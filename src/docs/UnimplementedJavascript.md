@@ -1,8 +1,8 @@
-# Unimplemented javascript bindings {#unimplemented}
+Unimplemented javascript bindings {#unimplemented}
+=================================
 
 This is a list of all the binding methods, getters and setters without an implementation in a binding.
 
-```
 Type | Unimplemented binding
 ---- | ---------------------
 method | URLSearchParams::append();
@@ -94,8 +94,8 @@ getter | CSSStyleDeclaration::length(unsigned long);
 getter | CSSStyleDeclaration::parentRule(user);
 getter | CSSStyleDeclaration::cssFloat(string);
 setter | CSSStyleDeclaration::cssFloat(string);
-getter | CSSStyleDeclaration::dashed\_attribute(string);
-setter | CSSStyleDeclaration::dashed\_attribute(string);
+getter | CSSStyleDeclaration::dashed_attribute(string);
+setter | CSSStyleDeclaration::dashed_attribute(string);
 getter | CSSRule::type(unsigned short);
 getter | CSSRule::cssText(string);
 setter | CSSRule::cssText(string);
@@ -1544,6 +1544,6 @@ getter | DocumentFragment::childElementCount(unsigned long);
 method | EventListener::handleEvent();
 method | CustomEvent::initCustomEvent();
 getter | CustomEvent::detail(any);
-```
 
-1539 unimplemented bindings
+ 1539 unimplemented bindings
+

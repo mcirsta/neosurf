@@ -193,6 +193,18 @@ static void scaffolding_window_destroy(GtkWidget *widget, gpointer data)
 
 	nsgtk_local_history_hide();
 
+	/* ensure scaffolding being destroyed is not current */
+	if (scaf_current == gs) {
+		scaf_current = NULL;
+		/* attempt to select nearest scaffold instead of just selecting the first */
+		if (gs->prev != NULL) {
+			scaf_current = gs->prev;
+		} else if (gs->next != NULL) {
+			scaf_current = gs->next;
+		}
+	}
+
+	/* remove scaffolding from list */
 	if (gs->prev != NULL) {
 		gs->prev->next = gs->next;
 	} else {
@@ -1071,7 +1083,7 @@ static nserror nsgtk_menu_initialise(struct nsgtk_scaffolding *g)
 	ITEM_MB(DELETE, delete, edit);
 	ITEM_MB(SELECTALL, selectall, edit);
 	ITEM_MB(FIND, find, edit);
-//	ITEM_MB(PREFERENCES, preferences, edit);
+	ITEM_MB(PREFERENCES, preferences, edit);
 
 	/* view menu */
 	ITEM_MB(FULLSCREEN, fullscreen, view);

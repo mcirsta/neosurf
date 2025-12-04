@@ -26,9 +26,6 @@
 
 #define AUTO INT_MIN
 
-/* Fixed point percentage (a) of an integer (b), to an integer */
-#define FPCT_OF_INT_TOINT(a, b) (FIXTOINT(FDIV((a * b), F_100)))
-
 /**
  * Layout a block formatting context.
  *
@@ -450,28 +447,12 @@ static inline void layout_find_dimensions(
 	unsigned int i;
 
 	if (width) {
-		enum css_width_e wtype;
-		css_fixed value = 0;
-		css_unit unit = CSS_UNIT_PX;
-
-		wtype = css_computed_width(style, &value, &unit);
-
-		if (wtype == CSS_WIDTH_SET) {
-			if (unit == CSS_UNIT_PCT) {
-				*width = FPCT_OF_INT_TOINT(
-						value, available_width);
-			} else {
-				*width = FIXTOINT(css_unit_len2device_px(
-						style, unit_len_ctx,
-						value, unit));
-			}
-		} else {
-			*width = AUTO;
-		}
-
-		if (*width != AUTO) {
+		if (css_computed_width_px(style, unit_len_ctx,
+				available_width, width) == CSS_WIDTH_SET) {
 			layout_handle_box_sizing(unit_len_ctx, box,
 					available_width, true, width);
+		} else {
+			*width = AUTO;
 		}
 	}
 

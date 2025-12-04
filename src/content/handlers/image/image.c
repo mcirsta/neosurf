@@ -32,7 +32,10 @@
 #include "content/handlers/image/gif.h"
 #include "content/handlers/image/ico.h"
 #include "content/handlers/image/jpeg.h"
+#include "content/handlers/image/jpegxl.h"
+#include "content/handlers/image/nssprite.h"
 #include "content/handlers/image/png.h"
+#include "content/handlers/image/rsvg.h"
 #include "content/handlers/image/svg.h"
 #include "content/handlers/image/webp.h"
 #include "content/handlers/image/image.h"
@@ -70,14 +73,32 @@ nserror image_init(void)
 		return error;
 #endif
 
+#ifdef WITH_JPEGXL
+	error = nsjpegxl_init();
+	if (error != NSERROR_OK)
+		return error;
+#endif
+
 #ifdef WITH_PNG
 	error = nspng_init();
 	if (error != NSERROR_OK)
 		return error;
 #endif
 
+#ifdef WITH_NSSPRITE
+	error = nssprite_init();
+	if (error != NSERROR_OK)
+		return error;
+#endif
+
+	/* Prefer rsvg over libsvgtiny for svgs */
 #ifdef WITH_NS_SVG
 	error = svg_init();
+	if (error != NSERROR_OK)
+		return error;
+#endif
+#ifdef WITH_RSVG
+	error = nsrsvg_init();
 	if (error != NSERROR_OK)
 		return error;
 #endif

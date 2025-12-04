@@ -94,7 +94,9 @@
 #include <string.h>
 #include <strings.h>
 #include <time.h>
-#include <libpsl.h>
+#ifdef WITH_NSPSL
+#include <nspsl.h>
+#endif
 
 #include <neosurf/utils/inet.h>
 #include <neosurf/utils/nsoption.h>
@@ -3848,6 +3850,9 @@ bool urldb_set_cookie(const char *header, nsurl *url, nsurl *referer)
 		struct cookie_internal_data *c;
 		char *dot;
 		size_t len;
+#ifdef WITH_NSPSL
+		const char *suffix;
+#endif
 
 		c = urldb_parse_cookie(url, &cur);
 		if (!c) {
@@ -3872,21 +3877,28 @@ bool urldb_set_cookie(const char *header, nsurl *url, nsurl *referer)
 			goto error;
 		}
 
+#ifdef WITH_NSPSL
 		/* check domain is not a public suffix */
 		dot = c->domain;
 		if (*dot == '.') {
 			dot++;
 		}
-
-		const psl_ctx_t *psl = psl_builtin();
-		bool is_public_suffix = psl_is_public_suffix2(psl, dot, PSL_TYPE_NO_STAR_RULE);
-		psl_free((psl_ctx_t*) psl);
-		if(is_public_suffix) {
-			NSLOG(neosurf, INFO,
+		suffix = nspsl_getpublicsuffix(dot);
+		if (suffix == NULL) {
+			NSLOG(netsurf, INFO,
 			      "domain %s was a public suffix domain", dot);
 			urldb_free_cookie(c);
 			goto error;
 		}
+#else
+		/* 4.3.2:ii Cookie domain must contain embedded dots */
+		dot = strchr(c->domain + 1, '.');
+		if (!dot || *(dot + 1) == '\0') {
+			/* no embedded dots */
+			urldb_free_cookie(c);
+			goto error;
+		}
+#endif
 
 		/* Domain match fetch host with cookie domain */
 		if (strcasecmp(lwc_string_data(host), c->domain) != 0) {

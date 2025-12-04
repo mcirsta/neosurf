@@ -32,6 +32,7 @@
 #include <neosurf/utils/log.h>
 #include <neosurf/utils/utf8.h>
 
+#include "neosurf/inttypes.h"
 #include "neosurf/utf8.h"
 #include <neosurf/desktop/gui_internal.h>
 
@@ -346,7 +347,7 @@ utf8_convert_html_chunk(iconv_t cd,
 			return NSERROR_NOMEM;
 
 		ucs4 = utf8_to_ucs4(chunk, inlen);
-		esclen = snprintf(escape, sizeof(escape), "&#x%06x;", ucs4);
+		esclen = snprintf(escape, sizeof(escape), "&#x%06"PRIx32";", ucs4);
 		pescape = escape;
 		ret = iconv(cd, (void *) &pescape, &esclen,
 			    (void *) out, outlen);

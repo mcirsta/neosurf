@@ -80,14 +80,25 @@
 #define CIPHER_LIST						\
 	/* disable everything */				\
 	"-ALL:"							\
-	/* enable TLSv1.2 PFS suites */				\
-	"EECDH+AES+TLSv1.2:EDH+AES+TLSv1.2:"			\
-	/* enable PFS AES GCM suites */				\
-	"EECDH+AESGCM:EDH+AESGCM:"				\
-	/* Enable PFS AES CBC suites */				\
-	"EECDH+AES:EDH+AES:"					\
-	/* Remove any PFS suites using weak DSA key exchange */	\
-	"-DSS"
+	/* enable TLSv1.2 ECDHE AES GCM suites */		\
+	"EECDH+AESGCM+TLSv1.2:"					\
+	/* enable ECDHE CHACHA20/POLY1305 suites */		\
+	"EECDH+CHACHA20:"					\
+	/* Sort above by strength */				\
+	"@STRENGTH:"						\
+	/* enable ECDHE (auth=RSA, mac=SHA1) AES CBC suites */	\
+	"EECDH+aRSA+AES+SHA1"
+
+/**
+ * The legacy cipher suites the browser is prepared to use for TLS<1.3
+ */
+#define CIPHER_LIST_LEGACY					\
+	/* as above */						\
+	CIPHER_LIST":"						\
+	/* enable (non-PFS) RSA AES GCM suites */		\
+	"RSA+AESGCM:"						\
+	/* enable (non-PFS) RSA (mac=SHA1) AES CBC suites */	\
+	"RSA+AES+SHA1"
 
 /* Open SSL compatability for certificate handling */
 #ifdef WITH_OPENSSL
@@ -95,8 +106,14 @@
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
 
-#define ns_X509_up_ref X509_up_ref
-#define ns_X509_free X509_free
+#else /* WITH_OPENSSL */
+
+typedef char X509;
+
+static void X509_free(X509 *cert)
+{
+	free(cert);
+}
 
 #endif /* WITH_OPENSSL */
 
@@ -194,6 +211,26 @@ struct cert_info {
 	long err;		/**< OpenSSL error code */
 };
 
+#if LIBCURL_VERSION_NUM >= 0x072000 /* 7.32.0 depricated CURLOPT_PROGRESSFUNCTION*/
+#define NSCURLOPT_PROGRESS_FUNCTION CURLOPT_XFERINFOFUNCTION
+#define NSCURLOPT_PROGRESS_DATA CURLOPT_XFERINFODATA
+#define NSCURL_PROGRESS_T curl_off_t
+#else
+#define NSCURLOPT_PROGRESS_FUNCTION CURLOPT_PROGRESSFUNCTION
+#define NSCURLOPT_PROGRESS_DATA CURLOPT_PROGRESSDATA
+#define NSCURL_PROGRESS_T double
+#endif
+
+#if LIBCURL_VERSION_NUM >= 0x073800 /* 7.56.0 depricated curl_formadd */
+#define NSCURL_POSTDATA_T curl_mime
+#define NSCURL_POSTDATA_CURLOPT CURLOPT_MIMEPOST
+#define NSCURL_POSTDATA_FREE(x) curl_mime_free(x)
+#else
+#define NSCURL_POSTDATA_T struct curl_httppost
+#define NSCURL_POSTDATA_CURLOPT CURLOPT_HTTPPOST
+#define NSCURL_POSTDATA_FREE(x) curl_formfree(x)
+#endif
+
 /** Information for a single fetch. */
 struct curl_fetch_info {
 	struct fetch *fetch_handle; /**< The fetch handle we're parented by. */
@@ -211,9 +248,11 @@ struct curl_fetch_info {
 	unsigned long content_length;	/**< Response Content-Length, or 0. */
 	char *cookie_string;	/**< Cookie string for this fetch */
 	char *realm;		/**< HTTP Auth Realm */
-	char *post_urlenc;	/**< Url encoded POST string, or 0. */
+	struct fetch_postdata *postdata; /**< POST data */
+	NSCURL_POSTDATA_T *curl_postdata; /**< POST data in curl representation */
+
 	long http_code; /**< HTTP result code from cURL. */
-	struct curl_httppost *post_multipart;	/**< Multipart post data, or 0. */
+
 	uint64_t last_progress_update;	/**< Time of last progress update */
 	int cert_depth; /**< deepest certificate in use */
 	struct cert_info cert_data[MAX_CERT_DEPTH]; /**< HTTPS certificate data */
@@ -320,85 +359,95 @@ static bool fetch_curl_can_fetch(const nsurl *url)
 }
 
 
+
 /**
- * Convert a list of struct ::fetch_multipart_data to a list of
- * struct curl_httppost for libcurl.
+ * allocate postdata
  */
-static struct curl_httppost *
-fetch_curl_post_convert(const struct fetch_multipart_data *control)
+static struct fetch_postdata *
+fetch_curl_alloc_postdata(const char *post_urlenc,
+			  const struct fetch_multipart_data *post_multipart)
 {
-	struct curl_httppost *post = 0, *last = 0;
-	CURLFORMcode code;
-	nserror ret;
+	struct fetch_postdata *postdata;
+	postdata = calloc(1, sizeof(struct fetch_postdata));
+	if (postdata != NULL) {
 
-	for (; control; control = control->next) {
-		if (control->file) {
-			char *leafname = NULL;
-			ret = guit->file->basename(control->value, &leafname, NULL);
-			if (ret != NSERROR_OK) {
-				continue;
+		if (post_urlenc) {
+			postdata->type = FETCH_POSTDATA_URLENC;
+			postdata->data.urlenc = strdup(post_urlenc);
+			if (postdata->data.urlenc == NULL) {
+				free(postdata);
+				postdata = NULL;
 			}
-
-			/* We have to special case filenames of "", so curl
-			 * a) actually attempts the fetch and
-			 * b) doesn't attempt to open the file ""
-			 */
-			if (control->value[0] == '\0') {
-				/* dummy buffer - needs to be static so
-				 * pointer's still valid when we go out
-				 * of scope (not that libcurl should be
-				 * attempting to access it, of course).
-				 */
-				static char buf;
-
-				code = curl_formadd(&post, &last,
-					CURLFORM_COPYNAME, control->name,
-					CURLFORM_BUFFER, control->value,
-					/* needed, as basename("") == "." */
-					CURLFORM_FILENAME, "",
-					CURLFORM_BUFFERPTR, &buf,
-					CURLFORM_BUFFERLENGTH, 0,
-					CURLFORM_CONTENTTYPE,
-						"application/octet-stream",
-					CURLFORM_END);
-				if (code != CURL_FORMADD_OK)
-					NSLOG(neosurf, INFO,
-					      "curl_formadd: %d (%s)", code,
-					      control->name);
-			} else {
-				char *mimetype = guit->fetch->mimetype(control->value);
-				code = curl_formadd(&post, &last,
-					CURLFORM_COPYNAME, control->name,
-					CURLFORM_FILE, control->rawfile,
-					CURLFORM_FILENAME, leafname,
-					CURLFORM_CONTENTTYPE,
-					(mimetype != 0 ? mimetype : "text/plain"),
-					CURLFORM_END);
-				if (code != CURL_FORMADD_OK)
-					NSLOG(neosurf, INFO,
-					      "curl_formadd: %d (%s=%s)",
-					      code,
-					      control->name,
-					      control->value);
-				free(mimetype);
+		} else if (post_multipart) {
+			postdata->type = FETCH_POSTDATA_MULTIPART;
+			postdata->data.multipart = fetch_multipart_data_clone(post_multipart);
+			if (postdata->data.multipart == NULL) {
+				free(postdata);
+				postdata = NULL;
 			}
-			free(leafname);
-		}
-		else {
-			code = curl_formadd(&post, &last,
-					CURLFORM_COPYNAME, control->name,
-					CURLFORM_COPYCONTENTS, control->value,
-					CURLFORM_END);
-			if (code != CURL_FORMADD_OK)
-				NSLOG(neosurf, INFO,
-				      "curl_formadd: %d (%s=%s)", code,
-				      control->name, control->value);
+		} else {
+			postdata->type = FETCH_POSTDATA_NONE;
 		}
 	}
-
-	return post;
+	return postdata;
 }
 
+/**
+ * free postdata
+ */
+static void fetch_curl_free_postdata(struct fetch_postdata *postdata)
+{
+	if (postdata != NULL) {
+		switch (postdata->type) {
+		case FETCH_POSTDATA_NONE:
+			break;
+		case FETCH_POSTDATA_URLENC:
+			free(postdata->data.urlenc);
+			break;
+		case FETCH_POSTDATA_MULTIPART:
+			fetch_multipart_data_destroy(postdata->data.multipart);
+			break;
+		}
+
+		free(postdata);
+	}
+}
+
+/**
+ *construct a new fetch structure
+ */
+static struct curl_fetch_info *fetch_alloc(void)
+{
+	struct curl_fetch_info *fetch;
+	fetch = malloc(sizeof (*fetch));
+	if (fetch == NULL)
+		return NULL;
+
+	fetch->curl_handle = NULL;
+	fetch->sent_ssl_chain = false;
+	fetch->had_headers = false;
+	fetch->abort = false;
+	fetch->stopped = false;
+	fetch->only_2xx = false;
+	fetch->downgrade_tls = false;
+	fetch->headers = NULL;
+	fetch->url = NULL;
+	fetch->host = NULL;
+	fetch->location = NULL;
+	fetch->content_length = 0;
+	fetch->http_code = 0;
+	fetch->cookie_string = NULL;
+	fetch->realm = NULL;
+	fetch->last_progress_update = 0;
+	fetch->postdata = NULL;
+	fetch->curl_postdata = NULL;
+
+	/* Clear certificate chain data */
+	memset(fetch->cert_data, 0, sizeof(fetch->cert_data));
+	fetch->cert_depth = -1;
+
+	return fetch;
+}
 
 /**
  * Start fetching data for the given URL.
@@ -434,46 +483,22 @@ fetch_curl_setup(struct fetch *parent_fetch,
 	struct curl_slist *slist;
 	int i;
 
-	fetch = malloc(sizeof (*fetch));
+	fetch = fetch_alloc();
 	if (fetch == NULL)
-		return 0;
+		return NULL;
 
-	fetch->fetch_handle = parent_fetch;
+	NSLOG(netsurf, INFO, "fetch %p, url '%s'", fetch, nsurl_access(url));
 
-	NSLOG(neosurf, INFO, "fetch %p, url '%s'", fetch, nsurl_access(url));
-
-	/* construct a new fetch structure */
-	fetch->curl_handle = NULL;
-	fetch->sent_ssl_chain = false;
-	fetch->had_headers = false;
-	fetch->abort = false;
-	fetch->stopped = false;
 	fetch->only_2xx = only_2xx;
 	fetch->downgrade_tls = downgrade_tls;
-	fetch->headers = NULL;
+	fetch->fetch_handle = parent_fetch;
 	fetch->url = nsurl_ref(url);
 	fetch->host = nsurl_get_component(url, NSURL_HOST);
-	fetch->location = NULL;
-	fetch->content_length = 0;
-	fetch->http_code = 0;
-	fetch->cookie_string = NULL;
-	fetch->realm = NULL;
-	fetch->post_urlenc = NULL;
-	fetch->post_multipart = NULL;
-	if (post_urlenc) {
-		fetch->post_urlenc = strdup(post_urlenc);
-	} else if (post_multipart) {
-		fetch->post_multipart = fetch_curl_post_convert(post_multipart);
+	if (fetch->host == NULL) {
+		goto failed;
 	}
-	fetch->last_progress_update = 0;
-
-	/* Clear certificate chain data */
-	memset(fetch->cert_data, 0, sizeof(fetch->cert_data));
-	fetch->cert_depth = -1;
-
-	if ((fetch->host == NULL) ||
-	    (post_multipart != NULL && fetch->post_multipart == NULL) ||
-	    (post_urlenc != NULL && fetch->post_urlenc == NULL)) {
+	fetch->postdata = fetch_curl_alloc_postdata(post_urlenc, post_multipart);
+	if (fetch->postdata == NULL) {
 		goto failed;
 	}
 
@@ -708,7 +733,7 @@ fetch_curl_verify_callback(int verify_ok, X509_STORE_CTX *x509_ctx)
 	 */
 	if (!fetch->cert_data[depth].cert) {
 		fetch->cert_data[depth].cert = X509_STORE_CTX_get_current_cert(x509_ctx);
-		ns_X509_up_ref(fetch->cert_data[depth].cert);
+		X509_up_ref(fetch->cert_data[depth].cert);
 		fetch->cert_data[depth].err = X509_STORE_CTX_get_error(x509_ctx);
 	}
 
@@ -839,6 +864,301 @@ fetch_curl_report_certs_upstream(struct curl_fetch_info *f)
 	f->sent_ssl_chain = true;
 }
 
+#if LIBCURL_VERSION_NUM >= 0x073800 /* 7.56.0 depricated curl_formadd */
+
+/**
+ * curl mime data context
+ */
+struct curl_mime_ctx {
+	char *buffer;
+	curl_off_t size;
+	curl_off_t position;
+};
+
+static size_t mime_data_read_callback(char *buffer, size_t size, size_t nitems, void *arg)
+{
+	struct curl_mime_ctx *mctx = (struct curl_mime_ctx *) arg;
+	curl_off_t sz = mctx->size - mctx->position;
+
+	nitems *= size;
+	if(sz > (curl_off_t)nitems) {
+		sz = nitems;
+	}
+	if(sz) {
+		memcpy(buffer, mctx->buffer + mctx->position, sz);
+	}
+	mctx->position += sz;
+	return sz;
+}
+
+static int mime_data_seek_callback(void *arg, curl_off_t offset, int origin)
+{
+	struct curl_mime_ctx *mctx = (struct curl_mime_ctx *) arg;
+
+	switch(origin) {
+	case SEEK_END:
+		offset += mctx->size;
+		break;
+	case SEEK_CUR:
+		offset += mctx->position;
+		break;
+	}
+
+	if(offset < 0) {
+		return CURL_SEEKFUNC_FAIL;
+	}
+	mctx->position = offset;
+	return CURL_SEEKFUNC_OK;
+}
+
+static void mime_data_free_callback(void *arg)
+{
+	struct curl_mime_ctx *mctx = (struct curl_mime_ctx *) arg;
+	free(mctx);
+}
+
+/**
+ * Convert a POST data list to a libcurl curl_mime.
+ *
+ * \param chandle curl fetch handle.
+ * \param multipart limked list of struct ::fetch_multipart forming post data.
+ */
+static curl_mime *
+fetch_curl_postdata_convert(CURL *chandle,
+			    const struct fetch_multipart_data *multipart)
+{
+	curl_mime *cmime;
+	curl_mimepart *part;
+	CURLcode code = CURLE_OK;
+	size_t value_len;
+
+	cmime = curl_mime_init(chandle);
+	if (cmime == NULL) {
+		NSLOG(netsurf, WARNING, "postdata conversion failed to curl mime context");
+		return NULL;
+	}
+
+	/* iterate post data */
+	for (; multipart != NULL; multipart = multipart->next) {
+		part = curl_mime_addpart(cmime);
+		if (part == NULL) {
+			goto convert_failed;
+		}
+
+		code = curl_mime_name(part, multipart->name);
+		if (code != CURLE_OK) {
+			goto convert_failed;
+		}
+
+		value_len = strlen(multipart->value);
+
+		if (multipart->file && value_len==0) {
+			/* file entries with no filename require special handling */
+			code=curl_mime_data(part, multipart->value, value_len);
+			if (code != CURLE_OK) {
+				goto convert_failed;
+			}
+
+			code = curl_mime_filename(part, "");
+			if (code != CURLE_OK) {
+				goto convert_failed;
+			}
+
+			code = curl_mime_type(part, "application/octet-stream");
+			if (code != CURLE_OK) {
+				goto convert_failed;
+			}
+
+		} else if(multipart->file) {
+			/* file entry */
+			nserror ret;
+			char *leafname = NULL;
+			char *mimetype = NULL;
+
+			code = curl_mime_filedata(part, multipart->rawfile);
+			if (code != CURLE_OK) {
+				goto convert_failed;
+			}
+
+			ret = guit->file->basename(multipart->value, &leafname, NULL);
+			if (ret != NSERROR_OK) {
+				goto convert_failed;
+			}
+			code = curl_mime_filename(part, leafname);
+			free(leafname);
+			if (code != CURLE_OK) {
+				goto convert_failed;
+			}
+
+			mimetype = guit->fetch->mimetype(multipart->value);
+			if (mimetype == NULL) {
+				mimetype=strdup("text/plain");
+			}
+			if (mimetype == NULL) {
+				goto convert_failed;
+			}
+			code = curl_mime_type(part, mimetype);
+			free(mimetype);
+			if (code != CURLE_OK) {
+				goto convert_failed;
+			}
+
+		} else {
+			/* make the curl mime reference the existing multipart
+			 * data which requires use of a callback and context.
+			 */
+			struct curl_mime_ctx *cb_ctx;
+			cb_ctx = malloc(sizeof(struct curl_mime_ctx));
+			if (cb_ctx == NULL) {
+				goto convert_failed;
+			}
+			cb_ctx->buffer = multipart->value;
+			cb_ctx->size = value_len;
+			cb_ctx->position = 0;
+			code = curl_mime_data_cb(part,
+						 value_len,
+						 mime_data_read_callback,
+						 mime_data_seek_callback,
+						 mime_data_free_callback,
+						 cb_ctx);
+			if (code != CURLE_OK) {
+				free(cb_ctx);
+				goto convert_failed;
+			}
+		}
+	}
+
+	return cmime;
+
+convert_failed:
+	NSLOG(netsurf, WARNING, "postdata conversion failed with curl code: %d", code);
+	curl_mime_free(cmime);
+	return NULL;
+}
+
+#else /* LIBCURL_VERSION_NUM >= 0x073800 */
+
+/**
+ * Convert a list of struct ::fetch_multipart_data to a list of
+ * struct curl_httppost for libcurl.
+ */
+static struct curl_httppost *
+fetch_curl_postdata_convert(CURL *chandle,
+			    const struct fetch_multipart_data *control)
+{
+	struct curl_httppost *post = NULL, *last = NULL;
+	CURLFORMcode code;
+	nserror ret;
+
+	for (; control; control = control->next) {
+		if (control->file) {
+			char *leafname = NULL;
+			ret = guit->file->basename(control->value, &leafname, NULL);
+			if (ret != NSERROR_OK) {
+				continue;
+			}
+
+			/* We have to special case filenames of "", so curl
+			 * a) actually attempts the fetch and
+			 * b) doesn't attempt to open the file ""
+			 */
+			if (control->value[0] == '\0') {
+				/* dummy buffer - needs to be static so
+				 * pointer's still valid when we go out
+				 * of scope (not that libcurl should be
+				 * attempting to access it, of course).
+				 */
+				static char buf;
+
+				code = curl_formadd(&post, &last,
+						    CURLFORM_COPYNAME, control->name,
+						    CURLFORM_BUFFER, control->value,
+						    /* needed, as basename("") == "." */
+						    CURLFORM_FILENAME, "",
+						    CURLFORM_BUFFERPTR, &buf,
+						    CURLFORM_BUFFERLENGTH, 0,
+						    CURLFORM_CONTENTTYPE,
+						    "application/octet-stream",
+						    CURLFORM_END);
+				if (code != CURL_FORMADD_OK)
+					NSLOG(netsurf, INFO,
+					      "curl_formadd: %d (%s)", code,
+					      control->name);
+			} else {
+				char *mimetype = guit->fetch->mimetype(control->value);
+				code = curl_formadd(&post, &last,
+						    CURLFORM_COPYNAME, control->name,
+						    CURLFORM_FILE, control->rawfile,
+						    CURLFORM_FILENAME, leafname,
+						    CURLFORM_CONTENTTYPE,
+						    (mimetype != 0 ? mimetype : "text/plain"),
+						    CURLFORM_END);
+				if (code != CURL_FORMADD_OK)
+					NSLOG(netsurf, INFO,
+					      "curl_formadd: %d (%s=%s)",
+					      code,
+					      control->name,
+					      control->value);
+				free(mimetype);
+			}
+			free(leafname);
+		} else {
+			code = curl_formadd(&post, &last,
+					    CURLFORM_COPYNAME, control->name,
+					    CURLFORM_COPYCONTENTS, control->value,
+					    CURLFORM_END);
+			if (code != CURL_FORMADD_OK)
+				NSLOG(netsurf, INFO,
+				      "curl_formadd: %d (%s=%s)", code,
+				      control->name, control->value);
+		}
+	}
+
+	return post;
+}
+
+#endif  /* LIBCURL_VERSION_NUM >= 0x073800 */
+
+/**
+ * Setup multipart post data
+ */
+static CURLcode fetch_curl_set_postdata(struct curl_fetch_info *f)
+{
+	CURLcode code = CURLE_OK;
+
+#undef SETOPT
+#define SETOPT(option, value) { \
+	code = curl_easy_setopt(f->curl_handle, option, value);	\
+	if (code != CURLE_OK)					\
+		return code;					\
+	}
+
+	switch (f->postdata->type) {
+	case FETCH_POSTDATA_NONE:
+		SETOPT(CURLOPT_POSTFIELDS, NULL);
+		SETOPT(NSCURL_POSTDATA_CURLOPT, NULL);
+		SETOPT(CURLOPT_HTTPGET, 1L);
+		break;
+
+	case FETCH_POSTDATA_URLENC:
+		SETOPT(NSCURL_POSTDATA_CURLOPT, NULL);
+		SETOPT(CURLOPT_HTTPGET, 0L);
+		SETOPT(CURLOPT_POSTFIELDS, f->postdata->data.urlenc);
+		break;
+
+	case FETCH_POSTDATA_MULTIPART:
+		SETOPT(CURLOPT_POSTFIELDS, NULL);
+		SETOPT(CURLOPT_HTTPGET, 0L);
+		if (f->curl_postdata == NULL) {
+			f->curl_postdata =
+				fetch_curl_postdata_convert(f->curl_handle,
+							    f->postdata->data.multipart);
+		}
+		SETOPT(NSCURL_POSTDATA_CURLOPT, f->curl_postdata);
+		break;
+	}
+	return code;
+}
 
 /**
  * Set options specific for a fetch.
@@ -862,20 +1182,11 @@ static CURLcode fetch_curl_set_options(struct curl_fetch_info *f)
 	SETOPT(CURLOPT_PRIVATE, f);
 	SETOPT(CURLOPT_WRITEDATA, f);
 	SETOPT(CURLOPT_WRITEHEADER, f);
-	SETOPT(CURLOPT_PROGRESSDATA, f);
+	SETOPT(NSCURLOPT_PROGRESS_DATA, f);
 	SETOPT(CURLOPT_HTTPHEADER, f->headers);
-	if (f->post_urlenc) {
-		SETOPT(CURLOPT_HTTPPOST, NULL);
-		SETOPT(CURLOPT_HTTPGET, 0L);
-		SETOPT(CURLOPT_POSTFIELDS, f->post_urlenc);
-	} else if (f->post_multipart) {
-		SETOPT(CURLOPT_POSTFIELDS, NULL);
-		SETOPT(CURLOPT_HTTPGET, 0L);
-		SETOPT(CURLOPT_HTTPPOST, f->post_multipart);
-	} else {
-		SETOPT(CURLOPT_POSTFIELDS, NULL);
-		SETOPT(CURLOPT_HTTPPOST, NULL);
-		SETOPT(CURLOPT_HTTPGET, 1L);
+	code = fetch_curl_set_postdata(f);
+	if (code != CURLE_OK) {
+		return code;
 	}
 
 	f->cookie_string = urldb_get_cookie(f->url, true);
@@ -922,8 +1233,14 @@ static CURLcode fetch_curl_set_options(struct curl_fetch_info *f)
 		SETOPT(CURLOPT_PROXY, NULL);
 	}
 
+
+	if (curl_with_openssl) {
+		SETOPT(CURLOPT_SSL_CIPHER_LIST,
+			f->downgrade_tls ? CIPHER_LIST_LEGACY : CIPHER_LIST);
+	}
+
 	/* Force-enable SSL session ID caching, as some distros are odd. */
-	SETOPT(CURLOPT_SSL_SESSIONID_CACHE, 1);
+	SETOPT(CURLOPT_SSL_SESSIONID_CACHE, 1L);
 
 	if (urldb_get_cert_permissions(f->url)) {
 		/* Disable certificate verification */
@@ -1020,8 +1337,49 @@ static bool fetch_curl_start(void *vfetch)
  */
 static void fetch_curl_cache_handle(CURL *handle, lwc_string *host)
 {
+#if LIBCURL_VERSION_NUM >= 0x071e00
+	/* 7.30.0 or later has its own connection caching; suppress ours */
 	curl_easy_cleanup(handle);
 	return;
+#else
+	struct cache_handle *h = 0;
+	int c;
+	RING_FINDBYLWCHOST(curl_handle_ring, h, host);
+	if (h) {
+		/* Already have a handle cached for this hostname */
+		curl_easy_cleanup(handle);
+		return;
+	}
+	/* We do not have a handle cached, first up determine if the cache is full */
+	RING_GETSIZE(struct cache_handle, curl_handle_ring, c);
+	if (c >= nsoption_int(max_cached_fetch_handles)) {
+		/* Cache is full, so, we rotate the ring by one and
+		 * replace the oldest handle with this one. We do this
+		 * without freeing/allocating memory (except the
+		 * hostname) and without removing the entry from the
+		 * ring and then re-inserting it, in order to be as
+		 * efficient as we can.
+		 */
+		if (curl_handle_ring != NULL) {
+			h = curl_handle_ring;
+			curl_handle_ring = h->r_next;
+			curl_easy_cleanup(h->handle);
+			h->handle = handle;
+			lwc_string_unref(h->host);
+			h->host = lwc_string_ref(host);
+		} else {
+			/* Actually, we don't want to cache any handles */
+			curl_easy_cleanup(handle);
+		}
+
+		return;
+	}
+	/* The table isn't full yet, so make a shiny new handle to add to the ring */
+	h = (struct cache_handle*)malloc(sizeof(struct cache_handle));
+	h->handle = handle;
+	h->host = lwc_string_ref(host);
+	RING_INSERT(curl_handle_ring, h);
+#endif
 }
 
 
@@ -1094,15 +1452,13 @@ static void fetch_curl_free(void *vf)
 	if (f->headers) {
 		curl_slist_free_all(f->headers);
 	}
-	free(f->post_urlenc);
-	if (f->post_multipart) {
-		curl_formfree(f->post_multipart);
-	}
+	fetch_curl_free_postdata(f->postdata);
+	NSCURL_POSTDATA_FREE(f->curl_postdata);
 
 	/* free certificate data */
 	for (i = 0; i < MAX_CERT_DEPTH; i++) {
 		if (f->cert_data[i].cert != NULL) {
-			ns_X509_free(f->cert_data[i].cert);
+			X509_free(f->cert_data[i].cert);
 		}
 	}
 
@@ -1132,7 +1488,7 @@ static bool fetch_curl_process_headers(struct curl_fetch_info *f)
 	http_code = f->http_code;
 	NSLOG(neosurf, INFO, "HTTP status code %li", http_code);
 
-	if (http_code == 304 && !f->post_urlenc && !f->post_multipart) {
+	if ((http_code == 304) && (f->postdata->type==FETCH_POSTDATA_NONE)) {
 		/* Not Modified && GET request */
 		msg.type = FETCH_NOTMODIFIED;
 		fetch_send_callback(&msg, f->fetch_handle);
@@ -1366,10 +1722,10 @@ static void fetch_curl_poll(lwc_string *scheme_ignored)
  */
 static int
 fetch_curl_progress(void *clientp,
-		    double dltotal,
-		    double dlnow,
-		    double ultotal,
-		    double ulnow)
+		    NSCURL_PROGRESS_T dltotal,
+		    NSCURL_PROGRESS_T dlnow,
+		    NSCURL_PROGRESS_T ultotal,
+		    NSCURL_PROGRESS_T ulnow)
 {
 	static char fetch_progress_buffer[256]; /**< Progress buffer for cURL */
 	struct curl_fetch_info *f = (struct curl_fetch_info *) clientp;
@@ -1435,6 +1791,24 @@ fetch_curl_debug(CURL *handle,
 	return 0;
 }
 
+
+static curl_socket_t fetch_curl_socket_open(void *clientp,
+		curlsocktype purpose, struct curl_sockaddr *address)
+{
+	(void) clientp;
+	(void) purpose;
+
+	return (curl_socket_t) guit->fetch->socket_open(
+			address->family, address->socktype,
+			address->protocol);
+}
+
+static int fetch_curl_socket_close(void *clientp, curl_socket_t item)
+{
+	(void) clientp;
+
+	return guit->fetch->socket_close((int) item);
+}
 
 /**
  * Callback function for cURL.
@@ -1606,6 +1980,8 @@ nserror fetch_curl_register(void)
 		.finalise = fetch_curl_finalise
 	};
 
+#if LIBCURL_VERSION_NUM >= 0x073800
+	/* version 7.56.0 can select which SSL backend to use */
 	CURLsslset setres;
 
 	setres = curl_global_sslset(CURLSSLBACKEND_OPENSSL, NULL, NULL);
@@ -1614,6 +1990,7 @@ nserror fetch_curl_register(void)
 	} else {
 		curl_with_openssl = false;
 	}
+#endif
 
 	NSLOG(neosurf, INFO, "curl_version %s", curl_version());
 
@@ -1629,6 +2006,8 @@ nserror fetch_curl_register(void)
 		return NSERROR_INIT_FAILED;
 	}
 
+#if LIBCURL_VERSION_NUM >= 0x071e00
+	/* built against 7.30.0 or later: configure caching */
 	{
 		CURLMcode mcode;
 		int maxconnects = nsoption_int(max_fetchers) +
@@ -1646,6 +2025,7 @@ nserror fetch_curl_register(void)
 		SETOPT(CURLMOPT_MAX_TOTAL_CONNECTIONS, maxconnects);
 		SETOPT(CURLMOPT_MAX_HOST_CONNECTIONS, nsoption_int(max_fetchers_per_host));
 	}
+#endif
 
 	/* Create a curl easy handle with the options that are common to all
 	 *  fetches.
@@ -1677,7 +2057,7 @@ nserror fetch_curl_register(void)
 
 	SETOPT(CURLOPT_WRITEFUNCTION, fetch_curl_data);
 	SETOPT(CURLOPT_HEADERFUNCTION, fetch_curl_header);
-	SETOPT(CURLOPT_PROGRESSFUNCTION, fetch_curl_progress);
+	SETOPT(NSCURLOPT_PROGRESS_FUNCTION, fetch_curl_progress);
 	SETOPT(CURLOPT_NOPROGRESS, 0);
 	SETOPT(CURLOPT_USERAGENT, user_agent_string());
 	SETOPT(CURLOPT_ENCODING, "gzip");
@@ -1685,6 +2065,8 @@ nserror fetch_curl_register(void)
 	SETOPT(CURLOPT_LOW_SPEED_TIME, 180L);
 	SETOPT(CURLOPT_NOSIGNAL, 1L);
 	SETOPT(CURLOPT_CONNECTTIMEOUT, nsoption_uint(curl_fetch_timeout));
+	SETOPT(CURLOPT_OPENSOCKETFUNCTION, fetch_curl_socket_open);
+	SETOPT(CURLOPT_CLOSESOCKETFUNCTION, fetch_curl_socket_close);
 
 	if (nsoption_charp(ca_bundle) &&
 	    strcmp(nsoption_charp(ca_bundle), "")) {
@@ -1697,14 +2079,31 @@ nserror fetch_curl_register(void)
 		SETOPT(CURLOPT_CAPATH, nsoption_charp(ca_path));
 	}
 
+#if LIBCURL_VERSION_NUM < 0x073800
+	/*
+	 * before 7.56.0 Detect openssl from whether the SSL CTX
+	 *  function API works
+	 */
+	code = curl_easy_setopt(fetch_blank_curl, CURLOPT_SSL_CTX_FUNCTION, NULL);
+	if (code != CURLE_OK) {
+		curl_with_openssl = false;
+	} else {
+		curl_with_openssl = true;
+	}
+#endif
+
 	if (curl_with_openssl) {
 		/* only set the cipher list with openssl otherwise the
 		 *  fetch fails with "Unknown cipher in list"
 		 */
+#if LIBCURL_VERSION_NUM >= 0x073d00
+		/* Need libcurl 7.61.0 or later built against OpenSSL with
+		 * TLS1.3 support */
 		code = curl_easy_setopt(fetch_blank_curl,
 				CURLOPT_TLS13_CIPHERS, CIPHER_SUITES);
 		if (code != CURLE_OK && code != CURLE_NOT_BUILT_IN)
 			goto curl_easy_setopt_failed;
+#endif
 		SETOPT(CURLOPT_SSL_CIPHER_LIST, CIPHER_LIST);
 	}
 
@@ -1746,7 +2145,9 @@ curl_easy_setopt_failed:
 	NSLOG(neosurf, INFO, "curl_easy_setopt failed.");
 	return NSERROR_INIT_FAILED;
 
+#if LIBCURL_VERSION_NUM >= 0x071e00
 curl_multi_setopt_failed:
 	NSLOG(neosurf, INFO, "curl_multi_setopt failed.");
 	return NSERROR_INIT_FAILED;
+#endif
 }

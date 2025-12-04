@@ -64,6 +64,10 @@
 #include <neosurf/desktop/browser_history.h>
 #include "desktop/theme.h"
 
+#ifdef WITH_THEME_INSTALL
+#include "desktop/theme.h"
+#endif
+
 /**
  * smallest scale that can be applied to a browser window
  */
@@ -1476,6 +1480,13 @@ browser_window_callback(hlcache_handle *c, const hlcache_event *event, void *pw)
 	case CONTENT_MSG_LOADING:
 		assert(bw->loading_content == c);
 
+#ifdef WITH_THEME_INSTALL
+		if (content_get_type(c) == CONTENT_THEME) {
+			theme_install_start(c);
+			bw->loading_content = NULL;
+			browser_window_stop_throbber(bw);
+		} else
+#endif
 		{
 			bw->refresh_interval = -1;
 			browser_window_set_status(bw,
@@ -2392,7 +2403,6 @@ browser_window_scroll_at_point_internal(struct browser_window *bw,
 					int x, int y,
 					int scrx, int scry)
 {
-	bool handled_scroll = false;
 	assert(bw != NULL);
 
 	/* Handle (i)frame scroll offset (core-managed browser windows only) */
@@ -2432,18 +2442,9 @@ browser_window_scroll_at_point_internal(struct browser_window *bw,
 		return true;
 	}
 
-	/* Try to scroll this window, if scroll not already handled */
-	if (handled_scroll == false) {
-		if (bw->scroll_y && scrollbar_scroll(bw->scroll_y, scry)) {
-			handled_scroll = true;
-		}
-
-		if (bw->scroll_x && scrollbar_scroll(bw->scroll_x, scrx)) {
-			handled_scroll = true;
-		}
-	}
-
-	return handled_scroll;
+	/* Try to scroll this window. */
+	return (int)scrollbar_scroll(bw->scroll_y, scry) |
+		(int)scrollbar_scroll(bw->scroll_x, scrx);
 }
 
 
@@ -3001,6 +3002,8 @@ browser_window_get_features(struct browser_window *bw,
 {
 	/* clear the features structure to empty values */
 	data->link = NULL;
+	data->link_title = NULL;
+	data->link_title_length = 0;
 	data->object = NULL;
 	data->main = NULL;
 	data->form_features = CTX_FORM_NONE;
@@ -3307,10 +3310,6 @@ browser_window_navigate(struct browser_window *bw,
 	assert(bw);
 	assert(url);
 
-	if (bw->browser_window_type == BROWSER_WINDOW_NORMAL &&
-			guit->window->url_filter) {
-		url = guit->window->url_filter(bw->window, url);
-	}
 	NSLOG(neosurf, INFO, "bw %p, url %s", bw, nsurl_access(url));
 
 	/*
@@ -3974,7 +3973,7 @@ bool browser_window_has_content(struct browser_window *bw)
 }
 
 
-/* Exported interface, documented in neosurf/browser_window.h */
+./* Exported interface, documented in neosurf/browser_window.h */
 struct hlcache_handle *browser_window_get_content(struct browser_window *bw)
 {
 	return bw->current_content;
@@ -4343,6 +4342,10 @@ browser_window_find_target(struct browser_window *bw,
 	hlcache_handle *c;
 	int rdepth;
 	nserror error;
+	int flags = BW_CREATE_HISTORY | BW_CREATE_CLONE;
+
+	if (nsoption_bool(foreground_new))
+		flags |= BW_CREATE_FOREGROUND;
 
 	/* use the base target if we don't have one */
 	c = bw->current_content;
@@ -4384,13 +4387,8 @@ browser_window_find_target(struct browser_window *bw,
 		 * OR
 		 * - button_2 opens in new tab and the link target is "_blank"
 		 */
-		error = browser_window_create(BW_CREATE_TAB |
-					      BW_CREATE_HISTORY |
-					      BW_CREATE_CLONE,
-					      NULL,
-					      NULL,
-					      bw,
-					      &bw_target);
+		flags |= BW_CREATE_TAB;
+		error = browser_window_create(flags, NULL, NULL, bw, &bw_target);
 		if (error != NSERROR_OK) {
 			return bw;
 		}
@@ -4411,12 +4409,7 @@ browser_window_find_target(struct browser_window *bw,
 		 * - button_2 doesn't open in new tabs and the link target is
 		 *   "_blank"
 		 */
-		error = browser_window_create(BW_CREATE_HISTORY |
-					      BW_CREATE_CLONE,
-					      NULL,
-					      NULL,
-					      bw,
-					      &bw_target);
+		error = browser_window_create(flags, NULL, NULL, bw, &bw_target);
 		if (error != NSERROR_OK) {
 			return bw;
 		}
@@ -4450,11 +4443,7 @@ browser_window_find_target(struct browser_window *bw,
 	if (!nsoption_bool(target_blank))
 		return bw;
 
-	error = browser_window_create(BW_CREATE_CLONE | BW_CREATE_HISTORY,
-				      NULL,
-				      NULL,
-				      bw,
-				      &bw_target);
+	error = browser_window_create(flags, NULL, NULL, bw, &bw_target);
 	if (error != NSERROR_OK) {
 		return bw;
 	}

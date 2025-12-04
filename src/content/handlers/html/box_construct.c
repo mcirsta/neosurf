@@ -249,16 +249,19 @@ box_get_style(html_content *c,
 	      const css_computed_style *root_style,
 	      dom_node *n)
 {
-	dom_string *s;
-	dom_exception err;
+	dom_string *s = NULL;
 	css_stylesheet *inline_style = NULL;
 	css_select_results *styles;
 	nscss_select_ctx ctx;
 
 	/* Firstly, construct inline stylesheet, if any */
-	err = dom_element_get_attribute(n, corestring_dom_style, &s);
-	if (err != DOM_NO_ERR)
-		return NULL;
+	if (nsoption_bool(author_level_css)) {
+		dom_exception err;
+		err = dom_element_get_attribute(n, corestring_dom_style, &s);
+		if (err != DOM_NO_ERR) {
+			return NULL;
+		}
+	}
 
 	if (s != NULL) {
 		inline_style = nscss_create_inline_style(
@@ -549,8 +552,9 @@ box_construct_element(struct box_construct_ctx *ctx, bool *convert_children)
 	if (s != NULL) {
 		const char *val = dom_string_data(s);
 
+		/* Convert to a number, clamping to [1,1000] according to 4.9.11 */
 		if ('0' <= val[0] && val[0] <= '9')
-			box->columns = strtol(val, NULL, 10);
+			box->columns = clamp(strtol(val, NULL, 10), 1, 1000);
 
 		dom_string_unref(s);
 	}
@@ -562,8 +566,9 @@ box_construct_element(struct box_construct_ctx *ctx, bool *convert_children)
 	if (s != NULL) {
 		const char *val = dom_string_data(s);
 
+		/* Convert to a number, clamping to [0,65534] according to 4.9.11 */
 		if ('0' <= val[0] && val[0] <= '9')
-			box->rows = strtol(val, NULL, 10);
+			box->rows = clamp(strtol(val, NULL, 10), 0, 65534);
 
 		dom_string_unref(s);
 	}
@@ -1286,6 +1291,7 @@ static void convert_xml_to_box(struct box_construct_ctx *ctx)
 			root.children = root.last = ctx->root_box;
 			root.children->parent = &root;
 
+			/** \todo Remove box_normalise_block */
 			if (box_normalise_block(&root, ctx->root_box,
 					ctx->content) == false) {
 				ctx->cb(ctx->content, false);

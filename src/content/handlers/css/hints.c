@@ -1621,12 +1621,18 @@ static void css_hint_list(
 }
 
 
-/* Exported function, documeted in css/hints.h */
+/* Exported function, documented in css/hints.h */
 css_error node_presentational_hint(void *pw, void *node,
 		uint32_t *nhints, css_hint **hints)
 {
 	dom_exception exc;
 	dom_html_element_type tag_type;
+
+	if (nsoption_bool(author_level_css) == false) {
+		*nhints = 0;
+		*hints = NULL;
+		return CSS_OK;
+	}
 
 	css_hint_clean();
 
@@ -1724,6 +1730,10 @@ css_error node_presentational_hint(void *pw, void *node,
 		css_hint_bg_color(pw, node);
 		css_hint_bg_image(pw, node);
 	}
+
+#ifdef LOG_STATS
+	NSLOG(netsurf, INFO, "Properties with hints: %i", hint_ctx.len);
+#endif
 
 	css_hint_get_hints(hints, nhints);
 

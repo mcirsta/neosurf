@@ -65,6 +65,7 @@
 #include "gtk/toolbar_items.h"
 #include "gtk/scaffolding.h"
 #include "gtk/window.h"
+#include "gtk/corewindow.h"
 #include "gtk/schedule.h"
 #include "gtk/selection.h"
 #include "gtk/search.h"
@@ -831,6 +832,8 @@ static nserror nsgtk_init(int *pargc, char ***pargv, char **cache_home)
 }
 
 
+#if GTK_CHECK_VERSION(3,14,0)
+
 /**
  * adds named icons into gtk theme
  */
@@ -840,6 +843,62 @@ static nserror nsgtk_add_named_icons_to_theme(void)
 					 "/org/neosurf/icons");
 	return NSERROR_OK;
 }
+
+#else
+
+static nserror
+add_builtin_icon(const char *prefix, const char *name, int x, int y)
+{
+	GdkPixbuf *pixbuf;
+	nserror res;
+	char *resname;
+	int resnamelen;
+
+	/* resource name string length allowing for / .png and termination */
+	resnamelen = strlen(prefix) + strlen(name) + 5 + 1 + 4 + 1;
+	resname = malloc(resnamelen);
+	if (resname == NULL) {
+		return NSERROR_NOMEM;
+	}
+	snprintf(resname, resnamelen, "icons%s/%s.png", prefix, name);
+
+	res = nsgdk_pixbuf_new_from_resname(resname, &pixbuf);
+	NSLOG(netsurf, DEEPDEBUG, "%d %s", res, resname);
+	free(resname);
+	if (res != NSERROR_OK) {
+		pixbuf = gdk_pixbuf_new(GDK_COLORSPACE_RGB, false, 8, x, y);
+	}
+	gtk_icon_theme_add_builtin_icon(name, y, pixbuf);
+
+	return NSERROR_OK;
+}
+
+
+/**
+ * adds named icons into gtk theme
+ */
+static nserror nsgtk_add_named_icons_to_theme(void)
+{
+	/* these must also be in gtk/resources.c pixbuf_resource *and*
+	 * gtk/res/netsurf.gresource.xml
+	 */
+	add_builtin_icon("", "local-history", 8, 32);
+	add_builtin_icon("", "show-cookie", 24, 24);
+	add_builtin_icon("/24x24/actions", "page-info-insecure", 24, 24);
+	add_builtin_icon("/24x24/actions", "page-info-internal", 24, 24);
+	add_builtin_icon("/24x24/actions", "page-info-local", 24, 24);
+	add_builtin_icon("/24x24/actions", "page-info-secure", 24, 24);
+	add_builtin_icon("/24x24/actions", "page-info-warning", 24, 24);
+	add_builtin_icon("/48x48/actions", "page-info-insecure", 48, 48);
+	add_builtin_icon("/48x48/actions", "page-info-internal", 48, 48);
+	add_builtin_icon("/48x48/actions", "page-info-local", 48, 48);
+	add_builtin_icon("/48x48/actions", "page-info-secure", 48, 48);
+	add_builtin_icon("/48x48/actions", "page-info-warning", 48, 48);
+
+	return NSERROR_OK;
+}
+
+#endif
 
 
 /**
@@ -890,7 +949,7 @@ static nserror nsgtk_setup(int argc, char** argv, char **respath)
 		      resource_filename);
 		free(resource_filename);
 	}
-	search_web_select_provider(nsoption_int(search_provider));
+	search_web_select_provider(nsoption_charp(search_web_provider));
 
 	/* Default favicon */
 	res = nsgdk_pixbuf_new_from_resname("favicon.png", &favicon_pixbuf);
@@ -1126,6 +1185,7 @@ int main(int argc, char** argv)
 	struct neosurf_table nsgtk_table = {
 		.misc = nsgtk_misc_table,
 		.window = nsgtk_window_table,
+		.corewindow = nsgtk_core_window_table,
 		.clipboard = nsgtk_clipboard_table,
 		.download = nsgtk_download_table,
 		.fetch = nsgtk_fetch_table,

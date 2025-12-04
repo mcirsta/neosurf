@@ -154,6 +154,8 @@ nsgtk_select_menu_clicked(GtkCheckMenuItem *checkmenuitem,
 				      (intptr_t)user_data);
 }
 
+#if GTK_CHECK_VERSION(3,0,0)
+
 static gboolean
 nsgtk_window_draw_event(GtkWidget *widget, cairo_t *cr, gpointer data)
 {
@@ -203,6 +205,48 @@ nsgtk_window_draw_event(GtkWidget *widget, cairo_t *cr, gpointer data)
 
 	return FALSE;
 }
+
+#else
+
+static gboolean
+nsgtk_window_draw_event(GtkWidget *widget, GdkEventExpose *event, gpointer data)
+{
+	struct gui_window *gw = data;
+	struct gui_window *z;
+	struct rect clip;
+	struct redraw_context ctx = {
+		.interactive = true,
+		.background_images = true,
+		.plot = &nsgtk_plotters
+	};
+
+	assert(gw);
+	assert(gw->bw);
+
+	for (z = window_list; z && z != gw; z = z->next)
+		continue;
+	assert(z);
+	assert(GTK_WIDGET(gw->layout) == widget);
+
+	current_cr = gdk_cairo_create(nsgtk_layout_get_bin_window(gw->layout));
+
+	clip.x0 = event->area.x;
+	clip.y0 = event->area.y;
+	clip.x1 = event->area.x + event->area.width;
+	clip.y1 = event->area.y + event->area.height;
+
+	browser_window_redraw(gw->bw, 0, 0, &clip, &ctx);
+
+	if (gw->careth != 0) {
+		nsgtk_plot_caret(gw->caretx, gw->carety, gw->careth);
+	}
+
+	cairo_destroy(current_cr);
+
+	return FALSE;
+}
+
+#endif
 
 static gboolean
 nsgtk_window_motion_notify_event(GtkWidget *widget,
@@ -308,6 +352,14 @@ nsgtk_window_button_press_event(GtkWidget *widget,
 					       g->mouse.pressed_y);
 		return TRUE;
 
+	case 8: /* Back button */
+		g->mouse.state = BROWSER_MOUSE_PRESS_4;
+		break;
+
+	case 9: /* Forward button */
+		g->mouse.state = BROWSER_MOUSE_PRESS_5;
+		break;
+
 	default:
 		return FALSE;
 	}
@@ -323,6 +375,8 @@ nsgtk_window_button_press_event(GtkWidget *widget,
 		g->mouse.state |= BROWSER_MOUSE_MOD_1;
 	if (event->state & GDK_CONTROL_MASK)
 		g->mouse.state |= BROWSER_MOUSE_MOD_2;
+	if (event->state & GDK_MOD1_MASK)
+		g->mouse.state |= BROWSER_MOUSE_MOD_3;
 
 	/* Record where we pressed, for use when determining whether to start
 	 * a drag in motion notify events. */
@@ -344,20 +398,6 @@ nsgtk_window_button_release_event(GtkWidget *widget,
 				  gpointer data)
 {
 	struct gui_window *g = data;
-	bool shift = event->state & GDK_SHIFT_MASK;
-	bool ctrl = event->state & GDK_CONTROL_MASK;
-
-	switch (event->button) {
-	case 8:
-		nsgtk_toolbar_item_activate(g->toolbar, BACK_BUTTON);
-		break;
-	case 9:
-		nsgtk_toolbar_item_activate(g->toolbar, FORWARD_BUTTON);
-		break;
-	default:
-		NSLOG(neosurf, DEBUG, "event button %d", event->button);
-		break;
-	}
 
 	/* If the mouse state is PRESS then we are waiting for a release to emit
 	 * a click event, otherwise just reset the state to nothing */
@@ -365,15 +405,33 @@ nsgtk_window_button_release_event(GtkWidget *widget,
 		g->mouse.state ^= (BROWSER_MOUSE_PRESS_1 | BROWSER_MOUSE_CLICK_1);
 	} else if (g->mouse.state & BROWSER_MOUSE_PRESS_2) {
 		g->mouse.state ^= (BROWSER_MOUSE_PRESS_2 | BROWSER_MOUSE_CLICK_2);
+	} else if (g->mouse.state & BROWSER_MOUSE_PRESS_3) {
+		g->mouse.state ^= (BROWSER_MOUSE_PRESS_3 | BROWSER_MOUSE_CLICK_3);
+	} else if (g->mouse.state & BROWSER_MOUSE_PRESS_4) {
+		g->mouse.state ^= (BROWSER_MOUSE_PRESS_4 | BROWSER_MOUSE_CLICK_4);
+	} else if (g->mouse.state & BROWSER_MOUSE_PRESS_5) {
+		g->mouse.state ^= (BROWSER_MOUSE_PRESS_5 | BROWSER_MOUSE_CLICK_5);
 	}
 
 	/* Handle modifiers being removed */
-	if (g->mouse.state & BROWSER_MOUSE_MOD_1 && !shift)
+	if (g->mouse.state & BROWSER_MOUSE_MOD_1 &&
+	    !(event->state & GDK_SHIFT_MASK)) {
 		g->mouse.state ^= BROWSER_MOUSE_MOD_1;
-	if (g->mouse.state & BROWSER_MOUSE_MOD_2 && !ctrl)
+	}
+	if (g->mouse.state & BROWSER_MOUSE_MOD_2 &&
+	    !(event->state & GDK_CONTROL_MASK)) {
 		g->mouse.state ^= BROWSER_MOUSE_MOD_2;
+	}
+	if (g->mouse.state & BROWSER_MOUSE_MOD_3 &&
+	    !(event->state & GDK_MOD1_MASK)) {
+		g->mouse.state ^= BROWSER_MOUSE_MOD_3;
+	}
 
-	if (g->mouse.state & (BROWSER_MOUSE_CLICK_1 | BROWSER_MOUSE_CLICK_2)) {
+	if (g->mouse.state & (BROWSER_MOUSE_CLICK_1 |
+			      BROWSER_MOUSE_CLICK_2 |
+			      BROWSER_MOUSE_CLICK_3 |
+			      BROWSER_MOUSE_CLICK_4 |
+			      BROWSER_MOUSE_CLICK_5)) {
 		browser_window_mouse_click(g->bw, g->mouse.state, event->x, event->y);
 	} else {
 		browser_window_mouse_track(g->bw, 0, event->x, event->y);
@@ -414,12 +472,13 @@ nsgtk_window_scroll_event(GtkWidget *widget,
 		deltay = 1.0;
 		break;
 
+#if GTK_CHECK_VERSION(3,4,0)
 	case GDK_SCROLL_SMOOTH:
 		gdk_event_get_scroll_deltas((GdkEvent *)event, &deltax, &deltay);
 		break;
-
+#endif
 	default:
-		NSLOG(neosurf, INFO, "Unhandled mouse scroll direction");
+		NSLOG(netsurf, INFO, "Unhandled mouse scroll direction");
 		return TRUE;
 	}
 
@@ -774,13 +833,8 @@ gui_window_create(struct browser_window *bw,
 		  gui_window_create_flags flags)
 {
 	struct gui_window *g; /* what is being created to return */
-	bool open_in_background = !(nsoption_bool(focus_new));
+	bool open_in_background = !(flags & GW_CREATE_FOREGROUND);
 	GtkBuilder* tab_builder;
-
-	/* If there is a foreground request, override user preference */
-	if (flags & GW_CREATE_FOREGROUND)
-		open_in_background = false;
-
 	nserror res;
 
 	res = nsgtk_builder_new_from_resname("tabcontents", &tab_builder);

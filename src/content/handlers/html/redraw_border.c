@@ -25,6 +25,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
+#include <neosurf/utils/utils.h>
 #include <neosurf/utils/log.h>
 #include "neosurf/plotters.h"
 #include "neosurf/css.h"
@@ -131,7 +132,7 @@ html_redraw_border_plot(const int side,
 		break;
 
 	case CSS_BORDER_STYLE_SOLID:
-		/* fall through to default */
+		/* solid is the default */
 	default:
 		if (rectangular || thickness == 1) {
 

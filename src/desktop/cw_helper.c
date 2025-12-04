@@ -29,12 +29,10 @@
 #include "neosurf/types.h"
 #include <neosurf/content/handlers/css/utils.h>
 #include "desktop/cw_helper.h"
+#include "desktop/gui_internal.h"
 
 /* exported interface documented in cw_helper.h */
-nserror cw_helper_scroll_visible(
-		const struct core_window_callback_table *cw_t,
-		struct core_window *cw_h,
-		const struct rect *r)
+nserror cw_helper_scroll_visible(struct core_window *cw_h, const struct rect *r)
 {
 	nserror err;
 	int height;
@@ -50,12 +48,12 @@ nserror cw_helper_scroll_visible(
 	assert(cw_t->set_scroll != NULL);
 	assert(cw_t->get_window_dimensions != NULL);
 
-	err = cw_t->get_window_dimensions(cw_h, &width, &height);
+	err = guit->corewindow->get_dimensions(cw_h, &width, &height);
 	if (err != NSERROR_OK) {
 		return err;
 	}
 
-	cw_t->get_scroll(cw_h, &x0, &y0);
+	guit->corewindow->get_scroll(cw_h, &x0, &y0);
 	if (err != NSERROR_OK) {
 		return err;
 	}
@@ -88,5 +86,5 @@ nserror cw_helper_scroll_visible(
 		x0 = r->x0;
 	}
 
-	return cw_t->set_scroll(cw_h, x0, y0);
+	return guit->corewindow->set_scroll(cw_h, x0, y0);
 }

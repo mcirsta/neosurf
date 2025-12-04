@@ -609,13 +609,13 @@ nsgtk_download_dialog_show(const gchar *filename,
 	info = g_strdup_printf(messages_get("gtkInfo"), filename, domain, size);
 
 	dialog = gtk_message_dialog_new_with_markup(
-				dl_ctx.parent,
-				GTK_DIALOG_DESTROY_WITH_PARENT,
-				GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE,
-				"<span size=\"x-large\" weight=\"ultrabold\">%s</span>"
-				"\n\n<small>%s</small>",
-				message,
-				info);
+		dl_ctx.parent,
+		GTK_DIALOG_DESTROY_WITH_PARENT,
+		GTK_MESSAGE_QUESTION, GTK_BUTTONS_NONE,
+		"<span size=\"x-large\" weight=\"ultrabold\">%s</span>"
+		"\n\n<small>%s</small>",
+		message,
+		info);
 
 	gtk_dialog_add_buttons(GTK_DIALOG(dialog),
 			       NSGTK_STOCK_SAVE, GTK_RESPONSE_DOWNLOAD,
@@ -631,12 +631,12 @@ nsgtk_download_dialog_show(const gchar *filename,
 	switch (result) {
 	case GTK_RESPONSE_SAVE_AS: {
 		dialog = gtk_file_chooser_dialog_new(
-				messages_get("gtkSave"),
-				dl_ctx.parent,
-				GTK_FILE_CHOOSER_ACTION_SAVE,
-				NSGTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				NSGTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
-				NULL);
+			messages_get("gtkSave"),
+			dl_ctx.parent,
+			GTK_FILE_CHOOSER_ACTION_SAVE,
+			NSGTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
+			NSGTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
+			NULL);
 		gtk_file_chooser_set_current_name
 			(GTK_FILE_CHOOSER(dialog), filename);
 		gtk_file_chooser_set_current_folder
@@ -674,28 +674,30 @@ nsgtk_download_dialog_show(const gchar *filename,
 					       nsoption_charp(downloads_directory));
 
 			dialog = gtk_message_dialog_new_with_markup(
-						dl_ctx.parent,
-						GTK_DIALOG_DESTROY_WITH_PARENT,
-						GTK_MESSAGE_QUESTION,
-						GTK_BUTTONS_CANCEL,
-						"<b>%s</b>",
-						message);
+				dl_ctx.parent,
+				GTK_DIALOG_DESTROY_WITH_PARENT,
+				GTK_MESSAGE_QUESTION,
+				GTK_BUTTONS_CANCEL,
+				"<b>%s</b>",
+				message);
 			gtk_message_dialog_format_secondary_markup(
-						GTK_MESSAGE_DIALOG(dialog),
-						"%s",
-						info);
+				GTK_MESSAGE_DIALOG(dialog),
+				"%s",
+				info);
 
 			button = gtk_dialog_add_button(GTK_DIALOG(dialog),
 						       "_Replace",
 						       GTK_RESPONSE_DOWNLOAD);
 			gtk_button_set_image(GTK_BUTTON(button),
 					     nsgtk_image_new_from_stock(
-							NSGTK_STOCK_SAVE,
-							GTK_ICON_SIZE_BUTTON));
+						     NSGTK_STOCK_SAVE,
+						     GTK_ICON_SIZE_BUTTON));
 
 			gint result = gtk_dialog_run(GTK_DIALOG(dialog));
-			if (result == GTK_RESPONSE_CANCEL)
+			if (result == GTK_RESPONSE_CANCEL) {
+				free(destination);
 				destination = NULL;
+			}
 
 			gtk_widget_destroy(dialog);
 			g_free(message);
@@ -867,8 +869,9 @@ gui_download_window_data(struct gui_download_window *dw,
 			 const char *data,
 			 unsigned int size)
 {
-	g_io_channel_write_chars(dw->write, data, size, NULL, &dw->error);
-	if (dw->error != NULL) {
+	GIOStatus status;
+	status = g_io_channel_write_chars(dw->write, data, size, NULL, &dw->error);
+	if (status != G_IO_STATUS_NORMAL || dw->error != NULL) {
 		dw->speed = 0;
 		dw->time_remaining = -1;
 
@@ -937,7 +940,7 @@ nserror nsgtk_download_init(void)
 
 	res = nsgtk_builder_new_from_resname("downloads", &builder);
 	if (res != NSERROR_OK) {
-		NSLOG(neosurf, INFO, "Download UI builder init failed");
+		NSLOG(netsurf, INFO, "Download UI builder init failed");
 		return res;
 	}
 
@@ -1022,7 +1025,7 @@ nserror nsgtk_download_init(void)
 
 
 /* exported interface documented in gtk/download.h */
-void nsgtk_download_destroy ()
+void nsgtk_download_destroy(void)
 {
 	nsgtk_download_do(nsgtk_download_store_cancel_item);
 }

@@ -130,6 +130,7 @@ static struct nsgtk_resource_s direct_resource[] = {
 	RES_ENTRY("default.css"),
 	RES_ENTRY("adblock.css"),
 	RES_ENTRY("internal.css"),
+	RES_ENTRY("quirks.css"),
 	RES_ENTRY("neosurf.png"),
 	RES_ENTRY("default.ico"),
 	RES_ENTRY("icons/arrow-l.png"),
@@ -261,7 +262,6 @@ init_resource(char **respath, struct nsgtk_resource_s *resource)
 
 	NSLOG(neosurf, INFO, "Unable to find resource %s on resource path",
 	      resource->name);
-	printf("%s\n", resource->name);
 
 	return NSERROR_NOT_FOUND;
 }

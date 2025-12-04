@@ -31,6 +31,7 @@
 #include "utils/http/content-disposition.h"
 #include "utils/http/content-type.h"
 #include "utils/http/strict-transport-security.h"
+#include "utils/http/www-authenticate.h"
 
 #endif
 
