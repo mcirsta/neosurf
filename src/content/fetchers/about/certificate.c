@@ -131,30 +131,56 @@ static nserror free_ns_cert_info(struct ns_cert_info *cinfo)
 
 #ifdef WITH_OPENSSL
 
-#include <openssl/evp.h>
 #include <openssl/ssl.h>
 #include <openssl/x509v3.h>
 
-#define ns_X509_get_signature_nid X509_get_signature_nid
-#define ns_ASN1_STRING_get0_data ASN1_STRING_get0_data
-#if !defined(LIBRESSL_VERSION_NUMBER) || LIBRESSL_VERSION_NUMBER >= 0x030502000
-#define ns_RSA_get0_n RSA_get0_n
-#define ns_RSA_get0_e RSA_get0_e
-#else
-const BIGNUM *ns_RSA_get0_n(const RSA *d) {
+#if (OPENSSL_VERSION_NUMBER < 0x30000000L)
+/* OpenSSL 1.1.1 or LibreSSL */
+
+# if defined(LIBRESSL_VERSION_NUMBER)
+  /* LibreSSL */
+#  if (LIBRESSL_VERSION_NUMBER < 0x3050000fL)
+   /* LibreSSL <3.5.0 */
+
+#   if (LIBRESSL_VERSION_NUMBER < 0x2070000fL)
+    /* LibreSSL <2.7.0 */
+static int ns_X509_get_signature_nid(X509 *cert)
+{
+	return OBJ_obj2nid(cert->cert_info->key->algor->algorithm);
+}
+
+static const unsigned char *ns_ASN1_STRING_get0_data(ASN1_STRING *asn1str)
+{
+	return (const unsigned char *)ASN1_STRING_data(asn1str);
+}
+#   else
+#    define ns_X509_get_signature_nid X509_get_signature_nid
+#    define ns_ASN1_STRING_get0_data ASN1_STRING_get0_data
+#   endif
+
+static const BIGNUM *ns_RSA_get0_n(const RSA *d)
+{
 	return d->n;
 }
 
-const BIGNUM *ns_RSA_get0_e(const RSA *d) {
+static const BIGNUM *ns_RSA_get0_e(const RSA *d)
+{
 	return d->e;
 }
-#endif
-//#define ns_EVP_PKEY_get_bn_param EVP_PKEY_get_bn_param
-//#define ns_EVP_PKEY_get_octet_string_param EVP_PKEY_get_octet_string_param
-//#define ns_EVP_PKEY_get_utf8_string_param EVP_PKEY_get_utf8_string_param
-#define ns_RSA_bits RSA_bits
-#define ns_DSA_bits DSA_bits
-#define ns_DH_bits DH_bits
+#  else
+   /* LibreSSL >= 3.5.0 */
+#   define ns_X509_get_signature_nid X509_get_signature_nid
+#   define ns_ASN1_STRING_get0_data ASN1_STRING_get0_data
+#   define ns_RSA_get0_n RSA_get0_n
+#   define ns_RSA_get0_e RSA_get0_e
+#  endif
+# else
+  /* OpenSSL 1.1.1 */
+#  define ns_X509_get_signature_nid X509_get_signature_nid
+#  define ns_ASN1_STRING_get0_data ASN1_STRING_get0_data
+#  define ns_RSA_get0_n RSA_get0_n
+#  define ns_RSA_get0_e RSA_get0_e
+# endif
 
 static int ns_EVP_PKEY_get_bn_param(const EVP_PKEY *pkey,
 		const char *key_name, BIGNUM **bn) {
@@ -287,6 +313,15 @@ static int ns_EVP_PKEY_get_octet_string_param(const EVP_PKEY *pkey,
 
 	return ret;
 }
+#else
+/* OpenSSL 3.x and later */
+#define ns_X509_get_signature_nid X509_get_signature_nid
+#define ns_ASN1_STRING_get0_data ASN1_STRING_get0_data
+#define ns_RSA_get0_n RSA_get0_n
+#define ns_RSA_get0_e RSA_get0_e
+#define ns_EVP_PKEY_get_bn_param EVP_PKEY_get_bn_param
+#define ns_EVP_PKEY_get_octet_string_param EVP_PKEY_get_octet_string_param
+#define ns_EVP_PKEY_get_utf8_string_param EVP_PKEY_get_utf8_string_param
 #endif
 
 /**
@@ -805,6 +840,15 @@ convert_chain_to_cert_info(const struct cert_chain *chain,
 	return NSERROR_OK;
 }
 
+#else
+static nserror
+convert_chain_to_cert_info(const struct cert_chain *chain,
+			   struct ns_cert_info **cert_info_out)
+{
+	return NSERROR_NOT_IMPLEMENTED;
+}
+#endif
+
 
 static nserror
 format_certificate_name(struct fetch_about_context *ctx,
@@ -847,7 +891,7 @@ format_certificate_name(struct fetch_about_context *ctx,
 
 	if (cert_name->province != NULL) {
 		res = fetch_about_ssenddataf(ctx,
-				 "<tr><th>Privince</th><td>%s</td></tr>\n",
+				 "<tr><th>Province</th><td>%s</td></tr>\n",
 				 cert_name->province);
 		if (res != NSERROR_OK) {
 			return res;

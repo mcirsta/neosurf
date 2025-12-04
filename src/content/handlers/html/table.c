@@ -32,6 +32,9 @@
 #include <neosurf/content/handlers/html/box.h>
 #include "content/handlers/html/table.h"
 
+/* Define to enable verbose table debug */
+#undef TABLE_DEBUG
+
 /**
  * Container for border values during table border calculations
  */
@@ -959,6 +962,22 @@ table_calculate_column_types(const css_unit_ctx *unit_len_ctx, struct box *table
 		if (col[i].type == COLUMN_WIDTH_UNKNOWN)
 			col[i].type = COLUMN_WIDTH_AUTO;
 	}
+
+#ifdef TABLE_DEBUG
+	for (i = 0; i != table->columns; i++)
+		NSLOG(netsurf, INFO,
+		      "table %p, column %u: type %s, width %i",
+		      table,
+		      i,
+		      ((const char *[]){
+					"UNKNOWN",
+					"FIXED",
+					"AUTO",
+					"PERCENT",
+					"RELATIVE",
+				      })[col[i].type],
+		      col[i].width);
+#endif
 
 	return true;
 }

@@ -1923,7 +1923,7 @@ llcache_object_retrieve_from_cache(nsurl *url,
 	llcache_object *obj, *newest = NULL;
 
 	NSLOG(llcache, DEBUG,
-	      "Searching cache for %s flags:%x referer:%s post:%p",
+	      "Searching cache for %s flags:%"PRIx32" referer:%s post:%p",
 	      nsurl_access(url), flags,
 	      referer==NULL?"":nsurl_access(referer),
 	      post);
@@ -2100,7 +2100,7 @@ llcache_object_retrieve(nsurl *url,
 	nsurl *defragmented_url;
 	bool uncachable = false;
 
-	NSLOG(llcache, DEBUG, "Retrieve %s (%x, %s, %p)", nsurl_access(url), flags,
+	NSLOG(llcache, DEBUG, "Retrieve %s (%"PRIx32", %s, %p)", nsurl_access(url), flags,
 		     referer==NULL?"":nsurl_access(referer), post);
 
 
@@ -2207,10 +2207,17 @@ static nserror llcache_hsts_transform_url(nsurl *url, nsurl **result,
 	scheme = nsurl_get_component(url, NSURL_SCHEME);
 	if (lwc_string_caseless_isequal(scheme, corestring_lwc_http,
 			&match) != lwc_error_ok || match == false) {
-		/* Non-HTTP fetch: ignore */
+		/* Non-HTTP fetch: no transform required */
+		if (lwc_string_caseless_isequal(scheme, corestring_lwc_https,
+				&match) == lwc_error_ok && match) {
+			/* HTTPS: ask urldb if HSTS is enabled */
+			*hsts_in_use = urldb_get_hsts_enabled(url);
+		} else {
+			/* Anything else: no HSTS */
+			*hsts_in_use = false;
+		}
 		lwc_string_unref(scheme);
 		*result = nsurl_ref(url);
-		*hsts_in_use = false;
 		return error;
 	}
 	lwc_string_unref(scheme);
@@ -3593,8 +3600,8 @@ llcache_object_snapshot(llcache_object *object,	llcache_object **snapshot)
 	}
 
 	if (object->num_headers > 0) {
-		newobj->headers = calloc(sizeof(llcache_header),
-				object->num_headers);
+		newobj->headers = calloc(object->num_headers,
+				sizeof(llcache_header));
 		if (newobj->headers == NULL) {
 			llcache_object_destroy(newobj);
 			return NSERROR_NOMEM;
@@ -3876,7 +3883,7 @@ void llcache_clean(bool purge)
 		}
 	}
 
-	NSLOG(llcache, DEBUG, "Size: %u (limit: %u)", llcache_size, limit);
+	NSLOG(llcache, DEBUG, "Size: %"PRIu32" (limit: %"PRIu32")", llcache_size, limit);
 }
 
 /* Exported interface documented in content/llcache.h */
@@ -3897,7 +3904,7 @@ llcache_initialise(const struct llcache_parameters *prm)
 	llcache->all_caught_up = true;
 
 	NSLOG(llcache, INFO,
-	      "llcache initialising with a limit of %d bytes",
+	      "llcache initialising with a limit of %"PRIu32" bytes",
 	      llcache->limit);
 
 	/* backing store initialisation */

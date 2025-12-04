@@ -259,15 +259,13 @@ static void layout_minmax_table(struct box *table,
 		const html_content *content)
 {
 	unsigned int i, j;
+	int width;
 	int border_spacing_h = 0;
 	int table_min = 0, table_max = 0;
 	int extra_fixed = 0;
 	float extra_frac = 0;
 	struct column *col;
 	struct box *row_group, *row, *cell;
-	enum css_width_e wtype;
-	css_fixed value = 0;
-	css_unit unit = CSS_UNIT_PX;
 
 	/* check if the widths have already been calculated */
 	if (table->max_width != UNKNOWN_MAX_WIDTH)
@@ -402,12 +400,8 @@ static void layout_minmax_table(struct box *table,
 	}
 
 	/* fixed width takes priority, unless it is too narrow */
-	wtype = css_computed_width(table->style, &value, &unit);
-	if (wtype == CSS_WIDTH_SET && unit != CSS_UNIT_PCT) {
-		int width = FIXTOINT(css_unit_len2device_px(
-					table->style,
-					&content->unit_len_ctx,
-					value, unit));
+	if (css_computed_width_px(table->style, &content->unit_len_ctx,
+			-1, &width) == CSS_WIDTH_SET) {
 		if (table_min < width)
 			table_min = width;
 		if (table_max < width)
@@ -669,35 +663,28 @@ layout_minmax_line(struct box *first,
 		/* inline replaced, 10.3.2 and 10.6.2 */
 		assert(b->style);
 
-		/* calculate box width */
-		wtype = css_computed_width(b->style, &value, &unit);
 		bs = css_computed_box_sizing(block->style);
-		if (wtype == CSS_WIDTH_SET) {
-			if (unit == CSS_UNIT_PCT) {
-				width = AUTO;
-			} else {
-				width = FIXTOINT(css_unit_len2device_px(
-						b->style,
-						&content->unit_len_ctx,
-						value, unit));
 
-				if (bs == CSS_BOX_SIZING_BORDER_BOX) {
-					fixed = frac = 0;
-					calculate_mbp_width(&content->unit_len_ctx,
-							block->style, LEFT,
-							false, true, true,
-							&fixed, &frac);
-					calculate_mbp_width(&content->unit_len_ctx,
-							block->style, RIGHT,
-							false, true, true,
-							&fixed, &frac);
-					if (width < fixed) {
-						width = fixed;
-					}
+		/* calculate box width */
+		wtype = css_computed_width_px(b->style,
+				&content->unit_len_ctx, -1, &width);
+		if (wtype == CSS_WIDTH_SET) {
+			if (bs == CSS_BOX_SIZING_BORDER_BOX) {
+				fixed = frac = 0;
+				calculate_mbp_width(&content->unit_len_ctx,
+						block->style, LEFT,
+						false, true, true,
+						&fixed, &frac);
+				calculate_mbp_width(&content->unit_len_ctx,
+						block->style, RIGHT,
+						false, true, true,
+						&fixed, &frac);
+				if (width < fixed) {
+					width = fixed;
 				}
-				if (width < 0)
-					width = 0;
 			}
+			if (width < 0)
+				width = 0;
 		} else {
 			width = AUTO;
 		}
@@ -1049,11 +1036,11 @@ static void layout_minmax_block(
 		enum css_min_width_e min_type;
 		css_unit unit = CSS_UNIT_PX;
 		css_fixed value = 0;
+		int width;
 
-		if (wtype == CSS_WIDTH_SET && wunit != CSS_UNIT_PCT) {
-			min = max = FIXTOINT(
-					css_unit_len2device_px(block->style,
-					&content->unit_len_ctx, width, wunit));
+		if (css_computed_width_px(block->style, &content->unit_len_ctx,
+				-1, &width) == CSS_WIDTH_SET) {
+			min = max = width;
 			using_max_border_box = border_box;
 			using_min_border_box = border_box;
 		}
@@ -1629,7 +1616,6 @@ bool layout_table(
 	struct box **row_span_cell;
 	struct column *col;
 	const css_computed_style *style = table->style;
-	enum css_width_e wtype;
 	enum css_height_e htype;
 	css_fixed value = 0;
 	css_unit unit = CSS_UNIT_PX;
@@ -1707,17 +1693,8 @@ bool layout_table(
 	}
 
 	/* find specified table width, or available width if auto-width */
-	wtype = css_computed_width(style, &value, &unit);
-	if (wtype == CSS_WIDTH_SET) {
-		if (unit == CSS_UNIT_PCT) {
-			table_width = FPCT_OF_INT_TOINT(value, available_width);
-		} else {
-			table_width =
-				FIXTOINT(css_unit_len2device_px(
-						style, &content->unit_len_ctx,
-						value, unit));
-		}
-
+	if (css_computed_width_px(style, &content->unit_len_ctx,
+			available_width, &table_width) == CSS_WIDTH_SET) {
 		/* specified width includes border */
 		table_width -= table->border[LEFT].width +
 				table->border[RIGHT].width;
@@ -2305,7 +2282,7 @@ static bool layout_block_object(struct box *block)
 	NSLOG(layout, DEBUG,  "block %p, object %p, width %i", block,
 	      hlcache_handle_get_url(block->object), block->width);
 
-	if (content_get_type(block->object) == CONTENT_HTML) {
+	if (content_can_reformat(block->object)) {
 		content_reformat(block->object, false, block->width, 1);
 	} else {
 		/* Non-HTML objects */
@@ -2984,7 +2961,7 @@ layout_line(struct box *first,
 		}
 
 		/* Reformat object to new box size */
-		if (b->object && content_get_type(b->object) == CONTENT_HTML &&
+		if (b->object && content_can_reformat(b->object) &&
 				b->width !=
 				content_get_available_width(b->object)) {
 			css_fixed value = 0;
@@ -4194,7 +4171,7 @@ layout__get_ol_reversed(dom_node *ol_node)
  */
 static bool
 layout__get_list_item_count(
-		dom_node *list_owner, int *count_out)
+		dom_node *list_owner, dom_long *count_out)
 {
 	dom_html_element_type tag_type;
 	dom_exception exc;
@@ -4266,7 +4243,7 @@ layout__ordered_list_count(
 	dom_exception exc;
 	dom_node *child;
 	int step = 1;
-	int next;
+	dom_long next;
 
 	if (box->node == NULL) {
 		return;

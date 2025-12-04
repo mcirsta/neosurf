@@ -622,7 +622,9 @@ dom_default_action_DOMNodeInserted_cb(struct dom_event *evt, void *pw)
 			break;
 
 		case DOM_HTML_ELEMENT_TYPE_STYLE:
-			html_css_process_style(htmlc, (dom_node *)node);
+			if (nsoption_bool(author_level_css)) {
+				html_css_process_style(htmlc, (dom_node *)node);
+			}
 			break;
 
 		case DOM_HTML_ELEMENT_TYPE_SCRIPT:
@@ -689,6 +691,7 @@ dom_default_action_DOMNodeInsertedIntoDocument_cb(struct dom_event *evt,
 			switch (tag_type) {
 			case DOM_HTML_ELEMENT_TYPE_SCRIPT:
 				dom_SCRIPT_showed_up(htmlc, (dom_html_script_element *) node);
+				[[fallthrough]];
 			default:
 				break;
 			}
@@ -730,11 +733,15 @@ dom_default_action_DOMSubtreeModified_cb(struct dom_event *evt, void *pw)
 
 			switch (tag_type) {
 			case DOM_HTML_ELEMENT_TYPE_STYLE:
-				html_css_update_style(htmlc, (dom_node *)node);
+				if (nsoption_bool(author_level_css)) {
+					html_css_update_style(htmlc,
+							(dom_node *)node);
+				}
 				break;
 			case DOM_HTML_ELEMENT_TYPE_TEXTAREA:
 			case DOM_HTML_ELEMENT_TYPE_INPUT:
 				html_texty_element_update(htmlc, (dom_node *)node);
+				[[fallthrough]];
 			default:
 				break;
 			}

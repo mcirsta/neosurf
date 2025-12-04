@@ -74,6 +74,12 @@
 
 #define CHUNK 4096
 
+/* Change these to 1 to cause a dump to stderr of the frameset or box
+ * when the trees have been built.
+ */
+#define ALWAYS_DUMP_FRAMESET 0
+#define ALWAYS_DUMP_BOX 0
+
 static const char *html_types[] = {
 	"application/xhtml+xml",
 	"text/html"
@@ -230,6 +236,15 @@ static void html_box_convert_done(html_content *c, bool success)
 		content_set_error(&c->base);
 		return;
 	}
+
+
+#if ALWAYS_DUMP_BOX
+	box_dump(stderr, c->layout->children, 0, true);
+#endif
+#if ALWAYS_DUMP_FRAMESET
+	if (c->frameset)
+		html_dump_frameset(c->frameset, 0);
+#endif
 
 	exc = dom_document_get_document_element(c->document, (void *) &html);
 	if ((exc != DOM_NO_ERR) || (html == NULL)) {
@@ -1473,6 +1488,9 @@ html_get_contextual_content(struct content *c, int x, int y,
 
 		if (box->href)
 			data->link = box->href;
+			data->link_title = box->text;
+			data->link_title_length = box->length;
+		}
 
 		if (box->usemap) {
 			const char *target = NULL;
@@ -1874,6 +1892,60 @@ html_debug_dump(struct content *c, FILE *f, enum content_debug op)
 	return ret;
 }
 
+
+#if ALWAYS_DUMP_FRAMESET
+/**
+ * Print a frameset tree to stderr.
+ */
+
+static void
+html_dump_frameset(struct content_html_frames *frame, unsigned int depth)
+{
+	unsigned int i;
+	int row, col, index;
+	const char *unit[] = {"px", "%", "*"};
+	const char *scrolling[] = {"auto", "yes", "no"};
+
+	assert(frame);
+
+	fprintf(stderr, "%p ", frame);
+
+	fprintf(stderr, "(%i %i) ", frame->rows, frame->cols);
+
+	fprintf(stderr, "w%g%s ", frame->width.value, unit[frame->width.unit]);
+	fprintf(stderr, "h%g%s ", frame->height.value,unit[frame->height.unit]);
+	fprintf(stderr, "(margin w%i h%i) ",
+			frame->margin_width, frame->margin_height);
+
+	if (frame->name)
+		fprintf(stderr, "'%s' ", frame->name);
+	if (frame->url)
+		fprintf(stderr, "<%s> ", frame->url);
+
+	if (frame->no_resize)
+		fprintf(stderr, "noresize ");
+	fprintf(stderr, "(scrolling %s) ", scrolling[frame->scrolling]);
+	if (frame->border)
+		fprintf(stderr, "border %x ",
+				(unsigned int) frame->border_colour);
+
+	fprintf(stderr, "\n");
+
+	if (frame->children) {
+		for (row = 0; row != frame->rows; row++) {
+			for (col = 0; col != frame->cols; col++) {
+				for (i = 0; i != depth; i++)
+					fprintf(stderr, "  ");
+				fprintf(stderr, "(%i %i): ", row, col);
+				index = (row * frame->cols) + col;
+				html_dump_frameset(&frame->children[index],
+						depth + 1);
+			}
+		}
+	}
+}
+
+#endif
 
 /**
  * Retrieve HTML document tree

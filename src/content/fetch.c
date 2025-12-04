@@ -286,10 +286,12 @@ nserror fetcher_init(void)
 {
 	nserror ret;
 
+#ifdef WITH_CURL
 	ret = fetch_curl_register();
 	if (ret != NSERROR_OK) {
 		return ret;
 	}
+#endif
 
 	ret = fetch_data_register();
 	if (ret != NSERROR_OK) {
@@ -724,7 +726,7 @@ fetch_multipart_data_new_kv(struct fetch_multipart_data **list,
 
 	assert(list);
 
-	newdata = calloc(sizeof(*newdata), 1);
+	newdata = calloc(1, sizeof(*newdata));
 
 	if (newdata == NULL) {
 		return NSERROR_NOMEM;

@@ -47,13 +47,13 @@ user_agent_build_string(void)
 
         if (uname(&un) >= 0) {
                 sysname = un.sysname;
-		if (strcmp(sysname, "Linux") == 0) {
+                if (strcmp(sysname, "Linux") == 0) {
 			/* Force desktop, not mobile */
-			sysname = "X11; Linux";
-		}
-	}
+                        sysname = "X11; Linux";
+                }
+        }
 
-	len = snprintf(NULL, 0, NEOSURF_UA_FORMAT_STRING,
+        len = snprintf(NULL, 0, NETSURF_UA_FORMAT_STRING,
                        sysname,
                        neosurf_version);
         ua_string = malloc(len + 1);

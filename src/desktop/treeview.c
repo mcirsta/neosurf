@@ -248,7 +248,6 @@ struct treeview {
 
 	const struct treeview_callback_table *callbacks; /**< For node events */
 
-	const struct core_window_callback_table *cw_t; /**< Window cb table */
 	struct core_window *cw_h; /**< Core window handle */
 };
 
@@ -355,8 +354,8 @@ static inline void treeview__cw_invalidate_area(
 		const struct treeview *tree,
 		const struct rect *r)
 {
-	if (tree->cw_t != NULL) {
-		tree->cw_t->invalidate(tree->cw_h, r);
+	if (tree->cw_h != NULL) {
+		guit->corewindow->invalidate(tree->cw_h, r);
 	}
 }
 
@@ -369,14 +368,14 @@ static inline void treeview__cw_invalidate_area(
 static inline void treeview__cw_full_redraw(
 		const struct treeview *tree)
 {
-	if (tree->cw_t != NULL) {
+	if (tree->cw_h != NULL) {
 		static const struct rect r = {
 			.x0 = 0,
 			.y0 = 0,
 			.x1 = REDRAW_MAX,
 			.y1 = REDRAW_MAX,
 		};
-		tree->cw_t->invalidate(tree->cw_h, &r);
+		guit->corewindow->invalidate(tree->cw_h, &r);
 	}
 }
 
@@ -406,9 +405,10 @@ static inline void treeview__cw_update_size(
 	const struct treeview *tree,
 	int width, int height)
 {
-	if (tree->cw_t != NULL) {
-		tree->cw_t->update_size(tree->cw_h, width,
-				height + treeview__get_search_height(tree));
+	if (tree->cw_h != NULL) {
+		guit->corewindow->set_extent(tree->cw_h,
+				     width,
+				     height + treeview__get_search_height(tree));
 	}
 }
 
@@ -428,9 +428,8 @@ static inline void treeview__cw_scroll_top(
 		.y1 = tree_g.line_height,
 	};
 
-	cw_helper_scroll_visible(tree->cw_t, tree->cw_h, &r);
+	cw_helper_scroll_visible(tree->cw_h, &r);
 }
-
 
 /**
  * Corewindow callback wrapper: Get window viewport dimensions
@@ -443,8 +442,8 @@ static inline void treeview__cw_get_window_dimensions(
 	const struct treeview *tree,
 	int *width, int *height)
 {
-	if (tree->cw_t != NULL) {
-		tree->cw_t->get_window_dimensions(tree->cw_h, width, height);
+	if (tree->cw_h != NULL) {
+		guit->corewindow->get_dimensions(tree->cw_h, width, height);
 	}
 }
 
@@ -459,8 +458,8 @@ static inline void treeview__cw_drag_status(
 	const struct treeview *tree,
 	core_window_drag_status ds)
 {
-	if (tree->cw_t != NULL) {
-		tree->cw_t->drag_status(tree->cw_h, ds);
+	if (tree->cw_h != NULL) {
+		guit->corewindow->drag_status(tree->cw_h, ds);
 	}
 }
 
@@ -600,13 +599,13 @@ static inline void treeview__cw_scroll_to_node(
 		.x0 = 0,
 		.y0 = treeview_node_y(tree, node),
 		.x1 = 1,
-		.y1 = ((node->type == TREE_NODE_ENTRY) ?
+		.y1 = (((node != NULL) && (node->type == TREE_NODE_ENTRY)) ?
 		       node->height : tree_g.line_height),
 	};
 
 	r.y1 += r.y0; /* Apply the Y offset to the second Y coordinate */
 
-	cw_helper_scroll_visible(tree->cw_t, tree->cw_h, &r);
+	cw_helper_scroll_visible(tree->cw_h, &r);
 }
 
 
@@ -818,38 +817,40 @@ static nserror treeview__search_walk_cb(
 {
 	struct treeview_search_walk_data *sw = ctx;
 
+	/* only entry nodes can be searched */
 	if (n->type != TREE_NODE_ENTRY) {
 		return NSERROR_OK;
 	}
 
+	/* empty string will never match */
 	if (sw->len == 0) {
 		n->flags &= ~TV_NFLAGS_MATCHED;
-	} else {
-		struct treeview_node_entry *entry =
-				(struct treeview_node_entry *)n;
-		bool matched = false;
+		return NSERROR_OK;
+	}
 
-		for (int i = 0; i < sw->tree->n_fields; i++) {
-			struct treeview_field *ef = &(sw->tree->fields[i + 1]);
-			if (ef->flags & TREE_FLAG_SEARCHABLE) {
-				if (strcasestr(entry->fields[i].value.data,
-						sw->text) != NULL) {
-					matched = true;
-					break;
-				}
+	struct treeview_node_entry *entry = (struct treeview_node_entry *)n;
+	bool matched = false;
+
+	for (int i = 0; i < sw->tree->n_fields; i++) {
+		struct treeview_field *ef = &(sw->tree->fields[i + 1]);
+		if (ef->flags & TREE_FLAG_SEARCHABLE) {
+			if (strcasestr(entry->fields[i].value.data,
+				       sw->text) != NULL) {
+				matched = true;
+				break;
 			}
 		}
+	}
 
-		if (!matched && strcasestr(n->text.data, sw->text) != NULL) {
-			matched = true;
-		}
+	if (!matched && strcasestr(n->text.data, sw->text) != NULL) {
+		matched = true;
+	}
 
-		if (matched) {
-			n->flags |= TV_NFLAGS_MATCHED;
-			sw->window_height += n->height;
-		} else {
-			n->flags &= ~TV_NFLAGS_MATCHED;
-		}
+	if (matched) {
+		n->flags |= TV_NFLAGS_MATCHED;
+		sw->window_height += n->height;
+	} else {
+		n->flags &= ~TV_NFLAGS_MATCHED;
 	}
 
 	return NSERROR_OK;
@@ -2020,18 +2021,17 @@ static struct textarea *treeview__create_textarea(
 
 /* Exported interface, documented in treeview.h */
 nserror
-treeview_create(treeview **tree,
+treeview_create(treeview **treeout,
 		const struct treeview_callback_table *callbacks,
 		int n_fields,
 		struct treeview_field_desc fields[],
-		const struct core_window_callback_table *cw_t,
 		struct core_window *cw,
 		treeview_flags flags)
 {
+	treeview *tree;
 	nserror error;
-	int i;
+	int fldidx;
 
-	assert((cw_t == NULL && cw == NULL) || (cw_t != NULL && cw != NULL));
 	assert(callbacks != NULL);
 
 	assert(fields != NULL);
@@ -2039,86 +2039,91 @@ treeview_create(treeview **tree,
 	assert(fields[n_fields - 1].flags & TREE_FLAG_DEFAULT);
 	assert(n_fields >= 2);
 
-	*tree = malloc(sizeof(struct treeview));
-	if (*tree == NULL) {
+	tree = malloc(sizeof(struct treeview));
+	if (tree == NULL) {
 		return NSERROR_NOMEM;
 	}
 
-	(*tree)->fields = malloc(sizeof(struct treeview_field) * n_fields);
-	if ((*tree)->fields == NULL) {
-		free(*tree);
+	tree->fields = malloc(sizeof(struct treeview_field) * n_fields);
+	if (tree->fields == NULL) {
+		free(tree);
 		return NSERROR_NOMEM;
 	}
 
-	error = treeview_create_node_root(&((*tree)->root));
+	error = treeview_create_node_root(&(tree->root));
 	if (error != NSERROR_OK) {
-		free((*tree)->fields);
-		free(*tree);
+		free(tree->fields);
+		free(tree);
 		return error;
 	}
 
-	(*tree)->field_width = 0;
-	for (i = 0; i < n_fields; i++) {
-		struct treeview_field *f = &((*tree)->fields[i]);
+	tree->field_width = 0;
+	for (fldidx = 0; fldidx < n_fields; fldidx++) {
+		struct treeview_field *f = &(tree->fields[fldidx]);
 
-		f->flags = fields[i].flags;
-		f->field = lwc_string_ref(fields[i].field);
-		f->value.data = lwc_string_data(fields[i].field);
-		f->value.len = lwc_string_length(fields[i].field);
+		f->flags = fields[fldidx].flags;
+		f->field = lwc_string_ref(fields[fldidx].field);
+		f->value.data = lwc_string_data(fields[fldidx].field);
+		f->value.len = lwc_string_length(fields[fldidx].field);
 
-		guit->layout->width(&plot_style_odd.text, f->value.data,
-				    f->value.len, &(f->value.width));
+		guit->layout->width(&plot_style_odd.text,
+				    f->value.data,
+				    f->value.len,
+				    &(f->value.width));
 
-		if (f->flags & TREE_FLAG_SHOW_NAME)
-			if ((*tree)->field_width < f->value.width)
-				(*tree)->field_width = f->value.width;
+		if (f->flags & TREE_FLAG_SHOW_NAME) {
+			if (tree->field_width < f->value.width) {
+				tree->field_width = f->value.width;
+			}
+		}
 	}
 
-	(*tree)->field_width += tree_g.step_width;
+	tree->field_width += tree_g.step_width;
 
-	(*tree)->callbacks = callbacks;
-	(*tree)->n_fields = n_fields - 1;
+	tree->callbacks = callbacks;
+	tree->n_fields = n_fields - 1;
 
-	(*tree)->drag.type = TV_DRAG_NONE;
-	(*tree)->drag.start_node = NULL;
-	(*tree)->drag.start.x = 0;
-	(*tree)->drag.start.y = 0;
-	(*tree)->drag.start.node_y = 0;
-	(*tree)->drag.start.node_h = 0;
-	(*tree)->drag.prev.x = 0;
-	(*tree)->drag.prev.y = 0;
-	(*tree)->drag.prev.node_y = 0;
-	(*tree)->drag.prev.node_h = 0;
+	tree->drag.type = TV_DRAG_NONE;
+	tree->drag.start_node = NULL;
+	tree->drag.start.x = 0;
+	tree->drag.start.y = 0;
+	tree->drag.start.node_y = 0;
+	tree->drag.start.node_h = 0;
+	tree->drag.prev.x = 0;
+	tree->drag.prev.y = 0;
+	tree->drag.prev.node_y = 0;
+	tree->drag.prev.node_h = 0;
 
-	(*tree)->move.root = NULL;
-	(*tree)->move.target = NULL;
-	(*tree)->move.target_pos = TV_TARGET_NONE;
+	tree->move.root = NULL;
+	tree->move.target = NULL;
+	tree->move.target_pos = TV_TARGET_NONE;
 
-	(*tree)->edit.textarea = NULL;
-	(*tree)->edit.node = NULL;
+	tree->edit.textarea = NULL;
+	tree->edit.node = NULL;
 
 	if (flags & TREEVIEW_SEARCHABLE) {
-		(*tree)->search.textarea = treeview__create_textarea(
-				*tree, 600, tree_g.line_height,
+		tree->search.textarea = treeview__create_textarea(
+				tree, 600, tree_g.line_height,
 				nscolours[NSCOLOUR_TEXT_INPUT_BG],
 				nscolours[NSCOLOUR_TEXT_INPUT_BG],
 				nscolours[NSCOLOUR_TEXT_INPUT_FG],
 				plot_style_odd.text,
 				treeview_textarea_search_callback);
-		if ((*tree)->search.textarea == NULL) {
-			treeview_destroy(*tree);
+		if (tree->search.textarea == NULL) {
+			treeview_destroy(tree);
 			return NSERROR_NOMEM;
 		}
 	} else {
-		(*tree)->search.textarea = NULL;
+		tree->search.textarea = NULL;
 	}
-	(*tree)->search.active = false;
-	(*tree)->search.search = false;
+	tree->search.active = false;
+	tree->search.search = false;
 
-	(*tree)->flags = flags;
+	tree->flags = flags;
 
-	(*tree)->cw_t = cw_t;
-	(*tree)->cw_h = cw;
+	tree->cw_h = cw;
+
+	*treeout = tree;
 
 	return NSERROR_OK;
 }
@@ -2126,18 +2131,14 @@ treeview_create(treeview **tree,
 
 /* Exported interface, documented in treeview.h */
 nserror
-treeview_cw_attach(treeview *tree,
-		   const struct core_window_callback_table *cw_t,
-		   struct core_window *cw)
+treeview_cw_attach(treeview *tree, struct core_window *cw)
 {
-	assert(cw_t != NULL);
 	assert(cw != NULL);
 
-	if (tree->cw_t != NULL || tree->cw_h != NULL) {
-		NSLOG(neosurf, INFO, "Treeview already attached.");
+	if (tree->cw_h != NULL) {
+		NSLOG(netsurf, INFO, "Treeview already attached.");
 		return NSERROR_UNKNOWN;
 	}
-	tree->cw_t = cw_t;
 	tree->cw_h = cw;
 
 	return NSERROR_OK;
@@ -2147,7 +2148,6 @@ treeview_cw_attach(treeview *tree,
 /* Exported interface, documented in treeview.h */
 nserror treeview_cw_detach(treeview *tree)
 {
-	tree->cw_t = NULL;
 	tree->cw_h = NULL;
 
 	treeview__search_cancel(tree, true);
@@ -4932,6 +4932,9 @@ nserror treeview_set_search_string(
 	if (string == NULL || strlen(string) == 0) {
 		tree->search.active = false;
 		tree->search.search = false;
+		if (!textarea_set_text(tree->search.textarea, "")) {
+			return NSERROR_UNKNOWN;
+		}
 		return treeview__search(tree, "", 0);
 	}
 

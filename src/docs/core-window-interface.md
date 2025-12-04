@@ -1,4 +1,5 @@
-# Core Window Interface
+Core Window Interface
+=====================
 
 The NetSurf core provides an optional API to frontend implementations
 which allows a number of "standard" window content interfaces to be
@@ -138,7 +139,7 @@ frontends/example/corewindow.h
     #ifndef EXAMPLE_COREWINDOW_H
     #define EXAMPLE_COREWINDOW_H
     
-    #include "neosurf/core_window.h"
+    #include "netsurf/core_window.h"
     
     /**
      * example core window state
@@ -252,13 +253,13 @@ frontends/example/corewindow.c
     #include <string.h>
     #include <math.h>
     
-    #include <neosurf/utils/log.h>
-    #include <neosurf/utils/utils.h>
-    #include <neosurf/utils/messages.h>
-    #include <neosurf/utils/utf8.h>
-    #include "neosurf/keypress.h"
-    #include "neosurf/mouse.h"
-    #include "neosurf/plot_style.h"
+    #include "utils/log.h"
+    #include "utils/utils.h"
+    #include "utils/messages.h"
+    #include "utils/utf8.h"
+    #include "netsurf/keypress.h"
+    #include "netsurf/mouse.h"
+    #include "netsurf/plot_style.h"
     
     /* extremely likely there will be additional headers required in a real frontend */
     #include "example/corewindow.h"
@@ -485,9 +486,9 @@ frontends/example/ssl_cert.c
     #include <stdint.h>
     #include <stdlib.h>
     
-    #include <neosurf/utils/log.h>
-    #include "neosurf/keypress.h"
-    #include "neosurf/plotters.h"
+    #include "utils/log.h"
+    #include "netsurf/keypress.h"
+    #include "netsurf/plotters.h"
     #include "desktop/sslcert_viewer.h"
     
     #include "example/corewindow.h"

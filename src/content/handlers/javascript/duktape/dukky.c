@@ -582,7 +582,6 @@ void js_initialise(void)
 	/* Disabled force-on for forthcoming release */
 	/* nsoption_set_bool(enable_javascript, true);
 	 */
-
 	javascript_init();
 }
 
