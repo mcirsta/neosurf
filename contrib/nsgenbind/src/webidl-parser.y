@@ -47,6 +47,7 @@ webidl_error(YYLTYPE *locp, struct webidl_node **winbind_ast, const char *str)
 %locations
 %define api.pure
 %define parse.error verbose
+%define parse.trace
 %parse-param { struct webidl_node **webidl_ast }
 
 %union

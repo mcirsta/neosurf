@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "nsgenbind-parser.h"
 #include "nsgenbind-ast.h"
@@ -178,7 +179,15 @@ unsigned                return TOK_UNSIGNED;
                         return TOK_IDENTIFIER;
                     }
 
-\"{quotedstring}*\"     yylval->text = strndup(yytext + 1, yyleng - 2 ); return TOK_STRING_LITERAL;
+"{quotedstring}*"     {
+                        size_t n = yyleng - 2;
+                        char *t = malloc(n + 1);
+                        if (t == NULL) { YY_FATAL_ERROR("out of memory"); }
+                        memcpy(t, yytext + 1, n);
+                        t[n] = '\0';
+                        yylval->text = t;
+                        return TOK_STRING_LITERAL;
+                    }
 
 {multicomment}          /* nothing */
 
