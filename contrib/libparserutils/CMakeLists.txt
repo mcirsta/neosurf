@@ -1,3 +1,12 @@
+find_package(Perl REQUIRED)
+
+execute_process(COMMAND ${PERL_EXECUTABLE} build/make-aliases.pl 
+	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/contrib/libparserutils 
+	RESULT_VARIABLE RET)
+if(NOT RET EQUAL 0)
+	message(FATAL_ERROR "libparserutils make-aliases.pl failed (error ${RET})")
+endif()
+
 add_library(parserutils SHARED
 	src/input/filter.c
 	src/input/inputstream.c
