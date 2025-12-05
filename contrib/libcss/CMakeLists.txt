@@ -1,9 +1,9 @@
 # Build gen_parser at configure time
-execute_process(COMMAND cmake -B ${CMAKE_BINARY_DIR}/contrib/libcss/gen_parser ${CMAKE_SOURCE_DIR}/contrib/libcss/src/parse/properties/gen_parser -G ${CMAKE_GENERATOR} RESULT_VARIABLE RET)
+execute_process(COMMAND ${CMAKE_COMMAND} -B ${CMAKE_BINARY_DIR}/contrib/libcss/gen_parser ${CMAKE_SOURCE_DIR}/contrib/libcss/src/parse/properties/gen_parser -G ${CMAKE_GENERATOR} RESULT_VARIABLE RET)
 if(NOT RET EQUAL 0)
 	message(FATAL_ERROR "libcss gen_parser configure failed (error ${RET})")
 endif()
-execute_process(COMMAND ${CMAKE_MAKE_PROGRAM} -C ${CMAKE_BINARY_DIR}/contrib/libcss/gen_parser RESULT_VARIABLE RET)
+execute_process(COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR}/contrib/libcss/gen_parser RESULT_VARIABLE RET)
 if(NOT RET EQUAL 0)
 	message(FATAL_ERROR "libcss gen_parser build failed (error ${RET})")
 endif()

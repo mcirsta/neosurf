@@ -1,10 +1,15 @@
 find_package(Perl REQUIRED)
+find_package(Iconv REQUIRED)
 
-execute_process(COMMAND ${PERL_EXECUTABLE} build/make-aliases.pl 
-	WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/contrib/libparserutils 
-	RESULT_VARIABLE RET)
-if(NOT RET EQUAL 0)
-	message(FATAL_ERROR "libparserutils make-aliases.pl failed (error ${RET})")
+if(EXISTS "${CMAKE_SOURCE_DIR}/contrib/libparserutils/build/make-aliases.pl")
+	execute_process(COMMAND ${PERL_EXECUTABLE} build/make-aliases.pl 
+		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/contrib/libparserutils 
+		RESULT_VARIABLE RET)
+	if(NOT RET EQUAL 0)
+		message(FATAL_ERROR "libparserutils make-aliases.pl failed (error ${RET})")
+	endif()
+else()
+	message(STATUS "libparserutils make-aliases.pl not found, skipping aliases.inc generation")
 endif()
 
 add_library(parserutils SHARED
@@ -25,6 +30,15 @@ add_library(parserutils SHARED
 	src/utils/errors.c
 )
 set_target_properties(parserutils PROPERTIES SOVERSION ${NEOSURF_ABI})
+
+if(Iconv_FOUND)
+	if(TARGET Iconv::Iconv)
+		target_link_libraries(parserutils Iconv::Iconv)
+	else()
+		target_link_libraries(parserutils ${Iconv_LIBRARIES})
+		include_directories(${Iconv_INCLUDE_DIRS})
+	endif()
+endif()
 
 install(TARGETS parserutils DESTINATION ${CMAKE_INSTALL_LIBDIR})
 
