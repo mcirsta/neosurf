@@ -45,6 +45,10 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
+#ifndef HAVE_INETPTON
+#define HAVE_INETPTON
+#endif
+
 #ifndef EAFNOSUPPORT
 #define EAFNOSUPPORT WSAEAFNOSUPPORT
 #endif

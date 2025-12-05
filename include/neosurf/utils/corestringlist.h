@@ -182,6 +182,7 @@ CORESTRING_LWC_VALUE(application_postscript, "application/postscript");
 CORESTRING_LWC_VALUE(application_pdf, "application/pdf");
 CORESTRING_LWC_VALUE(video_mp4, "video/mp4");
 CORESTRING_LWC_VALUE(image_svg, "image/svg+xml");
+CORESTRING_LWC_VALUE(image_jxl, "image/jxl");
 
 
 /* DOM strings */

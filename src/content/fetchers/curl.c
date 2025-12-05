@@ -56,7 +56,7 @@
 #include <neosurf/misc.h>
 #include <neosurf/desktop/gui_internal.h>
 
-#include <neosurf/content/fetch.h>
+#include "content/fetch.h"
 #include "content/fetchers.h"
 #include "content/fetchers/curl.h"
 #include "content/urldb.h"
@@ -551,9 +551,8 @@ failed:
 		lwc_string_unref(fetch->host);
 
 	nsurl_unref(fetch->url);
-	free(fetch->post_urlenc);
-	if (fetch->post_multipart)
-		curl_formfree(fetch->post_multipart);
+	if (fetch->postdata)
+		fetch_curl_free_postdata(fetch->postdata);
 	curl_slist_free_all(fetch->headers);
 	free(fetch);
 	return NULL;
@@ -1792,23 +1791,7 @@ fetch_curl_debug(CURL *handle,
 }
 
 
-static curl_socket_t fetch_curl_socket_open(void *clientp,
-		curlsocktype purpose, struct curl_sockaddr *address)
-{
-	(void) clientp;
-	(void) purpose;
 
-	return (curl_socket_t) guit->fetch->socket_open(
-			address->family, address->socktype,
-			address->protocol);
-}
-
-static int fetch_curl_socket_close(void *clientp, curl_socket_t item)
-{
-	(void) clientp;
-
-	return guit->fetch->socket_close((int) item);
-}
 
 /**
  * Callback function for cURL.
@@ -2065,8 +2048,6 @@ nserror fetch_curl_register(void)
 	SETOPT(CURLOPT_LOW_SPEED_TIME, 180L);
 	SETOPT(CURLOPT_NOSIGNAL, 1L);
 	SETOPT(CURLOPT_CONNECTTIMEOUT, nsoption_uint(curl_fetch_timeout));
-	SETOPT(CURLOPT_OPENSOCKETFUNCTION, fetch_curl_socket_open);
-	SETOPT(CURLOPT_CLOSESOCKETFUNCTION, fetch_curl_socket_close);
 
 	if (nsoption_charp(ca_bundle) &&
 	    strcmp(nsoption_charp(ca_bundle), "")) {
