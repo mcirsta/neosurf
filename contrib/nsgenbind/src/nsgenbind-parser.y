@@ -9,6 +9,7 @@
 %locations
 %define api.pure
 %define parse.error verbose
+%define parse.trace
 
 %code requires {
 
