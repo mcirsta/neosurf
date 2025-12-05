@@ -23,6 +23,10 @@
 #include "parse/mq.h"
 #include "select/hash.h"
 
+#ifndef _ALIGNED
+#define _ALIGNED
+#endif
+
 typedef struct css_rule css_rule;
 typedef struct css_selector css_selector;
 
