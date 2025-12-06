@@ -27,4 +27,7 @@ nsfb-*
 build
 netsurf
 netsurf-libs
+dist
+install
+install
 
