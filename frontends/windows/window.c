@@ -53,6 +53,7 @@
 #include "windows/hotlist.h"
 #include "windows/cookies.h"
 #include "windows/global_history.h"
+#include "neosurf/desktop/searchweb.h"
 #include "windows/window.h"
 
 /**
@@ -416,6 +417,7 @@ nsws_window_urlbar_callback(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	/* override messages */
 	switch (msg) {
 	case WM_CHAR:
+		NSLOG(netsurf, INFO, "URLBar WM_CHAR: %d", wparam);
 		if (wparam == 1) {
 			/* handle ^A */
 			SendMessage(hwnd, EM_SETSEL, 0, -1);
@@ -1272,15 +1274,19 @@ nsws_window_command(HWND hwnd,
 		nsurl *url;
 		nserror err;
 
-		if (GetFocus() != gw->urlbar)
+		NSLOG(netsurf, INFO, "IDC_MAIN_LAUNCH_URL: focus=%p, urlbar=%p", GetFocus(), gw->urlbar);
+
+		if (GetFocus() != gw->urlbar) {
+			NSLOG(netsurf, INFO, "Focus not on urlbar, ignoring");
 			break;
+		}
 
 		int len = SendMessage(gw->urlbar, WM_GETTEXTLENGTH, 0, 0);
 		char addr[len + 1];
 		SendMessage(gw->urlbar, WM_GETTEXT, (WPARAM)(len + 1), (LPARAM)addr);
 		NSLOG(netsurf, INFO, "launching %s\n", addr);
 
-		err = nsurl_create(addr, &url);
+		err = search_web_omni(addr, SEARCH_WEB_OMNI_NONE, &url);
 
 		if (err != NSERROR_OK) {
 			win32_report_nserror(err, 0);

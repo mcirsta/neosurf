@@ -84,6 +84,15 @@ endif()
 option(NEOSURF_INSTALL_NSGENBIND "Installs the nsgenbind utility with neosurf" OFF)
 option(NEOSURF_INSTALL_GEN_PARSER "Installs the libcss gen_parser utility with neosurf" OFF)
 option(NEOSURF_BUILD_XXD "Build and install a complimentary xxd implementation" OFF)
+option(NEOSURF_WERROR "Treat warnings as errors" OFF)
+
+if(NEOSURF_WERROR)
+	if(MSVC)
+		add_compile_options(/WX)
+	else()
+		add_compile_options(-Werror)
+	endif()
+endif()
 
 include_directories(
 	"${CMAKE_SOURCE_DIR}/contrib/libsvgtiny/include"

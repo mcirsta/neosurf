@@ -1,15 +1,14 @@
-find_package(Perl REQUIRED)
 find_package(Iconv REQUIRED)
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/contrib/libparserutils/build/make-aliases.pl")
-	execute_process(COMMAND ${PERL_EXECUTABLE} build/make-aliases.pl 
+if(EXISTS "${CMAKE_SOURCE_DIR}/contrib/libparserutils/build/make-aliases.py")
+	execute_process(COMMAND ${PYTHON3} build/make-aliases.py 
 		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/contrib/libparserutils 
 		RESULT_VARIABLE RET)
 	if(NOT RET EQUAL 0)
-		message(FATAL_ERROR "libparserutils make-aliases.pl failed (error ${RET})")
+		message(FATAL_ERROR "libparserutils make-aliases.py failed (error ${RET})")
 	endif()
 else()
-	message(FATAL_ERROR "libparserutils make-aliases.pl not found, cannot generate aliases.inc")
+	message(FATAL_ERROR "libparserutils make-aliases.py not found, cannot generate aliases.inc")
 endif()
 
 add_library(parserutils SHARED
