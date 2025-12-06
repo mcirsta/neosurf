@@ -59,7 +59,7 @@ nsws_init_resource(const char *resource_path)
 	slsh = strrchr(winpath, '\\');
 	if (slsh != NULL)
 		*slsh=0;
-	strncat(winpath, "\\windows\\res", MAX_PATH);
+	strncat(winpath, "\\..\\share\\neosurf-windows", MAX_PATH);
 
 	pathi = 0;
 	while (pathv[pathi] != NULL)
