@@ -192,6 +192,7 @@ css_error css_computed_style_destroy(css_computed_style *style)
 		free(style->quotes);
 	}
 
+	//TODO can these be NULL ?
 	if (style->i.list_style_image != NULL)
 		lwc_string_unref(style->i.list_style_image);
 	if (style->i.background_image != NULL)

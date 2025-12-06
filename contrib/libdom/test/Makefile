@@ -17,9 +17,9 @@ define do_xml_test
 
 ifeq ($$(WANT_XML_TEST),yes)
 
-$(DIR)$2: $(DIR)testcases/tests/$1 $(DIR)transform.pl  $(DIR)DOMTSHandler.pm
+$(DIR)$2: $(DIR)testcases/tests/$1 $(DIR)../build/transform.py
 	$(VQ)$(ECHO) "   XFORM: $1"
-	$(Q)$(PERL) $(DIR)transform.pl $(DIR)$3 $(DIR)testcases/tests/$(dir $1)/files $(DIR)testcases/tests/$1 > $(DIR)$2
+	$(Q)python3 $(DIR)../build/transform.py $(DIR)$3 $(DIR)testcases/tests/$(dir $1)/files $(DIR)testcases/tests/$1 > $(DIR)$2
 
 DIR_TEST_ITEMS := $$(DIR_TEST_ITEMS) $4:$2;$(testutils_files)
 

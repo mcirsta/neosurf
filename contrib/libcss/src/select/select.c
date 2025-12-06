@@ -1031,6 +1031,7 @@ static void css_select__finalise_selection_state(
 		}
 	}
 
+	//TODO can these be null ?
 	if (state->id != NULL)
 		lwc_string_unref(state->id);
 	if (state->element.ns != NULL)

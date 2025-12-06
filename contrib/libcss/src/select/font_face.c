@@ -16,6 +16,7 @@ static void font_faces_srcs_destroy(css_font_face *font_face)
 	css_font_face_src *srcs = font_face->srcs;
 
 	for (i = 0; i < font_face->n_srcs; ++i) {
+	//TODO can this be NULL ?
 		if (srcs[i].location != NULL)
 			lwc_string_unref(srcs[i].location);
 	}

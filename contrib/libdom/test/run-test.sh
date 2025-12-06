@@ -68,7 +68,7 @@ while read test; do
 	echo -n "$file:";
 
 	# Generate the test C program
-	out=`perl transform.pl "$dtd" "$tfile" 2>&1  >"${cfile}.unindent"`;
+	out=`python3 ../build/transform.py "$dtd" "files" "$tfile" 2>&1  >"${cfile}.unindent"`;
 	if [ "$?" != "0" ]; then
 		fail=$((fail+1));
 		conversion=$((conversion+1));
