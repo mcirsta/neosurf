@@ -115,7 +115,10 @@ char *strchrnul(const char *s, int c);
 
 #define HAVE_INETPTON
 #if (defined(_WIN32))
+/* Windows (Vista+) has inet_pton */
+#if defined(_WIN32_WINNT) && _WIN32_WINNT < 0x0600
 #undef HAVE_INETPTON
+#endif
 #endif
 
 #define HAVE_UTSNAME
