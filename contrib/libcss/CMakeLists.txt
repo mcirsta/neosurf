@@ -20,7 +20,8 @@ if(NOT RET EQUAL 0)
 	message(FATAL_ERROR "libcss parser_wrapper.sh failed (error ${RET})")
 endif()
 
-execute_process(COMMAND ${PYTHON3} ${CMAKE_SOURCE_DIR}/contrib/libcss/src/select/select_generator.py ${CMAKE_BINARY_DIR} RESULT_VARIABLE RET)
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/src/select)
+execute_process(COMMAND ${PYTHON3} ${CMAKE_SOURCE_DIR}/contrib/libcss/src/select/select_generator.py ${CMAKE_CURRENT_BINARY_DIR}/src/select RESULT_VARIABLE RET)
 if(NOT RET EQUAL 0)
 	message(FATAL_ERROR "libcss select_generator.py failed (error ${RET})")
 endif()
@@ -28,6 +29,8 @@ endif()
 aux_source_directory(${CMAKE_BINARY_DIR}/contrib/libcss/properties PROPSRC)
 
 include_directories("${CMAKE_SOURCE_DIR}/contrib/libcss/src")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/src/select")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/src")
 
 add_library(css SHARED
 	src/stylesheet.c

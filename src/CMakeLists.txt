@@ -54,6 +54,28 @@ if(NOT RET EQUAL 0)
 	message(FATAL_ERROR "nsgenbind build failed (error ${RET})")
 endif()
 
+file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/content/handlers/javascript/duktape)
+
+execute_process(COMMAND ${PYTHON3} ${CMAKE_SOURCE_DIR}/utils/cmake_helper.py file-to-hex
+	${CMAKE_SOURCE_DIR}/src/content/handlers/javascript/duktape/polyfill.js
+	${CMAKE_CURRENT_BINARY_DIR}/content/handlers/javascript/duktape/polyfill.js.inc
+	polyfill_js
+	RESULT_VARIABLE RET)
+if(NOT RET EQUAL 0)
+	message(FATAL_ERROR "Failed to generate polyfill.js.inc (error ${RET})")
+endif()
+
+execute_process(COMMAND ${PYTHON3} ${CMAKE_SOURCE_DIR}/utils/cmake_helper.py file-to-hex
+	${CMAKE_SOURCE_DIR}/src/content/handlers/javascript/duktape/generics.js
+	${CMAKE_CURRENT_BINARY_DIR}/content/handlers/javascript/duktape/generics.js.inc
+	generics_js
+	RESULT_VARIABLE RET)
+if(NOT RET EQUAL 0)
+	message(FATAL_ERROR "Failed to generate generics.js.inc (error ${RET})")
+endif()
+
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/content/handlers/javascript/duktape)
+
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/duktape)
 execute_process(COMMAND ${CMAKE_BINARY_DIR}/contrib/nsgenbind/nsgenbind${CMAKE_EXECUTABLE_SUFFIX} -I ${CMAKE_SOURCE_DIR}/src/content/handlers/javascript/WebIDL neosurf.bnd ${CMAKE_BINARY_DIR}/duktape WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}/src/content/handlers/javascript/duktape RESULT_VARIABLE RET)
 if(NOT RET EQUAL 0)
