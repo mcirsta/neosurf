@@ -551,14 +551,23 @@ nsws_window_urlbar_create(HINSTANCE hInstance,
 				     NULL);
 
 	if (gw->tooltip) {
-		TOOLINFO toolInfo = { 0 };
+		TOOLINFOW toolInfo = { 0 };
+		LRESULT res;
+		
 		toolInfo.cbSize = sizeof(toolInfo);
+		
 		toolInfo.uFlags = TTF_SUBCLASS | TTF_IDISHWND;
 		toolInfo.hwnd = hwnd;
 		toolInfo.uId = (UINT_PTR)hbutton;
-		toolInfo.lpszText = "";
-		SendMessage(gw->tooltip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+		toolInfo.lpszText = L"";
+		res = SendMessageW(gw->tooltip, TTM_ADDTOOLW, 0, (LPARAM)&toolInfo);
+		if (res == 0) {
+			NSLOG(neosurf, INFO, "Page info tooltip create failed (TTM_ADDTOOLW): hwnd=%p tooltip=%p size=%lu",
+			      hwnd, gw->tooltip, (unsigned long)toolInfo.cbSize);
+		}
 		SendMessage(gw->tooltip, TTM_ACTIVATE, TRUE, 0);
+	} else {
+		NSLOG(neosurf, INFO, "Page info tooltip create failed: hwnd=%p", hwnd);
 	}
 
 	/* put a property on the parent toolbar so it can set the page info */
@@ -766,6 +775,9 @@ nsws_window_create_toolbar(HINSTANCE hInstance,
 		    TB_BUTTONSTRUCTSIZE,
 		    (WPARAM)sizeof(TBBUTTON),
 		    0);
+
+	/* Enable Unicode notifications for tooltips (TB_SETUNICODEFORMAT) */
+	SendMessage(hWndToolbar, 0x2005, (WPARAM)TRUE, 0);
 
 	SendMessage(hWndToolbar,
 		    TB_ADDBUTTONS,
@@ -1469,8 +1481,8 @@ nsws_window_event_callback(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 	case WM_NOTIFY:
 	{
 		LPNMHDR pnmh = (LPNMHDR)lparam;
-		if (pnmh->code == TTN_GETDISPINFO) {
-			LPNMTTDISPINFO ptdi = (LPNMTTDISPINFO)lparam;
+		if (pnmh->code == TTN_GETDISPINFOW) {
+			LPNMTTDISPINFOW ptdi = (LPNMTTDISPINFOW)lparam;
 			const char *utf8_text = NULL;
 
 			switch (ptdi->hdr.idFrom) {
@@ -1492,9 +1504,9 @@ nsws_window_event_callback(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 			}
 
 			if (utf8_text) {
+				/* Convert UTF-8 to WideChar and store directly in the Unicode structure */
 				MultiByteToWideChar(CP_UTF8, 0, utf8_text, -1,
-						    ptdi->szText,
-						    sizeof(ptdi->szText) / sizeof(WCHAR));
+						    ptdi->szText, sizeof(ptdi->szText) / sizeof(WCHAR));
 				ptdi->lpszText = ptdi->szText;
 			}
 			return 0;
@@ -1941,9 +1953,8 @@ static void win32_window_page_info_change(struct gui_window *gw)
 		     (LPARAM)gw->hPageInfo[pistate]);
 
 	if (gw->tooltip) {
-		TOOLINFO toolInfo = { 0 };
+		TOOLINFOW toolInfo = { 0 };
 		const char *text = "";
-		WCHAR wtext[256] = {0};
 
 		switch (pistate) {
 		case PAGE_STATE_UNKNOWN:
@@ -1972,15 +1983,20 @@ static void win32_window_page_info_change(struct gui_window *gw)
 		}
 
 		if (text) {
+			WCHAR wtext[256] = {0};
+			/* Convert UTF-8 to WideChar */
 			MultiByteToWideChar(CP_UTF8, 0, text, -1,
 					    wtext, sizeof(wtext) / sizeof(WCHAR));
-		}
 
-		toolInfo.cbSize = sizeof(toolInfo);
-		toolInfo.hwnd = gw->urlbar;
-		toolInfo.uId = (UINT_PTR)hbutton;
-		toolInfo.lpszText = wtext;
-		SendMessage(gw->tooltip, TTM_UPDATETIPTEXT, 0, (LPARAM)&toolInfo);
+			toolInfo.cbSize = sizeof(toolInfo);
+			toolInfo.hwnd = gw->urlbar;
+			toolInfo.uId = (UINT_PTR)hbutton;
+			toolInfo.lpszText = wtext;
+			/* Use TTM_UPDATETIPTEXTW for Unicode */
+			SendMessageW(gw->tooltip, TTM_UPDATETIPTEXTW, 0, (LPARAM)&toolInfo);
+		}
+	} else {
+		NSLOG(neosurf, INFO, "Page info tooltip update failed: no tooltip window");
 	}
 }
 
