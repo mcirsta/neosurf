@@ -41,25 +41,40 @@
  */
 static const char *fetch_filetype(const char *unix_path)
 {
-	int l;
+	const char *ext;
 	NSLOG(netsurf, INFO, "unix path %s", unix_path);
-	l = strlen(unix_path);
-	if (2 < l && strcasecmp(unix_path + l - 3, "css") == 0)
+
+	ext = strrchr(unix_path, '.');
+	if (ext == NULL) {
+		NSLOG(netsurf, INFO, "no extension for %s returning html", unix_path);
+		return "text/html";
+	}
+
+	ext++; /* skip dot */
+
+	NSLOG(netsurf, INFO, "extension %s", ext);
+
+	if (strcasecmp(ext, "css") == 0)
 		return "text/css";
-	if (2 < l && strcasecmp(unix_path + l - 3, "jpg") == 0)
+	if (strcasecmp(ext, "jpg") == 0)
 		return "image/jpeg";
-	if (3 < l && strcasecmp(unix_path + l - 4, "jpeg") == 0)
+	if (strcasecmp(ext, "jpeg") == 0)
 		return "image/jpeg";
-	if (2 < l && strcasecmp(unix_path + l - 3, "gif") == 0)
+	if (strcasecmp(ext, "gif") == 0)
 		return "image/gif";
-	if (2 < l && strcasecmp(unix_path + l - 3, "png") == 0)
+	if (strcasecmp(ext, "png") == 0)
 		return "image/png";
-	if (2 < l && strcasecmp(unix_path + l - 3, "jng") == 0)
+	if (strcasecmp(ext, "jng") == 0)
 		return "image/jng";
-	if (2 < l && strcasecmp(unix_path + l - 3, "svg") == 0)
+	if (strcasecmp(ext, "svg") == 0)
 		return "image/svg";
-	if (2 < l && strcasecmp(unix_path + l - 3, "bmp") == 0)
+	if (strcasecmp(ext, "bmp") == 0)
 		return "image/x-ms-bmp";
+	if (strcasecmp(ext, "ico") == 0)
+		return "image/x-icon";
+	if (strcasecmp(ext, "webp") == 0)
+		return "image/webp";
+
 	return "text/html";
 }
 
