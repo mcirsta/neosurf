@@ -211,6 +211,10 @@ struct css_stylesheet {
 	css_font_resolution_fn font;
 	void *font_pw;				/**< Private word */
 
+	/** Error handler function */
+	css_error_handler_fn error;
+	void *error_pw;				/**< Private word */
+
 	css_style *cached_style;		/**< Cache for style parsing */
 
 	lwc_string **string_vector;             /**< Bytecode string vector */

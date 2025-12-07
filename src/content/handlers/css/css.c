@@ -217,7 +217,7 @@ static nserror nscss_create_css_data(struct content_css_data *c,
 	else
 		c->charset = NULL;
 
-	params.params_version = CSS_STYLESHEET_PARAMS_VERSION_1;
+	params.params_version = CSS_STYLESHEET_PARAMS_VERSION_2;
 	params.level = CSS_LEVEL_DEFAULT;
 	params.charset = charset;
 	params.url = url;
@@ -232,6 +232,8 @@ static nserror nscss_create_css_data(struct content_css_data *c,
 	params.color_pw = NULL;
 	params.font = NULL;
 	params.font_pw = NULL;
+	params.error = nscss_error_handler;
+	params.error_pw = NULL;
 
 	error = css_stylesheet_create(&params, &c->sheet);
 	if (error != CSS_OK) {
@@ -514,6 +516,22 @@ void nscss_content_done(struct content_css_data *css, void *pw)
  *****************************************************************************/
 
 /**
+ * Handler for LibCSS errors
+ *
+ * \param pw     Callback context
+ * \param sheet  Stylesheet triggering the error
+ * \param error  Error code
+ * \param msg    Error message
+ * \return CSS_OK
+ */
+static css_error nscss_error_handler(void *pw, css_stylesheet *sheet,
+		css_error error, const char *msg)
+{
+	NSLOG(netsurf, ERROR, "LibCSS Error: %s (Code: %d)", msg, error);
+	return CSS_OK;
+}
+
+/**
  * Handle notification of the need for an imported stylesheet
  *
  * \param pw      CSS object requesting the import
@@ -749,7 +767,8 @@ css_error nscss_register_import(struct content_css_data *c,
 		if (blank_import == NULL) {
 			css_stylesheet_params params;
 
-			params.params_version = CSS_STYLESHEET_PARAMS_VERSION_1;
+			
+			params.params_version = CSS_STYLESHEET_PARAMS_VERSION_2;
 			params.level = CSS_LEVEL_DEFAULT;
 			params.charset = NULL;
 			params.url = "";
@@ -764,6 +783,8 @@ css_error nscss_register_import(struct content_css_data *c,
 			params.color_pw = NULL;
 			params.font = NULL;
 			params.font_pw = NULL;
+			params.error = nscss_error_handler;
+			params.error_pw = NULL;
 
 			error = css_stylesheet_create(&params, &blank_import);
 			if (error != CSS_OK) {
