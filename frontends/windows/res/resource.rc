@@ -7,6 +7,11 @@
 #include "../resourceid.h"
 
 //
+// Manifest resources
+//
+1 24 "neosurf.manifest"
+
+//
 // Bitmap resources
 //
 LANGUAGE LANG_NEUTRAL, SUBLANG_NEUTRAL
