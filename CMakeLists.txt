@@ -117,8 +117,8 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 	add_definitions(-DNETSURF_LOG_LEVEL=DEEPDEBUG)
 
 	if((WIN32 AND CMAKE_C_COMPILER_ID MATCHES "Clang") OR UNIX)
-		add_compile_options(-fsanitize=address)
-		add_link_options(-fsanitize=address)
+		add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+		add_link_options(-fsanitize=address,undefined)
 	endif()
 endif()
 

@@ -50,23 +50,43 @@ static const wchar_t *windowclassname_drawable = L"nswsdrawablewindow";
 static LRESULT
 nsws_drawable_wheel(struct gui_window *gw, HWND hwnd, WPARAM wparam)
 {
-	int i, z = GET_WHEEL_DELTA_WPARAM(wparam) / WHEEL_DELTA;
+	int i, z, delta;
 	int key = LOWORD(wparam);
 	DWORD command;
 	unsigned int newmessage = WM_VSCROLL;
+	UINT lines = 3;
+
+	delta = GET_WHEEL_DELTA_WPARAM(wparam);
 
 	if (key == MK_SHIFT) {
+		z = delta / WHEEL_DELTA;
 		command = (z > 0) ? SB_LINERIGHT : SB_LINELEFT;
 		newmessage = WM_HSCROLL;
+		z = (z < 0) ? -1 * z : z;
+
+		for (i = 0; i < z; i++) {
+			SendMessage(hwnd, newmessage, MAKELONG(command, 0), 0);
+		}
 	} else {
 		/* add MK_CONTROL -> zoom */
-		command = (z > 0) ? SB_LINEUP : SB_LINEDOWN;
-	}
 
-	z = (z < 0) ? -1 * z : z;
+		SystemParametersInfo(SPI_GETWHEELSCROLLLINES, 0, &lines, 0);
 
-	for (i = 0; i < z; i++) {
-		SendMessage(hwnd, newmessage, MAKELONG(command, 0), 0);
+		if (lines == WHEEL_PAGESCROLL) {
+			command = (delta > 0) ? SB_PAGEUP : SB_PAGEDOWN;
+			z = delta / WHEEL_DELTA;
+			z = (z < 0) ? -1 * z : z;
+			for (i = 0; i < z; i++) {
+				SendMessage(hwnd, newmessage, MAKELONG(command, 0), 0);
+			}
+		} else {
+			command = (delta > 0) ? SB_LINEUP : SB_LINEDOWN;
+			z = (delta * (int)lines) / WHEEL_DELTA;
+			z = (z < 0) ? -1 * z : z;
+			for (i = 0; i < z; i++) {
+				SendMessage(hwnd, newmessage, MAKELONG(command, 0), 0);
+			}
+		}
 	}
 
 	return 0;
