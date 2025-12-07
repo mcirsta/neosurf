@@ -35,7 +35,11 @@ enum content_debug {
 	CONTENT_DEBUG_DOM,
 
 	/** Debug redraw operations. */
-	CONTENT_DEBUG_REDRAW
+	CONTENT_DEBUG_REDRAW,
+
+	//TODO, implement this in the UI
+	/** Check for missing resources. */
+	CONTENT_DEBUG_MISSING
 };
 
 
