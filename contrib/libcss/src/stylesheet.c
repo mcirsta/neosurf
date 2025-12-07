@@ -8,6 +8,7 @@
 #include <assert.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
 #include "stylesheet.h"
 #include "bytecode/bytecode.h"
@@ -236,6 +237,14 @@ css_error css_stylesheet_create(const css_stylesheet_params *params,
 
 	sheet->font = params->font;
 	sheet->font_pw = params->font_pw;
+
+	if (params->params_version >= CSS_STYLESHEET_PARAMS_VERSION_2) {
+		sheet->error = params->error;
+		sheet->error_pw = params->error_pw;
+	} else {
+		sheet->error = NULL;
+		sheet->error_pw = NULL;
+	}
 
 	sheet->size = sizeof(css_stylesheet) + strlen(sheet->url);
 	if (sheet->title != NULL)
@@ -854,8 +863,18 @@ css_error css__stylesheet_selector_destroy(css_stylesheet *sheet,
 		d = c->combinator;
 
 		for (detail = &c->data; detail;) {
-			lwc_string_unref(detail->qname.ns);
-			lwc_string_unref(detail->qname.name);
+			if (detail->qname.ns != NULL)
+				lwc_string_unref(detail->qname.ns);
+
+			if (detail->qname.name == NULL) {
+				if (sheet->error != NULL) {
+					sheet->error(sheet->error_pw, sheet,
+							CSS_INVALID,
+							"FATAL: Partially initialized selector (name == NULL) encountered during error recovery.");
+				}
+			} else {
+				lwc_string_unref(detail->qname.name);
+			}
 
 			if (detail->value_type ==
 					CSS_SELECTOR_DETAIL_VALUE_STRING &&
@@ -873,8 +892,18 @@ css_error css__stylesheet_selector_destroy(css_stylesheet *sheet,
 	}
 
 	for (detail = &selector->data; detail;) {
-		lwc_string_unref(detail->qname.ns);
-		lwc_string_unref(detail->qname.name);
+		if (detail->qname.ns != NULL)
+			lwc_string_unref(detail->qname.ns);
+
+		if (detail->qname.name == NULL) {
+			if (sheet->error != NULL) {
+				sheet->error(sheet->error_pw, sheet,
+						CSS_INVALID,
+						"FATAL: Partially initialized selector (name == NULL) encountered during error recovery.");
+			}
+		} else {
+			lwc_string_unref(detail->qname.name);
+		}
 
 		if (detail->value_type == CSS_SELECTOR_DETAIL_VALUE_STRING &&
 				detail->value.string != NULL) {

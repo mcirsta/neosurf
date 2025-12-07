@@ -88,12 +88,28 @@ typedef struct css_system_font {
 typedef css_error (*css_font_resolution_fn)(void *pw,
 		lwc_string *name, css_system_font *system_font);
 
+/**
+ * Callback to report errors
+ *
+ * \param pw     Client data
+ * \param sheet  The stylesheet context
+ * \param error  The error code
+ * \param msg    Optional error message (may be NULL)
+ * \return CSS_OK on success, appropriate error otherwise
+ */
+typedef css_error (*css_error_handler_fn)(void *pw,
+		css_stylesheet *sheet, css_error error, const char *msg);
+
 typedef enum css_stylesheet_params_version {
-	CSS_STYLESHEET_PARAMS_VERSION_1 = 1
+	CSS_STYLESHEET_PARAMS_VERSION_1 = 1,
+	CSS_STYLESHEET_PARAMS_VERSION_2 = 2
 } css_stylesheet_params_version;
 
 /**
  * Parameter block for css_stylesheet_create()
+ *
+ * Clients should zero this structure and set params_version to the
+ * latest version they support.
  */
 typedef struct css_stylesheet_params {
 	/** ABI version of this structure */
@@ -133,6 +149,11 @@ typedef struct css_stylesheet_params {
 	css_font_resolution_fn font;
 	/** Client private data for font */
 	void *font_pw;
+
+	/** Error handler function */
+	css_error_handler_fn error;
+	/** Client private data for error handler */
+	void *error_pw;
 } css_stylesheet_params;
 
 css_error css_stylesheet_create(const css_stylesheet_params *params,

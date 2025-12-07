@@ -909,6 +909,15 @@ static css_error css_font_resolution_func(void *pw, lwc_string *name,
 	return CSS_OK;
 }
 
+static css_error test_error_handler(void *pw, css_stylesheet *sheet,
+		css_error error, const char *msg)
+{
+	UNUSED(pw);
+	UNUSED(sheet);
+	fprintf(stderr, "LibCSS Error: %s (Code: %d)\n", msg, error);
+	return CSS_OK;
+}
+
 static void css__parse_sheet(line_ctx *ctx, const char *data, size_t len)
 {
 	css_stylesheet_params params;
@@ -946,7 +955,7 @@ static void css__parse_sheet(line_ctx *ctx, const char *data, size_t len)
 	memcpy(media, p, end - p);
 	media[end - p] = '\0';
 
-	params.params_version = CSS_STYLESHEET_PARAMS_VERSION_1;
+	params.params_version = CSS_STYLESHEET_PARAMS_VERSION_2;
 	params.level = CSS_LEVEL_21;
 	params.charset = "UTF-8";
 	params.url = "foo";
@@ -961,6 +970,8 @@ static void css__parse_sheet(line_ctx *ctx, const char *data, size_t len)
 	params.color_pw = NULL;
 	params.font = css_font_resolution_func;
 	params.font_pw = NULL;
+	params.error = test_error_handler;
+	params.error_pw = NULL;
 
 	/** \todo How are we going to handle @import? */
 	assert(css_stylesheet_create(&params, &sheet) == CSS_OK);
