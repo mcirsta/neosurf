@@ -50,6 +50,7 @@ struct gui_window {
 	HWND statusbar; /**< status bar handle */
 	HWND vscroll; /**< vertical scrollbar handle */
 	HWND hscroll; /**< horizontal scrollbar handle */
+	HWND tooltip; /**< tooltip handle */
 
 	HMENU mainmenu; /**< the main menu */
 	HMENU rclick; /**< the right-click menu */

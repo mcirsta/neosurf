@@ -9311,3 +9311,20 @@ nl.all.SetPassword:Stel wachtwoord in
 #fr.gtk.gtkToolBarTitle:Personaliser la barre d’outils
 #it.gtk.gtkToolBarTitle:Pulsanti della barra strumenti
 #nl.gtk.gtkToolBarTitle:Werkbalk aanpassen
+
+# Windows Frontend Page Info Tooltips
+en.win.PageInfoUnknown:Unknown
+fr.win.PageInfoUnknown:Inconnu
+en.win.PageInfoInternal:Internal
+fr.win.PageInfoInternal:Interne
+en.win.PageInfoLocal:Local
+fr.win.PageInfoLocal:Local
+en.win.PageInfoInsecure:Insecure
+fr.win.PageInfoInsecure:Non sécurisé
+en.win.PageInfoSecureOverride:Secure Override
+fr.win.PageInfoSecureOverride:Sécurité outrepassée
+en.win.PageInfoSecureIssues:Secure Issues
+fr.win.PageInfoSecureIssues:Problèmes de sécurité
+en.win.PageInfoSecure:Secure
+fr.win.PageInfoSecure:Sécurisé
+
