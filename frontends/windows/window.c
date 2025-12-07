@@ -74,12 +74,12 @@ static const LPCWSTR windowclassname_main = L"nswsmainwindow";
 /**
  * height of the url entry box
  */
-#define NSWS_URLBAR_HEIGHT 23
+#define NSWS_URLBAR_HEIGHT 24
 
 /**
  * height of the Page Information bitmap button
  */
-#define NSW32_PGIBUTTON_HEIGHT 16
+#define NSW32_PGIBUTTON_HEIGHT 24
 
 /**
  * Number of open windows
