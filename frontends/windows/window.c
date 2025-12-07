@@ -537,6 +537,29 @@ nsws_window_urlbar_create(HINSTANCE hInstance,
 				 hInstance,
 			     NULL);
 
+	/* Create tooltip control */
+	gw->tooltip = CreateWindowEx(WS_EX_TOPMOST,
+				     TOOLTIPS_CLASS,
+				     NULL,
+				     WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
+				     CW_USEDEFAULT, CW_USEDEFAULT,
+				     CW_USEDEFAULT, CW_USEDEFAULT,
+				     hwnd,
+				     NULL,
+				     hInstance,
+				     NULL);
+
+	if (gw->tooltip) {
+		TOOLINFO toolInfo = { 0 };
+		toolInfo.cbSize = sizeof(toolInfo);
+		toolInfo.uFlags = TTF_SUBCLASS | TTF_IDISHWND;
+		toolInfo.hwnd = hwnd;
+		toolInfo.uId = (UINT_PTR)hbutton;
+		toolInfo.lpszText = "";
+		SendMessage(gw->tooltip, TTM_ADDTOOL, 0, (LPARAM)&toolInfo);
+		SendMessage(gw->tooltip, TTM_ACTIVATE, TRUE, 0);
+	}
+
 	/* put a property on the parent toolbar so it can set the page info */
 	SetProp(hWndParent, TEXT("hPGIbutton"), (HANDLE)hbutton);
 
@@ -1877,6 +1900,43 @@ static void win32_window_page_info_change(struct gui_window *gw)
 
 	SendMessageW(hbutton, BM_SETIMAGE, IMAGE_BITMAP,
 		     (LPARAM)gw->hPageInfo[pistate]);
+
+	if (gw->tooltip) {
+		TOOLINFO toolInfo = { 0 };
+		const char *text = "";
+
+		switch (pistate) {
+		case PAGE_STATE_UNKNOWN:
+			text = messages_get("PageInfoUnknown");
+			break;
+		case PAGE_STATE_INTERNAL:
+			text = messages_get("PageInfoInternal");
+			break;
+		case PAGE_STATE_LOCAL:
+			text = messages_get("PageInfoLocal");
+			break;
+		case PAGE_STATE_INSECURE:
+			text = messages_get("PageInfoInsecure");
+			break;
+		case PAGE_STATE_SECURE_OVERRIDE:
+			text = messages_get("PageInfoSecureOverride");
+			break;
+		case PAGE_STATE_SECURE_ISSUES:
+			text = messages_get("PageInfoSecureIssues");
+			break;
+		case PAGE_STATE_SECURE:
+			text = messages_get("PageInfoSecure");
+			break;
+		default:
+			break;
+		}
+
+		toolInfo.cbSize = sizeof(toolInfo);
+		toolInfo.hwnd = gw->urlbar;
+		toolInfo.uId = (UINT_PTR)hbutton;
+		toolInfo.lpszText = (char *)text;
+		SendMessage(gw->tooltip, TTM_UPDATETIPTEXT, 0, (LPARAM)&toolInfo);
+	}
 }
 
 
