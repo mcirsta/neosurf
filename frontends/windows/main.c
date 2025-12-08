@@ -253,6 +253,25 @@ static nserror set_defaults(struct nsoption_s *defaults)
 		nsoption_setnull_charp(hotlist_path, fname);
 	}
 
+	{
+		DWORD v = GetVersion();
+		DWORD maj = LOBYTE(LOWORD(v));
+		if (maj < 6) {
+			//use Windows XP supported fonts
+			nsoption_setnull_charp(font_sans, strdup("Tahoma"));
+			nsoption_setnull_charp(font_serif, strdup("Times New Roman"));
+			nsoption_setnull_charp(font_mono, strdup("Courier New"));
+			nsoption_setnull_charp(font_cursive, strdup("Comic Sans MS"));
+			nsoption_setnull_charp(font_fantasy, strdup("Tahoma"));
+		} else {
+			nsoption_setnull_charp(font_sans, strdup("Segoe UI"));
+			nsoption_setnull_charp(font_serif, strdup("Times New Roman"));
+			nsoption_setnull_charp(font_mono, strdup("Consolas"));
+			nsoption_setnull_charp(font_cursive, strdup("Segoe Script"));
+			nsoption_setnull_charp(font_fantasy, strdup("Segoe UI"));
+		}
+	}
+
 	return NSERROR_OK;
 }
 
