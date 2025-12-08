@@ -154,10 +154,10 @@ NSOPTION_STRING(cookie_jar, NULL)
 NSOPTION_STRING(homepage_url, NULL)
 
 /** search web from url bar */
-NSOPTION_BOOL(search_url_bar, false)
+NSOPTION_BOOL(search_url_bar, true)
 
 /** default web search provider */
-NSOPTION_STRING(search_web_provider, NULL)
+NSOPTION_STRING(search_web_provider, "DuckDuckGo")
 
 /** URL completion in url bar */
 NSOPTION_BOOL(url_suggestion, true)

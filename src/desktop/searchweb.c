@@ -33,6 +33,7 @@
 
 #include <neosurf/desktop/searchweb.h>
 #include <neosurf/desktop/gui_internal.h>
+#include "content/urldb.h"
 
 struct search_provider {
 	char *name; /**< readable name such as 'google', 'yahoo', etc */
@@ -328,8 +329,26 @@ search_web_omni(const char *term,
 		/* first check to see if the term is a url */
 		ret = nsurl_create(term, &url);
 		if (ret == NSERROR_OK) {
-			*url_out = url;
-			return NSERROR_OK;
+			bool valid = true;
+			enum nsurl_scheme_type st = nsurl_get_scheme_type(url);
+			if (st == NSURL_SCHEME_HTTP || st == NSURL_SCHEME_HTTPS) {
+				lwc_string *host_lwc = nsurl_get_component(url, NSURL_HOST);
+				if (host_lwc != NULL) {
+					const char *host = lwc_string_data(host_lwc);
+					valid = urldb_host_is_valid_domain(host);
+					lwc_string_unref(host_lwc);
+				} else {
+					valid = false;
+				}
+			} else if (!nsurl_has_component(url, NSURL_SCHEME)) {
+				valid = false;
+			}
+
+			if (valid) {
+				*url_out = url;
+				return NSERROR_OK;
+			}
+			nsurl_unref(url);
 		}
 
 		/* try with adding default scheme */
@@ -338,12 +357,22 @@ search_web_omni(const char *term,
 			return NSERROR_NOMEM;
 		}
 		sprintf(eterm, "https://%s", term);
-		ret = nsurl_create(eterm, &url);
-		free(eterm);
-		if (ret == NSERROR_OK) {
-			*url_out = url;
-			return NSERROR_OK;
-		}
+        ret = nsurl_create(eterm, &url);
+        free(eterm);
+        if (ret == NSERROR_OK) {
+            bool valid = true;
+            lwc_string *host_lwc = nsurl_get_component(url, NSURL_HOST);
+            if (host_lwc != NULL) {
+                const char *host = lwc_string_data(host_lwc);
+                valid = urldb_host_is_valid_domain(host);
+                lwc_string_unref(host_lwc);
+            }
+            if (valid) {
+                *url_out = url;
+                return NSERROR_OK;
+            }
+            nsurl_unref(url);
+        }
 
 		/* do not pass to search if user has disabled the option */
 		if (nsoption_bool(search_url_bar) == false) {
