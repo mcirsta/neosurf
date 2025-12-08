@@ -56,5 +56,7 @@ extern nserror utf8_to_font_encoding(const struct font_desc* font, const char *s
  */
 HFONT get_font(const struct plot_font_style *style);
 
+void win32_font_caches_flush(void);
+
 #endif /* NETSURF_WINDOWS_FONT_H */
 

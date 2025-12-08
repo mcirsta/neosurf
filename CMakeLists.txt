@@ -104,6 +104,12 @@ option(NEOSURF_INSTALL_NSGENBIND "Installs the nsgenbind utility with neosurf" O
 option(NEOSURF_INSTALL_GEN_PARSER "Installs the libcss gen_parser utility with neosurf" OFF)
 option(NEOSURF_BUILD_XXD "Build and install a complimentary xxd implementation" OFF)
 option(NEOSURF_WERROR "Treat warnings as errors" ON)
+option(NEOSURF_ENABLE_GPROF "Enable gprof profiling instrumentation (-pg)" OFF)
+option(NEOSURF_ENABLE_FINSTRUMENT "Enable function tracing (-finstrument-functions)" OFF)
+
+if(NEOSURF_ENABLE_GPROF AND NEOSURF_ENABLE_FINSTRUMENT)
+    message(FATAL_ERROR "Enable only one of NEOSURF_ENABLE_GPROF or NEOSURF_ENABLE_FINSTRUMENT")
+endif()
 
 if(NEOSURF_WERROR)
 	if(MSVC)
@@ -113,13 +119,21 @@ if(NEOSURF_WERROR)
 	endif()
 endif()
 
-if(CMAKE_BUILD_TYPE MATCHES Debug)
-	add_definitions(-DNETSURF_LOG_LEVEL=DEEPDEBUG)
+if(CMAKE_BUILD_TYPE MATCHES Debug AND NOT NEOSURF_ENABLE_GPROF)
+    add_definitions(-DNETSURF_LOG_LEVEL=DEEPDEBUG)
 
-	if((WIN32 AND CMAKE_C_COMPILER_ID MATCHES "Clang") OR UNIX)
-		add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
-		add_link_options(-fsanitize=address,undefined)
-	endif()
+    if((WIN32 AND CMAKE_C_COMPILER_ID MATCHES "Clang") OR UNIX)
+        add_compile_options(-fsanitize=address,undefined -fno-omit-frame-pointer)
+        add_link_options(-fsanitize=address,undefined)
+    endif()
+endif()
+
+if(NEOSURF_ENABLE_GPROF)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        message(STATUS "Gprof profiling enabled (-pg) for executables")
+    else()
+        message(FATAL_ERROR "NEOSURF_ENABLE_GPROF requires GCC or Clang compilers")
+    endif()
 endif()
 
 include_directories(

@@ -94,7 +94,12 @@ endif()
 
 aux_source_directory(${CMAKE_BINARY_DIR}/duktape DSRC)
 
-add_library(neosurf SHARED
+set(NEOSURF_LIB_TYPE SHARED)
+if(NEOSURF_ENABLE_GPROF OR NEOSURF_ENABLE_FINSTRUMENT)
+    set(NEOSURF_LIB_TYPE STATIC)
+endif()
+
+add_library(neosurf ${NEOSURF_LIB_TYPE}
 	content/content.c
 	content/content_factory.c
 	content/fetch.c
@@ -229,6 +234,18 @@ add_library(neosurf SHARED
 	${DSRC}
 )
 set_target_properties(neosurf PROPERTIES SOVERSION ${NEOSURF_ABI})
+
+if(NEOSURF_ENABLE_GPROF)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(neosurf PRIVATE -pg -g -fno-omit-frame-pointer)
+    endif()
+endif()
+
+if(NEOSURF_ENABLE_FINSTRUMENT)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(neosurf PRIVATE -finstrument-functions -g -fno-omit-frame-pointer)
+    endif()
+endif()
 
 if(NEOSURF_BUILD_XXD)
 	add_executable(xxd

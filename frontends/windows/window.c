@@ -2020,9 +2020,10 @@ win32_window_event(struct gui_window *gw, enum gui_window_event event)
 		win32_window_remove_caret(gw);
 		break;
 
-	case GW_EVENT_START_THROBBER:
-		win32_window_start_throbber(gw);
-		break;
+    case GW_EVENT_START_THROBBER:
+        win32_font_caches_flush();
+        win32_window_start_throbber(gw);
+        break;
 
 	case GW_EVENT_STOP_THROBBER:
 		win32_window_stop_throbber(gw);
@@ -2101,18 +2102,19 @@ bool nsws_window_go(HWND hwnd, const char *urltxt)
 		return false;
 	ret = nsurl_create(urltxt, &url);
 
-	if (ret != NSERROR_OK) {
-		win32_report_nserror(ret, 0);
-	} else {
-		browser_window_navigate(gw->bw,
-					url,
-					NULL,
-					BW_NAVIGATE_HISTORY,
-					NULL,
-					NULL,
-					NULL);
-		nsurl_unref(url);
-	}
+    if (ret != NSERROR_OK) {
+        win32_report_nserror(ret, 0);
+    } else {
+        win32_font_caches_flush();
+        browser_window_navigate(gw->bw,
+                                url,
+                                NULL,
+                                BW_NAVIGATE_HISTORY,
+                                NULL,
+                                NULL,
+                                NULL);
+        nsurl_unref(url);
+    }
 
 	return true;
 }
