@@ -3648,6 +3648,40 @@ bool urldb_get_hsts_enabled(struct nsurl *url)
 	return false;
 }
 
+bool urldb_host_is_ip_address(const char *host)
+{
+    return urldb__host_is_ip_address(host);
+}
+
+bool urldb_host_is_valid_domain(const char *host)
+{
+    if (host == NULL) {
+        return false;
+    }
+
+    if (urldb__host_is_ip_address(host)) {
+        return true;
+    }
+
+    if (strcasecmp(host, "localhost") == 0) {
+        return true;
+    }
+
+    if (strlen(host) == 0) {
+        return false;
+    }
+
+    if (strchr(host, '.') == NULL) {
+        return false;
+    }
+
+    if (psl_ctx && psl_registrable_domain(psl_ctx, host) != NULL) {
+        return true;
+    }
+
+    return false;
+}
+
 
 /* exported interface documented in netsurf/url_db.h */
 void

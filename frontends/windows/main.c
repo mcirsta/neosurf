@@ -40,6 +40,7 @@
 #include "neosurf/misc.h"
 #include "neosurf/neosurf.h"
 #include "neosurf/desktop/hotlist.h"
+#include "neosurf/desktop/searchweb.h"
 
 #include "windows/findfile.h"
 #include "windows/file.h"
@@ -454,6 +455,17 @@ WinMain(HINSTANCE hInstance, HINSTANCE hLastInstance, LPSTR lpcli, int ncmd)
 		NSLOG(neosurf, INFO, "NeoSurf failed to initialise");
 		return 1;
 	}
+
+	{
+		char *resource_filename = filepath_find(respaths, "SearchEngines");
+		search_web_init(resource_filename);
+		if (resource_filename != NULL) {
+			NSLOG(neosurf, INFO, "Using '%s' as Search Engines file", resource_filename);
+			free(resource_filename);
+		}
+	}
+
+	search_web_select_provider(nsoption_charp(search_web_provider));
 
 	browser_set_dpi(get_screen_dpi());
 

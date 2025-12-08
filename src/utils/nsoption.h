@@ -56,7 +56,7 @@
 #define NSOPTION_UINT(NAME, DEFAULT)
 #define NSOPTION_COLOUR(NAME, DEFAULT)
 
-#include "desktop/options.h"
+#include <neosurf/desktop/options.h>
 #if defined(riscos)
 #include "riscos/options.h"
 #elif defined(nsgtk)
@@ -131,7 +131,7 @@ struct nsoption_s {
 #define NSOPTION_COLOUR(NAME, DEFAULT) NSOPTION_##NAME,
 
 enum nsoption_e {
-#include "desktop/options.h"
+#include <neosurf/desktop/options.h>
 #if defined(riscos)
 #include "riscos/options.h"
 #elif defined(nsgtk)

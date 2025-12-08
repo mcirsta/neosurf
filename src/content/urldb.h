@@ -176,4 +176,7 @@ bool urldb_set_hsts_policy(struct nsurl *url, const char *header);
  */
 bool urldb_get_hsts_enabled(struct nsurl *url);
 
+bool urldb_host_is_ip_address(const char *host);
+bool urldb_host_is_valid_domain(const char *host);
+
 #endif
