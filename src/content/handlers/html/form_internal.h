@@ -27,6 +27,7 @@
 #include <stdbool.h>
 
 #include "netsurf/form.h"
+#include "utils/hashmap.h"
 
 struct box;
 struct form_control;
@@ -135,6 +136,9 @@ struct form {
 	char *document_charset;		/**< Charset of document containing form */
 	struct form_control *controls;	/**< Linked list of controls. */
 	struct form_control *last_control;	/**< Last control in list. */
+
+	/** Fast index from DOM node to form_control */
+	hashmap_t *control_index;
 
 	struct form *prev;		/**< Previous form in doc. */
 };

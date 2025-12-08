@@ -63,9 +63,25 @@ add_executable(neosurf-windows WIN32
 )
 
 add_dependencies(neosurf-windows windows_messages)
-target_include_directories(neosurf-windows PRIVATE ${GENERATED_MESSAGES_DIR})
+target_include_directories(neosurf-windows PRIVATE ${GENERATED_MESSAGES_DIR} ${CMAKE_SOURCE_DIR}/src)
 
 target_link_libraries(neosurf-windows neosurf m ${NEOSURF_COMMON_LIBS} ws2_32 comctl32 gdi32 user32 kernel32 msimg32 wininet shlwapi crypt32)
+
+if(NEOSURF_ENABLE_GPROF)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_compile_options(neosurf-windows PRIVATE -pg -g -fno-omit-frame-pointer)
+        target_link_options(neosurf-windows PRIVATE -pg)
+    endif()
+endif()
+
+if(NEOSURF_ENABLE_FINSTRUMENT)
+    if(CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+        target_sources(neosurf-windows PRIVATE profiler.c)
+        target_compile_options(neosurf-windows PRIVATE -finstrument-functions -g -fno-omit-frame-pointer)
+    else()
+        message(FATAL_ERROR "NEOSURF_ENABLE_FINSTRUMENT requires GCC or Clang")
+    endif()
+endif()
 
 if(CMAKE_BUILD_TYPE MATCHES Debug)
 	set(CMAKE_INSTALL_DO_STRIP OFF)

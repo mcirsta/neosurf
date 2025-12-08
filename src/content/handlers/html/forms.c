@@ -544,18 +544,30 @@ invent_fake_gadget(dom_node *node)
 struct form_control *
 html_forms_get_control_for_node(struct form *forms, dom_node *node)
 {
-	struct form *f;
-	struct form_control *ctl = NULL;
-	dom_exception err;
-	dom_string *ds_name = NULL;
+    struct form *f;
+    struct form_control *ctl = NULL;
+    dom_exception err;
+    dom_string *ds_name = NULL;
 
-	/* Step one, see if we already have a control */
-	for (f = forms; f != NULL; f = f->prev) {
-		for (ctl = f->controls; ctl != NULL; ctl = ctl->next) {
-			if (ctl->node == node)
-				return ctl;
-		}
-	}
+    /* Step one, see if we already have a control */
+    for (f = forms; f != NULL; f = f->prev) {
+        if (f->control_index != NULL) {
+            void **slot = hashmap_lookup(f->control_index, node);
+            if (slot != NULL) {
+                struct form_control *mapped = *(struct form_control **)slot;
+                if (mapped != NULL) {
+                    return mapped;
+                }
+                /* fall back to list scan if stale */
+            }
+        }
+        {
+            for (ctl = f->controls; ctl != NULL; ctl = ctl->next) {
+                if (ctl->node == node)
+                    return ctl;
+            }
+        }
+    }
 
 	/* Step two, extract the node's name so we can construct a gadget. */
 	err = dom_element_get_tag_name(node, &ds_name);

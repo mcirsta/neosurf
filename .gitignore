@@ -32,4 +32,10 @@ install
 install
 ns.log
 neosurf-logs
+build-gprof
+install-gprof
+build-finstrument
+install-finstrument
+capture.csv
+
 

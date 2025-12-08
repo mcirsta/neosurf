@@ -28,6 +28,7 @@
 
 #include <assert.h>
 #include <limits.h>
+#include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
@@ -58,6 +59,7 @@
 #include <neosurf/content/handlers/html/box_inspect.h>
 #include "content/handlers/html/font.h"
 #include <neosurf/content/handlers/html/form_internal.h>
+#include "utils/hashmap.h"
 
 #define MAX_SELECT_HEIGHT 210
 #define SELECT_LINE_SPACING 0.2
@@ -1431,11 +1433,18 @@ static void form_select_menu_clicked(struct form_control *control, int x, int y)
 /* exported interface documented in html/form_internal.h */
 void form_add_control(struct form *form, struct form_control *control)
 {
-	if (form == NULL) {
-		return;
-	}
+    if (form == NULL) {
+        return;
+    }
 
-	control->form = form;
+    control->form = form;
+
+    if (form->control_index != NULL) {
+        void **slot = hashmap_insert(form->control_index, control->node);
+        if (slot != NULL) {
+            *(struct form_control **)slot = control;
+        }
+    }
 
 	if (form->controls != NULL) {
 		assert(form->last_control);
@@ -1512,6 +1521,14 @@ void form_free_control(struct form_control *control)
 					control->form->controls =
 						control->form->last_control = NULL;
 				break;
+			}
+		}
+
+		/* mark index entry as removed */
+		if (control->form->control_index != NULL) {
+			void **slot = hashmap_insert(control->form->control_index, control->node);
+			if (slot != NULL) {
+				*(struct form_control **)slot = NULL;
 			}
 		}
 	}
@@ -2270,6 +2287,14 @@ out:
 }
 
 
+static void *map_key_clone(void *key) { void **p = malloc(sizeof(void*)); if (p != NULL) *p = key; return p; }
+static void map_key_destroy(void *key) { free(key); }
+static uint32_t map_key_hash(void *key) { uintptr_t v = (uintptr_t)key; return (uint32_t)((v >> 4) ^ (v >> 32) ^ v); }
+static bool map_key_eq(void *a, void *b) { return *(void**)a == *(void**)b; }
+static void *map_value_alloc(void *key) { return malloc(sizeof(void*)); }
+static void map_value_destroy(void *value) { free(value); }
+static hashmap_parameters_t form_node_map_params = { map_key_clone, map_key_hash, map_key_eq, map_key_destroy, map_value_alloc, map_value_destroy };
+
 /* exported interface documented in html/form_internal.h */
 struct form *
 form_new(void *node,
@@ -2320,6 +2345,8 @@ form_new(void *node,
 
 	form->node = node;
 
+	form->control_index = hashmap_create(&form_node_map_params);
+
 	return form;
 }
 
@@ -2327,7 +2354,7 @@ form_new(void *node,
 /* exported interface documented in html/form_internal.h */
 void form_free(struct form *form)
 {
-	struct form_control *c, *d;
+    struct form_control *c, *d;
 
 	for (c = form->controls; c != NULL; c = d) {
 		d = c->next;
@@ -2338,7 +2365,12 @@ void form_free(struct form *form)
 	free(form->action);
 	free(form->target);
 	free(form->accept_charsets);
-	free(form->document_charset);
+    free(form->document_charset);
+
+    if (form->control_index != NULL) {
+        hashmap_destroy(form->control_index);
+        form->control_index = NULL;
+    }
 
 	free(form);
 }

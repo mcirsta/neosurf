@@ -307,26 +307,28 @@ plot_bitmap(struct bitmap *bitmap, int x, int y, int width, int height)
 		    (bitmap->height == height)) {
 			/* unscaled */
 			bltres = SetDIBitsToDevice(plot_hdc,
-						   x, y,
-						   width, height,
-						   0, 0,
-						   0,
-						   height,
-						   bitmap->pixdata,
-						   (BITMAPINFO *)bitmap->pbmi,
-						   DIB_RGB_COLORS);
+					   x, y,
+					   width, height,
+					   0, 0,
+					   0,
+					   height,
+					   bitmap->pixdata,
+					   (BITMAPINFO *)bitmap->pbmi,
+					   DIB_RGB_COLORS);
 		} else {
-			/* scaled */
-			SetStretchBltMode(plot_hdc, COLORONCOLOR);
-			bltres = StretchDIBits(plot_hdc,
-					       x, y,
-					       width, height,
-					       0, 0,
-					       bitmap->width, bitmap->height,
-					       bitmap->pixdata,
-					       (BITMAPINFO *)bitmap->pbmi,
-					       DIB_RGB_COLORS,
-					       SRCCOPY);
+			if (win32_bitmap_ensure_scaled(bitmap, width, height) != NSERROR_OK) {
+				DeleteObject(clipregion);
+				return NSERROR_INVALID;
+			}
+			bltres = SetDIBitsToDevice(plot_hdc,
+					   x, y,
+					   width, height,
+					   0, 0,
+					   0,
+					   height,
+					   bitmap->scaled_pixdata,
+					   (BITMAPINFO *)bitmap->scaled_pbmi,
+					   DIB_RGB_COLORS);
 
 
 		}

@@ -36,6 +36,7 @@
 
 #include "windows/plot.h"
 #include "windows/bitmap.h"
+#include "neosurf/utils/errors.h"
 
 /**
  * Create a bitmap.
@@ -150,16 +151,17 @@ static size_t bitmap_get_rowstride(void *bitmap)
  */
 void win32_bitmap_destroy(void *bitmap)
 {
-	struct bitmap *bm = bitmap;
+    struct bitmap *bm = bitmap;
 
-	if (bitmap == NULL) {
-		NSLOG(neosurf, INFO, "NULL bitmap!");
-		return;
-	}
+    if (bitmap == NULL) {
+        NSLOG(neosurf, INFO, "NULL bitmap!");
+        return;
+    }
 
-	DeleteObject(bm->windib);
-	free(bm->pbmi);
-	free(bm);
+    win32_bitmap_flush_scaled(bm);
+    DeleteObject(bm->windib);
+    free(bm->pbmi);
+    free(bm);
 }
 
 
@@ -169,6 +171,10 @@ void win32_bitmap_destroy(void *bitmap)
  * \param  bitmap  a bitmap, as returned by bitmap_create()
  */
 static void bitmap_modified(void *bitmap) {
+    if (bitmap == NULL) {
+        return;
+    }
+    win32_bitmap_flush_scaled(bitmap);
 }
 
 /**
@@ -262,6 +268,100 @@ struct bitmap *bitmap_scale(struct bitmap *prescale, int width, int height)
 	}
 	return ret;
 
+}
+
+
+nserror win32_bitmap_ensure_scaled(struct bitmap *bm, int width, int height)
+{
+    BITMAPV5HEADER *spbmi;
+    HBITMAP swindib;
+    uint8_t *spix;
+    HDC sdc;
+    int bltres;
+
+    if (bm == NULL) {
+        return NSERROR_INVALID;
+    }
+
+    if (bm->scaled_windib != NULL && bm->scaled_pbmi != NULL &&
+        bm->scaled_pixdata != NULL && bm->scaled_width == width && bm->scaled_height == height) {
+        return NSERROR_OK;
+    }
+
+    win32_bitmap_flush_scaled(bm);
+
+    spbmi = calloc(1, sizeof(BITMAPV5HEADER));
+    if (spbmi == NULL) {
+        return NSERROR_NOMEM;
+    }
+    spbmi->bV5Size = sizeof(BITMAPV5HEADER);
+    spbmi->bV5Width = width;
+    spbmi->bV5Height = -height;
+    spbmi->bV5Planes = 1;
+    spbmi->bV5BitCount = 32;
+    spbmi->bV5Compression = BI_BITFIELDS;
+    spbmi->bV5RedMask = 0xff;
+    spbmi->bV5GreenMask = 0xff00;
+    spbmi->bV5BlueMask = 0xff0000;
+    spbmi->bV5AlphaMask = 0xff000000;
+
+    swindib = CreateDIBSection(NULL, (BITMAPINFO *)spbmi, DIB_RGB_COLORS, (void **)&spix, NULL, 0);
+    if (swindib == NULL) {
+        free(spbmi);
+        return NSERROR_INVALID;
+    }
+
+    sdc = CreateCompatibleDC(NULL);
+    if (sdc == NULL) {
+        DeleteObject(swindib);
+        free(spbmi);
+        return NSERROR_INVALID;
+    }
+    SelectObject(sdc, swindib);
+    SetStretchBltMode(sdc, COLORONCOLOR);
+    bltres = StretchDIBits(sdc,
+                           0, 0,
+                           width, height,
+                           0, 0,
+                           bm->width, bm->height,
+                           bm->pixdata,
+                           (BITMAPINFO *)bm->pbmi,
+                           DIB_RGB_COLORS,
+                           SRCCOPY);
+
+    DeleteDC(sdc);
+
+    if (bltres == 0) {
+        DeleteObject(swindib);
+        free(spbmi);
+        return NSERROR_INVALID;
+    }
+
+    bm->scaled_windib = swindib;
+    bm->scaled_pbmi = spbmi;
+    bm->scaled_pixdata = spix;
+    bm->scaled_width = width;
+    bm->scaled_height = height;
+
+    return NSERROR_OK;
+}
+
+void win32_bitmap_flush_scaled(struct bitmap *bm)
+{
+    if (bm == NULL) {
+        return;
+    }
+    if (bm->scaled_windib != NULL) {
+        DeleteObject(bm->scaled_windib);
+        bm->scaled_windib = NULL;
+    }
+    if (bm->scaled_pbmi != NULL) {
+        free(bm->scaled_pbmi);
+        bm->scaled_pbmi = NULL;
+    }
+    bm->scaled_pixdata = NULL;
+    bm->scaled_width = 0;
+    bm->scaled_height = 0;
 }
 
 
