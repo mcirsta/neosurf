@@ -812,22 +812,76 @@ static bool layout_flex__place_line_items_main(
 	size_t item_count = line->first + line->count;
 	int extra_remainder = 0;
 	int extra = 0;
+	int jc_gap_pre = 0;
+	int jc_gap_between = 0;
+	int jc_gap_between_rem = 0;
+	int jc_gap_pre_extra = 0;
 
 	if (ctx->main_reversed) {
 		main_pos = lh__box_size_main(ctx->horizontal, ctx->flex) -
 				main_pos;
 	}
 
-	if (ctx->available_main != AUTO &&
-	    ctx->available_main != UNKNOWN_WIDTH &&
-	    ctx->available_main > line->used_main_size) {
-		if (line->main_auto_margin_count > 0) {
-			extra = ctx->available_main - line->used_main_size;
+	    if (ctx->available_main != AUTO &&
+	        ctx->available_main != UNKNOWN_WIDTH &&
+	        ctx->available_main > line->used_main_size) {
+	        if (line->main_auto_margin_count > 0) {
+	            extra = ctx->available_main - line->used_main_size;
 
-			extra_remainder = extra % line->main_auto_margin_count;
-			extra /= line->main_auto_margin_count;
-		}
-	}
+	            extra_remainder = extra % line->main_auto_margin_count;
+	            extra /= line->main_auto_margin_count;
+	        } else {
+	            int free_main = ctx->available_main - line->used_main_size;
+	            uint8_t jc = css_computed_justify_content(ctx->flex->style);
+	            switch (jc) {
+	            default:
+	                break;
+	            case CSS_JUSTIFY_CONTENT_FLEX_END:
+	                jc_gap_pre = free_main;
+	                break;
+	            case CSS_JUSTIFY_CONTENT_CENTER:
+	                jc_gap_pre = free_main / 2;
+	                jc_gap_pre_extra = free_main - (jc_gap_pre * 2);
+	                break;
+	            case CSS_JUSTIFY_CONTENT_SPACE_BETWEEN:
+	                if (line->count > 1) {
+	                    int gaps = (int)(line->count - 1);
+	                    jc_gap_between = free_main / gaps;
+	                    jc_gap_between_rem = free_main % gaps;
+	                }
+	                break;
+	            case CSS_JUSTIFY_CONTENT_SPACE_AROUND:
+	                if (line->count > 0) {
+	                    int denom = (int)line->count;
+	                    int base_between = free_main / denom;
+	                    int remainder = free_main % denom;
+	                    jc_gap_between = base_between;
+	                    jc_gap_pre = base_between / 2;
+	                    jc_gap_pre_extra = base_between % 2;
+	                    jc_gap_between_rem = remainder;
+	                }
+	                break;
+	            case CSS_JUSTIFY_CONTENT_SPACE_EVENLY:
+	                {
+	                    int gaps = (int)(line->count + 1);
+	                    jc_gap_between = free_main / gaps;
+	                    jc_gap_pre = jc_gap_between;
+	                    jc_gap_between_rem = free_main % gaps;
+	                    if (jc_gap_between_rem > 0) {
+	                        jc_gap_pre_extra = 1;
+	                        jc_gap_between_rem--;
+	                    }
+	                }
+	                break;
+	            }
+	        }
+	    }
+
+	    if (!ctx->main_reversed) {
+	        main_pos += jc_gap_pre + jc_gap_pre_extra;
+	    } else {
+	        main_pos -= jc_gap_pre + jc_gap_pre_extra;
+	    }
 
 	for (size_t i = line->first; i < item_count; i++) {
 		enum box_side main_end = ctx->horizontal ? RIGHT : BOTTOM;
@@ -869,14 +923,37 @@ static bool layout_flex__place_line_items_main(
 		*box_pos_main = main_pos + lh__non_auto_margin(b, main_start) +
 				extra_pre + b->border[main_start].width;
 
-		if (!lh__box_is_absolute(b)) {
-			int cross_size;
-			int box_size_cross = lh__box_size_cross(
-					ctx->horizontal, b);
+        if (!lh__box_is_absolute(b)) {
+            int cross_size;
+            int box_size_cross = lh__box_size_cross(
+                    ctx->horizontal, b);
 
-			main_pos += post_multiplier *
-					(extra_total + box_size_main +
-					 lh__delta_outer_main(ctx->flex, b));
+	            main_pos += post_multiplier *
+	                    (extra_total + box_size_main +
+	                        lh__delta_outer_main(ctx->flex, b));
+
+	            if (jc_gap_between > 0 || jc_gap_between_rem > 0) {
+	                int extra_between_for_item = 0;
+	                if (jc_gap_between_rem > 0) {
+	                    int gap_idx = (int)(i - line->first);
+	                    int gaps = (int)(line->count - 1);
+	                    if (gaps > 0) {
+	                        if (!ctx->main_reversed) {
+	                            if (gap_idx < jc_gap_between_rem && gap_idx < gaps) {
+	                                extra_between_for_item = 1;
+	                            }
+	                        } else {
+	                            int rev_idx = gaps - 1 - gap_idx;
+	                            if (rev_idx < jc_gap_between_rem && gap_idx < gaps) {
+	                                extra_between_for_item = 1;
+	                            }
+	                        }
+	                    }
+	                }
+
+	                main_pos += (!ctx->main_reversed ? 1 : -1) *
+	                        (jc_gap_between + extra_between_for_item);
+	            }
 
 			cross_size = box_size_cross + lh__delta_outer_cross(
 					ctx->flex, b);
