@@ -2554,13 +2554,13 @@ layout_float_find_dimensions(
 		width -= scrollbar_width_y;
 	}
 
-	box->width = width;
-	box->height = height;
+box->width = width;
+box->height = height;
 
-	if (margin[TOP] == AUTO)
-		margin[TOP] = 0;
-	if (margin[BOTTOM] == AUTO)
-		margin[BOTTOM] = 0;
+if (margin[TOP] == AUTO)
+    margin[TOP] = 0;
+if (margin[BOTTOM] == AUTO)
+    margin[BOTTOM] = 0;
 }
 
 
@@ -2671,8 +2671,8 @@ static int line_height(
 
 	lhtype = css_computed_line_height(style, &lhvalue, &lhunit);
 	if (lhtype == CSS_LINE_HEIGHT_NORMAL) {
-		/* Normal => use a constant of 1.3 * font-size */
-		lhvalue = FLTTOFIX(1.3);
+		/* Normal => use a constant of 1.2 * font-size */
+		lhvalue = FLTTOFIX(1.2);
 		lhtype = CSS_LINE_HEIGHT_NUMBER;
 	}
 
@@ -4801,6 +4801,10 @@ layout_absolute(struct box *box,
 	}
 	box->width = width;
 	box->height = height;
+
+	NSLOG(layout, INFO,
+	      "abs box %p: width %i parent %p parent.width %i",
+	      box, box->width, containing_block, containing_block->width);
 
 	if (box->type == BOX_BLOCK || box->type == BOX_INLINE_BLOCK ||
 			box->object || box->flags & IFRAME) {
