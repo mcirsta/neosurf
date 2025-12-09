@@ -55,6 +55,7 @@
 #include "desktop/scrollbar.h"
 #include <neosurf/desktop/textarea.h>
 #include <neosurf/desktop/gui_internal.h>
+#include "desktop/browser_private.h"
 
 #include <neosurf/content/handlers/html/box.h>
 #include <neosurf/content/handlers/html/box_inspect.h>
@@ -1160,10 +1161,11 @@ static bool html_redraw_text_box(const html_content *html, struct box *box,
 }
 
 bool html_redraw_box(const html_content *html, struct box *box,
-		int x_parent, int y_parent,
-		const struct rect *clip, float scale,
-		colour current_background_color,
-		const struct redraw_context *ctx);
+        int x_parent, int y_parent,
+        const struct rect *clip, float scale,
+        colour current_background_color,
+        const struct content_redraw_data *data,
+        const struct redraw_context *ctx);
 
 /**
  * Draw the various children of a box.
@@ -1180,34 +1182,37 @@ bool html_redraw_box(const html_content *html, struct box *box,
  */
 
 static bool html_redraw_box_children(const html_content *html, struct box *box,
-		int x_parent, int y_parent,
-		const struct rect *clip, float scale,
-		colour current_background_color,
-		const struct redraw_context *ctx)
+        int x_parent, int y_parent,
+        const struct rect *clip, float scale,
+        colour current_background_color,
+        const struct content_redraw_data *data,
+        const struct redraw_context *ctx)
 {
 	struct box *c;
 
 	for (c = box->children; c; c = c->next) {
 
 		if (c->type != BOX_FLOAT_LEFT && c->type != BOX_FLOAT_RIGHT)
-			if (!html_redraw_box(html, c,
-					x_parent + box->x -
-					scrollbar_get_offset(box->scroll_x),
-					y_parent + box->y -
-					scrollbar_get_offset(box->scroll_y),
-					clip, scale, current_background_color,
-					ctx))
-				return false;
+            if (!html_redraw_box(html, c,
+                    x_parent + box->x -
+                    scrollbar_get_offset(box->scroll_x),
+                    y_parent + box->y -
+                    scrollbar_get_offset(box->scroll_y),
+                    clip, scale, current_background_color,
+                    data,
+                    ctx))
+                return false;
 	}
 	for (c = box->float_children; c; c = c->next_float)
-		if (!html_redraw_box(html, c,
-				x_parent + box->x -
-				scrollbar_get_offset(box->scroll_x),
-				y_parent + box->y -
-				scrollbar_get_offset(box->scroll_y),
-				clip, scale, current_background_color,
-				ctx))
-			return false;
+        if (!html_redraw_box(html, c,
+                x_parent + box->x -
+                scrollbar_get_offset(box->scroll_x),
+                y_parent + box->y -
+                scrollbar_get_offset(box->scroll_y),
+                clip, scale, current_background_color,
+                data,
+                ctx))
+            return false;
 
 	return true;
 }
@@ -1229,10 +1234,11 @@ static bool html_redraw_box_children(const html_content *html, struct box *box,
  */
 
 bool html_redraw_box(const html_content *html, struct box *box,
-		int x_parent, int y_parent,
-		const struct rect *clip, const float scale,
-		colour current_background_color,
-		const struct redraw_context *ctx)
+        int x_parent, int y_parent,
+        const struct rect *clip, const float scale,
+        colour current_background_color,
+        const struct content_redraw_data *data,
+        const struct redraw_context *ctx)
 {
 	const struct plotter_table *plot = ctx->plot;
 	int x, y;
@@ -1256,6 +1262,27 @@ bool html_redraw_box(const html_content *html, struct box *box,
 	if (box->style != NULL) {
 		overflow_x = css_computed_overflow_x(box->style);
 		overflow_y = css_computed_overflow_y(box->style);
+	}
+
+	{
+		const char *tag = "";
+		const char *cls = "";
+		dom_string *name = NULL;
+		dom_string *class_attr = NULL;
+		if (box->node != NULL) {
+			if (dom_node_get_node_name(box->node, &name) == DOM_NO_ERR && name != NULL) {
+				tag = dom_string_data(name);
+			}
+			if (dom_element_get_attribute(box->node, corestring_dom_class, &class_attr) == DOM_NO_ERR && class_attr != NULL) {
+				cls = dom_string_data(class_attr);
+			}
+		}
+		bool is_target = (cls != NULL && (strstr(cls, "submenu-wrapper") || strstr(cls, "hn-container") || strstr(cls, "sub-menu")));
+		if (is_target) {
+			NSLOG(layout, INFO, "redraw pre: tag %s class %s box %p x %i width %i overflow_x %u overflow_y %u parent %p parent.width %i", tag, cls, box, x_parent + box->x, box->width, (unsigned)overflow_x, (unsigned)overflow_y, box->parent, box->parent ? box->parent->width : -1);
+		}
+		if (class_attr != NULL) dom_string_unref(class_attr);
+		if (name != NULL) dom_string_unref(name);
 	}
 
 	/* avoid trivial FP maths */
@@ -1295,13 +1322,18 @@ bool html_redraw_box(const html_content *html, struct box *box,
 	}
 
 	/* calculate rectangle covering this box and descendants */
-	if (box->style && overflow_x != CSS_OVERFLOW_VISIBLE &&
+	if (box->style && box->parent != NULL &&
+		css_computed_position(box->style) != CSS_POSITION_STATIC) {
+		/* positioned boxes: clip to their own box size */
+		r.x0 = x - border_left;
+		r.x1 = x + padding_width + border_right;
+	} else if (box->style && overflow_x != CSS_OVERFLOW_VISIBLE &&
 			box->parent != NULL) {
-		/* box contents clipped to box size */
+		/* non-visible overflow: clip to box size */
 		r.x0 = x - border_left;
 		r.x1 = x + padding_width + border_right;
 	} else {
-		/* box contents can hang out of the box; use descendant box */
+		/* visible overflow and not positioned: use descendant extents */
 		if (scale == 1.0) {
 			r.x0 = x + box->descendant_x0;
 			r.x1 = x + box->descendant_x1 + 1;
@@ -1310,7 +1342,6 @@ bool html_redraw_box(const html_content *html, struct box *box,
 			r.x1 = x + box->descendant_x1 * scale + 1;
 		}
 		if (!box->parent) {
-			/* root element */
 			int margin_left, margin_right;
 			if (scale == 1.0) {
 				margin_left = box->margin[LEFT];
@@ -1329,13 +1360,18 @@ bool html_redraw_box(const html_content *html, struct box *box,
 	}
 
 	/* calculate rectangle covering this box and descendants */
-	if (box->style && overflow_y != CSS_OVERFLOW_VISIBLE &&
+	if (box->style && box->parent != NULL &&
+		css_computed_position(box->style) != CSS_POSITION_STATIC) {
+		/* positioned boxes: clip to their own box size */
+		r.y0 = y - border_top;
+		r.y1 = y + padding_height + border_bottom;
+	} else if (box->style && overflow_y != CSS_OVERFLOW_VISIBLE &&
 			box->parent != NULL) {
-		/* box contents clipped to box size */
+		/* non-visible overflow: clip to box size */
 		r.y0 = y - border_top;
 		r.y1 = y + padding_height + border_bottom;
 	} else {
-		/* box contents can hang out of the box; use descendant box */
+		/* visible overflow and not positioned: use descendant extents */
 		if (scale == 1.0) {
 			r.y0 = y + box->descendant_y0;
 			r.y1 = y + box->descendant_y1 + 1;
@@ -1344,7 +1380,6 @@ bool html_redraw_box(const html_content *html, struct box *box,
 			r.y1 = y + box->descendant_y1 * scale + 1;
 		}
 		if (!box->parent) {
-			/* root element */
 			int margin_top, margin_bottom;
 			if (scale == 1.0) {
 				margin_top = box->margin[TOP];
@@ -1391,9 +1426,9 @@ bool html_redraw_box(const html_content *html, struct box *box,
 		if ((ctx->plot->group_start) &&
 		    (ctx->plot->group_start(ctx, "hidden box") != NSERROR_OK))
 			return false;
-		if (!html_redraw_box_children(html, box, x_parent, y_parent,
-				&r, scale, current_background_color, ctx))
-			return false;
+        if (!html_redraw_box_children(html, box, x_parent, y_parent,
+                &r, scale, current_background_color, data, ctx))
+            return false;
 		return ((!ctx->plot->group_end) || (ctx->plot->group_end(ctx) == NSERROR_OK));
 	}
 
@@ -1482,6 +1517,46 @@ bool html_redraw_box(const html_content *html, struct box *box,
 			(bg_box->gadget->type == GADGET_TEXTAREA ||
 			bg_box->gadget->type == GADGET_TEXTBOX ||
 			bg_box->gadget->type == GADGET_PASSWORD)))) {
+		const char *tag = "";
+		const char *cls = "";
+		dom_string *name = NULL;
+		dom_string *class_attr = NULL;
+		if (box->node != NULL) {
+			if (dom_node_get_node_name(box->node, &name) == DOM_NO_ERR && name != NULL) {
+				tag = dom_string_data(name);
+			}
+			if (dom_element_get_attribute(box->node, corestring_dom_class, &class_attr) == DOM_NO_ERR && class_attr != NULL) {
+				cls = dom_string_data(class_attr);
+			}
+		}
+        uint8_t pos_enum = (box->style != NULL) ? css_computed_position(box->style) : CSS_POSITION_STATIC;
+        uint8_t bg_attach = (box->style != NULL) ? css_computed_background_attachment(box->style) : CSS_BACKGROUND_ATTACHMENT_SCROLL;
+        bool expand_viewport_bg = false;
+        if (data != NULL) {
+            int vp_x = data->viewport_x;
+            int root_w = data->root_width;
+            int b_left = x - border_left;
+            int b_right = x + padding_width + border_right;
+            int target_left = (int)(-vp_x * scale);
+            int target_right = (int)((-vp_x + root_w) * scale);
+            int tol = 8;
+            if (pos_enum == CSS_POSITION_FIXED || bg_attach == CSS_BACKGROUND_ATTACHMENT_FIXED) {
+                expand_viewport_bg = true;
+            } else {
+                bool left_match = (b_left >= target_left - tol) && (b_left <= target_left + tol);
+                bool right_match = (b_right >= target_right - tol) && (b_right <= target_right + tol);
+                int root_w_scaled = (int)(root_w * scale);
+                int bg_extent = padding_width + border_left + border_right;
+                bool abs_full_width = (pos_enum == CSS_POSITION_ABSOLUTE) && (bg_extent >= root_w_scaled - tol);
+                expand_viewport_bg = left_match && right_match;
+                if (!expand_viewport_bg && abs_full_width) {
+                    expand_viewport_bg = true;
+                }
+            }
+        }
+        if (expand_viewport_bg) {
+            NSLOG(layout, INFO, "bg draw pre: tag %s class %s box %p pad_w %i pad_h %i", tag, cls, box, padding_width, padding_height);
+        }
 		/* find intersection of clip box and border edge */
 		struct rect p;
 		p.x0 = x - border_left < r.x0 ? r.x0 : x - border_left;
@@ -1490,6 +1565,14 @@ bool html_redraw_box(const html_content *html, struct box *box,
 				x + padding_width + border_right : r.x1;
 		p.y1 = y + padding_height + border_bottom < r.y1 ?
 				y + padding_height + border_bottom : r.y1;
+        if (expand_viewport_bg && ctx->interactive) {
+            int vp_x = (data != NULL) ? data->viewport_x : 0;
+            int root_w = (data != NULL) ? data->root_width : 0;
+            p.x0 = (int)(-vp_x * scale);
+            p.x1 = (int)((-vp_x + root_w) * scale);
+            if (ctx->plot->clip(ctx, &p) != NSERROR_OK)
+                return false;
+        }
 		if (!box->parent) {
 			/* Root element, special case:
 			 * background covers margins too */
@@ -1513,10 +1596,15 @@ bool html_redraw_box(const html_content *html, struct box *box,
 		/* valid clipping rectangles only */
 		if ((p.x0 < p.x1) && (p.y0 < p.y1)) {
 			/* plot background */
-			if (!html_redraw_background(x, y, box, scale, &p,
-					&current_background_color, bg_box,
-					&html->unit_len_ctx, ctx))
-				return false;
+		if (!html_redraw_background(x, y, box, scale, &p,
+				&current_background_color, bg_box,
+				&html->unit_len_ctx, ctx))
+			return false;
+        if (expand_viewport_bg) {
+            NSLOG(layout, INFO, "bg draw post: tag %s class %s box %p rect x0 %i x1 %i", tag, cls, box, p.x0, p.x1);
+        }
+		if (class_attr != NULL) dom_string_unref(class_attr);
+		if (name != NULL) dom_string_unref(name);
 			/* restore previous graphics window */
 			if (ctx->plot->clip(ctx, &r) != NSERROR_OK)
 				return false;
@@ -1859,9 +1947,34 @@ bool html_redraw_box(const html_content *html, struct box *box,
 			return false;
 
 	} else {
-		if (!html_redraw_box_children(html, box, x_parent, y_parent, &r,
-				scale, current_background_color, ctx))
-			return false;
+		const struct rect *child_clip_ptr = &r;
+		if (overflow_x == CSS_OVERFLOW_VISIBLE &&
+		    overflow_y == CSS_OVERFLOW_VISIBLE) {
+			child_clip_ptr = clip;
+		}
+		{
+			const char *tag = "";
+			const char *cls = "";
+			dom_string *name = NULL;
+			dom_string *class_attr = NULL;
+			if (box->node != NULL) {
+				if (dom_node_get_node_name(box->node, &name) == DOM_NO_ERR && name != NULL) {
+					tag = dom_string_data(name);
+				}
+				if (dom_element_get_attribute(box->node, corestring_dom_class, &class_attr) == DOM_NO_ERR && class_attr != NULL) {
+					cls = dom_string_data(class_attr);
+				}
+			}
+			bool is_target = (cls != NULL && (strstr(cls, "submenu-wrapper") || strstr(cls, "hn-container") || strstr(cls, "sub-menu")));
+			if (is_target) {
+				NSLOG(layout, INFO, "redraw children clip: tag %s class %s box %p using %s clip x0 %i x1 %i", tag, cls, box, (child_clip_ptr == clip) ? "viewport" : "parent", child_clip_ptr->x0, child_clip_ptr->x1);
+			}
+			if (class_attr != NULL) dom_string_unref(class_attr);
+			if (name != NULL) dom_string_unref(name);
+		}
+        if (!html_redraw_box_children(html, box, x_parent, y_parent, child_clip_ptr,
+                scale, current_background_color, data, ctx))
+            return false;
 	}
 
 	if (box->type == BOX_BLOCK || box->type == BOX_INLINE_BLOCK ||
@@ -1871,25 +1984,26 @@ bool html_redraw_box(const html_content *html, struct box *box,
 
 	/* list marker */
 	if (box->list_marker) {
-		if (!html_redraw_box(html, box->list_marker,
-				x_parent + box->x -
-				scrollbar_get_offset(box->scroll_x),
-				y_parent + box->y -
-				scrollbar_get_offset(box->scroll_y),
-				clip, scale, current_background_color, ctx))
-			return false;
+        if (!html_redraw_box(html, box->list_marker,
+                x_parent + box->x -
+                scrollbar_get_offset(box->scroll_x),
+                y_parent + box->y -
+                scrollbar_get_offset(box->scroll_y),
+                clip, scale, current_background_color, data, ctx))
+            return false;
 	}
 
 	/* scrollbars */
-	if (((box->style && box->type != BOX_BR &&
-	      box->type != BOX_TABLE && box->type != BOX_INLINE &&
-	      (box->gadget == NULL || box->gadget->type != GADGET_TEXTAREA) &&
-	      (overflow_x == CSS_OVERFLOW_SCROLL ||
-	       overflow_x == CSS_OVERFLOW_AUTO ||
-	       overflow_y == CSS_OVERFLOW_SCROLL ||
-	       overflow_y == CSS_OVERFLOW_AUTO)) ||
-	     (box->object && content_get_type(box->object) ==
-	      CONTENT_HTML)) && box->parent != NULL) {
+    if (((box->style && box->type != BOX_BR &&
+          box->type != BOX_TABLE && box->type != BOX_INLINE &&
+          box->type != BOX_FLEX && box->type != BOX_INLINE_FLEX &&
+          (box->gadget == NULL || box->gadget->type != GADGET_TEXTAREA) &&
+          (overflow_x == CSS_OVERFLOW_SCROLL ||
+           overflow_x == CSS_OVERFLOW_AUTO ||
+           overflow_y == CSS_OVERFLOW_SCROLL ||
+           overflow_y == CSS_OVERFLOW_AUTO)) ||
+         (box->object && content_get_type(box->object) ==
+          CONTENT_HTML)) && box->parent != NULL && box->parent != html->layout) {
 		nserror res;
 		bool has_x_scroll = (overflow_x == CSS_OVERFLOW_SCROLL);
 		bool has_y_scroll = (overflow_y == CSS_OVERFLOW_SCROLL);
@@ -1979,8 +2093,8 @@ bool html_redraw(struct content *c, struct content_redraw_data *data,
 
 		result &= (ctx->plot->rectangle(ctx, &pstyle_fill_bg, clip) == NSERROR_OK);
 
-		result &= html_redraw_box(html, box, data->x, data->y, clip,
-				data->scale, pstyle_fill_bg.fill_colour, ctx);
+        result &= html_redraw_box(html, box, data->x, data->y, clip,
+                data->scale, pstyle_fill_bg.fill_colour, data, ctx);
 	}
 
 	if (select) {

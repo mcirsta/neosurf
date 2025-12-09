@@ -2713,6 +2713,21 @@ browser_window_redraw(struct browser_window *bw,
 	data.repeat_x = false;
 	data.repeat_y = false;
 
+	{
+		int root_w = 0, root_h = 0;
+		int pos_x = 0, pos_y = 0;
+		struct browser_window *rbw = browser_window_get_root(bw);
+		if (rbw != NULL) {
+			if (browser_window_get_dimensions(rbw, &root_w, &root_h) == NSERROR_OK) {
+				browser_window_get_position(bw, true, &pos_x, &pos_y);
+			}
+		}
+		data.root_width = root_w;
+		data.root_height = root_h;
+		data.viewport_x = pos_x;
+		data.viewport_y = pos_y;
+	}
+
 	content_clip = *clip;
 
 	if (!bw->window) {

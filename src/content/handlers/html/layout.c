@@ -3606,6 +3606,26 @@ bool layout_block_context(
 				box->type == BOX_TABLE ||
 				box->type == BOX_INLINE_CONTAINER);
 
+		{
+			const char *tag = "";
+			const char *cls = "";
+			dom_string *name = NULL;
+			dom_string *class_attr = NULL;
+			if (box->node != NULL) {
+				if (dom_node_get_node_name(box->node, &name) == DOM_NO_ERR && name != NULL) {
+					tag = dom_string_data(name);
+				}
+				if (dom_element_get_attribute(box->node, corestring_dom_class, &class_attr) == DOM_NO_ERR && class_attr != NULL) {
+					cls = dom_string_data(class_attr);
+				}
+			}
+			if (class_attr != NULL) {
+				NSLOG(layout, INFO, "processing: tag %s class %s box %p width %i", tag, cls, box, box->width);
+			}
+			if (class_attr != NULL) dom_string_unref(class_attr);
+			if (name != NULL) dom_string_unref(name);
+		}
+
 		/* Tables are laid out before being positioned, because the
 		 * position depends on the width which is calculated in
 		 * table layout. Blocks and inline containers are positioned
@@ -3682,9 +3702,34 @@ bool layout_block_context(
 						box->parent->padding[RIGHT] -
 						x1;
 			}
-			layout_block_find_dimensions(&content->unit_len_ctx,
-					box->parent->width,
-					viewport_height, lm, rm, box);
+            {
+                const char *tag = "";
+                const char *cls = "";
+                dom_string *name = NULL;
+                dom_string *class_attr = NULL;
+                if (box->node != NULL) {
+                    if (dom_node_get_node_name(box->node, &name) == DOM_NO_ERR && name != NULL) {
+                        tag = dom_string_data(name);
+                    }
+                    if (dom_element_get_attribute(box->node, corestring_dom_class, &class_attr) == DOM_NO_ERR && class_attr != NULL) {
+                        cls = dom_string_data(class_attr);
+                    }
+                }
+                bool is_target = (cls != NULL && (strstr(cls, "submenu-wrapper") || strstr(cls, "hn-container") || strstr(cls, "sub-menu")));
+                if (is_target) {
+                    NSLOG(layout, INFO, "block pre: tag %s class %s box %p parent_w %i lm %i rm %i", tag, cls, box, box->parent ? box->parent->width : 0, lm, rm);
+                }
+
+                layout_block_find_dimensions(&content->unit_len_ctx,
+                        box->parent->width,
+                        viewport_height, lm, rm, box);
+
+                if (is_target) {
+                    NSLOG(layout, INFO, "block post: tag %s class %s box %p width %i height %i", tag, cls, box, box->width, box->height);
+                }
+                if (class_attr != NULL) dom_string_unref(class_attr);
+                if (name != NULL) dom_string_unref(name);
+            }
 			if (box->type == BOX_BLOCK && !(box->flags & IFRAME)) {
 				layout_block_add_scrollbar(box, RIGHT);
 				layout_block_add_scrollbar(box, BOTTOM);
@@ -3772,15 +3817,35 @@ bool layout_block_context(
 				 (overflow_x != CSS_OVERFLOW_VISIBLE ||
 				  overflow_y != CSS_OVERFLOW_VISIBLE))) {
 
-		if (box->type == BOX_FLEX) {
-			NSLOG(layout, INFO, "calling layout_flex for flex container %p width %i", box, box->width);
-			if (!layout_flex(box, box->width, content)) {
-				return false;
-			}
-		} else {
-			layout_block_context(box,
-					viewport_height, content);
-			}
+        if (box->type == BOX_FLEX) {
+            const char *tag = "";
+            const char *cls = "";
+            dom_string *name = NULL;
+            dom_string *class_attr = NULL;
+            if (box->node != NULL) {
+                if (dom_node_get_node_name(box->node, &name) == DOM_NO_ERR && name != NULL) {
+                    tag = dom_string_data(name);
+                }
+                if (dom_element_get_attribute(box->node, corestring_dom_class, &class_attr) == DOM_NO_ERR && class_attr != NULL) {
+                    cls = dom_string_data(class_attr);
+                }
+            }
+            NSLOG(layout, INFO, "flex pre: tag %s class %s box %p, overflow_x %d, overflow_y %d, wrap %d, parent_w %i, box_w %i",
+                    tag, cls, box,
+                    overflow_x, overflow_y,
+                    css_computed_flex_wrap(box->style),
+                    box->parent ? box->parent->width : 0, box->width);
+            NSLOG(layout, INFO, "calling layout_flex for flex container %p width %i", box, box->width);
+            if (!layout_flex(box, box->width, content)) {
+                return false;
+            }
+            NSLOG(layout, INFO, "flex post: box %p, w %i, h %i", box, box->width, box->height);
+            if (class_attr != NULL) dom_string_unref(class_attr);
+            if (name != NULL) dom_string_unref(name);
+        } else {
+            layout_block_context(box,
+                    viewport_height, content);
+            }
 
 			cy += box->padding[TOP];
 
@@ -4565,9 +4630,9 @@ layout_compute_offsets(const css_unit_ctx *unit_len_ctx,
  */
 static bool
 layout_absolute(struct box *box,
-		struct box *containing_block,
-		int cx, int cy,
-		html_content *content)
+        struct box *containing_block,
+        int cx, int cy,
+        html_content *content)
 {
 	int static_left, static_top;  /* static position */
 	int top, right, bottom, left;
@@ -4608,11 +4673,49 @@ layout_absolute(struct box *box,
 	 * containing block box member. This is unused for absolutely positioned
 	 * boxes because a box can't be floated and absolutely positioned. */
 	box->float_container = containing_block;
-	layout_find_dimensions(&content->unit_len_ctx, available_width, -1,
-			box, box->style, &width, &height,
-			&max_width, &min_width, 0, 0,
-			margin, padding, border);
-	box->float_container = NULL;
+    layout_find_dimensions(&content->unit_len_ctx, available_width, -1,
+            box, box->style, &width, &height,
+            &max_width, &min_width, 0, 0,
+            margin, padding, border);
+    box->float_container = NULL;
+
+    {
+        css_fixed wlen = 0;
+        css_unit wunit = CSS_UNIT_PX;
+        const char *tag = "";
+        const char *cls = "";
+        dom_string *name = NULL;
+        dom_string *class_attr = NULL;
+        if (box->node != NULL) {
+            if (dom_node_get_node_name(box->node, &name) == DOM_NO_ERR && name != NULL) {
+                tag = dom_string_data(name);
+            }
+            if (dom_element_get_attribute(box->node, corestring_dom_class, &class_attr) == DOM_NO_ERR && class_attr != NULL) {
+                cls = dom_string_data(class_attr);
+            }
+        }
+        uint8_t wtype = css_computed_width(box->style, &wlen, &wunit);
+        NSLOG(layout, INFO, "abs offsets pre: tag %s class %s left %i right %i width %i wtype %u wlen %ld wunit %u cb.width %i", tag, cls, left, right, width, (unsigned)wtype, (long)wlen, (unsigned)wunit, containing_block->width);
+        if (class_attr != NULL) dom_string_unref(class_attr);
+        if (name != NULL) dom_string_unref(name);
+    }
+	{
+		const char *tag = "";
+		const char *cls = "";
+		dom_string *name = NULL;
+		dom_string *class_attr = NULL;
+		if (box->node != NULL) {
+			if (dom_node_get_node_name(box->node, &name) == DOM_NO_ERR && name != NULL) {
+				tag = dom_string_data(name);
+			}
+			if (dom_element_get_attribute(box->node, corestring_dom_class, &class_attr) == DOM_NO_ERR && class_attr != NULL) {
+				cls = dom_string_data(class_attr);
+			}
+		}
+		NSLOG(layout, INFO, "abs pre: tag %s class %s box %p", tag, cls, box);
+		if (class_attr != NULL) dom_string_unref(class_attr);
+		if (name != NULL) dom_string_unref(name);
+	}
 
 	/* 10.3.7 */
 	NSLOG(layout, DEBUG,
@@ -4956,26 +5059,55 @@ layout_absolute(struct box *box,
  */
 static bool
 layout_position_absolute(struct box *box,
-			 struct box *containing_block,
-			 int cx, int cy,
-			 html_content *content)
+             struct box *containing_block,
+             int cx, int cy,
+             html_content *content)
 {
 	struct box *c;
 
 	for (c = box->children; c; c = c->next) {
-		if ((c->type == BOX_BLOCK || c->type == BOX_TABLE ||
-				c->type == BOX_INLINE_BLOCK ||
-				c->type == BOX_FLEX ||
-				c->type == BOX_INLINE_FLEX) &&
-				(css_computed_position(c->style) ==
-						CSS_POSITION_ABSOLUTE ||
-				 css_computed_position(c->style) ==
-						CSS_POSITION_FIXED)) {
-			if (!layout_absolute(c, containing_block,
-					cx, cy, content))
-				return false;
-			if (!layout_position_absolute(c, c, 0, 0, content))
-				return false;
+        if ((c->type == BOX_BLOCK || c->type == BOX_TABLE ||
+                c->type == BOX_INLINE_BLOCK ||
+                c->type == BOX_FLEX ||
+                c->type == BOX_INLINE_FLEX) &&
+                (css_computed_position(c->style) ==
+                        CSS_POSITION_ABSOLUTE ||
+                css_computed_position(c->style) ==
+                        CSS_POSITION_FIXED)) {
+            const char *cb_tag = "";
+            const char *cb_cls = "";
+            const char *tag = "";
+            const char *cls = "";
+            dom_string *cb_name = NULL;
+            dom_string *cb_class_attr = NULL;
+            dom_string *name = NULL;
+            dom_string *class_attr = NULL;
+            if (containing_block->node != NULL) {
+                if (dom_node_get_node_name(containing_block->node, &cb_name) == DOM_NO_ERR && cb_name != NULL) {
+                    cb_tag = dom_string_data(cb_name);
+                }
+                if (dom_element_get_attribute(containing_block->node, corestring_dom_class, &cb_class_attr) == DOM_NO_ERR && cb_class_attr != NULL) {
+                    cb_cls = dom_string_data(cb_class_attr);
+                }
+            }
+            if (c->node != NULL) {
+                if (dom_node_get_node_name(c->node, &name) == DOM_NO_ERR && name != NULL) {
+                    tag = dom_string_data(name);
+                }
+                if (dom_element_get_attribute(c->node, corestring_dom_class, &class_attr) == DOM_NO_ERR && class_attr != NULL) {
+                    cls = dom_string_data(class_attr);
+                }
+            }
+            NSLOG(layout, INFO, "abs call: elem tag %s class %s box %p cb tag %s class %s cb %p cb.width %i", tag, cls, c, cb_tag, cb_cls, containing_block, containing_block->width);
+            if (class_attr != NULL) dom_string_unref(class_attr);
+            if (name != NULL) dom_string_unref(name);
+            if (cb_class_attr != NULL) dom_string_unref(cb_class_attr);
+            if (cb_name != NULL) dom_string_unref(cb_name);
+            if (!layout_absolute(c, containing_block,
+                    cx, cy, content))
+                return false;
+            if (!layout_position_absolute(c, c, 0, 0, content))
+                return false;
 		} else if (c->style && css_computed_position(c->style) ==
 				CSS_POSITION_RELATIVE) {
 			if (!layout_position_absolute(c, c, 0, 0, content))
