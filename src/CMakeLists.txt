@@ -244,56 +244,60 @@ if(NEOSURF_BUILD_XXD)
 endif()
 
 if(WIN32)
-	function(install_dlls_for_package PREFIX LIBS)
-		if(NOT PREFIX OR NOT EXISTS "${PREFIX}/bin")
-			return()
-		endif()
-		
-		foreach(LIB ${LIBS})
-			string(REGEX REPLACE "^lib" "" BASE_NAME "${LIB}")
-			
-			file(GLOB DLLS 
-				"${PREFIX}/bin/lib${BASE_NAME}*.dll"
-				"${PREFIX}/bin/${BASE_NAME}*.dll"
-			)
-			
-			if(DLLS)
-				foreach(DLL ${DLLS})
-					message(STATUS "  Found DLL for ${LIB}: ${DLL}")
-				endforeach()
-				install(FILES ${DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
-			endif()
-		endforeach()
-	endfunction()
+    function(install_dlls_for_package PREFIX LIBS)
+        if(NOT PREFIX OR NOT EXISTS "${PREFIX}/bin")
+            return()
+        endif()
+        
+        foreach(LIB ${LIBS})
+            string(REGEX REPLACE "^lib" "" BASE_NAME "${LIB}")
+
+            set(DLLS)
+            file(GLOB DLL_EXACT
+                "${PREFIX}/bin/lib${BASE_NAME}.dll"
+                "${PREFIX}/bin/${BASE_NAME}.dll"
+            )
+            file(GLOB DLL_VER
+                "${PREFIX}/bin/lib${BASE_NAME}-*.dll"
+                "${PREFIX}/bin/${BASE_NAME}-*.dll"
+            )
+            list(APPEND DLLS ${DLL_EXACT} ${DLL_VER})
+            
+            if(DLLS)
+                foreach(DLL ${DLLS})
+                    message(STATUS "  Found DLL for ${LIB}: ${DLL}")
+                endforeach()
+                install(FILES ${DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
+            endif()
+        endforeach()
+    endfunction()
 
 	if(LIBCURL_FOUND)
 		install_dlls_for_package("${LIBCURL_PREFIX}" "${LIBCURL_LIBRARIES}")
 		
-		file(GLOB RUNTIME_DLLS 
-			"${LIBCURL_PREFIX}/bin/libgcc_s_*.dll"
-			"${LIBCURL_PREFIX}/bin/libstdc++-*.dll"
-			"${LIBCURL_PREFIX}/bin/libwinpthread-*.dll"
-			"${LIBCURL_PREFIX}/bin/libbrotli*.dll" 
-			"${LIBCURL_PREFIX}/bin/libidn2*.dll"
-			"${LIBCURL_PREFIX}/bin/libunistring*.dll"
-			"${LIBCURL_PREFIX}/bin/libiconv*.dll"
-			"${LIBCURL_PREFIX}/bin/libintl*.dll"
-			"${LIBCURL_PREFIX}/bin/zlib1.dll"
-			"${LIBCURL_PREFIX}/bin/libssh2*.dll"
-			"${LIBCURL_PREFIX}/bin/libnghttp2*.dll"
-			"${LIBCURL_PREFIX}/bin/nghttp2*.dll"
-			"${LIBCURL_PREFIX}/bin/libnghttp3*.dll"
-			"${LIBCURL_PREFIX}/bin/libngtcp2*.dll"
-			"${LIBCURL_PREFIX}/bin/libzstd*.dll"
-			"${LIBCURL_PREFIX}/bin/libregex*.dll"
-			"${LIBCURL_PREFIX}/bin/libtre*.dll"
-			"${LIBCURL_PREFIX}/bin/libsystre*.dll"
-			"${LIBCURL_PREFIX}/bin/liblzma*.dll"
-		)
-		if(RUNTIME_DLLS)
-			install(FILES ${RUNTIME_DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
-		endif()
-	endif()
+        file(GLOB RUNTIME_DLLS 
+            "${LIBCURL_PREFIX}/bin/libgcc_s_*.dll"
+            "${LIBCURL_PREFIX}/bin/libwinpthread-*.dll"
+            "${LIBCURL_PREFIX}/bin/libbrotli*.dll" 
+            "${LIBCURL_PREFIX}/bin/libidn2*.dll"
+            "${LIBCURL_PREFIX}/bin/libunistring*.dll"
+            "${LIBCURL_PREFIX}/bin/libiconv*.dll"
+            "${LIBCURL_PREFIX}/bin/libintl*.dll"
+            "${LIBCURL_PREFIX}/bin/zlib1.dll"
+            "${LIBCURL_PREFIX}/bin/libssh2*.dll"
+            "${LIBCURL_PREFIX}/bin/libnghttp2*.dll"
+            "${LIBCURL_PREFIX}/bin/libnghttp3*.dll"
+            "${LIBCURL_PREFIX}/bin/libngtcp2-*.dll"
+            "${LIBCURL_PREFIX}/bin/libngtcp2_crypto_ossl-*.dll"
+            "${LIBCURL_PREFIX}/bin/libzstd*.dll"
+            "${LIBCURL_PREFIX}/bin/libregex*.dll"
+            "${LIBCURL_PREFIX}/bin/libtre*.dll"
+            "${LIBCURL_PREFIX}/bin/libsystre*.dll"
+        )
+        if(RUNTIME_DLLS)
+            install(FILES ${RUNTIME_DLLS} DESTINATION ${CMAKE_INSTALL_BINDIR})
+        endif()
+    endif()
 
 	if(LIBPSL_FOUND)
 		install_dlls_for_package("${LIBPSL_PREFIX}" "${LIBPSL_LIBRARIES}")

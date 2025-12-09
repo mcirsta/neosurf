@@ -29,5 +29,7 @@
  * NeoSurf browser version number.
  */
 extern const int neosurf_version;
+extern const int neosurf_version_major;
+extern const int neosurf_version_minor;
 
 #endif
