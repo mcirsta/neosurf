@@ -56,8 +56,8 @@ static BOOL init_about_dialog(HWND hwnd)
 			SendMessage(dlg_itm, WM_SETFONT, (WPARAM)hFont, 0);
 		}
 
-		snprintf(ver_str, sizeof(ver_str), "%s %d", 
-			 messages_get("NeoSurf"), neosurf_version); 
+		snprintf(ver_str, sizeof(ver_str), "%s %d.%d", 
+			 messages_get("NeoSurf"), neosurf_version_major, neosurf_version_minor); 
 		
 		SendMessage(dlg_itm, WM_SETTEXT, 0, (LPARAM)ver_str);
 	}

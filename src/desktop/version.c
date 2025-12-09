@@ -19,3 +19,5 @@
 #include <neosurf/desktop/version.h>
 
 const int neosurf_version = NEOSURF_VERSION;
+const int neosurf_version_major = NEOSURF_VERSION_MAJOR;
+const int neosurf_version_minor = NEOSURF_VERSION_MINOR;

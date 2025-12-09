@@ -529,7 +529,7 @@ nserror nslog_init(nslog_ensure_t *ensure, int *pargc, char **argv)
 #ifdef _WIN32
 		if (verbose_log || split_logging) async_log_start();
 #endif
-		NSLOG(neosurf, INFO, "NeoSurf version '%d'", neosurf_version);
+		NSLOG(neosurf, INFO, "NeoSurf version '%d.%d'", neosurf_version_major, neosurf_version_minor);
 		if (uname(&utsname) < 0) {
 			NSLOG(neosurf, INFO,
 			      "Failed to extract machine information");
