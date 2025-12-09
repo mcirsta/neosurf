@@ -88,31 +88,6 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 endif()
 
 install(TARGETS neosurf-windows DESTINATION ${CMAKE_INSTALL_BINDIR})
-install(DIRECTORY res/ DESTINATION ${CMAKE_INSTALL_DATADIR}/neosurf-windows)
-install(DIRECTORY ${GENERATED_MESSAGES_DIR}/ DESTINATION ${CMAKE_INSTALL_DATADIR}/neosurf-windows)
-
-# Install real resources from src/resources
-install(FILES 
-    ${CMAKE_SOURCE_DIR}/src/resources/en/welcome.html
-    ${CMAKE_SOURCE_DIR}/src/resources/en/credits.html
-    ${CMAKE_SOURCE_DIR}/src/resources/en/licence.html
-    ${CMAKE_SOURCE_DIR}/src/resources/default.css
-    ${CMAKE_SOURCE_DIR}/src/resources/adblock.css
-    ${CMAKE_SOURCE_DIR}/src/resources/internal.css
-    ${CMAKE_SOURCE_DIR}/src/resources/quirks.css
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/neosurf-windows
-)
-install(FILES ${CMAKE_SOURCE_DIR}/src/resources/neosurf.png DESTINATION ${CMAKE_INSTALL_DATADIR}/neosurf-windows RENAME neosurf.png)
-install(FILES ${CMAKE_SOURCE_DIR}/src/resources/ca-bundle DESTINATION ${CMAKE_INSTALL_DATADIR}/neosurf-windows RENAME ca-bundle.crt)
-install(FILES ${CMAKE_SOURCE_DIR}/src/resources/uninstall.ico DESTINATION ${CMAKE_INSTALL_DATADIR}/neosurf-windows)
-
-install(FILES 
-    ${CMAKE_SOURCE_DIR}/src/resources/icons/arrow-l.png
-    ${CMAKE_SOURCE_DIR}/src/resources/icons/content.png
-    ${CMAKE_SOURCE_DIR}/src/resources/icons/directory.png
-    ${CMAKE_SOURCE_DIR}/src/resources/icons/directory2.png
-    ${CMAKE_SOURCE_DIR}/src/resources/icons/hotlist-add.png
-    ${CMAKE_SOURCE_DIR}/src/resources/icons/hotlist-rmv.png
-    ${CMAKE_SOURCE_DIR}/src/resources/icons/search.png
-    DESTINATION ${CMAKE_INSTALL_DATADIR}/neosurf-windows/icons
-)
+install(DIRECTORY res/ DESTINATION ${CMAKE_INSTALL_DATADIR}/neosurf)
+install(DIRECTORY ${GENERATED_MESSAGES_DIR}/ DESTINATION ${CMAKE_INSTALL_DATADIR}/neosurf)
+install(FILES ${CMAKE_SOURCE_DIR}/src/resources/ca-bundle DESTINATION ${CMAKE_INSTALL_DATADIR}/neosurf RENAME ca-bundle.crt)
