@@ -1144,7 +1144,8 @@ bool layout_flex(struct box *flex, int available_width,
 			NULL, NULL, &max_height, &min_height,
 			flex->margin, flex->padding, flex->border);
 
-
+	available_width = min(available_width, flex->width);
+	
 	int resolved_height;
 	if (flex->height != AUTO) {
 		resolved_height = flex->height;

@@ -38,8 +38,8 @@ struct redraw_context;
 
 /** parameters to content redraw */
 struct content_redraw_data {
-	int x; /**< coordinate for top-left of redraw */
-	int y; /**< coordinate for top-left of redraw */
+    int x; /**< coordinate for top-left of redraw */
+    int y; /**< coordinate for top-left of redraw */
 
 	/** dimensions to render content at (for scaling contents with
 	 *  intrinsic dimensions)
@@ -53,10 +53,14 @@ struct content_redraw_data {
 	/** Scale for redraw
 	 *  (for scaling contents without intrinsic dimensions)
 	 */
-	float scale; /**< Scale factor for redraw */
+    float scale; /**< Scale factor for redraw */
 
-	bool repeat_x; /**< whether content is tiled in x direction */
-	bool repeat_y; /**< whether content is tiled in y direction */
+    bool repeat_x; /**< whether content is tiled in x direction */
+    bool repeat_y; /**< whether content is tiled in y direction */
+    int root_width;
+    int root_height;
+    int viewport_x;
+    int viewport_y;
 };
 
 /**
