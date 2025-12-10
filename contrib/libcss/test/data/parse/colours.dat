@@ -285,3 +285,10 @@
 |   0x02000063 0x00000400
 #reset
 
+#data
+* { color: rebeccapurple }
+#errors
+#expected
+| 1 *
+|   0x02000018 0xff663399
+#reset
