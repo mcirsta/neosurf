@@ -1065,7 +1065,7 @@ invalid:
 css_error css__parse_named_colour(css_language *c, lwc_string *data,
 		uint32_t *result)
 {
-	static const uint32_t colourmap[LAST_COLOUR + 1 - FIRST_COLOUR] = {
+    static const uint32_t colourmap[LAST_COLOUR + 1 - FIRST_COLOUR] = {
 		0xfff0f8ff, /* ALICEBLUE */
 		0xfffaebd7, /* ANTIQUEWHITE */
 		0xff00ffff, /* AQUA */
@@ -1215,8 +1215,9 @@ css_error css__parse_named_colour(css_language *c, lwc_string *data,
 		0xffffffff, /* WHITE */
 		0xfff5f5f5, /* WHITESMOKE */
 		0xffffff00, /* YELLOW */
-		0xff9acd32  /* YELLOWGREEN */
-	};
+        0xff9acd32, /* YELLOWGREEN */
+        0xff663399  /* REBECCAPURPLE */
+    };
 	/** Legacy system colour mapping */
 	static const int deprecatedmap[LAST_DEPRECATEDCOLOUR + 1 - FIRST_DEPRECATEDCOLOUR] = {
 		BUTTONBORDER, /* ACTIVEBORDER */
