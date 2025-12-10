@@ -25,6 +25,7 @@
 #define NETSURF_HTML_PRIVATE_H
 
 #include <libdom/bindings/hubbub/parser.h>
+#include <hubbub/errors.h>
 
 #include "netsurf/types.h"
 #include "content/content_protected.h"
