@@ -266,6 +266,16 @@ fetch_resource_notfound_handler_aborted:
 	return false;
 }
 
+static bool fetch_resource_missing_handler(struct fetch_resource_context *ctx)
+{
+    fetch_msg msg;
+    fetch_set_http_code(ctx->fetchh, 404);
+    msg.type = FETCH_ERROR;
+    msg.data.error = "Resource not found";
+    fetch_resource_send_callback(&msg, ctx);
+    return true;
+}
+
 
 
 /** callback to initialise the resource fetcher. */
@@ -295,20 +305,24 @@ static bool fetch_resource_initialise(lwc_string *scheme)
 		res = guit->fetch->get_resource_data(lwc_string_data(e->path),
 						     &e->data,
 						     &e->data_len);
-		if (res == NSERROR_OK) {
-			NSLOG(neosurf, INFO, "direct data for %s",
-			      fetch_resource_paths[i]);
-			fetch_resource_path_count++;
-		} else {
-			e->redirect_url = guit->fetch->get_resource_url(fetch_resource_paths[i]);
-			if (e->redirect_url == NULL) {
-				lwc_string_unref(e->path);
-			} else {
-				NSLOG(neosurf, INFO, "redirect url for %s",
-				      fetch_resource_paths[i]);
-				fetch_resource_path_count++;
-			}
-		}
+        if (res == NSERROR_OK) {
+            NSLOG(neosurf, INFO, "direct data for %s",
+                  fetch_resource_paths[i]);
+            fetch_resource_path_count++;
+        } else {
+            e->redirect_url = guit->fetch->get_resource_url(fetch_resource_paths[i]);
+            if (e->redirect_url == NULL) {
+                if (strcmp(fetch_resource_paths[i], "user.css") == 0) {
+                    fetch_resource_path_count++;
+                } else {
+                    lwc_string_unref(e->path);
+                }
+            } else {
+                NSLOG(neosurf, INFO, "redirect url for %s",
+                      fetch_resource_paths[i]);
+                fetch_resource_path_count++;
+            }
+        }
 	}
 
 	return true;
@@ -317,16 +331,18 @@ static bool fetch_resource_initialise(lwc_string *scheme)
 /** callback to finalise the resource fetcher. */
 static void fetch_resource_finalise(lwc_string *scheme)
 {
-	uint32_t i;
+    uint32_t i;
 
-	for (i = 0; i < fetch_resource_path_count; i++) {
-		lwc_string_unref(fetch_resource_map[i].path);
-		if (fetch_resource_map[i].data != NULL) {
-			guit->fetch->release_resource_data(fetch_resource_map[i].data);
-		} else {
-			nsurl_unref(fetch_resource_map[i].redirect_url);
-		}
-	}
+    for (i = 0; i < fetch_resource_path_count; i++) {
+        lwc_string_unref(fetch_resource_map[i].path);
+        if (fetch_resource_map[i].data != NULL) {
+            guit->fetch->release_resource_data(fetch_resource_map[i].data);
+        } else {
+            if (fetch_resource_map[i].redirect_url != NULL) {
+                nsurl_unref(fetch_resource_map[i].redirect_url);
+            }
+        }
+    }
 }
 
 static bool fetch_resource_can_fetch(const nsurl *url)
@@ -365,15 +381,17 @@ fetch_resource_setup(struct fetch *fetchh,
 			if (lwc_string_isequal(path,
 					fetch_resource_map[i].path,
 					&match) == lwc_error_ok && match) {
-				/* found a url match, select handler */
-				ctx->entry = &fetch_resource_map[i];
-				if (ctx->entry->data != NULL) {
-					ctx->handler = fetch_resource_data_handler;
-				} else {
-					ctx->handler = fetch_resource_redirect_handler;
-				}
-				break;
-			}
+                /* found a url match, select handler */
+                ctx->entry = &fetch_resource_map[i];
+                if (ctx->entry->data != NULL) {
+                    ctx->handler = fetch_resource_data_handler;
+                } else if (ctx->entry->redirect_url != NULL) {
+                    ctx->handler = fetch_resource_redirect_handler;
+                } else {
+                    ctx->handler = fetch_resource_missing_handler;
+                }
+                break;
+            }
 		}
 
 		lwc_string_unref(path);

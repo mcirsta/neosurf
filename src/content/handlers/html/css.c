@@ -116,17 +116,27 @@ html_convert_css_callback(hlcache_handle *css,
 		NSLOG(neosurf, INFO, "%d fetches active", parent->base.active);
 		break;
 
-	case CONTENT_MSG_ERROR:
-		NSLOG(neosurf, ERROR, "stylesheet %s failed: %s (code %d)",
-		      nsurl_access(hlcache_handle_get_url(css)),
-		      event->data.errordata.errormsg,
-		      event->data.errordata.errorcode);
+    case CONTENT_MSG_ERROR:
+    {
+        const char *u = nsurl_access(hlcache_handle_get_url(css));
+        if (u != NULL && strcmp(u, "resource:user.css") == 0) {
+            NSLOG(neosurf, INFO, "stylesheet %s missing: %s (code %d)",
+                  u,
+                  event->data.errordata.errormsg,
+                  event->data.errordata.errorcode);
+        } else {
+            NSLOG(neosurf, ERROR, "stylesheet %s failed: %s (code %d)",
+                  u,
+                  event->data.errordata.errormsg,
+                  event->data.errordata.errorcode);
+        }
 
-		hlcache_handle_release(css);
-		s->sheet = NULL;
-		parent->base.active--;
-		NSLOG(neosurf, INFO, "%d fetches active", parent->base.active);
-		break;
+        hlcache_handle_release(css);
+        s->sheet = NULL;
+        parent->base.active--;
+        NSLOG(neosurf, INFO, "%d fetches active", parent->base.active);
+        break;
+    }
 
 	case CONTENT_MSG_POINTER:
 		/* Really don't want this to continue after the switch */
