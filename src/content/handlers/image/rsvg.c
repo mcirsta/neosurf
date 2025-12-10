@@ -180,10 +180,11 @@ static bool rsvg_convert(struct content *c)
 
 	rsvg_handle_render_cairo(d->rsvgh, d->ct);
 
-	bitmap_format_to_client(d->bitmap, &(bitmap_fmt_t) {
-		.layout = BITMAP_LAYOUT_ARGB8888,
-	});
-	guit->bitmap->modified(d->bitmap);
+    bitmap_format_to_client(d->bitmap, &(bitmap_fmt_t) {
+        .layout = BITMAP_LAYOUT_ARGB8888,
+        .pma = true,
+    });
+    guit->bitmap->modified(d->bitmap);
 	content_set_ready(c);
 	content_set_done(c);
 	/* Done: update status bar */

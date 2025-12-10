@@ -133,10 +133,11 @@ rsvg_cache_convert(struct content *c)
 	renderres = rsvg_handle_render_document(svgc->rsvgh, cr, &viewport, NULL);
 	NSLOG(netsurf, DEBUG, "rsvg render:%d, width:%d, height %d", renderres, c->width, c->height);
 
-	bitmap_format_to_client(bitmap, &(bitmap_fmt_t) {
-			.layout = BITMAP_LAYOUT_ARGB8888,
-		});
-	guit->bitmap->modified(bitmap);
+    bitmap_format_to_client(bitmap, &(bitmap_fmt_t) {
+            .layout = BITMAP_LAYOUT_ARGB8888,
+            .pma = true,
+        });
+    guit->bitmap->modified(bitmap);
 
 	cairo_destroy(cr);
 	cairo_surface_destroy(cs);

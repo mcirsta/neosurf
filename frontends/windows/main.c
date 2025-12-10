@@ -58,6 +58,7 @@
 #include "windows/clipboard.h"
 #include "windows/gui.h"
 #include <neosurf/content/backing_store.h>
+#include <neosurf/bitmap.h>
 
 
 /**
@@ -446,24 +447,30 @@ WinMain(HINSTANCE hInstance, HINSTANCE hLastInstance, LPSTR lpcli, int ncmd)
 	nserror ret;
 	const char *addr;
 	nsurl *url;
-	struct neosurf_table win32_table = {
-		.misc = &win32_misc_table,
-		.window = win32_window_table,
-		.corewindow = win32_core_window_table,
-		.clipboard = win32_clipboard_table,
-		.download = win32_download_table,
-		.fetch = win32_fetch_table,
-		.file = win32_file_table,
-		.utf8 = win32_utf8_table,
-		.llcache = filesystem_llcache_table,
-		.bitmap = win32_bitmap_table,
-		.layout = win32_layout_table,
-	};
+    struct neosurf_table win32_table = {
+        .misc = &win32_misc_table,
+        .window = win32_window_table,
+        .corewindow = win32_core_window_table,
+        .clipboard = win32_clipboard_table,
+        .download = win32_download_table,
+        .fetch = win32_fetch_table,
+        .file = win32_file_table,
+        .utf8 = win32_utf8_table,
+        .llcache = filesystem_llcache_table,
+        .bitmap = win32_bitmap_table,
+        .layout = win32_layout_table,
+    };
 
-	ret = neosurf_register(&win32_table);
-	if (ret != NSERROR_OK) {
-		die("NeoSurf operation table registration failed");
-	}
+    ret = neosurf_register(&win32_table);
+    if (ret != NSERROR_OK) {
+        die("NeoSurf operation table registration failed");
+    }
+
+    /* Configure client bitmap format for Windows: RGBA with premultiplied alpha */
+    bitmap_set_format(&(bitmap_fmt_t){
+        .layout = BITMAP_LAYOUT_R8G8B8A8,
+        .pma = true,
+    });
 
 	/* Save the application-instance handle. */
 	hinst = hInstance;
