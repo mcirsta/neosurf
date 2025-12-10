@@ -118,147 +118,29 @@ plot_block(COLORREF col, int x, int y, int width, int height)
  */
 static nserror
 plot_alpha_bitmap(HDC hdc,
-		  struct bitmap *bitmap,
-		  int x, int y,
-		  int width, int height)
+          struct bitmap *bitmap,
+          int x, int y,
+          int width, int height)
 {
-#ifdef WINDOWS_GDI_ALPHA_WORKED
-	BLENDFUNCTION blnd = {  AC_SRC_OVER, 0, 0xff, AC_SRC_ALPHA };
-	HDC bmihdc;
-	bool bltres;
-	bmihdc = CreateCompatibleDC(hdc);
-	SelectObject(bmihdc, bitmap->windib);
-	bltres = AlphaBlend(hdc,
-			    x, y,
-			    width, height,
-			    bmihdc,
-			    0, 0,
-			    bitmap->width, bitmap->height,
-			    blnd);
-	DeleteDC(bmihdc);
-	if (!bltres) {
-		return NSERROR_INVALID;
-	}
-#else
-	HDC Memhdc;
-	BITMAPINFOHEADER bmih;
-	int v, vv, vi, h, hh, width4, transparency;
-	unsigned char alpha;
-	bool isscaled = false; /* set if the scaled bitmap requires freeing */
-	BITMAP MemBM;
-	BITMAPINFO *bmi;
-	HBITMAP MemBMh;
 
-	NSLOG(plot, DEEPDEBUG, "%p bitmap %d,%d width %d height %d",
-		 bitmap, x, y, width, height);
-	NSLOG(plot, DEEPDEBUG, "clipped %ld,%ld to %ld,%ld",
-		 plot_clip.left, plot_clip.top,
-		 plot_clip.right, plot_clip.bottom);
+    BLENDFUNCTION blnd = { AC_SRC_OVER, 0, 0xff, AC_SRC_ALPHA };
+    HDC bmihdc;
+    bool bltres;
+    bmihdc = CreateCompatibleDC(hdc);
+    SelectObject(bmihdc, bitmap->windib);
+    bltres = AlphaBlend(hdc,
+                x, y,
+                width, height,
+                bmihdc,
+                0, 0,
+                bitmap->width, bitmap->height,
+                blnd);
+    DeleteDC(bmihdc);
+    if (!bltres) {
+        return NSERROR_INVALID;
+    }
 
-	Memhdc = CreateCompatibleDC(hdc);
-	if (Memhdc == NULL) {
-		return NSERROR_INVALID;
-	}
-
-	if ((bitmap->width != width) ||
-	    (bitmap->height != height)) {
-		NSLOG(plot, DEEPDEBUG, "scaling from %d,%d to %d,%d",
-			 bitmap->width, bitmap->height, width, height);
-		bitmap = bitmap_scale(bitmap, width, height);
-		if (bitmap == NULL) {
-			return NSERROR_INVALID;
-		}
-		isscaled = true;
-	}
-
-	bmi = (BITMAPINFO *) malloc(sizeof(BITMAPINFOHEADER) +
-				    (bitmap->width * bitmap->height * 4));
-	if (bmi == NULL) {
-		DeleteDC(Memhdc);
-		return NSERROR_INVALID;
-	}
-
-	MemBMh = CreateCompatibleBitmap(hdc, bitmap->width, bitmap->height);
-	if (MemBMh == NULL){
-		free(bmi);
-		DeleteDC(Memhdc);
-		return NSERROR_INVALID;
-	}
-
-	/* save 'background' data for alpha channel work */
-	SelectObject(Memhdc, MemBMh);
-	BitBlt(Memhdc, 0, 0, bitmap->width, bitmap->height, hdc, x, y, SRCCOPY);
-	GetObject(MemBMh, sizeof(BITMAP), &MemBM);
-
-	bmih.biSize = sizeof(bmih);
-	bmih.biWidth = bitmap->width;
-	bmih.biHeight = bitmap->height;
-	bmih.biPlanes = 1;
-	bmih.biBitCount = 32;
-	bmih.biCompression = BI_RGB;
-	bmih.biSizeImage = 4 * bitmap->height * bitmap->width;
-	bmih.biXPelsPerMeter = 3600; /* 100 dpi */
-	bmih.biYPelsPerMeter = 3600;
-	bmih.biClrUsed = 0;
-	bmih.biClrImportant = 0;
-	bmi->bmiHeader = bmih;
-
-	GetDIBits(hdc, MemBMh, 0, bitmap->height, bmi->bmiColors, bmi,
-		  DIB_RGB_COLORS);
-
-	/* then load 'foreground' bits from bitmap->pixdata */
-
-	width4 = bitmap->width * 4;
-	for (v = 0, vv = 0, vi = (bitmap->height - 1) * width4;
-	     v < bitmap->height;
-	     v++, vv += bitmap->width, vi -= width4) {
-		for (h = 0, hh = 0; h < bitmap->width; h++, hh += 4) {
-			alpha = bitmap->pixdata[vi + hh + 3];
-/* multiplication of alpha value; subject to profiling could be optional */
-			if (alpha == 0xFF) {
-				bmi->bmiColors[vv + h].rgbBlue =
-					bitmap->pixdata[vi + hh + 2];
-				bmi->bmiColors[vv + h].rgbGreen =
-					bitmap->pixdata[vi + hh + 1];
-				bmi->bmiColors[vv + h].rgbRed =
-					bitmap->pixdata[vi + hh];
-			} else if (alpha > 0) {
-				transparency = 0x100 - alpha;
-				bmi->bmiColors[vv + h].rgbBlue =
-					(bmi->bmiColors[vv + h].rgbBlue
-					 * transparency +
-					 (bitmap->pixdata[vi + hh + 2]) *
-					 alpha) >> 8;
-				bmi->bmiColors[vv + h].rgbGreen =
-					(bmi->bmiColors[vv + h].
-					 rgbGreen
-					 * transparency +
-					 (bitmap->pixdata[vi + hh + 1]) *
-					 alpha) >> 8;
-				bmi->bmiColors[vv + h].rgbRed =
-					(bmi->bmiColors[vv + h].rgbRed
-					 * transparency +
-					 bitmap->pixdata[vi + hh]
-					 * alpha) >> 8;
-			}
-		}
-	}
-	SetDIBitsToDevice(hdc, x, y, bitmap->width, bitmap->height,
-			  0, 0, 0, bitmap->height,
-			  (const void *) bmi->bmiColors,
-			  bmi, DIB_RGB_COLORS);
-
-	if (isscaled && bitmap && bitmap->pixdata) {
-		free(bitmap->pixdata);
-		free(bitmap);
-	}
-
-	free(bmi);
-	DeleteObject(MemBMh);
-	DeleteDC(Memhdc);
-#endif
-
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 

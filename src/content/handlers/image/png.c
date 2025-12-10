@@ -91,8 +91,8 @@ static void nspng_error(png_structp png_ptr, png_const_charp error_message)
 
 static void nspng_setup_transforms(png_structp png_ptr, png_infop info_ptr)
 {
-	int bit_depth, color_type, intent;
-	double gamma;
+    int bit_depth, color_type, intent;
+    double gamma;
 
 	bit_depth = png_get_bit_depth(png_ptr, info_ptr);
 	color_type = png_get_color_type(png_ptr, info_ptr);
@@ -119,38 +119,41 @@ static void nspng_setup_transforms(png_structp png_ptr, png_infop info_ptr)
 		png_set_gray_to_rgb(png_ptr);
 	}
 
-	switch (bitmap_fmt.layout) {
-	case BITMAP_LAYOUT_B8G8R8A8: /* Fall through. */
-	case BITMAP_LAYOUT_A8B8G8R8:
-		png_set_bgr(png_ptr);
-		break;
-	default:
-		/* RGB is the default. */
-		break;
-	}
+    switch (bitmap_fmt.layout) {
+    case BITMAP_LAYOUT_B8G8R8A8: /* Fall through. */
+    case BITMAP_LAYOUT_A8B8G8R8:
+        png_set_bgr(png_ptr);
+        break;
+    default:
+        /* RGB is the default. */
+        break;
+    }
 
-	if (!(color_type & PNG_COLOR_MASK_ALPHA)) {
-		switch (bitmap_fmt.layout) {
-		case BITMAP_LAYOUT_A8R8G8B8: /* Fall through. */
-		case BITMAP_LAYOUT_A8B8G8R8:
-			png_set_filler(png_ptr, 0xff, PNG_FILLER_BEFORE);
-			break;
+    if (!(color_type & PNG_COLOR_MASK_ALPHA)) {
+        switch (bitmap_fmt.layout) {
+        case BITMAP_LAYOUT_A8R8G8B8: /* Fall through. */
+        case BITMAP_LAYOUT_A8B8G8R8:
+            png_set_filler(png_ptr, 0xff, PNG_FILLER_BEFORE);
+            break;
 
-		default:
-			png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
-			break;
-		}
-	} else {
-		switch (bitmap_fmt.layout) {
-		case BITMAP_LAYOUT_A8R8G8B8: /* Fall through. */
-		case BITMAP_LAYOUT_A8B8G8R8:
-			png_set_swap_alpha(png_ptr);
-			break;
-		default:
-			/* Alpha as final component is the default. */
-			break;
-		}
-	}
+        default:
+            png_set_filler(png_ptr, 0xff, PNG_FILLER_AFTER);
+            break;
+        }
+    } else {
+        switch (bitmap_fmt.layout) {
+        case BITMAP_LAYOUT_A8R8G8B8: /* Fall through. */
+        case BITMAP_LAYOUT_A8B8G8R8:
+            png_set_swap_alpha(png_ptr);
+            break;
+        default:
+            /* Alpha as final component is the default. */
+            break;
+        }
+        if (bitmap_fmt.pma) {
+            png_set_alpha_mode(png_ptr, PNG_ALPHA_PREMULTIPLIED, PNG_DEFAULT_sRGB);
+        }
+    }
 
 	/* gamma correction - we use 2.2 as our screen gamma
 	 * this appears to be correct (at least in respect to !Browse)
@@ -537,15 +540,15 @@ png_cache_convert_error:
 		free((png_bytep *) row_pointers);
 	}
 
-	if (bitmap != NULL) {
-		bool opaque = bitmap_test_opaque((void *)bitmap);
-		guit->bitmap->set_opaque((void *)bitmap, opaque);
-		bitmap_format_to_client((void *)bitmap, &(bitmap_fmt_t) {
-			.layout = bitmap_fmt.layout,
-			.pma = opaque ? bitmap_fmt.pma : false,
-		});
-		guit->bitmap->modified((void *)bitmap);
-	}
+    if (bitmap != NULL) {
+        bool opaque = bitmap_test_opaque((void *)bitmap);
+        guit->bitmap->set_opaque((void *)bitmap, opaque);
+        bitmap_format_to_client((void *)bitmap, &(bitmap_fmt_t) {
+            .layout = bitmap_fmt.layout,
+            .pma = bitmap_fmt.pma,
+        });
+        guit->bitmap->modified((void *)bitmap);
+    }
 
 	return (struct bitmap *)bitmap;
 }
@@ -570,15 +573,15 @@ static bool nspng_convert(struct content *c)
 		free(title);
 	}
 
-	if (png_c->bitmap != NULL) {
-		bool opaque = bitmap_test_opaque(png_c->bitmap);
-		guit->bitmap->set_opaque(png_c->bitmap, opaque);
-		bitmap_format_to_client(png_c->bitmap, &(bitmap_fmt_t) {
-			.layout = bitmap_fmt.layout,
-			.pma = opaque ? bitmap_fmt.pma : false,
-		});
-		guit->bitmap->modified(png_c->bitmap);
-	}
+    if (png_c->bitmap != NULL) {
+        bool opaque = bitmap_test_opaque(png_c->bitmap);
+        guit->bitmap->set_opaque(png_c->bitmap, opaque);
+        bitmap_format_to_client(png_c->bitmap, &(bitmap_fmt_t) {
+            .layout = bitmap_fmt.layout,
+            .pma = bitmap_fmt.pma,
+        });
+        guit->bitmap->modified(png_c->bitmap);
+    }
 
 	image_cache_add(c, png_c->bitmap, png_cache_convert);
 

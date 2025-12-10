@@ -145,10 +145,11 @@ static bool nssprite_convert(struct content *c)
 		free(title);
 	}
 
-	bitmap_format_to_client(nssprite->bitmap, &(bitmap_fmt_t) {
-		.layout = BITMAP_LAYOUT_A8B8G8R8,
-	});
-	guit->bitmap->modified(nssprite->bitmap);
+    bitmap_format_to_client(nssprite->bitmap, &(bitmap_fmt_t) {
+        .layout = BITMAP_LAYOUT_A8B8G8R8,
+        .pma = false,
+    });
+    guit->bitmap->modified(nssprite->bitmap);
 
 	content_set_ready(c);
 	content_set_done(c);

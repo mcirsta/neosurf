@@ -190,10 +190,11 @@ static bool nsbmp_redraw(struct content *c, struct content_redraw_data *data,
 			return false;
 		}
 
-		bitmap_format_to_client(bmp->bitmap, &(bitmap_fmt_t) {
-			.layout = BITMAP_LAYOUT_R8G8B8A8,
-		});
-		guit->bitmap->modified(bmp->bitmap);
+        bitmap_format_to_client(bmp->bitmap, &(bitmap_fmt_t) {
+            .layout = BITMAP_LAYOUT_R8G8B8A8,
+            .pma = bitmap_fmt.pma,
+        });
+        guit->bitmap->modified(bmp->bitmap);
 	}
 
 	if (data->repeat_x)

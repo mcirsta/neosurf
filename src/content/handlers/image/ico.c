@@ -181,10 +181,11 @@ static bool nsico__decode(struct bmp_image *ico)
 			return false;
 		}
 
-		bitmap_format_to_client(ico->bitmap, &(bitmap_fmt_t) {
-			.layout = BITMAP_LAYOUT_R8G8B8A8,
-		});
-		guit->bitmap->modified(ico->bitmap);
+        bitmap_format_to_client(ico->bitmap, &(bitmap_fmt_t) {
+            .layout = BITMAP_LAYOUT_R8G8B8A8,
+            .pma = bitmap_fmt.pma,
+        });
+        guit->bitmap->modified(ico->bitmap);
 
 	}
 
