@@ -350,6 +350,25 @@ svg_redraw_internal(svg_content *svg,
 }
 
 
+bool svg_redraw_diagram(struct svgtiny_diagram *diagram,
+                        int x,
+                        int y,
+                        int width,
+                        int height,
+                        const struct rect *clip,
+                        const struct redraw_context *ctx,
+                        float scale,
+                        colour background_colour)
+{
+    svg_content tmp;
+    memset(&tmp, 0, sizeof(tmp));
+    tmp.diagram = diagram;
+    tmp.base.width = width;
+    tmp.base.height = height;
+    return svg_redraw_internal(&tmp, x, y, width, height, clip, ctx, scale, background_colour);
+}
+
+
 static bool
 svg_redraw_tiled_internal(svg_content *svg,
 			  struct content_redraw_data *data,

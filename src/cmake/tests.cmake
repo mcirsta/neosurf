@@ -139,6 +139,18 @@ include(CTest)
     ${CMAKE_SOURCE_DIR}/src/test/mimesniff.c
   )
 
+  # Renderer unit test: borders geometry via plotter polygons
+  add_neosurf_test(html_redraw_borders_test
+    ${CMAKE_SOURCE_DIR}/src/content/handlers/html/redraw_border.c
+    ${CMAKE_SOURCE_DIR}/src/test/html_redraw_borders_test.c
+  )
+
+  add_neosurf_test(svg_redraw_test
+    ${CMAKE_SOURCE_DIR}/src/desktop/plot_style.c
+    ${CMAKE_SOURCE_DIR}/src/test/svg_redraw_driver.c
+    ${CMAKE_SOURCE_DIR}/src/test/svg_redraw_test.c
+  )
+
   if(NOT WIN32)
     add_library(malloc_fig SHARED ${CMAKE_SOURCE_DIR}/src/test/malloc_fig.c)
     target_include_directories(malloc_fig PRIVATE ${CMAKE_SOURCE_DIR}/src)

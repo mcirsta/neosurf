@@ -24,7 +24,9 @@
 #ifndef NETSURF_HTML_PRIVATE_H
 #define NETSURF_HTML_PRIVATE_H
 
+#include <dom/dom.h>
 #include <libdom/bindings/hubbub/parser.h>
+#include <libdom/bindings/hubbub/errors.h>
 
 #include "neosurf/types.h"
 #include <neosurf/content/content_protected.h>
