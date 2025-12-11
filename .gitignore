@@ -42,6 +42,7 @@ build-inc
 _staging
 build-ninja
 build-release
+build-mingw
 
 
 

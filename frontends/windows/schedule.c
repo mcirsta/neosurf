@@ -207,7 +207,13 @@ schedule_run(void)
 	      (rettime.tv_sec * 1000) + (rettime.tv_usec / 1000));
 
 	/* return next event time in milliseconds (24days max wait) */
-        return (rettime.tv_sec * 1000) + (rettime.tv_usec / 1000);
+	int timeout = (rettime.tv_sec * 1000) + (rettime.tv_usec / 1000);
+
+	if (timeout == 0 && rettime.tv_usec > 0) {
+		timeout = 1;
+	}
+
+	return timeout;
 }
 
 /* exported interface documented in schedule.h */
