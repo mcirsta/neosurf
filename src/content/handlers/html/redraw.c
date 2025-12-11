@@ -37,11 +37,13 @@
 #include <dom/dom.h>
 
 #include <neosurf/utils/log.h>
+#include <libwapcaplet/libwapcaplet.h>
 #include <neosurf/utils/messages.h>
 #include <neosurf/utils/utils.h>
 #include <neosurf/utils/nsoption.h>
 #include <neosurf/utils/corestrings.h>
 #include <neosurf/content.h>
+#include <neosurf/content/hlcache.h>
 #include <neosurf/browser_window.h>
 #include <neosurf/plotters.h>
 #include <neosurf/bitmap.h>
@@ -1878,12 +1880,42 @@ bool html_redraw_box(const html_content *html, struct box *box,
 			obj_data.y /= scale;
 		}
 
-		if (!content_redraw(box->object, &obj_data, &r, ctx)) {
-			/* Show image fail */
-			/* Unicode (U+FFFC) 'OBJECT REPLACEMENT CHARACTER' */
-			const char *obj = "\xef\xbf\xbc";
-			int obj_width;
-			int obj_x = x + padding_left;
+        if (!content_redraw(box->object, &obj_data, &r, ctx)) {
+            const char *tag = "";
+            const char *cls = "";
+            dom_string *name = NULL;
+            dom_string *class_attr = NULL;
+            if (box->node != NULL) {
+                if (dom_node_get_node_name(box->node, &name) == DOM_NO_ERR && name != NULL) {
+                    tag = dom_string_data(name);
+                }
+                if (dom_element_get_attribute(box->node, corestring_dom_class, &class_attr) == DOM_NO_ERR && class_attr != NULL) {
+                    cls = dom_string_data(class_attr);
+                }
+            }
+            const char *url = NULL;
+            const char *mime_c = NULL;
+            {
+                nsurl *nurl = content_get_url(hlcache_handle_get_content(box->object));
+                url = nurl ? nsurl_access(nurl) : NULL;
+                lwc_string *mime = content_get_mime_type(box->object);
+                mime_c = mime ? lwc_string_data(mime) : NULL;
+                if (mime) lwc_string_unref(mime);
+            }
+            NSLOG(neosurf, ERROR, "Object redraw failed; red square shown for element tag=%s class=%s mime=%s url=%s size=%dx%d",
+                  tag ? tag : "",
+                  cls ? cls : "",
+                  mime_c ? mime_c : "",
+                  url ? url : "",
+                  width,
+                  height);
+            if (class_attr != NULL) dom_string_unref(class_attr);
+            if (name != NULL) dom_string_unref(name);
+            /* Show image fail */
+            /* Unicode (U+FFFC) 'OBJECT REPLACEMENT CHARACTER' */
+            const char *obj = "\xef\xbf\xbc";
+            int obj_width;
+            int obj_x = x + padding_left;
 			nserror res;
 
 			rect.x0 = x + padding_left;
