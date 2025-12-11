@@ -20,7 +20,7 @@
 
 #include "utils/utils.h"
 #include "utils/errors.h"
-#include "netsurf/plotters.h"
+#include "neosurf/plotters.h"
 
 #include "monkey/output.h"
 

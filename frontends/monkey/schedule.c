@@ -19,7 +19,7 @@
 #include <time.h>
 #include <stdlib.h>
 
-#include "utils/sys_time.h"
+#include "neosurf/utils/sys_time.h"
 #include "utils/log.h"
 
 #include "monkey/schedule.h"

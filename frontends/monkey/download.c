@@ -22,7 +22,7 @@
 
 #include "utils/errors.h"
 #include "utils/ring.h"
-#include "netsurf/download.h"
+#include "neosurf/download.h"
 #include "desktop/download.h"
 
 #include "monkey/output.h"

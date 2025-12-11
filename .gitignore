@@ -41,6 +41,7 @@ build-ctest
 build-inc
 _staging
 build-ninja
+build-release
 
 
 

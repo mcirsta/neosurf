@@ -19,7 +19,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <limits.h>
+#ifdef _WIN32
+#include <winsock2.h>
+#include <windows.h>
+#else
 #include <sys/select.h>
+#endif
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
@@ -27,18 +32,18 @@
 #include <signal.h>
 
 #include "utils/config.h"
-#include "utils/sys_time.h"
+#include "neosurf/utils/sys_time.h"
 #include "utils/log.h"
 #include "utils/messages.h"
 #include "utils/filepath.h"
 #include "utils/nsoption.h"
 #include "utils/nsurl.h"
-#include "netsurf/misc.h"
-#include "netsurf/netsurf.h"
-#include "netsurf/url_db.h"
-#include "netsurf/cookie_db.h"
-#include "content/fetch.h"
-#include "content/backing_store.h"
+#include "neosurf/misc.h"
+#include "neosurf/neosurf.h"
+#include "neosurf/url_db.h"
+#include "neosurf/cookie_db.h"
+#include "neosurf/content/fetch.h"
+#include "neosurf/content/backing_store.h"
 
 #include "monkey/output.h"
 #include "monkey/dispatch.h"
@@ -291,12 +296,14 @@ static void monkey_run(void)
 		/* clears fdset */
 		fetch_fdset(&read_fd_set, &write_fd_set, &exc_fd_set, &max_fd);
 
-		/* add stdin to the set */
+
+#ifndef _WIN32
 		if (max_fd < 0) {
 			max_fd = 0;
 		}
 		FD_SET(0, &read_fd_set);
 		FD_SET(0, &exc_fd_set);
+#endif
 
 		/* setup timeout */
 		switch (schedtm) {
@@ -322,6 +329,36 @@ static void monkey_run(void)
 			break;
 		}
 
+		#ifdef _WIN32
+		if (max_fd < 0) {
+			if (schedtm == -1) {
+				Sleep(1);
+			} else if (schedtm == 0) {
+				Sleep(0);
+			} else {
+				Sleep((DWORD)schedtm);
+			}
+		} else {
+			rdy_fd = select(max_fd + 1,
+					&read_fd_set,
+					&write_fd_set,
+					&exc_fd_set,
+					timeout);
+            if (rdy_fd < 0) {
+                NSLOG(netsurf, CRITICAL, "Unable to select: %s", strerror(errno));
+                Sleep(1);
+            }
+		}
+		{
+			DWORD avail = 0;
+			HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
+			if (hIn != INVALID_HANDLE_VALUE) {
+				if (PeekNamedPipe(hIn, NULL, 0, NULL, &avail, NULL) && avail > 0) {
+					monkey_process_command();
+				}
+			}
+		}
+		#else
 		rdy_fd = select(max_fd + 1,
 				&read_fd_set,
 				&write_fd_set,
@@ -335,6 +372,7 @@ static void monkey_run(void)
 				monkey_process_command();
 			}
 		}
+		#endif
 	}
 }
 
@@ -392,7 +430,7 @@ main(int argc, char **argv)
 	char *options;
 	char buf[PATH_MAX];
 	nserror ret;
-	struct netsurf_table monkey_table = {
+    struct neosurf_table monkey_table = {
 		.misc = &monkey_misc_table,
 		.window = monkey_window_table,
 		.download = monkey_download_table,
@@ -401,6 +439,8 @@ main(int argc, char **argv)
 		.layout = monkey_layout_table,
                 .llcache = filesystem_llcache_table,
 	};
+
+	moutf(MOUT_GENERIC, "BOOT MAIN ENTRY");
 
 #if (!defined(NDEBUG) && defined(HAVE_EXECINFO))
 	/* Catch segfault, illegal instructions and fp exceptions */
@@ -411,23 +451,28 @@ main(int argc, char **argv)
 	signal(SIGBUS, signal_handler);
 #endif
 
-	ret = netsurf_register(&monkey_table);
+    ret = neosurf_register(&monkey_table);
 	if (ret != NSERROR_OK) {
 		die("NetSurf operation table failed registration");
 	}
+
+	moutf(MOUT_GENERIC, "BOOT REGISTERED");
 
 	/* Unbuffer stdin/out/err */
 	setbuf(stdin, NULL);
 	setbuf(stdout, NULL);
 	setbuf(stderr, NULL);
+	moutf(MOUT_GENERIC, "BOOT SETBUF");
 
 	/* Prep the search paths */
-	respaths = nsmonkey_init_resource("${HOME}/.netsurf/:${NETSURFRES}:"MONKEY_RESPATH":./frontends/monkey/res");
+    respaths = nsmonkey_init_resource("${HOME}/.netsurf/:${NETSURFRES}:"MONKEY_RESPATH":./frontends/monkey/res:"MONKEY_SRCPATH"");
+	moutf(MOUT_GENERIC, "BOOT RESPATHS READY");
 
 	/* initialise logging. Not fatal if it fails but not much we can do
 	 * about it either.
 	 */
 	nslog_init(nslog_stream_configure, &argc, argv);
+	moutf(MOUT_GENERIC, "BOOT NSLOG INIT");
 
 	/* user options setup */
 	ret = nsoption_init(set_defaults, &nsoptions, &nsoptions_default);
@@ -438,25 +483,30 @@ main(int argc, char **argv)
 	nsoption_read(options, nsoptions);
 	free(options);
 	nsoption_commandline(&argc, argv, nsoptions);
+	moutf(MOUT_GENERIC, "BOOT OPTIONS READY");
 
 	messages = filepath_find(respaths, "Messages");
 	ret = messages_add_from_file(messages);
 	if (ret != NSERROR_OK) {
 		NSLOG(netsurf, INFO, "Messages failed to load");
 	}
+	moutf(MOUT_GENERIC, "BOOT MESSAGES LOADED");
 
 	/* common initialisation */
-	ret = netsurf_init(NULL);
+    ret = neosurf_init(NULL);
 	free(messages);
 	if (ret != NSERROR_OK) {
 		die("NetSurf failed to initialise");
 	}
+	moutf(MOUT_GENERIC, "BOOT CORE INIT");
 
 	filepath_sfinddef(respaths, buf, "mime.types", "/etc/");
 	monkey_fetch_filetype_init(buf);
+	moutf(MOUT_GENERIC, "BOOT FILETYPE INIT");
 
 	urldb_load(nsoption_charp(url_file));
 	urldb_load_cookies(nsoption_charp(cookie_file));
+	moutf(MOUT_GENERIC, "BOOT URLDB COOKIES LOADED");
 
 	/* Free resource paths now we're done finding resources */
 	for (char **s = respaths; *s != NULL; s++) {
@@ -484,14 +534,17 @@ main(int argc, char **argv)
 		die("login handler failed to register");
 	}
 
+	moutf(MOUT_GENERIC, "BOOT HANDLERS REGISTERED");
+
 
 	moutf(MOUT_GENERIC, "STARTED");
+	moutf(MOUT_GENERIC, "RUN LOOP START");
 	monkey_run();
 
 	moutf(MOUT_GENERIC, "CLOSING_DOWN");
 	monkey_kill_browser_windows();
 
-	netsurf_exit();
+    neosurf_exit();
 	moutf(MOUT_GENERIC, "FINISHED");
 
 	/* finalise options */
