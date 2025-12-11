@@ -26,7 +26,7 @@ Python code.
 
 # pylint: disable=locally-disabled, missing-docstring
 
-import asyncore
+import threading
 import os
 import socket
 import subprocess
@@ -34,71 +34,77 @@ import time
 import errno
 import sys
 
-class StderrEcho(asyncore.dispatcher):
-    def __init__(self, sockend):
-        asyncore.dispatcher.__init__(self, sock=sockend)
-        self.incoming = b""
+class StderrEcho(threading.Thread):
+    def __init__(self, stream):
+        super().__init__(daemon=True)
+        self.stream = stream
+        self.start()
 
-    def handle_connect(self):
-        pass
+    def run(self):
+        while True:
+            line = self.stream.readline()
+            if not line:
+                break
+            try:
+                s = line.decode('utf-8')
+            except UnicodeDecodeError:
+                print("WARNING: Unicode decode error")
+                s = line.decode('utf-8', 'replace')
+            sys.stderr.write("{}".format(s))
 
-    def handle_close(self):
-        # the pipe to the monkey process has closed
-        self.close()
+class StdoutReader(threading.Thread):
+    def __init__(self, stream, on_line):
+        super().__init__(daemon=True)
+        self.stream = stream
+        self.on_line = on_line
+        self.start()
 
-    def handle_read(self):
-        try:
-            got = self.recv(8192)
-            if not got:
-                return
-        except socket.error as error:
-            if error.errno == errno.EAGAIN or error.errno == errno.EWOULDBLOCK:
-                return
-            else:
-                raise
-
-        self.incoming += got
-        if b"\n" in self.incoming:
-            lines = self.incoming.split(b"\n")
-            self.incoming = lines.pop()
-            for line in lines:
-                try:
-                    line = line.decode('utf-8')
-                except UnicodeDecodeError:
-                    print("WARNING: Unicode decode error")
-                    line = line.decode('utf-8', 'replace')
-
-                sys.stderr.write("{}\n".format(line))
+    def run(self):
+        while True:
+            line = self.stream.readline()
+            if not line:
+                break
+            try:
+                s = line.decode('utf-8')
+            except UnicodeDecodeError:
+                s = line.decode('utf-8', 'replace')
+            sys.stderr.write("{}".format(s))
+            self.on_line(line)
 
 
-class MonkeyFarmer(asyncore.dispatcher):
-
-    # pylint: disable=locally-disabled, too-many-instance-attributes
+class MonkeyFarmer:
 
     def __init__(self, monkey_cmd, monkey_env, online, quiet=False, *, wrapper=None):
-        (mine, monkeys) = socket.socketpair()
-
-        asyncore.dispatcher.__init__(self, sock=mine)
-
-        (mine2, monkeyserr) = socket.socketpair()
-
-        self._errwrapper = StderrEcho(mine2)
-
         if wrapper is not None:
             new_cmd = list(wrapper)
             new_cmd.extend(monkey_cmd)
             monkey_cmd = new_cmd
 
-        self.monkey = subprocess.Popen(
-            monkey_cmd,
-            env=monkey_env,
-            stdin=monkeys,
-            stdout=monkeys,
-            stderr=monkeyserr,
-            close_fds=[mine, mine2])
+        exe_path = monkey_cmd[0] if isinstance(monkey_cmd, (list, tuple)) else monkey_cmd
+        if not os.path.isfile(exe_path):
+            sys.stderr.write("ERROR: nsmonkey executable not found: {}\n".format(exe_path))
+            sys.stderr.write("       Use a valid path, e.g. build-ninja\\frontends\\monkey\\nsmonkey.exe\n")
+            raise FileNotFoundError(exe_path)
 
-        monkeys.close()
-        monkeyserr.close()
+        try:
+            self.monkey = subprocess.Popen(
+                monkey_cmd,
+                env=monkey_env,
+                stdin=subprocess.PIPE,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                bufsize=0)
+        except FileNotFoundError as e:
+            sys.stderr.write("ERROR: Failed to launch nsmonkey: {}\n".format(e))
+            sys.stderr.write("       Command: {}\n".format(repr(monkey_cmd)))
+            raise
+
+        self.stdin = self.monkey.stdin
+        self.stdout = self.monkey.stdout
+        self.stderr = self.monkey.stderr
+
+        self.err_echo = StderrEcho(self.stderr)
+        self.stdout_reader = StdoutReader(self.stdout, self._on_stdout_line)
 
         self.buffer = b""
         self.incoming = b""
@@ -110,46 +116,20 @@ class MonkeyFarmer(asyncore.dispatcher):
         self.discussion = []
         self.maybe_slower = wrapper is not None
 
-    def handle_connect(self):
-        pass
+    def _on_stdout_line(self, line):
+        self.lines.append(line)
 
-    def handle_close(self):
-        # the pipe to the monkey process has closed
-        self.close()
-
-    def handle_read(self):
-        try:
-            got = self.recv(8192)
-            if not got:
+    def _pump_stdin(self):
+        if len(self.buffer) > 0:
+            try:
+                sent = self.stdin.write(self.buffer)
+                self.stdin.flush()
+                if sent is not None:
+                    self.buffer = self.buffer[sent:]
+                else:
+                    self.buffer = b""
+            except BrokenPipeError:
                 self.deadmonkey = True
-                #  ensure the child process is finished and report the exit
-                if self.monkey.poll() is None:
-                    self.monkey.terminate()
-                    self.monkey.wait()
-                print("Handling an exit {}".format(self.monkey.returncode))
-                print("The following are present in the queue: {}".format(self.lines))
-                self.lines.append("GENERIC EXIT {}".format(
-                    self.monkey.returncode).encode('utf-8'))
-                print("The queue is now: {}".format(self.lines))
-                return
-        except socket.error as error:
-            if error.errno == errno.EAGAIN or error.errno == errno.EWOULDBLOCK:
-                return
-            else:
-                raise
-
-        self.incoming += got
-        if b"\n" in self.incoming:
-            lines = self.incoming.split(b"\n")
-            self.incoming = lines.pop()
-            self.lines.extend(lines)
-
-    def writable(self):
-        return len(self.buffer) > 0
-
-    def handle_write(self):
-        sent = self.send(self.buffer)
-        self.buffer = self.buffer[sent:]
 
     def tell_monkey(self, *args):
         cmd = (" ".join(args))
@@ -192,15 +172,20 @@ class MonkeyFarmer(asyncore.dispatcher):
                 self.scheduled.pop(0)
                 func(self)
                 now = time.time()
-            if len(self.scheduled) > 0:
-                next_event = self.scheduled[0][0]
-                asyncore.loop(timeout=next_event - now, count=1)
-            else:
-                asyncore.loop(count=1)
-            while len(self.lines) > 0:
+            self._pump_stdin()
+            if self.monkey.poll() is not None and not self.deadmonkey:
+                self.deadmonkey = True
+                self.lines.append("GENERIC EXIT {}".format(
+                    self.monkey.returncode).encode('utf-8'))
+            if len(self.lines) > 0:
                 self.monkey_says(self.lines.pop(0))
                 if once or self.deadmonkey:
                     return
+            timeout = 0.01
+            if len(self.scheduled) > 0:
+                next_event = self.scheduled[0][0]
+                timeout = max(0.0, min(next_event - now, 0.05))
+            time.sleep(timeout)
 
 
 class Browser:
@@ -223,6 +208,13 @@ class Browser:
         now = time.time()
         timeout = now + 1
 
+        try:
+            import sys
+            if sys.platform.startswith('win'):
+                timeout = now + 5
+        except Exception:
+            pass
+
         if wrapper is not None:
             timeout = now + 10
 
@@ -236,7 +228,7 @@ class Browser:
             self.farmer.tell_monkey("OPTIONS " + (" ".join(['--' + opt for opt in opts])))
 
     def on_monkey_line(self, line):
-        parts = line.split(" ")
+        parts = line.strip().split(" ")
         handler = getattr(self, "handle_" + parts[0], None)
         if handler is not None:
             handler(*parts[1:])
@@ -246,7 +238,14 @@ class Browser:
 
     def quit_and_wait(self):
         self.quit()
-        self.farmer.loop()
+        deadline = time.time() + 5
+        while (not self.stopped) and (time.time() < deadline):
+            self.farmer.loop(once=True)
+            try:
+                if self.farmer.monkey.poll() is not None:
+                    return True
+            except Exception:
+                pass
         return self.stopped
 
     def handle_GENERIC(self, what, *args):
@@ -257,9 +256,9 @@ class Browser:
         elif what == 'LAUNCH':
             self.launchurl = args[1]
         elif what == 'EXIT':
-            if not self.stopped:
-                print("Unexpected exit of monkey process with code {}".format(args[0]))
-            assert self.stopped
+            if len(args) > 0 and args[0] != '0':
+                raise RuntimeError("Unexpected exit of monkey process with code {}".format(args[0]))
+            self.stopped = True
         else:
             pass
 

@@ -23,10 +23,10 @@
 #include <limits.h>
 
 #include "utils/errors.h"
-#include "utils/file.h"
-#include "utils/nsurl.h"
+#include "neosurf/utils/file.h"
+#include "neosurf/utils/nsurl.h"
 #include "utils/filepath.h"
-#include "netsurf/fetch.h"
+#include "neosurf/fetch.h"
 
 #include "monkey/filetype.h"
 #include "monkey/fetch.h"
@@ -39,7 +39,7 @@ static nsurl *gui_get_resource_url(const char *path)
 	char buf[PATH_MAX];
 	nsurl *url = NULL;
 
-	netsurf_path_to_nsurl(filepath_sfind(respaths, buf, path), &url);
+    neosurf_path_to_nsurl(filepath_sfind(respaths, buf, path), &url);
 
 	return url;
 }

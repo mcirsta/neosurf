@@ -219,6 +219,11 @@ def run_test_step_action_launch(ctx, step):
         monkey_env=monkey_env,
         quiet=True,
         wrapper=ctx.get("wrapper"))
+    # Ensure STARTED is observed before asserting
+    import time as _time
+    _deadline = _time.time() + 2
+    while (not ctx['browser'].started) and (not ctx['browser'].stopped) and (_time.time() < _deadline):
+        ctx['browser'].farmer.loop(once=True)
     assert_browser(ctx)
     ctx['windows'] = dict()
 

@@ -70,10 +70,9 @@ monkey_process_command(void)
 	handle_command_fn fn = NULL;
 	char **nargv;
   
-	if (fgets(buffer, PATH_MAX, stdin) == NULL) {
-		/* end of input or read error so issue QUIT */
-		sprintf(buffer, "QUIT\n");
-	}
+    if (fgets(buffer, PATH_MAX, stdin) == NULL) {
+        return;
+    }
 
 	/* remove newline */
 	buffer[strlen(buffer) - 1] = '\0';
