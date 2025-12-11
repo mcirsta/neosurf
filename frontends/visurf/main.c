@@ -1396,8 +1396,14 @@ main(int argc, char *argv[]) {
 			timeout = timespec_to_msec(&diff);
 			if (timeout <= 0) {
 				timeout = 0;
+			} else if (timeout == 0 && diff.tv_nsec > 0) {
+				/* If less than 1ms remains, wait at least 1ms to avoid busy looping */
+				timeout = 1;
 			}
 		}
+
+		/* Flush any pending Wayland requests before blocking */
+		wl_display_flush(state.wl_display);
 
 		int max_fd;
 		fd_set read_fd, write_fd, except_fd;
