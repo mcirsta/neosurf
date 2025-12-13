@@ -49,8 +49,8 @@ incremental_reflow:1
 min_reflow_period:25
 core_select_menu:1
 display_decoded_idn:0
-max_fetchers:24
-max_fetchers_per_host:5
+max_fetchers:256
+max_fetchers_per_host:64
 max_cached_fetch_handles:6
 max_retried_fetches:1
 curl_fetch_timeout:30
