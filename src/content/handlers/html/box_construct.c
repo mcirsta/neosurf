@@ -1281,10 +1281,10 @@ static void convert_xml_to_box(void *p)
 				if (box_construct_text(ctx) == false) {
 					ctx->cb(ctx->content, false);
 					dom_node_unref(ctx->n);
-					free(ctx);
-					NSLOG(netsurf, DEBUG, "PROFILER: STOP Box construction slice %p", ctx);
-					return;
-				}
+				free(ctx);
+				NSLOG(netsurf, DEBUG, "PROFILER: STOP Box construction slice %p", ctx);
+				return;
+			}
 			}
 
 			next = next_node(next, ctx->content, true);

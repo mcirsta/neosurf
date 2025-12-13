@@ -248,6 +248,14 @@ nserror llcache_handle_force_stream(llcache_handle *handle);
 nserror llcache_handle_invalidate_cache_data(llcache_handle *handle);
 
 /**
+ * Clear validators (etag, last-modified) for a low-level cache object
+ *
+ * \param handle  Handle to clear validators for
+ * \return NSERROR_OK on success, appropriate error otherwise
+ */
+nserror llcache_handle_clear_validators(llcache_handle *handle);
+
+/**
  * Retrieve the post-redirect URL of a low-level cache object
  *
  * \param handle  Handle to retrieve URL from

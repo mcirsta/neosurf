@@ -480,6 +480,13 @@ const uint8_t *content__get_source_data(struct content *c, size_t *size);
 void content__invalidate_reuse_data(struct content *c);
 
 /**
+ * Clear a content's validators
+ *
+ * \param c content to clear validators for
+ */
+void content__clear_validators(struct content *c);
+
+/**
  * Retrieve the refresh URL for a content
  *
  * \param c Content to retrieve refresh URL from
