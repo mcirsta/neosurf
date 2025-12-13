@@ -23,6 +23,7 @@ set(NEOSURF_WINDOWS_SRCS
 	plot.c
 	pointers.c
 	prefs.c
+	qpc_safe.c
 	schedule.c
 	windbg.c
 	window.c
