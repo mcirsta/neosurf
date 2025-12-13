@@ -566,3 +566,79 @@ if (typeof ResizeObserver === 'undefined') {
         this.disconnect = function() {};
     };
 }
+
+// CSS.supports polyfill
+if (typeof CSS === 'undefined') {
+    this.CSS = {};
+}
+if (typeof CSS.supports === 'undefined') {
+    (function() {
+        // List of properties supported by LibCSS
+        // This list is statically generated from LibCSS source
+        var supportedProperties = [
+            "align-content", "align-items", "align-self", "azimuth", 
+            "background", "background-attachment", "background-color", 
+            "background-image", "background-position", "background-repeat", 
+            "border", "border-bottom", "border-bottom-color", 
+            "border-bottom-style", "border-bottom-width", "border-collapse", 
+            "border-color", "border-left", "border-left-color", 
+            "border-left-style", "border-left-width", "border-right", 
+            "border-right-color", "border-right-style", "border-right-width", 
+            "border-spacing", "border-style", "border-top", "border-top-color", 
+            "border-top-style", "border-top-width", "border-width", "bottom", 
+            "box-sizing", "break-after", "break-before", "break-inside", 
+            "caption-side", "clear", "clip", "color", "column-count", 
+            "column-fill", "column-gap", "column-rule", "column-rule-color", 
+            "column-rule-style", "column-rule-width", "column-span", 
+            "column-width", "columns", "content", "counter-increment", 
+            "counter-reset", "cue", "cue-after", "cue-before", "cursor", 
+            "direction", "display", "elevation", "empty-cells", "fill-opacity", 
+            "flex", "flex-basis", "flex-direction", "flex-flow", "flex-grow", 
+            "flex-shrink", "flex-wrap", "float", "font", "font-family", 
+            "font-size", "font-style", "font-variant", "font-weight", "height", 
+            "justify-content", "left", "letter-spacing", "line-height", 
+            "list-style", "list-style-image", "list-style-position", 
+            "list-style-type", "margin", "margin-bottom", "margin-left", 
+            "margin-right", "margin-top", "max-height", "max-width", 
+            "min-height", "min-width", "opacity", "order", "orphans", 
+            "outline", "outline-color", "outline-style", "outline-width", 
+            "overflow", "overflow-x", "overflow-y", "padding", 
+            "padding-bottom", "padding-left", "padding-right", "padding-top", 
+            "page-break-after", "page-break-before", "page-break-inside", 
+            "pause", "pause-after", "pause-before", "pitch", "pitch-range", 
+            "play-during", "position", "quotes", "richness", "right", "speak", 
+            "speak-header", "speak-numeral", "speak-punctuation", 
+            "speech-rate", "stress", "stroke-opacity", "table-layout", 
+            "text-align", "text-decoration", "text-indent", "text-transform", 
+            "top", "unicode-bidi", "vertical-align", "visibility", 
+            "voice-family", "volume", "white-space", "widows", "width", 
+            "word-spacing", "writing-mode", "z-index"
+        ];
+
+        CSS.supports = function(ident, val) {
+            if (arguments.length === 0) return false;
+            
+            var prop;
+            if (arguments.length === 1) {
+                var s = ident.toString();
+                // Simple check for (prop: val) or prop: val
+                if (s.indexOf('(') === 0 && s.lastIndexOf(')') === s.length - 1) {
+                    s = s.substring(1, s.length - 1);
+                }
+                var parts = s.split(':');
+                if (parts.length >= 2) {
+                    prop = parts[0].trim().toLowerCase();
+                } else {
+                    prop = s.trim().toLowerCase();
+                }
+            } else {
+                prop = ident.toString().toLowerCase();
+            }
+            
+            return supportedProperties.indexOf(prop) !== -1;
+        };
+    })();
+}
+if (typeof CSS.escape === 'undefined') {
+    CSS.escape = function(s) { return s; }; // Minimal implementation
+}

@@ -1,29 +1,11 @@
-file(GLOB LIBCSS_PROPERTIES 
-    ${CMAKE_SOURCE_DIR}/contrib/libcss/src/parse/properties/properties.gen
-    ${CMAKE_SOURCE_DIR}/contrib/libcss/src/parse/properties/*.c
-)
-
-# Generate updated polyfill.js with CSS properties
-add_custom_command(
-    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/content/handlers/javascript/duktape/polyfill.js
-    COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/content/handlers/javascript/duktape
-    COMMAND ${PYTHON3} ${CMAKE_SOURCE_DIR}/src/content/handlers/javascript/duktape/gen_css_props.py
-        --libcss-dir ${CMAKE_SOURCE_DIR}/contrib/libcss/src/parse/properties
-        --template ${CMAKE_SOURCE_DIR}/src/content/handlers/javascript/duktape/polyfill.js
-        --output ${CMAKE_CURRENT_BINARY_DIR}/content/handlers/javascript/duktape/polyfill.js
-    DEPENDS ${CMAKE_SOURCE_DIR}/src/content/handlers/javascript/duktape/polyfill.js
-            ${CMAKE_SOURCE_DIR}/src/content/handlers/javascript/duktape/gen_css_props.py
-            ${LIBCSS_PROPERTIES}
-)
-
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/content/handlers/javascript/duktape/polyfill.js.inc
     COMMAND ${CMAKE_COMMAND} -E make_directory ${CMAKE_CURRENT_BINARY_DIR}/content/handlers/javascript/duktape
     COMMAND ${PYTHON3} ${CMAKE_SOURCE_DIR}/utils/cmake_helper.py file-to-hex
-        ${CMAKE_CURRENT_BINARY_DIR}/content/handlers/javascript/duktape/polyfill.js
+        ${CMAKE_SOURCE_DIR}/src/content/handlers/javascript/duktape/polyfill.js
         ${CMAKE_CURRENT_BINARY_DIR}/content/handlers/javascript/duktape/polyfill.js.inc
         polyfill_js
-    DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/content/handlers/javascript/duktape/polyfill.js
+    DEPENDS ${CMAKE_SOURCE_DIR}/src/content/handlers/javascript/duktape/polyfill.js
 )
 add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/content/handlers/javascript/duktape/generics.js.inc
