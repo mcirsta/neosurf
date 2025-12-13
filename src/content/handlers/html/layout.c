@@ -5545,6 +5545,8 @@ bool layout_document(html_content *content, int width, int height)
 	struct box *doc = content->layout;
 	const struct gui_layout_table *font_func = content->font_func;
 
+	NSLOG(netsurf, DEBUG, "PROFILER: START layout_document %p", content);
+
 	NSLOG(layout, DEBUG, "Doing layout to %ix%i of %s",
 			width, height, nsurl_access(content_get_url(
 					&content->base)));
@@ -5588,6 +5590,8 @@ bool layout_document(html_content *content, int width, int height)
 	layout_position_relative(&content->unit_len_ctx, doc, doc, 0, 0);
 
 	layout_calculate_descendant_bboxes(&content->unit_len_ctx, doc);
+
+	NSLOG(netsurf, DEBUG, "PROFILER: STOP layout_document %p", content);
 
 	return ret;
 }
