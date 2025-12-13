@@ -48,3 +48,5 @@ install_mingw
 install_release
 *.diff
 Testing/Temporary
+duktape
+duktape-build
