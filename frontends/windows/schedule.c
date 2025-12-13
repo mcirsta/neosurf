@@ -17,6 +17,7 @@
  */
 
 #include <stdlib.h>
+#include <stdint.h>
 #include <time.h>
 
 #include "neosurf/utils/sys_time.h"
@@ -24,6 +25,7 @@
 #include "neosurf/utils/errors.h"
 
 #include "windows/schedule.h"
+#include "windows/qpc_safe.h"
 
 /* linked list of scheduled callbacks */
 static struct nscallback *schedule_list = NULL;
@@ -34,11 +36,26 @@ static struct nscallback *schedule_list = NULL;
 struct nscallback
 {
         struct nscallback *next;
-	struct timeval tv;
+	uint64_t tv; /* Absolute time in microseconds */
 	void (*callback)(void *p);
 	void *p;
 };
 
+
+/**
+ * Get current monotonic time in microseconds
+ */
+static uint64_t get_monotonic_time_us(void)
+{
+	uint64_t current_us;
+	if (qpc_safe_get_monotonic_us(&current_us)) {
+		return current_us;
+	}
+	/* Fallback to original gettimeofday */
+	struct timeval tv;
+	gettimeofday(&tv, NULL);
+	return ((uint64_t)tv.tv_sec * 1000000) + tv.tv_usec;
+}
 
 /**
  * Unschedule a callback.
@@ -99,7 +116,6 @@ static nserror schedule_remove(void (*callback)(void *p), void *p)
 nserror win32_schedule(int ival, void (*callback)(void *p), void *p)
 {
 	struct nscallback *nscb;
-	struct timeval tv;
 	nserror ret;
 
 	ret = schedule_remove(callback, p);
@@ -107,20 +123,17 @@ nserror win32_schedule(int ival, void (*callback)(void *p), void *p)
 		return ret;
 	}
 
-        tv.tv_sec = ival / 1000; /* miliseconds to seconds */
-        tv.tv_usec = (ival % 1000) * 1000; /* remainder to microseconds */
-
 	nscb = calloc(1, sizeof(struct nscallback));
 	if (nscb == NULL) {
 		return NSERROR_NOMEM;
 	}
 
 	NSLOG(schedule, DEBUG,
-	      "adding callback %p for %p(%p) at %d cs",
+	      "adding callback %p for %p(%p) at %d ms",
 	       nscb, callback, p, ival);
 
-	gettimeofday(&nscb->tv, NULL);
-	timeradd(&nscb->tv, &tv, &nscb->tv);
+	/* Store absolute time in microseconds */
+	nscb->tv = get_monotonic_time_us() + ((uint64_t)ival * 1000);
 
 	nscb->callback = callback;
 	nscb->p = p;
@@ -136,9 +149,8 @@ nserror win32_schedule(int ival, void (*callback)(void *p), void *p)
 int 
 schedule_run(void)
 {
-	struct timeval tv;
-	struct timeval nexttime;
-	struct timeval rettime;
+	uint64_t now;
+	uint64_t nexttime;
         struct nscallback *cur_nscb;
         struct nscallback *prev_nscb;
         struct nscallback *unlnk_nscb;
@@ -151,10 +163,10 @@ schedule_run(void)
         prev_nscb = NULL;
 	nexttime = cur_nscb->tv;
 
-	gettimeofday(&tv, NULL);
+	now = get_monotonic_time_us();
 
         while (cur_nscb != NULL) {
-                if (timercmp(&tv, &cur_nscb->tv, >)) {
+                if (now >= cur_nscb->tv) {
                         /* scheduled time */
 
                         /* remove callback */
@@ -190,7 +202,7 @@ schedule_run(void)
 			/* if the time to the event is sooner than the
 			 * currently recorded soonest event record it 
 			 */
-			if (timercmp(&nexttime, &cur_nscb->tv, >)) {
+			if (cur_nscb->tv < nexttime) {
 				nexttime = cur_nscb->tv;
 			}
                         /* move to next element */
@@ -200,18 +212,17 @@ schedule_run(void)
         }
 
 	/* make returned time relative to now */
-	timersub(&nexttime, &tv, &rettime);
+	int64_t diff = nexttime - now;
+	if (diff < 0) {
+		diff = 0;
+	}
+
+	/* Convert microseconds to milliseconds, rounding up */
+	int timeout = (int)((diff + 999) / 1000);
 
 	NSLOG(schedule, DEBUG,
-	      "returning time to next event as %ldms",
-	      (rettime.tv_sec * 1000) + (rettime.tv_usec / 1000));
-
-	/* return next event time in milliseconds (24days max wait) */
-	int timeout = (rettime.tv_sec * 1000) + (rettime.tv_usec / 1000);
-
-	if (timeout == 0 && rettime.tv_usec > 0) {
-		timeout = 1;
-	}
+	      "returning time to next event as %dms (diff %lldus)",
+	      timeout, diff);
 
 	return timeout;
 }
@@ -219,21 +230,20 @@ schedule_run(void)
 /* exported interface documented in schedule.h */
 void list_schedule(void)
 {
-	struct timeval tv;
+	uint64_t now;
         struct nscallback *cur_nscb;
 
-	gettimeofday(&tv, NULL);
+	now = get_monotonic_time_us();
 
-        NSLOG(neosurf, INFO, "schedule list at %ld:%ld", tv.tv_sec, tv.tv_usec);
+        NSLOG(neosurf, INFO, "schedule list at %lld", now);
 
         cur_nscb = schedule_list;
 
         while (cur_nscb != NULL) {
                 NSLOG(neosurf, INFO,
-		      "Schedule %p at %ld:%ld",
+		      "Schedule %p at %lld",
 		      cur_nscb,
-                      cur_nscb->tv.tv_sec,
-		      cur_nscb->tv.tv_usec);
+		      cur_nscb->tv);
                 cur_nscb = cur_nscb->next;
         }
 }
