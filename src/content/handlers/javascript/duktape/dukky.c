@@ -936,8 +936,8 @@ js_exec(jsthread *thread, const uint8_t *txt, size_t txtlen, const char *name)
 	dukky_enter_thread(thread);
 
 	duk_set_top(CTX, 0);
-	NSLOG(dukky, DEEPDEBUG, "Running %"PRIsizet" bytes from %s", txtlen, name);
-	/* NSLOG(dukky, DEEPDEBUG, "\n%s\n", txt); */
+	NSLOG(dukky, INFO, "Running %"PRIsizet" bytes from %s", txtlen, name);
+	NSLOG(dukky, INFO, "\n%.*s\n", (int)(txtlen > 200 ? 200 : txtlen), txt);
 
 	dukky_reset_start_time(CTX);
 	if (name != NULL) {
