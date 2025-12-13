@@ -222,7 +222,10 @@ getter Document::head()
 
 	dom_nodelist_unref(nodes);
 
-	if (retnode == NULL) return 0; /* coerced to undefined */
+	if (retnode == NULL) {
+		duk_push_null(ctx);
+		return 1;
+	}
 
 	dukky_push_node(ctx, retnode);
 
@@ -260,7 +263,8 @@ getter Document::body()
 		return 1;
 	}
 
-	return 0; /* coerced to undefined */
+	duk_push_null(ctx);
+	return 1;
 %}
 
 getter Document::location()
@@ -302,7 +306,8 @@ method Document::getElementById()
 		return 1;
 	}
 
-	return 0;
+	duk_push_null(ctx);
+	return 1;
 %}
 
 getter Document::documentElement()
