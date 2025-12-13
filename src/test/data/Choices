@@ -53,8 +53,8 @@ scale:100
 incremental_reflow:1
 min_reflow_period:25
 core_select_menu:1
-max_fetchers:24
-max_fetchers_per_host:5
+max_fetchers:256
+max_fetchers_per_host:64
 max_cached_fetch_handles:6
 suppress_curl_debug:1
 target_blank:1
