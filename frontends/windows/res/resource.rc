@@ -318,6 +318,11 @@ default.css             USER    "../../../src/resources/default.css"
 adblock.css             USER    "../../../src/resources/adblock.css"
 internal.css            USER    "../../../src/resources/internal.css"
 quirks.css              USER    "../../../src/resources/quirks.css"
+#if WINVER <= 0x0501
+user.css                USER    "../../../src/resources/user-xp.css"
+#else
+user.css                USER    "../../../src/resources/user-win10.css"
+#endif
 credits.html            USER    "../../../src/resources/credits.html"
 license.html            USER    "../../../src/resources/license.html"
 welcome.html            USER    "../../../src/resources/en/welcome.html"

@@ -4,6 +4,7 @@
 	<file>default.css</file>
 	<file>internal.css</file>
 	<file>quirks.css</file>
+	<file>user.css</file>
         <file>languages</file>
 	<file>neosurf.png</file>
 	<file>favicon.png</file>

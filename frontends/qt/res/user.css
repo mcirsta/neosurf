@@ -1,0 +1,280 @@
+/*
+ * Qt/Linux Theme for Neosurf
+ * Applies Qt Fusion/Breeze-style visual styling to web form elements
+ * Matches the default Qt look on modern Linux desktops (KDE/GNOME)
+ * Note: This stylesheet only changes visual appearance (colors, borders)
+ *       without affecting element dimensions or layout
+ */
+
+/* =============================================================================
+   Text Inputs - Qt Fusion style
+   ============================================================================= */
+input[type=text],
+input[type=password],
+input[type=email],
+input[type=url],
+input[type=search],
+input[type=tel],
+input[type=number],
+input[type=date],
+input[type=time],
+input[type=datetime-local],
+input:not([type]) {
+    background-color: #fcfcfc;
+    color: #232627;
+    border: 1px solid #bdc3c7;
+    outline: none;
+}
+
+input[type=text]:hover,
+input[type=password]:hover,
+input[type=email]:hover,
+input[type=url]:hover,
+input[type=search]:hover,
+input[type=tel]:hover,
+input[type=number]:hover,
+input[type=date]:hover,
+input[type=time]:hover,
+input[type=datetime-local]:hover,
+input:not([type]):hover {
+    border-color: #93cee9;
+}
+
+input[type=text]:focus,
+input[type=password]:focus,
+input[type=email]:focus,
+input[type=url]:focus,
+input[type=search]:focus,
+input[type=tel]:focus,
+input[type=number]:focus,
+input[type=date]:focus,
+input[type=time]:focus,
+input[type=datetime-local]:focus,
+input:not([type]):focus {
+    border-color: #3daee9;
+}
+
+input[type=text]:disabled,
+input[type=password]:disabled,
+input[type=email]:disabled,
+input[type=url]:disabled,
+input[type=search]:disabled,
+input[type=tel]:disabled,
+input[type=number]:disabled,
+input:not([type]):disabled {
+    background-color: #eff0f1;
+    color: #7f8c8d;
+    border-color: #bdc3c7;
+}
+
+/* =============================================================================
+   Buttons - Qt Fusion/Breeze style
+   ============================================================================= */
+button,
+input[type=button],
+input[type=submit],
+input[type=reset] {
+    background-color: #eff0f1;
+    color: #232627;
+    border: 1px solid #bdc3c7;
+    cursor: pointer;
+    outline: none;
+}
+
+button:hover,
+input[type=button]:hover,
+input[type=submit]:hover,
+input[type=reset]:hover {
+    background-color: #e3f3fb;
+    border-color: #3daee9;
+}
+
+button:active,
+input[type=button]:active,
+input[type=submit]:active,
+input[type=reset]:active {
+    background-color: #d1ebf7;
+    border-color: #1d99e0;
+}
+
+button:focus,
+input[type=button]:focus,
+input[type=submit]:focus,
+input[type=reset]:focus {
+    border-color: #3daee9;
+}
+
+button:disabled,
+input[type=button]:disabled,
+input[type=submit]:disabled,
+input[type=reset]:disabled {
+    background-color: #eff0f1;
+    color: #a1a9b1;
+    border-color: #bdc3c7;
+    cursor: default;
+}
+
+/* Submit buttons - Breeze accent blue */
+input[type=submit] {
+    background-color: #3daee9;
+    color: #ffffff;
+    border-color: #1d99e0;
+}
+
+input[type=submit]:hover {
+    background-color: #5bbef0;
+    border-color: #1d99e0;
+}
+
+input[type=submit]:active {
+    background-color: #1d99e0;
+    border-color: #1a8dcf;
+}
+
+input[type=submit]:disabled {
+    background-color: #a6d8f2;
+    color: #ffffff;
+    border-color: #a6d8f2;
+}
+
+/* =============================================================================
+   Checkboxes - Qt Breeze style
+   ============================================================================= */
+input[type=checkbox] {
+    background-color: #fcfcfc;
+    border: 1px solid #bdc3c7;
+    outline: none;
+}
+
+input[type=checkbox]:hover {
+    border-color: #93cee9;
+}
+
+input[type=checkbox]:checked {
+    background-color: #3daee9;
+    border-color: #3daee9;
+}
+
+input[type=checkbox]:focus {
+    border-color: #3daee9;
+}
+
+input[type=checkbox]:disabled {
+    background-color: #eff0f1;
+    border-color: #bdc3c7;
+    cursor: default;
+}
+
+input[type=checkbox]:checked:disabled {
+    background-color: #a6d8f2;
+    border-color: #a6d8f2;
+}
+
+/* =============================================================================
+   Radio Buttons - Qt Breeze style
+   ============================================================================= */
+input[type=radio] {
+    background-color: #fcfcfc;
+    border: 1px solid #bdc3c7;
+    outline: none;
+}
+
+input[type=radio]:hover {
+    border-color: #93cee9;
+}
+
+input[type=radio]:checked {
+    border-color: #3daee9;
+}
+
+input[type=radio]:focus {
+    border-color: #3daee9;
+}
+
+input[type=radio]:disabled {
+    background-color: #eff0f1;
+    border-color: #bdc3c7;
+    cursor: default;
+}
+
+/* =============================================================================
+   Select Dropdowns - Qt Breeze style
+   ============================================================================= */
+select {
+    background-color: #fcfcfc;
+    color: #232627;
+    border: 1px solid #bdc3c7;
+    cursor: pointer;
+    outline: none;
+}
+
+select:hover {
+    border-color: #93cee9;
+}
+
+select:focus {
+    border-color: #3daee9;
+}
+
+select:disabled {
+    background-color: #eff0f1;
+    color: #7f8c8d;
+    border-color: #bdc3c7;
+    cursor: default;
+}
+
+option:checked {
+    background-color: #3daee9;
+    color: #ffffff;
+}
+
+/* =============================================================================
+   Textarea - Qt Breeze style
+   ============================================================================= */
+textarea {
+    background-color: #fcfcfc;
+    color: #232627;
+    border: 1px solid #bdc3c7;
+    outline: none;
+}
+
+textarea:hover {
+    border-color: #93cee9;
+}
+
+textarea:focus {
+    border-color: #3daee9;
+}
+
+textarea:disabled {
+    background-color: #eff0f1;
+    color: #7f8c8d;
+    border-color: #bdc3c7;
+}
+
+/* =============================================================================
+   File Input - Qt style
+   ============================================================================= */
+input[type=file] {
+    background-color: transparent;
+    border: none;
+}
+
+/* =============================================================================
+   Fieldset and Legend - Qt Breeze style
+   ============================================================================= */
+fieldset {
+    border: 1px solid #bdc3c7;
+}
+
+legend {
+    color: #3daee9;
+}
+
+/* =============================================================================
+   Progress Bar - Qt Breeze style
+   ============================================================================= */
+progress {
+    border: none;
+    background-color: #eff0f1;
+}

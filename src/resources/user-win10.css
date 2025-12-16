@@ -1,0 +1,279 @@
+/*
+ * Windows 10 Theme for Neosurf
+ * Applies Windows 10 visual styling to web form elements
+ * Note: This stylesheet only changes visual appearance (colors, borders)
+ *       without affecting element dimensions or layout
+ */
+
+/* =============================================================================
+   Text Inputs - Visual only
+   ============================================================================= */
+input[type=text],
+input[type=password],
+input[type=email],
+input[type=url],
+input[type=search],
+input[type=tel],
+input[type=number],
+input[type=date],
+input[type=time],
+input[type=datetime-local],
+input:not([type]) {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #8a8a8a;
+    outline: none;
+}
+
+input[type=text]:hover,
+input[type=password]:hover,
+input[type=email]:hover,
+input[type=url]:hover,
+input[type=search]:hover,
+input[type=tel]:hover,
+input[type=number]:hover,
+input[type=date]:hover,
+input[type=time]:hover,
+input[type=datetime-local]:hover,
+input:not([type]):hover {
+    border-color: #171717;
+}
+
+input[type=text]:focus,
+input[type=password]:focus,
+input[type=email]:focus,
+input[type=url]:focus,
+input[type=search]:focus,
+input[type=tel]:focus,
+input[type=number]:focus,
+input[type=date]:focus,
+input[type=time]:focus,
+input[type=datetime-local]:focus,
+input:not([type]):focus {
+    border-color: #0078d7;
+}
+
+input[type=text]:disabled,
+input[type=password]:disabled,
+input[type=email]:disabled,
+input[type=url]:disabled,
+input[type=search]:disabled,
+input[type=tel]:disabled,
+input[type=number]:disabled,
+input:not([type]):disabled {
+    background-color: #f0f0f0;
+    color: #6d6d6d;
+    border-color: #cccccc;
+}
+
+/* =============================================================================
+   Buttons - Visual only
+   ============================================================================= */
+button,
+input[type=button],
+input[type=submit],
+input[type=reset] {
+    background-color: #e1e1e1;
+    color: #000000;
+    border: 1px solid #adadad;
+    cursor: pointer;
+    outline: none;
+}
+
+button:hover,
+input[type=button]:hover,
+input[type=submit]:hover,
+input[type=reset]:hover {
+    background-color: #c8e4fb;
+    border-color: #0078d7;
+}
+
+button:active,
+input[type=button]:active,
+input[type=submit]:active,
+input[type=reset]:active {
+    background-color: #aad6fc;
+    border-color: #005499;
+}
+
+button:focus,
+input[type=button]:focus,
+input[type=submit]:focus,
+input[type=reset]:focus {
+    border-color: #0078d7;
+}
+
+button:disabled,
+input[type=button]:disabled,
+input[type=submit]:disabled,
+input[type=reset]:disabled {
+    background-color: #f0f0f0;
+    color: #a0a0a0;
+    border-color: #cccccc;
+    cursor: default;
+}
+
+/* Primary/Default button style - Submit buttons get accent color */
+input[type=submit] {
+    background-color: #0078d7;
+    color: #ffffff;
+    border-color: #005499;
+}
+
+input[type=submit]:hover {
+    background-color: #1a86dc;
+    border-color: #005499;
+}
+
+input[type=submit]:active {
+    background-color: #005499;
+    border-color: #003d6e;
+}
+
+input[type=submit]:disabled {
+    background-color: #a0c8e8;
+    color: #ffffff;
+    border-color: #a0c8e8;
+}
+
+/* =============================================================================
+   Checkboxes - Visual only
+   ============================================================================= */
+input[type=checkbox] {
+    background-color: #ffffff;
+    border: 1px solid #8a8a8a;
+    outline: none;
+}
+
+input[type=checkbox]:hover {
+    border-color: #171717;
+}
+
+input[type=checkbox]:checked {
+    background-color: #0078d7;
+    border-color: #0078d7;
+}
+
+input[type=checkbox]:focus {
+    border-color: #0078d7;
+}
+
+input[type=checkbox]:disabled {
+    background-color: #f0f0f0;
+    border-color: #cccccc;
+    cursor: default;
+}
+
+input[type=checkbox]:checked:disabled {
+    background-color: #cccccc;
+    border-color: #cccccc;
+}
+
+/* =============================================================================
+   Radio Buttons - Visual only
+   ============================================================================= */
+input[type=radio] {
+    background-color: #ffffff;
+    border: 1px solid #8a8a8a;
+    outline: none;
+}
+
+input[type=radio]:hover {
+    border-color: #171717;
+}
+
+input[type=radio]:checked {
+    border-color: #0078d7;
+}
+
+input[type=radio]:focus {
+    border-color: #0078d7;
+}
+
+input[type=radio]:disabled {
+    background-color: #f0f0f0;
+    border-color: #cccccc;
+    cursor: default;
+}
+
+/* =============================================================================
+   Select Dropdowns - Visual only
+   ============================================================================= */
+select {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #8a8a8a;
+    cursor: pointer;
+    outline: none;
+}
+
+select:hover {
+    border-color: #171717;
+}
+
+select:focus {
+    border-color: #0078d7;
+}
+
+select:disabled {
+    background-color: #f0f0f0;
+    color: #6d6d6d;
+    border-color: #cccccc;
+    cursor: default;
+}
+
+option:checked {
+    background-color: #0078d7;
+    color: #ffffff;
+}
+
+/* =============================================================================
+   Textarea - Visual only
+   ============================================================================= */
+textarea {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #8a8a8a;
+    outline: none;
+}
+
+textarea:hover {
+    border-color: #171717;
+}
+
+textarea:focus {
+    border-color: #0078d7;
+}
+
+textarea:disabled {
+    background-color: #f0f0f0;
+    color: #6d6d6d;
+    border-color: #cccccc;
+}
+
+/* =============================================================================
+   File Input - Visual only
+   ============================================================================= */
+input[type=file] {
+    background-color: transparent;
+    border: none;
+}
+
+/* =============================================================================
+   Fieldset and Legend - Visual only
+   ============================================================================= */
+fieldset {
+    border: 1px solid #d9d9d9;
+}
+
+legend {
+    color: #0078d7;
+}
+
+/* =============================================================================
+   Progress Bar - Visual only
+   ============================================================================= */
+progress {
+    border: none;
+    background-color: #e6e6e6;
+}
