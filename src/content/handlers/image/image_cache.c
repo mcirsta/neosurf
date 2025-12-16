@@ -192,12 +192,12 @@ static void image_cache_stats_bitmap_add(struct image_cache_entry_s *centry)
 	if (image_cache->total_bitmap_size > image_cache->max_bitmap_size) {
 		image_cache->max_bitmap_size = image_cache->total_bitmap_size;
 		image_cache->max_bitmap_size_count = image_cache->bitmap_count;
-
 	}
 
 	if (image_cache->bitmap_count > image_cache->max_bitmap_count) {
 		image_cache->max_bitmap_count = image_cache->bitmap_count;
-		image_cache->max_bitmap_count_size = image_cache->total_bitmap_size;
+		image_cache->max_bitmap_count_size =
+			image_cache->total_bitmap_size;
 	}
 
 	if (centry->conversion_count == 2) {
@@ -256,7 +256,8 @@ static void image_cache__free_bitmap(struct image_cache_entry_s *centry)
 {
 	if (centry->bitmap != NULL) {
 #ifdef IMAGE_CACHE_VERBOSE
-		NSLOG(netsurf, INFO,
+		NSLOG(netsurf,
+		      INFO,
 		      "Freeing bitmap %p size %d age %d redraw count %d",
 		      centry->bitmap,
 		      centry->bitmap_size,
@@ -271,7 +272,6 @@ static void image_cache__free_bitmap(struct image_cache_entry_s *centry)
 			image_cache->specultive_miss_count++;
 		}
 	}
-
 }
 
 /**
@@ -310,12 +310,13 @@ static void image_cache__clean(struct image_cache_s *icache)
 		    icache->params.bg_clean_time) {
 			/* only consider older entries, avoids active entries */
 			if ((icache->total_bitmap_size >
-			     (icache->params.limit - icache->params.hysteresis)) &&
+			     (icache->params.limit -
+			      icache->params.hysteresis)) &&
 			    (rand() > (RAND_MAX / 2))) {
 				image_cache__free_bitmap(centry);
 			}
 		}
-		centry=centry->next;
+		centry = centry->next;
 	}
 }
 
@@ -338,8 +339,8 @@ static void image_cache__background_update(void *p)
 	image_cache__clean(icache);
 
 	guit->misc->schedule(icache->params.bg_clean_time,
-				image_cache__background_update,
-				icache);
+			     image_cache__background_update,
+			     icache);
 }
 
 /* exported interface documented in image_cache.h */
@@ -384,7 +385,8 @@ bool image_cache_speculate(struct content *c)
 	if ((image_cache->total_bitmap_size < image_cache->params.limit) &&
 	    (c->size <= image_cache->params.speculative_small)) {
 #ifdef IMAGE_CACHE_VERBOSE
-		NSLOG(netsurf, INFO,
+		NSLOG(netsurf,
+		      INFO,
 		      "content size (%d) is smaller than minimum (%d)",
 		      c->size,
 		      SPECULATE_SMALL);
@@ -423,11 +425,13 @@ image_cache_init(const struct image_cache_parameters *image_cache_parameters)
 	image_cache->params = *image_cache_parameters;
 
 	guit->misc->schedule(image_cache->params.bg_clean_time,
-				image_cache__background_update,
-				image_cache);
+			     image_cache__background_update,
+			     image_cache);
 
-	NSLOG(neosurf, INFO,
-	      "Image cache initialised with a limit of %"PRIsizet" hysteresis of %"PRIsizet,
+	NSLOG(neosurf,
+	      INFO,
+	      "Image cache initialised with a limit of %" PRIsizet
+	      " hysteresis of %" PRIsizet,
 	      image_cache->params.limit,
 	      image_cache->params.hysteresis);
 
@@ -442,32 +446,38 @@ nserror image_cache_fini(void)
 
 	guit->misc->schedule(-1, image_cache__background_update, image_cache);
 
-	NSLOG(neosurf, INFO, "Size at finish %"PRIsizet" (in %d)",
-	      image_cache->total_bitmap_size, image_cache->bitmap_count);
+	NSLOG(neosurf,
+	      INFO,
+	      "Size at finish %" PRIsizet " (in %d)",
+	      image_cache->total_bitmap_size,
+	      image_cache->bitmap_count);
 
 	while (image_cache->entries != NULL) {
 		image_cache__free_entry(image_cache->entries);
 	}
 
-	op_count = image_cache->hit_count +
-		image_cache->miss_count +
-		image_cache->fail_count;
+	op_count = image_cache->hit_count + image_cache->miss_count +
+		   image_cache->fail_count;
 
-	op_size = image_cache->hit_size +
-		image_cache->miss_size +
-		image_cache->fail_size;
+	op_size = image_cache->hit_size + image_cache->miss_size +
+		  image_cache->fail_size;
 
 	NSLOG(neosurf, INFO, "Age %ds", image_cache->current_age / 1000);
-	NSLOG(neosurf, INFO, "Peak size %"PRIsizet" (in %d)",
+	NSLOG(neosurf,
+	      INFO,
+	      "Peak size %" PRIsizet " (in %d)",
 	      image_cache->max_bitmap_size,
 	      image_cache->max_bitmap_size_count);
-	NSLOG(neosurf, INFO, "Peak image count %d (size %"PRIsizet")",
+	NSLOG(neosurf,
+	      INFO,
+	      "Peak image count %d (size %" PRIsizet ")",
 	      image_cache->max_bitmap_count,
 	      image_cache->max_bitmap_count_size);
 
-	if ((op_count > 0) && (op_size >0)) {
+	if ((op_count > 0) && (op_size > 0)) {
 
-		NSLOG(neosurf, INFO,
+		NSLOG(neosurf,
+		      INFO,
 		      "Cache total/hit/miss/fail (counts) %d/%d/%d/%d (100%%/%d%%/%d%%/%d%%)",
 		      op_count,
 		      image_cache->hit_count,
@@ -476,8 +486,11 @@ nserror image_cache_fini(void)
 		      (image_cache->hit_count * 100) / op_count,
 		      (image_cache->miss_count * 100) / op_count,
 		      (image_cache->fail_count * 100) / op_count);
-		NSLOG(neosurf, INFO,
-		      "Cache total/hit/miss/fail (size) %"PRIu64"/%"PRIu64"/%"PRIu64"/%"PRIu64" (100%%/%"PRId64"%%/%"PRId64"%%/%"PRId64"%%)",
+		NSLOG(neosurf,
+		      INFO,
+		      "Cache total/hit/miss/fail (size) %" PRIu64 "/%" PRIu64
+		      "/%" PRIu64 "/%" PRIu64 " (100%%/%" PRId64 "%%/%" PRId64
+		      "%%/%" PRId64 "%%)",
 		      op_size,
 		      image_cache->hit_size,
 		      image_cache->miss_size,
@@ -487,17 +500,21 @@ nserror image_cache_fini(void)
 		      (image_cache->fail_size * 100) / op_size);
 	}
 
-	NSLOG(neosurf, INFO,
+	NSLOG(neosurf,
+	      INFO,
 	      "Total images never rendered: %d (includes %d that were converted)",
 	      image_cache->total_unrendered,
 	      image_cache->specultive_miss_count);
 
-	NSLOG(neosurf, INFO,
+	NSLOG(neosurf,
+	      INFO,
 	      "Total number of excessive conversions: %d (from %d images converted more than once)",
 	      image_cache->total_extra_conversions,
 	      image_cache->total_extra_conversions_count);
 
-	NSLOG(neosurf, INFO, "Bitmap of size %d had most (%d) conversions",
+	NSLOG(neosurf,
+	      INFO,
+	      "Bitmap of size %d had most (%d) conversions",
 	      image_cache->peak_conversions_size,
 	      image_cache->peak_conversions);
 
@@ -508,21 +525,21 @@ nserror image_cache_fini(void)
 
 void image_cache_purge_bitmaps(void)
 {
-    struct image_cache_entry_s *centry;
-    if (image_cache == NULL) {
-        return;
-    }
-    centry = image_cache->entries;
-    while (centry != NULL) {
-        image_cache__free_bitmap(centry);
-        centry = centry->next;
-    }
+	struct image_cache_entry_s *centry;
+	if (image_cache == NULL) {
+		return;
+	}
+	centry = image_cache->entries;
+	while (centry != NULL) {
+		image_cache__free_bitmap(centry);
+		centry = centry->next;
+	}
 }
 
 /* exported interface documented in image_cache.h */
 nserror image_cache_add(struct content *content,
-            struct bitmap *bitmap,
-            image_cache_convert_fn *convert)
+			struct bitmap *bitmap,
+			image_cache_convert_fn *convert)
 {
 	struct image_cache_entry_s *centry;
 
@@ -544,8 +561,12 @@ nserror image_cache_add(struct content *content,
 		centry->bitmap_size = content->width * content->height * 4llu;
 	}
 
-	NSLOG(neosurf, INFO, "centry %p, content %p, bitmap %p", centry,
-	      content, bitmap);
+	NSLOG(neosurf,
+	      INFO,
+	      "centry %p, content %p, bitmap %p",
+	      centry,
+	      content,
+	      bitmap);
 
 	centry->convert = convert;
 
@@ -572,7 +593,6 @@ nserror image_cache_add(struct content *content,
 	}
 
 
-
 	return NSERROR_OK;
 }
 
@@ -584,8 +604,10 @@ nserror image_cache_remove(struct content *content)
 	/* get the cache entry */
 	centry = image_cache__find(content);
 	if (centry == NULL) {
-		NSLOG(neosurf, INFO,
-		      "Could not find cache entry for content (%p)", content);
+		NSLOG(neosurf,
+		      INFO,
+		      "Could not find cache entry for content (%p)",
+		      content);
 		return NSERROR_NOT_FOUND;
 	}
 
@@ -603,15 +625,13 @@ int image_cache_snsummaryf(char *string, size_t size, const char *fmt)
 	unsigned int op_count;
 	uint64_t op_size;
 
-	op_count = image_cache->hit_count +
-		image_cache->miss_count +
-		image_cache->fail_count;
+	op_count = image_cache->hit_count + image_cache->miss_count +
+		   image_cache->fail_count;
 
-	op_size = image_cache->hit_size +
-		image_cache->miss_size +
-		image_cache->fail_size;
+	op_size = image_cache->hit_size + image_cache->miss_size +
+		  image_cache->fail_size;
 
-	while((slen < size) && (fmt[fmtc] != 0)) {
+	while ((slen < size) && (fmt[fmtc] != 0)) {
 		if (fmt[fmtc] == '%') {
 			fmtc++;
 
@@ -623,20 +643,36 @@ int image_cache_snsummaryf(char *string, size_t size, const char *fmt)
 				pct = false;
 			}
 
-#define FMTCHR(chr,fmt,var) case chr : \
-slen += snprintf(string + slen, size - slen, "%"fmt, image_cache->var); break
+#define FMTCHR(chr, fmt, var)                                                  \
+	case chr:                                                              \
+		slen += snprintf(string + slen,                                \
+				 size - slen,                                  \
+				 "%" fmt,                                      \
+				 image_cache->var);                            \
+		break
 
-#define FMTPCHR(chr,fmt,var,div) \
-case chr :					\
-	if (pct) {							\
-		if (div > 0) {						\
-			slen += snprintf(string + slen, size - slen, "%"PRId64, (uint64_t)((image_cache->var * 100) / div)); \
-		} else {						\
-			slen += snprintf(string + slen, size - slen, "100"); \
-		}							\
-	} else {							\
-		slen += snprintf(string + slen, size - slen, "%"fmt, image_cache->var); \
-	} break
+#define FMTPCHR(chr, fmt, var, div)                                            \
+	case chr:                                                              \
+		if (pct) {                                                     \
+			if (div > 0) {                                         \
+				slen += snprintf(                              \
+					string + slen,                         \
+					size - slen,                           \
+					"%" PRId64,                            \
+					(uint64_t)((image_cache->var * 100) /  \
+						   div));                      \
+			} else {                                               \
+				slen += snprintf(string + slen,                \
+						 size - slen,                  \
+						 "100");                       \
+			}                                                      \
+		} else {                                                       \
+			slen += snprintf(string + slen,                        \
+					 size - slen,                          \
+					 "%" fmt,                              \
+					 image_cache->var);                    \
+		}                                                              \
+		break
 
 
 			switch (fmt[fmtc]) {
@@ -645,43 +681,45 @@ case chr :					\
 				slen++;
 				break;
 
-			FMTCHR('a', PRIsizet, params.limit);
-			FMTCHR('b', PRIsizet, params.hysteresis);
-			FMTCHR('c', PRIsizet, total_bitmap_size);
-			FMTCHR('d', "d", bitmap_count);
-			FMTCHR('e', "u", current_age / 1000);
-			FMTCHR('f', PRIsizet, max_bitmap_size);
-			FMTCHR('g', "d", max_bitmap_size_count);
-			FMTCHR('h', "d", max_bitmap_count);
-			FMTCHR('i', PRIsizet, max_bitmap_count_size);
+				FMTCHR('a', PRIsizet, params.limit);
+				FMTCHR('b', PRIsizet, params.hysteresis);
+				FMTCHR('c', PRIsizet, total_bitmap_size);
+				FMTCHR('d', "d", bitmap_count);
+				FMTCHR('e', "u", current_age / 1000);
+				FMTCHR('f', PRIsizet, max_bitmap_size);
+				FMTCHR('g', "d", max_bitmap_size_count);
+				FMTCHR('h', "d", max_bitmap_count);
+				FMTCHR('i', PRIsizet, max_bitmap_count_size);
 
 
 			case 'j':
-				slen += snprintf(string + slen, size - slen,
-						 "%u", pct?100:op_count);
+				slen += snprintf(string + slen,
+						 size - slen,
+						 "%u",
+						 pct ? 100 : op_count);
 				break;
 
-			FMTPCHR('k', "d", hit_count, op_count);
-			FMTPCHR('l', "d", miss_count, op_count);
-			FMTPCHR('m', "d", fail_count, op_count);
+				FMTPCHR('k', "d", hit_count, op_count);
+				FMTPCHR('l', "d", miss_count, op_count);
+				FMTPCHR('m', "d", fail_count, op_count);
 
 			case 'n':
-				slen += snprintf(string + slen, size - slen,
-						 "%"PRId64, pct?100:op_size);
+				slen += snprintf(string + slen,
+						 size - slen,
+						 "%" PRId64,
+						 pct ? 100 : op_size);
 				break;
 
-			FMTPCHR('o', PRId64, hit_size, op_size);
-			FMTPCHR('q', PRId64, miss_size, op_size);
-			FMTPCHR('r', PRId64, fail_size, op_size);
+				FMTPCHR('o', PRId64, hit_size, op_size);
+				FMTPCHR('q', PRId64, miss_size, op_size);
+				FMTPCHR('r', PRId64, fail_size, op_size);
 
-			FMTCHR('s', "d", total_unrendered);
-			FMTCHR('t', "d", specultive_miss_count);
-			FMTCHR('u', "d", total_extra_conversions);
-			FMTCHR('v', "d", total_extra_conversions_count);
-			FMTCHR('w', "u", peak_conversions_size);
-			FMTCHR('x', "d", peak_conversions);
-
-
+				FMTCHR('s', "d", total_unrendered);
+				FMTCHR('t', "d", specultive_miss_count);
+				FMTCHR('u', "d", total_extra_conversions);
+				FMTCHR('v', "d", total_extra_conversions_count);
+				FMTCHR('w', "u", peak_conversions_size);
+				FMTCHR('x', "d", peak_conversions);
 			}
 #undef FMTCHR
 #undef FMTPCHR
@@ -701,11 +739,10 @@ case chr :					\
 }
 
 /* exported interface documented in image_cache.h */
-int
-image_cache_snentryf(char *string,
-		     size_t size,
-		     unsigned int entryn,
-		     const char *fmt)
+int image_cache_snentryf(char *string,
+			 size_t size,
+			 unsigned int entryn,
+			 const char *fmt)
 {
 	struct image_cache_entry_s *centry;
 	size_t slen = 0; /* current output string length */
@@ -716,66 +753,91 @@ image_cache_snentryf(char *string,
 	if (centry == NULL)
 		return -1;
 
-	while((slen < size) && (fmt[fmtc] != 0)) {
+	while ((slen < size) && (fmt[fmtc] != 0)) {
 		if (fmt[fmtc] == '%') {
 			fmtc++;
 			switch (fmt[fmtc]) {
 			case 'e':
-				slen += snprintf(string + slen, size - slen,
-						"%u", entryn);
+				slen += snprintf(string + slen,
+						 size - slen,
+						 "%u",
+						 entryn);
 				break;
 
 			case 'r':
-				slen += snprintf(string + slen, size - slen,
-						"%u", centry->redraw_count);
+				slen += snprintf(string + slen,
+						 size - slen,
+						 "%u",
+						 centry->redraw_count);
 				break;
 
 			case 'a':
-				slen += snprintf(string + slen, size - slen,
-						 "%.2f", (float)((image_cache->current_age -  centry->redraw_age)) / 1000);
+				slen += snprintf(
+					string + slen,
+					size - slen,
+					"%.2f",
+					(float)((image_cache->current_age -
+						 centry->redraw_age)) /
+						1000);
 				break;
 
 
 			case 'c':
-				slen += snprintf(string + slen, size - slen,
-						"%d", centry->conversion_count);
+				slen += snprintf(string + slen,
+						 size - slen,
+						 "%d",
+						 centry->conversion_count);
 				break;
 
 			case 'g':
-				slen += snprintf(string + slen, size - slen,
-						"%.2f", (float)((image_cache->current_age -  centry->bitmap_age)) / 1000);
+				slen += snprintf(
+					string + slen,
+					size - slen,
+					"%.2f",
+					(float)((image_cache->current_age -
+						 centry->bitmap_age)) /
+						1000);
 				break;
 
 			case 'k':
-				slen += snprintf(string + slen, size - slen,
-						"%p", centry->content);
+				slen += snprintf(string + slen,
+						 size - slen,
+						 "%p",
+						 centry->content);
 				break;
 
 			case 'U':
-				slen += snprintf(string + slen, size - slen,
-						"%s", nsurl_access(llcache_handle_get_url(centry->content->llcache)));
+				slen += snprintf(
+					string + slen,
+					size - slen,
+					"%s",
+					nsurl_access(llcache_handle_get_url(
+						centry->content->llcache)));
 				break;
 
 			case 'o':
-				if (nsurl_has_component(llcache_handle_get_url(
-						centry->content->llcache),
-						NSURL_HOST)) {
+				if (nsurl_has_component(
+					    llcache_handle_get_url(
+						    centry->content->llcache),
+					    NSURL_HOST)) {
 					origin = nsurl_get_component(
-							llcache_handle_get_url(
-							centry->content->
-								llcache),
-							NSURL_HOST);
+						llcache_handle_get_url(
+							centry->content
+								->llcache),
+						NSURL_HOST);
 
 					slen += snprintf(string + slen,
-							size - slen, "%s",
-							lwc_string_data(
-								origin));
+							 size - slen,
+							 "%s",
+							 lwc_string_data(
+								 origin));
 
 					lwc_string_unref(origin);
 				} else {
 					slen += snprintf(string + slen,
-							size - slen, "%s",
-							"localhost");
+							 size - slen,
+							 "%s",
+							 "localhost");
 				}
 				break;
 
@@ -818,8 +880,10 @@ bool image_cache_redraw(struct content *c,
 	/* get the cache entry */
 	centry = image_cache__find(c);
 	if (centry == NULL) {
-		NSLOG(neosurf, INFO,
-		      "Could not find cache entry for content (%p)", c);
+		NSLOG(neosurf,
+		      INFO,
+		      "Could not find cache entry for content (%p)",
+		      c);
 		return false;
 	}
 
@@ -858,8 +922,10 @@ void image_cache_destroy(struct content *content)
 	/* get the cache entry */
 	centry = image_cache__find(content);
 	if (centry == NULL) {
-		NSLOG(neosurf, INFO,
-		      "Could not find cache entry for content (%p)", content);
+		NSLOG(neosurf,
+		      INFO,
+		      "Could not find cache entry for content (%p)",
+		      content);
 	} else {
 		image_cache__free_entry(centry);
 	}
