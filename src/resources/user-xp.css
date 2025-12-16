@@ -1,0 +1,283 @@
+/*
+ * Windows XP Theme for Neosurf
+ * Applies Windows XP Luna visual styling to web form elements
+ * Note: This stylesheet only changes visual appearance (colors, borders)
+ *       without affecting element dimensions or layout
+ */
+
+/* =============================================================================
+   Text Inputs - Windows XP style (white with blue-gray border)
+   ============================================================================= */
+input[type=text],
+input[type=password],
+input[type=email],
+input[type=url],
+input[type=search],
+input[type=tel],
+input[type=number],
+input[type=date],
+input[type=time],
+input[type=datetime-local],
+input:not([type]) {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #7f9db9;
+    outline: none;
+}
+
+input[type=text]:hover,
+input[type=password]:hover,
+input[type=email]:hover,
+input[type=url]:hover,
+input[type=search]:hover,
+input[type=tel]:hover,
+input[type=number]:hover,
+input[type=date]:hover,
+input[type=time]:hover,
+input[type=datetime-local]:hover,
+input:not([type]):hover {
+    border-color: #69a3ce;
+}
+
+input[type=text]:focus,
+input[type=password]:focus,
+input[type=email]:focus,
+input[type=url]:focus,
+input[type=search]:focus,
+input[type=tel]:focus,
+input[type=number]:focus,
+input[type=date]:focus,
+input[type=time]:focus,
+input[type=datetime-local]:focus,
+input:not([type]):focus {
+    border-color: #3c7fb1;
+}
+
+input[type=text]:disabled,
+input[type=password]:disabled,
+input[type=email]:disabled,
+input[type=url]:disabled,
+input[type=search]:disabled,
+input[type=tel]:disabled,
+input[type=number]:disabled,
+input:not([type]):disabled {
+    background-color: #f0f0f0;
+    color: #6d6d6d;
+    border-color: #adb2b5;
+}
+
+/* =============================================================================
+   Buttons - Windows XP Luna style (gradient blue with 3D effect)
+   ============================================================================= */
+button,
+input[type=button],
+input[type=submit],
+input[type=reset] {
+    background-color: #ece9d8;
+    color: #000000;
+    border: 1px solid #003c74;
+    border-top-color: #ffffff;
+    border-left-color: #ffffff;
+    border-right-color: #7a8a99;
+    border-bottom-color: #7a8a99;
+    cursor: pointer;
+    outline: none;
+}
+
+button:hover,
+input[type=button]:hover,
+input[type=submit]:hover,
+input[type=reset]:hover {
+    background-color: #dfd8c8;
+    border-color: #316ac5;
+}
+
+button:active,
+input[type=button]:active,
+input[type=submit]:active,
+input[type=reset]:active {
+    background-color: #c8d6e8;
+    border-top-color: #7a8a99;
+    border-left-color: #7a8a99;
+    border-right-color: #ffffff;
+    border-bottom-color: #ffffff;
+}
+
+button:focus,
+input[type=button]:focus,
+input[type=submit]:focus,
+input[type=reset]:focus {
+    border-color: #003c74;
+}
+
+button:disabled,
+input[type=button]:disabled,
+input[type=submit]:disabled,
+input[type=reset]:disabled {
+    background-color: #ece9d8;
+    color: #aca899;
+    border-color: #aca899;
+    cursor: default;
+}
+
+/* Submit buttons - XP blue accent */
+input[type=submit] {
+    background-color: #d3e5fa;
+    border-color: #003c74;
+}
+
+input[type=submit]:hover {
+    background-color: #c1d9f4;
+}
+
+input[type=submit]:active {
+    background-color: #98b7d6;
+}
+
+input[type=submit]:disabled {
+    background-color: #d9dfe5;
+    color: #8a9199;
+    border-color: #8a9199;
+}
+
+/* =============================================================================
+   Checkboxes - Windows XP style
+   ============================================================================= */
+input[type=checkbox] {
+    background-color: #ffffff;
+    border: 1px solid #7f9db9;
+    outline: none;
+}
+
+input[type=checkbox]:hover {
+    border-color: #69a3ce;
+}
+
+input[type=checkbox]:checked {
+    background-color: #cfe3f6;
+    border-color: #3c7fb1;
+}
+
+input[type=checkbox]:focus {
+    border-color: #3c7fb1;
+}
+
+input[type=checkbox]:disabled {
+    background-color: #f0f0f0;
+    border-color: #aca899;
+    cursor: default;
+}
+
+input[type=checkbox]:checked:disabled {
+    background-color: #e0e0e0;
+    border-color: #aca899;
+}
+
+/* =============================================================================
+   Radio Buttons - Windows XP style
+   ============================================================================= */
+input[type=radio] {
+    background-color: #ffffff;
+    border: 1px solid #7f9db9;
+    outline: none;
+}
+
+input[type=radio]:hover {
+    border-color: #69a3ce;
+}
+
+input[type=radio]:checked {
+    border-color: #3c7fb1;
+}
+
+input[type=radio]:focus {
+    border-color: #3c7fb1;
+}
+
+input[type=radio]:disabled {
+    background-color: #f0f0f0;
+    border-color: #aca899;
+    cursor: default;
+}
+
+/* =============================================================================
+   Select Dropdowns - Windows XP style
+   ============================================================================= */
+select {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #7f9db9;
+    cursor: pointer;
+    outline: none;
+}
+
+select:hover {
+    border-color: #69a3ce;
+}
+
+select:focus {
+    border-color: #3c7fb1;
+}
+
+select:disabled {
+    background-color: #f0f0f0;
+    color: #6d6d6d;
+    border-color: #aca899;
+    cursor: default;
+}
+
+option:checked {
+    background-color: #316ac5;
+    color: #ffffff;
+}
+
+/* =============================================================================
+   Textarea - Windows XP style
+   ============================================================================= */
+textarea {
+    background-color: #ffffff;
+    color: #000000;
+    border: 1px solid #7f9db9;
+    outline: none;
+}
+
+textarea:hover {
+    border-color: #69a3ce;
+}
+
+textarea:focus {
+    border-color: #3c7fb1;
+}
+
+textarea:disabled {
+    background-color: #f0f0f0;
+    color: #6d6d6d;
+    border-color: #aca899;
+}
+
+/* =============================================================================
+   File Input - Windows XP style
+   ============================================================================= */
+input[type=file] {
+    background-color: transparent;
+    border: none;
+}
+
+/* =============================================================================
+   Fieldset and Legend - Windows XP style
+   ============================================================================= */
+fieldset {
+    border: 1px solid #7f9db9;
+}
+
+legend {
+    color: #003c74;
+}
+
+/* =============================================================================
+   Progress Bar - Windows XP style (green)
+   ============================================================================= */
+progress {
+    border: none;
+    background-color: #ece9d8;
+}
