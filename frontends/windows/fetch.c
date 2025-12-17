@@ -26,12 +26,10 @@
 
 #include "neosurf/utils/log.h"
 #include "neosurf/utils/file.h"
-#include "neosurf/utils/filepath.h"
 #include "neosurf/content/fetch.h"
 #include "neosurf/fetch.h"
 
 #include "windows/fetch.h"
-#include "windows/gui.h"
 
 /**
  * determine the MIME type of a local file.
@@ -46,7 +44,10 @@ static const char *fetch_filetype(const char *unix_path)
 
 	ext = strrchr(unix_path, '.');
 	if (ext == NULL) {
-		NSLOG(neosurf, INFO, "no extension for %s returning html", unix_path);
+		NSLOG(neosurf,
+		      INFO,
+		      "no extension for %s returning html",
+		      unix_path);
 		return "text/html";
 	}
 
@@ -78,43 +79,11 @@ static const char *fetch_filetype(const char *unix_path)
 	return "text/html";
 }
 
-/**
- * Translate resource to full win32 url.
- *
- * Transforms a resource: path into a full URL. The returned URL
- * is used as the target for a redirect. The caller takes ownership of
- * the returned nsurl including unrefing it when finished with it.
- *
- * \param path The path of the resource to locate.
- * \return A string containing the full URL of the target object or
- *         NULL if no suitable resource can be found.
- */
-static nsurl *nsw32_get_resource_url(const char *path)
-{
-    char buf[PATH_MAX];
-    nsurl *url = NULL;
-
-    neosurf_path_to_nsurl(filepath_sfind(G_resource_pathv, buf, path), &url);
-
-    if (url == NULL && strcmp(path, "license.html") == 0) {
-        neosurf_path_to_nsurl(filepath_sfind(G_resource_pathv, buf, "licence.html"), &url);
-    }
-    if (url == NULL && strcmp(path, "credits.html") == 0) {
-        neosurf_path_to_nsurl(filepath_sfind(G_resource_pathv, buf, "en/credits.html"), &url);
-    }
-    if (url == NULL && strcmp(path, "welcome.html") == 0) {
-        neosurf_path_to_nsurl(filepath_sfind(G_resource_pathv, buf, "en/welcome.html"), &url);
-    }
-
-    return url;
-}
-
 
 /* exported interface documented in windows/fetch.h */
-nserror
-nsw32_get_resource_data(const char *path,
-			const uint8_t **data_out,
-			size_t *data_len_out)
+nserror nsw32_get_resource_data(const char *path,
+				const uint8_t **data_out,
+				size_t *data_len_out)
 {
 	HRSRC reshandle;
 	HGLOBAL datahandle;
@@ -151,7 +120,7 @@ nsw32_get_resource_data(const char *path,
 static struct gui_fetch_table fetch_table = {
 	.filetype = fetch_filetype,
 
-	.get_resource_url = nsw32_get_resource_url,
+	.get_resource_url = NULL,
 	.get_resource_data = nsw32_get_resource_data,
 };
 

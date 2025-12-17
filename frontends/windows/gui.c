@@ -44,9 +44,6 @@
 HINSTANCE hinst;
 
 /* exported global defined in windows/gui.h */
-char **G_resource_pathv;
-
-/* exported global defined in windows/gui.h */
 char *G_config_path;
 
 static bool win32_quit = false;
@@ -87,8 +84,11 @@ nserror nsw32_del_dialog(HWND hwndDlg)
 		if (cur->hwnd == hwndDlg) {
 			/* found match */
 			*prev = cur->next;
-			NSLOG(neosurf, DEBUG,
-			      "removed hwnd %p entry %p", cur->hwnd, cur);
+			NSLOG(neosurf,
+			      DEBUG,
+			      "removed hwnd %p entry %p",
+			      cur->hwnd,
+			      cur);
 			free(cur);
 			return NSERROR_OK;
 		}
@@ -109,8 +109,10 @@ static nserror handle_dialog_message(LPMSG lpMsg)
 	cur = dlglist;
 	while (cur != NULL) {
 		if (IsDialogMessage(cur->hwnd, lpMsg)) {
-			NSLOG(neosurf, DEBUG,
-			      "dispatched dialog hwnd %p", cur->hwnd);
+			NSLOG(neosurf,
+			      DEBUG,
+			      "dispatched dialog hwnd %p",
+			      cur->hwnd);
 			return NSERROR_OK;
 		}
 		cur = cur->next;
@@ -174,8 +176,9 @@ void win32_run(void)
 /* exported function documented in windows/gui.h */
 nserror win32_warning(const char *warning, const char *detail)
 {
-	size_t len = 1 + ((warning != NULL) ? strlen(messages_get(warning)) :
-			  0) + ((detail != 0) ? strlen(detail) : 0);
+	size_t len = 1 +
+		     ((warning != NULL) ? strlen(messages_get(warning)) : 0) +
+		     ((detail != 0) ? strlen(detail) : 0);
 	char message[len];
 	snprintf(message, len, messages_get(warning), detail);
 	MessageBox(NULL, message, "Warning", MB_ICONWARNING);
@@ -185,16 +188,13 @@ nserror win32_warning(const char *warning, const char *detail)
 
 
 /* exported function documented in windows/gui.h */
-nserror
-win32_report_nserror(nserror error, const char *detail)
+nserror win32_report_nserror(nserror error, const char *detail)
 {
-	size_t len = 1 +
-		strlen(messages_get_errorcode(error)) +
-		((detail != 0) ? strlen(detail) : 0);
+	size_t len = 1 + strlen(messages_get_errorcode(error)) +
+		     ((detail != 0) ? strlen(detail) : 0);
 	char message[len];
 	snprintf(message, len, messages_get_errorcode(error), detail);
 	MessageBox(NULL, message, "Warning", MB_ICONWARNING);
 
 	return NSERROR_OK;
 }
-
