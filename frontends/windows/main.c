@@ -28,7 +28,6 @@
 #include "neosurf/utils/utils.h"
 #include "neosurf/utils/log.h"
 #include "neosurf/utils/messages.h"
-#include "neosurf/utils/filepath.h"
 #include "neosurf/utils/file.h"
 #include "neosurf/utils/nsurl.h"
 #include "neosurf/utils/nsoption.h"
@@ -42,7 +41,6 @@
 #include "neosurf/desktop/hotlist.h"
 #include "neosurf/desktop/searchweb.h"
 
-#include "windows/findfile.h"
 #include "windows/file.h"
 #include "windows/cookies.h"
 #include "windows/drawable.h"
@@ -140,7 +138,6 @@ static void die(const char *error)
 }
 
 
-
 /**
  * Ensures output logging stream is available
  */
@@ -179,25 +176,16 @@ static nserror set_defaults(struct nsoption_s *defaults)
 	char dldir[] = "Downloads";
 
 	buf = malloc(buf_bytes_size);
-	if (buf== NULL) {
+	if (buf == NULL) {
 		return NSERROR_NOMEM;
 	}
 	buf[0] = '\0';
 
 	/* locate certificate bundle */
-	res_len = SearchPathA(NULL,
-			      "ca-bundle.crt",
-			      NULL,
-			      buf_tchar_size,
-			      buf,
-			      &ptr);
+	res_len = SearchPathA(
+		NULL, "ca-bundle.crt", NULL, buf_tchar_size, buf, &ptr);
 	if (res_len > 0) {
 		nsoption_setnull_charp(ca_bundle, strdup(buf));
-	} else {
-		ptr = filepath_sfind(G_resource_pathv, buf, "ca-bundle.crt");
-		if (ptr != NULL) {
-			nsoption_setnull_charp(ca_bundle, strdup(buf));
-		}
 	}
 
 
@@ -218,7 +206,6 @@ static nserror set_defaults(struct nsoption_s *defaults)
 		if (PathAppend(buf, dldir)) {
 			nsoption_setnull_charp(downloads_directory,
 					       strdup(buf));
-
 		}
 	}
 
@@ -265,18 +252,24 @@ static nserror set_defaults(struct nsoption_s *defaults)
 		DWORD v = GetVersion();
 		DWORD maj = LOBYTE(LOWORD(v));
 		if (maj < 6) {
-			//use Windows XP supported fonts
+			// use Windows XP supported fonts
 			nsoption_setnull_charp(font_sans, strdup("Tahoma"));
-			nsoption_setnull_charp(font_serif, strdup("Times New Roman"));
-			nsoption_setnull_charp(font_mono, strdup("Courier New"));
-			nsoption_setnull_charp(font_cursive, strdup("Comic Sans MS"));
+			nsoption_setnull_charp(font_serif,
+					       strdup("Times New Roman"));
+			nsoption_setnull_charp(font_mono,
+					       strdup("Courier New"));
+			nsoption_setnull_charp(font_cursive,
+					       strdup("Comic Sans MS"));
 			nsoption_setnull_charp(font_fantasy, strdup("Tahoma"));
 		} else {
 			nsoption_setnull_charp(font_sans, strdup("Segoe UI"));
-			nsoption_setnull_charp(font_serif, strdup("Times New Roman"));
+			nsoption_setnull_charp(font_serif,
+					       strdup("Times New Roman"));
 			nsoption_setnull_charp(font_mono, strdup("Consolas"));
-			nsoption_setnull_charp(font_cursive, strdup("Segoe Script"));
-			nsoption_setnull_charp(font_fantasy, strdup("Segoe UI"));
+			nsoption_setnull_charp(font_cursive,
+					       strdup("Segoe Script"));
+			nsoption_setnull_charp(font_fantasy,
+					       strdup("Segoe UI"));
 		}
 	}
 
@@ -287,14 +280,12 @@ static nserror set_defaults(struct nsoption_s *defaults)
 /**
  * Initialise user options location and contents
  */
-static nserror
-nsw32_option_init(int *pargc, char** argv, char **respaths, char *config_path)
+static nserror nsw32_option_init(int *pargc, char **argv, char *config_path)
 {
 	nserror ret;
 	char *choices = NULL;
 
 	/* set the globals that will be used in the set_defaults() callback */
-	G_resource_pathv = respaths;
 	G_config_path = config_path;
 
 	/* user options setup */
@@ -317,62 +308,20 @@ nsw32_option_init(int *pargc, char** argv, char **respaths, char *config_path)
 }
 
 /**
- * Initialise messages
+ * Initialise messages from embedded resources
  */
-static nserror nsw32_messages_init(char **respaths)
+static nserror nsw32_messages_init(void)
 {
-    char *messages;
-    nserror res;
-    const uint8_t *data;
-    size_t data_size;
+	nserror res;
+	const uint8_t *data;
+	size_t data_size;
 
-    res = nsw32_get_resource_data("messages", &data, &data_size);
-    if (res == NSERROR_OK) {
-        res = messages_add_from_inline(data, data_size);
-        return res;
-    }
+	res = nsw32_get_resource_data("messages", &data, &data_size);
+	if (res == NSERROR_OK) {
+		res = messages_add_from_inline(data, data_size);
+	}
 
-    {
-        LANGID lid = GetUserDefaultUILanguage();
-        WORD pid = PRIMARYLANGID(lid);
-        const char *pref = "en";
-        if (pid == LANG_FRENCH) pref = "fr";
-        else if (pid == LANG_GERMAN) pref = "de";
-        else if (pid == LANG_ITALIAN) pref = "it";
-        else if (pid == LANG_DUTCH) pref = "nl";
-
-        {
-            char langpath[PATH_MAX];
-            snprintf(langpath, sizeof(langpath), "%s/Messages", pref);
-            messages = filepath_find(respaths, langpath);
-            if (messages != NULL) {
-                res = messages_add_from_file(messages);
-                free(messages);
-                return res;
-            }
-        }
-
-        {
-            char langpath[PATH_MAX];
-            snprintf(langpath, sizeof(langpath), "%s/Messages", "en");
-            messages = filepath_find(respaths, langpath);
-            if (messages != NULL) {
-                res = messages_add_from_file(messages);
-                free(messages);
-                return res;
-            }
-        }
-    }
-
-    /* Last resort: flat messages file */
-    messages = filepath_find(respaths, "messages");
-    if (messages != NULL) {
-        res = messages_add_from_file(messages);
-        free(messages);
-        return res;
-    }
-
-    return NSERROR_NOT_FOUND;
+	return res;
 }
 
 
@@ -437,40 +386,42 @@ static struct gui_misc_table win32_misc_table = {
 /**
  * Entry point from windows
  **/
-int WINAPI
-WinMain(HINSTANCE hInstance, HINSTANCE hLastInstance, LPSTR lpcli, int ncmd)
+int WINAPI WinMain(HINSTANCE hInstance,
+		   HINSTANCE hLastInstance,
+		   LPSTR lpcli,
+		   int ncmd)
 {
 	int argc;
 	char **argv;
-	char **respaths;
 	char *nsw32_config_home = NULL;
 	nserror ret;
 	const char *addr;
 	nsurl *url;
-    struct neosurf_table win32_table = {
-        .misc = &win32_misc_table,
-        .window = win32_window_table,
-        .corewindow = win32_core_window_table,
-        .clipboard = win32_clipboard_table,
-        .download = win32_download_table,
-        .fetch = win32_fetch_table,
-        .file = win32_file_table,
-        .utf8 = win32_utf8_table,
-        .llcache = filesystem_llcache_table,
-        .bitmap = win32_bitmap_table,
-        .layout = win32_layout_table,
-    };
+	struct neosurf_table win32_table = {
+		.misc = &win32_misc_table,
+		.window = win32_window_table,
+		.corewindow = win32_core_window_table,
+		.clipboard = win32_clipboard_table,
+		.download = win32_download_table,
+		.fetch = win32_fetch_table,
+		.file = win32_file_table,
+		.utf8 = win32_utf8_table,
+		.llcache = filesystem_llcache_table,
+		.bitmap = win32_bitmap_table,
+		.layout = win32_layout_table,
+	};
 
-    ret = neosurf_register(&win32_table);
-    if (ret != NSERROR_OK) {
-        die("NeoSurf operation table registration failed");
-    }
+	ret = neosurf_register(&win32_table);
+	if (ret != NSERROR_OK) {
+		die("NeoSurf operation table registration failed");
+	}
 
-    /* Configure client bitmap format for Windows: RGBA with premultiplied alpha */
-    bitmap_set_format(&(bitmap_fmt_t){
-        .layout = BITMAP_LAYOUT_R8G8B8A8,
-        .pma = true,
-    });
+	/* Configure client bitmap format for Windows: RGBA with premultiplied
+	 * alpha */
+	bitmap_set_format(&(bitmap_fmt_t){
+		.layout = BITMAP_LAYOUT_R8G8B8A8,
+		.pma = true,
+	});
 
 	/* Save the application-instance handle. */
 	hinst = hInstance;
@@ -488,31 +439,31 @@ WinMain(HINSTANCE hInstance, HINSTANCE hLastInstance, LPSTR lpcli, int ncmd)
 	 */
 	nslog_init(nslog_ensure, &argc, argv);
 
-	/* build resource path string vector */
-    respaths = nsws_init_resource("${APPDATA}\\NeoSurf:${PROGRAMFILES}\\NeoSurf\\share\\neosurf\\:"NEOSURF_WINDOWS_RESPATH);
-
 	/* Locate the correct user configuration directory path */
 	ret = get_config_home(&nsw32_config_home);
 	if (ret != NSERROR_OK) {
-		NSLOG(neosurf, INFO,
+		NSLOG(neosurf,
+		      INFO,
 		      "Unable to locate a configuration directory.");
 	}
 
 	/* Initialise user options */
-	ret = nsw32_option_init(&argc, argv, respaths, nsw32_config_home);
+	ret = nsw32_option_init(&argc, argv, nsw32_config_home);
 	if (ret != NSERROR_OK) {
-		NSLOG(neosurf, ERROR, "Options failed to initialise (%s)\n",
+		NSLOG(neosurf,
+		      ERROR,
+		      "Options failed to initialise (%s)\n",
 		      messages_get_errorcode(ret));
 		return 1;
 	}
 
-	/* Initialise translated messages */
-	ret = nsw32_messages_init(respaths);
+	/* Initialise translated messages from embedded resources */
+	ret = nsw32_messages_init();
 	if (ret != NSERROR_OK) {
-		fprintf(stderr, "Unable to load translated messages (%s)\n",
-			messages_get_errorcode(ret));
-		NSLOG(neosurf, INFO, "Unable to load translated messages");
-		/** \todo decide if message load faliure should be fatal */
+		NSLOG(neosurf,
+		      WARNING,
+		      "Unable to load translated messages (%s)",
+		      messages_get_errorcode(ret));
 	}
 
 	/* common initialisation */
@@ -522,14 +473,8 @@ WinMain(HINSTANCE hInstance, HINSTANCE hLastInstance, LPSTR lpcli, int ncmd)
 		return 1;
 	}
 
-	{
-		char *resource_filename = filepath_find(respaths, "SearchEngines");
-		search_web_init(resource_filename);
-		if (resource_filename != NULL) {
-			NSLOG(neosurf, INFO, "Using '%s' as Search Engines file", resource_filename);
-			free(resource_filename);
-		}
-	}
+	/* Initialize search web with no external file (uses defaults) */
+	search_web_init(NULL);
 
 	search_web_select_provider(nsoption_charp(search_web_provider));
 
@@ -538,7 +483,7 @@ WinMain(HINSTANCE hInstance, HINSTANCE hLastInstance, LPSTR lpcli, int ncmd)
 	urldb_load(nsoption_charp(url_file));
 	urldb_load_cookies(nsoption_charp(cookie_file));
 	hotlist_init(nsoption_charp(hotlist_path),
-			nsoption_charp(hotlist_path));
+		     nsoption_charp(hotlist_path));
 
 	ret = nsws_create_main_class(hInstance);
 	ret = nsws_create_drawable_class(hInstance);
@@ -561,13 +506,9 @@ WinMain(HINSTANCE hInstance, HINSTANCE hLastInstance, LPSTR lpcli, int ncmd)
 
 	ret = nsurl_create(addr, &url);
 	if (ret == NSERROR_OK) {
-		ret = browser_window_create(BW_CREATE_HISTORY,
-					      url,
-					      NULL,
-					      NULL,
-					      NULL);
+		ret = browser_window_create(
+			BW_CREATE_HISTORY, url, NULL, NULL, NULL);
 		nsurl_unref(url);
-
 	}
 	if (ret != NSERROR_OK) {
 		win32_warning(messages_get_errorcode(ret), 0);
