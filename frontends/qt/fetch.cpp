@@ -27,6 +27,7 @@
 #include <limits.h>
 
 #include <QResource>
+#include <QString>
 
 extern "C" {
 
@@ -107,26 +108,44 @@ static nserror nsqt_get_resource_data(const char *resname,
 				      const uint8_t **data_out,
 				      size_t *data_size_out)
 {
-	QResource resource(resname);
+	QString qpath = QString(":/") + QString(resname);
+	QResource resource(qpath);
 	if (!resource.isValid()) {
-		return NSERROR_NOT_FOUND;
-	}
-	QByteArray resource_data = resource.uncompressedData();
-	qint64 size = resource_data.size();
-	if (size < 1) {
-		return NSERROR_NOT_FOUND;
-	}
-	uint8_t *data = (uint8_t *)malloc(size);
-	if (data == NULL) {
+		NSLOG(netsurf,
+		      WARNING,
+		      "QResource not found: %s (path: %s)",
+		      resname,
+		      qpath.toUtf8().constData());
 		return NSERROR_NOT_FOUND;
 	}
 
+	QByteArray resource_data = resource.uncompressedData();
+	qint64 size = resource_data.size();
+
+	NSLOG(netsurf,
+	      DEBUG,
+	      "QResource: %s size=%lld",
+	      resname,
+	      (long long)size);
+
+	if (size < 1) {
+		NSLOG(netsurf, ERROR, "QResource empty: %s", resname);
+		return NSERROR_NOT_FOUND;
+	}
+
+	uint8_t *data = (uint8_t *)malloc(size);
+	if (data == NULL) {
+		NSLOG(netsurf,
+		      ERROR,
+		      "Failed to allocate %lld bytes for resource: %s",
+		      (long long)size,
+		      resname);
+		return NSERROR_NOMEM;
+	}
 	memcpy(data, resource_data.data(), size);
 
 	*data_out = data;
 	*data_size_out = size;
-
-	NSLOG(netsurf, DEBUG, "returning resource data for: %s", resname);
 	return NSERROR_OK;
 }
 
