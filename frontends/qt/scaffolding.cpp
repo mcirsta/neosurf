@@ -35,6 +35,7 @@ extern "C" {
 #include "qt/scaffolding.cls.h"
 #include "qt/scaffoldstyle.cls.h"
 #include "qt/window.cls.h"
+#include <QSettings>
 
 static NS_Scaffold *current = nullptr; /**< currently selected scaffold */
 
@@ -100,6 +101,14 @@ NS_Scaffold::NS_Scaffold(QWidget *parent)
 		&NS_Scaffold::changeTab);
 	setTabsClosable(true);
 	setFocusPolicy(Qt::StrongFocus);
+
+	QSettings settings;
+	if (settings.contains("window/geometry")) {
+		restoreGeometry(
+			settings.value("window/geometry").toByteArray());
+	} else {
+		setWindowState(Qt::WindowMaximized);
+	}
 }
 
 /**
@@ -115,6 +124,9 @@ void NS_Scaffold::closeEvent(QCloseEvent *event)
 	for (int idx = 0; idx < pages.size(); idx++) {
 		pages.at(idx)->destroy();
 	}
+
+	QSettings settings;
+	settings.setValue("window/geometry", saveGeometry());
 }
 
 /**
