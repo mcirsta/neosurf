@@ -52,9 +52,16 @@ typedef struct {
 
 int regcomp(regex_t *restrict preg, const char *restrictregex, int cflags);
 
-size_t regerror(int errorcode, const regex_t *restrict preg, char *restrict errbuf, size_t errbuf_size);
+size_t regerror(int errorcode,
+		const regex_t *restrict preg,
+		char *restrict errbuf,
+		size_t errbuf_size);
 
-int regexec(const regex_t *restrict preg, const char *restrict string, size_t nmatch, regmatch_t pmatch[restrict], int eflags);
+int regexec(const regex_t *restrict preg,
+	    const char *restrict string,
+	    size_t nmatch,
+	    regmatch_t pmatch[restrict],
+	    int eflags);
 
 void regfree(regex_t *preg);
 

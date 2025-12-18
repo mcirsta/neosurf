@@ -14,8 +14,9 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_vertical_align(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error css__cascade_vertical_align(uint32_t opv,
+				      css_style *style,
+				      css_select_state *state)
 {
 	uint16_t value = CSS_VERTICAL_ALIGN_INHERIT;
 	css_fixed length = 0;
@@ -26,9 +27,9 @@ css_error css__cascade_vertical_align(uint32_t opv, css_style *style,
 		case VERTICAL_ALIGN_SET:
 			value = CSS_VERTICAL_ALIGN_SET;
 
-			length = *((css_fixed *) style->bytecode);
+			length = *((css_fixed *)style->bytecode);
 			advance_bytecode(style, sizeof(length));
-			unit = *((uint32_t *) style->bytecode);
+			unit = *((uint32_t *)style->bytecode);
 			advance_bytecode(style, sizeof(unit));
 			break;
 		case VERTICAL_ALIGN_BASELINE:
@@ -67,8 +68,10 @@ css_error css__cascade_vertical_align(uint32_t opv, css_style *style,
 
 	unit = css__to_css_unit(unit);
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			getFlagValue(opv))) {
+	if (css__outranks_existing(getOpcode(opv),
+				   isImportant(opv),
+				   state,
+				   getFlagValue(opv))) {
 		return set_vertical_align(state->computed, value, length, unit);
 	}
 
@@ -76,21 +79,22 @@ css_error css__cascade_vertical_align(uint32_t opv, css_style *style,
 }
 
 css_error css__set_vertical_align_from_hint(const css_hint *hint,
-		css_computed_style *style)
+					    css_computed_style *style)
 {
-	return set_vertical_align(style, hint->status,
-			hint->data.length.value, hint->data.length.unit);
+	return set_vertical_align(style,
+				  hint->status,
+				  hint->data.length.value,
+				  hint->data.length.unit);
 }
 
 css_error css__initial_vertical_align(css_select_state *state)
 {
-	return set_vertical_align(state->computed, CSS_VERTICAL_ALIGN_BASELINE,
-			0, CSS_UNIT_PX);
+	return set_vertical_align(
+		state->computed, CSS_VERTICAL_ALIGN_BASELINE, 0, CSS_UNIT_PX);
 }
 
-css_error css__copy_vertical_align(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error
+css__copy_vertical_align(const css_computed_style *from, css_computed_style *to)
 {
 	css_fixed length = 0;
 	css_unit unit = CSS_UNIT_PX;
@@ -104,15 +108,13 @@ css_error css__copy_vertical_align(
 }
 
 css_error css__compose_vertical_align(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+				      const css_computed_style *child,
+				      css_computed_style *result)
 {
 	css_fixed length = 0;
 	css_unit unit = CSS_UNIT_PX;
 	uint8_t type = get_vertical_align(child, &length, &unit);
 
 	return css__copy_vertical_align(
-			type == CSS_VERTICAL_ALIGN_INHERIT ? parent : child,
-			result);
+		type == CSS_VERTICAL_ALIGN_INHERIT ? parent : child, result);
 }
-

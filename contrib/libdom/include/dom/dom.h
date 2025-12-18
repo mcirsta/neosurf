@@ -102,15 +102,15 @@
 #include <dom/events/events.h>
 
 typedef enum dom_namespace {
-	DOM_NAMESPACE_NULL    = 0,
-	DOM_NAMESPACE_HTML    = 1,
-	DOM_NAMESPACE_MATHML  = 2,
-	DOM_NAMESPACE_SVG     = 3,
-	DOM_NAMESPACE_XLINK   = 4,
-	DOM_NAMESPACE_XML     = 5,
-	DOM_NAMESPACE_XMLNS   = 6,
+	DOM_NAMESPACE_NULL = 0,
+	DOM_NAMESPACE_HTML = 1,
+	DOM_NAMESPACE_MATHML = 2,
+	DOM_NAMESPACE_SVG = 3,
+	DOM_NAMESPACE_XLINK = 4,
+	DOM_NAMESPACE_XML = 5,
+	DOM_NAMESPACE_XMLNS = 6,
 
-	DOM_NAMESPACE_COUNT   = 7
+	DOM_NAMESPACE_COUNT = 7
 } dom_namespace;
 
 /* Note, these are not valid until at least one function related to DOM

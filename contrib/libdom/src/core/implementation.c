@@ -27,9 +27,9 @@
  * \param result   Pointer to location to receive result
  * \return DOM_NO_ERR.
  */
-dom_exception dom_implementation_has_feature(
-		const char *feature, const char *version,
-		bool *result)
+dom_exception dom_implementation_has_feature(const char *feature,
+					     const char *version,
+					     bool *result)
 {
 	UNUSED(feature);
 	UNUSED(version);
@@ -57,10 +57,11 @@ dom_exception dom_implementation_has_feature(
  * explicitly. The client must unref the doctype once it has
  * finished with it.
  */
-dom_exception dom_implementation_create_document_type(
-		const char *qname, const char *public_id, 
-		const char *system_id,
-		struct dom_document_type **doctype)
+dom_exception
+dom_implementation_create_document_type(const char *qname,
+					const char *public_id,
+					const char *system_id,
+					struct dom_document_type **doctype)
 {
 	struct dom_document_type *d;
 	dom_string *qname_s = NULL, *prefix = NULL, *lname = NULL;
@@ -71,8 +72,9 @@ dom_exception dom_implementation_create_document_type(
 		return DOM_INVALID_CHARACTER_ERR;
 	}
 
-	err = dom_string_create((const uint8_t *) qname,
-				strlen(qname), &qname_s);
+	err = dom_string_create((const uint8_t *)qname,
+				strlen(qname),
+				&qname_s);
 	if (err != DOM_NO_ERR)
 		return err;
 
@@ -83,8 +85,9 @@ dom_exception dom_implementation_create_document_type(
 	}
 
 	if (public_id != NULL) {
-		err = dom_string_create((const uint8_t *) public_id,
-				strlen(public_id), &public_id_s);
+		err = dom_string_create((const uint8_t *)public_id,
+					strlen(public_id),
+					&public_id_s);
 		if (err != DOM_NO_ERR) {
 			dom_string_unref(lname);
 			dom_string_unref(prefix);
@@ -94,8 +97,9 @@ dom_exception dom_implementation_create_document_type(
 	}
 
 	if (system_id != NULL) {
-		err = dom_string_create((const uint8_t *) system_id,
-				strlen(system_id), &system_id_s);
+		err = dom_string_create((const uint8_t *)system_id,
+					strlen(system_id),
+					&system_id_s);
 		if (err != DOM_NO_ERR) {
 			dom_string_unref(public_id_s);
 			dom_string_unref(lname);
@@ -150,28 +154,31 @@ dom_exception dom_implementation_create_document_type(
  * explicitly. The client must unref the document once it has
  * finished with it.
  */
-dom_exception dom_implementation_create_document(
-		uint32_t impl_type,
-		const char *namespace, const char *qname,
-		struct dom_document_type *doctype,
-		dom_events_default_action_fetcher daf,
-		void *daf_ctx,
-		struct dom_document **doc)
+dom_exception
+dom_implementation_create_document(uint32_t impl_type,
+				   const char *namespace,
+				   const char *qname,
+				   struct dom_document_type *doctype,
+				   dom_events_default_action_fetcher daf,
+				   void *daf_ctx,
+				   struct dom_document **doc)
 {
 	struct dom_document *d;
 	dom_string *namespace_s = NULL, *qname_s = NULL;
 	dom_exception err;
 
 	if (namespace != NULL) {
-		err = dom_string_create((const uint8_t *) namespace,
-				strlen(namespace), &namespace_s);
+		err = dom_string_create((const uint8_t *)namespace,
+					strlen(namespace),
+					&namespace_s);
 		if (err != DOM_NO_ERR)
 			return err;
 	}
 
 	if (qname != NULL) {
-		err = dom_string_create((const uint8_t *) qname, 
-				strlen(qname), &qname_s);
+		err = dom_string_create((const uint8_t *)qname,
+					strlen(qname),
+					&qname_s);
 		if (err != DOM_NO_ERR) {
 			dom_string_unref(namespace_s);
 			return err;
@@ -183,7 +190,7 @@ dom_exception dom_implementation_create_document(
 		dom_string_unref(namespace_s);
 		return DOM_INVALID_CHARACTER_ERR;
 	}
-  
+
 	err = _dom_namespace_validate_qname(qname_s, namespace_s);
 	if (err != DOM_NO_ERR) {
 		dom_string_unref(qname_s);
@@ -198,12 +205,12 @@ dom_exception dom_implementation_create_document(
 	}
 
 	/* Create document object that reflects the required APIs */
- 	if (impl_type == DOM_IMPLEMENTATION_HTML) {
+	if (impl_type == DOM_IMPLEMENTATION_HTML) {
 		dom_html_document *html_doc;
 
 		err = _dom_html_document_create(daf, daf_ctx, &html_doc);
 
-		d = (dom_document *) html_doc;
+		d = (dom_document *)html_doc;
 	} else {
 		err = _dom_document_create(daf, daf_ctx, &d);
 	}
@@ -218,10 +225,11 @@ dom_exception dom_implementation_create_document(
 	if (doctype != NULL) {
 		struct dom_node *ins_doctype = NULL;
 
-		err = dom_node_append_child((struct dom_node *) d, 
-				(struct dom_node *) doctype, &ins_doctype);
+		err = dom_node_append_child((struct dom_node *)d,
+					    (struct dom_node *)doctype,
+					    &ins_doctype);
 		if (err != DOM_NO_ERR) {
-			dom_node_unref((struct dom_node *) d);
+			dom_node_unref((struct dom_node *)d);
 			dom_string_unref(qname_s);
 			dom_string_unref(namespace_s);
 			return err;
@@ -237,19 +245,21 @@ dom_exception dom_implementation_create_document(
 		struct dom_element *e;
 		struct dom_node *inserted;
 
-		err = dom_document_create_element_ns(d, namespace_s, qname_s, &e);
+		err = dom_document_create_element_ns(
+			d, namespace_s, qname_s, &e);
 		if (err != DOM_NO_ERR) {
-			dom_node_unref((struct dom_node *) d);
+			dom_node_unref((struct dom_node *)d);
 			dom_string_unref(qname_s);
 			dom_string_unref(namespace_s);
 			return err;
 		}
 
-		err = dom_node_append_child((struct dom_node *) d,
-				(struct dom_node *) e, &inserted);
+		err = dom_node_append_child((struct dom_node *)d,
+					    (struct dom_node *)e,
+					    &inserted);
 		if (err != DOM_NO_ERR) {
-			dom_node_unref((struct dom_node *) e);
-			dom_node_unref((struct dom_node *) d);
+			dom_node_unref((struct dom_node *)e);
+			dom_node_unref((struct dom_node *)d);
 			dom_string_unref(qname_s);
 			dom_string_unref(namespace_s);
 			return err;
@@ -259,7 +269,7 @@ dom_exception dom_implementation_create_document(
 		dom_node_unref(inserted);
 
 		/* Done with element */
-		dom_node_unref((struct dom_node *) e);
+		dom_node_unref((struct dom_node *)e);
 	}
 
 	/* Clean up strings we created */
@@ -283,9 +293,9 @@ dom_exception dom_implementation_create_document(
  * Any memory allocated by this call should be allocated using
  * the provided memory (de)allocation function.
  */
-dom_exception dom_implementation_get_feature(
-		const char *feature, const char *version,
-		void **object)
+dom_exception dom_implementation_get_feature(const char *feature,
+					     const char *version,
+					     void **object)
 {
 	UNUSED(feature);
 	UNUSED(version);

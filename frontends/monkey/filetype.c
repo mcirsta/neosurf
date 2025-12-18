@@ -80,15 +80,15 @@ void monkey_fetch_filetype_init(const char *mimefile)
 
 	/* first, check to see if /etc/mime.types in preference */
 	if ((stat("/etc/mime.types", &statbuf) == 0) &&
-			S_ISREG(statbuf.st_mode)) {
+	    S_ISREG(statbuf.st_mode)) {
 		mimefile = "/etc/mime.types";
-
 	}
 
 	fh = fopen(mimefile, "r");
 
 	if (fh == NULL) {
-		NSLOG(netsurf, INFO,
+		NSLOG(netsurf,
+		      INFO,
 		      "Unable to open a mime.types file, so using a minimal one for you.");
 		return;
 	}
@@ -96,7 +96,7 @@ void monkey_fetch_filetype_init(const char *mimefile)
 	while (!feof(fh)) {
 		char line[MAX_LINE_LEN], *ptr, *type, *ext;
 		if (fgets(line, MAX_LINE_LEN, fh) == NULL)
-                	break;
+			break;
 		if (!feof(fh) && line[0] != '#') {
 			ptr = line;
 
@@ -129,7 +129,7 @@ void monkey_fetch_filetype_init(const char *mimefile)
 			while (ascii_is_space(*ptr))
 				ptr++;
 
-			while(true) {
+			while (true) {
 				ext = ptr;
 
 				/* search for the first whitespace char or
@@ -153,8 +153,7 @@ void monkey_fetch_filetype_init(const char *mimefile)
 				/* search for the first non-whitespace char or
 				 * NUL or NL, to find start of next ext.
 				 */
-				while (*ptr &&
-				       (ascii_is_space(*ptr)) &&
+				while (*ptr && (ascii_is_space(*ptr)) &&
 				       *ptr != '\n') {
 					ptr++;
 				}
@@ -217,13 +216,13 @@ const char *monkey_fetch_filetype(const char *unix_path)
 		return "text/plain";
 	}
 
-	ext = strdup(ptr + 1);	/* skip the . */
+	ext = strdup(ptr + 1); /* skip the . */
 
 	/* the hash table only contains lower-case versions - make sure this
 	 * copy is lower case too.
 	 */
 	lowerchar = ext;
-	while(*lowerchar) {
+	while (*lowerchar) {
 		*lowerchar = ascii_to_lower(*lowerchar);
 		lowerchar++;
 	}

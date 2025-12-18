@@ -43,11 +43,11 @@ struct nsgtk_cookie_window {
 
 static struct nsgtk_cookie_window *cookie_window = NULL;
 
-#define MENUPROTO(x) static gboolean nsgtk_on_##x##_activate(	\
-		GtkMenuItem *widget, gpointer g)
-#define MENUEVENT(x) { #x, G_CALLBACK(nsgtk_on_##x##_activate) }
-#define MENUHANDLER(x) gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, \
-		gpointer g)
+#define MENUPROTO(x)                                                           \
+	static gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, gpointer g)
+#define MENUEVENT(x) {#x, G_CALLBACK(nsgtk_on_##x##_activate)}
+#define MENUHANDLER(x)                                                         \
+	gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, gpointer g)
 
 struct menu_events {
 	const char *widget;
@@ -85,8 +85,7 @@ static struct menu_events menu_events[] = {
 	MENUEVENT(collapse_domains),
 	MENUEVENT(collapse_cookies),
 
-	{NULL, NULL}
-};
+	{NULL, NULL}};
 
 
 /* edit menu */
@@ -165,17 +164,18 @@ static void nsgtk_cookies_init_menu(struct nsgtk_cookie_window *ncwin)
 	GtkWidget *w;
 
 	while (event->widget != NULL) {
-		w = GTK_WIDGET(gtk_builder_get_object(ncwin->builder,
-						      event->widget));
+		w = GTK_WIDGET(
+			gtk_builder_get_object(ncwin->builder, event->widget));
 		if (w == NULL) {
-			NSLOG(neosurf, INFO,
-			      "Unable to connect menu widget ""%s""",
+			NSLOG(neosurf,
+			      INFO,
+			      "Unable to connect menu widget "
+			      "%s"
+			      "",
 			      event->widget);
 		} else {
-			g_signal_connect(G_OBJECT(w),
-					 "activate",
-					 event->handler,
-					 ncwin);
+			g_signal_connect(
+				G_OBJECT(w), "activate", event->handler, ncwin);
 		}
 		event++;
 	}
@@ -190,10 +190,10 @@ static void nsgtk_cookies_init_menu(struct nsgtk_cookie_window *ncwin)
  * \param y location of event
  * \return NSERROR_OK on success otherwise appropriate error code
  */
-static nserror
-nsgtk_cookies_mouse(struct nsgtk_corewindow *nsgtk_cw,
-		    browser_mouse_state mouse_state,
-		    int x, int y)
+static nserror nsgtk_cookies_mouse(struct nsgtk_corewindow *nsgtk_cw,
+				   browser_mouse_state mouse_state,
+				   int x,
+				   int y)
 {
 	cookie_manager_mouse_action(mouse_state, x, y);
 
@@ -226,11 +226,9 @@ nsgtk_cookies_key(struct nsgtk_corewindow *nsgtk_cw, uint32_t nskey)
 static nserror
 nsgtk_cookies_draw(struct nsgtk_corewindow *nsgtk_cw, struct rect *r)
 {
-	struct redraw_context ctx = {
-		.interactive = true,
-		.background_images = true,
-		.plot = &nsgtk_plotters
-	};
+	struct redraw_context ctx = {.interactive = true,
+				     .background_images = true,
+				     .plot = &nsgtk_plotters};
 
 	cookie_manager_redraw(0, 0, r, &ctx);
 
@@ -265,8 +263,8 @@ static nserror nsgtk_cookies_init(void)
 
 	gtk_builder_connect_signals(ncwin->builder, NULL);
 
-	ncwin->wnd = GTK_WINDOW(gtk_builder_get_object(ncwin->builder,
-						       "wndCookies"));
+	ncwin->wnd = GTK_WINDOW(
+		gtk_builder_get_object(ncwin->builder, "wndCookies"));
 
 	ncwin->core.scrolled = GTK_SCROLLED_WINDOW(
 		gtk_builder_get_object(ncwin->builder, "cookiesScrolled"));

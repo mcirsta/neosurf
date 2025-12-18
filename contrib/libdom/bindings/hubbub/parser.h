@@ -67,32 +67,35 @@ typedef struct dom_hubbub_parser_params {
 
 /* Create a Hubbub parser instance */
 dom_hubbub_error dom_hubbub_parser_create(dom_hubbub_parser_params *params,
-		dom_hubbub_parser **parser,
-		dom_document **document);
+					  dom_hubbub_parser **parser,
+					  dom_document **document);
 
 /* Create a Hubbub parser instance for a document fragment */
-dom_hubbub_error dom_hubbub_fragment_parser_create(dom_hubbub_parser_params *params,
-		dom_document *document,
-		dom_hubbub_parser **parser,
-		dom_document_fragment **fragment);
+dom_hubbub_error
+dom_hubbub_fragment_parser_create(dom_hubbub_parser_params *params,
+				  dom_document *document,
+				  dom_hubbub_parser **parser,
+				  dom_document_fragment **fragment);
 
 /* Destroy a Hubbub parser instance */
 void dom_hubbub_parser_destroy(dom_hubbub_parser *parser);
 
 /* Parse a chunk of data */
 dom_hubbub_error dom_hubbub_parser_parse_chunk(dom_hubbub_parser *parser,
-		const uint8_t *data, size_t len);
+					       const uint8_t *data,
+					       size_t len);
 
 /* insert data into the parse stream but do not parse it */
 dom_hubbub_error dom_hubbub_parser_insert_chunk(dom_hubbub_parser *parser,
-		const uint8_t *data, size_t length);
+						const uint8_t *data,
+						size_t length);
 
 /* Notify parser that datastream is empty */
 dom_hubbub_error dom_hubbub_parser_completed(dom_hubbub_parser *parser);
 
 /* Retrieve the document's encoding */
 const char *dom_hubbub_parser_get_encoding(dom_hubbub_parser *parser,
-		dom_hubbub_encoding_source *source);
+					   dom_hubbub_encoding_source *source);
 
 /**
  * Set the Parse pause state.

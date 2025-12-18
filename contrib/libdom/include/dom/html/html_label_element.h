@@ -16,18 +16,17 @@
 
 typedef struct dom_html_label_element dom_html_label_element;
 
-dom_exception dom_html_label_element_get_access_key(
-		dom_html_label_element *ele, dom_string **access_key);
-dom_exception dom_html_label_element_set_access_key(
-		dom_html_label_element *ele, dom_string *access_key);
+dom_exception dom_html_label_element_get_access_key(dom_html_label_element *ele,
+						    dom_string **access_key);
+dom_exception dom_html_label_element_set_access_key(dom_html_label_element *ele,
+						    dom_string *access_key);
 
-dom_exception dom_html_label_element_get_html_for(
-		dom_html_label_element *ele, dom_string **html_for);
-dom_exception dom_html_label_element_set_html_for(
-		dom_html_label_element *ele, dom_string *html_for);
+dom_exception dom_html_label_element_get_html_for(dom_html_label_element *ele,
+						  dom_string **html_for);
+dom_exception dom_html_label_element_set_html_for(dom_html_label_element *ele,
+						  dom_string *html_for);
 
-dom_exception dom_html_label_element_get_form(
-		dom_html_label_element *ele, dom_html_form_element **form);
+dom_exception dom_html_label_element_get_form(dom_html_label_element *ele,
+					      dom_html_form_element **form);
 
 #endif
-

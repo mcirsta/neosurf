@@ -19,13 +19,14 @@
  * \param listener  The returned EventListener
  * \return DOM_NO_ERR on success, DOM_NO_MEM_ERR on memory exhaustion.
  */
-dom_exception dom_event_listener_create(
-		handle_event handler, void *pw, dom_event_listener **listener)
+dom_exception dom_event_listener_create(handle_event handler,
+					void *pw,
+					dom_event_listener **listener)
 {
 	dom_event_listener *ret = malloc(sizeof(dom_event_listener));
 	if (ret == NULL)
 		return DOM_NO_MEM_ERR;
-	
+
 	ret->handler = handler;
 	ret->pw = pw;
 	ret->refcnt = 1;
@@ -58,4 +59,3 @@ void dom_event_listener_unref(dom_event_listener *listener)
 	if (listener->refcnt == 0)
 		free(listener);
 }
-

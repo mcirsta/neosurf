@@ -36,5 +36,3 @@ NSOPTION_BOOL(new_blank, false)
 NSOPTION_STRING(hotlist_path, NULL)
 NSOPTION_BOOL(source_tab, false)
 NSOPTION_INTEGER(current_theme, 0)
-
-

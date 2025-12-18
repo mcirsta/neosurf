@@ -108,8 +108,7 @@ struct plotter_table {
 	 *              operations within.
 	 * \return NSERROR_OK on success else error code.
 	 */
-	nserror (*clip)(
-			const struct redraw_context *ctx,
+	nserror (*clip)(const struct redraw_context *ctx,
 			const struct rect *clip);
 
 	/**
@@ -128,14 +127,13 @@ struct plotter_table {
 	 * \param angle2 The finish angle of the arc.
 	 * \return NSERROR_OK on success else error code.
 	 */
-	nserror (*arc)(
-			const struct redraw_context *ctx,
-			const plot_style_t *pstyle,
-			int x,
-			int y,
-			int radius,
-			int angle1,
-			int angle2);
+	nserror (*arc)(const struct redraw_context *ctx,
+		       const plot_style_t *pstyle,
+		       int x,
+		       int y,
+		       int radius,
+		       int angle1,
+		       int angle2);
 
 	/**
 	 * Plots a circle
@@ -149,8 +147,7 @@ struct plotter_table {
 	 * \param radius The radius of the circle.
 	 * \return NSERROR_OK on success else error code.
 	 */
-	nserror (*disc)(
-			const struct redraw_context *ctx,
+	nserror (*disc)(const struct redraw_context *ctx,
 			const plot_style_t *pstyle,
 			int x,
 			int y,
@@ -167,8 +164,7 @@ struct plotter_table {
 	 * \param line A rectangle defining the line to be drawn
 	 * \return NSERROR_OK on success else error code.
 	 */
-	nserror (*line)(
-			const struct redraw_context *ctx,
+	nserror (*line)(const struct redraw_context *ctx,
 			const plot_style_t *pstyle,
 			const struct rect *line);
 
@@ -185,10 +181,9 @@ struct plotter_table {
 	 * \param rect A rectangle defining the line to be drawn
 	 * \return NSERROR_OK on success else error code.
 	 */
-	nserror (*rectangle)(
-			const struct redraw_context *ctx,
-			const plot_style_t *pstyle,
-			const struct rect *rectangle);
+	nserror (*rectangle)(const struct redraw_context *ctx,
+			     const plot_style_t *pstyle,
+			     const struct rect *rectangle);
 
 	/**
 	 * Plot a polygon
@@ -204,11 +199,10 @@ struct plotter_table {
 	 * \param n number of verticies.
 	 * \return NSERROR_OK on success else error code.
 	 */
-	nserror (*polygon)(
-			const struct redraw_context *ctx,
-			const plot_style_t *pstyle,
-			const int *p,
-			unsigned int n);
+	nserror (*polygon)(const struct redraw_context *ctx,
+			   const plot_style_t *pstyle,
+			   const int *p,
+			   unsigned int n);
 
 	/**
 	 * Plots a path.
@@ -235,8 +229,7 @@ struct plotter_table {
 	 * \param transform A transform to apply to the path.
 	 * \return NSERROR_OK on success else error code.
 	 */
-	nserror (*path)(
-			const struct redraw_context *ctx,
+	nserror (*path)(const struct redraw_context *ctx,
 			const plot_style_t *pstyle,
 			const float *p,
 			unsigned int n,
@@ -266,15 +259,14 @@ struct plotter_table {
 	 * \param flags the flags controlling the type of plot operation
 	 * \return NSERROR_OK on success else error code.
 	 */
-	nserror (*bitmap)(
-			const struct redraw_context *ctx,
-			struct bitmap *bitmap,
-			int x,
-			int y,
-			int width,
-			int height,
-			colour bg,
-			bitmap_flags_t flags);
+	nserror (*bitmap)(const struct redraw_context *ctx,
+			  struct bitmap *bitmap,
+			  int x,
+			  int y,
+			  int width,
+			  int height,
+			  colour bg,
+			  bitmap_flags_t flags);
 
 	/**
 	 * Text plotting.
@@ -287,8 +279,7 @@ struct plotter_table {
 	 * \param length length of string, in bytes
 	 * \return NSERROR_OK on success else error code.
 	 */
-	nserror (*text)(
-			const struct redraw_context *ctx,
+	nserror (*text)(const struct redraw_context *ctx,
 			const plot_font_style_t *fstyle,
 			int x,
 			int y,
@@ -304,9 +295,8 @@ struct plotter_table {
 	 * \param ctx The current redraw context.
 	 * \return NSERROR_OK on success else error code.
 	 */
-	nserror (*group_start)(
-			const struct redraw_context *ctx,
-			const char *name);
+	nserror (*group_start)(const struct redraw_context *ctx,
+			       const char *name);
 
 	/**
 	 * End of the most recently started group.
@@ -316,8 +306,7 @@ struct plotter_table {
 	 * \param ctx The current redraw context.
 	 * \return NSERROR_OK on success else error code.
 	 */
-	nserror (*group_end)(
-			const struct redraw_context *ctx);
+	nserror (*group_end)(const struct redraw_context *ctx);
 
 	/**
 	 * Only used internally by the knockout code. Must be NULL in
@@ -326,8 +315,7 @@ struct plotter_table {
 	 * \param ctx The current redraw context.
 	 * \return NSERROR_OK on success else error code.
 	 */
-	nserror (*flush)(
-			const struct redraw_context *ctx);
+	nserror (*flush)(const struct redraw_context *ctx);
 
 	/* flags */
 	/**

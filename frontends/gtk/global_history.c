@@ -45,11 +45,11 @@ struct nsgtk_global_history_window {
 
 static struct nsgtk_global_history_window *global_history_window = NULL;
 
-#define MENUPROTO(x) static gboolean nsgtk_on_##x##_activate( \
-		GtkMenuItem *widget, gpointer g)
-#define MENUEVENT(x) { #x, G_CALLBACK(nsgtk_on_##x##_activate) }
-#define MENUHANDLER(x) gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, \
-		gpointer g)
+#define MENUPROTO(x)                                                           \
+	static gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, gpointer g)
+#define MENUEVENT(x) {#x, G_CALLBACK(nsgtk_on_##x##_activate)}
+#define MENUHANDLER(x)                                                         \
+	gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, gpointer g)
 
 struct menu_events {
 	const char *widget;
@@ -95,8 +95,7 @@ static struct menu_events menu_events[] = {
 	MENUEVENT(collapse_addresses),
 
 	MENUEVENT(launch),
-		  {NULL, NULL}
-};
+	{NULL, NULL}};
 
 /* edit menu */
 MENUHANDLER(delete_selected)
@@ -182,21 +181,24 @@ MENUHANDLER(export)
 	ghwin = (struct nsgtk_global_history_window *)g;
 
 	save_dialog = gtk_file_chooser_dialog_new("Save File",
-			ghwin->wnd,
-			GTK_FILE_CHOOSER_ACTION_SAVE,
-			NSGTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-			NSGTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
-			NULL);
+						  ghwin->wnd,
+						  GTK_FILE_CHOOSER_ACTION_SAVE,
+						  NSGTK_STOCK_CANCEL,
+						  GTK_RESPONSE_CANCEL,
+						  NSGTK_STOCK_SAVE,
+						  GTK_RESPONSE_ACCEPT,
+						  NULL);
 
 	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(save_dialog),
-			getenv("HOME") ? getenv("HOME") : "/");
+					    getenv("HOME") ? getenv("HOME")
+							   : "/");
 
 	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(save_dialog),
-			"history.html");
+					  "history.html");
 
 	if (gtk_dialog_run(GTK_DIALOG(save_dialog)) == GTK_RESPONSE_ACCEPT) {
 		gchar *filename = gtk_file_chooser_get_filename(
-				GTK_FILE_CHOOSER(save_dialog));
+			GTK_FILE_CHOOSER(save_dialog));
 
 		global_history_export(filename, NULL);
 		g_free(filename);
@@ -217,17 +219,18 @@ nsgtk_global_history_init_menu(struct nsgtk_global_history_window *ghwin)
 	GtkWidget *w;
 
 	while (event->widget != NULL) {
-		w = GTK_WIDGET(gtk_builder_get_object(ghwin->builder,
-						      event->widget));
+		w = GTK_WIDGET(
+			gtk_builder_get_object(ghwin->builder, event->widget));
 		if (w == NULL) {
-			NSLOG(neosurf, INFO,
-			      "Unable to connect menu widget ""%s""",
+			NSLOG(neosurf,
+			      INFO,
+			      "Unable to connect menu widget "
+			      "%s"
+			      "",
 			      event->widget);
 		} else {
-			g_signal_connect(G_OBJECT(w),
-					 "activate",
-					 event->handler,
-					 ghwin);
+			g_signal_connect(
+				G_OBJECT(w), "activate", event->handler, ghwin);
 		}
 		event++;
 	}
@@ -243,10 +246,10 @@ nsgtk_global_history_init_menu(struct nsgtk_global_history_window *ghwin)
  * \param y location of event
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror
-nsgtk_global_history_mouse(struct nsgtk_corewindow *nsgtk_cw,
-		    browser_mouse_state mouse_state,
-		    int x, int y)
+static nserror nsgtk_global_history_mouse(struct nsgtk_corewindow *nsgtk_cw,
+					  browser_mouse_state mouse_state,
+					  int x,
+					  int y)
 {
 	global_history_mouse_action(mouse_state, x, y);
 
@@ -281,11 +284,9 @@ nsgtk_global_history_key(struct nsgtk_corewindow *nsgtk_cw, uint32_t nskey)
 static nserror
 nsgtk_global_history_draw(struct nsgtk_corewindow *nsgtk_cw, struct rect *r)
 {
-	struct redraw_context ctx = {
-		.interactive = true,
-		.background_images = true,
-		.plot = &nsgtk_plotters
-	};
+	struct redraw_context ctx = {.interactive = true,
+				     .background_images = true,
+				     .plot = &nsgtk_plotters};
 
 	global_history_redraw(0, 0, r, &ctx);
 
@@ -320,16 +321,14 @@ static nserror nsgtk_global_history_init(void)
 
 	gtk_builder_connect_signals(ncwin->builder, NULL);
 
-	ncwin->wnd = GTK_WINDOW(gtk_builder_get_object(ncwin->builder,
-						       "wndHistory"));
+	ncwin->wnd = GTK_WINDOW(
+		gtk_builder_get_object(ncwin->builder, "wndHistory"));
 
-	ncwin->core.scrolled = GTK_SCROLLED_WINDOW(
-		gtk_builder_get_object(ncwin->builder,
-				       "globalHistoryScrolled"));
+	ncwin->core.scrolled = GTK_SCROLLED_WINDOW(gtk_builder_get_object(
+		ncwin->builder, "globalHistoryScrolled"));
 
-	ncwin->core.drawing_area = GTK_DRAWING_AREA(
-		gtk_builder_get_object(ncwin->builder,
-				       "globalHistoryDrawingArea"));
+	ncwin->core.drawing_area = GTK_DRAWING_AREA(gtk_builder_get_object(
+		ncwin->builder, "globalHistoryDrawingArea"));
 
 	/* make the delete event hide the window */
 	g_signal_connect(G_OBJECT(ncwin->wnd),
@@ -396,8 +395,4 @@ nserror nsgtk_global_history_destroy(void)
 	}
 
 	return res;
-
 }
-
-
-

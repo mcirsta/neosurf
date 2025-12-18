@@ -78,27 +78,30 @@ bool fetch_about_query_privacy_handler(struct fetch_about_context *ctx)
 	fetch_about_set_http_code(ctx, 200);
 
 	/* content type */
-	if (fetch_about_send_header(ctx, "Content-Type: text/html; charset=utf-8")) {
+	if (fetch_about_send_header(ctx,
+				    "Content-Type: text/html; charset=utf-8")) {
 		goto fetch_about_query_ssl_handler_aborted;
 	}
 
 	title = messages_get("PrivacyTitle");
-	res = fetch_about_ssenddataf(ctx,
-			"<html>\n<head>\n"
-			"<title>%s</title>\n"
-			"<link rel=\"stylesheet\" type=\"text/css\" "
-			"href=\"resource:internal.css\">\n"
-			"</head>\n"
-			"<body class=\"ns-even-bg ns-even-fg ns-border\" id =\"privacy\">\n"
-			"<h1 class=\"ns-border ns-odd-fg-bad\">%s</h1>\n",
-			title, title);
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<html>\n<head>\n"
+		"<title>%s</title>\n"
+		"<link rel=\"stylesheet\" type=\"text/css\" "
+		"href=\"resource:internal.css\">\n"
+		"</head>\n"
+		"<body class=\"ns-even-bg ns-even-fg ns-border\" id =\"privacy\">\n"
+		"<h1 class=\"ns-border ns-odd-fg-bad\">%s</h1>\n",
+		title,
+		title);
 	if (res != NSERROR_OK) {
 		goto fetch_about_query_ssl_handler_aborted;
 	}
 
 	res = fetch_about_ssenddataf(ctx,
-			 "<form method=\"post\""
-			 " enctype=\"multipart/form-data\">");
+				     "<form method=\"post\""
+				     " enctype=\"multipart/form-data\">");
 	if (res != NSERROR_OK) {
 		goto fetch_about_query_ssl_handler_aborted;
 	}
@@ -107,7 +110,9 @@ bool fetch_about_query_privacy_handler(struct fetch_about_context *ctx)
 				    "PrivacyDescription",
 				    &description);
 	if (res == NSERROR_OK) {
-		res = fetch_about_ssenddataf(ctx, "<div><p>%s</p></div>", description);
+		res = fetch_about_ssenddataf(ctx,
+					     "<div><p>%s</p></div>",
+					     description);
 		free(description);
 		if (res != NSERROR_OK) {
 			goto fetch_about_query_ssl_handler_aborted;
@@ -115,31 +120,34 @@ bool fetch_about_query_privacy_handler(struct fetch_about_context *ctx)
 	}
 
 	if (chainurl == NULL) {
-		res = fetch_about_ssenddataf(ctx,
-				 "<div><p>%s</p></div>"
-				 "<div><p>%s</p></div>",
-				 reason,
-				 messages_get("ViewCertificatesNotPossible"));
+		res = fetch_about_ssenddataf(
+			ctx,
+			"<div><p>%s</p></div>"
+			"<div><p>%s</p></div>",
+			reason,
+			messages_get("ViewCertificatesNotPossible"));
 	} else {
-		res = fetch_about_ssenddataf(ctx,
-				 "<div><p>%s</p></div>"
-				 "<div><p><a href=\"%s\" target=\"_blank\">%s</a></p></div>",
-				 reason,
-				 chainurl,
-				 messages_get("ViewCertificates"));
+		res = fetch_about_ssenddataf(
+			ctx,
+			"<div><p>%s</p></div>"
+			"<div><p><a href=\"%s\" target=\"_blank\">%s</a></p></div>",
+			reason,
+			chainurl,
+			messages_get("ViewCertificates"));
 	}
 	if (res != NSERROR_OK) {
 		goto fetch_about_query_ssl_handler_aborted;
 	}
-	res = fetch_about_ssenddataf(ctx,
-			 "<div id=\"buttons\">"
-			 "<input type=\"submit\" id=\"back\" name=\"back\" "
-			 "value=\"%s\" class=\"default-action\">"
-			 "<input type=\"submit\" id=\"proceed\" name=\"proceed\" "
-			 "value=\"%s\">"
-			 "</div>",
-			 messages_get("Backtosafety"),
-			 messages_get("Proceed"));
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<div id=\"buttons\">"
+		"<input type=\"submit\" id=\"back\" name=\"back\" "
+		"value=\"%s\" class=\"default-action\">"
+		"<input type=\"submit\" id=\"proceed\" name=\"proceed\" "
+		"value=\"%s\">"
+		"</div>",
+		messages_get("Backtosafety"),
+		messages_get("Proceed"));
 	if (res != NSERROR_OK) {
 		goto fetch_about_query_ssl_handler_aborted;
 	}
@@ -148,9 +156,10 @@ bool fetch_about_query_privacy_handler(struct fetch_about_context *ctx)
 	if (res != NSERROR_OK) {
 		url_s = strdup("");
 	}
-	res = fetch_about_ssenddataf(ctx,
-			 "<input type=\"hidden\" name=\"siteurl\" value=\"%s\">",
-			 url_s);
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<input type=\"hidden\" name=\"siteurl\" value=\"%s\">",
+		url_s);
 	free(url_s);
 	if (res != NSERROR_OK) {
 		goto fetch_about_query_ssl_handler_aborted;

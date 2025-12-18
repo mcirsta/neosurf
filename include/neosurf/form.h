@@ -36,7 +36,7 @@ struct form_option {
 	bool initial_selected;
 	char *value;
 	char *text; /**< NUL terminated. */
-	struct form_option* next;
+	struct form_option *next;
 };
 
 /**
@@ -54,7 +54,8 @@ nserror form_select_process_selection(struct form_control *control, int item);
  * \param item The index of the menu entry to return.
  * \return The form option at that index.
  */
-struct form_option *form_select_get_option(struct form_control *control, int item);
+struct form_option *
+form_select_get_option(struct form_control *control, int item);
 
 /**
  * Get a form control name
@@ -72,6 +73,7 @@ char *form_control_get_name(struct form_control *control);
  * \param[out] r The rectangle to place the bounds in.
  * \return NSERROR_OK on success or error code.
  */
-nserror form_control_bounding_rect(struct form_control *control, struct rect *r);
+nserror
+form_control_bounding_rect(struct form_control *control, struct rect *r);
 
 #endif

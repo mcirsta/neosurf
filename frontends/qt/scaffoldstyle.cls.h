@@ -29,11 +29,13 @@
 /**
  * Class for netsurf scaffold style
  */
-class ScaffoldStyle: public QProxyStyle
+class ScaffoldStyle : public QProxyStyle
 {
 	Q_OBJECT
-public:
+      public:
 	explicit ScaffoldStyle(QObject *parent = nullptr);
 
-	virtual QRect subElementRect(SubElement subElement, const QStyleOption *option, const QWidget *widget) const override;
+	virtual QRect subElementRect(SubElement subElement,
+				     const QStyleOption *option,
+				     const QWidget *widget) const override;
 };

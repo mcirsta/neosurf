@@ -14,11 +14,9 @@
 #define NSUTILS_ASSERT_H__
 
 /** Compile time assertion macro. */
-#define ns_static_assert(e) \
-{ \
-	enum { \
-		ns_static_assert_check = 1 / (!!(e)) \
-	}; \
-}
+#define ns_static_assert(e)                                                    \
+	{                                                                      \
+		enum { ns_static_assert_check = 1 / (!!(e)) };                 \
+	}
 
 #endif

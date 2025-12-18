@@ -17,12 +17,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- /** \file
-  * Font handling in Haru pdf documents (implementation).
-  *
-  * The functions were written to implement the same interface as the Pango ones
-  * so that the usage of the latter wouldn't have to be modified.
-  */
+/** \file
+ * Font handling in Haru pdf documents (implementation).
+ *
+ * The functions were written to implement the same interface as the Pango ones
+ * so that the usage of the latter wouldn't have to be modified.
+ */
 
 #include "utils/config.h"
 #ifdef WITH_PDF_EXPORT
@@ -42,28 +42,36 @@
 #include "utils/log.h"
 
 
-static bool haru_nsfont_init(HPDF_Doc *pdf, HPDF_Page *page,
-		const char *string, char **string_nt, int length);
+static bool haru_nsfont_init(HPDF_Doc *pdf,
+			     HPDF_Page *page,
+			     const char *string,
+			     char **string_nt,
+			     int length);
 
 static bool haru_nsfont_width(const plot_font_style_t *fstyle,
-		const char *string, size_t length,
-		int *width);
+			      const char *string,
+			      size_t length,
+			      int *width);
 
 static bool haru_nsfont_position_in_string(const plot_font_style_t *fstyle,
-		const char *string, size_t length,
-		int x, size_t *char_offset, int *actual_x);
+					   const char *string,
+					   size_t length,
+					   int x,
+					   size_t *char_offset,
+					   int *actual_x);
 
 static bool haru_nsfont_split(const plot_font_style_t *fstyle,
-		const char *string, size_t length,
-	 	int x, size_t *char_offset, int *actual_x);
+			      const char *string,
+			      size_t length,
+			      int x,
+			      size_t *char_offset,
+			      int *actual_x);
 
 static float pdf_text_scale = DEFAULT_EXPORT_SCALE;
 
-const struct font_functions haru_nsfont = {
-	haru_nsfont_width,
- 	haru_nsfont_position_in_string,
- 	haru_nsfont_split
-};
+const struct font_functions haru_nsfont = {haru_nsfont_width,
+					   haru_nsfont_position_in_string,
+					   haru_nsfont_split};
 
 /**
  * Haru error handler
@@ -71,10 +79,11 @@ const struct font_functions haru_nsfont = {
  * as it would otherwise flood the user with all resulting complications,
  * covering the most important error source.
  */
-static void error_handler(HPDF_STATUS error_no, HPDF_STATUS detail_no,
-		void *user_data)
+static void
+error_handler(HPDF_STATUS error_no, HPDF_STATUS detail_no, void *user_data)
 {
-	NSLOG(netsurf, INFO,
+	NSLOG(netsurf,
+	      INFO,
 	      "ERROR: in font_haru \n\terror_no=%x\n\tdetail_no=%d\n",
 	      (HPDF_UINT)error_no,
 	      (HPDF_UINT)detail_no);
@@ -83,8 +92,11 @@ static void error_handler(HPDF_STATUS error_no, HPDF_STATUS detail_no,
 #endif
 }
 
-static bool haru_nsfont_init(HPDF_Doc *pdf, HPDF_Page *page,
-		const char *string, char **string_nt, int length)
+static bool haru_nsfont_init(HPDF_Doc *pdf,
+			     HPDF_Page *page,
+			     const char *string,
+			     char **string_nt,
+			     int length)
 {
 
 	*pdf = HPDF_New(error_handler, NULL);
@@ -120,8 +132,9 @@ static bool haru_nsfont_init(HPDF_Doc *pdf, HPDF_Page *page,
  * \return  true on success, false on error and error reported
  */
 bool haru_nsfont_width(const plot_font_style_t *fstyle,
-		const char *string, size_t length,
-	 	int *width)
+		       const char *string,
+		       size_t length,
+		       int *width)
 {
 	HPDF_Doc pdf;
 	HPDF_Page page;
@@ -146,9 +159,12 @@ bool haru_nsfont_width(const plot_font_style_t *fstyle,
 	*width = width_real;
 
 #ifdef FONT_HARU_DEBUG
-	NSLOG(netsurf, INFO,
-	      "Measuring string: %s ; Calculated width: %f %i", string_nt,
-	      width_real, *width);
+	NSLOG(netsurf,
+	      INFO,
+	      "Measuring string: %s ; Calculated width: %f %i",
+	      string_nt,
+	      width_real,
+	      *width);
 #endif
 	free(string_nt);
 	HPDF_Free(pdf);
@@ -170,8 +186,11 @@ bool haru_nsfont_width(const plot_font_style_t *fstyle,
  */
 
 bool haru_nsfont_position_in_string(const plot_font_style_t *fstyle,
-		const char *string, size_t length,
-		int x, size_t *char_offset, int *actual_x)
+				    const char *string,
+				    size_t length,
+				    int x,
+				    size_t *char_offset,
+				    int *actual_x)
 {
 	HPDF_Doc pdf;
 	HPDF_Page page;
@@ -182,16 +201,16 @@ bool haru_nsfont_position_in_string(const plot_font_style_t *fstyle,
 	if (!haru_nsfont_init(&pdf, &page, string, &string_nt, length))
 		return false;
 
-	if (HPDF_Page_SetWidth(page, x) != HPDF_OK
-			|| !haru_nsfont_apply_style(fstyle, pdf, page, NULL, NULL)) {
+	if (HPDF_Page_SetWidth(page, x) != HPDF_OK ||
+	    !haru_nsfont_apply_style(fstyle, pdf, page, NULL, NULL)) {
 		free(string_nt);
 		HPDF_Free(pdf);
 		return false;
 	}
 
 
-	offset = HPDF_Page_MeasureText(page, string_nt, x,
-			HPDF_FALSE, &real_width);
+	offset = HPDF_Page_MeasureText(
+		page, string_nt, x, HPDF_FALSE, &real_width);
 
 
 	if (real_width < x)
@@ -206,7 +225,8 @@ bool haru_nsfont_position_in_string(const plot_font_style_t *fstyle,
 	*actual_x = real_width;
 
 #ifdef FONT_HARU_DEBUG
-	NSLOG(netsurf, INFO,
+	NSLOG(netsurf,
+	      INFO,
 	      "Position in string: %s at x: %i; Calculated position: %i",
 	      string_nt,
 	      x,
@@ -231,8 +251,11 @@ bool haru_nsfont_position_in_string(const plot_font_style_t *fstyle,
  */
 
 bool haru_nsfont_split(const plot_font_style_t *fstyle,
-		const char *string, size_t length,
-		int x, size_t *char_offset, int *actual_x)
+		       const char *string,
+		       size_t length,
+		       int x,
+		       size_t *char_offset,
+		       int *actual_x)
 {
 	HPDF_Doc pdf;
 	HPDF_Page page;
@@ -244,18 +267,19 @@ bool haru_nsfont_split(const plot_font_style_t *fstyle,
 	if (!haru_nsfont_init(&pdf, &page, string, &string_nt, length))
 		return false;
 
-	if (HPDF_Page_SetWidth(page, x) != HPDF_OK
-		    || !haru_nsfont_apply_style(fstyle, pdf, page, NULL, NULL)) {
+	if (HPDF_Page_SetWidth(page, x) != HPDF_OK ||
+	    !haru_nsfont_apply_style(fstyle, pdf, page, NULL, NULL)) {
 		free(string_nt);
 		HPDF_Free(pdf);
 		return false;
 	}
 
-	offset = HPDF_Page_MeasureText(page, string_nt, x,
-			HPDF_TRUE, &real_width);
+	offset = HPDF_Page_MeasureText(
+		page, string_nt, x, HPDF_TRUE, &real_width);
 
 #ifdef FONT_HARU_DEBUG
-	NSLOG(netsurf, INFO,
+	NSLOG(netsurf,
+	      INFO,
 	      "Splitting string: %s for width: %i ; Calculated position: %i Calculated real_width: %f",
 	      string_nt,
 	      x,
@@ -289,8 +313,10 @@ bool haru_nsfont_split(const plot_font_style_t *fstyle,
  * style, otherwise it is left to the called to do this.
  */
 bool haru_nsfont_apply_style(const plot_font_style_t *fstyle,
-		HPDF_Doc doc, HPDF_Page page,
-		HPDF_Font *font, HPDF_REAL *font_size)
+			     HPDF_Doc doc,
+			     HPDF_Page page,
+			     HPDF_Font *font,
+			     HPDF_REAL *font_size)
 {
 	HPDF_Font pdf_font;
 	HPDF_REAL size;
@@ -317,7 +343,7 @@ bool haru_nsfont_apply_style(const plot_font_style_t *fstyle,
 	case PLOT_FONT_FAMILY_FANTASY:
 	default:
 		strcpy(font_name, "Times");
-		roman=true;
+		roman = true;
 		break;
 	}
 
@@ -328,11 +354,11 @@ bool haru_nsfont_apply_style(const plot_font_style_t *fstyle,
 
 	if ((fstyle->flags & FONTF_ITALIC) || (fstyle->flags & FONTF_OBLIQUE)) {
 		if (!bold)
-			strcat(font_name,"-");
+			strcat(font_name, "-");
 		if (roman)
-			strcat(font_name,"Italic");
+			strcat(font_name, "Italic");
 		else
-			strcat(font_name,"Oblique");
+			strcat(font_name, "Oblique");
 
 		styled = true;
 	}

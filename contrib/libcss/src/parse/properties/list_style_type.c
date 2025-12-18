@@ -28,8 +28,9 @@
  *		   If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_list_style_type(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+				     const parserutils_vector *vector,
+				     int32_t *ctx,
+				     css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	css_error error;
@@ -50,24 +51,28 @@ css_error css__parse_list_style_type(css_language *c,
 	}
 
 	if (ident->type == CSS_TOKEN_IDENT &&
-			(lwc_string_caseless_isequal(
-			ident->idata, c->strings[INHERIT],
-			&match) == lwc_error_ok && match)) {
+	    (lwc_string_caseless_isequal(ident->idata,
+					 c->strings[INHERIT],
+					 &match) == lwc_error_ok &&
+	     match)) {
 		flags |= FLAG_INHERIT;
 	} else if (ident->type == CSS_TOKEN_IDENT &&
-			(lwc_string_caseless_isequal(
-			ident->idata, c->strings[INITIAL],
-			&match) == lwc_error_ok && match)) {
+		   (lwc_string_caseless_isequal(ident->idata,
+						c->strings[INITIAL],
+						&match) == lwc_error_ok &&
+		    match)) {
 		flags = FLAG_INITIAL;
 	} else if (ident->type == CSS_TOKEN_IDENT &&
-			(lwc_string_caseless_isequal(
-			ident->idata, c->strings[REVERT],
-			&match) == lwc_error_ok && match)) {
+		   (lwc_string_caseless_isequal(ident->idata,
+						c->strings[REVERT],
+						&match) == lwc_error_ok &&
+		    match)) {
 		flags = FLAG_REVERT;
 	} else if (ident->type == CSS_TOKEN_IDENT &&
-			(lwc_string_caseless_isequal(
-			ident->idata, c->strings[UNSET],
-			&match) == lwc_error_ok && match)) {
+		   (lwc_string_caseless_isequal(ident->idata,
+						c->strings[UNSET],
+						&match) == lwc_error_ok &&
+		    match)) {
 		flags = FLAG_UNSET;
 	} else {
 		error = css__parse_list_style_type_value(c, ident, &value);
@@ -77,7 +82,8 @@ css_error css__parse_list_style_type(css_language *c,
 		}
 	}
 
-	error = css__stylesheet_style_appendOPV(result, CSS_PROP_LIST_STYLE_TYPE, flags, value);
+	error = css__stylesheet_style_appendOPV(
+		result, CSS_PROP_LIST_STYLE_TYPE, flags, value);
 
 	if (error != CSS_OK)
 		*ctx = orig_ctx;

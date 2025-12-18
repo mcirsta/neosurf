@@ -102,8 +102,10 @@ struct gui_misc_table {
 	 * \param cbpw      Context pointer passed to cb
 	 * \return NSERROR_OK on sucess else error and cb never called
 	 */
-	nserror (*login)(struct nsurl *url, const char *realm,
-			 const char *username, const char *password,
+	nserror (*login)(struct nsurl *url,
+			 const char *realm,
+			 const char *username,
+			 const char *password,
 			 nserror (*cb)(struct nsurl *url,
 				       const char *realm,
 				       const char *username,

@@ -21,14 +21,13 @@
  * \param token        The token to handle
  * \return True to reprocess token, false otherwise
  */
-hubbub_error handle_after_body(hubbub_treebuilder *treebuilder,
-		const hubbub_token *token)
+hubbub_error
+handle_after_body(hubbub_treebuilder *treebuilder, const hubbub_token *token)
 {
 	hubbub_error err = HUBBUB_OK;
 
 	switch (token->type) {
-	case HUBBUB_TOKEN_CHARACTER:
-	{
+	case HUBBUB_TOKEN_CHARACTER: {
 		/* mostly cribbed from process_characters_expect_whitespace */
 		const uint8_t *data = token->data.character.ptr;
 		size_t len = token->data.character.len;
@@ -37,7 +36,7 @@ hubbub_error handle_after_body(hubbub_treebuilder *treebuilder,
 		/* Scan for whitespace */
 		for (c = 0; c < len; c++) {
 			if (data[c] != 0x09 && data[c] != 0x0A &&
-					data[c] != 0x0C && data[c] != 0x20)
+			    data[c] != 0x0C && data[c] != 0x20)
 				break;
 		}
 
@@ -54,26 +53,25 @@ hubbub_error handle_after_body(hubbub_treebuilder *treebuilder,
 		/* Anything else, switch to in body */
 		if (c != len) {
 			/* Update token data to strip leading whitespace */
-			((hubbub_token *) token)->data.character.ptr += c;
-			((hubbub_token *) token)->data.character.len -= c;
+			((hubbub_token *)token)->data.character.ptr += c;
+			((hubbub_token *)token)->data.character.len -= c;
 
 			treebuilder->context.mode = IN_BODY;
 			err = HUBBUB_REPROCESS;
 		}
-	}
-		break;
+	} break;
 	case HUBBUB_TOKEN_COMMENT:
-		err = process_comment_append(treebuilder, token,
-				treebuilder->context.element_stack[
-				0].node);
+		err = process_comment_append(
+			treebuilder,
+			token,
+			treebuilder->context.element_stack[0].node);
 		break;
 	case HUBBUB_TOKEN_DOCTYPE:
 		/** \todo parse error */
 		break;
-	case HUBBUB_TOKEN_START_TAG:
-	{
-		element_type type = element_type_from_name(treebuilder,
-				&token->data.tag.name);
+	case HUBBUB_TOKEN_START_TAG: {
+		element_type type = element_type_from_name(
+			treebuilder, &token->data.tag.name);
 
 		if (type == HTML) {
 			/* Process as if "in body" */
@@ -83,12 +81,10 @@ hubbub_error handle_after_body(hubbub_treebuilder *treebuilder,
 			treebuilder->context.mode = IN_BODY;
 			err = HUBBUB_REPROCESS;
 		}
-	}
-		break;
-	case HUBBUB_TOKEN_END_TAG:
-	{
-		element_type type = element_type_from_name(treebuilder,
-				&token->data.tag.name);
+	} break;
+	case HUBBUB_TOKEN_END_TAG: {
+		element_type type = element_type_from_name(
+			treebuilder, &token->data.tag.name);
 
 		if (type == HTML) {
 			/** \todo fragment case */
@@ -99,12 +95,10 @@ hubbub_error handle_after_body(hubbub_treebuilder *treebuilder,
 			treebuilder->context.mode = IN_BODY;
 			err = HUBBUB_REPROCESS;
 		}
-	}
-		break;
+	} break;
 	case HUBBUB_TOKEN_EOF:
 		break;
 	}
 
 	return err;
 }
-

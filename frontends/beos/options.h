@@ -26,4 +26,3 @@
 #endif
 
 NSOPTION_STRING(url_file, NULL)
-

@@ -25,43 +25,42 @@ static void printToken(const css_token *token)
 
 	switch (token->type) {
 	case CSS_TOKEN_IDENT:
-		printf("IDENT(%.*s)",
-				(int) token->data.len, token->data.data);
+		printf("IDENT(%.*s)", (int)token->data.len, token->data.data);
 		break;
 	case CSS_TOKEN_ATKEYWORD:
 		printf("ATKEYWORD(%.*s)",
-				(int) token->data.len, token->data.data);
+		       (int)token->data.len,
+		       token->data.data);
 		break;
 	case CSS_TOKEN_STRING:
-		printf("STRING(%.*s)",
-				(int) token->data.len, token->data.data);
+		printf("STRING(%.*s)", (int)token->data.len, token->data.data);
 		break;
 	case CSS_TOKEN_INVALID_STRING:
-		printf("INVALID(%.*s)",
-				(int) token->data.len, token->data.data);
+		printf("INVALID(%.*s)", (int)token->data.len, token->data.data);
 		break;
 	case CSS_TOKEN_HASH:
-		printf("HASH(%.*s)",
-				(int) token->data.len, token->data.data);
+		printf("HASH(%.*s)", (int)token->data.len, token->data.data);
 		break;
 	case CSS_TOKEN_NUMBER:
-		printf("NUMBER(%.*s)",
-				(int) token->data.len, token->data.data);
+		printf("NUMBER(%.*s)", (int)token->data.len, token->data.data);
 		break;
 	case CSS_TOKEN_PERCENTAGE:
 		printf("PERCENTAGE(%.*s)",
-				(int) token->data.len, token->data.data);
+		       (int)token->data.len,
+		       token->data.data);
 		break;
 	case CSS_TOKEN_DIMENSION:
 		printf("DIMENSION(%.*s)",
-				(int) token->data.len, token->data.data);
+		       (int)token->data.len,
+		       token->data.data);
 		break;
 	case CSS_TOKEN_URI:
-		printf("URI(%.*s)", (int) token->data.len, token->data.data);
+		printf("URI(%.*s)", (int)token->data.len, token->data.data);
 		break;
 	case CSS_TOKEN_UNICODE_RANGE:
 		printf("UNICODE-RANGE(%.*s)",
-				(int) token->data.len, token->data.data);
+		       (int)token->data.len,
+		       token->data.data);
 		break;
 	case CSS_TOKEN_CDO:
 		printf("CDO");
@@ -73,11 +72,12 @@ static void printToken(const css_token *token)
 		printf("S");
 		break;
 	case CSS_TOKEN_COMMENT:
-		printf("COMMENT(%.*s)", (int) token->data.len, token->data.data);
+		printf("COMMENT(%.*s)", (int)token->data.len, token->data.data);
 		break;
 	case CSS_TOKEN_FUNCTION:
 		printf("FUNCTION(%.*s)",
-				(int) token->data.len, token->data.data);
+		       (int)token->data.len,
+		       token->data.data);
 		break;
 	case CSS_TOKEN_INCLUDES:
 		printf("INCLUDES");
@@ -95,7 +95,7 @@ static void printToken(const css_token *token)
 		printf("SUBSTRINGMATCH");
 		break;
 	case CSS_TOKEN_CHAR:
-		printf("CHAR(%.*s)", (int) token->data.len, token->data.data);
+		printf("CHAR(%.*s)", (int)token->data.len, token->data.data);
 		break;
 	case CSS_TOKEN_EOF:
 		printf("EOF");
@@ -129,11 +129,12 @@ int main(int argc, char **argv)
 
 	for (i = 0; i < ITERATIONS; i++) {
 		assert(parserutils_inputstream_create("UTF-8",
-			CSS_CHARSET_DICTATED,css__charset_extract,
-			&stream) == PARSERUTILS_OK);
+						      CSS_CHARSET_DICTATED,
+						      css__charset_extract,
+						      &stream) ==
+		       PARSERUTILS_OK);
 
-		assert(css__lexer_create(stream, &lexer) ==
-			CSS_OK);
+		assert(css__lexer_create(stream, &lexer) == CSS_OK);
 
 		fp = fopen(argv[1], "rb");
 		if (fp == NULL) {
@@ -149,13 +150,14 @@ int main(int argc, char **argv)
 			size_t read = fread(buf, 1, CHUNK_SIZE, fp);
 			assert(read == CHUNK_SIZE);
 
-			assert(parserutils_inputstream_append(stream,
-					buf, CHUNK_SIZE) == PARSERUTILS_OK);
+			assert(parserutils_inputstream_append(
+				       stream, buf, CHUNK_SIZE) ==
+			       PARSERUTILS_OK);
 
 			len -= CHUNK_SIZE;
 
 			while ((error = css__lexer_get_token(lexer, &tok)) ==
-					CSS_OK) {
+			       CSS_OK) {
 				printToken(tok);
 
 				if (tok->type == CSS_TOKEN_EOF)
@@ -167,8 +169,8 @@ int main(int argc, char **argv)
 			size_t read = fread(buf, 1, len, fp);
 			assert(read == len);
 
-			assert(parserutils_inputstream_append(stream,
-					buf, len) == PARSERUTILS_OK);
+			assert(parserutils_inputstream_append(
+				       stream, buf, len) == PARSERUTILS_OK);
 
 			len = 0;
 		}
@@ -176,7 +178,7 @@ int main(int argc, char **argv)
 		fclose(fp);
 
 		assert(parserutils_inputstream_append(stream, NULL, 0) ==
-				PARSERUTILS_OK);
+		       PARSERUTILS_OK);
 
 		while ((error = css__lexer_get_token(lexer, &tok)) == CSS_OK) {
 			printToken(tok);
@@ -194,4 +196,3 @@ int main(int argc, char **argv)
 
 	return 0;
 }
-

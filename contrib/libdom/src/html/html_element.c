@@ -21,26 +21,20 @@
 const struct dom_html_element_vtable _dom_html_element_vtable = {
 	{
 		{
-			{
-				DOM_NODE_EVENT_TARGET_VTABLE
-			},
+			{DOM_NODE_EVENT_TARGET_VTABLE},
 			DOM_NODE_VTABLE_ELEMENT,
 		},
 		DOM_ELEMENT_VTABLE_HTML_ELEMENT,
 	},
-	DOM_HTML_ELEMENT_VTABLE
-};
+	DOM_HTML_ELEMENT_VTABLE};
 
-static const struct dom_element_protected_vtable _dom_html_element_protect_vtable = {
-	{
-		DOM_HTML_ELEMENT_PROTECT_VTABLE
-	},
-	DOM_ELEMENT_PROTECT_VTABLE
-};
+static const struct dom_element_protected_vtable
+	_dom_html_element_protect_vtable = {{DOM_HTML_ELEMENT_PROTECT_VTABLE},
+					    DOM_ELEMENT_PROTECT_VTABLE};
 
-dom_exception _dom_html_element_create(
-		struct dom_html_element_create_params *params,
-		struct dom_html_element **result)
+dom_exception
+_dom_html_element_create(struct dom_html_element_create_params *params,
+			 struct dom_html_element **result)
 {
 	dom_exception error;
 	dom_html_element *el;
@@ -63,19 +57,22 @@ dom_exception _dom_html_element_create(
 	return DOM_NO_ERR;
 }
 
-dom_exception _dom_html_element_initialise(
-		struct dom_html_element_create_params *params,
-		struct dom_html_element *el)
+dom_exception
+_dom_html_element_initialise(struct dom_html_element_create_params *params,
+			     struct dom_html_element *el)
 {
 	dom_exception err;
 
 	el->type = params->type;
 
-	err = _dom_element_initialise(&params->doc->base, &el->base,
-			params->name, params->namespace, params->prefix);
+	err = _dom_element_initialise(&params->doc->base,
+				      &el->base,
+				      params->name,
+				      params->namespace,
+				      params->prefix);
 	if (err != DOM_NO_ERR)
 		return err;
-	
+
 	return err;
 }
 
@@ -90,7 +87,7 @@ void _dom_html_element_finalise(struct dom_html_element *ele)
 /* The virtual destroy function, see src/core/node.c for detail */
 void _dom_html_element_destroy(dom_node_internal *node)
 {
-	dom_html_element *html = (dom_html_element *) node;
+	dom_html_element *html = (dom_html_element *)node;
 
 	_dom_html_element_finalise(html);
 
@@ -98,8 +95,8 @@ void _dom_html_element_destroy(dom_node_internal *node)
 }
 
 /* The virtual copy function, see src/core/node.c for detail */
-dom_exception _dom_html_element_copy(dom_node_internal *old,
-		dom_node_internal **copy)
+dom_exception
+_dom_html_element_copy(dom_node_internal *old, dom_node_internal **copy)
 {
 	dom_html_element *new_node;
 	dom_exception err;
@@ -114,13 +111,13 @@ dom_exception _dom_html_element_copy(dom_node_internal *old,
 		return err;
 	}
 
-	*copy = (dom_node_internal *) new_node;
+	*copy = (dom_node_internal *)new_node;
 
 	return DOM_NO_ERR;
 }
 
-dom_exception _dom_html_element_copy_internal(
-		dom_html_element *old, dom_html_element *new)
+dom_exception
+_dom_html_element_copy_internal(dom_html_element *old, dom_html_element *new)
 {
 	dom_exception err;
 
@@ -137,46 +134,50 @@ dom_exception _dom_html_element_copy_internal(
 /*-----------------------------------------------------------------------*/
 /* API functions */
 
-#define SIMPLE_GET_SET(fattr,attr)                                    \
-dom_exception _dom_html_element_get_##fattr(dom_html_element *element, \
-					   dom_string **fattr)		\
-{									\
-	dom_exception ret;						\
-	dom_string *_memo_##attr;					\
-									\
-	_memo_##attr =							\
-		((struct dom_html_document *)				\
-		 ((struct dom_node_internal *)element)->owner)->memoised[hds_##attr]; \
-									\
-	ret = dom_element_get_attribute(element, _memo_##attr, fattr);	\
-									\
-	return ret;							\
-}									\
-									\
-dom_exception _dom_html_element_set_##fattr(dom_html_element *element,	\
-					   dom_string *fattr)		\
-{									\
-	dom_exception ret;						\
-	dom_string *_memo_##attr;					\
-									\
-	_memo_##attr =							\
-		((struct dom_html_document *)				\
-		 ((struct dom_node_internal *)element)->owner)->memoised[hds_##attr]; \
-									\
-	ret = dom_element_set_attribute(element, _memo_##attr, fattr);	\
-									\
-	return ret;							\
-}
+#define SIMPLE_GET_SET(fattr, attr)                                            \
+	dom_exception _dom_html_element_get_##fattr(dom_html_element *element, \
+						    dom_string **fattr)        \
+	{                                                                      \
+		dom_exception ret;                                             \
+		dom_string *_memo_##attr;                                      \
+                                                                               \
+		_memo_##attr =                                                 \
+			((struct dom_html_document                             \
+				  *)((struct dom_node_internal *)element)      \
+				 ->owner)                                      \
+				->memoised[hds_##attr];                        \
+                                                                               \
+		ret = dom_element_get_attribute(element, _memo_##attr, fattr); \
+                                                                               \
+		return ret;                                                    \
+	}                                                                      \
+                                                                               \
+	dom_exception _dom_html_element_set_##fattr(dom_html_element *element, \
+						    dom_string *fattr)         \
+	{                                                                      \
+		dom_exception ret;                                             \
+		dom_string *_memo_##attr;                                      \
+                                                                               \
+		_memo_##attr =                                                 \
+			((struct dom_html_document                             \
+				  *)((struct dom_node_internal *)element)      \
+				 ->owner)                                      \
+				->memoised[hds_##attr];                        \
+                                                                               \
+		ret = dom_element_set_attribute(element, _memo_##attr, fattr); \
+                                                                               \
+		return ret;                                                    \
+	}
 
-SIMPLE_GET_SET(id,id)
-SIMPLE_GET_SET(title,title)
-SIMPLE_GET_SET(lang,lang)
-SIMPLE_GET_SET(dir,dir)
-SIMPLE_GET_SET(class_name,class)
+SIMPLE_GET_SET(id, id)
+SIMPLE_GET_SET(title, title)
+SIMPLE_GET_SET(lang, lang)
+SIMPLE_GET_SET(dir, dir)
+SIMPLE_GET_SET(class_name, class)
 
-dom_exception _dom_html_element_get_attribute(
-		struct dom_element *element,
-		dom_string *name, dom_string **value)
+dom_exception _dom_html_element_get_attribute(struct dom_element *element,
+					      dom_string *name,
+					      dom_string **value)
 {
 	dom_exception exc;
 	dom_string *lower_case_name;
@@ -192,9 +193,9 @@ dom_exception _dom_html_element_get_attribute(
 	return exc;
 }
 
-dom_exception _dom_html_element_set_attribute(
-		struct dom_element *element,
-		dom_string *name, dom_string *value)
+dom_exception _dom_html_element_set_attribute(struct dom_element *element,
+					      dom_string *name,
+					      dom_string *value)
 {
 	dom_exception exc;
 	dom_string *lower_case_name;
@@ -210,9 +211,8 @@ dom_exception _dom_html_element_set_attribute(
 	return exc;
 }
 
-dom_exception _dom_html_element_remove_attribute(
-		struct dom_element *element,
-		dom_string *name)
+dom_exception _dom_html_element_remove_attribute(struct dom_element *element,
+						 dom_string *name)
 {
 	dom_exception exc;
 	dom_string *lower_case_name;
@@ -228,9 +228,9 @@ dom_exception _dom_html_element_remove_attribute(
 	return exc;
 }
 
-dom_exception _dom_html_element_has_attribute(
-		struct dom_element *element,
-		dom_string *name, bool *result)
+dom_exception _dom_html_element_has_attribute(struct dom_element *element,
+					      dom_string *name,
+					      bool *result)
 {
 	dom_exception exc;
 	dom_string *lower_case_name;
@@ -260,19 +260,23 @@ dom_exception _dom_html_element_has_attribute(
  * the responsibility of the caller to unref the nodelist once it has
  * finished with it.
  */
-dom_exception _dom_html_element_get_elements_by_tag_name(
-		struct dom_element *element, dom_string *name,
-		struct dom_nodelist **result)
+dom_exception
+_dom_html_element_get_elements_by_tag_name(struct dom_element *element,
+					   dom_string *name,
+					   struct dom_nodelist **result)
 {
 	dom_exception err;
-	dom_node_internal *base = (dom_node_internal *) element;
+	dom_node_internal *base = (dom_node_internal *)element;
 
 	assert(base->owner != NULL);
 
 	err = _dom_document_get_nodelist(base->owner,
-			DOM_NODELIST_BY_NAME_CASELESS,
-			(struct dom_node_internal *) element, name, NULL,
-			NULL, result);
+					 DOM_NODELIST_BY_NAME_CASELESS,
+					 (struct dom_node_internal *)element,
+					 name,
+					 NULL,
+					 NULL,
+					 result);
 
 	return err;
 }
@@ -295,19 +299,23 @@ dom_exception _dom_html_element_get_elements_by_tag_name(
  * the responsibility of the caller to unref the nodelist once it has
  * finished with it.
  */
-dom_exception _dom_html_element_get_elements_by_tag_name_ns(
-		struct dom_element *element, dom_string *namespace,
-		dom_string *localname, struct dom_nodelist **result)
+dom_exception
+_dom_html_element_get_elements_by_tag_name_ns(struct dom_element *element,
+					      dom_string *namespace,
+					      dom_string *localname,
+					      struct dom_nodelist **result)
 {
 	dom_exception err;
 
 	/** \todo ensure XML feature is supported */
 
 	err = _dom_document_get_nodelist(element->base.owner,
-			DOM_NODELIST_BY_NAMESPACE_CASELESS,
-			(struct dom_node_internal *) element, NULL,
-			namespace, localname,
-			result);
+					 DOM_NODELIST_BY_NAMESPACE_CASELESS,
+					 (struct dom_node_internal *)element,
+					 NULL,
+					 namespace,
+					 localname,
+					 result);
 
 	return err;
 }
@@ -321,9 +329,9 @@ dom_exception _dom_html_element_get_elements_by_tag_name_ns(
  *
  * Elements with non-standard tags will be DOM_HTML_ELEMENT_TYPE__UNKNOWN.
  */
-dom_exception _dom_html_element_get_tag_type(
-		const struct dom_html_element *element,
-		dom_html_element_type *type)
+dom_exception
+_dom_html_element_get_tag_type(const struct dom_html_element *element,
+			       dom_html_element_type *type)
 {
 	*type = element->type;
 
@@ -343,13 +351,15 @@ dom_exception _dom_html_element_get_tag_type(
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception dom_html_element_get_bool_property(dom_html_element *ele,
-		const char *name, uint32_t len, bool *has)
+						 const char *name,
+						 uint32_t len,
+						 bool *has)
 {
 	dom_string *str = NULL;
 	dom_attr *a = NULL;
 	dom_exception err;
 
-	err = dom_string_create((const uint8_t *) name, len, &str);
+	err = dom_string_create((const uint8_t *)name, len, &str);
 	if (err != DOM_NO_ERR)
 		goto fail;
 
@@ -382,20 +392,22 @@ fail:
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception dom_html_element_set_bool_property(dom_html_element *ele,
-		const char *name, uint32_t len, bool has)
+						 const char *name,
+						 uint32_t len,
+						 bool has)
 {
 	dom_string *str = NULL;
 	dom_attr *a = NULL;
 	dom_exception err;
 
-	err = dom_string_create((const uint8_t *) name, len, &str);
+	err = dom_string_create((const uint8_t *)name, len, &str);
 	if (err != DOM_NO_ERR)
 		goto fail;
 
 	err = dom_element_get_attribute_node(ele, str, &a);
 	if (err != DOM_NO_ERR)
 		goto cleanup1;
-	
+
 	if (a != NULL && has == false) {
 		dom_attr *res = NULL;
 
@@ -457,13 +469,15 @@ static char *_strndup(const char *s, size_t n)
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception dom_html_element_get_int32_t_property(dom_html_element *ele,
-		const char *name, uint32_t len, int32_t *value)
+						    const char *name,
+						    uint32_t len,
+						    int32_t *value)
 {
 	dom_string *str = NULL, *s2 = NULL;
 	dom_attr *a = NULL;
 	dom_exception err;
 
-	err = dom_string_create((const uint8_t *) name, len, &str);
+	err = dom_string_create((const uint8_t *)name, len, &str);
 	if (err != DOM_NO_ERR)
 		goto fail;
 
@@ -508,26 +522,29 @@ fail:
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception dom_html_element_set_int32_t_property(dom_html_element *ele,
-		const char *name, uint32_t len, uint32_t value)
+						    const char *name,
+						    uint32_t len,
+						    uint32_t value)
 {
 	dom_string *str = NULL, *svalue = NULL;
 	dom_exception err;
 	char numbuffer[32];
 
-	err = dom_string_create((const uint8_t *) name, len, &str);
+	err = dom_string_create((const uint8_t *)name, len, &str);
 	if (err != DOM_NO_ERR)
 		goto fail;
-	
-	if (snprintf(numbuffer, 32, "%"PRIu32, value) == 32)
+
+	if (snprintf(numbuffer, 32, "%" PRIu32, value) == 32)
 		numbuffer[31] = '\0';
-	
-	err = dom_string_create((const uint8_t *) numbuffer,
-				strlen(numbuffer), &svalue);
+
+	err = dom_string_create((const uint8_t *)numbuffer,
+				strlen(numbuffer),
+				&svalue);
 	if (err != DOM_NO_ERR)
 		goto cleanup;
-	
+
 	err = dom_element_set_attribute(ele, str, svalue);
-	
+
 	dom_string_unref(svalue);
 cleanup:
 	dom_string_unref(str);
@@ -546,13 +563,15 @@ fail:
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception dom_html_element_get_dom_ulong_property(dom_html_element *ele,
-		const char *name, uint32_t len, dom_ulong *value)
+						      const char *name,
+						      uint32_t len,
+						      dom_ulong *value)
 {
 	dom_string *str = NULL, *s2 = NULL;
 	dom_attr *a = NULL;
 	dom_exception err;
 
-	err = dom_string_create((const uint8_t *) name, len, &str);
+	err = dom_string_create((const uint8_t *)name, len, &str);
 	if (err != DOM_NO_ERR)
 		goto fail;
 
@@ -597,21 +616,24 @@ fail:
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception dom_html_element_set_dom_ulong_property(dom_html_element *ele,
-		const char *name, uint32_t len, dom_ulong value)
+						      const char *name,
+						      uint32_t len,
+						      dom_ulong value)
 {
 	dom_string *str = NULL, *svalue = NULL;
 	dom_exception err;
 	char numbuffer[32];
 
-	err = dom_string_create((const uint8_t *) name, len, &str);
+	err = dom_string_create((const uint8_t *)name, len, &str);
 	if (err != DOM_NO_ERR)
 		goto fail;
 
-	if (snprintf(numbuffer, 32, "%"PRIu32, value) == 32)
+	if (snprintf(numbuffer, 32, "%" PRIu32, value) == 32)
 		numbuffer[31] = '\0';
 
-	err = dom_string_create((const uint8_t *) numbuffer,
-				strlen(numbuffer), &svalue);
+	err = dom_string_create((const uint8_t *)numbuffer,
+				strlen(numbuffer),
+				&svalue);
 	if (err != DOM_NO_ERR)
 		goto cleanup;
 

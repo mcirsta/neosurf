@@ -40,8 +40,8 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	assert(parserutils_charset_codec_create("NATS-SEFI-ADD",
-			&codec) == PARSERUTILS_BADENCODING);
+	assert(parserutils_charset_codec_create("NATS-SEFI-ADD", &codec) ==
+	       PARSERUTILS_BADENCODING);
 
 	ctx.buflen = parse_filesize(argv[1]);
 	if (ctx.buflen == 0)
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 	ctx.buf = malloc(2 * ctx.buflen);
 	if (ctx.buf == NULL) {
 		printf("Failed allocating %u bytes\n",
-				(unsigned int) ctx.buflen);
+		       (unsigned int)ctx.buflen);
 		return 1;
 	}
 
@@ -88,7 +88,7 @@ int main(int argc, char **argv)
 
 bool handle_line(const char *data, size_t datalen, void *pw)
 {
-	line_ctx *ctx = (line_ctx *) pw;
+	line_ctx *ctx = (line_ctx *)pw;
 
 	if (data[0] == '#') {
 		if (ctx->inexp) {
@@ -109,7 +109,7 @@ bool handle_line(const char *data, size_t datalen, void *pw)
 			ctx->exp_ret = PARSERUTILS_OK;
 		}
 
-		if (strncasecmp(data+1, "data", 4) == 0) {
+		if (strncasecmp(data + 1, "data", 4) == 0) {
 			parserutils_charset_codec_optparams params;
 			const char *ptr = data + 6;
 
@@ -139,22 +139,23 @@ bool handle_line(const char *data, size_t datalen, void *pw)
 				ptr += 9;
 			}
 
-			assert(parserutils_charset_codec_setopt(ctx->codec,
-				PARSERUTILS_CHARSET_CODEC_ERROR_MODE,
-				(parserutils_charset_codec_optparams *) &params)
-				== PARSERUTILS_OK);
-		} else if (strncasecmp(data+1, "expected", 8) == 0) {
+			assert(parserutils_charset_codec_setopt(
+				       ctx->codec,
+				       PARSERUTILS_CHARSET_CODEC_ERROR_MODE,
+				       (parserutils_charset_codec_optparams
+						*)&params) == PARSERUTILS_OK);
+		} else if (strncasecmp(data + 1, "expected", 8) == 0) {
 			ctx->indata = false;
 			ctx->inexp = true;
 
-			ctx->exp_ret = parserutils_error_from_string(data + 10,
-					datalen - 10 - 1 /* \n */);
-		} else if (strncasecmp(data+1, "reset", 5) == 0) {
+			ctx->exp_ret = parserutils_error_from_string(
+				data + 10, datalen - 10 - 1 /* \n */);
+		} else if (strncasecmp(data + 1, "reset", 5) == 0) {
 			ctx->indata = false;
 			ctx->inexp = false;
 
 			parserutils_charset_codec_reset(ctx->codec);
-		} else if (strncasecmp(data+1, "enc", 3) == 0) {
+		} else if (strncasecmp(data + 1, "enc", 3) == 0) {
 			const char *enc = data + 5;
 			const char *end;
 			char *enc_name;
@@ -167,7 +168,8 @@ bool handle_line(const char *data, size_t datalen, void *pw)
 			enc_name[end - enc] = 0;
 
 			assert(parserutils_charset_codec_create(enc_name,
-					&ctx->codec) == PARSERUTILS_OK);
+								&ctx->codec) ==
+			       PARSERUTILS_OK);
 
 			ctx->hadenc = true;
 
@@ -198,13 +200,13 @@ void run_test(line_ctx *ctx)
 	size_t i;
 
 	if (ctx->dir == DECODE) {
-		assert(parserutils_charset_codec_decode(ctx->codec,
-				&psrc, &srclen,
-				&pdest, &destlen) == ctx->exp_ret);
+		assert(parserutils_charset_codec_decode(
+			       ctx->codec, &psrc, &srclen, &pdest, &destlen) ==
+		       ctx->exp_ret);
 	} else if (ctx->dir == ENCODE) {
-		assert(parserutils_charset_codec_encode(ctx->codec,
-				&psrc, &srclen,
-				&pdest, &destlen) == ctx->exp_ret);
+		assert(parserutils_charset_codec_encode(
+			       ctx->codec, &psrc, &srclen, &pdest, &destlen) ==
+		       ctx->exp_ret);
 	} else {
 		size_t templen = ctx->bufused * 4;
 		uint8_t *temp = malloc(templen);
@@ -212,9 +214,9 @@ void run_test(line_ctx *ctx)
 		const uint8_t *ptemp2;
 		size_t templen2;
 
-		assert(parserutils_charset_codec_decode(ctx->codec,
-				&psrc, &srclen,
-				&ptemp, &templen) == ctx->exp_ret);
+		assert(parserutils_charset_codec_decode(
+			       ctx->codec, &psrc, &srclen, &ptemp, &templen) ==
+		       ctx->exp_ret);
 		/* \todo currently there is no way to specify the number of
 		   consumed & produced data in case of a deliberate bad input
 		   data set.  */
@@ -225,8 +227,11 @@ void run_test(line_ctx *ctx)
 		ptemp2 = temp;
 		templen2 = ctx->bufused * 4 - templen;
 		assert(parserutils_charset_codec_encode(ctx->codec,
-				&ptemp2, &templen2,
-				&pdest, &destlen) == ctx->exp_ret);
+							&ptemp2,
+							&templen2,
+							&pdest,
+							&destlen) ==
+		       ctx->exp_ret);
 		if (ctx->exp_ret == PARSERUTILS_OK) {
 			assert(templen2 == 0);
 			assert(temp + (ctx->bufused * 4 - templen) == ptemp2);
@@ -243,13 +248,15 @@ void run_test(line_ctx *ctx)
 
 	printf("%d: Read '", ++testnum);
 	for (i = 0; i < ctx->expused; i++) {
-		printf("%c%c ", "0123456789abcdef"[(dest[i] >> 4) & 0xf],
-				"0123456789abcdef"[dest[i] & 0xf]);
+		printf("%c%c ",
+		       "0123456789abcdef"[(dest[i] >> 4) & 0xf],
+		       "0123456789abcdef"[dest[i] & 0xf]);
 	}
 	printf("' Expected '");
 	for (i = 0; i < ctx->expused; i++) {
-		printf("%c%c ", "0123456789abcdef"[(ctx->exp[i] >> 4) & 0xf],
-				"0123456789abcdef"[ctx->exp[i] & 0xf]);
+		printf("%c%c ",
+		       "0123456789abcdef"[(ctx->exp[i] >> 4) & 0xf],
+		       "0123456789abcdef"[ctx->exp[i] & 0xf]);
 	}
 	printf("'\n");
 
@@ -258,4 +265,3 @@ void run_test(line_ctx *ctx)
 
 	free(dest);
 }
-

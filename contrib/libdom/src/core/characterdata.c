@@ -22,14 +22,8 @@
 /* The virtual functions for dom_characterdata, we make this vtable
  * public to each child class */
 const struct dom_characterdata_vtable characterdata_vtable = {
-	{
-		{
-			DOM_NODE_EVENT_TARGET_VTABLE
-		},
-		DOM_NODE_VTABLE_CHARACTERDATA
-	},
-	DOM_CHARACTERDATA_VTABLE
-};
+	{{DOM_NODE_EVENT_TARGET_VTABLE}, DOM_NODE_VTABLE_CHARACTERDATA},
+	DOM_CHARACTERDATA_VTABLE};
 
 
 /* Create a DOM characterdata node and compose the vtable */
@@ -58,11 +52,13 @@ dom_characterdata *_dom_characterdata_create(void)
  * \p doc, \p name and \p value will have their reference counts increased.
  */
 dom_exception _dom_characterdata_initialise(struct dom_characterdata *cdata,
-		struct dom_document *doc, dom_node_type type,
-		dom_string *name, dom_string *value)
+					    struct dom_document *doc,
+					    dom_node_type type,
+					    dom_string *name,
+					    dom_string *value)
 {
-	return _dom_node_initialise(&cdata->base, doc, type, 
-			name, value, NULL, NULL);
+	return _dom_node_initialise(
+		&cdata->base, doc, type, name, value, NULL, NULL);
 }
 
 /**
@@ -96,10 +92,10 @@ void _dom_characterdata_finalise(struct dom_characterdata *cdata)
  * DOM3Core states that this can raise DOMSTRING_SIZE_ERR. It will not in
  * this implementation; dom_strings are unbounded.
  */
-dom_exception _dom_characterdata_get_data(struct dom_characterdata *cdata,
-		dom_string **data)
+dom_exception
+_dom_characterdata_get_data(struct dom_characterdata *cdata, dom_string **data)
 {
-	struct dom_node_internal *c = (struct dom_node_internal *) cdata;
+	struct dom_node_internal *c = (struct dom_node_internal *)cdata;
 
 	if (c->value != NULL) {
 		dom_string_ref(c->value);
@@ -121,10 +117,10 @@ dom_exception _dom_characterdata_get_data(struct dom_characterdata *cdata,
  * should unref it after the call (as the caller should have already claimed
  * a reference on the string). The node's existing content will be unrefed.
  */
-dom_exception _dom_characterdata_set_data(struct dom_characterdata *cdata,
-		dom_string *data)
+dom_exception
+_dom_characterdata_set_data(struct dom_characterdata *cdata, dom_string *data)
 {
-	struct dom_node_internal *c = (struct dom_node_internal *) cdata;
+	struct dom_node_internal *c = (struct dom_node_internal *)cdata;
 	dom_exception err;
 	struct dom_document *doc;
 	bool success = true;
@@ -135,8 +131,8 @@ dom_exception _dom_characterdata_set_data(struct dom_characterdata *cdata,
 
 	/* Dispatch a DOMCharacterDataModified event */
 	doc = dom_node_get_owner(cdata);
-	err = _dom_dispatch_characterdata_modified_event(doc, c, c->value,
-			data, &success);
+	err = _dom_dispatch_characterdata_modified_event(
+		doc, c, c->value, data, &success);
 	if (err != DOM_NO_ERR)
 		return err;
 
@@ -158,10 +154,10 @@ dom_exception _dom_characterdata_set_data(struct dom_characterdata *cdata,
  * \param length  Pointer to location to receive character length of content
  * \return DOM_NO_ERR.
  */
-dom_exception _dom_characterdata_get_length(struct dom_characterdata *cdata,
-		uint32_t *length)
+dom_exception
+_dom_characterdata_get_length(struct dom_characterdata *cdata, uint32_t *length)
 {
-	struct dom_node_internal *c = (struct dom_node_internal *) cdata;
+	struct dom_node_internal *c = (struct dom_node_internal *)cdata;
 
 	if (c->value != NULL) {
 		*length = dom_string_length(c->value);
@@ -180,8 +176,8 @@ dom_exception _dom_characterdata_get_length(struct dom_characterdata *cdata,
  * \param count   The number of characters to extract
  * \param data    Pointer to location to receive substring
  * \return DOM_NO_ERR         on success,
- *         DOM_INDEX_SIZE_ERR if \p offset is negative or greater than the 
- *                            number of characters in \p cdata or 
+ *         DOM_INDEX_SIZE_ERR if \p offset is negative or greater than the
+ *                            number of characters in \p cdata or
  *                            \p count is negative.
  *
  * The returned string will have its reference count increased. It is
@@ -191,14 +187,15 @@ dom_exception _dom_characterdata_get_length(struct dom_characterdata *cdata,
  * DOM3Core states that this can raise DOMSTRING_SIZE_ERR. It will not in
  * this implementation; dom_strings are unbounded.
  */
-dom_exception _dom_characterdata_substring_data(
-		struct dom_characterdata *cdata, uint32_t offset,
-		uint32_t count, dom_string **data)
+dom_exception _dom_characterdata_substring_data(struct dom_characterdata *cdata,
+						uint32_t offset,
+						uint32_t count,
+						dom_string **data)
 {
-	struct dom_node_internal *c = (struct dom_node_internal *) cdata;
+	struct dom_node_internal *c = (struct dom_node_internal *)cdata;
 	uint32_t len, end;
 
-	if ((int32_t) offset < 0 || (int32_t) count < 0) {
+	if ((int32_t)offset < 0 || (int32_t)count < 0) {
 		return DOM_INDEX_SIZE_ERR;
 	}
 
@@ -226,9 +223,9 @@ dom_exception _dom_characterdata_substring_data(
  *         DOM_NO_MODIFICATION_ALLOWED_ERR if \p cdata is readonly.
  */
 dom_exception _dom_characterdata_append_data(struct dom_characterdata *cdata,
-		dom_string *data)
+					     dom_string *data)
 {
-	struct dom_node_internal *c = (struct dom_node_internal *) cdata;
+	struct dom_node_internal *c = (struct dom_node_internal *)cdata;
 	dom_string *temp;
 	dom_exception err;
 	struct dom_document *doc;
@@ -245,8 +242,8 @@ dom_exception _dom_characterdata_append_data(struct dom_characterdata *cdata,
 
 	/* Dispatch a DOMCharacterDataModified event */
 	doc = dom_node_get_owner(cdata);
-	err = _dom_dispatch_characterdata_modified_event(doc, c, c->value,
-			temp, &success);
+	err = _dom_dispatch_characterdata_modified_event(
+		doc, c, c->value, temp, &success);
 	if (err != DOM_NO_ERR) {
 		dom_string_unref(temp);
 		return err;
@@ -269,15 +266,16 @@ dom_exception _dom_characterdata_append_data(struct dom_characterdata *cdata,
  * \param offset  The character offset to insert at
  * \param data    The data to insert
  * \return DOM_NO_ERR                      on success,
- *         DOM_INDEX_SIZE_ERR              if \p offset is negative or greater 
- *                                         than the number of characters in 
+ *         DOM_INDEX_SIZE_ERR              if \p offset is negative or greater
+ *                                         than the number of characters in
  *                                         \p cdata,
  *         DOM_NO_MODIFICATION_ALLOWED_ERR if \p cdata is readonly.
  */
 dom_exception _dom_characterdata_insert_data(struct dom_characterdata *cdata,
-		uint32_t offset, dom_string *data)
+					     uint32_t offset,
+					     dom_string *data)
 {
-	struct dom_node_internal *c = (struct dom_node_internal *) cdata;
+	struct dom_node_internal *c = (struct dom_node_internal *)cdata;
 	dom_string *temp;
 	uint32_t len;
 	dom_exception err;
@@ -288,7 +286,7 @@ dom_exception _dom_characterdata_insert_data(struct dom_characterdata *cdata,
 		return DOM_NO_MODIFICATION_ALLOWED_ERR;
 	}
 
-	if ((int32_t) offset < 0) {
+	if ((int32_t)offset < 0) {
 		return DOM_INDEX_SIZE_ERR;
 	}
 
@@ -309,8 +307,8 @@ dom_exception _dom_characterdata_insert_data(struct dom_characterdata *cdata,
 
 	/* Dispatch a DOMCharacterDataModified event */
 	doc = dom_node_get_owner(cdata);
-	err = _dom_dispatch_characterdata_modified_event(doc, c, c->value,
-			temp, &success);
+	err = _dom_dispatch_characterdata_modified_event(
+		doc, c, c->value, temp, &success);
 	if (err != DOM_NO_ERR)
 		return err;
 
@@ -331,15 +329,16 @@ dom_exception _dom_characterdata_insert_data(struct dom_characterdata *cdata,
  * \param offset  The character offset to start deletion from
  * \param count   The number of characters to delete
  * \return DOM_NO_ERR                      on success,
- *         DOM_INDEX_SIZE_ERR              if \p offset is negative or greater 
- *                                         than the number of characters in 
+ *         DOM_INDEX_SIZE_ERR              if \p offset is negative or greater
+ *                                         than the number of characters in
  *                                         \p cdata or \p count is negative,
  *         DOM_NO_MODIFICATION_ALLOWED_ERR if \p cdata is readonly.
  */
 dom_exception _dom_characterdata_delete_data(struct dom_characterdata *cdata,
-		uint32_t offset, uint32_t count)
+					     uint32_t offset,
+					     uint32_t count)
 {
-	struct dom_node_internal *c = (struct dom_node_internal *) cdata;
+	struct dom_node_internal *c = (struct dom_node_internal *)cdata;
 	dom_string *temp;
 	uint32_t len, end;
 	dom_exception err;
@@ -351,7 +350,7 @@ dom_exception _dom_characterdata_delete_data(struct dom_characterdata *cdata,
 		return DOM_NO_MODIFICATION_ALLOWED_ERR;
 	}
 
-	if ((int32_t) offset < 0 || (int32_t) count < 0) {
+	if ((int32_t)offset < 0 || (int32_t)count < 0) {
 		return DOM_INDEX_SIZE_ERR;
 	}
 
@@ -367,8 +366,8 @@ dom_exception _dom_characterdata_delete_data(struct dom_characterdata *cdata,
 
 	end = (offset + count) >= len ? len : offset + count;
 
-	empty = ((struct dom_document *)
-		 ((struct dom_node_internal *)c)->owner)->_memo_empty;
+	empty = ((struct dom_document *)((struct dom_node_internal *)c)->owner)
+			->_memo_empty;
 
 	err = dom_string_replace(c->value, empty, offset, end, &temp);
 	if (err != DOM_NO_ERR) {
@@ -377,8 +376,8 @@ dom_exception _dom_characterdata_delete_data(struct dom_characterdata *cdata,
 
 	/* Dispatch a DOMCharacterDataModified event */
 	doc = dom_node_get_owner(cdata);
-	err = _dom_dispatch_characterdata_modified_event(doc, c, c->value,
-			temp, &success);
+	err = _dom_dispatch_characterdata_modified_event(
+		doc, c, c->value, temp, &success);
 	if (err != DOM_NO_ERR)
 		return err;
 
@@ -400,16 +399,17 @@ dom_exception _dom_characterdata_delete_data(struct dom_characterdata *cdata,
  * \param count   The number of characters to replace
  * \param data    The replacement data
  * \return DOM_NO_ERR                      on success,
- *         DOM_INDEX_SIZE_ERR              if \p offset is negative or greater 
- *                                         than the number of characters in 
+ *         DOM_INDEX_SIZE_ERR              if \p offset is negative or greater
+ *                                         than the number of characters in
  *                                         \p cdata or \p count is negative,
  *         DOM_NO_MODIFICATION_ALLOWED_ERR if \p cdata is readonly.
  */
 dom_exception _dom_characterdata_replace_data(struct dom_characterdata *cdata,
-		uint32_t offset, uint32_t count,
-		dom_string *data)
+					      uint32_t offset,
+					      uint32_t count,
+					      dom_string *data)
 {
-	struct dom_node_internal *c = (struct dom_node_internal *) cdata;
+	struct dom_node_internal *c = (struct dom_node_internal *)cdata;
 	dom_string *temp;
 	uint32_t len, end;
 	dom_exception err;
@@ -420,7 +420,7 @@ dom_exception _dom_characterdata_replace_data(struct dom_characterdata *cdata,
 		return DOM_NO_MODIFICATION_ALLOWED_ERR;
 	}
 
-	if ((int32_t) offset < 0 || (int32_t) count < 0) {
+	if ((int32_t)offset < 0 || (int32_t)count < 0) {
 		return DOM_INDEX_SIZE_ERR;
 	}
 
@@ -443,8 +443,8 @@ dom_exception _dom_characterdata_replace_data(struct dom_characterdata *cdata,
 
 	/* Dispatch a DOMCharacterDataModified event */
 	doc = dom_node_get_owner(cdata);
-	err = _dom_dispatch_characterdata_modified_event(doc, c, c->value, temp,
-			&success);
+	err = _dom_dispatch_characterdata_modified_event(
+		doc, c, c->value, temp, &success);
 	if (err != DOM_NO_ERR)
 		return err;
 
@@ -462,7 +462,7 @@ dom_exception _dom_characterdata_get_text_content(dom_node_internal *node,
 						  dom_string **result)
 {
 	dom_characterdata *cdata = (dom_characterdata *)node;
-	
+
 	return dom_characterdata_get_data(cdata, result);
 }
 
@@ -470,7 +470,7 @@ dom_exception _dom_characterdata_set_text_content(dom_node_internal *node,
 						  dom_string *content)
 {
 	dom_characterdata *cdata = (dom_characterdata *)node;
-	
+
 	return dom_characterdata_set_data(cdata, content);
 }
 
@@ -484,8 +484,8 @@ void _dom_characterdata_destroy(struct dom_node_internal *node)
 }
 
 /* The copy constructor of this class */
-dom_exception _dom_characterdata_copy(dom_node_internal *old, 
-		dom_node_internal **copy)
+dom_exception
+_dom_characterdata_copy(dom_node_internal *old, dom_node_internal **copy)
 {
 	dom_characterdata *new_node;
 	dom_exception err;
@@ -500,14 +500,13 @@ dom_exception _dom_characterdata_copy(dom_node_internal *old,
 		return err;
 	}
 
-	*copy = (dom_node_internal *) new_node;
+	*copy = (dom_node_internal *)new_node;
 
 	return DOM_NO_ERR;
 }
 
-dom_exception _dom_characterdata_copy_internal(dom_characterdata *old,
-		dom_characterdata *new)
+dom_exception
+_dom_characterdata_copy_internal(dom_characterdata *old, dom_characterdata *new)
 {
 	return dom_node_copy_internal(old, new);
 }
-

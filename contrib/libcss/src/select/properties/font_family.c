@@ -14,8 +14,9 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_font_family(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error css__cascade_font_family(uint32_t opv,
+				   css_style *style,
+				   css_select_state *state)
 {
 	uint16_t value = CSS_FONT_FAMILY_INHERIT;
 	lwc_string **fonts = NULL;
@@ -31,8 +32,9 @@ css_error css__cascade_font_family(uint32_t opv, css_style *style,
 			switch (v) {
 			case FONT_FAMILY_STRING:
 			case FONT_FAMILY_IDENT_LIST:
-				css__stylesheet_string_get(style->sheet,
-					*((css_code_t *) style->bytecode),
+				css__stylesheet_string_get(
+					style->sheet,
+					*((css_code_t *)style->bytecode),
 					&font);
 				advance_bytecode(style, sizeof(css_code_t));
 				break;
@@ -64,7 +66,8 @@ css_error css__cascade_font_family(uint32_t opv, css_style *style,
 			/** \todo Do this at bytecode generation time? */
 			if (value == CSS_FONT_FAMILY_INHERIT && font != NULL) {
 				temp = realloc(fonts,
-					(n_fonts + 1) * sizeof(lwc_string *));
+					       (n_fonts + 1) *
+						       sizeof(lwc_string *));
 				if (temp == NULL) {
 					if (fonts != NULL) {
 						free(fonts);
@@ -79,7 +82,7 @@ css_error css__cascade_font_family(uint32_t opv, css_style *style,
 				n_fonts++;
 			}
 
-			v = *((uint32_t *) style->bytecode);
+			v = *((uint32_t *)style->bytecode);
 			advance_bytecode(style, sizeof(v));
 		}
 	}
@@ -109,15 +112,15 @@ css_error css__cascade_font_family(uint32_t opv, css_style *style,
 			css_error error;
 
 			error = state->handler->ua_default_for_property(
-					state->pw, CSS_PROP_FONT_FAMILY, &hint);
+				state->pw, CSS_PROP_FONT_FAMILY, &hint);
 			if (error == CSS_OK) {
 				lwc_string **item;
 
 				value = hint.status;
 
 				for (item = hint.data.strings;
-						item != NULL && (*item) != NULL;
-						item++) {
+				     item != NULL && (*item) != NULL;
+				     item++) {
 					lwc_string_unref(*item);
 				}
 
@@ -133,8 +136,10 @@ css_error css__cascade_font_family(uint32_t opv, css_style *style,
 		}
 	}
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			getFlagValue(opv))) {
+	if (css__outranks_existing(getOpcode(opv),
+				   isImportant(opv),
+				   state,
+				   getFlagValue(opv))) {
 		css_error error;
 
 		error = set_font_family(state->computed, value, fonts);
@@ -150,16 +155,16 @@ css_error css__cascade_font_family(uint32_t opv, css_style *style,
 	return CSS_OK;
 }
 
-css_error css__set_font_family_from_hint(const css_hint *hint,
-		css_computed_style *style)
+css_error
+css__set_font_family_from_hint(const css_hint *hint, css_computed_style *style)
 {
 	lwc_string **item;
 	css_error error;
 
 	error = set_font_family(style, hint->status, hint->data.strings);
 
-	for (item = hint->data.strings;
-			item != NULL && (*item) != NULL; item++) {
+	for (item = hint->data.strings; item != NULL && (*item) != NULL;
+	     item++) {
 		lwc_string_unref(*item);
 	}
 
@@ -175,16 +180,16 @@ css_error css__initial_font_family(css_select_state *state)
 	css_error error;
 
 	error = state->handler->ua_default_for_property(state->pw,
-			CSS_PROP_FONT_FAMILY, &hint);
+							CSS_PROP_FONT_FAMILY,
+							&hint);
 	if (error != CSS_OK)
 		return error;
 
 	return css__set_font_family_from_hint(&hint, state->computed);
 }
 
-css_error css__copy_font_family(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error
+css__copy_font_family(const css_computed_style *from, css_computed_style *to)
 {
 	css_error error;
 	lwc_string **copy = NULL;
@@ -209,14 +214,12 @@ css_error css__copy_font_family(
 }
 
 css_error css__compose_font_family(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+				   const css_computed_style *child,
+				   css_computed_style *result)
 {
 	lwc_string **font_family = NULL;
 	uint8_t type = get_font_family(child, &font_family);
 
 	return css__copy_font_family(
-			type == CSS_FONT_FAMILY_INHERIT ? parent : child,
-			result);
+		type == CSS_FONT_FAMILY_INHERIT ? parent : child, result);
 }
-

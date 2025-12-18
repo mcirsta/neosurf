@@ -48,15 +48,12 @@ extern "C" {
 /**
  * netsurf widget class constructor
  */
-NS_Widget::NS_Widget(QWidget *parent, NS_Actions *actions, struct browser_window *bw)
-	: QWidget(parent, Qt::Widget),
-	  m_bw(bw),
-	  m_actions(actions),
-	  m_xoffset(0),
-	  m_yoffset(0),
-	  m_pointer_shape(GUI_POINTER_DEFAULT),
-	  m_contextmenu(new QMenu(this)),
-	  m_drag_state(BROWSER_MOUSE_HOVER),
+NS_Widget::NS_Widget(QWidget *parent,
+		     NS_Actions *actions,
+		     struct browser_window *bw)
+	: QWidget(parent, Qt::Widget), m_bw(bw), m_actions(actions),
+	  m_xoffset(0), m_yoffset(0), m_pointer_shape(GUI_POINTER_DEFAULT),
+	  m_contextmenu(new QMenu(this)), m_drag_state(BROWSER_MOUSE_HOVER),
 	  m_caret_frame(0)
 {
 	setFocusPolicy(Qt::StrongFocus);
@@ -89,7 +86,7 @@ void NS_Widget::redraw_caret(struct rect *clip, struct redraw_context *ctx)
 	if (m_caret_frame != 1) {
 		return;
 	}
-	QPainter* painter = (QPainter*)ctx->priv;
+	QPainter *painter = (QPainter *)ctx->priv;
 	QPen pen(Qt::SolidLine);
 	painter->setPen(pen);
 	QPainter::CompositionMode oldmode = painter->compositionMode();
@@ -111,7 +108,8 @@ void NS_Widget::next_caret_frame(void *p)
 	if (frame_time < 100) {
 		frame_time = 0;
 	} else if (widget->m_caret_frame > 0) {
-		/* first time through animation holds first frame twice as long */
+		/* first time through animation holds first frame twice as long
+		 */
 		frame_time = frame_time / 2;
 	}
 
@@ -123,7 +121,8 @@ void NS_Widget::next_caret_frame(void *p)
 	widget->update(widget->m_caret_x - widget->m_xoffset,
 		       widget->m_caret_y - widget->m_yoffset,
 		       widget->m_caret_x + CARET_WIDTH - widget->m_xoffset,
-		       widget->m_caret_y + widget->m_caret_h - widget->m_yoffset);
+		       widget->m_caret_y + widget->m_caret_h -
+			       widget->m_yoffset);
 
 	if (frame_time != 0) {
 		nsqt_schedule(frame_time, next_caret_frame, p);
@@ -167,11 +166,7 @@ void NS_Widget::paintEvent(QPaintEvent *event)
 		.y1 = event->rect().top() + event->rect().height(),
 	};
 
-	browser_window_redraw(m_bw,
-			      - m_xoffset,
-			      - m_yoffset,
-			      &clip,
-			      &ctx);
+	browser_window_redraw(m_bw, -m_xoffset, -m_yoffset, &clip, &ctx);
 
 	redraw_caret(&clip, &ctx);
 
@@ -237,18 +232,22 @@ void NS_Widget::mouseMoveEvent(QMouseEvent *event)
 			    (fabs(pos.y() - m_press_pos.y()) > 5.0)) {
 				/* start drag operation */
 				if ((buttons & Qt::LeftButton) != 0) {
-					/* Start button 1 drag where button initialy pressed */
-					browser_window_mouse_click(m_bw,
-								   BROWSER_MOUSE_DRAG_1,
-								   m_press_pos.x() + m_xoffset,
-								   m_press_pos.y() + m_yoffset);
+					/* Start button 1 drag where button
+					 * initialy pressed */
+					browser_window_mouse_click(
+						m_bw,
+						BROWSER_MOUSE_DRAG_1,
+						m_press_pos.x() + m_xoffset,
+						m_press_pos.y() + m_yoffset);
 					m_drag_state = BROWSER_MOUSE_HOLDING_1;
 				} else if ((buttons & Qt::MiddleButton) != 0) {
-					/* Start button 2 drag where button initialy pressed */
-					browser_window_mouse_click(m_bw,
-								   BROWSER_MOUSE_DRAG_2,
-								   m_press_pos.x() + m_xoffset,
-								   m_press_pos.y() + m_yoffset);
+					/* Start button 2 drag where button
+					 * initialy pressed */
+					browser_window_mouse_click(
+						m_bw,
+						BROWSER_MOUSE_DRAG_2,
+						m_press_pos.x() + m_xoffset,
+						m_press_pos.y() + m_yoffset);
 					m_drag_state = BROWSER_MOUSE_HOLDING_2;
 				}
 			}
@@ -282,10 +281,11 @@ void NS_Widget::mouseReleaseEvent(QMouseEvent *event)
 	if ((button & Qt::LeftButton) != 0) {
 		if (m_drag_state == BROWSER_MOUSE_HOLDING_1) {
 			/* terminate drag */
-			browser_window_mouse_track(m_bw,
-						   (browser_mouse_state)BROWSER_MOUSE_HOVER,
-						   pos.x() + m_xoffset,
-						   pos.y() + m_yoffset);
+			browser_window_mouse_track(
+				m_bw,
+				(browser_mouse_state)BROWSER_MOUSE_HOVER,
+				pos.x() + m_xoffset,
+				pos.y() + m_yoffset);
 			m_drag_state = BROWSER_MOUSE_HOVER;
 		} else {
 			bms |= BROWSER_MOUSE_CLICK_1;
@@ -294,10 +294,11 @@ void NS_Widget::mouseReleaseEvent(QMouseEvent *event)
 	if ((button & Qt::MiddleButton) != 0) {
 		if (m_drag_state == BROWSER_MOUSE_HOLDING_2) {
 			/* terminate drag */
-			browser_window_mouse_track(m_bw,
-						   (browser_mouse_state)BROWSER_MOUSE_HOVER,
-						   pos.x() + m_xoffset,
-						   pos.y() + m_yoffset);
+			browser_window_mouse_track(
+				m_bw,
+				(browser_mouse_state)BROWSER_MOUSE_HOVER,
+				pos.x() + m_xoffset,
+				pos.y() + m_yoffset);
 			m_drag_state = BROWSER_MOUSE_HOVER;
 		} else {
 			bms |= BROWSER_MOUSE_CLICK_2;
@@ -358,11 +359,13 @@ void NS_Widget::contextMenuEvent(QContextMenuEvent *event)
 				    event->x() + m_xoffset,
 				    event->y() + m_yoffset,
 				    &features);
-        selected_text = browser_window_get_selection(m_bw);
+	selected_text = browser_window_get_selection(m_bw);
 
 	if ((selected_text == NULL) && (features.link_title != NULL)) {
 		selected_text = (char *)malloc(features.link_title_length + 1);
-		memcpy(selected_text, features.link_title, features.link_title_length);
+		memcpy(selected_text,
+		       features.link_title,
+		       features.link_title_length);
 		*(selected_text + features.link_title_length) = 0;
 	}
 
@@ -370,9 +373,8 @@ void NS_Widget::contextMenuEvent(QContextMenuEvent *event)
 
 	m_contextmenu->clear();
 
-	if ((features.link == NULL) &&
-	    (features.object == NULL) &&
-	    (selected_text==NULL)) {
+	if ((features.link == NULL) && (features.object == NULL) &&
+	    (selected_text == NULL)) {
 		/* populate base menu */
 		m_contextmenu->addAction(m_actions->m_back);
 		m_contextmenu->addAction(m_actions->m_forward);
@@ -402,8 +404,10 @@ void NS_Widget::contextMenuEvent(QContextMenuEvent *event)
 			} else {
 				prev = true;
 			}
-			if(content_get_type(features.object) == CONTENT_IMAGE) {
-				m_contextmenu->addAction(m_actions->m_img_new_tab);
+			if (content_get_type(features.object) ==
+			    CONTENT_IMAGE) {
+				m_contextmenu->addAction(
+					m_actions->m_img_new_tab);
 				m_contextmenu->addAction(m_actions->m_img_save);
 				m_contextmenu->addAction(m_actions->m_img_copy);
 			} else {

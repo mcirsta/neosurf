@@ -95,13 +95,16 @@ char *filepath_find(char **respathv, const char *filename);
  * path and the filename.
  *
  * \param respathv The resource path vector to iterate.
- * \param filepath The buffer to place the result in. Must have space for PATH_MAX bytes.
+ * \param filepath The buffer to place the result in. Must have space for
+ * PATH_MAX bytes.
  * \param filename The filename of the resource to search for.
  * \param def The default path to use
  * \return A pointer to filepath if a target is found or the default if not
  */
-char *filepath_sfinddef(char **respathv, char *filepath, const char *filename,
-		const char *def);
+char *filepath_sfinddef(char **respathv,
+			char *filepath,
+			const char *filename,
+			const char *def);
 
 
 /**
@@ -112,11 +115,11 @@ char *filepath_sfinddef(char **respathv, char *filepath, const char *filename,
  * @return A pointer to a NULL terminated string vector of valid
  *         resource directories.
  */
-char **filepath_generate(char * const *pathv, const char * const *langv);
+char **filepath_generate(char *const *pathv, const char *const *langv);
 
 
 /**
- * Convert a colon separated list of path elements into a string vector. 
+ * Convert a colon separated list of path elements into a string vector.
  *
  * @param path A colon separated path.
  * @return A pointer to a NULL terminated string vector of valid
@@ -131,7 +134,6 @@ char **filepath_path_to_strvec(const char *path);
  * Free a string vector allocated by filepath_path_to_strvec
  */
 void filepath_free_strvec(char **pathv);
-
 
 
 #endif /* _NETSURF_UTILS_FILEPATH_H_ */

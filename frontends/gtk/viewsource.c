@@ -60,12 +60,15 @@ nserror nsgtk_viewsource(GtkWindow *parent, struct browser_window *bw)
 		}
 	}
 
-	title = malloc(strlen(nsurl_access(browser_window_access_url(bw))) + SLEN("Source of  - NeoSurf") + 1);
+	title = malloc(strlen(nsurl_access(browser_window_access_url(bw))) +
+		       SLEN("Source of  - NeoSurf") + 1);
 	if (title == NULL) {
 		free(filename);
 		return NSERROR_NOMEM;
 	}
-	sprintf(title, "Source of %s - NeoSurf", nsurl_access(browser_window_access_url(bw)));
+	sprintf(title,
+		"Source of %s - NeoSurf",
+		nsurl_access(browser_window_access_url(bw)));
 
 	ret = utf8_from_enc((const char *)source_data,
 			    content_get_encoding(hlcontent,

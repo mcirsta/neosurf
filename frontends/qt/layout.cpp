@@ -33,7 +33,6 @@ extern "C" {
 #include "neosurf/inttypes.h"
 #include "neosurf/layout.h"
 #include "neosurf/plot_style.h"
-
 }
 
 #include "qt/layout.h"
@@ -130,14 +129,16 @@ static QFont *nsfont_style_to_font(const struct plot_font_style *fstyle)
 			pfcache.entries[idx].age = ++pfcache.age;
 			return new QFont(*pfcache.entries[idx].qfont);
 		}
-		if (pfcache.entries[idx].age < pfcache.entries[oldest_idx].age) {
+		if (pfcache.entries[idx].age <
+		    pfcache.entries[oldest_idx].age) {
 			oldest_idx = idx;
 		}
 	}
 
 	/* no existing entry, replace oldest */
 
-	NSLOG(netsurf, DEEPDEBUG,
+	NSLOG(netsurf,
+	      DEEPDEBUG,
 	      "evicting slot %d age %d after %d hits",
 	      oldest_idx,
 	      pfcache.entries[oldest_idx].age,
@@ -168,16 +169,17 @@ static QFont *nsfont_style_to_font(const struct plot_font_style *fstyle)
  * \param[in] length length of string, in bytes
  * \param[in] x coordinate to search for
  * \param[out] string_idx updated to offset in string of actual_x, [0..length]
- * \param[out] actual_x updated to x coordinate of character closest to x or full length if string_idx is 0
- * \return NSERROR_OK and string_idx and actual_x updated or appropriate error code on faliure
+ * \param[out] actual_x updated to x coordinate of character closest to x or
+ * full length if string_idx is 0
+ * \return NSERROR_OK and string_idx and actual_x updated or appropriate error
+ * code on faliure
  */
-static nserror
-layout_position(QFontMetrics &metrics,
-		const char *string,
-		size_t length,
-		int x,
-		size_t *string_idx,
-		int *actual_x)
+static nserror layout_position(QFontMetrics &metrics,
+			       const char *string,
+			       size_t length,
+			       int x,
+			       size_t *string_idx,
+			       int *actual_x)
 {
 	int full_x;
 	int measured_x;
@@ -238,7 +240,8 @@ layout_position(QFontMetrics &metrics,
 		/* too short try more chars untill overflowing */
 		int n_measured_x = measured_x;
 		while (n_measured_x < x) {
-			n_measured_x = metrics.horizontalAdvance(string, str_len + 1);
+			n_measured_x = metrics.horizontalAdvance(string,
+								 str_len + 1);
 			if (n_measured_x < x) {
 				measured_x = n_measured_x;
 				str_len++;
@@ -250,7 +253,6 @@ layout_position(QFontMetrics &metrics,
 	*actual_x = measured_x;
 
 	return NSERROR_OK;
-
 }
 
 
@@ -264,19 +266,23 @@ layout_position(QFontMetrics &metrics,
  * \return NSERROR_OK and width updated or appropriate error
  *          code on faliure
  */
-static nserror
-nsqt_layout_width(const struct plot_font_style *fstyle,
-		  const char *string,
-		  size_t length,
-		  int *width)
+static nserror nsqt_layout_width(const struct plot_font_style *fstyle,
+				 const char *string,
+				 size_t length,
+				 int *width)
 {
 	QFont *font = nsfont_style_to_font(fstyle);
 	QFontMetrics metrics(*font);
 	*width = metrics.horizontalAdvance(string, length);
 	delete font;
-	NSLOG(netsurf, DEEPDEBUG,
+	NSLOG(netsurf,
+	      DEEPDEBUG,
 	      "fstyle: %p string:\"%.*s\", length: %" PRIsizet ", width: %dpx",
-	      fstyle, (int)length, string, length, *width);
+	      fstyle,
+	      (int)length,
+	      string,
+	      length,
+	      *width);
 	return NSERROR_OK;
 }
 
@@ -290,15 +296,15 @@ nsqt_layout_width(const struct plot_font_style *fstyle,
  * \param[in] x coordinate to search for
  * \param[out] string_idx updated to offset in string of actual_x, [0..length]
  * \param[out] actual_x updated to x coordinate of character closest to x
- * \return NSERROR_OK and string_idx and actual_x updated or appropriate error code on faliure
+ * \return NSERROR_OK and string_idx and actual_x updated or appropriate error
+ * code on faliure
  */
-static nserror
-nsqt_layout_position(const struct plot_font_style *fstyle,
-		     const char *string,
-		     size_t length,
-		     int x,
-		     size_t *string_idx,
-		     int *actual_x)
+static nserror nsqt_layout_position(const struct plot_font_style *fstyle,
+				    const char *string,
+				    size_t length,
+				    int x,
+				    size_t *string_idx,
+				    int *actual_x)
 {
 	QFont *font = nsfont_style_to_font(fstyle);
 	QFontMetrics metrics(*font);
@@ -308,10 +314,17 @@ nsqt_layout_position(const struct plot_font_style *fstyle,
 
 	delete font;
 
-	NSLOG(netsurf, DEEPDEBUG,
+	NSLOG(netsurf,
+	      DEEPDEBUG,
 	      "fstyle: %p string:\"%.*s\", length: %" PRIsizet ", "
 	      "search_x: %dpx, offset: %" PRIsizet ", actual_x: %dpx",
-	      fstyle, (int)*string_idx, string, length, x, *string_idx, *actual_x);
+	      fstyle,
+	      (int)*string_idx,
+	      string,
+	      length,
+	      x,
+	      *string_idx,
+	      *actual_x);
 	return res;
 }
 
@@ -338,13 +351,12 @@ nsqt_layout_position(const struct plot_font_style *fstyle,
  *
  * Returning string_idx == length means no split possible
  */
-static nserror
-nsqt_layout_split(const struct plot_font_style *fstyle,
-		  const char *string,
-		  size_t length,
-		  int split,
-		  size_t *string_idx,
-		  int *actual_x)
+static nserror nsqt_layout_split(const struct plot_font_style *fstyle,
+				 const char *string,
+				 size_t length,
+				 int split,
+				 size_t *string_idx,
+				 int *actual_x)
 {
 	nserror res;
 	QFont *font = nsfont_style_to_font(fstyle);
@@ -353,7 +365,8 @@ nsqt_layout_split(const struct plot_font_style *fstyle,
 	int split_x;
 	size_t str_len;
 
-	res = layout_position(metrics, string, length, split, &split_len, &split_x);
+	res = layout_position(
+		metrics, string, length, split, &split_len, &split_x);
 	if (res != NSERROR_OK) {
 		delete font;
 		return res;
@@ -376,16 +389,14 @@ nsqt_layout_split(const struct plot_font_style *fstyle,
 	str_len = split_len;
 
 	/* walk backwards through string looking for space to break on */
-	while ((string[str_len] != ' ') &&
-	       (str_len > 0)) {
+	while ((string[str_len] != ' ') && (str_len > 0)) {
 		str_len--;
 	}
 
 	/* walk forwards through string looking for space if back failed */
 	if (str_len == 0) {
 		str_len = split_len;
-		while ((str_len < length) &&
-		       (string[str_len] != ' ')) {
+		while ((str_len < length) && (string[str_len] != ' ')) {
 			str_len++;
 		}
 	}
@@ -398,39 +409,50 @@ nsqt_layout_split(const struct plot_font_style *fstyle,
 
 nsqt_layout_split_done:
 	delete font;
-	NSLOG(netsurf, DEEPDEBUG,
+	NSLOG(netsurf,
+	      DEEPDEBUG,
 	      "fstyle: %p string:\"%.*s\", length: %" PRIsizet ", "
 	      "split: %dpx, offset: %" PRIsizet ", actual_x: %dpx",
-	      fstyle, (int)*string_idx, string, length, split, *string_idx, *actual_x);
+	      fstyle,
+	      (int)*string_idx,
+	      string,
+	      length,
+	      split,
+	      *string_idx,
+	      *actual_x);
 
 	return res;
 }
 
 
 /* exported interface documented in qt/layout.h */
-nserror
-nsqt_layout_plot(QPainter* painter,
-		 const struct plot_font_style *fstyle,
-		 int x,
-		 int y,
-		 const char *text,
-		 size_t length)
+nserror nsqt_layout_plot(QPainter *painter,
+			 const struct plot_font_style *fstyle,
+			 int x,
+			 int y,
+			 const char *text,
+			 size_t length)
 {
 	QColor strokecolour(fstyle->foreground & 0xFF,
-			    (fstyle->foreground & 0xFF00) >>8,
-			    (fstyle->foreground & 0xFF0000) >>16);
+			    (fstyle->foreground & 0xFF00) >> 8,
+			    (fstyle->foreground & 0xFF0000) >> 16);
 	QPen pen(strokecolour);
 	QFont *font = nsfont_style_to_font(fstyle);
 
-	NSLOG(netsurf, DEEPDEBUG,
+	NSLOG(netsurf,
+	      DEEPDEBUG,
 	      "fstyle: %p string:\"%.*s\", length: %" PRIsizet ", width: %dpx",
-	      fstyle, (int)length, text, length,
-	      QFontMetrics(*font, painter->device()).horizontalAdvance(text, length));
+	      fstyle,
+	      (int)length,
+	      text,
+	      length,
+	      QFontMetrics(*font, painter->device())
+		      .horizontalAdvance(text, length));
 
 	painter->setPen(pen);
 	painter->setFont(*font);
 
-	painter->drawText(x,y, QString::fromUtf8(text,length));
+	painter->drawText(x, y, QString::fromUtf8(text, length));
 
 	delete font;
 	return NSERROR_OK;

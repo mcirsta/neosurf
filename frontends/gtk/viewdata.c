@@ -56,8 +56,10 @@ struct nsgtk_viewdata_ctx {
 	char *filename;
 
 	GtkBuilder *builder; /**< The gtk builder that built the widgets. */
-	GtkWindow *window; /**< handle to gtk window (builder holds reference) */
-	GtkTextView *gv; /**< handle to gtk text view (builder holds reference) */
+	GtkWindow
+		*window; /**< handle to gtk window (builder holds reference) */
+	GtkTextView
+		*gv; /**< handle to gtk text view (builder holds reference) */
 
 	struct nsgtk_viewdata_ctx *next;
 	struct nsgtk_viewdata_ctx *prev;
@@ -71,9 +73,9 @@ struct menu_events {
 static struct nsgtk_viewdata_ctx *nsgtk_viewdata_list = NULL;
 static char viewdata_zoomlevel = 10;
 
-#define MENUEVENT(x) { #x, G_CALLBACK(nsgtk_on_##x##_activate) }
-#define MENUPROTO(x) static gboolean nsgtk_on_##x##_activate(	\
-		GtkMenuItem *widget, gpointer g)
+#define MENUEVENT(x) {#x, G_CALLBACK(nsgtk_on_##x##_activate)}
+#define MENUPROTO(x)                                                           \
+	static gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, gpointer g)
 
 MENUPROTO(viewdata_save_as);
 MENUPROTO(viewdata_print);
@@ -101,16 +103,15 @@ static struct menu_events viewdata_menu_events[] = {
 	MENUEVENT(viewdata_zoom_out),
 	MENUEVENT(viewdata_zoom_normal),
 	MENUEVENT(viewdata_about),
-	{NULL, NULL}
-};
+	{NULL, NULL}};
 
 static void nsgtk_attach_viewdata_menu_handlers(GtkBuilder *xml, gpointer g)
 {
 	struct menu_events *event = viewdata_menu_events;
 
-	while (event->widget != NULL)
-	{
-		GtkWidget *w = GTK_WIDGET(gtk_builder_get_object(xml, event->widget));
+	while (event->widget != NULL) {
+		GtkWidget *w = GTK_WIDGET(
+			gtk_builder_get_object(xml, event->widget));
 		g_signal_connect(G_OBJECT(w), "activate", event->handler, g);
 		event++;
 	}
@@ -142,15 +143,16 @@ static gboolean nsgtk_viewdata_destroy_event(GtkBuilder *window, gpointer g)
 	return FALSE;
 }
 
-static gboolean nsgtk_viewdata_delete_event(GtkWindow * window, gpointer g)
+static gboolean nsgtk_viewdata_delete_event(GtkWindow *window, gpointer g)
 {
 	return FALSE;
 }
 
 
-
-static void nsgtk_viewdata_file_save(GtkWindow *parent, const char *filename,
-				     const char *data, size_t data_size)
+static void nsgtk_viewdata_file_save(GtkWindow *parent,
+				     const char *filename,
+				     const char *data,
+				     size_t data_size)
 {
 	FILE *f;
 	GtkWidget *notif;
@@ -171,19 +173,20 @@ static void nsgtk_viewdata_file_save(GtkWindow *parent, const char *filename,
 					    GTK_RESPONSE_NONE,
 					    NULL);
 
-	g_signal_connect_swapped(notif, "response",
-				 G_CALLBACK(gtk_widget_destroy), notif);
+	g_signal_connect_swapped(
+		notif, "response", G_CALLBACK(gtk_widget_destroy), notif);
 
 	label = gtk_label_new(messages_get("gtkSaveFailed"));
-	gtk_container_add(GTK_CONTAINER(nsgtk_dialog_get_content_area(GTK_DIALOG(notif))), label);
+	gtk_container_add(
+		GTK_CONTAINER(nsgtk_dialog_get_content_area(GTK_DIALOG(notif))),
+		label);
 	gtk_widget_show_all(notif);
-
 }
 
 
 gboolean nsgtk_on_viewdata_save_as_activate(GtkMenuItem *widget, gpointer g)
 {
-	struct nsgtk_viewdata_ctx *nsg = (struct nsgtk_viewdata_ctx *) g;
+	struct nsgtk_viewdata_ctx *nsg = (struct nsgtk_viewdata_ctx *)g;
 	GtkWidget *fc;
 
 	fc = gtk_file_chooser_dialog_new(messages_get("gtkSaveFile"),
@@ -203,7 +206,8 @@ gboolean nsgtk_on_viewdata_save_as_activate(GtkMenuItem *widget, gpointer g)
 	if (gtk_dialog_run(GTK_DIALOG(fc)) == GTK_RESPONSE_ACCEPT) {
 		char *filename;
 		filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(fc));
-		nsgtk_viewdata_file_save(nsg->window, filename, nsg->data, nsg->data_len);
+		nsgtk_viewdata_file_save(
+			nsg->window, filename, nsg->data, nsg->data_len);
 		g_free(filename);
 	}
 
@@ -213,16 +217,16 @@ gboolean nsgtk_on_viewdata_save_as_activate(GtkMenuItem *widget, gpointer g)
 }
 
 
-gboolean nsgtk_on_viewdata_print_activate( GtkMenuItem *widget, gpointer g)
+gboolean nsgtk_on_viewdata_print_activate(GtkMenuItem *widget, gpointer g)
 {
 	/* correct printing */
 
 	return TRUE;
 }
 
-gboolean nsgtk_on_viewdata_close_activate( GtkMenuItem *widget, gpointer g)
+gboolean nsgtk_on_viewdata_close_activate(GtkMenuItem *widget, gpointer g)
 {
-	struct nsgtk_viewdata_ctx *nsg = (struct nsgtk_viewdata_ctx *) g;
+	struct nsgtk_viewdata_ctx *nsg = (struct nsgtk_viewdata_ctx *)g;
 
 	gtk_widget_destroy(GTK_WIDGET(nsg->window));
 
@@ -230,10 +234,9 @@ gboolean nsgtk_on_viewdata_close_activate( GtkMenuItem *widget, gpointer g)
 }
 
 
-
-gboolean nsgtk_on_viewdata_select_all_activate (GtkMenuItem *widget, gpointer g)
+gboolean nsgtk_on_viewdata_select_all_activate(GtkMenuItem *widget, gpointer g)
 {
-	struct nsgtk_viewdata_ctx *nsg = (struct nsgtk_viewdata_ctx *) g;
+	struct nsgtk_viewdata_ctx *nsg = (struct nsgtk_viewdata_ctx *)g;
 	GtkTextBuffer *buf = gtk_text_view_get_buffer(nsg->gv);
 	GtkTextIter start, end;
 
@@ -251,11 +254,11 @@ gboolean nsgtk_on_viewdata_cut_activate(GtkMenuItem *widget, gpointer g)
 
 gboolean nsgtk_on_viewdata_copy_activate(GtkMenuItem *widget, gpointer g)
 {
-	struct nsgtk_viewdata_ctx *nsg = (struct nsgtk_viewdata_ctx *) g;
+	struct nsgtk_viewdata_ctx *nsg = (struct nsgtk_viewdata_ctx *)g;
 	GtkTextBuffer *buf = gtk_text_view_get_buffer(GTK_TEXT_VIEW(nsg->gv));
 
-	gtk_text_buffer_copy_clipboard(buf,
-		gtk_clipboard_get(GDK_SELECTION_CLIPBOARD));
+	gtk_text_buffer_copy_clipboard(
+		buf, gtk_clipboard_get(GDK_SELECTION_CLIPBOARD));
 
 	return TRUE;
 }
@@ -291,18 +294,22 @@ static void nsgtk_viewdata_update_zoomlevel(gpointer g)
 				gtk_text_tag_table_add(tab, GTK_TEXT_TAG(tag));
 			}
 
-			gdouble fscale = ((gdouble) viewdata_zoomlevel) / 10;
+			gdouble fscale = ((gdouble)viewdata_zoomlevel) / 10;
 
 			g_object_set(GTK_TEXT_TAG(tag), "scale", fscale, NULL);
 
 			GtkTextIter start, end;
 
 			gtk_text_buffer_get_bounds(GTK_TEXT_BUFFER(buf),
-						   &start, &end);
+						   &start,
+						   &end);
 			gtk_text_buffer_remove_all_tags(GTK_TEXT_BUFFER(buf),
-							&start,	&end);
+							&start,
+							&end);
 			gtk_text_buffer_apply_tag(GTK_TEXT_BUFFER(buf),
-						  GTK_TEXT_TAG(tag), &start, &end);
+						  GTK_TEXT_TAG(tag),
+						  &start,
+						  &end);
 		}
 		nsg = nsg->next;
 	}
@@ -337,7 +344,7 @@ gboolean nsgtk_on_viewdata_zoom_normal_activate(GtkMenuItem *widget, gpointer g)
 
 gboolean nsgtk_on_viewdata_about_activate(GtkMenuItem *widget, gpointer g)
 {
-	struct nsgtk_viewdata_ctx *nsg = (struct nsgtk_viewdata_ctx *) g;
+	struct nsgtk_viewdata_ctx *nsg = (struct nsgtk_viewdata_ctx *)g;
 
 	nsgtk_about_dialog_init(nsg->window);
 
@@ -347,11 +354,10 @@ gboolean nsgtk_on_viewdata_about_activate(GtkMenuItem *widget, gpointer g)
 /**
  * View the data in a gtk text window.
  */
-static nserror
-window_init(const char *title,
-	    const char *filename,
-	    char *ndata,
-	    size_t ndata_len)
+static nserror window_init(const char *title,
+			   const char *filename,
+			   char *ndata,
+			   size_t ndata_len)
 {
 	GtkWindow *window;
 	GtkWidget *cutbutton;
@@ -378,8 +384,8 @@ window_init(const char *title,
 
 	gtk_builder_connect_signals(newctx->builder, NULL);
 
-	window = GTK_WINDOW(gtk_builder_get_object(newctx->builder,
-						   "ViewDataWindow"));
+	window = GTK_WINDOW(
+		gtk_builder_get_object(newctx->builder, "ViewDataWindow"));
 	if (window == NULL) {
 		NSLOG(neosurf, INFO, "Unable to find window in builder ");
 
@@ -392,10 +398,14 @@ window_init(const char *title,
 		return NSERROR_INIT_FAILED;
 	}
 
-	cutbutton = GTK_WIDGET(gtk_builder_get_object(newctx->builder, "viewdata_cut"));
-	pastebutton = GTK_WIDGET(gtk_builder_get_object(newctx->builder, "viewdata_paste"));
-	deletebutton = GTK_WIDGET(gtk_builder_get_object(newctx->builder, "viewdata_delete"));
-	printbutton = GTK_WIDGET(gtk_builder_get_object(newctx->builder, "viewdata_print"));
+	cutbutton = GTK_WIDGET(
+		gtk_builder_get_object(newctx->builder, "viewdata_cut"));
+	pastebutton = GTK_WIDGET(
+		gtk_builder_get_object(newctx->builder, "viewdata_paste"));
+	deletebutton = GTK_WIDGET(
+		gtk_builder_get_object(newctx->builder, "viewdata_delete"));
+	printbutton = GTK_WIDGET(
+		gtk_builder_get_object(newctx->builder, "viewdata_print"));
 	gtk_widget_set_sensitive(cutbutton, FALSE);
 	gtk_widget_set_sensitive(pastebutton, FALSE);
 	gtk_widget_set_sensitive(deletebutton, FALSE);
@@ -421,15 +431,17 @@ window_init(const char *title,
 
 	gtk_window_set_title(window, title);
 
-	g_signal_connect(G_OBJECT(window), "destroy",
+	g_signal_connect(G_OBJECT(window),
+			 "destroy",
 			 G_CALLBACK(nsgtk_viewdata_destroy_event),
 			 newctx);
-	g_signal_connect(G_OBJECT(window), "delete-event",
+	g_signal_connect(G_OBJECT(window),
+			 "delete-event",
 			 G_CALLBACK(nsgtk_viewdata_delete_event),
 			 newctx);
 
-	dataview = GTK_TEXT_VIEW(gtk_builder_get_object(newctx->builder,
-							"viewdata_view"));
+	dataview = GTK_TEXT_VIEW(
+		gtk_builder_get_object(newctx->builder, "viewdata_view"));
 
 	fontdesc = pango_font_description_from_string("Monospace 8");
 
@@ -448,9 +460,7 @@ window_init(const char *title,
  * open a window to dispaly an existing file.
  */
 static nserror
-window_init_fname(const char *title,
-	       const char *leafname,
-	       const char *filename)
+window_init_fname(const char *title, const char *leafname, const char *filename)
 {
 	nserror ret;
 	FILE *f;
@@ -470,7 +480,7 @@ window_init_fname(const char *title,
 	tell_len = ftell(f);
 	if (tell_len == -1) {
 		fclose(f);
-		return NSERROR_BAD_SIZE;		
+		return NSERROR_BAD_SIZE;
 	}
 
 	if (fseek(f, 0, SEEK_SET) != 0) {
@@ -481,7 +491,7 @@ window_init_fname(const char *title,
 	ndata = malloc(tell_len);
 
 	ndata_len = fread(ndata, 1, tell_len, f);
-	
+
 	fclose(f);
 
 	/* window init takes ownership of the ndata if there is no error */
@@ -497,9 +507,7 @@ window_init_fname(const char *title,
  * open a new tab from an existing file.
  */
 static nserror
-tab_init_fname(const char *title,
-	       const char *leafname,
-	       const char *fname)
+tab_init_fname(const char *title, const char *leafname, const char *fname)
 {
 	nsurl *url;
 	nserror ret;
@@ -511,7 +519,8 @@ tab_init_fname(const char *title,
 	}
 
 	/* open tab on temportary file */
-	ret = browser_window_create(BW_CREATE_TAB | BW_CREATE_HISTORY, url, NULL, NULL, NULL);
+	ret = browser_window_create(
+		BW_CREATE_TAB | BW_CREATE_HISTORY, url, NULL, NULL, NULL);
 	nsurl_unref(url);
 	if (ret != NSERROR_OK) {
 		return ret;
@@ -524,10 +533,7 @@ tab_init_fname(const char *title,
  * create a new tab from data.
  */
 static nserror
-tab_init(const char *title,
-	 const char *leafname,
-	 char *ndata,
-	 size_t ndata_len)
+tab_init(const char *title, const char *leafname, char *ndata, size_t ndata_len)
 {
 	nserror ret;
 	gchar *fname;
@@ -572,7 +578,7 @@ tab_init(const char *title,
  *
  * \return string vector of search pathnames or NULL on error.
  */
-static char** xdg_data_strvec(void)
+static char **xdg_data_strvec(void)
 {
 	const char *xdg_data_dirs;
 	const char *xdg_data_home;
@@ -582,38 +588,40 @@ static char** xdg_data_strvec(void)
 	char **svec;
 
 	xdg_data_dirs = getenv("XDG_DATA_DIRS");
-	if ((xdg_data_dirs == NULL) ||
-	    (*xdg_data_dirs == 0) ||
+	if ((xdg_data_dirs == NULL) || (*xdg_data_dirs == 0) ||
 	    (strlen(xdg_data_dirs) > 4096)) {
 		xdg_data_dirs = "/usr/local/share/:/usr/share/";
 	}
 
 	xdg_data_home = getenv("XDG_DATA_HOME");
-	if ((xdg_data_home == NULL) ||
-	    (*xdg_data_home == 0) ||
+	if ((xdg_data_home == NULL) || (*xdg_data_home == 0) ||
 	    (strlen(xdg_data_home) > 4096)) {
 		/* $XDG_DATA_HOME is empty use $HOME/.local/share */
 
 		home_dir = getenv("HOME");
-		if ((home_dir == NULL) ||
-		    (*home_dir == 0) ||
+		if ((home_dir == NULL) || (*home_dir == 0) ||
 		    (strlen(home_dir) > 4096)) {
 			xdg_data_path = strdup(xdg_data_dirs);
 		} else {
 			xdg_data_size = strlen(home_dir) +
-				SLEN("/.local/share:") +
-				strlen(xdg_data_dirs) + 1;
+					SLEN("/.local/share:") +
+					strlen(xdg_data_dirs) + 1;
 			xdg_data_path = malloc(xdg_data_size);
-			snprintf(xdg_data_path, xdg_data_size ,
+			snprintf(xdg_data_path,
+				 xdg_data_size,
 				 "%s/.local/share/:%s",
-				 home_dir, xdg_data_dirs);
+				 home_dir,
+				 xdg_data_dirs);
 		}
 	} else {
-		xdg_data_size = strlen(xdg_data_home) +
-			strlen(xdg_data_dirs) + 2;
+		xdg_data_size = strlen(xdg_data_home) + strlen(xdg_data_dirs) +
+				2;
 		xdg_data_path = malloc(xdg_data_size);
-		snprintf(xdg_data_path, xdg_data_size , "%s:%s",
-			 xdg_data_home, xdg_data_dirs);
+		snprintf(xdg_data_path,
+			 xdg_data_size,
+			 "%s:%s",
+			 xdg_data_home,
+			 xdg_data_dirs);
 	}
 
 	NSLOG(neosurf, INFO, "%s", xdg_data_path);
@@ -668,13 +676,13 @@ static char *xdg_get_default_app(const char *path, const char *mimetype)
 		line[rd] = 0;
 
 		/* look for mimetype */
-		if ((rd > mimetype_len) &&
-		    (line[mimetype_len] == '=') &&
+		if ((rd > mimetype_len) && (line[mimetype_len] == '=') &&
 		    (strncmp(line, mimetype, mimetype_len) == 0)) {
 
 			ret = strdup(line + mimetype_len + 1);
 
-			NSLOG(neosurf, INFO,
+			NSLOG(neosurf,
+			      INFO,
 			      "Found line match for %s length %zu\n",
 			      mimetype,
 			      rd);
@@ -696,7 +704,8 @@ static char *xdg_get_default_app(const char *path, const char *mimetype)
  * search path is combined with applications/application.desktop to
  * create a filename.
  *
- * Desktop file format http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html
+ * Desktop file format
+ * http://standards.freedesktop.org/desktop-entry-spec/desktop-entry-spec-latest.html
  *
  * \todo The parsing of the desktop file is badly incomplete and needs
  * improving. For example the handling of the = delimiter is wrong and
@@ -757,8 +766,8 @@ static char *exec_arg(const char *arg, int len, const char *fname)
 
 	if (*arg == '%') {
 		arg++;
-		if ((*arg == 'f') || (*arg == 'F') ||
-		    (*arg == 'u') || (*arg == 'U')) {
+		if ((*arg == 'f') || (*arg == 'F') || (*arg == 'u') ||
+		    (*arg == 'U')) {
 			res = strdup(fname);
 		}
 	} else {
@@ -823,9 +832,7 @@ static char **build_exec_argv(const char *fname, const char *exec_cmd)
  * open an editor from an existing file.
  */
 static nserror
-editor_init_fname(const char *title,
-	       const char *leafname,
-	       const char *fname)
+editor_init_fname(const char *title, const char *leafname, const char *fname)
 {
 	char **xdg_data_vec;
 	int veci;
@@ -841,7 +848,7 @@ editor_init_fname(const char *title,
 	veci = 0;
 	while (xdg_data_vec[veci] != NULL) {
 		def_app_desktop = xdg_get_default_app(xdg_data_vec[veci],
-						  "text/plain");
+						      "text/plain");
 		if (def_app_desktop != NULL) {
 			break;
 		}
@@ -857,7 +864,8 @@ editor_init_fname(const char *title,
 	/* find app to execute */
 	veci = 0;
 	while (xdg_data_vec[veci] != NULL) {
-		exec_cmd = xdg_get_exec_cmd(xdg_data_vec[veci], def_app_desktop);
+		exec_cmd = xdg_get_exec_cmd(xdg_data_vec[veci],
+					    def_app_desktop);
 		if (exec_cmd != NULL) {
 			break;
 		}
@@ -876,8 +884,14 @@ editor_init_fname(const char *title,
 	free(exec_cmd);
 
 	/* execute target app on saved data */
-	if (g_spawn_async(NULL, argv, NULL, G_SPAWN_SEARCH_PATH, NULL, NULL,
-			  NULL, NULL) != TRUE) {
+	if (g_spawn_async(NULL,
+			  argv,
+			  NULL,
+			  G_SPAWN_SEARCH_PATH,
+			  NULL,
+			  NULL,
+			  NULL,
+			  NULL) != TRUE) {
 		return NSERROR_NOT_FOUND;
 	}
 	filepath_free_strvec(argv);
@@ -888,11 +902,10 @@ editor_init_fname(const char *title,
 /**
  * open an editor with data.
  */
-static nserror
-editor_init(const char *title,
-	    const char *leafname,
-	    char *ndata,
-	    size_t ndata_len)
+static nserror editor_init(const char *title,
+			   const char *leafname,
+			   char *ndata,
+			   size_t ndata_len)
 {
 
 	nserror ret;
@@ -927,11 +940,10 @@ editor_init(const char *title,
 }
 
 /* exported interface documented in gtk/viewdata.h */
-nserror
-nsgtk_viewdata(const char *title,
-	       const char *filename,
-	       char *ndata,
-	       size_t ndata_len)
+nserror nsgtk_viewdata(const char *title,
+		       const char *filename,
+		       char *ndata,
+		       size_t ndata_len)
 {
 	nserror ret;
 
@@ -963,9 +975,7 @@ nsgtk_viewdata(const char *title,
 
 /* exported interface documented in gtk/viewdata.h */
 nserror
-nsgtk_viewfile(const char *title,
-	       const char *leafname,
-	       const char *filename)
+nsgtk_viewfile(const char *title, const char *leafname, const char *filename)
 {
 	nserror ret;
 

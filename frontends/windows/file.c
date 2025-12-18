@@ -51,8 +51,10 @@
  *                         Returned string has trailing '\0'.
  * \return NSERROR_OK on success
  */
-nserror url_unescape(const char *str, size_t length,
-		size_t *length_out, char **result_out);
+nserror url_unescape(const char *str,
+		     size_t length,
+		     size_t *length_out,
+		     char **result_out);
 
 /**
  * Generate a windows path from one or more component elemnts.
@@ -141,9 +143,8 @@ static nserror windows_nsurl_to_path(struct nsurl *url, char **path_out)
 
 	scheme = nsurl_get_component(url, NSURL_SCHEME);
 
-	if (lwc_string_caseless_isequal(scheme, corestring_lwc_file,
-					&match) != lwc_error_ok)
-	{
+	if (lwc_string_caseless_isequal(scheme, corestring_lwc_file, &match) !=
+	    lwc_error_ok) {
 		return NSERROR_BAD_PARAMETER;
 	}
 	lwc_string_unref(scheme);
@@ -166,7 +167,7 @@ static nserror windows_nsurl_to_path(struct nsurl *url, char **path_out)
 	}
 
 	/* if there is a drive: prefix treat path as DOS filename */
-	if ((path[2] == ':') ||  (path[2] == '|')) {
+	if ((path[2] == ':') || (path[2] == '|')) {
 		char *sidx; /* slash index */
 
 		/* move the string down to remove leading / note the
@@ -253,9 +254,9 @@ static nserror windows_path_to_nsurl(const char *path, struct nsurl **url_out)
  */
 static nserror windows_mkdir_all(const char *fname)
 {
-    char *dname;
-    char *sep;
-    struct stat sb;
+	char *dname;
+	char *sep;
+	struct stat sb;
 
 	dname = strdup(fname);
 
@@ -278,38 +279,38 @@ static nserror windows_mkdir_all(const char *fname)
 	}
 	*sep = '\\'; /* restore separator */
 
-    {
-        char *p = dname;
-        if (ascii_is_alpha(p[0]) &&
-            p[1] == ':' && (p[2] == '\\' || p[2] == '/')) {
-            p += 3;
-        }
-        while (*p == '\\') {
-            p++;
-        }
-        while ((sep = strchr(p, '\\')) != NULL) {
-            *sep = 0;
-            if (stat(dname, &sb) != 0) {
-                if (nsmkdir(dname, S_IRWXU) != 0) {
-                    free(dname);
-                    return NSERROR_NOT_FOUND;
-                }
-            } else {
-                if (! S_ISDIR(sb.st_mode)) {
-                    free(dname);
-                    return NSERROR_NOT_DIRECTORY;
-                }
-            }
-            *sep = '\\';
-            p = sep + 1;
-            while (*p == '\\') {
-                p++;
-            }
-        }
-    }
+	{
+		char *p = dname;
+		if (ascii_is_alpha(p[0]) && p[1] == ':' &&
+		    (p[2] == '\\' || p[2] == '/')) {
+			p += 3;
+		}
+		while (*p == '\\') {
+			p++;
+		}
+		while ((sep = strchr(p, '\\')) != NULL) {
+			*sep = 0;
+			if (stat(dname, &sb) != 0) {
+				if (nsmkdir(dname, S_IRWXU) != 0) {
+					free(dname);
+					return NSERROR_NOT_FOUND;
+				}
+			} else {
+				if (!S_ISDIR(sb.st_mode)) {
+					free(dname);
+					return NSERROR_NOT_DIRECTORY;
+				}
+			}
+			*sep = '\\';
+			p = sep + 1;
+			while (*p == '\\') {
+				p++;
+			}
+		}
+	}
 
-    free(dname);
-    return NSERROR_OK;
+	free(dname);
+	return NSERROR_OK;
 }
 
 /* windows file handling */

@@ -92,7 +92,8 @@ void gtk_fetch_filetype_init(const char *mimefile)
 
 	fh = fopen(mimefile, "r");
 	if (fh == NULL) {
-		NSLOG(neosurf, INFO,
+		NSLOG(neosurf,
+		      INFO,
 		      "Unable to open a mime.types file, so using a minimal one for you.");
 		return;
 	}
@@ -164,8 +165,7 @@ void gtk_fetch_filetype_init(const char *mimefile)
 				/* search for the first non-whitespace char or
 				 * NUL or NL, to find start of next ext.
 				 */
-				while (*ptr &&
-				       (ascii_is_space(*ptr)) &&
+				while (*ptr && (ascii_is_space(*ptr)) &&
 				       *ptr != '\n') {
 					ptr++;
 				}
@@ -226,7 +226,7 @@ const char *fetch_filetype(const char *unix_path)
 		return "text/plain";
 	}
 
-	ext = strdup(ptr + 1);	/* skip the . */
+	ext = strdup(ptr + 1); /* skip the . */
 
 	/* the hash table only contains lower-case versions - make sure this
 	 * copy is lower case too.
@@ -257,7 +257,8 @@ static nsurl *nsgtk_get_resource_url(const char *path)
 	if (strcmp(path, "favicon.ico") == 0) {
 		nsurl_create("resource:favicon.png", &url);
 	} else {
-		neosurf_path_to_nsurl(filepath_sfind(respaths, buf, path), &url);
+		neosurf_path_to_nsurl(filepath_sfind(respaths, buf, path),
+				      &url);
 	}
 
 	return url;

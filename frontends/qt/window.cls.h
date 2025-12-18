@@ -45,8 +45,8 @@ class NS_Window : public QWidget
 {
 	Q_OBJECT
 
-public:
-	NS_Window(QWidget* parent, struct browser_window *bw);
+      public:
+	NS_Window(QWidget *parent, struct browser_window *bw);
 	~NS_Window();
 
 	void destroy(void);
@@ -54,31 +54,43 @@ public:
 	nserror advance_throbber(bool cont);
 
 	/* static wrappers to be able to call instance methods */
-	static nserror static_set_scroll(struct gui_window *gw, const struct rect *rect);
+	static nserror
+	static_set_scroll(struct gui_window *gw, const struct rect *rect);
 	static void static_set_status(struct gui_window *gw, const char *text);
 	static void static_set_title(struct gui_window *gw, const char *title);
-	static void static_set_icon(struct gui_window *gw, struct hlcache_handle *icon);
+	static void
+	static_set_icon(struct gui_window *gw, struct hlcache_handle *icon);
 	static bool static_get_scroll(struct gui_window *gw, int *sx, int *sy);
 	static nserror static_set_url(struct gui_window *gw, struct nsurl *url);
 
-	static nserror static_event(struct gui_window *gw, enum gui_window_event event);
-	static nserror static_invalidate(struct gui_window *gw, const struct rect *rect);
-	static nserror static_get_dimensions(struct gui_window *gw, int *width, int *height);
-	static void static_set_pointer(struct gui_window *gw, enum gui_pointer_shape shape);
-	static void static_place_caret(struct gui_window *gw, int x, int y, int height, const struct rect *clip);
-	static struct gui_window *static_create(struct browser_window *bw, struct gui_window *existing, gui_window_create_flags flags);
+	static nserror
+	static_event(struct gui_window *gw, enum gui_window_event event);
+	static nserror
+	static_invalidate(struct gui_window *gw, const struct rect *rect);
+	static nserror
+	static_get_dimensions(struct gui_window *gw, int *width, int *height);
+	static void
+	static_set_pointer(struct gui_window *gw, enum gui_pointer_shape shape);
+	static void static_place_caret(struct gui_window *gw,
+				       int x,
+				       int y,
+				       int height,
+				       const struct rect *clip);
+	static struct gui_window *static_create(struct browser_window *bw,
+						struct gui_window *existing,
+						gui_window_create_flags flags);
 	static void static_destroy(struct gui_window *gw);
 
-signals:
+      signals:
 	void titleChanged(const char *title);
 	void iconChanged(const QIcon &icon);
 
-protected:
+      protected:
 	void closeEvent(QCloseEvent *event);
 	void wheelEvent(QWheelEvent *event);
 	void keyPressEvent(QKeyEvent *event);
 
-private:
+      private:
 	struct browser_window *m_bw;
 
 	NS_Actions *m_actions;

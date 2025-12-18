@@ -51,19 +51,21 @@
  */
 static const JxlPixelFormat jxl_output_format = {
 	.num_channels = 4,
-	.data_type    = JXL_TYPE_UINT8,
-	.endianness   = JXL_LITTLE_ENDIAN,
-	.align        = 0,
+	.data_type = JXL_TYPE_UINT8,
+	.endianness = JXL_LITTLE_ENDIAN,
+	.align = 0,
 };
 
 /**
  * Content create entry point.
  */
-static nserror
-nsjpegxl_create(const content_handler *handler,
-		lwc_string *imime_type, const struct http_parameter *params,
-		llcache_handle *llcache, const char *fallback_charset,
-		bool quirks, struct content **c)
+static nserror nsjpegxl_create(const content_handler *handler,
+			       lwc_string *imime_type,
+			       const struct http_parameter *params,
+			       llcache_handle *llcache,
+			       const char *fallback_charset,
+			       bool quirks,
+			       struct content **c)
 {
 	struct content *jpeg;
 	nserror error;
@@ -72,8 +74,13 @@ nsjpegxl_create(const content_handler *handler,
 	if (jpeg == NULL)
 		return NSERROR_NOMEM;
 
-	error = content__init(jpeg, handler, imime_type, params,
-			      llcache, fallback_charset, quirks);
+	error = content__init(jpeg,
+			      handler,
+			      imime_type,
+			      params,
+			      llcache,
+			      fallback_charset,
+			      quirks);
 	if (error != NSERROR_OK) {
 		free(jpeg);
 		return error;
@@ -87,20 +94,19 @@ nsjpegxl_create(const content_handler *handler,
 /**
  * create a bitmap from jpeg xl content.
  */
-static struct bitmap *
-jpegxl_cache_convert(struct content *c)
+static struct bitmap *jpegxl_cache_convert(struct content *c)
 {
-	struct bitmap * bitmap = NULL;
+	struct bitmap *bitmap = NULL;
 	JxlDecoder *jxldec;
 	JxlDecoderStatus decstatus;
 	JxlBasicInfo binfo;
 	const uint8_t *src_data;
 	size_t src_size;
-	uint8_t * output;
-    bitmap_fmt_t jxl_fmt = {
-        .layout = BITMAP_LAYOUT_R8G8B8A8,
-        .pma    = bitmap_fmt.pma,
-    };
+	uint8_t *output;
+	bitmap_fmt_t jxl_fmt = {
+		.layout = BITMAP_LAYOUT_R8G8B8A8,
+		.pma = bitmap_fmt.pma,
+	};
 
 	jxldec = JxlDecoderCreate(NULL);
 	if (jxldec == NULL) {
@@ -110,13 +116,15 @@ jpegxl_cache_convert(struct content *c)
 
 	decstatus = JxlDecoderSetUnpremultiplyAlpha(jxldec, !bitmap_fmt.pma);
 	if (decstatus != JXL_DEC_SUCCESS) {
-		NSLOG(netsurf, ERROR, "unable to set premultiplied alpha status: %d",
-				decstatus);
+		NSLOG(netsurf,
+		      ERROR,
+		      "unable to set premultiplied alpha status: %d",
+		      decstatus);
 		JxlDecoderDestroy(jxldec);
 		return NULL;
 	}
 
-	decstatus= JxlDecoderSubscribeEvents(jxldec, JXL_DEC_FULL_IMAGE);
+	decstatus = JxlDecoderSubscribeEvents(jxldec, JXL_DEC_FULL_IMAGE);
 	if (decstatus != JXL_DEC_SUCCESS) {
 		NSLOG(netsurf, ERROR, "Unable to subscribe");
 		return NULL;
@@ -131,7 +139,8 @@ jpegxl_cache_convert(struct content *c)
 
 	decstatus = JxlDecoderProcessInput(jxldec);
 	if (decstatus != JXL_DEC_NEED_IMAGE_OUT_BUFFER) {
-		NSLOG(netsurf, ERROR,
+		NSLOG(netsurf,
+		      ERROR,
 		      "expected status JXL_DEC_NEED_IMAGE_OUT_BUFFER(%d) got %d",
 		      JXL_DEC_NEED_IMAGE_OUT_BUFFER,
 		      decstatus);
@@ -141,14 +150,19 @@ jpegxl_cache_convert(struct content *c)
 
 	decstatus = JxlDecoderGetBasicInfo(jxldec, &binfo);
 	if (decstatus != JXL_DEC_SUCCESS) {
-		NSLOG(netsurf, ERROR, "unable to get basic info status:%d",decstatus);
+		NSLOG(netsurf,
+		      ERROR,
+		      "unable to get basic info status:%d",
+		      decstatus);
 		JxlDecoderDestroy(jxldec);
 		return NULL;
 	}
 
 	/* create bitmap with appropriate opacity */
 	if (binfo.alpha_bits > 0) {
-		bitmap = guit->bitmap->create(c->width, c->height, BITMAP_OPAQUE);
+		bitmap = guit->bitmap->create(c->width,
+					      c->height,
+					      BITMAP_OPAQUE);
 	} else {
 		bitmap = guit->bitmap->create(c->width, c->height, BITMAP_NONE);
 	}
@@ -166,9 +180,13 @@ jpegxl_cache_convert(struct content *c)
 		JxlDecoderDestroy(jxldec);
 		return NULL;
 	}
-	decstatus = JxlDecoderSetImageOutBuffer(jxldec, &jxl_output_format, output, c->size);
+	decstatus = JxlDecoderSetImageOutBuffer(
+		jxldec, &jxl_output_format, output, c->size);
 	if (decstatus != JXL_DEC_SUCCESS) {
-		NSLOG(netsurf, ERROR, "unable to set output buffer callback status:%d",decstatus);
+		NSLOG(netsurf,
+		      ERROR,
+		      "unable to set output buffer callback status:%d",
+		      decstatus);
 		guit->bitmap->destroy(bitmap);
 		JxlDecoderDestroy(jxldec);
 		return NULL;
@@ -181,10 +199,10 @@ jpegxl_cache_convert(struct content *c)
 		JxlDecoderDestroy(jxldec);
 		return NULL;
 	}
-	
+
 	JxlDecoderDestroy(jxldec);
 
-    bitmap_format_to_client(bitmap, &jxl_fmt);
+	bitmap_format_to_client(bitmap, &jxl_fmt);
 	guit->bitmap->modified(bitmap);
 
 	return bitmap;
@@ -193,7 +211,8 @@ jpegxl_cache_convert(struct content *c)
 /**
  * report failiure
  */
-static bool jxl_report_fail(struct content *c, JxlDecoderStatus decstatus, const char *msg)
+static bool
+jxl_report_fail(struct content *c, JxlDecoderStatus decstatus, const char *msg)
 {
 	union content_msg_data msg_data;
 	NSLOG(netsurf, ERROR, "%s decoder status:%d", msg, decstatus);
@@ -221,7 +240,7 @@ static bool nsjpegxl_convert(struct content *c)
 	/* check image header is valid and get width/height */
 	data = content__get_source_data(c, &size);
 
-	decsig = JxlSignatureCheck(data,size);
+	decsig = JxlSignatureCheck(data, size);
 	if ((decsig != JXL_SIG_CODESTREAM) && (decsig != JXL_SIG_CONTAINER)) {
 		NSLOG(netsurf, ERROR, "signature failed");
 		msg_data.errordata.errorcode = NSERROR_UNKNOWN;
@@ -232,32 +251,45 @@ static bool nsjpegxl_convert(struct content *c)
 
 	jxldec = JxlDecoderCreate(NULL);
 	if (jxldec == NULL) {
-		return jxl_report_fail(c, decstatus, "Unable to allocate decoder");
+		return jxl_report_fail(c,
+				       decstatus,
+				       "Unable to allocate decoder");
 	}
-	decstatus= JxlDecoderSubscribeEvents(jxldec, JXL_DEC_BASIC_INFO);
+	decstatus = JxlDecoderSubscribeEvents(jxldec, JXL_DEC_BASIC_INFO);
 	if (decstatus != JXL_DEC_SUCCESS) {
 		return jxl_report_fail(c, decstatus, "Unable to subscribe");
 	}
-	decstatus = JxlDecoderSetInput(jxldec, data,size);
+	decstatus = JxlDecoderSetInput(jxldec, data, size);
 	if (decstatus != JXL_DEC_SUCCESS) {
 		return jxl_report_fail(c, decstatus, "unable to set input");
 	}
 	decstatus = JxlDecoderProcessInput(jxldec);
 	if (decstatus != JXL_DEC_BASIC_INFO) {
-		return jxl_report_fail(c, decstatus, "did not get basic info event");
+		return jxl_report_fail(c,
+				       decstatus,
+				       "did not get basic info event");
 	}
 	decstatus = JxlDecoderGetBasicInfo(jxldec, &binfo);
 	if (decstatus != JXL_DEC_SUCCESS) {
-		return jxl_report_fail(c, decstatus, "unable to get basic info");
+		return jxl_report_fail(c,
+				       decstatus,
+				       "unable to get basic info");
 	}
-	decstatus = JxlDecoderImageOutBufferSize(jxldec, &jxl_output_format, &image_size);
+	decstatus = JxlDecoderImageOutBufferSize(jxldec,
+						 &jxl_output_format,
+						 &image_size);
 	if (decstatus != JXL_DEC_SUCCESS) {
 		return jxl_report_fail(c, decstatus, "unable get image size");
 	}
-	
+
 	JxlDecoderDestroy(jxldec);
 
-	NSLOG(netsurf, INFO, "got basic info size:%ld x:%d y:%d", image_size, binfo.xsize, binfo.ysize);
+	NSLOG(netsurf,
+	      INFO,
+	      "got basic info size:%ld x:%d y:%d",
+	      image_size,
+	      binfo.xsize,
+	      binfo.ysize);
 
 	c->width = binfo.xsize;
 	c->height = binfo.ysize;
@@ -267,15 +299,17 @@ static bool nsjpegxl_convert(struct content *c)
 
 	/* set title text */
 	title = messages_get_buff("JPEGXLTitle",
-			nsurl_access_leaf(llcache_handle_get_url(c->llcache)),
-			c->width, c->height);
+				  nsurl_access_leaf(
+					  llcache_handle_get_url(c->llcache)),
+				  c->width,
+				  c->height);
 	if (title != NULL) {
 		content__set_title(c, title);
 		free(title);
 	}
 
 	content_set_ready(c);
-	content_set_done(c);	
+	content_set_done(c);
 	content_set_status(c, ""); /* Done: update status bar */
 
 	return true;
@@ -330,4 +364,6 @@ static const char *nsjpegxl_types[] = {
 	"image/jxl",
 };
 
-CONTENT_FACTORY_REGISTER_TYPES(nsjpegxl, nsjpegxl_types, nsjpegxl_content_handler);
+CONTENT_FACTORY_REGISTER_TYPES(nsjpegxl,
+			       nsjpegxl_types,
+			       nsjpegxl_content_handler);

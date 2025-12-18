@@ -35,7 +35,8 @@ typedef struct http_parameter http_parameter;
  *         NSERROR_NOT_FOUND if requested item does not exist
  */
 nserror http_parameter_list_find_item(const http_parameter *list,
-		lwc_string *name, lwc_string **value);
+				      lwc_string *name,
+				      lwc_string **value);
 
 /**
  * Iterate over a parameter list
@@ -46,7 +47,8 @@ nserror http_parameter_list_find_item(const http_parameter *list,
  * \return Pointer to next iteration position, or NULL for end of iteration
  */
 const http_parameter *http_parameter_list_iterate(const http_parameter *cur,
-		lwc_string **name, lwc_string **value);
+						  lwc_string **name,
+						  lwc_string **value);
 
 /**
  * Destroy a list of HTTP parameters
@@ -56,4 +58,3 @@ const http_parameter *http_parameter_list_iterate(const http_parameter *cur,
 void http_parameter_list_destroy(http_parameter *list);
 
 #endif
-

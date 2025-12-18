@@ -20,18 +20,18 @@
 
 /* The hash table entry */
 struct _dom_hash_entry {
-	void *key;			/**< The key pointer */
-	void *value;			/**< The value pointer */
-	struct _dom_hash_entry *next;	/**< Next entry */
+	void *key; /**< The key pointer */
+	void *value; /**< The value pointer */
+	struct _dom_hash_entry *next; /**< Next entry */
 };
 
 /* The hash table */
 struct dom_hash_table {
-	const dom_hash_vtable *vtable;	/**< Vtable */
-	void *pw;			/**< Client data */
-	unsigned int nchains;		/**< Number of chains */
-	struct _dom_hash_entry **chain;	/**< The chain head */
-	uint32_t nentries;		/**< The entries in this table */
+	const dom_hash_vtable *vtable; /**< Vtable */
+	void *pw; /**< Client data */
+	unsigned int nchains; /**< Number of chains */
+	struct _dom_hash_entry **chain; /**< The chain head */
+	uint32_t nentries; /**< The entries in this table */
 };
 
 
@@ -47,8 +47,8 @@ struct dom_hash_table {
  * \return struct dom_hash_table containing the context of this hash table or
  *         NULL if there is insufficent memory to create it and its chains.
  */
-dom_hash_table *_dom_hash_create(unsigned int chains, 
-		const dom_hash_vtable *vtable, void *pw)
+dom_hash_table *
+_dom_hash_create(unsigned int chains, const dom_hash_vtable *vtable, void *pw)
 {
 	dom_hash_table *r = malloc(sizeof(struct dom_hash_table));
 	if (r == NULL) {
@@ -81,12 +81,12 @@ dom_hash_table *_dom_hash_clone(dom_hash_table *ht)
 	void *value = NULL, *nvalue = NULL;
 	uintptr_t c1, *c2 = NULL;
 	struct dom_hash_table *ret;
-	
+
 	ret = _dom_hash_create(ht->nchains, ht->vtable, ht->pw);
 	if (ret == NULL)
 		return NULL;
 
-	while ( (key = _dom_hash_iterate(ht, &c1, &c2)) != NULL) {
+	while ((key = _dom_hash_iterate(ht, &c1, &c2)) != NULL) {
 		nkey = ht->vtable->clone_key(key, ht->pw);
 		if (nkey == NULL) {
 			_dom_hash_destroy(ret);
@@ -116,7 +116,7 @@ dom_hash_table *_dom_hash_clone(dom_hash_table *ht)
  * \param ht        Hash table to destroy. After the function returns, this
  *                  will nolonger be valid
  */
-void _dom_hash_destroy(dom_hash_table *ht) 
+void _dom_hash_destroy(dom_hash_table *ht)
 {
 	unsigned int i;
 
@@ -149,8 +149,7 @@ void _dom_hash_destroy(dom_hash_table *ht)
  * \return true if the add succeeded, false otherwise.  (Failure most likely
  *         indicates insufficent memory to make copies of the key and value.
  */
-bool _dom_hash_add(dom_hash_table *ht, void *key, void *value, 
-		bool replace)
+bool _dom_hash_add(dom_hash_table *ht, void *key, void *value, bool replace)
 {
 	unsigned int h, c;
 	struct _dom_hash_entry *e;
@@ -248,7 +247,7 @@ void *_dom_hash_del(struct dom_hash_table *ht, void *key)
 			return ret;
 		}
 	}
-	
+
 	return NULL;
 }
 
@@ -260,10 +259,10 @@ void *_dom_hash_del(struct dom_hash_table *ht, void *key)
  * \param  c2  Pointer to second context (set to 0 on first call)
  * \return The next hash key, or NULL for no more keys
  */
-void *_dom_hash_iterate(struct dom_hash_table *ht, uintptr_t *c1,
-		uintptr_t **c2)
+void *
+_dom_hash_iterate(struct dom_hash_table *ht, uintptr_t *c1, uintptr_t **c2)
 {
-	struct _dom_hash_entry **he = (struct _dom_hash_entry **) c2;
+	struct _dom_hash_entry **he = (struct _dom_hash_entry **)c2;
 
 	if (ht == NULL)
 		return NULL;
@@ -286,10 +285,10 @@ void *_dom_hash_iterate(struct dom_hash_table *ht, uintptr_t *c1,
 }
 
 /**
- * Get the number of elements in this hash table 
+ * Get the number of elements in this hash table
  *
  * \param ht  The hash table
- * 
+ *
  * \return the number of elements
  */
 uint32_t _dom_hash_get_length(struct dom_hash_table *ht)
@@ -312,7 +311,7 @@ uint32_t _dom_hash_get_length(struct dom_hash_table *ht)
 
 
 /**
- * Hash a pointer, returning a 32bit value.  
+ * Hash a pointer, returning a 32bit value.
  *
  * \param  ptr  The pointer to hash.
  * \return the calculated hash value for the pointer.
@@ -320,7 +319,7 @@ uint32_t _dom_hash_get_length(struct dom_hash_table *ht)
 
 static inline unsigned int _dom_hash_pointer_fnv(void *ptr)
 {
-	return (unsigned int) ptr;
+	return (unsigned int)ptr;
 }
 
 static void *test_alloc(void *p, size_t size, void *ptr)
@@ -341,10 +340,9 @@ int main(int argc, char *argv[])
 	FILE *dict;
 	char keybuf[BUFSIZ], valbuf[BUFSIZ];
 	int i;
-	char *cow="cow", *moo="moo", *pig="pig", *oink="oink",
-			*chicken="chikcken", *cluck="cluck",
-			*dog="dog", *woof="woof", *cat="cat", 
-			*meow="meow";
+	char *cow = "cow", *moo = "moo", *pig = "pig", *oink = "oink",
+	     *chicken = "chikcken", *cluck = "cluck", *dog = "dog",
+	     *woof = "woof", *cat = "cat", *meow = "meow";
 	void *ret;
 
 	a = _dom_hash_create(79, _dom_hash_pointer_fnv, test_alloc, NULL);
@@ -353,23 +351,24 @@ int main(int argc, char *argv[])
 	b = _dom_hash_create(103, _dom_hash_pointer_fnv, test_alloc, NULL);
 	assert(b != NULL);
 
-	_dom_hash_add(a, cow, moo ,true);
-	_dom_hash_add(b, moo, cow ,true);
+	_dom_hash_add(a, cow, moo, true);
+	_dom_hash_add(b, moo, cow, true);
 
-	_dom_hash_add(a, pig, oink ,true);
-	_dom_hash_add(b, oink, pig ,true);
+	_dom_hash_add(a, pig, oink, true);
+	_dom_hash_add(b, oink, pig, true);
 
-	_dom_hash_add(a, chicken, cluck ,true);
-	_dom_hash_add(b, cluck, chicken ,true);
+	_dom_hash_add(a, chicken, cluck, true);
+	_dom_hash_add(b, cluck, chicken, true);
 
-	_dom_hash_add(a, dog, woof ,true);
-	_dom_hash_add(b, woof, dog ,true);
+	_dom_hash_add(a, dog, woof, true);
+	_dom_hash_add(b, woof, dog, true);
 
-	_dom_hash_add(a, cat, meow ,true);
-	_dom_hash_add(b, meow, cat ,true);
+	_dom_hash_add(a, cat, meow, true);
+	_dom_hash_add(b, meow, cat, true);
 
-#define MATCH(x,y) assert(!strcmp((char *)hash_get(a, x), (char *)y)); \
-		assert(!strcmp((char *)hash_get(b, y), (char *)x))
+#define MATCH(x, y)                                                            \
+	assert(!strcmp((char *)hash_get(a, x), (char *)y));                    \
+	assert(!strcmp((char *)hash_get(b, y), (char *)x))
 	MATCH(cow, moo);
 	MATCH(pig, oink);
 	MATCH(chicken, cluck);

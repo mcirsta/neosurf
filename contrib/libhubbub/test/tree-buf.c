@@ -44,7 +44,7 @@ struct node_t {
 			size_t n_attrs;
 		} element;
 
-		char *content;		/**< For comments, characters **/
+		char *content; /**< For comments, characters **/
 	} data;
 
 	node_t *next;
@@ -64,61 +64,69 @@ struct buf_t {
 
 
 #define NUM_NAMESPACES 7
-const char * const ns_names[NUM_NAMESPACES] =
-		{ NULL, NULL /*html*/, "math", "svg", "xlink", "xml", "xmlns" };
+const char *const ns_names[NUM_NAMESPACES] =
+	{NULL, NULL /*html*/, "math", "svg", "xlink", "xml", "xmlns"};
 
 
 node_t *Document;
 
 
-
 static void node_print(buf_t *buf, node_t *node, unsigned depth);
 
-static hubbub_error create_comment(void *ctx, const hubbub_string *data, void **result);
-static hubbub_error create_doctype(void *ctx, const hubbub_doctype *doctype,
-		void **result);
-static hubbub_error create_element(void *ctx, const hubbub_tag *tag, void **result);
-static hubbub_error create_text(void *ctx, const hubbub_string *data, void **result);
+static hubbub_error
+create_comment(void *ctx, const hubbub_string *data, void **result);
+static hubbub_error
+create_doctype(void *ctx, const hubbub_doctype *doctype, void **result);
+static hubbub_error
+create_element(void *ctx, const hubbub_tag *tag, void **result);
+static hubbub_error
+create_text(void *ctx, const hubbub_string *data, void **result);
 static hubbub_error ref_node(void *ctx, void *node);
 static hubbub_error unref_node(void *ctx, void *node);
-static hubbub_error append_child(void *ctx, void *parent, void *child, void **result);
-static hubbub_error insert_before(void *ctx, void *parent, void *child, void *ref_child,
-		void **result);
-static hubbub_error remove_child(void *ctx, void *parent, void *child, void **result);
+static hubbub_error
+append_child(void *ctx, void *parent, void *child, void **result);
+static hubbub_error insert_before(void *ctx,
+				  void *parent,
+				  void *child,
+				  void *ref_child,
+				  void **result);
+static hubbub_error
+remove_child(void *ctx, void *parent, void *child, void **result);
 static hubbub_error clone_node(void *ctx, void *node, bool deep, void **result);
 static hubbub_error reparent_children(void *ctx, void *node, void *new_parent);
-static hubbub_error get_parent(void *ctx, void *node, bool element_only, void **result);
+static hubbub_error
+get_parent(void *ctx, void *node, bool element_only, void **result);
 static hubbub_error has_children(void *ctx, void *node, bool *result);
 static hubbub_error form_associate(void *ctx, void *form, void *node);
-static hubbub_error add_attributes(void *ctx, void *node,
-		const hubbub_attribute *attributes, uint32_t n_attributes);
+static hubbub_error add_attributes(void *ctx,
+				   void *node,
+				   const hubbub_attribute *attributes,
+				   uint32_t n_attributes);
 static hubbub_error set_quirks_mode(void *ctx, hubbub_quirks_mode mode);
 static hubbub_error complete_script(void *ctx, void *script);
 
 static void delete_node(node_t *node);
 static void delete_attr(attr_t *attr);
 
-static hubbub_tree_handler tree_handler = {
-	create_comment,
-	create_doctype,
-	create_element,
-	create_text,
-	ref_node,
-	unref_node,
-	append_child,
-	insert_before,
-	remove_child,
-	clone_node,
-	reparent_children,
-	get_parent,
-	has_children,
-	form_associate,
-	add_attributes,
-	set_quirks_mode,
-	NULL,
-	complete_script,
-	NULL
-};
+static hubbub_tree_handler tree_handler = {create_comment,
+					   create_doctype,
+					   create_element,
+					   create_text,
+					   ref_node,
+					   unref_node,
+					   append_child,
+					   insert_before,
+					   remove_child,
+					   clone_node,
+					   reparent_children,
+					   get_parent,
+					   has_children,
+					   form_associate,
+					   add_attributes,
+					   set_quirks_mode,
+					   NULL,
+					   complete_script,
+					   NULL};
 
 
 /*
@@ -132,22 +140,23 @@ static hubbub_parser *setup_parser(void)
 	assert(hubbub_parser_create("UTF-8", false, &parser) == HUBBUB_OK);
 
 	params.tree_handler = &tree_handler;
-	assert(hubbub_parser_setopt(parser, HUBBUB_PARSER_TREE_HANDLER,
-			&params) == HUBBUB_OK);
+	assert(hubbub_parser_setopt(parser,
+				    HUBBUB_PARSER_TREE_HANDLER,
+				    &params) == HUBBUB_OK);
 
 	params.document_node = (void *)1;
-	assert(hubbub_parser_setopt(parser, HUBBUB_PARSER_DOCUMENT_NODE,
-			&params) == HUBBUB_OK);
+	assert(hubbub_parser_setopt(parser,
+				    HUBBUB_PARSER_DOCUMENT_NODE,
+				    &params) == HUBBUB_OK);
 
-/* Don't enable scripting -- we want the same behaviour as NetSurf.
-	params.enable_scripting = true;
-	assert(hubbub_parser_setopt(parser, HUBBUB_PARSER_ENABLE_SCRIPTING,
-			&params) == HUBBUB_OK);
-*/
+	/* Don't enable scripting -- we want the same behaviour as NetSurf.
+		params.enable_scripting = true;
+		assert(hubbub_parser_setopt(parser,
+	   HUBBUB_PARSER_ENABLE_SCRIPTING, &params) == HUBBUB_OK);
+	*/
 
 	return parser;
 }
-
 
 
 /*** Buffer handling bits ***/
@@ -184,7 +193,7 @@ int main(int argc, char **argv)
 	hubbub_parser *parser;
 	uint32_t i;
 
-	buf_t got = { NULL, 0, 0 };
+	buf_t got = {NULL, 0, 0};
 
 	if (argc != 2) {
 		printf("Usage: %s <filename>\n", argv[0]);
@@ -222,14 +231,14 @@ int main(int argc, char **argv)
 	parser = setup_parser();
 
 	for (i = 0; i < n_chunks; i++) {
-                ssize_t bytes_read;
+		ssize_t bytes_read;
 		assert(chunks[i] <= sizeof(buf));
 
 		bytes_read = fread(buf, 1, chunks[i], fp);
-                assert((size_t)(bytes_read) == chunks[i]);
+		assert((size_t)(bytes_read) == chunks[i]);
 
-		assert(hubbub_parser_parse_chunk(parser, (uint8_t *) buf,
-				chunks[i]) == HUBBUB_OK);
+		assert(hubbub_parser_parse_chunk(
+			       parser, (uint8_t *)buf, chunks[i]) == HUBBUB_OK);
 	}
 
 	assert(hubbub_parser_completed(parser) == HUBBUB_OK);
@@ -265,7 +274,7 @@ hubbub_error create_comment(void *ctx, const hubbub_string *data, void **result)
 	UNUSED(ctx);
 
 	node->type = COMMENT;
-	node->data.content = strndup((const char *) data->ptr, data->len);
+	node->data.content = strndup((const char *)data->ptr, data->len);
 	node->refcnt = 1;
 	node->refcnt = 1;
 
@@ -274,28 +283,27 @@ hubbub_error create_comment(void *ctx, const hubbub_string *data, void **result)
 	return HUBBUB_OK;
 }
 
-hubbub_error create_doctype(void *ctx, const hubbub_doctype *doctype, 
-		void **result)
+hubbub_error
+create_doctype(void *ctx, const hubbub_doctype *doctype, void **result)
 {
 	node_t *node = calloc(1, sizeof *node);
 
 	UNUSED(ctx);
 
 	node->type = DOCTYPE;
-	node->data.doctype.name = strndup(
-			(const char *) doctype->name.ptr,
-			doctype->name.len);
+	node->data.doctype.name = strndup((const char *)doctype->name.ptr,
+					  doctype->name.len);
 
 	if (!doctype->public_missing) {
 		node->data.doctype.public_id = strndup(
-				(const char *) doctype->public_id.ptr,
-				doctype->public_id.len);
+			(const char *)doctype->public_id.ptr,
+			doctype->public_id.len);
 	}
 
 	if (!doctype->system_missing) {
 		node->data.doctype.system_id = strndup(
-				(const char *) doctype->system_id.ptr,
-				doctype->system_id.len);
+			(const char *)doctype->system_id.ptr,
+			doctype->system_id.len);
 	}
 	node->refcnt = 1;
 
@@ -315,13 +323,12 @@ hubbub_error create_element(void *ctx, const hubbub_tag *tag, void **result)
 
 	node->type = ELEMENT;
 	node->data.element.ns = tag->ns;
-	node->data.element.name = strndup(
-			(const char *) tag->name.ptr,
-			tag->name.len);
+	node->data.element.name = strndup((const char *)tag->name.ptr,
+					  tag->name.len);
 	node->data.element.n_attrs = tag->n_attributes;
 
 	node->data.element.attrs = calloc(node->data.element.n_attrs,
-			sizeof *node->data.element.attrs);
+					  sizeof *node->data.element.attrs);
 
 	for (i = 0; i < tag->n_attributes; i++) {
 		attr_t *attr = &node->data.element.attrs[i];
@@ -330,13 +337,12 @@ hubbub_error create_element(void *ctx, const hubbub_tag *tag, void **result)
 
 		attr->ns = tag->attributes[i].ns;
 
-		attr->name = strndup(
-				(const char *) tag->attributes[i].name.ptr,
-				tag->attributes[i].name.len);
+		attr->name = strndup((const char *)tag->attributes[i].name.ptr,
+				     tag->attributes[i].name.len);
 
 		attr->value = strndup(
-				(const char *) tag->attributes[i].value.ptr,
-				tag->attributes[i].value.len);
+			(const char *)tag->attributes[i].value.ptr,
+			tag->attributes[i].value.len);
 	}
 	node->refcnt = 1;
 
@@ -352,7 +358,7 @@ hubbub_error create_text(void *ctx, const hubbub_string *data, void **result)
 	UNUSED(ctx);
 
 	node->type = CHARACTER;
-	node->data.content = strndup((const char *) data->ptr, data->len);
+	node->data.content = strndup((const char *)data->ptr, data->len);
 	node->refcnt = 1;
 	node->refcnt = 1;
 
@@ -367,7 +373,7 @@ hubbub_error ref_node(void *ctx, void *node)
 
 	UNUSED(ctx);
 
-	if (node != (void *) 1)
+	if (node != (void *)1)
 		n->refcnt++;
 
 	return HUBBUB_OK;
@@ -379,7 +385,7 @@ hubbub_error unref_node(void *ctx, void *node)
 
 	UNUSED(ctx);
 
-	if (n != (void *) 1) {
+	if (n != (void *)1) {
 		assert(n->refcnt > 0);
 
 		n->refcnt--;
@@ -404,7 +410,7 @@ hubbub_error append_child(void *ctx, void *parent, void *child, void **result)
 	tchild->next = tchild->prev = NULL;
 
 #ifndef NDEBUG
-	printf("appending (%p):\n", (void *) tchild);
+	printf("appending (%p):\n", (void *)tchild);
 	node_print(NULL, tchild, 0);
 	printf("to:\n");
 	if (parent != (void *)1)
@@ -433,8 +439,9 @@ hubbub_error append_child(void *ctx, void *parent, void *child, void **result)
 		}
 
 		if (tchild->type == CHARACTER && insert->type == CHARACTER) {
-			insert->data.content = realloc(insert->data.content,
-					strlen(insert->data.content) +
+			insert->data.content = realloc(
+				insert->data.content,
+				strlen(insert->data.content) +
 					strlen(tchild->data.content) + 1);
 			strcat(insert->data.content, tchild->data.content);
 			*result = insert;
@@ -453,15 +460,18 @@ hubbub_error append_child(void *ctx, void *parent, void *child, void **result)
 }
 
 /* insert 'child' before 'ref_child', under 'parent' */
-hubbub_error insert_before(void *ctx, void *parent, void *child, 
-		void *ref_child, void **result)
+hubbub_error insert_before(void *ctx,
+			   void *parent,
+			   void *child,
+			   void *ref_child,
+			   void **result)
 {
 	node_t *tparent = parent;
 	node_t *tchild = child;
 	node_t *tref = ref_child;
 
 #ifndef NDEBUG
-	printf("inserting (%p):\n", (void *) tchild);
+	printf("inserting (%p):\n", (void *)tchild);
 	node_print(NULL, tchild, 0);
 	printf("before:\n");
 	node_print(NULL, tref, 0);
@@ -471,11 +481,12 @@ hubbub_error insert_before(void *ctx, void *parent, void *child,
 #endif
 
 	if (tchild->type == CHARACTER && tref->prev &&
-			tref->prev->type == CHARACTER) {
+	    tref->prev->type == CHARACTER) {
 		node_t *insert = tref->prev;
 
-		insert->data.content = realloc(insert->data.content,
-				strlen(insert->data.content) +
+		insert->data.content = realloc(
+			insert->data.content,
+			strlen(insert->data.content) +
 				strlen(tchild->data.content) + 1);
 		strcat(insert->data.content, tchild->data.content);
 
@@ -542,14 +553,14 @@ hubbub_error clone_node(void *ctx, void *node, bool deep, void **result)
 
 	switch (old_node->type) {
 	case DOCTYPE:
-		new_node->data.doctype.name = 
-				strdup(old_node->data.doctype.name);
+		new_node->data.doctype.name = strdup(
+			old_node->data.doctype.name);
 		if (old_node->data.doctype.public_id)
-			new_node->data.doctype.public_id = 
-				strdup(old_node->data.doctype.public_id);
+			new_node->data.doctype.public_id = strdup(
+				old_node->data.doctype.public_id);
 		if (old_node->data.doctype.system_id)
-			new_node->data.doctype.system_id =
-				strdup(old_node->data.doctype.system_id);
+			new_node->data.doctype.system_id = strdup(
+				old_node->data.doctype.system_id);
 		break;
 	case COMMENT:
 	case CHARACTER:
@@ -557,19 +568,19 @@ hubbub_error clone_node(void *ctx, void *node, bool deep, void **result)
 		break;
 	case ELEMENT:
 		new_node->data.element.ns = old_node->data.element.ns;
-		new_node->data.element.name = 
-				strdup(old_node->data.element.name);
-		new_node->data.element.attrs = 
-				calloc(old_node->data.element.n_attrs, 
-					sizeof *new_node->data.element.attrs);
+		new_node->data.element.name = strdup(
+			old_node->data.element.name);
+		new_node->data.element.attrs = calloc(
+			old_node->data.element.n_attrs,
+			sizeof *new_node->data.element.attrs);
 		for (i = 0; i < old_node->data.element.n_attrs; i++) {
 			attr_t *attr = &new_node->data.element.attrs[i];
 
 			attr->ns = old_node->data.element.attrs[i].ns;
-			attr->name = 
-				strdup(old_node->data.element.attrs[i].name);
-			attr->value =
-				strdup(old_node->data.element.attrs[i].value);
+			attr->name = strdup(
+				old_node->data.element.attrs[i].name);
+			attr->value = strdup(
+				old_node->data.element.attrs[i].value);
 		}
 		new_node->data.element.n_attrs = old_node->data.element.n_attrs;
 		break;
@@ -577,9 +588,8 @@ hubbub_error clone_node(void *ctx, void *node, bool deep, void **result)
 
 	*result = new_node;
 
-	new_node->child = new_node->parent =
-			new_node->next = new_node->prev =
-			NULL;
+	new_node->child = new_node->parent = new_node->next = new_node->prev =
+		NULL;
 
 	new_node->refcnt = 1;
 
@@ -588,11 +598,10 @@ hubbub_error clone_node(void *ctx, void *node, bool deep, void **result)
 
 	last = NULL;
 
-	for (child = old_node->child; child != NULL; 
-			child = child->next) {
+	for (child = old_node->child; child != NULL; child = child->next) {
 		node_t *n;
 
-		clone_node(ctx, child, true, (void **) (void *) &n);
+		clone_node(ctx, child, true, (void **)(void *)&n);
 
 		n->refcnt = 0;
 
@@ -622,7 +631,8 @@ hubbub_error reparent_children(void *ctx, void *node, void *new_parent)
 	UNUSED(ctx);
 
 	kids = old_parent->child;
-	if (!kids) return 0;
+	if (!kids)
+		return 0;
 
 	old_parent->child = NULL;
 
@@ -676,8 +686,10 @@ hubbub_error form_associate(void *ctx, void *form, void *node)
 	return HUBBUB_OK;
 }
 
-hubbub_error add_attributes(void *ctx, void *vnode,
-		const hubbub_attribute *attributes, uint32_t n_attributes)
+hubbub_error add_attributes(void *ctx,
+			    void *vnode,
+			    const hubbub_attribute *attributes,
+			    uint32_t n_attributes)
 {
 	node_t *node = vnode;
 	size_t old_elems = node->data.element.n_attrs;
@@ -687,9 +699,9 @@ hubbub_error add_attributes(void *ctx, void *vnode,
 
 	node->data.element.n_attrs += n_attributes;
 
-	node->data.element.attrs = realloc(node->data.element.attrs,
-			node->data.element.n_attrs *
-				sizeof *node->data.element.attrs);
+	node->data.element.attrs = realloc(
+		node->data.element.attrs,
+		node->data.element.n_attrs * sizeof *node->data.element.attrs);
 
 	for (i = 0; i < n_attributes; i++) {
 		attr_t *attr = &node->data.element.attrs[old_elems + i];
@@ -698,13 +710,11 @@ hubbub_error add_attributes(void *ctx, void *vnode,
 
 		attr->ns = attributes[i].ns;
 
-		attr->name = strndup(
-				(const char *) attributes[i].name.ptr,
-				attributes[i].name.len);
+		attr->name = strndup((const char *)attributes[i].name.ptr,
+				     attributes[i].name.len);
 
-		attr->value = strndup(
-				(const char *) attributes[i].value.ptr,
-				attributes[i].value.len);
+		attr->value = strndup((const char *)attributes[i].value.ptr,
+				      attributes[i].value.len);
 	}
 
 
@@ -730,14 +740,13 @@ hubbub_error complete_script(void *ctx, void *script)
 
 /*** Serialising bits ***/
 
-static int compare_attrs(const void *a, const void *b) {
+static int compare_attrs(const void *a, const void *b)
+{
 	const attr_t *first = a;
 	const attr_t *second = b;
 
 	return strcmp(first->name, second->name);
 }
-
-
 
 
 static void indent(buf_t *buf, unsigned depth)
@@ -763,18 +772,18 @@ static void node_print(buf_t *buf, node_t *node, unsigned depth)
 {
 	size_t i;
 
-	if (!node) return;
+	if (!node)
+		return;
 
 	indent(buf, depth);
 
-	switch (node->type)
-	{
+	switch (node->type) {
 	case DOCTYPE:
 		buf_add(buf, "<!DOCTYPE ");
 		buf_add(buf, node->data.doctype.name);
 
-		if (node->data.doctype.public_id || 
-				node->data.doctype.system_id) {
+		if (node->data.doctype.public_id ||
+		    node->data.doctype.system_id) {
 			if (node->data.doctype.public_id) {
 				buf_add(buf, " \"");
 				buf_add(buf, node->data.doctype.public_id);
@@ -782,7 +791,7 @@ static void node_print(buf_t *buf, node_t *node, unsigned depth)
 			} else {
 				buf_add(buf, "\"\" ");
 			}
-			
+
 			if (node->data.doctype.system_id) {
 				buf_add(buf, " \"");
 				buf_add(buf, node->data.doctype.system_id);
@@ -800,9 +809,10 @@ static void node_print(buf_t *buf, node_t *node, unsigned depth)
 		buf_add(buf, node->data.element.name);
 		buf_add(buf, ">\n");
 
-		qsort(node->data.element.attrs, node->data.element.n_attrs,
-				sizeof *node->data.element.attrs,
-				compare_attrs);
+		qsort(node->data.element.attrs,
+		      node->data.element.n_attrs,
+		      sizeof *node->data.element.attrs,
+		      compare_attrs);
 
 		for (i = 0; i < node->data.element.n_attrs; i++) {
 			indent(buf, depth + 1);
@@ -848,8 +858,9 @@ static void delete_node(node_t *node)
 		return;
 
 	if (node->refcnt != 0) {
-		printf("Node %p has non-zero refcount %d\n", 
-				(void *) node, node->refcnt);
+		printf("Node %p has non-zero refcount %d\n",
+		       (void *)node,
+		       node->refcnt);
 		assert(0);
 	}
 
@@ -892,4 +903,3 @@ static void delete_attr(attr_t *attr)
 
 	memset(attr, 0xdf, sizeof(attr_t));
 }
-

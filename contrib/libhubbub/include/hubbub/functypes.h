@@ -9,8 +9,7 @@
 #define hubbub_functypes_h_
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #include <stdbool.h>
@@ -26,8 +25,8 @@ extern "C"
  * \param pw     Pointer to client data
  * \return HUBBUB_OK on success, appropriate error otherwise.
  */
-typedef hubbub_error (*hubbub_token_handler)(
-		const hubbub_token *token, void *pw);
+typedef hubbub_error (*hubbub_token_handler)(const hubbub_token *token,
+					     void *pw);
 
 /**
  * Type of parse error handling function
@@ -37,12 +36,13 @@ typedef hubbub_error (*hubbub_token_handler)(
  * \param message  Error message
  * \param pw       Pointer to client data
  */
-typedef void (*hubbub_error_handler)(uint32_t line, uint32_t col,
-		const char *message, void *pw);
+typedef void (*hubbub_error_handler)(uint32_t line,
+				     uint32_t col,
+				     const char *message,
+				     void *pw);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-

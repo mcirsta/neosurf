@@ -39,11 +39,11 @@
  * Container for border values during table border calculations
  */
 struct border {
-	enum css_border_style_e style;	/**< border-style */
-	enum css_border_color_e color;	/**< border-color type */
-	css_color c;			/**< border-color value */
-	css_fixed width;		/**< border-width length */
-	css_unit unit;			/**< border-width units */
+	enum css_border_style_e style; /**< border-style */
+	enum css_border_color_e color; /**< border-color type */
+	css_color c; /**< border-color value */
+	css_fixed width; /**< border-width length */
+	css_unit unit; /**< border-width units */
 };
 
 
@@ -57,12 +57,11 @@ struct border {
  * \param b_src    Source of \a b
  * \return True if \a b is more eyecatching than \a a
  */
-static bool
-table_border_is_more_eyecatching(const css_unit_ctx *unit_len_ctx,
-				 const struct border *a,
-				 box_type a_src,
-				 const struct border *b,
-				 box_type b_src)
+static bool table_border_is_more_eyecatching(const css_unit_ctx *unit_len_ctx,
+					     const struct border *a,
+					     box_type a_src,
+					     const struct border *b,
+					     box_type b_src)
 {
 	css_fixed awidth, bwidth;
 	int impact = 0;
@@ -93,27 +92,43 @@ table_border_is_more_eyecatching(const css_unit_ctx *unit_len_ctx,
 
 	/* 3b -- sort by style */
 	switch (a->style) {
-	case CSS_BORDER_STYLE_DOUBLE: impact++; /* Fall through */
-	case CSS_BORDER_STYLE_SOLID:  impact++; /* Fall through */
-	case CSS_BORDER_STYLE_DASHED: impact++; /* Fall through */
-	case CSS_BORDER_STYLE_DOTTED: impact++; /* Fall through */
-	case CSS_BORDER_STYLE_RIDGE:  impact++; /* Fall through */
-	case CSS_BORDER_STYLE_OUTSET: impact++; /* Fall through */
-	case CSS_BORDER_STYLE_GROOVE: impact++; /* Fall through */
-	case CSS_BORDER_STYLE_INSET:  impact++; /* Fall through */
+	case CSS_BORDER_STYLE_DOUBLE:
+		impact++; /* Fall through */
+	case CSS_BORDER_STYLE_SOLID:
+		impact++; /* Fall through */
+	case CSS_BORDER_STYLE_DASHED:
+		impact++; /* Fall through */
+	case CSS_BORDER_STYLE_DOTTED:
+		impact++; /* Fall through */
+	case CSS_BORDER_STYLE_RIDGE:
+		impact++; /* Fall through */
+	case CSS_BORDER_STYLE_OUTSET:
+		impact++; /* Fall through */
+	case CSS_BORDER_STYLE_GROOVE:
+		impact++; /* Fall through */
+	case CSS_BORDER_STYLE_INSET:
+		impact++; /* Fall through */
 	default:
 		break;
 	}
 
 	switch (b->style) {
-	case CSS_BORDER_STYLE_DOUBLE: impact--; /* Fall through */
-	case CSS_BORDER_STYLE_SOLID:  impact--; /* Fall through */
-	case CSS_BORDER_STYLE_DASHED: impact--; /* Fall through */
-	case CSS_BORDER_STYLE_DOTTED: impact--; /* Fall through */
-	case CSS_BORDER_STYLE_RIDGE:  impact--; /* Fall through */
-	case CSS_BORDER_STYLE_OUTSET: impact--; /* Fall through */
-	case CSS_BORDER_STYLE_GROOVE: impact--; /* Fall through */
-	case CSS_BORDER_STYLE_INSET:  impact--; /* Fall through */
+	case CSS_BORDER_STYLE_DOUBLE:
+		impact--; /* Fall through */
+	case CSS_BORDER_STYLE_SOLID:
+		impact--; /* Fall through */
+	case CSS_BORDER_STYLE_DASHED:
+		impact--; /* Fall through */
+	case CSS_BORDER_STYLE_DOTTED:
+		impact--; /* Fall through */
+	case CSS_BORDER_STYLE_RIDGE:
+		impact--; /* Fall through */
+	case CSS_BORDER_STYLE_OUTSET:
+		impact--; /* Fall through */
+	case CSS_BORDER_STYLE_GROOVE:
+		impact--; /* Fall through */
+	case CSS_BORDER_STYLE_INSET:
+		impact--; /* Fall through */
 	default:
 		break;
 	}
@@ -128,20 +143,28 @@ table_border_is_more_eyecatching(const css_unit_ctx *unit_len_ctx,
 
 	/** \todo COL/COL_GROUP */
 	switch (a_src) {
-	case BOX_TABLE_CELL:       impact++; /* Fall through */
-	case BOX_TABLE_ROW:        impact++; /* Fall through */
-	case BOX_TABLE_ROW_GROUP:  impact++; /* Fall through */
-	case BOX_TABLE:            impact++; /* Fall through */
+	case BOX_TABLE_CELL:
+		impact++; /* Fall through */
+	case BOX_TABLE_ROW:
+		impact++; /* Fall through */
+	case BOX_TABLE_ROW_GROUP:
+		impact++; /* Fall through */
+	case BOX_TABLE:
+		impact++; /* Fall through */
 	default:
 		break;
 	}
 
 	/** \todo COL/COL_GROUP */
 	switch (b_src) {
-	case BOX_TABLE_CELL:       impact--; /* Fall through */
-	case BOX_TABLE_ROW:        impact--; /* Fall through */
-	case BOX_TABLE_ROW_GROUP:  impact--; /* Fall through */
-	case BOX_TABLE:            impact--; /* Fall through */
+	case BOX_TABLE_CELL:
+		impact--; /* Fall through */
+	case BOX_TABLE_ROW:
+		impact--; /* Fall through */
+	case BOX_TABLE_ROW_GROUP:
+		impact--; /* Fall through */
+	case BOX_TABLE:
+		impact--; /* Fall through */
 	default:
 		break;
 	}
@@ -168,11 +191,10 @@ table_border_is_more_eyecatching(const css_unit_ctx *unit_len_ctx,
  * \post \a a will be updated with most eyecatching style
  * \post \a a_src will be updated also
  */
-static void
-table_cell_top_process_table(const css_unit_ctx *unit_len_ctx,
-			     struct box *table,
-			     struct border *a,
-			     box_type *a_src)
+static void table_cell_top_process_table(const css_unit_ctx *unit_len_ctx,
+					 struct box *table,
+					 struct border *a,
+					 box_type *a_src)
 {
 	struct border b;
 	box_type b_src;
@@ -181,12 +203,13 @@ table_cell_top_process_table(const css_unit_ctx *unit_len_ctx,
 	b.style = css_computed_border_top_style(table->style);
 	b.color = css_computed_border_top_color(table->style, &b.c);
 	css_computed_border_top_width(table->style, &b.width, &b.unit);
-	b.width = css_unit_len2device_px(table->style, unit_len_ctx,
-			b.width, b.unit);
+	b.width = css_unit_len2device_px(
+		table->style, unit_len_ctx, b.width, b.unit);
 	b.unit = CSS_UNIT_PX;
 	b_src = BOX_TABLE;
 
-	if (table_border_is_more_eyecatching(unit_len_ctx, a, *a_src, &b, b_src)) {
+	if (table_border_is_more_eyecatching(
+		    unit_len_ctx, a, *a_src, &b, b_src)) {
 		*a = b;
 		*a_src = b_src;
 	}
@@ -206,12 +229,11 @@ table_cell_top_process_table(const css_unit_ctx *unit_len_ctx,
  * \post \a a will be updated with most eyecatching style
  * \post \a a_src will be updated also
  */
-static bool
-table_cell_top_process_row(const css_unit_ctx *unit_len_ctx,
-			   struct box *cell,
-			   struct box *row,
-			   struct border *a,
-			   box_type *a_src)
+static bool table_cell_top_process_row(const css_unit_ctx *unit_len_ctx,
+				       struct box *cell,
+				       struct box *row,
+				       struct border *a,
+				       box_type *a_src)
 {
 	struct border b;
 	box_type b_src;
@@ -220,12 +242,13 @@ table_cell_top_process_row(const css_unit_ctx *unit_len_ctx,
 	b.style = css_computed_border_bottom_style(row->style);
 	b.color = css_computed_border_bottom_color(row->style, &b.c);
 	css_computed_border_bottom_width(row->style, &b.width, &b.unit);
-	b.width = css_unit_len2device_px(row->style, unit_len_ctx,
-			b.width, b.unit);
+	b.width = css_unit_len2device_px(
+		row->style, unit_len_ctx, b.width, b.unit);
 	b.unit = CSS_UNIT_PX;
 	b_src = BOX_TABLE_ROW;
 
-	if (table_border_is_more_eyecatching(unit_len_ctx, a, *a_src, &b, b_src)) {
+	if (table_border_is_more_eyecatching(
+		    unit_len_ctx, a, *a_src, &b, b_src)) {
 		*a = b;
 		*a_src = b_src;
 	}
@@ -235,13 +258,13 @@ table_cell_top_process_row(const css_unit_ctx *unit_len_ctx,
 		b.style = css_computed_border_top_style(row->style);
 		b.color = css_computed_border_top_color(row->style, &b.c);
 		css_computed_border_top_width(row->style, &b.width, &b.unit);
-		b.width = css_unit_len2device_px(row->style, unit_len_ctx,
-				b.width, b.unit);
+		b.width = css_unit_len2device_px(
+			row->style, unit_len_ctx, b.width, b.unit);
 		b.unit = CSS_UNIT_PX;
 		b_src = BOX_TABLE_ROW;
 
-		if (table_border_is_more_eyecatching(unit_len_ctx,
-						     a, *a_src, &b, b_src)) {
+		if (table_border_is_more_eyecatching(
+			    unit_len_ctx, a, *a_src, &b, b_src)) {
 			*a = b;
 			*a_src = b_src;
 		}
@@ -261,8 +284,8 @@ table_cell_top_process_row(const css_unit_ctx *unit_len_ctx,
 				    cell->start_column)
 					continue;
 				/* Ignore cells to the right */
-				if (c->start_column > cell->start_column +
-				    cell->columns - 1)
+				if (c->start_column >
+				    cell->start_column + cell->columns - 1)
 					continue;
 
 				/* Flag that we've processed a cell */
@@ -270,22 +293,25 @@ table_cell_top_process_row(const css_unit_ctx *unit_len_ctx,
 
 				/* Consider bottom border */
 				b.style = css_computed_border_bottom_style(
-							c->style);
+					c->style);
 				b.color = css_computed_border_bottom_color(
-							c->style, &b.c);
+					c->style, &b.c);
 				css_computed_border_bottom_width(c->style,
-							&b.width, &b.unit);
-				b.width = css_unit_len2device_px(
-						c->style, unit_len_ctx,
-						b.width, b.unit);
+								 &b.width,
+								 &b.unit);
+				b.width = css_unit_len2device_px(c->style,
+								 unit_len_ctx,
+								 b.width,
+								 b.unit);
 				b.unit = CSS_UNIT_PX;
 				b_src = BOX_TABLE_CELL;
 
-				if (table_border_is_more_eyecatching(unit_len_ctx,
-								     a,
-								     *a_src,
-								     &b,
-								     b_src)) {
+				if (table_border_is_more_eyecatching(
+					    unit_len_ctx,
+					    a,
+					    *a_src,
+					    &b,
+					    b_src)) {
 					*a = b;
 					*a_src = b_src;
 				}
@@ -317,12 +343,11 @@ table_cell_top_process_row(const css_unit_ctx *unit_len_ctx,
  * \post \a a will be updated with most eyecatching style
  * \post \a a_src will be updated also
  */
-static bool
-table_cell_top_process_group(const css_unit_ctx *unit_len_ctx,
-			     struct box *cell,
-			     struct box *group,
-			     struct border *a,
-			     box_type *a_src)
+static bool table_cell_top_process_group(const css_unit_ctx *unit_len_ctx,
+					 struct box *cell,
+					 struct box *group,
+					 struct border *a,
+					 box_type *a_src)
 {
 	struct border b;
 	box_type b_src;
@@ -331,12 +356,13 @@ table_cell_top_process_group(const css_unit_ctx *unit_len_ctx,
 	b.style = css_computed_border_bottom_style(group->style);
 	b.color = css_computed_border_bottom_color(group->style, &b.c);
 	css_computed_border_bottom_width(group->style, &b.width, &b.unit);
-	b.width = css_unit_len2device_px(group->style, unit_len_ctx,
-			b.width, b.unit);
+	b.width = css_unit_len2device_px(
+		group->style, unit_len_ctx, b.width, b.unit);
 	b.unit = CSS_UNIT_PX;
 	b_src = BOX_TABLE_ROW_GROUP;
 
-	if (table_border_is_more_eyecatching(unit_len_ctx, a, *a_src, &b, b_src)) {
+	if (table_border_is_more_eyecatching(
+		    unit_len_ctx, a, *a_src, &b, b_src)) {
 		*a = b;
 		*a_src = b_src;
 	}
@@ -345,8 +371,8 @@ table_cell_top_process_group(const css_unit_ctx *unit_len_ctx,
 		/* Process rows in group, starting with last */
 		struct box *row = group->last;
 
-		while (table_cell_top_process_row(unit_len_ctx, cell, row,
-						  a, a_src) == false) {
+		while (table_cell_top_process_row(
+			       unit_len_ctx, cell, row, a, a_src) == false) {
 			if (row->prev == NULL) {
 				return false;
 			} else {
@@ -358,13 +384,13 @@ table_cell_top_process_group(const css_unit_ctx *unit_len_ctx,
 		b.style = css_computed_border_top_style(group->style);
 		b.color = css_computed_border_top_color(group->style, &b.c);
 		css_computed_border_top_width(group->style, &b.width, &b.unit);
-		b.width = css_unit_len2device_px(group->style, unit_len_ctx,
-				b.width, b.unit);
+		b.width = css_unit_len2device_px(
+			group->style, unit_len_ctx, b.width, b.unit);
 		b.unit = CSS_UNIT_PX;
 		b_src = BOX_TABLE_ROW_GROUP;
 
-		if (table_border_is_more_eyecatching(unit_len_ctx,
-						     a, *a_src, &b, b_src)) {
+		if (table_border_is_more_eyecatching(
+			    unit_len_ctx, a, *a_src, &b, b_src)) {
 			*a = b;
 			*a_src = b_src;
 		}
@@ -382,8 +408,8 @@ table_cell_top_process_group(const css_unit_ctx *unit_len_ctx,
  * \param unit_len_ctx  Length conversion context
  * \param cell     Table cell to consider
  */
-static void
-table_used_left_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *cell)
+static void table_used_left_border_for_cell(const css_unit_ctx *unit_len_ctx,
+					    struct box *cell)
 {
 	struct border a, b;
 	box_type a_src, b_src;
@@ -394,8 +420,8 @@ table_used_left_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *ce
 	a.style = css_computed_border_left_style(cell->style);
 	a.color = css_computed_border_left_color(cell->style, &a.c);
 	css_computed_border_left_width(cell->style, &a.width, &a.unit);
-	a.width = css_unit_len2device_px(cell->style, unit_len_ctx,
-			a.width, a.unit);
+	a.width = css_unit_len2device_px(
+		cell->style, unit_len_ctx, a.width, a.unit);
 	a.unit = CSS_UNIT_PX;
 	a_src = BOX_TABLE_CELL;
 
@@ -411,7 +437,7 @@ table_used_left_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *ce
 				for (prev = row->children; prev != NULL;
 				     prev = prev->next) {
 					if (prev->start_column +
-					    prev->columns ==
+						    prev->columns ==
 					    cell->start_column)
 						break;
 				}
@@ -428,13 +454,13 @@ table_used_left_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *ce
 		b.style = css_computed_border_right_style(prev->style);
 		b.color = css_computed_border_right_color(prev->style, &b.c);
 		css_computed_border_right_width(prev->style, &b.width, &b.unit);
-		b.width = css_unit_len2device_px(prev->style, unit_len_ctx,
-				b.width, b.unit);
+		b.width = css_unit_len2device_px(
+			prev->style, unit_len_ctx, b.width, b.unit);
 		b.unit = CSS_UNIT_PX;
 		b_src = BOX_TABLE_CELL;
 
-		if (table_border_is_more_eyecatching(unit_len_ctx,
-						     &a, a_src, &b, b_src)) {
+		if (table_border_is_more_eyecatching(
+			    unit_len_ctx, &a, a_src, &b, b_src)) {
 			a = b;
 			a_src = b_src;
 		}
@@ -448,18 +474,18 @@ table_used_left_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *ce
 		while (rows-- > 0 && row != NULL) {
 			/* Spanned rows -- consider their left border */
 			b.style = css_computed_border_left_style(row->style);
-			b.color = css_computed_border_left_color(
-								 row->style, &b.c);
-			css_computed_border_left_width(
-						       row->style, &b.width, &b.unit);
+			b.color = css_computed_border_left_color(row->style,
+								 &b.c);
+			css_computed_border_left_width(row->style,
+						       &b.width,
+						       &b.unit);
 			b.width = css_unit_len2device_px(
-					row->style, unit_len_ctx,
-					b.width, b.unit);
+				row->style, unit_len_ctx, b.width, b.unit);
 			b.unit = CSS_UNIT_PX;
 			b_src = BOX_TABLE_ROW;
 
-			if (table_border_is_more_eyecatching(unit_len_ctx,
-							     &a, a_src, &b, b_src)) {
+			if (table_border_is_more_eyecatching(
+				    unit_len_ctx, &a, a_src, &b, b_src)) {
 				a = b;
 				a_src = b_src;
 			}
@@ -473,13 +499,13 @@ table_used_left_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *ce
 		b.style = css_computed_border_left_style(group->style);
 		b.color = css_computed_border_left_color(group->style, &b.c);
 		css_computed_border_left_width(group->style, &b.width, &b.unit);
-		b.width = css_unit_len2device_px(group->style, unit_len_ctx,
-				b.width, b.unit);
+		b.width = css_unit_len2device_px(
+			group->style, unit_len_ctx, b.width, b.unit);
 		b.unit = CSS_UNIT_PX;
 		b_src = BOX_TABLE_ROW_GROUP;
 
-		if (table_border_is_more_eyecatching(unit_len_ctx,
-						     &a, a_src, &b, b_src)) {
+		if (table_border_is_more_eyecatching(
+			    unit_len_ctx, &a, a_src, &b, b_src)) {
 			a = b;
 			a_src = b_src;
 		}
@@ -488,13 +514,13 @@ table_used_left_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *ce
 		b.style = css_computed_border_left_style(table->style);
 		b.color = css_computed_border_left_color(table->style, &b.c);
 		css_computed_border_left_width(table->style, &b.width, &b.unit);
-		b.width = css_unit_len2device_px(table->style, unit_len_ctx,
-				b.width, b.unit);
+		b.width = css_unit_len2device_px(
+			table->style, unit_len_ctx, b.width, b.unit);
 		b.unit = CSS_UNIT_PX;
 		b_src = BOX_TABLE;
 
-		if (table_border_is_more_eyecatching(unit_len_ctx,
-						     &a, a_src, &b, b_src)) {
+		if (table_border_is_more_eyecatching(
+			    unit_len_ctx, &a, a_src, &b, b_src)) {
 			a = b;
 			a_src = b_src;
 		}
@@ -504,7 +530,7 @@ table_used_left_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *ce
 	cell->border[LEFT].style = a.style;
 	cell->border[LEFT].c = a.c;
 	cell->border[LEFT].width = FIXTOINT(css_unit_len2device_px(
-			cell->style, unit_len_ctx, a.width, a.unit));
+		cell->style, unit_len_ctx, a.width, a.unit));
 }
 
 
@@ -514,8 +540,8 @@ table_used_left_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *ce
  * \param unit_len_ctx  Length conversion context
  * \param cell     Table cell to consider
  */
-static void
-table_used_top_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *cell)
+static void table_used_top_border_for_cell(const css_unit_ctx *unit_len_ctx,
+					   struct box *cell)
 {
 	struct border a, b;
 	box_type a_src, b_src;
@@ -526,8 +552,8 @@ table_used_top_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *cel
 	a.style = css_computed_border_top_style(cell->style);
 	css_computed_border_top_color(cell->style, &a.c);
 	css_computed_border_top_width(cell->style, &a.width, &a.unit);
-	a.width = css_unit_len2device_px(cell->style, unit_len_ctx,
-			a.width, a.unit);
+	a.width = css_unit_len2device_px(
+		cell->style, unit_len_ctx, a.width, a.unit);
 	a.unit = CSS_UNIT_PX;
 	a_src = BOX_TABLE_CELL;
 
@@ -535,20 +561,22 @@ table_used_top_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *cel
 	b.style = css_computed_border_top_style(row->style);
 	css_computed_border_top_color(row->style, &b.c);
 	css_computed_border_top_width(row->style, &b.width, &b.unit);
-	b.width = css_unit_len2device_px(row->style, unit_len_ctx,
-			b.width, b.unit);
+	b.width = css_unit_len2device_px(
+		row->style, unit_len_ctx, b.width, b.unit);
 	b.unit = CSS_UNIT_PX;
 	b_src = BOX_TABLE_ROW;
 
-	if (table_border_is_more_eyecatching(unit_len_ctx, &a, a_src, &b, b_src)) {
+	if (table_border_is_more_eyecatching(
+		    unit_len_ctx, &a, a_src, &b, b_src)) {
 		a = b;
 		a_src = b_src;
 	}
 
 	if (row->prev != NULL) {
 		/* Consider row(s) above */
-		while (table_cell_top_process_row(unit_len_ctx, cell, row->prev,
-						  &a, &a_src) == false) {
+		while (table_cell_top_process_row(
+			       unit_len_ctx, cell, row->prev, &a, &a_src) ==
+		       false) {
 			if (row->prev->prev == NULL) {
 				/* Consider row group */
 				process_group = true;
@@ -568,31 +596,35 @@ table_used_top_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *cel
 		b.style = css_computed_border_top_style(group->style);
 		b.color = css_computed_border_top_color(group->style, &b.c);
 		css_computed_border_top_width(group->style, &b.width, &b.unit);
-		b.width = css_unit_len2device_px(group->style, unit_len_ctx,
-				b.width, b.unit);
+		b.width = css_unit_len2device_px(
+			group->style, unit_len_ctx, b.width, b.unit);
 		b.unit = CSS_UNIT_PX;
 		b_src = BOX_TABLE_ROW_GROUP;
 
-		if (table_border_is_more_eyecatching(unit_len_ctx,
-						     &a, a_src, &b, b_src)) {
+		if (table_border_is_more_eyecatching(
+			    unit_len_ctx, &a, a_src, &b, b_src)) {
 			a = b;
 			a_src = b_src;
 		}
 
 		if (group->prev == NULL) {
 			/* Top border of table */
-			table_cell_top_process_table(unit_len_ctx,
-						     group->parent, &a, &a_src);
+			table_cell_top_process_table(
+				unit_len_ctx, group->parent, &a, &a_src);
 		} else {
 			/* Process previous group(s) */
 			while (table_cell_top_process_group(unit_len_ctx,
-							    cell, group->prev,
-							    &a, &a_src) == false) {
+							    cell,
+							    group->prev,
+							    &a,
+							    &a_src) == false) {
 				if (group->prev->prev == NULL) {
 					/* Top border of table */
-					table_cell_top_process_table(unit_len_ctx,
-								     group->parent,
-								     &a, &a_src);
+					table_cell_top_process_table(
+						unit_len_ctx,
+						group->parent,
+						&a,
+						&a_src);
 					break;
 				} else {
 					group = group->prev;
@@ -605,7 +637,7 @@ table_used_top_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *cel
 	cell->border[TOP].style = a.style;
 	cell->border[TOP].c = a.c;
 	cell->border[TOP].width = FIXTOINT(css_unit_len2device_px(
-			cell->style, unit_len_ctx, a.width, a.unit));
+		cell->style, unit_len_ctx, a.width, a.unit));
 }
 
 /**
@@ -614,8 +646,8 @@ table_used_top_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *cel
  * \param unit_len_ctx  Length conversion context
  * \param cell     Table cell to consider
  */
-static void
-table_used_right_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *cell)
+static void table_used_right_border_for_cell(const css_unit_ctx *unit_len_ctx,
+					     struct box *cell)
 {
 	struct border a, b;
 	box_type a_src, b_src;
@@ -626,13 +658,14 @@ table_used_right_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *c
 	a.style = css_computed_border_right_style(cell->style);
 	css_computed_border_right_color(cell->style, &a.c);
 	css_computed_border_right_width(cell->style, &a.width, &a.unit);
-	a.width = css_unit_len2device_px(cell->style, unit_len_ctx,
-			a.width, a.unit);
+	a.width = css_unit_len2device_px(
+		cell->style, unit_len_ctx, a.width, a.unit);
 	a.unit = CSS_UNIT_PX;
 	a_src = BOX_TABLE_CELL;
 
-	if (cell->next != NULL || cell->start_column + cell->columns !=
-	    cell->parent->parent->parent->columns) {
+	if (cell->next != NULL ||
+	    cell->start_column + cell->columns !=
+		    cell->parent->parent->parent->columns) {
 		/* Cell is not at right edge of table -- no right border */
 		a.style = CSS_BORDER_STYLE_NONE;
 		a.width = 0;
@@ -653,14 +686,12 @@ table_used_right_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *c
 							&b.width,
 							&b.unit);
 			b.width = css_unit_len2device_px(
-					row->style, unit_len_ctx,
-					b.width, b.unit);
+				row->style, unit_len_ctx, b.width, b.unit);
 			b.unit = CSS_UNIT_PX;
 			b_src = BOX_TABLE_ROW;
 
-			if (table_border_is_more_eyecatching(unit_len_ctx,
-							     &a, a_src,
-							     &b, b_src)) {
+			if (table_border_is_more_eyecatching(
+				    unit_len_ctx, &a, a_src, &b, b_src)) {
 				a = b;
 				a_src = b_src;
 			}
@@ -674,14 +705,15 @@ table_used_right_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *c
 		b.style = css_computed_border_right_style(group->style);
 		b.color = css_computed_border_right_color(group->style, &b.c);
 		css_computed_border_right_width(group->style,
-						&b.width, &b.unit);
-		b.width = css_unit_len2device_px(group->style, unit_len_ctx,
-				b.width, b.unit);
+						&b.width,
+						&b.unit);
+		b.width = css_unit_len2device_px(
+			group->style, unit_len_ctx, b.width, b.unit);
 		b.unit = CSS_UNIT_PX;
 		b_src = BOX_TABLE_ROW_GROUP;
 
-		if (table_border_is_more_eyecatching(unit_len_ctx,
-						     &a, a_src, &b, b_src)) {
+		if (table_border_is_more_eyecatching(
+			    unit_len_ctx, &a, a_src, &b, b_src)) {
 			a = b;
 			a_src = b_src;
 		}
@@ -690,15 +722,15 @@ table_used_right_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *c
 		b.style = css_computed_border_right_style(table->style);
 		b.color = css_computed_border_right_color(table->style, &b.c);
 		css_computed_border_right_width(table->style,
-						&b.width, &b.unit);
-		b.width = css_unit_len2device_px(table->style, unit_len_ctx,
-				b.width, b.unit);
+						&b.width,
+						&b.unit);
+		b.width = css_unit_len2device_px(
+			table->style, unit_len_ctx, b.width, b.unit);
 		b.unit = CSS_UNIT_PX;
 		b_src = BOX_TABLE;
 
-		if (table_border_is_more_eyecatching(unit_len_ctx,
-						     &a, a_src,
-						     &b, b_src)) {
+		if (table_border_is_more_eyecatching(
+			    unit_len_ctx, &a, a_src, &b, b_src)) {
 			a = b;
 			a_src = b_src;
 		}
@@ -708,7 +740,7 @@ table_used_right_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *c
 	cell->border[RIGHT].style = a.style;
 	cell->border[RIGHT].c = a.c;
 	cell->border[RIGHT].width = FIXTOINT(css_unit_len2device_px(
-			cell->style, unit_len_ctx, a.width, a.unit));
+		cell->style, unit_len_ctx, a.width, a.unit));
 }
 
 
@@ -718,9 +750,8 @@ table_used_right_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *c
  * \param unit_len_ctx  Length conversion context
  * \param cell     Table cell to consider
  */
-static void
-table_used_bottom_border_for_cell(const css_unit_ctx *unit_len_ctx,
-				  struct box *cell)
+static void table_used_bottom_border_for_cell(const css_unit_ctx *unit_len_ctx,
+					      struct box *cell)
 {
 	struct border a, b;
 	box_type a_src, b_src;
@@ -731,8 +762,8 @@ table_used_bottom_border_for_cell(const css_unit_ctx *unit_len_ctx,
 	a.style = css_computed_border_bottom_style(cell->style);
 	css_computed_border_bottom_color(cell->style, &a.c);
 	css_computed_border_bottom_width(cell->style, &a.width, &a.unit);
-	a.width = css_unit_len2device_px(cell->style, unit_len_ctx,
-			a.width, a.unit);
+	a.width = css_unit_len2device_px(
+		cell->style, unit_len_ctx, a.width, a.unit);
 	a.unit = CSS_UNIT_PX;
 	a_src = BOX_TABLE_CELL;
 
@@ -756,13 +787,13 @@ table_used_bottom_border_for_cell(const css_unit_ctx *unit_len_ctx,
 		b.style = css_computed_border_bottom_style(row->style);
 		b.color = css_computed_border_bottom_color(row->style, &b.c);
 		css_computed_border_bottom_width(row->style, &b.width, &b.unit);
-		b.width = css_unit_len2device_px(row->style, unit_len_ctx,
-				b.width, b.unit);
+		b.width = css_unit_len2device_px(
+			row->style, unit_len_ctx, b.width, b.unit);
 		b.unit = CSS_UNIT_PX;
 		b_src = BOX_TABLE_ROW;
 
-		if (table_border_is_more_eyecatching(unit_len_ctx,
-						     &a, a_src, &b, b_src)) {
+		if (table_border_is_more_eyecatching(
+			    unit_len_ctx, &a, a_src, &b, b_src)) {
 			a = b;
 			a_src = b_src;
 		}
@@ -771,14 +802,15 @@ table_used_bottom_border_for_cell(const css_unit_ctx *unit_len_ctx,
 		b.style = css_computed_border_bottom_style(group->style);
 		b.color = css_computed_border_bottom_color(group->style, &b.c);
 		css_computed_border_bottom_width(group->style,
-						 &b.width, &b.unit);
-		b.width = css_unit_len2device_px(group->style, unit_len_ctx,
-				b.width, b.unit);
+						 &b.width,
+						 &b.unit);
+		b.width = css_unit_len2device_px(
+			group->style, unit_len_ctx, b.width, b.unit);
 		b.unit = CSS_UNIT_PX;
 		b_src = BOX_TABLE_ROW_GROUP;
 
-		if (table_border_is_more_eyecatching(unit_len_ctx,
-						     &a, a_src, &b, b_src)) {
+		if (table_border_is_more_eyecatching(
+			    unit_len_ctx, &a, a_src, &b, b_src)) {
 			a = b;
 			a_src = b_src;
 		}
@@ -787,14 +819,15 @@ table_used_bottom_border_for_cell(const css_unit_ctx *unit_len_ctx,
 		b.style = css_computed_border_bottom_style(table->style);
 		b.color = css_computed_border_bottom_color(table->style, &b.c);
 		css_computed_border_bottom_width(table->style,
-						 &b.width, &b.unit);
-		b.width = css_unit_len2device_px(table->style, unit_len_ctx,
-				b.width, b.unit);
+						 &b.width,
+						 &b.unit);
+		b.width = css_unit_len2device_px(
+			table->style, unit_len_ctx, b.width, b.unit);
 		b.unit = CSS_UNIT_PX;
 		b_src = BOX_TABLE;
 
-		if (table_border_is_more_eyecatching(unit_len_ctx,
-						     &a, a_src, &b, b_src)) {
+		if (table_border_is_more_eyecatching(
+			    unit_len_ctx, &a, a_src, &b, b_src)) {
 			a = b;
 		}
 	}
@@ -803,13 +836,13 @@ table_used_bottom_border_for_cell(const css_unit_ctx *unit_len_ctx,
 	cell->border[BOTTOM].style = a.style;
 	cell->border[BOTTOM].c = a.c;
 	cell->border[BOTTOM].width = FIXTOINT(css_unit_len2device_px(
-			cell->style, unit_len_ctx, a.width, a.unit));
+		cell->style, unit_len_ctx, a.width, a.unit));
 }
 
 
 /* exported interface documented in html/table.h */
-bool
-table_calculate_column_types(const css_unit_ctx *unit_len_ctx, struct box *table)
+bool table_calculate_column_types(const css_unit_ctx *unit_len_ctx,
+				  struct box *table)
 {
 	unsigned int i, j;
 	struct column *col;
@@ -830,7 +863,8 @@ table_calculate_column_types(const css_unit_ctx *unit_len_ctx, struct box *table
 	}
 
 	/* 1st pass: cells with colspan 1 only */
-	for (row_group = table->children; row_group; row_group =row_group->next)
+	for (row_group = table->children; row_group;
+	     row_group = row_group->next)
 		for (row = row_group->children; row; row = row->next)
 			for (cell = row->children; cell; cell = cell->next) {
 				enum css_width_e type;
@@ -845,22 +879,28 @@ table_calculate_column_types(const css_unit_ctx *unit_len_ctx, struct box *table
 				i = cell->start_column;
 
 				if (css_computed_position(cell->style) !=
-				    CSS_POSITION_ABSOLUTE &&
+					    CSS_POSITION_ABSOLUTE &&
 				    css_computed_position(cell->style) !=
-				    CSS_POSITION_FIXED) {
+					    CSS_POSITION_FIXED) {
 					col[i].positioned = false;
 				}
 
-				type = css_computed_width(cell->style, &value, &unit);
+				type = css_computed_width(cell->style,
+							  &value,
+							  &unit);
 
-				/* fixed width takes priority over any other width type */
+				/* fixed width takes priority over any other
+				 * width type */
 				if (col[i].type != COLUMN_WIDTH_FIXED &&
-				    type == CSS_WIDTH_SET && unit != CSS_UNIT_PCT) {
+				    type == CSS_WIDTH_SET &&
+				    unit != CSS_UNIT_PCT) {
 					col[i].type = COLUMN_WIDTH_FIXED;
-					col[i].width = FIXTOINT(css_unit_len2device_px(
+					col[i].width = FIXTOINT(
+						css_unit_len2device_px(
 							cell->style,
 							unit_len_ctx,
-							value, unit));
+							value,
+							unit));
 					if (col[i].width < 0)
 						col[i].width = 0;
 					continue;
@@ -869,7 +909,8 @@ table_calculate_column_types(const css_unit_ctx *unit_len_ctx, struct box *table
 				if (col[i].type != COLUMN_WIDTH_UNKNOWN)
 					continue;
 
-				if (type == CSS_WIDTH_SET && unit == CSS_UNIT_PCT) {
+				if (type == CSS_WIDTH_SET &&
+				    unit == CSS_UNIT_PCT) {
 					col[i].type = COLUMN_WIDTH_PERCENT;
 					col[i].width = FIXTOINT(value);
 					if (col[i].width < 0)
@@ -880,13 +921,14 @@ table_calculate_column_types(const css_unit_ctx *unit_len_ctx, struct box *table
 			}
 
 	/* 2nd pass: cells which span multiple columns */
-	for (row_group = table->children; row_group; row_group =row_group->next)
+	for (row_group = table->children; row_group;
+	     row_group = row_group->next)
 		for (row = row_group->children; row; row = row->next)
 			for (cell = row->children; cell; cell = cell->next) {
 				unsigned int fixed_columns = 0,
-					percent_columns = 0,
-					auto_columns = 0,
-					unknown_columns = 0;
+					     percent_columns = 0,
+					     auto_columns = 0,
+					     unknown_columns = 0;
 				int fixed_width = 0, percent_width = 0;
 				enum css_width_e type;
 				css_fixed value = 0;
@@ -902,13 +944,17 @@ table_calculate_column_types(const css_unit_ctx *unit_len_ctx, struct box *table
 
 				/* count column types in spanned cells */
 				for (j = 0; j != cell->columns; j++) {
-					if (col[i + j].type == COLUMN_WIDTH_FIXED) {
+					if (col[i + j].type ==
+					    COLUMN_WIDTH_FIXED) {
 						fixed_width += col[i + j].width;
 						fixed_columns++;
-					} else if (col[i + j].type == COLUMN_WIDTH_PERCENT) {
-						percent_width += col[i + j].width;
+					} else if (col[i + j].type ==
+						   COLUMN_WIDTH_PERCENT) {
+						percent_width +=
+							col[i + j].width;
 						percent_columns++;
-					} else if (col[i + j].type == COLUMN_WIDTH_AUTO) {
+					} else if (col[i + j].type ==
+						   COLUMN_WIDTH_AUTO) {
 						auto_columns++;
 					} else {
 						unknown_columns++;
@@ -918,40 +964,56 @@ table_calculate_column_types(const css_unit_ctx *unit_len_ctx, struct box *table
 				if (!unknown_columns)
 					continue;
 
-				type = css_computed_width(cell->style, &value, &unit);
+				type = css_computed_width(cell->style,
+							  &value,
+							  &unit);
 
-				/* if cell is fixed width, and all spanned columns are fixed
-				 * or unknown width, split extra width among unknown columns */
-				if (type == CSS_WIDTH_SET && unit != CSS_UNIT_PCT &&
+				/* if cell is fixed width, and all spanned
+				 * columns are fixed or unknown width, split
+				 * extra width among unknown columns */
+				if (type == CSS_WIDTH_SET &&
+				    unit != CSS_UNIT_PCT &&
 				    fixed_columns + unknown_columns ==
-				    cell->columns) {
-					int width = (FIXTOFLT(css_unit_len2device_px(
-							cell->style,
-							unit_len_ctx,
-							value, unit)) -
-						fixed_width) / unknown_columns;
+					    cell->columns) {
+					int width =
+						(FIXTOFLT(
+							 css_unit_len2device_px(
+								 cell->style,
+								 unit_len_ctx,
+								 value,
+								 unit)) -
+						 fixed_width) /
+						unknown_columns;
 					if (width < 0)
 						width = 0;
 					for (j = 0; j != cell->columns; j++) {
-						if (col[i + j].type == COLUMN_WIDTH_UNKNOWN) {
-							col[i + j].type = COLUMN_WIDTH_FIXED;
-							col[i + j].width = width;
+						if (col[i + j].type ==
+						    COLUMN_WIDTH_UNKNOWN) {
+							col[i + j].type =
+								COLUMN_WIDTH_FIXED;
+							col[i + j].width =
+								width;
 						}
 					}
 				}
 
 				/* as above for percentage width */
-				if (type == CSS_WIDTH_SET && unit == CSS_UNIT_PCT &&
+				if (type == CSS_WIDTH_SET &&
+				    unit == CSS_UNIT_PCT &&
 				    percent_columns + unknown_columns ==
-				    cell->columns) {
+					    cell->columns) {
 					int width = (FIXTOFLT(value) -
-						     percent_width) / unknown_columns;
+						     percent_width) /
+						    unknown_columns;
 					if (width < 0)
 						width = 0;
 					for (j = 0; j != cell->columns; j++) {
-						if (col[i + j].type == COLUMN_WIDTH_UNKNOWN) {
-							col[i + j].type = COLUMN_WIDTH_PERCENT;
-							col[i + j].width = width;
+						if (col[i + j].type ==
+						    COLUMN_WIDTH_UNKNOWN) {
+							col[i + j].type =
+								COLUMN_WIDTH_PERCENT;
+							col[i + j].width =
+								width;
 						}
 					}
 				}
@@ -965,17 +1027,18 @@ table_calculate_column_types(const css_unit_ctx *unit_len_ctx, struct box *table
 
 #ifdef TABLE_DEBUG
 	for (i = 0; i != table->columns; i++)
-		NSLOG(netsurf, INFO,
+		NSLOG(netsurf,
+		      INFO,
 		      "table %p, column %u: type %s, width %i",
 		      table,
 		      i,
 		      ((const char *[]){
-					"UNKNOWN",
-					"FIXED",
-					"AUTO",
-					"PERCENT",
-					"RELATIVE",
-				      })[col[i].type],
+			      "UNKNOWN",
+			      "FIXED",
+			      "AUTO",
+			      "PERCENT",
+			      "RELATIVE",
+		      })[col[i].type],
 		      col[i].width);
 #endif
 
@@ -984,7 +1047,8 @@ table_calculate_column_types(const css_unit_ctx *unit_len_ctx, struct box *table
 
 
 /* exported interface documented in html/table.h */
-void table_used_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *cell)
+void table_used_border_for_cell(const css_unit_ctx *unit_len_ctx,
+				struct box *cell)
 {
 	int side;
 
@@ -996,48 +1060,40 @@ void table_used_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *ce
 		css_unit unit = CSS_UNIT_PX;
 
 		/* Left border */
-		cell->border[LEFT].style =
-			css_computed_border_left_style(cell->style);
+		cell->border[LEFT].style = css_computed_border_left_style(
+			cell->style);
 		css_computed_border_left_color(cell->style,
 					       &cell->border[LEFT].c);
 		css_computed_border_left_width(cell->style, &width, &unit);
-		cell->border[LEFT].width =
-			FIXTOINT(css_unit_len2device_px(
-					cell->style, unit_len_ctx,
-					width, unit));
+		cell->border[LEFT].width = FIXTOINT(css_unit_len2device_px(
+			cell->style, unit_len_ctx, width, unit));
 
 		/* Top border */
-		cell->border[TOP].style =
-			css_computed_border_top_style(cell->style);
+		cell->border[TOP].style = css_computed_border_top_style(
+			cell->style);
 		css_computed_border_top_color(cell->style,
 					      &cell->border[TOP].c);
 		css_computed_border_top_width(cell->style, &width, &unit);
-		cell->border[TOP].width =
-			FIXTOINT(css_unit_len2device_px(
-					cell->style, unit_len_ctx,
-					width, unit));
+		cell->border[TOP].width = FIXTOINT(css_unit_len2device_px(
+			cell->style, unit_len_ctx, width, unit));
 
 		/* Right border */
-		cell->border[RIGHT].style =
-			css_computed_border_right_style(cell->style);
+		cell->border[RIGHT].style = css_computed_border_right_style(
+			cell->style);
 		css_computed_border_right_color(cell->style,
 						&cell->border[RIGHT].c);
 		css_computed_border_right_width(cell->style, &width, &unit);
-		cell->border[RIGHT].width =
-			FIXTOINT(css_unit_len2device_px(
-					cell->style, unit_len_ctx,
-					width, unit));
+		cell->border[RIGHT].width = FIXTOINT(css_unit_len2device_px(
+			cell->style, unit_len_ctx, width, unit));
 
 		/* Bottom border */
-		cell->border[BOTTOM].style =
-			css_computed_border_bottom_style(cell->style);
+		cell->border[BOTTOM].style = css_computed_border_bottom_style(
+			cell->style);
 		css_computed_border_bottom_color(cell->style,
 						 &cell->border[BOTTOM].c);
 		css_computed_border_bottom_width(cell->style, &width, &unit);
-		cell->border[BOTTOM].width =
-			FIXTOINT(css_unit_len2device_px(
-					cell->style, unit_len_ctx,
-					width, unit));
+		cell->border[BOTTOM].width = FIXTOINT(css_unit_len2device_px(
+			cell->style, unit_len_ctx, width, unit));
 	} else {
 		/* Left border */
 		table_used_left_border_for_cell(unit_len_ctx, cell);
@@ -1056,8 +1112,7 @@ void table_used_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *ce
 	 * hidden or none have zero width. (c.f. layout_find_dimensions) */
 	for (side = 0; side != 4; side++) {
 		if (cell->border[side].style == CSS_BORDER_STYLE_HIDDEN ||
-		    cell->border[side].style ==
-		    CSS_BORDER_STYLE_NONE)
+		    cell->border[side].style == CSS_BORDER_STYLE_NONE)
 			cell->border[side].width = 0;
 	}
 }

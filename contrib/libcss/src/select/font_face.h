@@ -41,9 +41,10 @@ css_error css__font_face_create(css_font_face **result);
 css_error css__font_face_destroy(css_font_face *font_face);
 
 css_error css__font_face_set_font_family(css_font_face *font_face,
-		lwc_string *font_family);
+					 lwc_string *font_family);
 
 css_error css__font_face_set_srcs(css_font_face *font_face,
-		css_font_face_src *srcs, uint32_t n_srcs);
+				  css_font_face_src *srcs,
+				  uint32_t n_srcs);
 
 #endif

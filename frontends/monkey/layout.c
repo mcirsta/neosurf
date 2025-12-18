@@ -30,10 +30,12 @@
 #include "monkey/layout.h"
 
 static nserror nsfont_width(const plot_font_style_t *fstyle,
-			    const char *string, size_t length,
+			    const char *string,
+			    size_t length,
 			    int *width)
 {
-	*width = (fstyle->size * utf8_bounded_length(string, length)) / PLOT_STYLE_SCALE;
+	*width = (fstyle->size * utf8_bounded_length(string, length)) /
+		 PLOT_STYLE_SCALE;
 	return NSERROR_OK;
 }
 
@@ -50,8 +52,11 @@ static nserror nsfont_width(const plot_font_style_t *fstyle,
  */
 
 static nserror nsfont_position_in_string(const plot_font_style_t *fstyle,
-					 const char *string, size_t length,
-					 int x, size_t *char_offset, int *actual_x)
+					 const char *string,
+					 size_t length,
+					 int x,
+					 size_t *char_offset,
+					 int *actual_x)
 {
 	*char_offset = x / (fstyle->size / PLOT_STYLE_SCALE);
 	if (*char_offset > length)
@@ -85,8 +90,11 @@ static nserror nsfont_position_in_string(const plot_font_style_t *fstyle,
  */
 
 static nserror nsfont_split(const plot_font_style_t *fstyle,
-			    const char *string, size_t length,
-			    int x, size_t *char_offset, int *actual_x)
+			    const char *string,
+			    size_t length,
+			    int x,
+			    size_t *char_offset,
+			    int *actual_x)
 {
 	int c_off = *char_offset = x / (fstyle->size / PLOT_STYLE_SCALE);
 	if (*char_offset > length) {
@@ -99,7 +107,8 @@ static nserror nsfont_split(const plot_font_style_t *fstyle,
 		}
 		if (*char_offset == 0) {
 			*char_offset = c_off;
-			while (*char_offset < length && string[*char_offset] != ' ') {
+			while (*char_offset < length &&
+			       string[*char_offset] != ' ') {
 				(*char_offset)++;
 			}
 		}

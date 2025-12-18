@@ -14,8 +14,8 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_speak(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error
+css__cascade_speak(uint32_t opv, css_style *style, css_select_state *state)
 {
 	UNUSED(style);
 
@@ -29,16 +29,18 @@ css_error css__cascade_speak(uint32_t opv, css_style *style,
 		}
 	}
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			getFlagValue(opv))) {
+	if (css__outranks_existing(getOpcode(opv),
+				   isImportant(opv),
+				   state,
+				   getFlagValue(opv))) {
 		/** \todo speak */
 	}
 
 	return CSS_OK;
 }
 
-css_error css__set_speak_from_hint(const css_hint *hint,
-		css_computed_style *style)
+css_error
+css__set_speak_from_hint(const css_hint *hint, css_computed_style *style)
 {
 	UNUSED(hint);
 	UNUSED(style);
@@ -53,9 +55,8 @@ css_error css__initial_speak(css_select_state *state)
 	return CSS_OK;
 }
 
-css_error css__copy_speak(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error
+css__copy_speak(const css_computed_style *from, css_computed_style *to)
 {
 	UNUSED(from);
 	UNUSED(to);
@@ -64,8 +65,8 @@ css_error css__copy_speak(
 }
 
 css_error css__compose_speak(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+			     const css_computed_style *child,
+			     css_computed_style *result)
 {
 	UNUSED(parent);
 	UNUSED(child);
@@ -73,4 +74,3 @@ css_error css__compose_speak(const css_computed_style *parent,
 
 	return CSS_OK;
 }
-

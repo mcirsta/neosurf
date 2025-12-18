@@ -12,9 +12,9 @@
 /**
  * A function pointer type for a comparator.
  */
-typedef int (*comparator)(const void* a, const void* b);
+typedef int (*comparator)(const void *a, const void *b);
 
-int int_comparator(const void* a, const void* b);
+int int_comparator(const void *a, const void *b);
 
 int str_icmp(const void *a, const void *b);
 int str_icmp_r(const void *a, const void *b);

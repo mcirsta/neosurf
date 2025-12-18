@@ -9,8 +9,7 @@
 #define libcss_unit_h_
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #include <libcss/types.h>
@@ -23,10 +22,9 @@ extern "C"
  * \param[in]  unit   Either CSS_UNIT_EX, CSS_UNIT_CH, or CSS_UNIT_IC.
  * \return length in CSS pixels.
  */
-typedef css_fixed (*css_unit_len_measure)(
-		void *pw,
-		const css_computed_style *style,
-		const css_unit unit);
+typedef css_fixed (*css_unit_len_measure)(void *pw,
+					  const css_computed_style *style,
+					  const css_unit unit);
 
 /**
  * LibCSS unit conversion context.
@@ -82,9 +80,8 @@ typedef struct css_unit_ctx {
  * \param[in] device_dpi  Device dots per inch.
  * \return Length in device pixels.
  */
-static inline css_fixed css_unit_css2device_px(
-		const css_fixed css_pixels,
-		const css_fixed device_dpi)
+static inline css_fixed
+css_unit_css2device_px(const css_fixed css_pixels, const css_fixed device_dpi)
 {
 	return FDIV(FMUL(css_pixels, device_dpi), F_96);
 }
@@ -96,9 +93,8 @@ static inline css_fixed css_unit_css2device_px(
  * \param[in] device_dpi     Device dots per inch.
  * \return Length in css pixels.
  */
-static inline css_fixed css_unit_device2css_px(
-		const css_fixed device_pixels,
-		const css_fixed device_dpi)
+static inline css_fixed css_unit_device2css_px(const css_fixed device_pixels,
+					       const css_fixed device_dpi)
 {
 	return FDIV(FMUL(device_pixels, F_96), device_dpi);
 }
@@ -112,11 +108,10 @@ static inline css_fixed css_unit_device2css_px(
  * \param[in]  unit    Current unit of length.
  * \return A length in points.
  */
-css_fixed css_unit_font_size_len2pt(
-		const css_computed_style *style,
-		const css_unit_ctx *ctx,
-		const css_fixed length,
-		const css_unit unit);
+css_fixed css_unit_font_size_len2pt(const css_computed_style *style,
+				    const css_unit_ctx *ctx,
+				    const css_fixed length,
+				    const css_unit unit);
 
 /**
  * Convert a length to CSS pixels.
@@ -127,11 +122,10 @@ css_fixed css_unit_font_size_len2pt(
  * \param[in]  unit    Current unit of length.
  * \return A length in CSS pixels.
  */
-css_fixed css_unit_len2css_px(
-		const css_computed_style *style,
-		const css_unit_ctx *ctx,
-		const css_fixed length,
-		const css_unit unit);
+css_fixed css_unit_len2css_px(const css_computed_style *style,
+			      const css_unit_ctx *ctx,
+			      const css_fixed length,
+			      const css_unit unit);
 
 /**
  * Convert a length to device pixels.
@@ -142,15 +136,13 @@ css_fixed css_unit_len2css_px(
  * \param[in]  unit    Current unit of length.
  * \return A length in device pixels.
  */
-css_fixed css_unit_len2device_px(
-		const css_computed_style *style,
-		const css_unit_ctx *ctx,
-		const css_fixed length,
-		const css_unit unit);
+css_fixed css_unit_len2device_px(const css_computed_style *style,
+				 const css_unit_ctx *ctx,
+				 const css_fixed length,
+				 const css_unit unit);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-

@@ -27,7 +27,7 @@
  * controlled by the platform-specific code (see image/bitmap.h for
  * detials). All image content handlers convert into this format and
  * pass it to the plot functions for display,
- * 
+ *
  * This cache maintains a link between the underlying original content
  * and the intermediate representation. It is intended to be flexable
  * and either manage the bitmap plotting completely or give the image
@@ -44,7 +44,7 @@ struct content;
 struct content_redraw_data;
 struct redraw_context;
 
-typedef struct bitmap * (image_cache_convert_fn) (struct content *content);
+typedef struct bitmap *(image_cache_convert_fn)(struct content * content);
 
 struct image_cache_parameters {
 	/** How frequently the background cache clean process is run (ms) */
@@ -60,24 +60,26 @@ struct image_cache_parameters {
 	size_t speculative_small;
 };
 
-/** Initialise the image cache 
+/** Initialise the image cache
  *
  * @param image_cache_parameters The control parameters for the image cache
  */
-nserror image_cache_init(const struct image_cache_parameters *image_cache_parameters);
+nserror
+image_cache_init(const struct image_cache_parameters *image_cache_parameters);
 nserror image_cache_fini(void);
 
 void image_cache_purge_bitmaps(void);
 
-/** adds an image content to be cached. 
- * 
+/** adds an image content to be cached.
+ *
  * @param content The content handle used as a key
  * @param bitmap A bitmap representing the already converted content or NULL.
- * @param convert A function pointer to convert the content into a bitmap or NULL.
+ * @param convert A function pointer to convert the content into a bitmap or
+ * NULL.
  * @return A netsurf error code.
  */
-nserror image_cache_add(struct content *content, 
-			struct bitmap *bitmap, 
+nserror image_cache_add(struct content *content,
+			struct bitmap *bitmap,
 			image_cache_convert_fn *convert);
 
 nserror image_cache_remove(struct content *content);
@@ -94,7 +96,7 @@ struct bitmap *image_cache_find_bitmap(struct content *c);
  * This allows for image content handlers to ask the cache if a bitmap
  * should be generated before it is added to the cache. This is the
  * same decision logic used to decide to perform an immediate
- * conversion when a content is initially added to the cache. 
+ * conversion when a content is initially added to the cache.
  *
  * @param c The content to be considered.
  * @return true if a speculative conversion is desired false otherwise.
@@ -118,7 +120,9 @@ bool image_cache_speculate(struct content *c);
  * \param fmt     The format string.
  * \return The number of bytes written to \a string or -1 on error
  */
-int image_cache_snentryf(char *string, size_t size, unsigned int entryn,
+int image_cache_snentryf(char *string,
+			 size_t size,
+			 unsigned int entryn,
 			 const char *fmt);
 
 /**
@@ -137,26 +141,26 @@ int image_cache_snentryf(char *string, size_t size, unsigned int entryn,
  * h The largest number of images in the cache since initialisation
  * i The size of the cache when the largest number of objects occoured
  * j The total number of read operations performed on the cache
- * k The total number of read operations satisfied from the cache without 
+ * k The total number of read operations satisfied from the cache without
  *     conversion.
- * l The total number of read operations satisfied from the cache which 
+ * l The total number of read operations satisfied from the cache which
  *     required a conversion.
- * m The total number of read operations which could not be sucessfully 
+ * m The total number of read operations which could not be sucessfully
  *     returned. ie. not available in cache and conversion failed.
  * n The total size  of read operations performed on the cache
- * o The total size of read operations satisfied from the cache without 
+ * o The total size of read operations satisfied from the cache without
  *     conversion.
- * q The total size of read operations satisfied from the cache which 
+ * q The total size of read operations satisfied from the cache which
  *     required a conversion.
- * r The total size of read operations which could not be sucessfully 
+ * r The total size of read operations which could not be sucessfully
  *     returned. ie. not available in cache and conversion failed.
  * s The number of images which were placed in the cache but never read.
- * t The number of images that were converted on insertion into the cache which were subsequently never used.
- * u The number of times an image was converted after the first
- * v The number of images that had extra conversions performed.
- * w Size of the image that was converted (read missed cache) highest number 
+ * t The number of images that were converted on insertion into the cache which
+ * were subsequently never used. u The number of times an image was converted
+ * after the first v The number of images that had extra conversions performed.
+ * w Size of the image that was converted (read missed cache) highest number
  *     of times.
- * x The number of times the image that was converted (read missed cache) 
+ * x The number of times the image that was converted (read missed cache)
  *     highest number of times.
  *
  * format modifiers:
@@ -180,9 +184,9 @@ int image_cache_snsummaryf(char *string, size_t size, const char *fmt);
  * callback. Performs all neccissary cache lookups and conversions and
  * calls the bitmap plot function in the redraw context.
  */
-bool image_cache_redraw(struct content *c, 
+bool image_cache_redraw(struct content *c,
 			struct content_redraw_data *data,
-			const struct rect *clip, 
+			const struct rect *clip,
 			const struct redraw_context *ctx);
 
 void image_cache_destroy(struct content *c);

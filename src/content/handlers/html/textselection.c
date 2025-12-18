@@ -56,12 +56,11 @@ struct rdw_info {
  * \param end_offset receives the end offset of the selected part
  * \return true iff the range encloses at least part of the box
  */
-static bool
-selected_part(struct box *box,
-	      unsigned start_idx,
-	      unsigned end_idx,
-	      unsigned *start_offset,
-	      unsigned *end_offset)
+static bool selected_part(struct box *box,
+			  unsigned start_idx,
+			  unsigned end_idx,
+			  unsigned *start_offset,
+			  unsigned *end_offset)
 {
 	size_t box_length = box->length + SPACE_LEN(box);
 
@@ -110,12 +109,11 @@ selected_part(struct box *box,
  * \param do_marker whether deal enter any marker box
  * \return NSERROR_OK on success else error code
  */
-static nserror
-coords_from_range(struct box *box,
-		  unsigned start_idx,
-		  unsigned end_idx,
-		  struct rdw_info *rdwi,
-		  bool do_marker)
+static nserror coords_from_range(struct box *box,
+				 unsigned start_idx,
+				 unsigned end_idx,
+				 struct rdw_info *rdwi,
+				 bool do_marker)
 {
 	struct box *child;
 	nserror res;
@@ -123,9 +121,7 @@ coords_from_range(struct box *box,
 	assert(box);
 
 	/* If selection starts inside marker */
-	if (box->parent &&
-	    box->parent->list_marker == box &&
-	    !do_marker) {
+	if (box->parent && box->parent->list_marker == box && !do_marker) {
 		/* set box to main list element */
 		box = box->parent;
 	}
@@ -134,11 +130,8 @@ coords_from_range(struct box *box,
 	if (box->list_marker) {
 		/* do the marker box before continuing with the rest of the
 		 * list element */
-		res = coords_from_range(box->list_marker,
-					start_idx,
-					end_idx,
-					rdwi,
-					true);
+		res = coords_from_range(
+			box->list_marker, start_idx, end_idx, rdwi, true);
 		if (res != NSERROR_OK) {
 			return res;
 		}
@@ -153,13 +146,13 @@ coords_from_range(struct box *box,
 	child = box->children;
 
 	if ((box->type != BOX_BR) &&
-	    !((box->type == BOX_FLOAT_LEFT ||
-	       box->type == BOX_FLOAT_RIGHT) &&
+	    !((box->type == BOX_FLOAT_LEFT || box->type == BOX_FLOAT_RIGHT) &&
 	      !box->text)) {
 		unsigned start_off;
 		unsigned end_off;
 
-		if (selected_part(box, start_idx, end_idx, &start_off, &end_off)) {
+		if (selected_part(
+			    box, start_idx, end_idx, &start_off, &end_off)) {
 			int width, height;
 			int x, y;
 
@@ -169,11 +162,12 @@ coords_from_range(struct box *box,
 			 */
 			box_coords(box, &x, &y);
 
-			width = box->padding[LEFT] + box->width + box->padding[RIGHT];
-			height = box->padding[TOP] + box->height + box->padding[BOTTOM];
+			width = box->padding[LEFT] + box->width +
+				box->padding[RIGHT];
+			height = box->padding[TOP] + box->height +
+				 box->padding[BOTTOM];
 
-			if ((box->type == BOX_TEXT) &&
-			    (box->space != 0)) {
+			if ((box->type == BOX_TEXT) && (box->space != 0)) {
 				width += box->space;
 			}
 
@@ -217,11 +211,8 @@ coords_from_range(struct box *box,
 			 * the tree */
 			struct box *next = child->next;
 
-			res = coords_from_range(child,
-						start_idx,
-						end_idx,
-						rdwi,
-						false);
+			res = coords_from_range(
+				child, start_idx, end_idx, rdwi, false);
 			if (res != NSERROR_OK) {
 				return res;
 			}
@@ -245,24 +236,23 @@ coords_from_range(struct box *box,
  * \param whitespace_text    whitespace to place before text for formatting
  *                            may be NULL
  * \param whitespace_length  length of whitespace_text
- * \return NSERROR_OK iff successful and traversal should continue else error code
+ * \return NSERROR_OK iff successful and traversal should continue else error
+ * code
  */
-static nserror
-selection_copy_box(const char *text,
-		   size_t length,
-		   struct box *box,
-		   const css_unit_ctx *unit_len_ctx,
-		   struct selection_string *handle,
-		   const char *whitespace_text,
-		   size_t whitespace_length)
+static nserror selection_copy_box(const char *text,
+				  size_t length,
+				  struct box *box,
+				  const css_unit_ctx *unit_len_ctx,
+				  struct selection_string *handle,
+				  const char *whitespace_text,
+				  size_t whitespace_length)
 {
 	bool add_space = false;
 	plot_font_style_t style;
 	plot_font_style_t *pstyle = NULL;
 
 	/* add any whitespace which precedes the text from this box */
-	if (whitespace_text != NULL &&
-	    whitespace_length > 0) {
+	if (whitespace_text != NULL && whitespace_length > 0) {
 		if (!selection_string_append(whitespace_text,
 					     whitespace_length,
 					     false,
@@ -278,7 +268,9 @@ selection_copy_box(const char *text,
 
 		if (box->style != NULL) {
 			/* Override default font style */
-			font_plot_style_from_css(unit_len_ctx, box->style, &style);
+			font_plot_style_from_css(unit_len_ctx,
+						 box->style,
+						 &style);
 			pstyle = &style;
 		} else {
 			/* If there's no style, there must be no text */
@@ -310,15 +302,14 @@ selection_copy_box(const char *text,
  * \param do_marker  whether deal enter any marker box
  * \return NSERROR_OK on sucess else error code
  */
-static nserror
-selection_copy(struct box *box,
-	       const css_unit_ctx *unit_len_ctx,
-	       unsigned start_idx,
-	       unsigned end_idx,
-	       struct selection_string *selstr,
-	       save_text_whitespace *before,
-	       bool *first,
-	       bool do_marker)
+static nserror selection_copy(struct box *box,
+			      const css_unit_ctx *unit_len_ctx,
+			      unsigned start_idx,
+			      unsigned end_idx,
+			      struct selection_string *selstr,
+			      save_text_whitespace *before,
+			      bool *first,
+			      bool do_marker)
 {
 	nserror res;
 	struct box *child;
@@ -328,9 +319,7 @@ selection_copy(struct box *box,
 	assert(box);
 
 	/* If selection starts inside marker */
-	if (box->parent &&
-	    box->parent->list_marker == box &&
-	    !do_marker) {
+	if (box->parent && box->parent->list_marker == box && !do_marker) {
 		/* set box to main list element */
 		box = box->parent;
 	}
@@ -373,15 +362,16 @@ selection_copy(struct box *box,
 	}
 
 	if ((box->type != BOX_BR) &&
-	    !((box->type == BOX_FLOAT_LEFT ||
-	       box->type == BOX_FLOAT_RIGHT) &&
+	    !((box->type == BOX_FLOAT_LEFT || box->type == BOX_FLOAT_RIGHT) &&
 	      !box->text)) {
 		unsigned start_off;
 		unsigned end_off;
 
-		if (selected_part(box, start_idx, end_idx, &start_off, &end_off)) {
+		if (selected_part(
+			    box, start_idx, end_idx, &start_off, &end_off)) {
 			res = selection_copy_box(box->text + start_off,
-						 min(box->length, end_off) - start_off,
+						 min(box->length, end_off) -
+							 start_off,
 						 box,
 						 unit_len_ctx,
 						 selstr,
@@ -470,10 +460,9 @@ static unsigned selection_label_subtree(struct box *box, unsigned idx)
 
 
 /* exported interface documented in html/textselection.h */
-nserror
-html_textselection_redraw(struct content *c,
-			  unsigned start_idx,
-			  unsigned end_idx)
+nserror html_textselection_redraw(struct content *c,
+				  unsigned start_idx,
+				  unsigned end_idx)
 {
 	nserror res;
 	html_content *html = (html_content *)c;
@@ -503,11 +492,10 @@ html_textselection_redraw(struct content *c,
 
 
 /* exported interface documented in html/textselection.h */
-nserror
-html_textselection_copy(struct content *c,
-			unsigned start_idx,
-			unsigned end_idx,
-			struct selection_string *selstr)
+nserror html_textselection_copy(struct content *c,
+				unsigned start_idx,
+				unsigned end_idx,
+				struct selection_string *selstr)
 {
 	html_content *html = (html_content *)c;
 	save_text_whitespace before = WHITESPACE_NONE;
@@ -529,8 +517,7 @@ html_textselection_copy(struct content *c,
 
 
 /* exported interface documented in html/textselection.h */
-nserror
-html_textselection_get_end(struct content *c, unsigned *end_idx)
+nserror html_textselection_get_end(struct content *c, unsigned *end_idx)
 {
 	html_content *html = (html_content *)c;
 	unsigned root_idx;

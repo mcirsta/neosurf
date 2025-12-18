@@ -63,7 +63,9 @@ nserror urldb_save(const char *filename);
  * \param prefix Prefix to match
  * \param callback Callback function
  */
-void urldb_iterate_partial(const char *prefix, bool (*callback)(struct nsurl *url, const struct url_data *data));
+void urldb_iterate_partial(const char *prefix,
+			   bool (*callback)(struct nsurl *url,
+					    const struct url_data *data));
 
 
 /**
@@ -71,7 +73,8 @@ void urldb_iterate_partial(const char *prefix, bool (*callback)(struct nsurl *ur
  *
  * \param callback Function to callback for each entry
  */
-void urldb_iterate_entries(bool (*callback)(struct nsurl *url,	const struct url_data *data));
+void urldb_iterate_entries(bool (*callback)(struct nsurl *url,
+					    const struct url_data *data));
 
 
 /**

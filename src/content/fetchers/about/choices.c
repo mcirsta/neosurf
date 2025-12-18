@@ -54,20 +54,24 @@ bool fetch_about_choices_handler(struct fetch_about_context *ctx)
 	if (fetch_about_send_header(ctx, "Content-Type: text/plain"))
 		goto fetch_about_choices_handler_aborted;
 
-	slen = snprintf(buffer, sizeof buffer,
-		 "# Automatically generated current NetSurf browser Choices\n");
+	slen = snprintf(
+		buffer,
+		sizeof buffer,
+		"# Automatically generated current NetSurf browser Choices\n");
 
 	do {
 		res = nsoption_snoptionf(buffer + slen,
-				sizeof buffer - slen,
-				opt_loop,
-				"%k:%v\n");
+					 sizeof buffer - slen,
+					 opt_loop,
+					 "%k:%v\n");
 		if (res <= 0)
 			break; /* last option */
 
-		if (res >= (int) (sizeof buffer - slen)) {
+		if (res >= (int)(sizeof buffer - slen)) {
 			/* last entry would not fit in buffer, submit buffer */
-			res = fetch_about_senddata(ctx, (const uint8_t *)buffer, slen);
+			res = fetch_about_senddata(ctx,
+						   (const uint8_t *)buffer,
+						   slen);
 			if (res != NSERROR_OK) {
 				goto fetch_about_choices_handler_aborted;
 			}

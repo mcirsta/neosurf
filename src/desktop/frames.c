@@ -44,20 +44,24 @@
 /** maximum frame resize margin */
 #define FRAME_RESIZE 6
 
-static bool browser_window_resolve_frame_dimension(struct browser_window *bw,
-		struct browser_window *sibling, int x, int y, bool width,
-		bool height);
+static bool
+browser_window_resolve_frame_dimension(struct browser_window *bw,
+				       struct browser_window *sibling,
+				       int x,
+				       int y,
+				       bool width,
+				       bool height);
 
 
 /**
  * Callback for (i)frame scrollbars.
  */
 void browser_window_scroll_callback(void *client_data,
-		struct scrollbar_msg_data *scrollbar_data)
+				    struct scrollbar_msg_data *scrollbar_data)
 {
 	struct browser_window *bw = client_data;
 
-	switch(scrollbar_data->msg) {
+	switch (scrollbar_data->msg) {
 	case SCROLLBAR_MSG_MOVED:
 		if (bw->browser_window_type == BROWSER_WINDOW_IFRAME) {
 			html_redraw_a_box(bw->parent->current_content, bw->box);
@@ -72,21 +76,17 @@ void browser_window_scroll_callback(void *client_data,
 			browser_window_invalidate_rect(bw, &rect);
 		}
 		break;
-	case SCROLLBAR_MSG_SCROLL_START:
-	{
-		struct rect rect = {
-			.x0 = scrollbar_data->x0,
-			.y0 = scrollbar_data->y0,
-			.x1 = scrollbar_data->x1,
-			.y1 = scrollbar_data->y1
-		};
+	case SCROLLBAR_MSG_SCROLL_START: {
+		struct rect rect = {.x0 = scrollbar_data->x0,
+				    .y0 = scrollbar_data->y0,
+				    .x1 = scrollbar_data->x1,
+				    .y1 = scrollbar_data->y1};
 
 		if (scrollbar_is_horizontal(scrollbar_data->scrollbar))
 			browser_window_set_drag_type(bw, DRAGGING_SCR_X, &rect);
 		else
 			browser_window_set_drag_type(bw, DRAGGING_SCR_Y, &rect);
-	}
-		break;
+	} break;
 	case SCROLLBAR_MSG_SCROLL_FINISHED:
 		browser_window_set_drag_type(bw, DRAGGING_NONE, NULL);
 
@@ -107,15 +107,14 @@ void browser_window_handle_scrollbars(struct browser_window *bw)
 	assert(!bw->window); /* Core-handled windows only */
 
 	if (h != NULL) {
-		c_width  = content_get_width(h);
+		c_width = content_get_width(h);
 		c_height = content_get_height(h);
 	}
 
 	if (bw->scrolling == BW_SCROLLING_YES) {
 		scroll_x = true;
 		scroll_y = true;
-	} else if (bw->scrolling == BW_SCROLLING_AUTO &&
-			bw->current_content) {
+	} else if (bw->scrolling == BW_SCROLLING_AUTO && bw->current_content) {
 		int bw_width = bw->width;
 		int bw_height = bw->height;
 
@@ -147,15 +146,19 @@ void browser_window_handle_scrollbars(struct browser_window *bw)
 
 		if (bw->scroll_y == NULL) {
 			/* create vertical scrollbar */
-			if (scrollbar_create(false, length, c_height, visible,
-					     bw, browser_window_scroll_callback,
+			if (scrollbar_create(false,
+					     length,
+					     c_height,
+					     visible,
+					     bw,
+					     browser_window_scroll_callback,
 					     &(bw->scroll_y)) != NSERROR_OK) {
 				return;
 			}
 		} else {
 			/* update vertical scrollbar */
-			scrollbar_set_extents(bw->scroll_y, length,
-					visible, c_height);
+			scrollbar_set_extents(
+				bw->scroll_y, length, visible, c_height);
 		}
 	}
 
@@ -165,15 +168,19 @@ void browser_window_handle_scrollbars(struct browser_window *bw)
 
 		if (bw->scroll_x == NULL) {
 			/* create horizontal scrollbar */
-			if (scrollbar_create(true, length, c_width, visible,
-					     bw, browser_window_scroll_callback,
+			if (scrollbar_create(true,
+					     length,
+					     c_width,
+					     visible,
+					     bw,
+					     browser_window_scroll_callback,
 					     &(bw->scroll_x)) != NSERROR_OK) {
 				return;
 			}
 		} else {
 			/* update horizontal scrollbar */
-			scrollbar_set_extents(bw->scroll_x, length,
-					visible, c_width);
+			scrollbar_set_extents(
+				bw->scroll_x, length, visible, c_width);
 		}
 	}
 
@@ -229,8 +236,7 @@ nserror browser_window_create_iframes(struct browser_window *bw)
 		window = &(bw->iframes[index++]);
 
 		/* Initialise common parts */
-		browser_window_initialise_common(BW_CREATE_NONE,
-				window, NULL);
+		browser_window_initialise_common(BW_CREATE_NONE, window, NULL);
 
 		/* window characteristics */
 		window->browser_window_type = BROWSER_WINDOW_IFRAME;
@@ -244,7 +250,7 @@ nserror browser_window_create_iframes(struct browser_window *bw)
 		if (cur->name != NULL) {
 			window->name = strdup(cur->name);
 			if (window->name == NULL) {
-				free(bw->iframes) ;
+				free(bw->iframes);
 				bw->iframes = 0;
 				bw->iframe_count = 0;
 				return NSERROR_NOMEM;
@@ -260,8 +266,9 @@ nserror browser_window_create_iframes(struct browser_window *bw)
 		box_bounds(window->box, &rect);
 
 		browser_window_set_position(window, rect.x0, rect.y0);
-		browser_window_set_dimensions(window, rect.x1 - rect.x0,
-				rect.y1 - rect.y0);
+		browser_window_set_dimensions(window,
+					      rect.x1 - rect.x0,
+					      rect.y1 - rect.y0);
 	}
 
 	/* calculate dimensions */
@@ -273,7 +280,8 @@ nserror browser_window_create_iframes(struct browser_window *bw)
 		window = &(bw->iframes[index++]);
 		if (cur->url) {
 			/* fetch iframe's content */
-			ret = browser_window_navigate(window,
+			ret = browser_window_navigate(
+				window,
 				cur->url,
 				hlcache_handle_get_url(bw->current_content),
 				BW_NAVIGATE_UNVERIFIABLE,
@@ -329,7 +337,8 @@ nserror browser_window_destroy_iframes(struct browser_window *bw)
  *
  * \param bw The browser window to reposition framesets for
  */
-static void browser_window_recalculate_frameset_internal(struct browser_window *bw)
+static void
+browser_window_recalculate_frameset_internal(struct browser_window *bw)
 {
 	int widths[bw->cols][bw->rows];
 	int heights[bw->cols][bw->rows];
@@ -371,7 +380,7 @@ static void browser_window_recalculate_frameset_internal(struct browser_window *
 			switch (window->frame_width.unit) {
 			case FRAME_DIMENSION_PIXELS:
 				widths[col][row] = window->frame_width.value *
-						window->scale;
+						   window->scale;
 				if (window->border) {
 					if (col != 0)
 						widths[col][row] += 1;
@@ -381,7 +390,8 @@ static void browser_window_recalculate_frameset_internal(struct browser_window *
 				break;
 			case FRAME_DIMENSION_PERCENT:
 				widths[col][row] = bw_width *
-						window->frame_width.value / 100;
+						   window->frame_width.value /
+						   100;
 				break;
 			case FRAME_DIMENSION_RELATIVE:
 				widths[col][row] = 0;
@@ -390,11 +400,11 @@ static void browser_window_recalculate_frameset_internal(struct browser_window *
 			default:
 				/* unknown frame dimension unit */
 				assert(window->frame_width.unit ==
-						FRAME_DIMENSION_PIXELS ||
-						window->frame_width.unit ==
-						FRAME_DIMENSION_PERCENT ||
-						window->frame_width.unit ==
-						FRAME_DIMENSION_RELATIVE);
+					       FRAME_DIMENSION_PIXELS ||
+				       window->frame_width.unit ==
+					       FRAME_DIMENSION_PERCENT ||
+				       window->frame_width.unit ==
+					       FRAME_DIMENSION_RELATIVE);
 				break;
 			}
 			avail_width -= widths[col][row];
@@ -408,10 +418,10 @@ static void browser_window_recalculate_frameset_internal(struct browser_window *
 				window = &bw->children[index];
 
 				if (window->frame_width.unit ==
-						FRAME_DIMENSION_RELATIVE) {
-					size = avail_width * window->
-							frame_width.value /
-							relative;
+				    FRAME_DIMENSION_RELATIVE) {
+					size = avail_width *
+					       window->frame_width.value /
+					       relative;
 					avail_width -= size;
 					relative -= window->frame_width.value;
 					widths[col][row] += size;
@@ -426,12 +436,13 @@ static void browser_window_recalculate_frameset_internal(struct browser_window *
 					/* Last cell, use up remainder */
 					widths[col][row] += extent - applied;
 					widths[col][row] =
-							widths[col][row] < 0 ?
-							0 : widths[col][row];
+						widths[col][row] < 0
+							? 0
+							: widths[col][row];
 				} else {
 					/* Find size of cell adjustment */
 					size = (widths[col][row] * extent) /
-							(bw_width - extent);
+					       (bw_width - extent);
 					/* Modify cell */
 					widths[col][row] += size;
 					applied += size;
@@ -451,7 +462,7 @@ static void browser_window_recalculate_frameset_internal(struct browser_window *
 			switch (window->frame_height.unit) {
 			case FRAME_DIMENSION_PIXELS:
 				heights[col][row] = window->frame_height.value *
-						window->scale;
+						    window->scale;
 				if (window->border) {
 					if (row != 0)
 						heights[col][row] += 1;
@@ -461,7 +472,8 @@ static void browser_window_recalculate_frameset_internal(struct browser_window *
 				break;
 			case FRAME_DIMENSION_PERCENT:
 				heights[col][row] = bw_height *
-						window->frame_height.value / 100;
+						    window->frame_height.value /
+						    100;
 				break;
 			case FRAME_DIMENSION_RELATIVE:
 				heights[col][row] = 0;
@@ -470,11 +482,11 @@ static void browser_window_recalculate_frameset_internal(struct browser_window *
 			default:
 				/* unknown frame dimension unit */
 				assert(window->frame_height.unit ==
-						FRAME_DIMENSION_PIXELS ||
-						window->frame_height.unit ==
-						FRAME_DIMENSION_PERCENT ||
-						window->frame_height.unit ==
-						FRAME_DIMENSION_RELATIVE);
+					       FRAME_DIMENSION_PIXELS ||
+				       window->frame_height.unit ==
+					       FRAME_DIMENSION_PERCENT ||
+				       window->frame_height.unit ==
+					       FRAME_DIMENSION_RELATIVE);
 				break;
 			}
 			avail_height -= heights[col][row];
@@ -491,10 +503,10 @@ static void browser_window_recalculate_frameset_internal(struct browser_window *
 				window = &bw->children[index];
 
 				if (window->frame_height.unit ==
-						FRAME_DIMENSION_RELATIVE) {
-					size = avail_height * window->
-							frame_height.value /
-							relative;
+				    FRAME_DIMENSION_RELATIVE) {
+					size = avail_height *
+					       window->frame_height.value /
+					       relative;
 					avail_height -= size;
 					relative -= window->frame_height.value;
 					heights[col][row] += size;
@@ -509,12 +521,13 @@ static void browser_window_recalculate_frameset_internal(struct browser_window *
 					/* Last cell, use up remainder */
 					heights[col][row] += extent - applied;
 					heights[col][row] =
-							heights[col][row] < 0 ?
-							0 : heights[col][row];
+						heights[col][row] < 0
+							? 0
+							: heights[col][row];
 				} else {
 					/* Find size of cell adjustment */
 					size = (heights[col][row] * extent) /
-							(bw_height - extent);
+					       (bw_height - extent);
 					/* Modify cell */
 					heights[col][row] += size;
 					applied += size;
@@ -532,7 +545,7 @@ static void browser_window_recalculate_frameset_internal(struct browser_window *
 
 			y = 0;
 			for (row2 = 0; row2 < row; row2++)
-				y+= heights[col][row2];
+				y += heights[col][row2];
 
 			window->x = x;
 			window->y = y;
@@ -541,11 +554,12 @@ static void browser_window_recalculate_frameset_internal(struct browser_window *
 			new_height = heights[col][row] - 1;
 
 			if (window->width != new_width ||
-					window->height != new_height) {
+			    window->height != new_height) {
 				/* Change in frame size */
-				browser_window_reformat(window, false,
-						new_width * bw->scale,
-						new_height * bw->scale);
+				browser_window_reformat(window,
+							false,
+							new_width * bw->scale,
+							new_height * bw->scale);
 				window->width = new_width;
 				window->height = new_height;
 
@@ -555,7 +569,8 @@ static void browser_window_recalculate_frameset_internal(struct browser_window *
 			x += widths[col][row];
 
 			if (window->children)
-				browser_window_recalculate_frameset_internal(window);
+				browser_window_recalculate_frameset_internal(
+					window);
 		}
 	}
 }
@@ -598,15 +613,16 @@ browser_window_create_frameset_internal(struct browser_window *bw,
 
 			/* Initialise common parts */
 			browser_window_initialise_common(BW_CREATE_NONE,
-					window, NULL);
+							 window,
+							 NULL);
 
 			/* window characteristics */
 			if (frame->children)
 				window->browser_window_type =
-						BROWSER_WINDOW_FRAMESET;
+					BROWSER_WINDOW_FRAMESET;
 			else
 				window->browser_window_type =
-						BROWSER_WINDOW_FRAME;
+					BROWSER_WINDOW_FRAME;
 			window->scrolling = frame->scrolling;
 			window->border = frame->border;
 			window->border_colour = frame->border_colour;
@@ -630,11 +646,12 @@ browser_window_create_frameset_internal(struct browser_window *bw,
 			window->parent = bw;
 
 			if (window->name)
-				NSLOG(neosurf, INFO, "Created frame '%s'",
+				NSLOG(neosurf,
+				      INFO,
+				      "Created frame '%s'",
 				      window->name);
 			else
-				NSLOG(neosurf, INFO,
-				      "Created frame (unnamed)");
+				NSLOG(neosurf, INFO, "Created frame (unnamed)");
 		}
 	}
 
@@ -650,7 +667,8 @@ browser_window_create_frameset_internal(struct browser_window *bw,
 			window = &bw->children[index];
 
 			if (frame->children)
-				browser_window_create_frameset_internal(window, frame);
+				browser_window_create_frameset_internal(window,
+									frame);
 		}
 	}
 
@@ -658,8 +676,7 @@ browser_window_create_frameset_internal(struct browser_window *bw,
 	 * as the referer */
 	for (window = bw; window->parent; window = window->parent) {
 		if (window->current_content &&
-				content_get_type(window->current_content) ==
-				CONTENT_HTML)
+		    content_get_type(window->current_content) == CONTENT_HTML)
 			break;
 	}
 
@@ -673,11 +690,12 @@ browser_window_create_frameset_internal(struct browser_window *bw,
 			window = &bw->children[index];
 
 			if (frame->url) {
-				browser_window_navigate(window,
+				browser_window_navigate(
+					window,
 					frame->url,
 					hlcache_handle_get_url(parent),
 					BW_NAVIGATE_HISTORY |
-					BW_NAVIGATE_UNVERIFIABLE,
+						BW_NAVIGATE_UNVERIFIABLE,
 					NULL,
 					NULL,
 					parent);
@@ -705,8 +723,6 @@ nserror browser_window_create_frameset(struct browser_window *bw)
 
 	return browser_window_create_frameset_internal(bw, frameset);
 }
-
-
 
 
 /**
@@ -752,7 +768,7 @@ void browser_window_resize_frame(struct browser_window *bw, int x, int y)
 		if (&parent->children[i] == bw) {
 			col = i % parent->cols;
 			row = i / parent->cols;
-		 }
+		}
 	}
 	assert((col >= 0) && (row >= 0));
 
@@ -763,8 +779,8 @@ void browser_window_resize_frame(struct browser_window *bw, int x, int y)
 		sibling = &parent->children[row * parent->cols + (col + 1)];
 	}
 	if (sibling) {
-		change |= browser_window_resolve_frame_dimension(bw, sibling,
-				x, y, true, false);
+		change |= browser_window_resolve_frame_dimension(
+			bw, sibling, x, y, true, false);
 	}
 
 	sibling = NULL;
@@ -775,8 +791,8 @@ void browser_window_resize_frame(struct browser_window *bw, int x, int y)
 	}
 
 	if (sibling) {
-		change |= browser_window_resolve_frame_dimension(bw, sibling,
-				x, y, false, true);
+		change |= browser_window_resolve_frame_dimension(
+			bw, sibling, x, y, false, true);
 	}
 
 	if (change) {
@@ -786,8 +802,11 @@ void browser_window_resize_frame(struct browser_window *bw, int x, int y)
 
 
 bool browser_window_resolve_frame_dimension(struct browser_window *bw,
-		struct browser_window *sibling,
-		int x, int y, bool width, bool height)
+					    struct browser_window *sibling,
+					    int x,
+					    int y,
+					    bool width,
+					    bool height)
 {
 	int bw_dimension, sibling_dimension;
 	int bw_pixels, sibling_pixels;
@@ -834,17 +853,22 @@ bool browser_window_resolve_frame_dimension(struct browser_window *bw,
 	/* our frame dimensions are now known to be:
 	 *
 	 * <--		    frame_size		    --> [VISIBLE PIXELS]
-	 * |<--  bw_pixels -->|<--  sibling_pixels -->|	[VISIBLE PIXELS, BEFORE RESIZE]
-	 * |<-- bw_d->value-->|<-- sibling_d->value-->| [SPECIFIED UNITS, BEFORE RESIZE]
-	 * |<--bw_dimension-->|<--sibling_dimension-->|	[VISIBLE PIXELS, AFTER RESIZE]
-	 * |<--		     total_new		   -->|	[VISIBLE PIXELS, AFTER RESIZE]
+	 * |<--  bw_pixels -->|<--  sibling_pixels -->|	[VISIBLE PIXELS, BEFORE
+	 * RESIZE]
+	 * |<-- bw_d->value-->|<-- sibling_d->value-->| [SPECIFIED UNITS, BEFORE
+	 * RESIZE]
+	 * |<--bw_dimension-->|<--sibling_dimension-->|	[VISIBLE PIXELS, AFTER
+	 * RESIZE]
+	 * |<--		     total_new		   -->|	[VISIBLE PIXELS, AFTER
+	 * RESIZE]
 	 *
-	 * when we resize, we must retain the original unit specification such that any
-	 * subsequent resizing of the parent window will recalculate the page as the
-	 * author specified.
+	 * when we resize, we must retain the original unit specification such
+	 * that any subsequent resizing of the parent window will recalculate
+	 * the page as the author specified.
 	 *
-	 * if the units of both frames are the same then we can resize the values simply
-	 * by updating the values to be a percentage of the original widths.
+	 * if the units of both frames are the same then we can resize the
+	 * values simply by updating the values to be a percentage of the
+	 * original widths.
 	 */
 	if (bw_d->unit == sibling_d->unit) {
 		float total_specified = bw_d->value + sibling_d->value;
@@ -853,10 +877,10 @@ bool browser_window_resolve_frame_dimension(struct browser_window *bw,
 		return true;
 	}
 
-	/* if one of the sizes is relative then we don't alter the relative width and
-	 * just let it reflow across. the non-relative (pixel/percentage) value can
-	 * simply be resolved to the specified width that will result in the required
-	 * dimension.
+	/* if one of the sizes is relative then we don't alter the relative
+	 * width and just let it reflow across. the non-relative
+	 * (pixel/percentage) value can simply be resolved to the specified
+	 * width that will result in the required dimension.
 	 */
 	if (bw_d->unit == FRAME_DIMENSION_RELATIVE) {
 		if ((sibling_pixels == 0) && (bw_dimension == 0))
@@ -864,12 +888,15 @@ bool browser_window_resolve_frame_dimension(struct browser_window *bw,
 		if (fabs(sibling_d->value) < 0.0001)
 			bw_d->value = 1;
 		if (sibling_pixels == 0)
-			sibling_d->value = (sibling_d->value * bw_pixels) / bw_dimension;
+			sibling_d->value = (sibling_d->value * bw_pixels) /
+					   bw_dimension;
 		else
-			sibling_d->value =
-					(sibling_d->value * sibling_dimension) / sibling_pixels;
+			sibling_d->value = (sibling_d->value *
+					    sibling_dimension) /
+					   sibling_pixels;
 
-		/* todo: the availble resize may have changed, update the drag box */
+		/* todo: the availble resize may have changed, update the drag
+		 * box */
 		return true;
 	} else if (sibling_d->unit == FRAME_DIMENSION_RELATIVE) {
 		if ((bw_pixels == 0) && (sibling_dimension == 0))
@@ -877,27 +904,34 @@ bool browser_window_resolve_frame_dimension(struct browser_window *bw,
 		if (fabs(bw_d->value) < 0.0001)
 			bw_d->value = 1;
 		if (bw_pixels == 0)
-			bw_d->value = (bw_d->value * sibling_pixels) / sibling_dimension;
+			bw_d->value = (bw_d->value * sibling_pixels) /
+				      sibling_dimension;
 		else
 			bw_d->value = (bw_d->value * bw_dimension) / bw_pixels;
 
-		/* todo: the availble resize may have changed, update the drag box */
+		/* todo: the availble resize may have changed, update the drag
+		 * box */
 		return true;
 	}
 
-	/* finally we have a pixel/percentage mix. unlike relative values, percentages
-	 * can easily be backwards-calculated as they can simply be scaled like pixel
-	 * values
+	/* finally we have a pixel/percentage mix. unlike relative values,
+	 * percentages can easily be backwards-calculated as they can simply be
+	 * scaled like pixel values
 	 */
 	if (bw_d->unit == FRAME_DIMENSION_PIXELS) {
-		float total_specified = bw_d->value + frame_size * sibling_d->value / 100;
+		float total_specified = bw_d->value +
+					frame_size * sibling_d->value / 100;
 		bw_d->value = (total_specified * bw_dimension) / total_new;
-		sibling_d->value = (total_specified - bw_d->value) * 100 / frame_size;
+		sibling_d->value = (total_specified - bw_d->value) * 100 /
+				   frame_size;
 		return true;
 	} else if (sibling_d->unit == FRAME_DIMENSION_PIXELS) {
-		float total_specified = bw_d->value * frame_size / 100 + sibling_d->value;
-		sibling_d->value = (total_specified * sibling_dimension) / total_new;
-		bw_d->value = (total_specified - sibling_d->value) * 100 / frame_size;
+		float total_specified = bw_d->value * frame_size / 100 +
+					sibling_d->value;
+		sibling_d->value = (total_specified * sibling_dimension) /
+				   total_new;
+		bw_d->value = (total_specified - sibling_d->value) * 100 /
+			      frame_size;
 		return true;
 	}
 	assert(!"Invalid frame dimension unit");
@@ -906,15 +940,17 @@ bool browser_window_resolve_frame_dimension(struct browser_window *bw,
 
 
 static bool browser_window_resize_frames(struct browser_window *bw,
-		browser_mouse_state mouse, int x, int y,
-		browser_pointer_shape *pointer)
+					 browser_mouse_state mouse,
+					 int x,
+					 int y,
+					 browser_pointer_shape *pointer)
 {
 	struct browser_window *parent;
 	bool left, right, up, down;
 	int i, resize_margin;
 
-	if ((x < bw->x) || (x > bw->x + bw->width) ||
-			(y < bw->y) || (y > bw->y + bw->height))
+	if ((x < bw->x) || (x > bw->x + bw->width) || (y < bw->y) ||
+	    (y > bw->y + bw->height))
 		return false;
 
 	parent = bw->parent;
@@ -928,19 +964,19 @@ static bool browser_window_resize_frames(struct browser_window *bw,
 		if (resize_margin * 2 > bw->height)
 			resize_margin = bw->height / 2;
 		up = (y < bw->y + resize_margin);
-		down = (y > bw->y + bw-> height - resize_margin);
+		down = (y > bw->y + bw->height - resize_margin);
 
 		/* check if the edges can actually be moved */
 		if (left || right || up || down) {
 			int row = -1, col = -1;
 			switch (bw->browser_window_type) {
-				case BROWSER_WINDOW_NORMAL:
-				case BROWSER_WINDOW_IFRAME:
-					assert(0);
-					break;
-				case BROWSER_WINDOW_FRAME:
-				case BROWSER_WINDOW_FRAMESET:
-					break;
+			case BROWSER_WINDOW_NORMAL:
+			case BROWSER_WINDOW_IFRAME:
+				assert(0);
+				break;
+			case BROWSER_WINDOW_FRAME:
+			case BROWSER_WINDOW_FRAMESET:
+				break;
 			}
 			for (i = 0; i < (parent->cols * parent->rows); i++) {
 				if (&parent->children[i] == bw) {
@@ -959,21 +995,23 @@ static bool browser_window_resize_frames(struct browser_window *bw,
 
 			/* check the sibling frames can be resized */
 			if (left)
-				left &= !parent->children[row *
-						parent->cols + (col - 1)].
-						no_resize;
+				left &= !parent->children[row * parent->cols +
+							  (col - 1)]
+						 .no_resize;
 			if (right)
-				right &= !parent->children[row *
-						parent->cols + (col + 1)].
-						no_resize;
+				right &= !parent->children[row * parent->cols +
+							   (col + 1)]
+						  .no_resize;
 			if (up)
 				up &= !parent->children[(row - 1) *
-						parent->cols + col].
-						no_resize;
+								parent->cols +
+							col]
+					       .no_resize;
 			if (down)
 				down &= !parent->children[(row + 1) *
-						parent->cols + col].
-						no_resize;
+								  parent->cols +
+							  col]
+						 .no_resize;
 
 			/* can't have opposite directions simultaneously */
 			if (up)
@@ -1002,13 +1040,14 @@ static bool browser_window_resize_frames(struct browser_window *bw,
 			} else {
 				*pointer = BROWSER_POINTER_DOWN;
 			}
-			if (mouse & (BROWSER_MOUSE_DRAG_1 |
-					BROWSER_MOUSE_DRAG_2)) {
+			if (mouse &
+			    (BROWSER_MOUSE_DRAG_1 | BROWSER_MOUSE_DRAG_2)) {
 
 				/* TODO: Pass appropriate rectangle to allow
 				 *	 front end to clamp pointer range */
 				browser_window_set_drag_type(bw,
-						DRAGGING_FRAME, NULL);
+							     DRAGGING_FRAME,
+							     NULL);
 				bw->drag.start_x = x;
 				bw->drag.start_y = y;
 				bw->drag.resize_left = left;
@@ -1022,14 +1061,14 @@ static bool browser_window_resize_frames(struct browser_window *bw,
 
 	if (bw->children) {
 		for (i = 0; i < (bw->cols * bw->rows); i++)
-			if (browser_window_resize_frames(&bw->children[i],
-					mouse, x, y, pointer))
+			if (browser_window_resize_frames(
+				    &bw->children[i], mouse, x, y, pointer))
 				return true;
 	}
 	if (bw->iframes) {
 		for (i = 0; i < bw->iframe_count; i++)
-			if (browser_window_resize_frames(&bw->iframes[i],
-					mouse, x, y, pointer))
+			if (browser_window_resize_frames(
+				    &bw->iframes[i], mouse, x, y, pointer))
 				return true;
 	}
 	return false;
@@ -1037,14 +1076,16 @@ static bool browser_window_resize_frames(struct browser_window *bw,
 
 
 bool browser_window_frame_resize_start(struct browser_window *bw,
-		browser_mouse_state mouse, int x, int y,
-		browser_pointer_shape *pointer)
+				       browser_mouse_state mouse,
+				       int x,
+				       int y,
+				       browser_pointer_shape *pointer)
 {
 	struct browser_window *root = browser_window_get_root(bw);
 	int offx, offy;
 
 	browser_window_get_position(bw, true, &offx, &offy);
 
-	return browser_window_resize_frames(root, mouse,
-			x + offx, y + offy, pointer);
+	return browser_window_resize_frames(
+		root, mouse, x + offx, y + offy, pointer);
 }

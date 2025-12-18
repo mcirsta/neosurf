@@ -49,4 +49,3 @@ css_error css_select_strings_intern(css_select_strings *str);
 void css_select_strings_unref(css_select_strings *str);
 
 #endif
-

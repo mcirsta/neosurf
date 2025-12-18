@@ -14,15 +14,15 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_cue_after(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error
+css__cascade_cue_after(uint32_t opv, css_style *style, css_select_state *state)
 {
 	/** \todo cue-after */
 	return css__cascade_uri_none(opv, style, state, NULL);
 }
 
-css_error css__set_cue_after_from_hint(const css_hint *hint,
-		css_computed_style *style)
+css_error
+css__set_cue_after_from_hint(const css_hint *hint, css_computed_style *style)
 {
 	UNUSED(hint);
 	UNUSED(style);
@@ -37,9 +37,8 @@ css_error css__initial_cue_after(css_select_state *state)
 	return CSS_OK;
 }
 
-css_error css__copy_cue_after(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error
+css__copy_cue_after(const css_computed_style *from, css_computed_style *to)
 {
 	UNUSED(from);
 	UNUSED(to);
@@ -48,8 +47,8 @@ css_error css__copy_cue_after(
 }
 
 css_error css__compose_cue_after(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+				 const css_computed_style *child,
+				 css_computed_style *result)
 {
 	UNUSED(parent);
 	UNUSED(child);
@@ -57,4 +56,3 @@ css_error css__compose_cue_after(const css_computed_style *parent,
 
 	return CSS_OK;
 }
-

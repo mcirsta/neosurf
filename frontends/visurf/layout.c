@@ -40,11 +40,10 @@
  * \param[out] width updated to width of string[0..length)
  * \return NSERROR_OK and width updated or appropriate error code on faliure
  */
-static nserror
-nsfont_width(const plot_font_style_t *fstyle,
-	     const char *string,
-	     size_t length,
-	     int *width)
+static nserror nsfont_width(const plot_font_style_t *fstyle,
+			    const char *string,
+			    size_t length,
+			    int *width)
 {
 	PangoFontDescription *desc;
 
@@ -63,10 +62,15 @@ nsfont_width(const plot_font_style_t *fstyle,
 
 	pango_layout_get_pixel_size(layout, width, NULL);
 
-	NSLOG(neosurf, DEEPDEBUG,
+	NSLOG(neosurf,
+	      DEEPDEBUG,
 	      "fstyle: %p string:\"%.*s\", length: %" PRIsizet ", width: %dpx",
-	      fstyle, (int)length, string, length, *width);
-	 
+	      fstyle,
+	      (int)length,
+	      string,
+	      length,
+	      *width);
+
 	return NSERROR_OK;
 }
 
@@ -83,13 +87,12 @@ nsfont_width(const plot_font_style_t *fstyle,
  * \return NSERROR_OK and char_offset and actual_x updated or appropriate
  *          error code on faliure
  */
-static nserror
-nsfont_position_in_string(const plot_font_style_t *fstyle,
-			  const char *string,
-			  size_t length,
-			  int x,
-			  size_t *char_offset,
-			  int *actual_x)
+static nserror nsfont_position_in_string(const plot_font_style_t *fstyle,
+					 const char *string,
+					 size_t length,
+					 int x,
+					 size_t *char_offset,
+					 int *actual_x)
 {
 	int index;
 	PangoFontDescription *desc;
@@ -102,9 +105,8 @@ nsfont_position_in_string(const plot_font_style_t *fstyle,
 
 	pango_layout_set_text(layout, string, length);
 
-	if (pango_layout_xy_to_index(layout,
-				     x * PANGO_SCALE, 
-				     0, &index, 0) == FALSE) {
+	if (pango_layout_xy_to_index(layout, x * PANGO_SCALE, 0, &index, 0) ==
+	    FALSE) {
 		index = length;
 	}
 
@@ -139,13 +141,12 @@ nsfont_position_in_string(const plot_font_style_t *fstyle,
  *
  * Returning char_offset == length means no split possible
  */
-static nserror
-nsfont_split(const plot_font_style_t *fstyle,
-	     const char *string,
-	     size_t length,
-	     int x,
-	     size_t *char_offset,
-	     int *actual_x)
+static nserror nsfont_split(const plot_font_style_t *fstyle,
+			    const char *string,
+			    size_t length,
+			    int x,
+			    size_t *char_offset,
+			    int *actual_x)
 {
 	int index = length;
 	PangoFontDescription *desc;
@@ -172,7 +173,7 @@ nsfont_split(const plot_font_style_t *fstyle,
 	/* Obtain the second line of the layout (if there is one) */
 	line = pango_layout_get_line_readonly(layout, 1);
 	if (line != NULL) {
-		/* Pango split the text. The line's start_index indicates the 
+		/* Pango split the text. The line's start_index indicates the
 		 * start of the character after the line break. */
 		index = line->start_index;
 	}
@@ -197,8 +198,11 @@ nsfont_split(const plot_font_style_t *fstyle,
  * \param  fstyle  plot style for this text
  * \return  true on success, false on error and error reported
  */
-nserror nsfont_paint(int x, int y, const char *string, size_t length,
-		const plot_font_style_t *fstyle)
+nserror nsfont_paint(int x,
+		     int y,
+		     const char *string,
+		     size_t length,
+		     const plot_font_style_t *fstyle)
 {
 	PangoFontDescription *desc;
 	PangoLayoutLine *line;
@@ -232,20 +236,25 @@ nsfont_style_to_description(const plot_font_style_t *fstyle)
 
 	switch (fstyle->family) {
 	case PLOT_FONT_FAMILY_SERIF:
-		desc = pango_font_description_from_string(nsoption_charp(font_serif));
+		desc = pango_font_description_from_string(
+			nsoption_charp(font_serif));
 		break;
 	case PLOT_FONT_FAMILY_MONOSPACE:
-		desc = pango_font_description_from_string(nsoption_charp(font_mono));
+		desc = pango_font_description_from_string(
+			nsoption_charp(font_mono));
 		break;
 	case PLOT_FONT_FAMILY_CURSIVE:
-		desc = pango_font_description_from_string(nsoption_charp(font_cursive));
+		desc = pango_font_description_from_string(
+			nsoption_charp(font_cursive));
 		break;
 	case PLOT_FONT_FAMILY_FANTASY:
-		desc = pango_font_description_from_string(nsoption_charp(font_fantasy));
+		desc = pango_font_description_from_string(
+			nsoption_charp(font_fantasy));
 		break;
 	case PLOT_FONT_FAMILY_SANS_SERIF:
 	default:
-		desc = pango_font_description_from_string(nsoption_charp(font_sans));
+		desc = pango_font_description_from_string(
+			nsoption_charp(font_sans));
 		break;
 	}
 
@@ -258,13 +267,13 @@ nsfont_style_to_description(const plot_font_style_t *fstyle)
 
 	pango_font_description_set_style(desc, style);
 
-	pango_font_description_set_weight(desc, (PangoWeight) fstyle->weight);
+	pango_font_description_set_weight(desc, (PangoWeight)fstyle->weight);
 
 	pango_font_description_set_size(desc, size);
 
 	if (fstyle->flags & FONTF_SMALLCAPS) {
-		pango_font_description_set_variant(desc, 
-				PANGO_VARIANT_SMALL_CAPS);
+		pango_font_description_set_variant(desc,
+						   PANGO_VARIANT_SMALL_CAPS);
 	} else {
 		pango_font_description_set_variant(desc, PANGO_VARIANT_NORMAL);
 	}
@@ -294,9 +303,13 @@ get_chrome_layout(cairo_t *cairo, const char *font, const char *text)
 	return layout;
 }
 
-void
-get_text_size(cairo_t *cairo, const char *font, int *width, int *height,
-		int *baseline, const char *fmt, ...)
+void get_text_size(cairo_t *cairo,
+		   const char *font,
+		   int *width,
+		   int *height,
+		   int *baseline,
+		   const char *fmt,
+		   ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -320,8 +333,7 @@ get_text_size(cairo_t *cairo, const char *font, int *width, int *height,
 	free(buf);
 }
 
-void
-pango_printf(cairo_t *cairo, const char *font, const char *fmt, ...)
+void pango_printf(cairo_t *cairo, const char *font, const char *fmt, ...)
 {
 	va_list args;
 	va_start(args, fmt);
@@ -338,7 +350,8 @@ pango_printf(cairo_t *cairo, const char *font, const char *fmt, ...)
 	PangoLayout *layout = get_chrome_layout(cairo, font, buf);
 	cairo_font_options_t *fo = cairo_font_options_create();
 	cairo_get_font_options(cairo, fo);
-	pango_cairo_context_set_font_options(pango_layout_get_context(layout), fo);
+	pango_cairo_context_set_font_options(pango_layout_get_context(layout),
+					     fo);
 	cairo_font_options_destroy(fo);
 	pango_cairo_update_layout(cairo, layout);
 	pango_cairo_show_layout(cairo, layout);

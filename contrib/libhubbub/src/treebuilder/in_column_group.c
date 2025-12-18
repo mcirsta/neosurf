@@ -22,7 +22,7 @@
  * \return True to reprocess the token, false otherwise
  */
 hubbub_error handle_in_column_group(hubbub_treebuilder *treebuilder,
-		const hubbub_token *token)
+				    const hubbub_token *token)
 {
 	hubbub_error err = HUBBUB_OK;
 	bool handled = false;
@@ -30,38 +30,41 @@ hubbub_error handle_in_column_group(hubbub_treebuilder *treebuilder,
 	switch (token->type) {
 	case HUBBUB_TOKEN_CHARACTER:
 		err = process_characters_expect_whitespace(treebuilder,
-				token, true);
+							   token,
+							   true);
 		break;
 	case HUBBUB_TOKEN_COMMENT:
-		err = process_comment_append(treebuilder, token,
-				treebuilder->context.element_stack[
-				treebuilder->context.current_node].node);
+		err = process_comment_append(
+			treebuilder,
+			token,
+			treebuilder->context
+				.element_stack[treebuilder->context
+						       .current_node]
+				.node);
 		break;
 	case HUBBUB_TOKEN_DOCTYPE:
 		/** \todo parse error */
 		break;
-	case HUBBUB_TOKEN_START_TAG:
-	{
-		element_type type = element_type_from_name(treebuilder,
-				&token->data.tag.name);
+	case HUBBUB_TOKEN_START_TAG: {
+		element_type type = element_type_from_name(
+			treebuilder, &token->data.tag.name);
 
 		if (type == HTML) {
 			/* Process as if "in body" */
 			err = handle_in_body(treebuilder, token);
 		} else if (type == COL) {
-			err = insert_element(treebuilder, &token->data.tag, 
-					false);
+			err = insert_element(treebuilder,
+					     &token->data.tag,
+					     false);
 
 			/** \todo ack sc flag */
 		} else {
 			err = HUBBUB_REPROCESS;
 		}
-	}
-		break;
-	case HUBBUB_TOKEN_END_TAG:
-	{
-		element_type type = element_type_from_name(treebuilder,
-				&token->data.tag.name);
+	} break;
+	case HUBBUB_TOKEN_END_TAG: {
+		element_type type = element_type_from_name(
+			treebuilder, &token->data.tag.name);
 
 		if (type == COLGROUP) {
 			/** \todo fragment case */
@@ -71,8 +74,7 @@ hubbub_error handle_in_column_group(hubbub_treebuilder *treebuilder,
 		} else {
 			err = HUBBUB_REPROCESS;
 		}
-	}
-		break;
+	} break;
 	case HUBBUB_TOKEN_EOF:
 		/** \todo fragment case */
 		err = HUBBUB_REPROCESS;
@@ -88,12 +90,10 @@ hubbub_error handle_in_column_group(hubbub_treebuilder *treebuilder,
 		element_stack_pop(treebuilder, &ns, &otype, &node);
 
 		treebuilder->tree_handler->unref_node(
-				treebuilder->tree_handler->ctx,
-				node);
+			treebuilder->tree_handler->ctx, node);
 
 		treebuilder->context.mode = IN_TABLE;
 	}
 
 	return err;
 }
-

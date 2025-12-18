@@ -14,8 +14,8 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_clear(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error
+css__cascade_clear(uint32_t opv, css_style *style, css_select_state *state)
 {
 	uint16_t value = CSS_CLEAR_INHERIT;
 
@@ -38,16 +38,18 @@ css_error css__cascade_clear(uint32_t opv, css_style *style,
 		}
 	}
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			getFlagValue(opv))) {
+	if (css__outranks_existing(getOpcode(opv),
+				   isImportant(opv),
+				   state,
+				   getFlagValue(opv))) {
 		return set_clear(state->computed, value);
 	}
 
 	return CSS_OK;
 }
 
-css_error css__set_clear_from_hint(const css_hint *hint,
-		css_computed_style *style)
+css_error
+css__set_clear_from_hint(const css_hint *hint, css_computed_style *style)
 {
 	return set_clear(style, hint->status);
 }
@@ -57,9 +59,8 @@ css_error css__initial_clear(css_select_state *state)
 	return set_clear(state->computed, CSS_CLEAR_NONE);
 }
 
-css_error css__copy_clear(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error
+css__copy_clear(const css_computed_style *from, css_computed_style *to)
 {
 	if (from == to) {
 		return CSS_OK;
@@ -69,13 +70,11 @@ css_error css__copy_clear(
 }
 
 css_error css__compose_clear(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+			     const css_computed_style *child,
+			     css_computed_style *result)
 {
 	uint8_t type = get_clear(child);
 
-	return css__copy_clear(
-			type == CSS_CLEAR_INHERIT ? parent : child,
-			result);
+	return css__copy_clear(type == CSS_CLEAR_INHERIT ? parent : child,
+			       result);
 }
-

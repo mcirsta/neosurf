@@ -28,8 +28,9 @@
  *		   If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_play_during(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+				 const parserutils_vector *vector,
+				 int32_t *ctx,
+				 css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	css_error error;
@@ -42,42 +43,48 @@ css_error css__parse_play_during(css_language *c,
 
 	/* URI [ IDENT(mix) || IDENT(repeat) ]? | IDENT(auto,none,inherit) */
 	token = parserutils_vector_iterate(vector, ctx);
-	if ((token == NULL) ||
-	    ((token->type != CSS_TOKEN_IDENT) &&
-	     (token->type != CSS_TOKEN_URI))) {
+	if ((token == NULL) || ((token->type != CSS_TOKEN_IDENT) &&
+				(token->type != CSS_TOKEN_URI))) {
 		*ctx = orig_ctx;
 		return CSS_INVALID;
 	}
 
 	if (token->type == CSS_TOKEN_IDENT) {
-		if ((lwc_string_caseless_isequal(
-				token->idata, c->strings[INHERIT],
-				&match) == lwc_error_ok && match)) {
+		if ((lwc_string_caseless_isequal(token->idata,
+						 c->strings[INHERIT],
+						 &match) == lwc_error_ok &&
+		     match)) {
 			flags |= FLAG_INHERIT;
 
-		} else if ((lwc_string_caseless_isequal(
-				token->idata, c->strings[INITIAL],
-				&match) == lwc_error_ok && match)) {
+		} else if ((lwc_string_caseless_isequal(token->idata,
+							c->strings[INITIAL],
+							&match) ==
+				    lwc_error_ok &&
+			    match)) {
 			flags |= FLAG_INITIAL;
 
 		} else if ((lwc_string_caseless_isequal(
-				token->idata, c->strings[REVERT],
-				&match) == lwc_error_ok && match)) {
+				    token->idata, c->strings[REVERT], &match) ==
+				    lwc_error_ok &&
+			    match)) {
 			flags |= FLAG_REVERT;
 
 		} else if ((lwc_string_caseless_isequal(
-				token->idata, c->strings[UNSET],
-				&match) == lwc_error_ok && match)) {
+				    token->idata, c->strings[UNSET], &match) ==
+				    lwc_error_ok &&
+			    match)) {
 			flags |= FLAG_UNSET;
 
 		} else if ((lwc_string_caseless_isequal(
-				token->idata, c->strings[NONE],
-				&match) == lwc_error_ok && match)) {
+				    token->idata, c->strings[NONE], &match) ==
+				    lwc_error_ok &&
+			    match)) {
 			value = PLAY_DURING_NONE;
 
 		} else if ((lwc_string_caseless_isequal(
-				token->idata, c->strings[AUTO],
-				&match) == lwc_error_ok && match)) {
+				    token->idata, c->strings[AUTO], &match) ==
+				    lwc_error_ok &&
+			    match)) {
 			value = PLAY_DURING_AUTO;
 
 		} else {
@@ -90,16 +97,15 @@ css_error css__parse_play_during(css_language *c,
 		value = PLAY_DURING_URI;
 
 		error = c->sheet->resolve(c->sheet->resolve_pw,
-				c->sheet->url,
-				token->idata, &uri);
+					  c->sheet->url,
+					  token->idata,
+					  &uri);
 		if (error != CSS_OK) {
 			*ctx = orig_ctx;
 			return error;
 		}
 
-		error = css__stylesheet_string_add(c->sheet,
-						  uri,
-						  &uri_snumber);
+		error = css__stylesheet_string_add(c->sheet, uri, &uri_snumber);
 		if (error != CSS_OK) {
 			*ctx = orig_ctx;
 			return error;
@@ -112,9 +118,10 @@ css_error css__parse_play_during(css_language *c,
 			token = parserutils_vector_peek(vector, *ctx);
 			if (token != NULL && token->type == CSS_TOKEN_IDENT) {
 				if ((lwc_string_caseless_isequal(
-						token->idata, c->strings[MIX],
-						&match) == lwc_error_ok &&
-						match)) {
+					     token->idata,
+					     c->strings[MIX],
+					     &match) == lwc_error_ok &&
+				     match)) {
 					if ((value & PLAY_DURING_MIX) == 0)
 						value |= PLAY_DURING_MIX;
 					else {
@@ -122,10 +129,10 @@ css_error css__parse_play_during(css_language *c,
 						return CSS_INVALID;
 					}
 				} else if (lwc_string_caseless_isequal(
-						token->idata,
-						c->strings[REPEAT],
-						&match) == lwc_error_ok &&
-						match) {
+						   token->idata,
+						   c->strings[REPEAT],
+						   &match) == lwc_error_ok &&
+					   match) {
 					if ((value & PLAY_DURING_REPEAT) == 0)
 						value |= PLAY_DURING_REPEAT;
 					else {
@@ -142,7 +149,8 @@ css_error css__parse_play_during(css_language *c,
 		}
 	}
 
-	error = css__stylesheet_style_appendOPV(result, CSS_PROP_PLAY_DURING, flags, value);
+	error = css__stylesheet_style_appendOPV(
+		result, CSS_PROP_PLAY_DURING, flags, value);
 	if (error != CSS_OK) {
 		*ctx = orig_ctx;
 		return error;

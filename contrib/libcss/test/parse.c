@@ -15,22 +15,20 @@
 #define DUMP_EVENTS (0)
 
 #if DUMP_EVENTS
-static const char *event_names[] = {
-	"START_STYLESHEET",
-	"END_STYLESHEET",
-	"START_RULESET",
-	"END_RULESET",
-	"START_ATRULE",
-	"END_ATRULE",
-	"START_BLOCK",
-	"END_BLOCK",
-	"BLOCK_CONTENT",
-	"DECLARATION"
-};
+static const char *event_names[] = {"START_STYLESHEET",
+				    "END_STYLESHEET",
+				    "START_RULESET",
+				    "END_RULESET",
+				    "START_ATRULE",
+				    "END_ATRULE",
+				    "START_BLOCK",
+				    "END_BLOCK",
+				    "BLOCK_CONTENT",
+				    "DECLARATION"};
 #endif
 
-static css_error event_handler(css_parser_event type,
-		const parserutils_vector *tokens, void *pw)
+static css_error
+event_handler(css_parser_event type, const parserutils_vector *tokens, void *pw)
 {
 #if !DUMP_EVENTS
 	UNUSED(type);
@@ -57,7 +55,7 @@ static css_error event_handler(css_parser_event type,
 		printf("\n    %d", token->type);
 
 		if (token->data.data != NULL)
-			printf(" %.*s", (int) token->data.len, token->data.data);
+			printf(" %.*s", (int)token->data.len, token->data.data);
 	} while (token != NULL);
 
 	printf("\n");
@@ -83,13 +81,15 @@ int main(int argc, char **argv)
 	}
 
 	for (i = 0; i < ITERATIONS; i++) {
-		assert(css__parser_create("UTF-8", CSS_CHARSET_DICTATED,
-				&parser) == CSS_OK);
+		assert(css__parser_create("UTF-8",
+					  CSS_CHARSET_DICTATED,
+					  &parser) == CSS_OK);
 
 		params.event_handler.handler = event_handler;
 		params.event_handler.pw = NULL;
-		assert(css__parser_setopt(parser, CSS_PARSER_EVENT_HANDLER,
-				&params) == CSS_OK);
+		assert(css__parser_setopt(parser,
+					  CSS_PARSER_EVENT_HANDLER,
+					  &params) == CSS_OK);
 
 		fp = fopen(argv[1], "rb");
 		if (fp == NULL) {
@@ -105,7 +105,9 @@ int main(int argc, char **argv)
 			size_t read = fread(buf, 1, CHUNK_SIZE, fp);
 			assert(read == CHUNK_SIZE);
 
-			error = css__parser_parse_chunk(parser, buf, CHUNK_SIZE);
+			error = css__parser_parse_chunk(parser,
+							buf,
+							CHUNK_SIZE);
 			assert(error == CSS_OK || error == CSS_NEEDDATA);
 
 			len -= CHUNK_SIZE;
@@ -126,11 +128,9 @@ int main(int argc, char **argv)
 		assert(css__parser_completed(parser) == CSS_OK);
 
 		css__parser_destroy(parser);
-
 	}
 
 	printf("PASS\n");
 
 	return 0;
 }
-

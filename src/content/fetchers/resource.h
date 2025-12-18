@@ -19,7 +19,7 @@
 /**
  * \file
  * resource URL scheme handler interface.
- * 
+ *
  * The resource fetcher is intended to provide a flat uniform URL
  * space for browser local resources referenced by URL. Using this
  * scheme each frontend is only required to provide a single entry
@@ -33,7 +33,7 @@
 
 /**
  * Register the resource scheme.
- * 
+ *
  * should only be called from the fetch initialise
  *
  * \return NSERROR_OK on successful registration or error code on failure.

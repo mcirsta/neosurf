@@ -31,9 +31,7 @@
 
 /* exported interface documented in about/query.h */
 nserror
-get_query_description(struct nsurl *url,
-		      const char *key,
-		      char **out_str)
+get_query_description(struct nsurl *url, const char *key, char **out_str)
 {
 	nserror res;
 	char *url_s;

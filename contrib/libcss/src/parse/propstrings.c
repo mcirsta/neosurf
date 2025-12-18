@@ -11,7 +11,7 @@
 #include <assert.h>
 
 /** build string map entry with a string constant */
-#define SMAP(s) { s, (sizeof((s)) - 1) /* -1 for '\0' */ }
+#define SMAP(s) {s, (sizeof((s)) - 1) /* -1 for '\0' */}
 
 
 typedef struct stringmap_entry {
@@ -648,8 +648,8 @@ const stringmap_entry stringmap[LAST_KNOWN] = {
 	SMAP("white"),
 	SMAP("whitesmoke"),
 	SMAP("yellow"),
-    SMAP("yellowgreen"),
-    SMAP("rebeccapurple"),
+	SMAP("yellowgreen"),
+	SMAP("rebeccapurple"),
 
 	/* CSS Color Module Level 4 system colors */
 	SMAP("accentcolor"),
@@ -695,8 +695,7 @@ const stringmap_entry stringmap[LAST_KNOWN] = {
 	SMAP("threedshadow"),
 	SMAP("window"),
 	SMAP("windowframe"),
-	SMAP("windowtext")
-};
+	SMAP("windowtext")};
 
 
 /**
@@ -720,9 +719,10 @@ css_error css__propstrings_get(lwc_string ***strings)
 
 		/* Intern all known strings */
 		for (i = 0; i < LAST_KNOWN; i++) {
-			lerror = lwc_intern_string(stringmap[i].data,
-					stringmap[i].len,
-					&css__propstrings.strings[i]);
+			lerror = lwc_intern_string(
+				stringmap[i].data,
+				stringmap[i].len,
+				&css__propstrings.strings[i]);
 
 			if (lerror != lwc_error_ok)
 				return CSS_NOMEM;

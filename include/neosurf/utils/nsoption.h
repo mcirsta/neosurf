@@ -84,10 +84,11 @@
 #undef NSOPTION_COLOUR
 
 
-
-enum { OPTION_HTTP_PROXY_AUTH_NONE = 0,
-       OPTION_HTTP_PROXY_AUTH_BASIC = 1,
-       OPTION_HTTP_PROXY_AUTH_NTLM = 2 };
+enum {
+	OPTION_HTTP_PROXY_AUTH_NONE = 0,
+	OPTION_HTTP_PROXY_AUTH_BASIC = 1,
+	OPTION_HTTP_PROXY_AUTH_NTLM = 2
+};
 
 #define DEFAULT_MARGIN_TOP_MM 10
 #define DEFAULT_MARGIN_BOTTOM_MM 10
@@ -202,7 +203,9 @@ enum nsoption_generate_flags {
  * @param pdefs pointer to update to get default options table or NULL.
  * @return The error status
  */
-nserror nsoption_init(nsoption_set_default_t *set_default, struct nsoption_s **popts, struct nsoption_s **pdefs);
+nserror nsoption_init(nsoption_set_default_t *set_default,
+		      struct nsoption_s **popts,
+		      struct nsoption_s **pdefs);
 
 
 /**
@@ -230,7 +233,8 @@ nserror nsoption_read(const char *path, struct nsoption_s *opts);
 /**
  * Generate options via acallback.
  *
- * iterates options controlled by flags calling a method for each matched option.
+ * iterates options controlled by flags calling a method for each matched
+ * option.
  *
  * @param cb Function called for each option to be output.
  * @param ctx The context for the callback.
@@ -239,7 +243,11 @@ nserror nsoption_read(const char *path, struct nsoption_s *opts);
  * @param defs The default table to use or NULL to use global.
  * @return The error status.
  */
-nserror nsoption_generate(nsoption_generate_cb *cb, void *ctx, enum nsoption_generate_flags flags, struct nsoption_s *opts, struct nsoption_s *defs);
+nserror nsoption_generate(nsoption_generate_cb *cb,
+			  void *ctx,
+			  enum nsoption_generate_flags flags,
+			  struct nsoption_s *opts,
+			  struct nsoption_s *defs);
 
 
 /**
@@ -253,7 +261,9 @@ nserror nsoption_generate(nsoption_generate_cb *cb, void *ctx, enum nsoption_gen
  * @param defs The default table to use or NULL to use global
  * @return The error status
  */
-nserror nsoption_write(const char *path, struct nsoption_s *opts, struct nsoption_s *defs);
+nserror nsoption_write(const char *path,
+		       struct nsoption_s *opts,
+		       struct nsoption_s *defs);
 
 
 /**
@@ -294,7 +304,10 @@ nserror nsoption_commandline(int *pargc, char **argv, struct nsoption_s *opts);
  * @param fmt The format string.
  * @return The number of bytes written to \a string or -1 on error
  */
-int nsoption_snoptionf(char *string, size_t size, enum nsoption_e option, const char *fmt);
+int nsoption_snoptionf(char *string,
+		       size_t size,
+		       enum nsoption_e option,
+		       const char *fmt);
 
 
 /**
@@ -343,18 +356,22 @@ int nsoption_snoptionf(char *string, size_t size, enum nsoption_e option, const 
 
 
 /** set a boolean option in the default table */
-#define nsoption_set_bool(OPTION, VALUE) nsoptions[NSOPTION_##OPTION].value.b = VALUE
+#define nsoption_set_bool(OPTION, VALUE)                                       \
+	nsoptions[NSOPTION_##OPTION].value.b = VALUE
 
 
 /** set an integer option in the default table */
-#define nsoption_set_int(OPTION, VALUE) nsoptions[NSOPTION_##OPTION].value.i = VALUE
+#define nsoption_set_int(OPTION, VALUE)                                        \
+	nsoptions[NSOPTION_##OPTION].value.i = VALUE
 
 /** set an unsigned integer option in the default table */
-#define nsoption_set_uint(OPTION, VALUE) nsoptions[NSOPTION_##OPTION].value.u = VALUE
+#define nsoption_set_uint(OPTION, VALUE)                                       \
+	nsoptions[NSOPTION_##OPTION].value.u = VALUE
 
 
 /** set a colour option in the default table */
-#define nsoption_set_colour(OPTION, VALUE) nsoptions[NSOPTION_##OPTION].value.c = VALUE
+#define nsoption_set_colour(OPTION, VALUE)                                     \
+	nsoptions[NSOPTION_##OPTION].value.c = VALUE
 
 
 /**
@@ -368,20 +385,24 @@ int nsoption_snoptionf(char *string, size_t size, enum nsoption_e option, const 
  * @param option_idx The option
  * @param s The string to set. This is used directly and not copied.
  */
-nserror nsoption_set_tbl_charp(struct nsoption_s *opts, enum nsoption_e option_idx, char *s);
+nserror nsoption_set_tbl_charp(struct nsoption_s *opts,
+			       enum nsoption_e option_idx,
+			       char *s);
 
 /** set string option in default table */
-#define nsoption_set_charp(OPTION, VALUE) \
+#define nsoption_set_charp(OPTION, VALUE)                                      \
 	nsoption_set_tbl_charp(nsoptions, NSOPTION_##OPTION, VALUE)
 
 /** set string option in default table if currently unset */
-#define nsoption_setnull_charp(OPTION, VALUE)				\
-	do {								\
-		if (nsoptions[NSOPTION_##OPTION].value.s == NULL) {	\
-			nsoption_set_tbl_charp(nsoptions, NSOPTION_##OPTION, VALUE); \
-		} else {						\
-			free(VALUE);					\
-		}							\
+#define nsoption_setnull_charp(OPTION, VALUE)                                  \
+	do {                                                                   \
+		if (nsoptions[NSOPTION_##OPTION].value.s == NULL) {            \
+			nsoption_set_tbl_charp(nsoptions,                      \
+					       NSOPTION_##OPTION,              \
+					       VALUE);                         \
+		} else {                                                       \
+			free(VALUE);                                           \
+		}                                                              \
 	} while (0)
 
 #endif

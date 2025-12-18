@@ -16,29 +16,27 @@
  * The MouseMultiWheelEvent
  */
 struct dom_mouse_multi_wheel_event {
-	struct dom_mouse_event base;	/**< The base class */
+	struct dom_mouse_event base; /**< The base class */
 
-	int32_t x;	/**< The wheelDeltaX */
-	int32_t y;	/**< The wheelDeltaY */
-	int32_t z;	/**< The wheelDeltaZ */
+	int32_t x; /**< The wheelDeltaX */
+	int32_t y; /**< The wheelDeltaY */
+	int32_t z; /**< The wheelDeltaZ */
 };
 
 /* Constructor */
-dom_exception _dom_mouse_multi_wheel_event_create(
-		struct dom_mouse_multi_wheel_event **evt);
+dom_exception
+_dom_mouse_multi_wheel_event_create(struct dom_mouse_multi_wheel_event **evt);
 
 /* Destructor */
 void _dom_mouse_multi_wheel_event_destroy(
-		struct dom_mouse_multi_wheel_event *evt);
+	struct dom_mouse_multi_wheel_event *evt);
 
 /* Initialise function */
 dom_exception _dom_mouse_multi_wheel_event_initialise(
-		struct dom_mouse_multi_wheel_event *evt);
+	struct dom_mouse_multi_wheel_event *evt);
 
 /* Finalise function */
 #define _dom_mouse_multi_wheel_event_finalise _dom_mouse_event_finalise
 
 
 #endif
-
-

@@ -29,4 +29,3 @@ struct plotter_table;
 extern const struct plotter_table nsqt_plotters;
 
 #endif /* NETSURF_QT_PLOTTERS_H */
-

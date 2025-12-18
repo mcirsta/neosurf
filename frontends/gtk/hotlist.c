@@ -49,11 +49,11 @@ struct nsgtk_hotlist_window {
 
 static struct nsgtk_hotlist_window *hotlist_window = NULL;
 
-#define MENUPROTO(x) static gboolean nsgtk_on_##x##_activate( \
-		GtkMenuItem *widget, gpointer g)
-#define MENUEVENT(x) { #x, G_CALLBACK(nsgtk_on_##x##_activate) }
-#define MENUHANDLER(x) gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, \
-		gpointer g)
+#define MENUPROTO(x)                                                           \
+	static gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, gpointer g)
+#define MENUEVENT(x) {#x, G_CALLBACK(nsgtk_on_##x##_activate)}
+#define MENUHANDLER(x)                                                         \
+	gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, gpointer g)
 
 struct menu_events {
 	const char *widget;
@@ -105,8 +105,7 @@ static struct menu_events menu_events[] = {
 
 	MENUEVENT(launch),
 
-	{NULL, NULL}
-};
+	{NULL, NULL}};
 
 
 /* file menu*/
@@ -118,21 +117,24 @@ MENUHANDLER(export)
 	hlwin = (struct nsgtk_hotlist_window *)g;
 
 	save_dialog = gtk_file_chooser_dialog_new("Save File",
-			hlwin->wnd,
-			GTK_FILE_CHOOSER_ACTION_SAVE,
-			NSGTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-			NSGTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT,
-			NULL);
+						  hlwin->wnd,
+						  GTK_FILE_CHOOSER_ACTION_SAVE,
+						  NSGTK_STOCK_CANCEL,
+						  GTK_RESPONSE_CANCEL,
+						  NSGTK_STOCK_SAVE,
+						  GTK_RESPONSE_ACCEPT,
+						  NULL);
 
 	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(save_dialog),
-			getenv("HOME") ? getenv("HOME") : "/");
+					    getenv("HOME") ? getenv("HOME")
+							   : "/");
 
 	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(save_dialog),
-			"hotlist.html");
+					  "hotlist.html");
 
 	if (gtk_dialog_run(GTK_DIALOG(save_dialog)) == GTK_RESPONSE_ACCEPT) {
 		gchar *filename = gtk_file_chooser_get_filename(
-				GTK_FILE_CHOOSER(save_dialog));
+			GTK_FILE_CHOOSER(save_dialog));
 
 		hotlist_export(filename, NULL);
 		g_free(filename);
@@ -235,17 +237,18 @@ static void nsgtk_hotlist_init_menu(struct nsgtk_hotlist_window *hlwin)
 	GtkWidget *w;
 
 	while (event->widget != NULL) {
-		w = GTK_WIDGET(gtk_builder_get_object(hlwin->builder,
-						      event->widget));
+		w = GTK_WIDGET(
+			gtk_builder_get_object(hlwin->builder, event->widget));
 		if (w == NULL) {
-			NSLOG(neosurf, INFO,
-			      "Unable to connect menu widget ""%s""",
+			NSLOG(neosurf,
+			      INFO,
+			      "Unable to connect menu widget "
+			      "%s"
+			      "",
 			      event->widget);
 		} else {
-			g_signal_connect(G_OBJECT(w),
-					 "activate",
-					 event->handler,
-					 hlwin);
+			g_signal_connect(
+				G_OBJECT(w), "activate", event->handler, hlwin);
 		}
 		event++;
 	}
@@ -261,10 +264,10 @@ static void nsgtk_hotlist_init_menu(struct nsgtk_hotlist_window *hlwin)
  * \param y location of event
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror
-nsgtk_hotlist_mouse(struct nsgtk_corewindow *nsgtk_cw,
-		    browser_mouse_state mouse_state,
-		    int x, int y)
+static nserror nsgtk_hotlist_mouse(struct nsgtk_corewindow *nsgtk_cw,
+				   browser_mouse_state mouse_state,
+				   int x,
+				   int y)
 {
 	hotlist_mouse_action(mouse_state, x, y);
 
@@ -297,11 +300,9 @@ nsgtk_hotlist_key(struct nsgtk_corewindow *nsgtk_cw, uint32_t nskey)
 static nserror
 nsgtk_hotlist_draw(struct nsgtk_corewindow *nsgtk_cw, struct rect *r)
 {
-	struct redraw_context ctx = {
-		.interactive = true,
-		.background_images = true,
-		.plot = &nsgtk_plotters
-	};
+	struct redraw_context ctx = {.interactive = true,
+				     .background_images = true,
+				     .plot = &nsgtk_plotters};
 
 	hotlist_redraw(0, 0, r, &ctx);
 
@@ -336,8 +337,8 @@ static nserror nsgtk_hotlist_init(void)
 
 	gtk_builder_connect_signals(ncwin->builder, NULL);
 
-	ncwin->wnd = GTK_WINDOW(gtk_builder_get_object(ncwin->builder,
-						       "wndHotlist"));
+	ncwin->wnd = GTK_WINDOW(
+		gtk_builder_get_object(ncwin->builder, "wndHotlist"));
 
 	ncwin->core.scrolled = GTK_SCROLLED_WINDOW(
 		gtk_builder_get_object(ncwin->builder, "hotlistScrolled"));

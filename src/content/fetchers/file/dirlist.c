@@ -38,7 +38,7 @@
 
 static int dirlist_filesize_calculate(unsigned long *bytesize);
 static int dirlist_filesize_value(unsigned long bytesize);
-static char* dirlist_filesize_unit(unsigned long bytesize);
+static char *dirlist_filesize_unit(unsigned long bytesize);
 
 
 /**
@@ -60,11 +60,13 @@ static char* dirlist_filesize_unit(unsigned long bytesize);
 
 bool dirlist_generate_top(char *buffer, int buffer_length)
 {
-	int error = snprintf(buffer, buffer_length,
+	int error = snprintf(
+		buffer,
+		buffer_length,
 		"<html>\n"
 		"<head>\n"
 		"<link rel=\"stylesheet\" title=\"Standard\" "
-			"type=\"text/css\" href=\"resource:internal.css\">\n"
+		"type=\"text/css\" href=\"resource:internal.css\">\n"
 		"<style>\n");
 	if (error < 0 || error >= buffer_length)
 		/* Error or buffer too small */
@@ -72,7 +74,6 @@ bool dirlist_generate_top(char *buffer, int buffer_length)
 	else
 		/* OK */
 		return true;
-
 }
 
 
@@ -99,18 +100,24 @@ bool dirlist_generate_top(char *buffer, int buffer_length)
 
 bool dirlist_generate_hide_columns(int flags, char *buffer, int buffer_length)
 {
-	int error = snprintf(buffer, buffer_length,
-			"%s\n%s\n%s\n%s\n%s\n",
-			(flags & DIRLIST_NO_NAME_COLUMN) ?
-					"span.name { display: none; }\n" : "",
-			(flags & DIRLIST_NO_TYPE_COLUMN) ?
-					"span.type { display: none; }\n" : "",
-			(flags & DIRLIST_NO_SIZE_COLUMN) ?
-					"span.size { display: none; }\n" : "",
-			(flags & DIRLIST_NO_DATE_COLUMN) ?
-					"span.date { display: none; }\n" : "",
-			(flags & DIRLIST_NO_TIME_COLUMN) ?
-					"span.time { display: none; }\n" : "");
+	int error = snprintf(buffer,
+			     buffer_length,
+			     "%s\n%s\n%s\n%s\n%s\n",
+			     (flags & DIRLIST_NO_NAME_COLUMN)
+				     ? "span.name { display: none; }\n"
+				     : "",
+			     (flags & DIRLIST_NO_TYPE_COLUMN)
+				     ? "span.type { display: none; }\n"
+				     : "",
+			     (flags & DIRLIST_NO_SIZE_COLUMN)
+				     ? "span.size { display: none; }\n"
+				     : "",
+			     (flags & DIRLIST_NO_DATE_COLUMN)
+				     ? "span.date { display: none; }\n"
+				     : "",
+			     (flags & DIRLIST_NO_TIME_COLUMN)
+				     ? "span.time { display: none; }\n"
+				     : "");
 	if (error < 0 || error >= buffer_length)
 		/* Error or buffer too small */
 		return false;
@@ -154,21 +161,24 @@ bool dirlist_generate_title(const char *title, char *buffer, int buffer_length)
 		return false;
 	}
 
-	error = snprintf(buffer, buffer_length,
-			"</style>\n"
-			"<title>%s</title>\n"
-			"<style>\n"
-			"html {\n"
-			"\tbackground-color: #%06"PRIx32";\n"
-			"}\n"
-			"%s"
-			"</style>\n"
-			"</head>\n"
-			"<body id=\"dirlist\" class=\"ns-even-bg ns-even-fg ns-border\">\n"
-			"<h1 class=\"ns-border\">%s</h1>\n",
-			title,
-			colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_BG]),
-			stylesheet, title);
+	error = snprintf(
+		buffer,
+		buffer_length,
+		"</style>\n"
+		"<title>%s</title>\n"
+		"<style>\n"
+		"html {\n"
+		"\tbackground-color: #%06" PRIx32 ";\n"
+		"}\n"
+		"%s"
+		"</style>\n"
+		"</head>\n"
+		"<body id=\"dirlist\" class=\"ns-even-bg ns-even-fg ns-border\">\n"
+		"<h1 class=\"ns-border\">%s</h1>\n",
+		title,
+		colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_BG]),
+		stylesheet,
+		title);
 	if (error < 0 || error >= buffer_length)
 		/* Error or buffer too small */
 		return false;
@@ -199,12 +209,15 @@ bool dirlist_generate_title(const char *title, char *buffer, int buffer_length)
  *     dirlist_generate_bottom()
  */
 
-bool dirlist_generate_parent_link(const char *parent, char *buffer,
-		int buffer_length)
+bool dirlist_generate_parent_link(const char *parent,
+				  char *buffer,
+				  int buffer_length)
 {
-	int error = snprintf(buffer, buffer_length,
-			"<p><a href=\"%s\">%s</a></p>",
-			parent, messages_get("FileParent"));
+	int error = snprintf(buffer,
+			     buffer_length,
+			     "<p><a href=\"%s\">%s</a></p>",
+			     parent,
+			     messages_get("FileParent"));
 	if (error < 0 || error >= buffer_length)
 		/* Error or buffer too small */
 		return false;
@@ -236,19 +249,22 @@ bool dirlist_generate_parent_link(const char *parent, char *buffer,
 
 bool dirlist_generate_headings(char *buffer, int buffer_length)
 {
-	int error = snprintf(buffer, buffer_length,
-			"<div>\n"
-			"<strong>\n"
-			"\t<span class=\"name\">%s</span>\n"
-			"\t<span class=\"type\">%s</span>\n"
-			"\t<span class=\"size\">%s</span>"
-			"<span class=\"size\"></span>\n"
-			"\t<span class=\"date\">%s</span>\n"
-			"\t<span class=\"time\">%s</span>\n"
-			"</strong>\n",
-			messages_get("FileName"), messages_get("FileType"),
-			messages_get("FileSize"), messages_get("FileDate"),
-			messages_get("FileTime"));
+	int error = snprintf(buffer,
+			     buffer_length,
+			     "<div>\n"
+			     "<strong>\n"
+			     "\t<span class=\"name\">%s</span>\n"
+			     "\t<span class=\"type\">%s</span>\n"
+			     "\t<span class=\"size\">%s</span>"
+			     "<span class=\"size\"></span>\n"
+			     "\t<span class=\"date\">%s</span>\n"
+			     "\t<span class=\"time\">%s</span>\n"
+			     "</strong>\n",
+			     messages_get("FileName"),
+			     messages_get("FileType"),
+			     messages_get("FileSize"),
+			     messages_get("FileDate"),
+			     messages_get("FileTime"));
 	if (error < 0 || error >= buffer_length)
 		/* Error or buffer too small */
 		return false;
@@ -286,9 +302,16 @@ bool dirlist_generate_headings(char *buffer, int buffer_length)
  *     dirlist_generate_bottom()
  */
 
-bool dirlist_generate_row(bool even, bool directory, nsurl *url, char *name,
-		const char *mimetype, long long size, char *date, char *time,
-		char *buffer, int buffer_length)
+bool dirlist_generate_row(bool even,
+			  bool directory,
+			  nsurl *url,
+			  char *name,
+			  const char *mimetype,
+			  long long size,
+			  char *date,
+			  char *time,
+			  char *buffer,
+			  int buffer_length)
 {
 	const char *unit;
 	char size_string[100];
@@ -299,22 +322,31 @@ bool dirlist_generate_row(bool even, bool directory, nsurl *url, char *name,
 		strncpy(size_string, "", sizeof size_string);
 	} else {
 		unit = messages_get(dirlist_filesize_unit((unsigned long)size));
-		snprintf(size_string, sizeof size_string, "%d",
-				dirlist_filesize_value((unsigned long)size));
+		snprintf(size_string,
+			 sizeof size_string,
+			 "%d",
+			 dirlist_filesize_value((unsigned long)size));
 	}
 
-	error = snprintf(buffer, buffer_length,
-			"<a href=\"%s\" class=\"%s %s\">\n"
-			"\t<span class=\"name ns-border\">%s</span>\n"
-			"\t<span class=\"type ns-border\">%s</span>\n"
-			"\t<span class=\"size ns-border\">%s</span>"
-			"<span class=\"size ns-border\">%s</span>\n"
-			"\t<span class=\"date ns-border\">%s</span>\n"
-			"\t<span class=\"time ns-border\">%s</span>\n"
-			"</a>\n", nsurl_access(url),
-			even ? "even ns-even-bg" : "odd  ns-odd-bg",
-			directory ? "dir" : "file",
-			name, mimetype, size_string, unit, date, time);
+	error = snprintf(buffer,
+			 buffer_length,
+			 "<a href=\"%s\" class=\"%s %s\">\n"
+			 "\t<span class=\"name ns-border\">%s</span>\n"
+			 "\t<span class=\"type ns-border\">%s</span>\n"
+			 "\t<span class=\"size ns-border\">%s</span>"
+			 "<span class=\"size ns-border\">%s</span>\n"
+			 "\t<span class=\"date ns-border\">%s</span>\n"
+			 "\t<span class=\"time ns-border\">%s</span>\n"
+			 "</a>\n",
+			 nsurl_access(url),
+			 even ? "even ns-even-bg" : "odd  ns-odd-bg",
+			 directory ? "dir" : "file",
+			 name,
+			 mimetype,
+			 size_string,
+			 unit,
+			 date,
+			 time);
 	if (error < 0 || error >= buffer_length)
 		/* Error or buffer too small */
 		return false;
@@ -343,10 +375,11 @@ bool dirlist_generate_row(bool even, bool directory, nsurl *url, char *name,
 
 bool dirlist_generate_bottom(char *buffer, int buffer_length)
 {
-	int error = snprintf(buffer, buffer_length,
-			"</div>\n"
-			"</body>\n"
-			"</html>\n");
+	int error = snprintf(buffer,
+			     buffer_length,
+			     "</div>\n"
+			     "</body>\n"
+			     "</html>\n");
 	if (error < 0 || error >= buffer_length)
 		/* Error or buffer too small */
 		return false;
@@ -358,7 +391,7 @@ bool dirlist_generate_bottom(char *buffer, int buffer_length)
 
 /**
  * Obtain display value and units for filesize after conversion to B/kB/MB/GB,
- * as appropriate.  
+ * as appropriate.
  *
  * \param  bytesize  file size in bytes, updated to filesize in output units
  * \return  number of times bytesize has been divided by 1024
@@ -400,8 +433,8 @@ int dirlist_filesize_value(unsigned long bytesize)
  * \return  Units to display for file size, for value given by filesize_value()
  */
 
-char* dirlist_filesize_unit(unsigned long bytesize)
+char *dirlist_filesize_unit(unsigned long bytesize)
 {
-	const char* units[] = { "Bytes", "kBytes", "MBytes", "GBytes" };
-	return (char*)units[dirlist_filesize_calculate(&bytesize)];
+	const char *units[] = {"Bytes", "kBytes", "MBytes", "GBytes"};
+	return (char *)units[dirlist_filesize_calculate(&bytesize)];
 }

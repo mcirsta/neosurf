@@ -9,8 +9,7 @@
 #define hubbub_types_h_
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #include <stdbool.h>
@@ -20,10 +19,10 @@ extern "C"
  * A client-dictated charset will override all others.
  * A document-specified charset will override autodetection or the default */
 typedef enum hubbub_charset_source {
-	HUBBUB_CHARSET_UNKNOWN		= 0,	/**< Unknown */
-	HUBBUB_CHARSET_TENTATIVE	= 1,	/**< Charset may be changed
-						 * with further data */
-	HUBBUB_CHARSET_CONFIDENT	= 2	/**< Charset definite */
+	HUBBUB_CHARSET_UNKNOWN = 0, /**< Unknown */
+	HUBBUB_CHARSET_TENTATIVE = 1, /**< Charset may be changed
+				       * with further data */
+	HUBBUB_CHARSET_CONFIDENT = 2 /**< Charset definite */
 } hubbub_charset_source;
 
 /**
@@ -74,50 +73,50 @@ typedef enum hubbub_ns {
  * Tokeniser string type
  */
 typedef struct hubbub_string {
-	const uint8_t *ptr;		/**< Pointer to data */
-	size_t len;			/**< Byte length of string */
+	const uint8_t *ptr; /**< Pointer to data */
+	size_t len; /**< Byte length of string */
 } hubbub_string;
 
 /**
  * Tag attribute data
  */
 typedef struct hubbub_attribute {
-	hubbub_ns ns;			/**< Attribute namespace */
-	hubbub_string name;		/**< Attribute name */
-	hubbub_string value;		/**< Attribute value */
+	hubbub_ns ns; /**< Attribute namespace */
+	hubbub_string name; /**< Attribute name */
+	hubbub_string value; /**< Attribute value */
 } hubbub_attribute;
 
 /**
  * Data for doctype token
  */
 typedef struct hubbub_doctype {
-	hubbub_string name;		/**< Doctype name */
+	hubbub_string name; /**< Doctype name */
 
-	bool public_missing;		/**< Whether the public id is missing */
-	hubbub_string public_id;	/**< Doctype public identifier */
+	bool public_missing; /**< Whether the public id is missing */
+	hubbub_string public_id; /**< Doctype public identifier */
 
-	bool system_missing;		/**< Whether the system id is missing */
-	hubbub_string system_id;	/**< Doctype system identifier */
+	bool system_missing; /**< Whether the system id is missing */
+	hubbub_string system_id; /**< Doctype system identifier */
 
-	bool force_quirks;		/**< Doctype force-quirks flag */
+	bool force_quirks; /**< Doctype force-quirks flag */
 } hubbub_doctype;
 
 /**
  * Data for a tag
  */
 typedef struct hubbub_tag {
-	hubbub_ns ns;			/**< Tag namespace */
-	hubbub_string name;		/**< Tag name */
-	uint32_t n_attributes;		/**< Count of attributes */
-	hubbub_attribute *attributes;	/**< Array of attribute data */
-	bool self_closing;		/**< Whether the tag can have children */
+	hubbub_ns ns; /**< Tag namespace */
+	hubbub_string name; /**< Tag name */
+	uint32_t n_attributes; /**< Count of attributes */
+	hubbub_attribute *attributes; /**< Array of attribute data */
+	bool self_closing; /**< Whether the tag can have children */
 } hubbub_tag;
 
 /**
  * Token data
  */
 typedef struct hubbub_token {
-	hubbub_token_type type;		/**< The token type */
+	hubbub_token_type type; /**< The token type */
 
 	union {
 		hubbub_doctype doctype;
@@ -127,7 +126,7 @@ typedef struct hubbub_token {
 		hubbub_string comment;
 
 		hubbub_string character;
-	} data;				/**< Type-specific data */
+	} data; /**< Type-specific data */
 } hubbub_token;
 
 #ifdef __cplusplus

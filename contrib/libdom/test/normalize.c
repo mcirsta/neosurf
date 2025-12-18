@@ -11,11 +11,11 @@
 #include "testutils/domts.h"
 
 #if defined(__has_feature)
-# if __has_feature(address_sanitizer)
-#  if !defined(__SANITIZE_ADDRESS__)
-#    define __SANITIZE_ADDRESS__
-#  endif
-# endif
+#if __has_feature(address_sanitizer)
+#if !defined(__SANITIZE_ADDRESS__)
+#define __SANITIZE_ADDRESS__
+#endif
+#endif
 #endif
 
 #if defined(__linux__) && !defined(__SANITIZE_ADDRESS__)

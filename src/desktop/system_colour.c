@@ -31,7 +31,8 @@
 
 #include "desktop/system_colour.h"
 
-#define colour_list_len ((NSOPTION_SYS_COLOUR_END - NSOPTION_SYS_COLOUR_START) + 1)
+#define colour_list_len                                                        \
+	((NSOPTION_SYS_COLOUR_END - NSOPTION_SYS_COLOUR_START) + 1)
 
 static lwc_string *colour_list[colour_list_len];
 
@@ -81,8 +82,11 @@ nserror ns_system_colour_char(const char *name, colour *colour_out)
 
 	for (ccount = 0; ccount < colour_list_len; ccount++) {
 		if (strcmp(name,
-			   nsoptions[ccount + NSOPTION_SYS_COLOUR_START].key + SLEN("sys_colour_")) == 0) {
-			*colour_out = nsoptions[ccount + NSOPTION_SYS_COLOUR_START].value.c;
+			   nsoptions[ccount + NSOPTION_SYS_COLOUR_START].key +
+				   SLEN("sys_colour_")) == 0) {
+			*colour_out =
+				nsoptions[ccount + NSOPTION_SYS_COLOUR_START]
+					.value.c;
 			return NSERROR_OK;
 		}
 	}
@@ -99,9 +103,12 @@ css_error ns_system_colour(void *pw, lwc_string *name, css_color *colour)
 
 	for (ccount = 0; ccount < colour_list_len; ccount++) {
 		if (lwc_string_caseless_isequal(name,
-				colour_list[ccount],
-				&match) == lwc_error_ok && match) {
-			*colour = ns_color_to_nscss(nsoptions[ccount + NSOPTION_SYS_COLOUR_START].value.c);
+						colour_list[ccount],
+						&match) == lwc_error_ok &&
+		    match) {
+			*colour = ns_color_to_nscss(
+				nsoptions[ccount + NSOPTION_SYS_COLOUR_START]
+					.value.c);
 			return CSS_OK;
 		}
 	}

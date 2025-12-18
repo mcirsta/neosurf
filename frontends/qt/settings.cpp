@@ -83,31 +83,34 @@ static char *accept_language_from_selection(const QList<QByteArray> &selected)
 					  (int)selected.at(idx).size(),
 					  selected.at(idx).constData(),
 					  quality);
-			cur+=outlen;
-			totallen-=outlen;
+			cur += outlen;
+			totallen -= outlen;
 		}
-		cur-=2;
-		*cur=0;
+		cur -= 2;
+		*cur = 0;
 	}
 	return alang;
 }
 
 
-class GeneralSettings: public AbstractSettingsCategory
+class GeneralSettings : public AbstractSettingsCategory
 {
-public:
+      public:
 	GeneralSettings(QWidget *parent);
-	const char *categoryName() { return messages_get("General"); }
+	const char *categoryName()
+	{
+		return messages_get("General");
+	}
 	void categoryRealize();
 	void categoryApply();
-private:
+
+      private:
 	QCheckBox *m_enablejavascript;
 };
 
 
-GeneralSettings::GeneralSettings(QWidget *parent=nullptr)
-	: AbstractSettingsCategory(parent),
-	  m_enablejavascript(new QCheckBox)
+GeneralSettings::GeneralSettings(QWidget *parent = nullptr)
+	: AbstractSettingsCategory(parent), m_enablejavascript(new QCheckBox)
 {
 	m_enablejavascript->setText(messages_get("Enable Javascript"));
 
@@ -139,7 +142,6 @@ void GeneralSettings::categoryRealize()
 		state = Qt::Checked;
 	}
 	m_enablejavascript->setCheckState(state);
-
 }
 
 
@@ -153,15 +155,19 @@ void GeneralSettings::categoryApply()
 }
 
 
-class HomeSettings: public AbstractSettingsCategory
+class HomeSettings : public AbstractSettingsCategory
 {
-public:
+      public:
 	HomeSettings(QWidget *parent);
 
-	const char *categoryName() { return messages_get("Home"); }
+	const char *categoryName()
+	{
+		return messages_get("Home");
+	}
 	void categoryRealize();
 	void categoryApply();
-private:
+
+      private:
 	QLineEdit *m_homeurl;
 };
 
@@ -173,14 +179,14 @@ void HomeSettings::categoryRealize()
 void HomeSettings::categoryApply()
 {
 	if (m_homeurl->isModified()) {
-		nsoption_set_charp(homepage_url,
-				   strdup(m_homeurl->text().toStdString().c_str()));
+		nsoption_set_charp(
+			homepage_url,
+			strdup(m_homeurl->text().toStdString().c_str()));
 	}
 }
 
-HomeSettings::HomeSettings(QWidget *parent=nullptr)
-	: AbstractSettingsCategory(parent),
-	  m_homeurl(new QLineEdit)
+HomeSettings::HomeSettings(QWidget *parent = nullptr)
+	: AbstractSettingsCategory(parent), m_homeurl(new QLineEdit)
 {
 	QFormLayout *pagelayout = new QFormLayout;
 	pagelayout->addRow("Homepage", m_homeurl);
@@ -196,34 +202,54 @@ HomeSettings::HomeSettings(QWidget *parent=nullptr)
 }
 
 
-class AppearanceSettings: public AbstractSettingsCategory
+class AppearanceSettings : public AbstractSettingsCategory
 {
-public:
+      public:
 	AppearanceSettings(QWidget *parent);
-	const char *categoryName() { return "Appearance"; }
+	const char *categoryName()
+	{
+		return "Appearance";
+	}
 	void categoryRealize();
 	void categoryApply();
-private:
+
+      private:
 	QCheckBox *m_opentab;
 	QCheckBox *m_switchnew;
 	QComboBox *m_colour_selection;
 	QComboBox *m_zoom;
 };
 
-AppearanceSettings::AppearanceSettings(QWidget *parent=nullptr)
-	: AbstractSettingsCategory(parent),
-	  m_opentab(new QCheckBox),
-	  m_switchnew(new QCheckBox),
-	  m_colour_selection(new QComboBox),
+AppearanceSettings::AppearanceSettings(QWidget *parent = nullptr)
+	: AbstractSettingsCategory(parent), m_opentab(new QCheckBox),
+	  m_switchnew(new QCheckBox), m_colour_selection(new QComboBox),
 	  m_zoom(new QComboBox)
 {
 	m_opentab->setText(messages_get("TabLinkOpen"));
 
 	m_switchnew->setText(messages_get("TabSwitchNew"));
 
-	int scales[]={ 33, 50, 67, 75, 80, 90, 100, 110, 120, 133, 150, 170, 200, 240, 300, 400, 500, 0 };
-	for (int idx=0; scales[idx] != 0; idx++) {
-		m_zoom->addItem(QString::number(scales[idx])+"%", scales[idx]);
+	int scales[] = {33,
+			50,
+			67,
+			75,
+			80,
+			90,
+			100,
+			110,
+			120,
+			133,
+			150,
+			170,
+			200,
+			240,
+			300,
+			400,
+			500,
+			0};
+	for (int idx = 0; scales[idx] != 0; idx++) {
+		m_zoom->addItem(QString::number(scales[idx]) + "%",
+				scales[idx]);
 	}
 
 	m_colour_selection->addItem(messages_get("ColourSelectionAutomatic"));
@@ -239,7 +265,8 @@ AppearanceSettings::AppearanceSettings(QWidget *parent=nullptr)
 	tabsgroup->setLayout(tabslayout);
 
 	QFormLayout *colourlayout = new QFormLayout;
-	colourlayout->addRow(messages_get("ColourSelection"), m_colour_selection);
+	colourlayout->addRow(messages_get("ColourSelection"),
+			     m_colour_selection);
 
 	QGroupBox *colourgroup = new QGroupBox(messages_get("Colours"));
 	colourgroup->setFlat(true);
@@ -280,10 +307,11 @@ void AppearanceSettings::categoryRealize()
 	m_colour_selection->setCurrentIndex(nsoption_uint(colour_selection));
 
 	/* select the page scale value in combobox closest to user config */
-	int sel_idx=0;
-	int max_difference=INT_MAX;
-	for (int idx = 0; idx < m_zoom->count() ; idx++) {
-		int delta = abs(m_zoom->itemData(idx).toInt() - nsoption_int(scale));
+	int sel_idx = 0;
+	int max_difference = INT_MAX;
+	for (int idx = 0; idx < m_zoom->count(); idx++) {
+		int delta = abs(m_zoom->itemData(idx).toInt() -
+				nsoption_int(scale));
 		if (delta < max_difference) {
 			max_difference = delta;
 			sel_idx = idx;
@@ -314,20 +342,23 @@ void AppearanceSettings::categoryApply()
 }
 
 
-class LanguageSettings: public AbstractSettingsCategory
+class LanguageSettings : public AbstractSettingsCategory
 {
-public:
+      public:
 	LanguageSettings(QWidget *parent);
-	const char *categoryName() { return "Language"; }
+	const char *categoryName()
+	{
+		return "Language";
+	}
 	void categoryRealize();
 	void categoryApply();
-private:
+
+      private:
 	NS_ListSelection *m_pagelang;
 };
 
-LanguageSettings::LanguageSettings(QWidget *parent=nullptr)
-	: AbstractSettingsCategory(parent),
-	  m_pagelang(new NS_ListSelection)
+LanguageSettings::LanguageSettings(QWidget *parent = nullptr)
+	: AbstractSettingsCategory(parent), m_pagelang(new NS_ListSelection)
 {
 	QFile lang(":languages");
 	if (!lang.open(QIODevice::ReadOnly | QIODevice::Text)) {
@@ -389,15 +420,15 @@ void LanguageSettings::categoryRealize()
 		return;
 	}
 	QList<QByteArray> split = alang.split(',');
-	for (int idx=0; idx < split.size(); idx++) {
+	for (int idx = 0; idx < split.size(); idx++) {
 		QByteArray ent = split.at(idx);
 		int langlen;
 		// strip leading spaces
 		while ((ent.size() > 0) && (ent.front() == ' ')) {
-			ent.remove(0,1);
+			ent.remove(0, 1);
 		}
 		// remove trailing quality, etc
-		for (langlen=0;langlen < ent.size();langlen++) {
+		for (langlen = 0; langlen < ent.size(); langlen++) {
 			if ((ent[langlen] < 'a' || ent[langlen] > 'z') &&
 			    (ent[langlen] < 'A' || ent[langlen] > 'Z') &&
 			    (ent[langlen] < '0' || ent[langlen] > '9') &&
@@ -426,20 +457,23 @@ void LanguageSettings::categoryApply()
 }
 
 
-class SearchSettings: public AbstractSettingsCategory
+class SearchSettings : public AbstractSettingsCategory
 {
-public:
+      public:
 	SearchSettings(QWidget *parent);
-	const char *categoryName() { return "Search"; }
+	const char *categoryName()
+	{
+		return "Search";
+	}
 	void categoryRealize();
 	void categoryApply();
-private:
+
+      private:
 	QComboBox *m_provider; /**< web search provider */
 };
 
-SearchSettings::SearchSettings(QWidget *parent=nullptr)
-	: AbstractSettingsCategory(parent),
-	  m_provider(new QComboBox)
+SearchSettings::SearchSettings(QWidget *parent = nullptr)
+	: AbstractSettingsCategory(parent), m_provider(new QComboBox)
 {
 	int iter;
 	const char *name;
@@ -465,8 +499,9 @@ SearchSettings::SearchSettings(QWidget *parent=nullptr)
 
 void SearchSettings::categoryRealize()
 {
-	for (int idx = 0; idx < m_provider->count() ; idx++) {
-		if (m_provider->itemText(idx) == nsoption_charp(search_web_provider)) {
+	for (int idx = 0; idx < m_provider->count(); idx++) {
+		if (m_provider->itemText(idx) ==
+		    nsoption_charp(search_web_provider)) {
 			m_provider->setCurrentIndex(idx);
 			break;
 		}
@@ -482,25 +517,27 @@ void SearchSettings::categoryApply()
 }
 
 
-class PrivacySettings: public AbstractSettingsCategory
+class PrivacySettings : public AbstractSettingsCategory
 {
-public:
+      public:
 	PrivacySettings(QWidget *parent);
-	const char *categoryName() { return messages_get("Privacy"); }
+	const char *categoryName()
+	{
+		return messages_get("Privacy");
+	}
 	void categoryRealize();
 	void categoryApply();
-private:
+
+      private:
 	QCheckBox *m_preventpopups;
 	QCheckBox *m_hideadverts;
 	QCheckBox *m_enablednt;
 	QCheckBox *m_enablereferral;
 };
 
-PrivacySettings::PrivacySettings(QWidget *parent=nullptr)
-	: AbstractSettingsCategory(parent),
-	  m_preventpopups(new QCheckBox),
-	  m_hideadverts(new QCheckBox),
-	  m_enablednt(new QCheckBox),
+PrivacySettings::PrivacySettings(QWidget *parent = nullptr)
+	: AbstractSettingsCategory(parent), m_preventpopups(new QCheckBox),
+	  m_hideadverts(new QCheckBox), m_enablednt(new QCheckBox),
 	  m_enablereferral(new QCheckBox)
 {
 	m_preventpopups->setText(messages_get("Prevent popups"));
@@ -582,18 +619,21 @@ void PrivacySettings::categoryApply()
 }
 
 
-class NetworkSettings:public AbstractSettingsCategory
+class NetworkSettings : public AbstractSettingsCategory
 {
-public:
+      public:
 	NetworkSettings(QWidget *parent);
 
-	const char *categoryName() { return "Network"; }
+	const char *categoryName()
+	{
+		return "Network";
+	}
 	void categoryRealize();
 	void categoryApply();
-private slots:
+      private slots:
 	void proxy_access_changed(int index);
 
-private:
+      private:
 	QFormLayout *m_proxylayout; /**< layout containing proxy */
 	QWidget *m_hostport; /**< widget holding the host and port layout */
 	QComboBox *m_proxy_access; /**< proxy access type direct/manual */
@@ -606,26 +646,25 @@ private:
 	QSpinBox *m_fetchers_max;
 	QSpinBox *m_fetchers_perhost;
 	QSpinBox *m_fetchers_cached;
-
 };
 
 void NetworkSettings::proxy_access_changed(int index)
 {
-	switch(index) {
-	case 0: //Direct
+	switch (index) {
+	case 0: // Direct
 		m_proxylayout->setRowVisible(m_hostport, false);
 		m_proxylayout->setRowVisible(m_proxy_auth_user, false);
 		m_proxylayout->setRowVisible(m_proxy_auth_pass, false);
 		m_proxylayout->setRowVisible(m_proxy_noproxy, false);
 		break;
-	case 1: //Manual no auth
+	case 1: // Manual no auth
 		m_proxylayout->setRowVisible(m_hostport, true);
 		m_proxylayout->setRowVisible(m_proxy_auth_user, false);
 		m_proxylayout->setRowVisible(m_proxy_auth_pass, false);
 		m_proxylayout->setRowVisible(m_proxy_noproxy, true);
 		break;
-	case 2: //Manual with basic auth
-	case 3: //Manual with ntlm auth
+	case 2: // Manual with basic auth
+	case 3: // Manual with ntlm auth
 		m_proxylayout->setRowVisible(m_hostport, true);
 		m_proxylayout->setRowVisible(m_proxy_auth_user, true);
 		m_proxylayout->setRowVisible(m_proxy_auth_pass, true);
@@ -636,7 +675,7 @@ void NetworkSettings::proxy_access_changed(int index)
 
 void NetworkSettings::categoryRealize()
 {
-	//proxy
+	// proxy
 	m_proxy_host->setText(nsoption_charp(http_proxy_host));
 	m_proxy_port->setValue(nsoption_int(http_proxy_port));
 	m_proxy_auth_user->setText(nsoption_charp(http_proxy_auth_user));
@@ -663,11 +702,11 @@ void NetworkSettings::categoryRealize()
 			break;
 		}
 	} else {
-		m_proxy_access->setCurrentIndex(0); //Direct
+		m_proxy_access->setCurrentIndex(0); // Direct
 		proxy_access_changed(0);
 	}
 
-	//fetchers
+	// fetchers
 	m_fetchers_max->setValue(nsoption_int(max_fetchers));
 	m_fetchers_perhost->setValue(nsoption_int(max_fetchers_per_host));
 	m_fetchers_cached->setValue(nsoption_int(max_cached_fetch_handles));
@@ -675,7 +714,7 @@ void NetworkSettings::categoryRealize()
 
 void NetworkSettings::categoryApply()
 {
-	//proxy
+	// proxy
 	int access = m_proxy_access->currentIndex();
 	if (access == 0) {
 		nsoption_set_bool(http_proxy, false);
@@ -683,12 +722,16 @@ void NetworkSettings::categoryApply()
 		nsoption_set_bool(http_proxy, true);
 		if (m_proxy_host->isModified()) {
 			nsoption_set_charp(http_proxy_host,
-					   strdup(m_proxy_host->text().toStdString().c_str()));
+					   strdup(m_proxy_host->text()
+							  .toStdString()
+							  .c_str()));
 		}
 		nsoption_set_int(http_proxy_port, m_proxy_port->value());
 		if (m_proxy_auth_user->isModified()) {
 			nsoption_set_charp(http_proxy_auth_user,
-					   strdup(m_proxy_auth_user->text().toStdString().c_str()));
+					   strdup(m_proxy_auth_user->text()
+							  .toStdString()
+							  .c_str()));
 		}
 		if (access == 1) {
 			nsoption_set_int(http_proxy_auth,
@@ -703,11 +746,17 @@ void NetworkSettings::categoryApply()
 			}
 			if (m_proxy_auth_pass->isModified()) {
 				nsoption_set_charp(http_proxy_auth_pass,
-						   strdup(m_proxy_auth_pass->text().toStdString().c_str()));
+						   strdup(m_proxy_auth_pass
+								  ->text()
+								  .toStdString()
+								  .c_str()));
 			}
 			if (m_proxy_noproxy->isModified()) {
 				nsoption_set_charp(http_proxy_noproxy,
-						   strdup(m_proxy_noproxy->text().toStdString().c_str()));
+						   strdup(m_proxy_noproxy
+								  ->text()
+								  .toStdString()
+								  .c_str()));
 			}
 		}
 	}
@@ -718,41 +767,41 @@ void NetworkSettings::categoryApply()
 	nsoption_set_int(max_cached_fetch_handles, m_fetchers_cached->value());
 }
 
-NetworkSettings::NetworkSettings(QWidget *parent=nullptr)
-	: AbstractSettingsCategory(parent),
-	  m_proxylayout(new QFormLayout),
-	  m_hostport(new QWidget),
-	  m_proxy_access(new QComboBox),
-	  m_proxy_host(new QLineEdit),
-	  m_proxy_port(new QSpinBox),
-	  m_proxy_auth_user(new QLineEdit),
-	  m_proxy_auth_pass(new QLineEdit),
+NetworkSettings::NetworkSettings(QWidget *parent = nullptr)
+	: AbstractSettingsCategory(parent), m_proxylayout(new QFormLayout),
+	  m_hostport(new QWidget), m_proxy_access(new QComboBox),
+	  m_proxy_host(new QLineEdit), m_proxy_port(new QSpinBox),
+	  m_proxy_auth_user(new QLineEdit), m_proxy_auth_pass(new QLineEdit),
 	  m_proxy_noproxy(new QLineEdit)
 {
-	//Proxy
+	// Proxy
 
-	connect(m_proxy_access, &QComboBox::currentIndexChanged,
-		this, &NetworkSettings::proxy_access_changed);
+	connect(m_proxy_access,
+		&QComboBox::currentIndexChanged,
+		this,
+		&NetworkSettings::proxy_access_changed);
 	m_proxy_port->setRange(1, 65535);
 
 	m_proxy_access->addItem("Direct Connection");
 	m_proxy_access->addItem("Manual Configuration");
-	m_proxy_access->addItem("Manual Configuration with basic authentication");
-	m_proxy_access->addItem("Manual Configuration with NTLM authentication");
+	m_proxy_access->addItem(
+		"Manual Configuration with basic authentication");
+	m_proxy_access->addItem(
+		"Manual Configuration with NTLM authentication");
 	m_proxylayout->addRow("Proxy access to internet", m_proxy_access);
-	// Access: direct/system/manual no auth/manual basic auth/manual ntlm auth
-	// Proxy Type:http/http1/https/https2/socks4/socks4a/socks5/socks5h
+	// Access: direct/system/manual no auth/manual basic auth/manual ntlm
+	// auth Proxy Type:http/http1/https/https2/socks4/socks4a/socks5/socks5h
 	// Host: host:port
 
 	QHBoxLayout *hostportlayout = new QHBoxLayout(m_hostport);
-	hostportlayout->setContentsMargins(0,0,0,0);
+	hostportlayout->setContentsMargins(0, 0, 0, 0);
 	QLabel *portlabel = new QLabel(":");
 	hostportlayout->addWidget(m_proxy_host);
 	hostportlayout->addWidget(portlabel);
 	hostportlayout->addWidget(m_proxy_port);
 
 	m_proxylayout->addRow("Host", m_hostport);
-        // username
+	// username
 	m_proxylayout->addRow("Username", m_proxy_auth_user);
 	// password
 	m_proxylayout->addRow("Password", m_proxy_auth_pass);
@@ -763,18 +812,18 @@ NetworkSettings::NetworkSettings(QWidget *parent=nullptr)
 	proxygroup->setFlat(true);
 	proxygroup->setLayout(m_proxylayout);
 
-	//fetchers
+	// fetchers
 	m_fetchers_max = new QSpinBox;
 	m_fetchers_perhost = new QSpinBox;
 	m_fetchers_cached = new QSpinBox;
 
 	QFormLayout *fetcherslayout = new QFormLayout;
-	fetcherslayout->addRow("Maximum",m_fetchers_max);
-	//maximum fetchers
-	fetcherslayout->addRow("Per host",m_fetchers_perhost);
-	//fetchers per host
-	fetcherslayout->addRow("Cached",m_fetchers_cached);
-	//cached connections
+	fetcherslayout->addRow("Maximum", m_fetchers_max);
+	// maximum fetchers
+	fetcherslayout->addRow("Per host", m_fetchers_perhost);
+	// fetchers per host
+	fetcherslayout->addRow("Cached", m_fetchers_cached);
+	// cached connections
 
 	QGroupBox *fetchersgroup = new QGroupBox("Fetchers");
 	fetchersgroup->setFlat(true);
@@ -797,32 +846,36 @@ NetworkSettings::NetworkSettings(QWidget *parent=nullptr)
  * list where selecting the category changes the page shown in a widget stack.
  */
 NS_Settings::NS_Settings(QWidget *parent)
-	: QWidget(parent),
-	  m_headerlabel(new QLabel),
-	  m_categorylist(new FirstListWidget),
-	  m_categories(new QStackedWidget),
+	: QWidget(parent), m_headerlabel(new QLabel),
+	  m_categorylist(new FirstListWidget), m_categories(new QStackedWidget),
 	  m_buttonbox(new QDialogButtonBox(QDialogButtonBox::Ok |
 					   QDialogButtonBox::Cancel |
 					   QDialogButtonBox::Apply))
 {
-	connect(m_categorylist, &QListWidget::currentRowChanged,
-		m_categories, &QStackedWidget::setCurrentIndex);
+	connect(m_categorylist,
+		&QListWidget::currentRowChanged,
+		m_categories,
+		&QStackedWidget::setCurrentIndex);
 
-	connect(m_categorylist, &QListWidget::currentTextChanged,
-		this, &NS_Settings::categorychanged_slot);
+	connect(m_categorylist,
+		&QListWidget::currentTextChanged,
+		this,
+		&NS_Settings::categorychanged_slot);
 
-	connect(m_buttonbox, &QDialogButtonBox::clicked,
-		this, &NS_Settings::clicked_slot);
+	connect(m_buttonbox,
+		&QDialogButtonBox::clicked,
+		this,
+		&NS_Settings::clicked_slot);
 
 	QFont labelfont;
 	labelfont.setBold(true);
 	m_headerlabel->setFont(labelfont);
 
 	QGridLayout *layout = new QGridLayout;
-	layout->addWidget( m_categorylist, 0, 0, 2, 1);
-	layout->addWidget(  m_headerlabel, 0, 1, 1, 1);
-	layout->addWidget(   m_categories, 1, 1, 1, 1);
-	layout->addWidget(    m_buttonbox, 2, 0, 1, 2);
+	layout->addWidget(m_categorylist, 0, 0, 2, 1);
+	layout->addWidget(m_headerlabel, 0, 1, 1, 1);
+	layout->addWidget(m_categories, 1, 1, 1, 1);
+	layout->addWidget(m_buttonbox, 2, 0, 1, 2);
 	layout->setColumnStretch(1, 4);
 	setLayout(layout);
 
@@ -842,8 +895,9 @@ NS_Settings::NS_Settings(QWidget *parent)
 void NS_Settings::showEvent(QShowEvent *event)
 {
 	for (int idx = 0; idx < m_categories->count(); idx++) {
-		dynamic_cast<AbstractSettingsCategory *>
-			(m_categories->widget(idx))->categoryRealize();
+		dynamic_cast<AbstractSettingsCategory *>(
+			m_categories->widget(idx))
+			->categoryRealize();
 	}
 }
 
@@ -854,8 +908,9 @@ void NS_Settings::clicked_slot(QAbstractButton *button)
 	if ((role == QDialogButtonBox::AcceptRole) ||
 	    (role == QDialogButtonBox::ApplyRole)) {
 		for (int idx = 0; idx < m_categories->count(); idx++) {
-			dynamic_cast<AbstractSettingsCategory *>
-				(m_categories->widget(idx))->categoryApply();
+			dynamic_cast<AbstractSettingsCategory *>(
+				m_categories->widget(idx))
+				->categoryApply();
 		}
 		NS_Application::instance()->nsOptionPersist();
 	}

@@ -37,9 +37,10 @@ extern "C" {
 /**
  * urlbar constructor
  */
-NS_URLBar::NS_URLBar(QWidget* parent, NS_Actions *actions, struct browser_window *bw)
-	: QToolBar(parent),
-	  m_bw(bw)
+NS_URLBar::NS_URLBar(QWidget *parent,
+		     NS_Actions *actions,
+		     struct browser_window *bw)
+	: QToolBar(parent), m_bw(bw)
 {
 	addAction(actions->m_back);
 	addAction(actions->m_local_history);
@@ -48,7 +49,8 @@ NS_URLBar::NS_URLBar(QWidget* parent, NS_Actions *actions, struct browser_window
 
 	m_input = new QLineEdit(parent);
 	m_input->addAction(actions->m_page_info, QLineEdit::LeadingPosition);
-	m_input->addAction(actions->m_add_edit_bookmark, QLineEdit::TrailingPosition);
+	m_input->addAction(actions->m_add_edit_bookmark,
+			   QLineEdit::TrailingPosition);
 #ifdef USE_ICON_FOR_SCALE
 	m_input->addAction(actions->m_reset_page_scale,
 			   QLineEdit::TrailingPosition);
@@ -103,8 +105,10 @@ NS_URLBar::NS_URLBar(QWidget* parent, NS_Actions *actions, struct browser_window
 	m_burgerbutton->setStyleSheet("::menu-indicator {image: none}");
 	addWidget(m_burgerbutton);
 
-	connect(m_input, &QLineEdit::returnPressed,
-		this, &NS_URLBar::input_pressed);
+	connect(m_input,
+		&QLineEdit::returnPressed,
+		this,
+		&NS_URLBar::input_pressed);
 }
 
 void NS_URLBar::input_pressed()

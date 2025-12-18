@@ -99,9 +99,9 @@ union content_msg_data {
 	 * CONTENT_MSG_REDIRECT - Redirect info
 	 */
 	struct {
-		struct nsurl *from;	/**< Redirect origin */
-		struct nsurl *to;	/**< Redirect target */
-	} redirect;		/**< Fetch URL redirect occured */
+		struct nsurl *from; /**< Redirect origin */
+		struct nsurl *to; /**< Redirect target */
+	} redirect; /**< Fetch URL redirect occured */
 
 	/**
 	 * CONTENT_MSG_REDRAW - Area of content which needs redrawing
@@ -174,7 +174,7 @@ union content_msg_data {
 			CONTENT_SAVE_COMPLETE,
 			CONTENT_SAVE_SOURCE
 		} type;
-		 /** if NULL, save the content generating the message */
+		/** if NULL, save the content generating the message */
 		struct hlcache_handle *content;
 	} dragsave;
 
@@ -209,11 +209,11 @@ union content_msg_data {
 			CONTENT_CARET_REMOVE
 		} type;
 		struct {
-			int x;				/**< Carret x-coord */
-			int y;				/**< Carret y-coord */
-			int height;			/**< Carret height */
-			const struct rect *clip;	/**< Carret clip rect */
-		} pos;			/**< With CONTENT_CARET_SET_POS */
+			int x; /**< Carret x-coord */
+			int y; /**< Carret y-coord */
+			int height; /**< Carret height */
+			const struct rect *clip; /**< Carret clip rect */
+		} pos; /**< With CONTENT_CARET_SET_POS */
 	} caret;
 
 	/**
@@ -250,26 +250,27 @@ union content_msg_data {
 		 * The type of text search operation
 		 */
 		enum {
-		      /**
-		       * Free text search find operation has started or finished
-		       */
-		      CONTENT_TEXTSEARCH_FIND,
-		      /**
-		       * Free text search match state has changed
-		       */
-		      CONTENT_TEXTSEARCH_MATCH,
-		      /**
-		       * Free text search back available state changed
-		       */
-		      CONTENT_TEXTSEARCH_BACK,
-		      /**
-		       * Free text search forward available state changed
-		       */
-		      CONTENT_TEXTSEARCH_FORWARD,
-		      /**
-		       * add a search query string to the recent searches
-		       */
-		      CONTENT_TEXTSEARCH_RECENT
+			/**
+			 * Free text search find operation has started or
+			 * finished
+			 */
+			CONTENT_TEXTSEARCH_FIND,
+			/**
+			 * Free text search match state has changed
+			 */
+			CONTENT_TEXTSEARCH_MATCH,
+			/**
+			 * Free text search back available state changed
+			 */
+			CONTENT_TEXTSEARCH_BACK,
+			/**
+			 * Free text search forward available state changed
+			 */
+			CONTENT_TEXTSEARCH_FORWARD,
+			/**
+			 * add a search query string to the recent searches
+			 */
+			CONTENT_TEXTSEARCH_RECENT
 		} type;
 		/**
 		 * context passed to browser_window_search()
@@ -284,7 +285,6 @@ union content_msg_data {
 		 */
 		const char *string;
 	} textsearch;
-
 };
 
 
@@ -301,8 +301,10 @@ bool content_can_reformat(struct hlcache_handle *h);
  *
  * Calls the reformat function for the content.
  */
-void content_reformat(struct hlcache_handle *h, bool background,
-		int width, int height);
+void content_reformat(struct hlcache_handle *h,
+		      bool background,
+		      int width,
+		      int height);
 
 /**
  * Request a redraw of an area of a content
@@ -314,7 +316,10 @@ void content_reformat(struct hlcache_handle *h, bool background,
  * \param height  Height of rectangle
  */
 void content_request_redraw(struct hlcache_handle *h,
-		int x, int y, int width, int height);
+			    int x,
+			    int y,
+			    int width,
+			    int height);
 
 /**
  * Handle mouse movements in a content window.
@@ -325,8 +330,11 @@ void content_request_redraw(struct hlcache_handle *h,
  * \param  x	  coordinate of mouse
  * \param  y	  coordinate of mouse
  */
-void content_mouse_track(struct hlcache_handle *h, struct browser_window *bw,
-		browser_mouse_state mouse, int x, int y);
+void content_mouse_track(struct hlcache_handle *h,
+			 struct browser_window *bw,
+			 browser_mouse_state mouse,
+			 int x,
+			 int y);
 
 /**
  * Handle mouse clicks and movements in a content window.
@@ -343,8 +351,11 @@ void content_mouse_track(struct hlcache_handle *h, struct browser_window *bw,
  * code paths opens the possibility that an attacker will make the status bar
  * show some harmless action where clicking will be harmful.
  */
-void content_mouse_action(struct hlcache_handle *h, struct browser_window *bw,
-		browser_mouse_state mouse, int x, int y);
+void content_mouse_action(struct hlcache_handle *h,
+			  struct browser_window *bw,
+			  browser_mouse_state mouse,
+			  int x,
+			  int y);
 
 /**
  * Handle keypresses.
@@ -367,8 +378,10 @@ bool content_keypress(struct hlcache_handle *h, uint32_t key);
  *
  * Calls the open function for the content.
  */
-nserror content_open(struct hlcache_handle *h, struct browser_window *bw,
-		struct content *page, struct object_params *params);
+nserror content_open(struct hlcache_handle *h,
+		     struct browser_window *bw,
+		     struct content *page,
+		     struct object_params *params);
 
 /**
  * The window containing the content has been closed.
@@ -387,7 +400,7 @@ void content_clear_selection(struct hlcache_handle *h);
  * Get a text selection from a content.  Ownership is passed to the caller,
  * who must free() it.
  */
-char * content_get_selection(struct hlcache_handle *h);
+char *content_get_selection(struct hlcache_handle *h);
 
 /**
  * Get positional contextural information for a content.
@@ -398,7 +411,9 @@ char * content_get_selection(struct hlcache_handle *h);
  * \param[out] data The context structure to fill in.
  */
 nserror content_get_contextual_content(struct hlcache_handle *h,
-		int x, int y, struct browser_window_features *data);
+				       int x,
+				       int y,
+				       struct browser_window_features *data);
 
 /**
  * scroll content at coordnate
@@ -408,7 +423,10 @@ nserror content_get_contextual_content(struct hlcache_handle *h,
  * \param[in] y The y coordinate to examine.
  */
 bool content_scroll_at_point(struct hlcache_handle *h,
-		int x, int y, int scrx, int scry);
+			     int x,
+			     int y,
+			     int scrx,
+			     int scry);
 
 /**
  * Drag and drop a file at coordinate
@@ -418,7 +436,9 @@ bool content_scroll_at_point(struct hlcache_handle *h,
  * \param[in] y The y coordinate to examine.
  */
 bool content_drop_file_at_point(struct hlcache_handle *h,
-		int x, int y, char *file);
+				int x,
+				int y,
+				char *file);
 
 
 /**
@@ -438,7 +458,8 @@ nserror content_debug(struct hlcache_handle *h, enum content_debug op);
  * \return A matching rfc5988 link or NULL if none is found.
  *
  */
-struct content_rfc5988_link *content_find_rfc5988_link(struct hlcache_handle *h, lwc_string *rel);
+struct content_rfc5988_link *
+content_find_rfc5988_link(struct hlcache_handle *h, lwc_string *rel);
 
 
 /**

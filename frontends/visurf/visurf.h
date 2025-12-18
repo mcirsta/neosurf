@@ -130,9 +130,11 @@ struct nsvi_output {
 extern struct nsvi_state *global_state;
 
 struct touch_point *get_touch_point(struct nsvi_state *state, int32_t id);
-void nsvi_set_clipboard(struct nsvi_state *state, const char *type,
-		const char *data, size_t len);
-nserror nsvi_filter_url(struct nsvi_filter *filter,
-		const char *in, nsurl **out);
+void nsvi_set_clipboard(struct nsvi_state *state,
+			const char *type,
+			const char *data,
+			size_t len);
+nserror
+nsvi_filter_url(struct nsvi_filter *filter, const char *in, nsurl **out);
 
 #endif

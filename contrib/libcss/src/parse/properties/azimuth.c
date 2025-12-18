@@ -28,8 +28,9 @@
  *		   If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_azimuth(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+			     const parserutils_vector *vector,
+			     int32_t *ctx,
+			     css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	css_error error;
@@ -53,37 +54,45 @@ css_error css__parse_azimuth(css_language *c,
 	}
 
 	if (token->type == CSS_TOKEN_IDENT &&
-			(lwc_string_caseless_isequal(
-			token->idata, c->strings[INHERIT],
-			&match) == lwc_error_ok && match)) {
+	    (lwc_string_caseless_isequal(token->idata,
+					 c->strings[INHERIT],
+					 &match) == lwc_error_ok &&
+	     match)) {
 		parserutils_vector_iterate(vector, ctx);
 		flags = FLAG_INHERIT;
 	} else if (token->type == CSS_TOKEN_IDENT &&
-			(lwc_string_caseless_isequal(
-			token->idata, c->strings[INITIAL],
-			&match) == lwc_error_ok && match)) {
+		   (lwc_string_caseless_isequal(token->idata,
+						c->strings[INITIAL],
+						&match) == lwc_error_ok &&
+		    match)) {
 		parserutils_vector_iterate(vector, ctx);
 		flags = FLAG_INITIAL;
 	} else if (token->type == CSS_TOKEN_IDENT &&
-			(lwc_string_caseless_isequal(
-			token->idata, c->strings[REVERT],
-			&match) == lwc_error_ok && match)) {
+		   (lwc_string_caseless_isequal(token->idata,
+						c->strings[REVERT],
+						&match) == lwc_error_ok &&
+		    match)) {
 		parserutils_vector_iterate(vector, ctx);
 		flags = FLAG_REVERT;
 	} else if (token->type == CSS_TOKEN_IDENT &&
-			(lwc_string_caseless_isequal(
-			token->idata, c->strings[UNSET],
-			&match) == lwc_error_ok && match)) {
+		   (lwc_string_caseless_isequal(token->idata,
+						c->strings[UNSET],
+						&match) == lwc_error_ok &&
+		    match)) {
 		parserutils_vector_iterate(vector, ctx);
 		flags = FLAG_UNSET;
 	} else if (token->type == CSS_TOKEN_IDENT &&
-		(lwc_string_caseless_isequal(token->idata, c->strings[LEFTWARDS],
-			&match) == lwc_error_ok && match)) {
+		   (lwc_string_caseless_isequal(token->idata,
+						c->strings[LEFTWARDS],
+						&match) == lwc_error_ok &&
+		    match)) {
 		parserutils_vector_iterate(vector, ctx);
 		value = AZIMUTH_LEFTWARDS;
 	} else if (token->type == CSS_TOKEN_IDENT &&
-		(lwc_string_caseless_isequal(token->idata, c->strings[RIGHTWARDS],
-			&match) == lwc_error_ok && match)) {
+		   (lwc_string_caseless_isequal(token->idata,
+						c->strings[RIGHTWARDS],
+						&match) == lwc_error_ok &&
+		    match)) {
 		parserutils_vector_iterate(vector, ctx);
 		value = AZIMUTH_RIGHTWARDS;
 	} else if (token->type == CSS_TOKEN_IDENT) {
@@ -92,45 +101,60 @@ css_error css__parse_azimuth(css_language *c,
 		/* Now, we may have one of the other keywords or behind,
 		 * potentially followed by behind or other keyword,
 		 * respectively */
-		if ((lwc_string_caseless_isequal(
-				token->idata, c->strings[LEFT_SIDE],
-				&match) == lwc_error_ok && match)) {
+		if ((lwc_string_caseless_isequal(token->idata,
+						 c->strings[LEFT_SIDE],
+						 &match) == lwc_error_ok &&
+		     match)) {
 			value = AZIMUTH_LEFT_SIDE;
-		} else if ((lwc_string_caseless_isequal(
-				token->idata, c->strings[FAR_LEFT],
-				&match) == lwc_error_ok && match)) {
+		} else if ((lwc_string_caseless_isequal(token->idata,
+							c->strings[FAR_LEFT],
+							&match) ==
+				    lwc_error_ok &&
+			    match)) {
 			value = AZIMUTH_FAR_LEFT;
 		} else if ((lwc_string_caseless_isequal(
-				token->idata, c->strings[LEFT],
-				&match) == lwc_error_ok && match)) {
+				    token->idata, c->strings[LEFT], &match) ==
+				    lwc_error_ok &&
+			    match)) {
 			value = AZIMUTH_LEFT;
-		} else if ((lwc_string_caseless_isequal(
-				token->idata, c->strings[CENTER_LEFT],
-				&match) == lwc_error_ok && match)) {
+		} else if ((lwc_string_caseless_isequal(token->idata,
+							c->strings[CENTER_LEFT],
+							&match) ==
+				    lwc_error_ok &&
+			    match)) {
 			value = AZIMUTH_CENTER_LEFT;
 		} else if ((lwc_string_caseless_isequal(
-				token->idata, c->strings[CENTER],
-				&match) == lwc_error_ok && match)) {
+				    token->idata, c->strings[CENTER], &match) ==
+				    lwc_error_ok &&
+			    match)) {
 			value = AZIMUTH_CENTER;
 		} else if ((lwc_string_caseless_isequal(
-				token->idata, c->strings[CENTER_RIGHT],
-				&match) == lwc_error_ok && match)) {
+				    token->idata,
+				    c->strings[CENTER_RIGHT],
+				    &match) == lwc_error_ok &&
+			    match)) {
 			value = AZIMUTH_CENTER_RIGHT;
 		} else if ((lwc_string_caseless_isequal(
-				token->idata, c->strings[RIGHT],
-				&match) == lwc_error_ok && match)) {
+				    token->idata, c->strings[RIGHT], &match) ==
+				    lwc_error_ok &&
+			    match)) {
 			value = AZIMUTH_RIGHT;
-		} else if ((lwc_string_caseless_isequal(
-				token->idata, c->strings[FAR_RIGHT],
-				&match) == lwc_error_ok && match)) {
+		} else if ((lwc_string_caseless_isequal(token->idata,
+							c->strings[FAR_RIGHT],
+							&match) ==
+				    lwc_error_ok &&
+			    match)) {
 			value = AZIMUTH_FAR_RIGHT;
-		} else if ((lwc_string_caseless_isequal(
-				token->idata, c->strings[RIGHT_SIDE],
-				&match) == lwc_error_ok && match)) {
+		} else if ((lwc_string_caseless_isequal(token->idata,
+							c->strings[RIGHT_SIDE],
+							&match) ==
+				    lwc_error_ok &&
+			    match)) {
 			value = AZIMUTH_RIGHT_SIDE;
 		} else if ((lwc_string_caseless_isequal(
-				token->idata, c->strings[BEHIND],
-				&match) == lwc_error_ok && match)) {
+				    token->idata, c->strings[BEHIND], &match) ==
+				    lwc_error_ok &&
+			    match)) {
 			value = AZIMUTH_BEHIND;
 		} else {
 			*ctx = orig_ctx;
@@ -143,68 +167,88 @@ css_error css__parse_azimuth(css_language *c,
 		token = parserutils_vector_peek(vector, *ctx);
 
 		if (token != NULL && token->type == CSS_TOKEN_IDENT &&
-				value == AZIMUTH_BEHIND) {
+		    value == AZIMUTH_BEHIND) {
 			parserutils_vector_iterate(vector, ctx);
 
-			if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[LEFT_SIDE],
-					&match) == lwc_error_ok && match)) {
+			if ((lwc_string_caseless_isequal(token->idata,
+							 c->strings[LEFT_SIDE],
+							 &match) ==
+				     lwc_error_ok &&
+			     match)) {
 				value |= AZIMUTH_LEFT_SIDE;
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[FAR_LEFT],
-					&match) == lwc_error_ok && match)) {
+					    token->idata,
+					    c->strings[FAR_LEFT],
+					    &match) == lwc_error_ok &&
+				    match)) {
 				value |= AZIMUTH_FAR_LEFT;
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[LEFT],
-					&match) == lwc_error_ok && match)) {
+					    token->idata,
+					    c->strings[LEFT],
+					    &match) == lwc_error_ok &&
+				    match)) {
 				value |= AZIMUTH_LEFT;
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[CENTER_LEFT],
-					&match) == lwc_error_ok && match)) {
+					    token->idata,
+					    c->strings[CENTER_LEFT],
+					    &match) == lwc_error_ok &&
+				    match)) {
 				value |= AZIMUTH_CENTER_LEFT;
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[CENTER],
-					&match) == lwc_error_ok && match)) {
+					    token->idata,
+					    c->strings[CENTER],
+					    &match) == lwc_error_ok &&
+				    match)) {
 				value |= AZIMUTH_CENTER;
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[CENTER_RIGHT],
-					&match) == lwc_error_ok && match)) {
+					    token->idata,
+					    c->strings[CENTER_RIGHT],
+					    &match) == lwc_error_ok &&
+				    match)) {
 				value |= AZIMUTH_CENTER_RIGHT;
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[RIGHT],
-					&match) == lwc_error_ok && match)) {
+					    token->idata,
+					    c->strings[RIGHT],
+					    &match) == lwc_error_ok &&
+				    match)) {
 				value |= AZIMUTH_RIGHT;
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[FAR_RIGHT],
-					&match) == lwc_error_ok && match)) {
+					    token->idata,
+					    c->strings[FAR_RIGHT],
+					    &match) == lwc_error_ok &&
+				    match)) {
 				value |= AZIMUTH_FAR_RIGHT;
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[RIGHT_SIDE],
-					&match) == lwc_error_ok && match)) {
+					    token->idata,
+					    c->strings[RIGHT_SIDE],
+					    &match) == lwc_error_ok &&
+				    match)) {
 				value |= AZIMUTH_RIGHT_SIDE;
 			} else {
 				*ctx = orig_ctx;
 				return CSS_INVALID;
 			}
 		} else if (token != NULL && token->type == CSS_TOKEN_IDENT &&
-				value != AZIMUTH_BEHIND) {
+			   value != AZIMUTH_BEHIND) {
 			parserutils_vector_iterate(vector, ctx);
 
-			if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[BEHIND],
-					&match) == lwc_error_ok && match)) {
+			if ((lwc_string_caseless_isequal(token->idata,
+							 c->strings[BEHIND],
+							 &match) ==
+				     lwc_error_ok &&
+			     match)) {
 				value |= AZIMUTH_BEHIND;
 			} else {
 				*ctx = orig_ctx;
 				return CSS_INVALID;
 			}
 		} else if ((token == NULL || token->type != CSS_TOKEN_IDENT) &&
-				value == AZIMUTH_BEHIND) {
+			   value == AZIMUTH_BEHIND) {
 			value |= AZIMUTH_CENTER;
 		}
 	} else {
-		error = css__parse_unit_specifier(c, vector, ctx, UNIT_DEG,
-				&length, &unit);
+		error = css__parse_unit_specifier(
+			c, vector, ctx, UNIT_DEG, &length, &unit);
 		if (error != CSS_OK) {
 			*ctx = orig_ctx;
 			return error;
@@ -236,7 +280,8 @@ css_error css__parse_azimuth(css_language *c,
 		value = AZIMUTH_ANGLE;
 	}
 
-	error = css__stylesheet_style_appendOPV(result, CSS_PROP_AZIMUTH, flags, value);
+	error = css__stylesheet_style_appendOPV(
+		result, CSS_PROP_AZIMUTH, flags, value);
 	if (error != CSS_OK) {
 		*ctx = orig_ctx;
 		return error;

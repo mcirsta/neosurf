@@ -28,8 +28,7 @@ static const char *namespaces[DOM_NAMESPACE_COUNT] = {
 	"http://www.w3.org/2000/svg",
 	"http://www.w3.org/1999/xlink",
 	"http://www.w3.org/XML/1998/namespace",
-	"http://www.w3.org/2000/xmlns/"
-};
+	"http://www.w3.org/2000/xmlns/"};
 
 dom_string *dom_namespaces[DOM_NAMESPACE_COUNT] = {
 	NULL,
@@ -45,13 +44,14 @@ static dom_exception _dom_namespace_initialise(void)
 	int i;
 	dom_exception err;
 
-	err = dom_string_create((const uint8_t *) "xml", SLEN("xml"), &xml);
+	err = dom_string_create((const uint8_t *)"xml", SLEN("xml"), &xml);
 	if (err != DOM_NO_ERR) {
 		return err;
 	}
 
-	err = dom_string_create((const uint8_t *) "xmlns", SLEN("xmlns"), 
-			&xmlns);
+	err = dom_string_create((const uint8_t *)"xmlns",
+				SLEN("xmlns"),
+				&xmlns);
 	if (err != DOM_NO_ERR) {
 		dom_string_unref(xml);
 		xml = NULL;
@@ -60,9 +60,9 @@ static dom_exception _dom_namespace_initialise(void)
 	}
 
 	for (i = 1; i < DOM_NAMESPACE_COUNT; i++) {
-		err = dom_string_create(
-				(const uint8_t *) namespaces[i],
-				strlen(namespaces[i]), &dom_namespaces[i]);
+		err = dom_string_create((const uint8_t *)namespaces[i],
+					strlen(namespaces[i]),
+					&dom_namespaces[i]);
 		if (err != DOM_NO_ERR) {
 			dom_string_unref(xmlns);
 			xmlns = NULL;
@@ -126,8 +126,8 @@ dom_exception dom_namespace_finalise(void)
  *                                   ::qname is not (or is not prefixed by)
  *                                   "xmlns".
  */
-dom_exception _dom_namespace_validate_qname(dom_string *qname,
-		dom_string *namespace)
+dom_exception
+_dom_namespace_validate_qname(dom_string *qname, dom_string *namespace)
 {
 	uint32_t colon, len;
 
@@ -152,21 +152,21 @@ dom_exception _dom_namespace_validate_qname(dom_string *qname,
 	/* Find colon */
 	colon = dom_string_index(qname, ':');
 
-	if (colon == (uint32_t) -1) {
+	if (colon == (uint32_t)-1) {
 		/* No prefix */
 		/* If namespace URI is for xmlns, ensure qname == "xmlns" */
-		if (namespace != NULL && 
-				dom_string_isequal(namespace, 
-				dom_namespaces[DOM_NAMESPACE_XMLNS]) &&
-				dom_string_isequal(qname, xmlns) == false) {
+		if (namespace != NULL &&
+		    dom_string_isequal(namespace,
+				       dom_namespaces[DOM_NAMESPACE_XMLNS]) &&
+		    dom_string_isequal(qname, xmlns) == false) {
 			return DOM_NAMESPACE_ERR;
 		}
 
 		/* If qname == "xmlns", ensure namespace URI is for xmlns */
-		if (namespace != NULL && 
-				dom_string_isequal(qname, xmlns) &&
-				dom_string_isequal(namespace, 
-				dom_namespaces[DOM_NAMESPACE_XMLNS]) == false) {
+		if (namespace != NULL && dom_string_isequal(qname, xmlns) &&
+		    dom_string_isequal(namespace,
+				       dom_namespaces[DOM_NAMESPACE_XMLNS]) ==
+			    false) {
 			return DOM_NAMESPACE_ERR;
 		}
 	} else if (colon == 0) {
@@ -205,24 +205,26 @@ dom_exception _dom_namespace_validate_qname(dom_string *qname,
 
 		/* Test for invalid XML namespace */
 		if (dom_string_isequal(prefix, xml) &&
-				dom_string_isequal(namespace,
-				dom_namespaces[DOM_NAMESPACE_XML]) == false) {
+		    dom_string_isequal(namespace,
+				       dom_namespaces[DOM_NAMESPACE_XML]) ==
+			    false) {
 			dom_string_unref(prefix);
 			return DOM_NAMESPACE_ERR;
 		}
 
 		/* Test for invalid xmlns namespace */
 		if (dom_string_isequal(prefix, xmlns) &&
-				dom_string_isequal(namespace,
-				dom_namespaces[DOM_NAMESPACE_XMLNS]) == false) {
+		    dom_string_isequal(namespace,
+				       dom_namespaces[DOM_NAMESPACE_XMLNS]) ==
+			    false) {
 			dom_string_unref(prefix);
 			return DOM_NAMESPACE_ERR;
 		}
 
 		/* Test for presence of xmlns namespace with non xmlns prefix */
-		if (dom_string_isequal(namespace, 
-				dom_namespaces[DOM_NAMESPACE_XMLNS]) &&
-				dom_string_isequal(prefix, xmlns) == false) {
+		if (dom_string_isequal(namespace,
+				       dom_namespaces[DOM_NAMESPACE_XMLNS]) &&
+		    dom_string_isequal(prefix, xmlns) == false) {
 			dom_string_unref(prefix);
 			return DOM_NAMESPACE_ERR;
 		}
@@ -247,7 +249,8 @@ dom_exception _dom_namespace_validate_qname(dom_string *qname,
  * them once finished.
  */
 dom_exception _dom_namespace_split_qname(dom_string *qname,
-		dom_string **prefix, dom_string **localname)
+					 dom_string **prefix,
+					 dom_string **localname)
 {
 	uint32_t colon;
 	dom_exception err;
@@ -261,7 +264,7 @@ dom_exception _dom_namespace_split_qname(dom_string *qname,
 	/* Find colon, if any */
 	colon = dom_string_index(qname, ':');
 
-	if (colon == (uint32_t) -1) {
+	if (colon == (uint32_t)-1) {
 		/* None found => no prefix */
 		*prefix = NULL;
 		*localname = dom_string_ref(qname);
@@ -272,8 +275,8 @@ dom_exception _dom_namespace_split_qname(dom_string *qname,
 			return err;
 		}
 
-		err = dom_string_substr(qname, colon + 1,
-				dom_string_length(qname), localname);
+		err = dom_string_substr(
+			qname, colon + 1, dom_string_length(qname), localname);
 		if (err != DOM_NO_ERR) {
 			dom_string_unref(*prefix);
 			*prefix = NULL;
@@ -285,10 +288,10 @@ dom_exception _dom_namespace_split_qname(dom_string *qname,
 }
 
 /**
- * Get the XML prefix dom_string 
+ * Get the XML prefix dom_string
  *
  * \return the xml prefix dom_string.
- * 
+ *
  * Note: The client of this function may or may not call the dom_string_ref
  * on the returned dom_string, because this string will only be destroyed when
  * the dom_finalise is called. But if the client call dom_string_ref, it must
@@ -308,7 +311,7 @@ dom_string *_dom_namespace_get_xml_prefix(void)
  * Get the XMLNS prefix dom_string.
  *
  * \return the xmlns prefix dom_string
- * 
+ *
  * Note: The client of this function may or may not call the dom_string_ref
  * on the returned dom_string, because this string will only be destroyed when
  * the dom_finalise is called. But if the client call dom_string_ref, it must
@@ -323,4 +326,3 @@ dom_string *_dom_namespace_get_xmlns_prefix(void)
 
 	return xmlns;
 }
-

@@ -96,7 +96,6 @@ struct about_handlers {
 };
 
 
-
 /**
  * issue fetch callbacks with locking
  */
@@ -111,8 +110,7 @@ fetch_about_send_callback(const fetch_msg *msg, struct fetch_about_context *ctx)
 }
 
 /* exported interface documented in about/private.h */
-bool
-fetch_about_send_finished(struct fetch_about_context *ctx)
+bool fetch_about_send_finished(struct fetch_about_context *ctx)
 {
 	fetch_msg msg;
 	msg.type = FETCH_FINISHED;
@@ -128,8 +126,9 @@ bool fetch_about_set_http_code(struct fetch_about_context *ctx, long code)
 }
 
 /* exported interface documented in about/private.h */
-bool
-fetch_about_send_header(struct fetch_about_context *ctx, const char *fmt, ...)
+bool fetch_about_send_header(struct fetch_about_context *ctx,
+			     const char *fmt,
+			     ...)
 {
 	char header[64];
 	fetch_msg msg;
@@ -142,15 +141,16 @@ fetch_about_send_header(struct fetch_about_context *ctx, const char *fmt, ...)
 	va_end(ap);
 
 	msg.type = FETCH_HEADER;
-	msg.data.header_or_data.buf = (const uint8_t *) header;
+	msg.data.header_or_data.buf = (const uint8_t *)header;
 	msg.data.header_or_data.len = strlen(header);
 
 	return fetch_about_send_callback(&msg, ctx);
 }
 
 /* exported interface documented in about/private.h */
-nserror
-fetch_about_senddata(struct fetch_about_context *ctx, const uint8_t *data, size_t data_len)
+nserror fetch_about_senddata(struct fetch_about_context *ctx,
+			     const uint8_t *data,
+			     size_t data_len)
 {
 	fetch_msg msg;
 
@@ -183,7 +183,7 @@ fetch_about_ssenddataf(struct fetch_about_context *ctx, const char *fmt, ...)
 
 	if (slen < (int)sizeof(buffer)) {
 		msg.type = FETCH_DATA;
-		msg.data.header_or_data.buf = (const uint8_t *) buffer;
+		msg.data.header_or_data.buf = (const uint8_t *)buffer;
 		msg.data.header_or_data.len = slen;
 
 		if (fetch_about_send_callback(&msg, ctx)) {
@@ -244,7 +244,8 @@ bool fetch_about_srverror(struct fetch_about_context *ctx)
 	if (fetch_about_send_header(ctx, "Content-Type: text/plain"))
 		return false;
 
-	res = fetch_about_ssenddataf(ctx, "%s 500 %s",
+	res = fetch_about_ssenddataf(ctx,
+				     "%s 500 %s",
 				     messages_get("FetchErrorCode"),
 				     messages_get("HTTP500"));
 	if (res != NSERROR_OK) {
@@ -366,154 +367,77 @@ static bool fetch_about_about_handler(struct fetch_about_context *ctx);
  * List of about paths and their handlers
  */
 struct about_handlers about_handler_list[] = {
-	{
-		"credits",
-		SLEN("credits"),
-		NULL,
-		fetch_about_credits_handler,
-		false
-	},
-	{
-		"license",
-		SLEN("license"),
-		NULL,
-		fetch_about_license_handler,
-		false
-	},
-	{
-		"license",
-		SLEN("license"),
-		NULL,
-		fetch_about_license_handler,
-		true
-	},
-	{
-		"licence",
-		SLEN("licence"),
-		NULL,
-		fetch_about_license_handler,
-		true
-	},
-	{
-		"welcome",
-		SLEN("welcome"),
-		NULL,
-		fetch_about_welcome_handler,
-		false
-	},
-	{
-		"config",
-		SLEN("config"),
-		NULL,
-		fetch_about_config_handler,
-		false
-	},
-	{
-		"Choices",
-		SLEN("Choices"),
-		NULL,
-		fetch_about_choices_handler,
-		false
-	},
-	{
-		"testament",
-		SLEN("testament"),
-		NULL,
-		fetch_about_testament_handler,
-		false
-	},
-	{
-		"about",
-		SLEN("about"),
-		NULL,
-		fetch_about_about_handler,
-		true
-	},
-	{
-		"nscolours.css",
-		SLEN("nscolours.css"),
-		NULL,
-		fetch_about_nscolours_handler,
-		true
-	},
-	{
-		"logo",
-		SLEN("logo"),
-		NULL,
-		fetch_about_logo_handler,
-		true
-	},
-	{
-		/* details about the image cache */
-		"imagecache",
-		SLEN("imagecache"),
-		NULL,
-		fetch_about_imagecache_handler,
-		true
-	},
-	{
-		/* The default blank page */
-		"blank",
-		SLEN("blank"),
-		NULL,
-		fetch_about_blank_handler,
-		true
-	},
-	{
-		/* details about a certificate */
-		"certificate",
-		SLEN("certificate"),
-		NULL,
-		fetch_about_certificate_handler,
-		true
-	},
-	{
-		/* chart generator */
-		"chart",
-		SLEN("chart"),
-		NULL,
-		fetch_about_chart_handler,
-		true
-	},
-	{
-		"query/auth",
-		SLEN("query/auth"),
-		NULL,
-		fetch_about_query_auth_handler,
-		true
-	},
-	{
-		"query/ssl",
-		SLEN("query/ssl"),
-		NULL,
-		fetch_about_query_privacy_handler,
-		true
-	},
-	{
-		"query/timeout",
-		SLEN("query/timeout"),
-		NULL,
-		fetch_about_query_timeout_handler,
-		true
-	},
-	{
-		"query/fetcherror",
-		SLEN("query/fetcherror"),
-		NULL,
-		fetch_about_query_fetcherror_handler,
-		true
-	},
-	{
-		/* web search using the configured provider */
-		"websearch",
-		SLEN("websearch"),
-		NULL,
-		fetch_about_websearch_handler,
-		true
-	}
-};
+	{"credits", SLEN("credits"), NULL, fetch_about_credits_handler, false},
+	{"license", SLEN("license"), NULL, fetch_about_license_handler, false},
+	{"license", SLEN("license"), NULL, fetch_about_license_handler, true},
+	{"licence", SLEN("licence"), NULL, fetch_about_license_handler, true},
+	{"welcome", SLEN("welcome"), NULL, fetch_about_welcome_handler, false},
+	{"config", SLEN("config"), NULL, fetch_about_config_handler, false},
+	{"Choices", SLEN("Choices"), NULL, fetch_about_choices_handler, false},
+	{"testament",
+	 SLEN("testament"),
+	 NULL,
+	 fetch_about_testament_handler,
+	 false},
+	{"about", SLEN("about"), NULL, fetch_about_about_handler, true},
+	{"nscolours.css",
+	 SLEN("nscolours.css"),
+	 NULL,
+	 fetch_about_nscolours_handler,
+	 true},
+	{"logo", SLEN("logo"), NULL, fetch_about_logo_handler, true},
+	{/* details about the image cache */
+	 "imagecache",
+	 SLEN("imagecache"),
+	 NULL,
+	 fetch_about_imagecache_handler,
+	 true},
+	{/* The default blank page */
+	 "blank",
+	 SLEN("blank"),
+	 NULL,
+	 fetch_about_blank_handler,
+	 true},
+	{/* details about a certificate */
+	 "certificate",
+	 SLEN("certificate"),
+	 NULL,
+	 fetch_about_certificate_handler,
+	 true},
+	{/* chart generator */
+	 "chart",
+	 SLEN("chart"),
+	 NULL,
+	 fetch_about_chart_handler,
+	 true},
+	{"query/auth",
+	 SLEN("query/auth"),
+	 NULL,
+	 fetch_about_query_auth_handler,
+	 true},
+	{"query/ssl",
+	 SLEN("query/ssl"),
+	 NULL,
+	 fetch_about_query_privacy_handler,
+	 true},
+	{"query/timeout",
+	 SLEN("query/timeout"),
+	 NULL,
+	 fetch_about_query_timeout_handler,
+	 true},
+	{"query/fetcherror",
+	 SLEN("query/fetcherror"),
+	 NULL,
+	 fetch_about_query_fetcherror_handler,
+	 true},
+	{/* web search using the configured provider */
+	 "websearch",
+	 SLEN("websearch"),
+	 NULL,
+	 fetch_about_websearch_handler,
+	 true}};
 
-#define about_handler_list_len \
+#define about_handler_list_len                                                 \
 	(sizeof(about_handler_list) / sizeof(struct about_handlers))
 
 /**
@@ -531,18 +455,20 @@ static bool fetch_about_about_handler(struct fetch_about_context *ctx)
 	fetch_set_http_code(ctx->fetchh, 200);
 
 	/* content type */
-	if (fetch_about_send_header(ctx, "Content-Type: text/html; charset=utf-8"))
+	if (fetch_about_send_header(ctx,
+				    "Content-Type: text/html; charset=utf-8"))
 		goto fetch_about_config_handler_aborted;
 
-	res = fetch_about_ssenddataf(ctx,
-			"<html>\n<head>\n"
-			"<title>List of NeoSurf pages</title>\n"
-			"<link rel=\"stylesheet\" type=\"text/css\" "
-			"href=\"resource:internal.css\">\n"
-			"</head>\n"
-			"<body class=\"ns-even-bg ns-even-fg ns-border\">\n"
-			"<h1 class =\"ns-border\">List of NeoSurf pages</h1>\n"
-			"<ul>\n");
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<html>\n<head>\n"
+		"<title>List of NeoSurf pages</title>\n"
+		"<link rel=\"stylesheet\" type=\"text/css\" "
+		"href=\"resource:internal.css\">\n"
+		"</head>\n"
+		"<body class=\"ns-even-bg ns-even-fg ns-border\">\n"
+		"<h1 class =\"ns-border\">List of NeoSurf pages</h1>\n"
+		"<ul>\n");
 	if (res != NSERROR_OK) {
 		goto fetch_about_config_handler_aborted;
 	}
@@ -553,10 +479,11 @@ static bool fetch_about_about_handler(struct fetch_about_context *ctx)
 		if (about_handler_list[abt_loop].hidden)
 			continue;
 
-		res = fetch_about_ssenddataf(ctx,
-			       "<li><a href=\"about:%s\">about:%s</a></li>\n",
-			       about_handler_list[abt_loop].name,
-			       about_handler_list[abt_loop].name);
+		res = fetch_about_ssenddataf(
+			ctx,
+			"<li><a href=\"about:%s\">about:%s</a></li>\n",
+			about_handler_list[abt_loop].name,
+			about_handler_list[abt_loop].name);
 		if (res != NSERROR_OK) {
 			goto fetch_about_config_handler_aborted;
 		}
@@ -575,8 +502,7 @@ fetch_about_config_handler_aborted:
 	return false;
 }
 
-static bool
-fetch_about_404_handler(struct fetch_about_context *ctx)
+static bool fetch_about_404_handler(struct fetch_about_context *ctx)
 {
 	nserror res;
 	const char *title;
@@ -586,12 +512,13 @@ fetch_about_404_handler(struct fetch_about_context *ctx)
 
 	/* content type */
 	if (fetch_about_send_header(ctx,
-			"Content-Type: text/html; charset=utf-8")) {
+				    "Content-Type: text/html; charset=utf-8")) {
 		return false;
 	}
 
 	title = messages_get("HTTP404");
-	res = fetch_about_ssenddataf(ctx,
+	res = fetch_about_ssenddataf(
+		ctx,
 		"<html>\n<head>\n"
 		"<title>%s</title>\n"
 		"<link rel=\"stylesheet\" type=\"text/css\" "
@@ -601,8 +528,12 @@ fetch_about_404_handler(struct fetch_about_context *ctx)
 		"<h1 class=\"ns-border ns-odd-fg-bad\">%s</h1>\n"
 		"<p>%s %d %s %s</p>\n"
 		"</body>\n</html>\n",
-		title, title, messages_get("FetchErrorCode"), 404,
-		messages_get("FetchFile"),nsurl_access(ctx->url));
+		title,
+		title,
+		messages_get("FetchErrorCode"),
+		404,
+		messages_get("FetchFile"),
+		nsurl_access(ctx->url));
 	if (res != NSERROR_OK) {
 		return false;
 	}
@@ -622,11 +553,12 @@ static bool fetch_about_initialise(lwc_string *scheme)
 
 	for (abt_loop = 0; abt_loop < about_handler_list_len; abt_loop++) {
 		error = lwc_intern_string(about_handler_list[abt_loop].name,
-					about_handler_list[abt_loop].name_len,
-					&about_handler_list[abt_loop].lname);
+					  about_handler_list[abt_loop].name_len,
+					  &about_handler_list[abt_loop].lname);
 		if (error != lwc_error_ok) {
 			while (abt_loop-- != 0) {
-				lwc_string_unref(about_handler_list[abt_loop].lname);
+				lwc_string_unref(
+					about_handler_list[abt_loop].lname);
 			}
 			return false;
 		}
@@ -662,13 +594,12 @@ static bool fetch_about_can_fetch(const nsurl *url)
  * \param post_multipart post data in multipart format, owned by the llcache
  *                        object hence valid the entire lifetime of the fetch.
  */
-static void *
-fetch_about_setup(struct fetch *fetchh,
-		  nsurl *url,
-		  bool only_2xx,
-		  bool downgrade_tls,
-		  const struct fetch_postdata *postdata,
-		  const char **headers)
+static void *fetch_about_setup(struct fetch *fetchh,
+			       nsurl *url,
+			       bool only_2xx,
+			       bool downgrade_tls,
+			       const struct fetch_postdata *postdata,
+			       const char **headers)
 {
 	struct fetch_about_context *ctx;
 	unsigned int handler_loop;
@@ -681,12 +612,12 @@ fetch_about_setup(struct fetch *fetchh,
 
 	path = nsurl_get_component(url, NSURL_PATH);
 
-	for (handler_loop = 0;
-	     handler_loop < about_handler_list_len;
+	for (handler_loop = 0; handler_loop < about_handler_list_len;
 	     handler_loop++) {
 		if (lwc_string_isequal(path,
 				       about_handler_list[handler_loop].lname,
-				       &match) == lwc_error_ok && match) {
+				       &match) == lwc_error_ok &&
+		    match) {
 			ctx->handler = about_handler_list[handler_loop].handler;
 			break;
 		}
@@ -798,8 +729,7 @@ nserror fetch_about_register(void)
 		.abort = fetch_about_abort,
 		.free = fetch_about_free,
 		.poll = fetch_about_poll,
-		.finalise = fetch_about_finalise
-	};
+		.finalise = fetch_about_finalise};
 
 	return fetcher_add(scheme, &fetcher_ops);
 }

@@ -28,8 +28,9 @@
  *		   If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_columns(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+			     const parserutils_vector *vector,
+			     int32_t *ctx,
+			     css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	int prev_ctx;
@@ -49,13 +50,15 @@ css_error css__parse_columns(css_language *c,
 	flag_value = get_css_flag_value(c, token);
 
 	if (flag_value != FLAG_VALUE__NONE) {
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_COLUMN_WIDTH);
+		error = css_stylesheet_style_flag_value(result,
+							flag_value,
+							CSS_PROP_COLUMN_WIDTH);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_COLUMN_COUNT);
+		error = css_stylesheet_style_flag_value(result,
+							flag_value,
+							CSS_PROP_COLUMN_COUNT);
 		if (error == CSS_OK)
 			parserutils_vector_iterate(vector, ctx);
 
@@ -88,12 +91,12 @@ css_error css__parse_columns(css_language *c,
 		 * haven't already got a value for this property.
 		 */
 		if ((width) &&
-				(error = css__parse_column_width(c, vector, ctx,
-						width_style)) == CSS_OK) {
+		    (error = css__parse_column_width(
+			     c, vector, ctx, width_style)) == CSS_OK) {
 			width = false;
 		} else if ((count) &&
-				(error = css__parse_column_count(c, vector, ctx,
-						count_style)) == CSS_OK) {
+			   (error = css__parse_column_count(
+				    c, vector, ctx, count_style)) == CSS_OK) {
 			count = false;
 		}
 
@@ -110,16 +113,18 @@ css_error css__parse_columns(css_language *c,
 	/* Set unset properties to initial values */
 	if (width) {
 		error = css__stylesheet_style_appendOPV(width_style,
-				CSS_PROP_COLUMN_WIDTH, 0,
-				COLUMN_WIDTH_AUTO);
+							CSS_PROP_COLUMN_WIDTH,
+							0,
+							COLUMN_WIDTH_AUTO);
 		if (error != CSS_OK)
 			goto css__parse_columns_cleanup;
 	}
 
 	if (count) {
 		error = css__stylesheet_style_appendOPV(count_style,
-				CSS_PROP_COLUMN_COUNT, 0,
-				COLUMN_COUNT_AUTO);
+							CSS_PROP_COLUMN_COUNT,
+							0,
+							COLUMN_COUNT_AUTO);
 		if (error != CSS_OK)
 			goto css__parse_columns_cleanup;
 	}
@@ -141,4 +146,3 @@ css__parse_columns_cleanup:
 
 	return error;
 }
-

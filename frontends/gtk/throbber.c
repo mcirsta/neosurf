@@ -31,8 +31,7 @@
 /**
  * Throbber images context
  */
-struct nsgtk_throbber
-{
+struct nsgtk_throbber {
 	int nframes; /**< Number of frames in the throbber */
 	GdkPixbuf **framedata; /* pixbuf data for the frames */
 };
@@ -73,7 +72,8 @@ nserror nsgtk_throbber_init(void)
 
 	if (frame < 1) {
 		/* we need at least two frames - one for idle, one for active */
-		NSLOG(neosurf, INFO,
+		NSLOG(neosurf,
+		      INFO,
 		      "Insufficent number of frames (%d) in throbber animation.",
 		      frame);
 		res = NSERROR_INIT_FAILED;

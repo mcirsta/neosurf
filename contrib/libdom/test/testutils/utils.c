@@ -27,7 +27,7 @@ void mymsg(uint32_t severity, void *ctx, const char *msg, ...)
 
 	va_start(l, msg);
 
-	fprintf(stderr, "%"PRIu32": ", severity);
+	fprintf(stderr, "%" PRIu32 ": ", severity);
 	vfprintf(stderr, msg, l);
 	fprintf(stderr, "\n");
 }

@@ -31,10 +31,11 @@
 /**
  * qlist widget that sizes itself to first column
  */
-class FirstListWidget:public QListWidget
+class FirstListWidget : public QListWidget
 {
-public:
-	QSize sizeHint() const final {
+      public:
+	QSize sizeHint() const final
+	{
 		int width = sizeHintForColumn(0) + frameWidth() * 2 + 5;
 		width += verticalScrollBar()->sizeHint().width();
 		return QSize(width, 100);
@@ -42,34 +43,38 @@ public:
 };
 
 /**
- * list selection allows selection of one or more items from one list in a second
+ * list selection allows selection of one or more items from one list in a
+ * second
  */
-class NS_ListSelection: public QWidget
+class NS_ListSelection : public QWidget
 {
 	Q_OBJECT
 
-public:
-	NS_ListSelection(QWidget *parent=nullptr);
+      public:
+	NS_ListSelection(QWidget *parent = nullptr);
 	void addItem(const char *label, const char *data);
 	void addItem(QByteArray &label, QByteArray &data);
 	void selectItem(const char *data);
 	void deselectAll();
 	QList<QByteArray> selection();
 
-public slots:
+      public slots:
 	void addtoselection(bool checked);
 	void remfromselection(bool checked);
 	void selectionup(bool checked);
 	void selectiondown(bool checked);
-private:
+
+      private:
 	enum ItemDataRole { DataRole = Qt::UserRole, SourcePosRole };
 	void selectRow(int row); /**< move row from source to selected */
 	void deselectRow(int row); /**< move row from selected to source */
 
 	FirstListWidget *m_source; /**< source list view */
 	FirstListWidget *m_selected; /**< selected list view */
-	QToolButton *m_add; /**< button that moves item from source to selected */
-	QToolButton *m_rem; /**< button that moves item from selected to source */
+	QToolButton
+		*m_add; /**< button that moves item from source to selected */
+	QToolButton
+		*m_rem; /**< button that moves item from selected to source */
 	QToolButton *m_sel_up;
 	QToolButton *m_sel_down;
 	int m_count; /**< number of items added */

@@ -29,10 +29,10 @@
  * Representation of a Cache-Control
  */
 struct http_cache_control {
-	uint32_t max_age;		/**< Max age (delta seconds) */
-	bool max_age_valid;		/**< Whether max-age is valid */
-	bool no_cache;			/**< Whether caching is forbidden */
-	bool no_store;			/**< Whether persistent caching is forbidden */
+	uint32_t max_age; /**< Max age (delta seconds) */
+	bool max_age_valid; /**< Whether max-age is valid */
+	bool no_cache; /**< Whether caching is forbidden */
+	bool no_store; /**< Whether persistent caching is forbidden */
 };
 
 /**
@@ -41,14 +41,14 @@ struct http_cache_control {
 typedef struct http_directive {
 	http__item base;
 
-	lwc_string *name;		/**< Parameter name */
-	lwc_string *value;		/**< Parameter value (optional) */
+	lwc_string *name; /**< Parameter name */
+	lwc_string *value; /**< Parameter value (optional) */
 } http_directive;
 
 
 static void http_destroy_directive(http__item *item)
 {
-	http_directive *self = (http_directive *) item;
+	http_directive *self = (http_directive *)item;
 
 	lwc_string_unref(self->name);
 	if (self->value != NULL) {
@@ -57,8 +57,7 @@ static void http_destroy_directive(http__item *item)
 	free(self);
 }
 
-static nserror http__parse_directive(const char **input,
-		http__item **result)
+static nserror http__parse_directive(const char **input, http__item **result)
 {
 	const char *pos = *input;
 	lwc_string *name;
@@ -103,7 +102,7 @@ static nserror http__parse_directive(const char **input,
 	directive->name = name;
 	directive->value = value;
 
-	*result = (http__item *) directive;
+	*result = (http__item *)directive;
 	*input = pos;
 
 	return NSERROR_OK;
@@ -115,16 +114,18 @@ static void http_directive_list_destroy(http_directive *list)
 }
 
 static nserror http_directive_list_find_item(const http_directive *list,
-		lwc_string *name, lwc_string **value)
+					     lwc_string *name,
+					     lwc_string **value)
 {
 	bool match;
 
 	while (list != NULL) {
-		if (lwc_string_caseless_isequal(name, list->name,
-				&match) == lwc_error_ok && match)
+		if (lwc_string_caseless_isequal(name, list->name, &match) ==
+			    lwc_error_ok &&
+		    match)
 			break;
 
-		list = (http_directive *) list->base.next;
+		list = (http_directive *)list->base.next;
 	}
 
 	if (list == NULL)
@@ -139,9 +140,10 @@ static nserror http_directive_list_find_item(const http_directive *list,
 	return NSERROR_OK;
 }
 
-static const http_directive *http_directive_list_iterate(
-		const http_directive *cur,
-		lwc_string **name, lwc_string **value)
+static const http_directive *
+http_directive_list_iterate(const http_directive *cur,
+			    lwc_string **name,
+			    lwc_string **value)
 {
 	if (cur == NULL)
 		return NULL;
@@ -153,7 +155,7 @@ static const http_directive *http_directive_list_iterate(
 		*value = NULL;
 	}
 
-	return (http_directive *) cur->base.next;
+	return (http_directive *)cur->base.next;
 }
 
 static uint32_t count(const http_directive *list, lwc_string *key)
@@ -162,12 +164,13 @@ static uint32_t count(const http_directive *list, lwc_string *key)
 	bool match;
 
 	while (list != NULL) {
-		if (lwc_string_caseless_isequal(key, list->name,
-				&match) == lwc_error_ok && match) {
+		if (lwc_string_caseless_isequal(key, list->name, &match) ==
+			    lwc_error_ok &&
+		    match) {
 			count++;
 		}
 
-		list = (http_directive *) list->base.next;
+		list = (http_directive *)list->base.next;
 	}
 
 	return count;
@@ -234,8 +237,8 @@ static nserror parse_max_age(lwc_string *value, uint32_t *result)
 }
 
 /* See cache-control.h for documentation */
-nserror http_parse_cache_control(const char *header_value,
-		http_cache_control **result)
+nserror
+http_parse_cache_control(const char *header_value, http_cache_control **result)
 {
 	const char *pos = header_value;
 	http_cache_control *cc;
@@ -252,7 +255,7 @@ nserror http_parse_cache_control(const char *header_value,
 
 	http__skip_LWS(&pos);
 
-	error = http__parse_directive(&pos, (http__item **) &first);
+	error = http__parse_directive(&pos, (http__item **)&first);
 	if (error != NSERROR_OK) {
 		return error;
 	}
@@ -261,8 +264,9 @@ nserror http_parse_cache_control(const char *header_value,
 
 	if (*pos == ',') {
 		error = http__item_list_parse(&pos,
-				http__parse_directive, (http__item *) first,
-				(http__item **) &directives);
+					      http__parse_directive,
+					      (http__item *)first,
+					      (http__item **)&directives);
 		if (error != NSERROR_OK) {
 			if (directives != NULL) {
 				http_directive_list_destroy(directives);
@@ -281,7 +285,8 @@ nserror http_parse_cache_control(const char *header_value,
 
 	/* Find max-age */
 	error = http_directive_list_find_item(directives,
-			corestring_lwc_max_age, &value_str);
+					      corestring_lwc_max_age,
+					      &value_str);
 	if (error == NSERROR_OK && value_str != NULL) {
 		error = parse_max_age(value_str, &max_age);
 		max_age_valid = (error == NSERROR_OK);
@@ -290,7 +295,8 @@ nserror http_parse_cache_control(const char *header_value,
 
 	/* Find no-cache */
 	error = http_directive_list_find_item(directives,
-			corestring_lwc_no_cache, &value_str);
+					      corestring_lwc_no_cache,
+					      &value_str);
 	if (error == NSERROR_OK) {
 		no_cache = true;
 		if (value_str != NULL) {
@@ -300,7 +306,8 @@ nserror http_parse_cache_control(const char *header_value,
 
 	/* Find no-store */
 	error = http_directive_list_find_item(directives,
-			corestring_lwc_no_store, &value_str);
+					      corestring_lwc_no_store,
+					      &value_str);
 	if (error == NSERROR_OK) {
 		no_store = true;
 		if (value_str != NULL) {

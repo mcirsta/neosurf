@@ -24,8 +24,7 @@ extern char **respaths;
 
 static struct hash_table *mime_hash = NULL;
 
-void
-nsvi_fetch_filetype_init(const char *mimefile)
+void nsvi_fetch_filetype_init(const char *mimefile)
 {
 	struct stat statbuf;
 	FILE *fh = NULL;
@@ -59,7 +58,8 @@ nsvi_fetch_filetype_init(const char *mimefile)
 
 	fh = fopen(mimefile, "r");
 	if (fh == NULL) {
-		NSLOG(neosurf, INFO,
+		NSLOG(neosurf,
+		      INFO,
 		      "Unable to open a mime.types file, so using a minimal one for you.");
 		return;
 	}
@@ -131,8 +131,7 @@ nsvi_fetch_filetype_init(const char *mimefile)
 				/* search for the first non-whitespace char or
 				 * NUL or NL, to find start of next ext.
 				 */
-				while (*ptr &&
-				       (ascii_is_space(*ptr)) &&
+				while (*ptr && (ascii_is_space(*ptr)) &&
 				       *ptr != '\n') {
 					ptr++;
 				}
@@ -143,14 +142,12 @@ nsvi_fetch_filetype_init(const char *mimefile)
 	fclose(fh);
 }
 
-void
-nsvi_fetch_filetype_fini(void)
+void nsvi_fetch_filetype_fini(void)
 {
 	hash_destroy(mime_hash);
 }
 
-static const char *
-nsvi_fetch_filetype(const char *unix_path)
+static const char *nsvi_fetch_filetype(const char *unix_path)
 {
 	struct stat statbuf;
 	char *ext;
@@ -195,7 +192,7 @@ nsvi_fetch_filetype(const char *unix_path)
 		return "text/plain";
 	}
 
-	ext = strdup(ptr + 1);	/* skip the . */
+	ext = strdup(ptr + 1); /* skip the . */
 
 	/* the hash table only contains lower-case versions - make sure this
 	 * copy is lower case too.
@@ -216,8 +213,7 @@ nsvi_fetch_filetype(const char *unix_path)
 	return type;
 }
 
-static nsurl *
-nsvi_fetch_get_resource_url(const char *path)
+static nsurl *nsvi_fetch_get_resource_url(const char *path)
 {
 	char buf[PATH_MAX];
 	nsurl *url = NULL;

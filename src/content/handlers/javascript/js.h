@@ -67,7 +67,8 @@ void js_finalise(void);
  *
  * There is usually one heap per browser window.
  *
- * \param timeout elapsed wallclock time (in seconds) before \a callback is called
+ * \param timeout elapsed wallclock time (in seconds) before \a callback is
+ * called
  * \param heap Updated to the created JS heap
  * \return NSERROR_OK on success, appropriate error otherwise.
  */
@@ -94,7 +95,8 @@ void js_destroyheap(jsheap *heap);
  * \param thread Updated to the created thread
  * \return NSERROR_OK on success, appropriate error otherwise
  */
-nserror js_newthread(jsheap *heap, void *win_priv, void *doc_priv, jsthread **thread);
+nserror
+js_newthread(jsheap *heap, void *win_priv, void *doc_priv, jsthread **thread);
 
 /**
  * Close a javascript thread
@@ -126,19 +128,24 @@ void js_destroythread(jsthread *thread);
 /**
  * execute some javascript in a context
  */
-bool js_exec(jsthread *thread, const uint8_t *txt, size_t txtlen, const char *name);
+bool js_exec(jsthread *thread,
+	     const uint8_t *txt,
+	     size_t txtlen,
+	     const char *name);
 
 /**
  * fire an event at a dom node
  */
-bool js_fire_event(jsthread *thread, const char *type, struct dom_document *doc, struct dom_node *target);
+bool js_fire_event(jsthread *thread,
+		   const char *type,
+		   struct dom_document *doc,
+		   struct dom_node *target);
 
-bool
-js_dom_event_add_listener(jsthread *thread,
-			  struct dom_document *document,
-			  struct dom_node *node,
-			  struct dom_string *event_type_dom,
-			  void *js_funcval);
+bool js_dom_event_add_listener(jsthread *thread,
+			       struct dom_document *document,
+			       struct dom_node *node,
+			       struct dom_string *event_type_dom,
+			       void *js_funcval);
 
 /*** New Events ***/
 

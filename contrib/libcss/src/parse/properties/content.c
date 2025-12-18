@@ -29,8 +29,9 @@
  *		   If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_content(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+			     const parserutils_vector *vector,
+			     int32_t *ctx,
+			     css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	css_error error = CSS_INVALID;
@@ -48,24 +49,32 @@ css_error css__parse_content(css_language *c,
 	flag_value = get_css_flag_value(c, token);
 
 	if (flag_value != FLAG_VALUE__NONE) {
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_CONTENT);
+		error = css_stylesheet_style_flag_value(result,
+							flag_value,
+							CSS_PROP_CONTENT);
 	} else if ((token->type == CSS_TOKEN_IDENT) &&
 		   (lwc_string_caseless_isequal(token->idata,
 						c->strings[NORMAL],
-						&match) == lwc_error_ok && match)) {
-		error = css__stylesheet_style_appendOPV(result, CSS_PROP_CONTENT, 0, CONTENT_NORMAL);
+						&match) == lwc_error_ok &&
+		    match)) {
+		error = css__stylesheet_style_appendOPV(
+			result, CSS_PROP_CONTENT, 0, CONTENT_NORMAL);
 	} else if ((token->type == CSS_TOKEN_IDENT) &&
 		   (lwc_string_caseless_isequal(token->idata,
 						c->strings[NONE],
-						&match) == lwc_error_ok && match)) {
-		error = css__stylesheet_style_appendOPV(result, CSS_PROP_CONTENT, 0, CONTENT_NONE);
+						&match) == lwc_error_ok &&
+		    match)) {
+		error = css__stylesheet_style_appendOPV(
+			result, CSS_PROP_CONTENT, 0, CONTENT_NONE);
 	} else {
 
 /* Macro to output the value marker, awkward because we need to check
  * first to determine how the value is constructed.
  */
-#define CSS_APPEND(CSSVAL) css__stylesheet_style_append(result, first?buildOPV(CSS_PROP_CONTENT, 0, CSSVAL):CSSVAL)
+#define CSS_APPEND(CSSVAL)                                                     \
+	css__stylesheet_style_append(                                          \
+		result,                                                        \
+		first ? buildOPV(CSS_PROP_CONTENT, 0, CSSVAL) : CSSVAL)
 
 		bool first = true;
 		int prev_ctx = orig_ctx;
@@ -83,32 +92,43 @@ css_error css__parse_content(css_language *c,
 
 		while (token != NULL) {
 			if ((token->type == CSS_TOKEN_IDENT) &&
-			    (lwc_string_caseless_isequal(
-				    token->idata, c->strings[OPEN_QUOTE],
-				    &match) == lwc_error_ok && match)) {
+			    (lwc_string_caseless_isequal(token->idata,
+							 c->strings[OPEN_QUOTE],
+							 &match) ==
+				     lwc_error_ok &&
+			     match)) {
 
 				error = CSS_APPEND(CONTENT_OPEN_QUOTE);
 
 			} else if (token->type == CSS_TOKEN_IDENT &&
 				   (lwc_string_caseless_isequal(
-					   token->idata, c->strings[CLOSE_QUOTE],
-					   &match) == lwc_error_ok && match)) {
+					    token->idata,
+					    c->strings[CLOSE_QUOTE],
+					    &match) == lwc_error_ok &&
+				    match)) {
 
 				error = CSS_APPEND(CONTENT_CLOSE_QUOTE);
 			} else if (token->type == CSS_TOKEN_IDENT &&
 				   (lwc_string_caseless_isequal(
-					   token->idata, c->strings[NO_OPEN_QUOTE],
-					   &match) == lwc_error_ok && match)) {
+					    token->idata,
+					    c->strings[NO_OPEN_QUOTE],
+					    &match) == lwc_error_ok &&
+				    match)) {
 				error = CSS_APPEND(CONTENT_NO_OPEN_QUOTE);
 			} else if (token->type == CSS_TOKEN_IDENT &&
 				   (lwc_string_caseless_isequal(
-					   token->idata, c->strings[NO_CLOSE_QUOTE],
-					   &match) == lwc_error_ok && match)) {
+					    token->idata,
+					    c->strings[NO_CLOSE_QUOTE],
+					    &match) == lwc_error_ok &&
+				    match)) {
 				error = CSS_APPEND(CONTENT_NO_CLOSE_QUOTE);
 			} else if (token->type == CSS_TOKEN_STRING) {
 				uint32_t snumber;
 
-				error = css__stylesheet_string_add(c->sheet, lwc_string_ref(token->idata), &snumber);
+				error = css__stylesheet_string_add(
+					c->sheet,
+					lwc_string_ref(token->idata),
+					&snumber);
 				if (error != CSS_OK) {
 					*ctx = orig_ctx;
 					return error;
@@ -120,7 +140,8 @@ css_error css__parse_content(css_language *c,
 					return error;
 				}
 
-				error = css__stylesheet_style_append(result, snumber);
+				error = css__stylesheet_style_append(result,
+								     snumber);
 			} else if (token->type == CSS_TOKEN_URI) {
 				lwc_string *uri;
 				uint32_t uri_snumber;
@@ -134,9 +155,8 @@ css_error css__parse_content(css_language *c,
 					return error;
 				}
 
-				error = css__stylesheet_string_add(c->sheet,
-								  uri,
-								  &uri_snumber);
+				error = css__stylesheet_string_add(
+					c->sheet, uri, &uri_snumber);
 				if (error != CSS_OK) {
 					*ctx = orig_ctx;
 					return error;
@@ -148,23 +168,30 @@ css_error css__parse_content(css_language *c,
 					return error;
 				}
 
-				error = css__stylesheet_style_append(result, uri_snumber);
+				error = css__stylesheet_style_append(
+					result, uri_snumber);
 			} else if (token->type == CSS_TOKEN_FUNCTION &&
 				   (lwc_string_caseless_isequal(
-					   token->idata, c->strings[ATTR],
-					   &match) == lwc_error_ok && match)) {
+					    token->idata,
+					    c->strings[ATTR],
+					    &match) == lwc_error_ok &&
+				    match)) {
 				uint32_t snumber;
 
 				consumeWhitespace(vector, ctx);
 
 				/* Expect IDENT */
 				token = parserutils_vector_iterate(vector, ctx);
-				if (token == NULL || token->type != CSS_TOKEN_IDENT) {
+				if (token == NULL ||
+				    token->type != CSS_TOKEN_IDENT) {
 					*ctx = orig_ctx;
 					return CSS_INVALID;
 				}
 
-				error = css__stylesheet_string_add(c->sheet, lwc_string_ref(token->idata), &snumber);
+				error = css__stylesheet_string_add(
+					c->sheet,
+					lwc_string_ref(token->idata),
+					&snumber);
 				if (error != CSS_OK) {
 					*ctx = orig_ctx;
 					return error;
@@ -176,20 +203,24 @@ css_error css__parse_content(css_language *c,
 					return error;
 				}
 
-				error = css__stylesheet_style_append(result, snumber);
+				error = css__stylesheet_style_append(result,
+								     snumber);
 
 				consumeWhitespace(vector, ctx);
 
 				/* Expect ')' */
 				token = parserutils_vector_iterate(vector, ctx);
-				if (token == NULL || tokenIsChar(token, ')') == false) {
+				if (token == NULL ||
+				    tokenIsChar(token, ')') == false) {
 					*ctx = orig_ctx;
 					return CSS_INVALID;
 				}
 			} else if (token->type == CSS_TOKEN_FUNCTION &&
 				   (lwc_string_caseless_isequal(
-					   token->idata, c->strings[COUNTER],
-					   &match) == lwc_error_ok && match)) {
+					    token->idata,
+					    c->strings[COUNTER],
+					    &match) == lwc_error_ok &&
+				    match)) {
 				lwc_string *name;
 				uint32_t snumber;
 				uint32_t opv;
@@ -200,7 +231,8 @@ css_error css__parse_content(css_language *c,
 
 				/* Expect IDENT */
 				token = parserutils_vector_iterate(vector, ctx);
-				if (token == NULL || token->type != CSS_TOKEN_IDENT) {
+				if (token == NULL ||
+				    token->type != CSS_TOKEN_IDENT) {
 					*ctx = orig_ctx;
 					return CSS_INVALID;
 				}
@@ -226,14 +258,16 @@ css_error css__parse_content(css_language *c,
 					consumeWhitespace(vector, ctx);
 
 					/* Expect IDENT */
-					token = parserutils_vector_peek(vector, *ctx);
-					if (token == NULL || token->type !=
-					    CSS_TOKEN_IDENT) {
+					token = parserutils_vector_peek(vector,
+									*ctx);
+					if (token == NULL ||
+					    token->type != CSS_TOKEN_IDENT) {
 						*ctx = orig_ctx;
 						return CSS_INVALID;
 					}
 
-					error = css__parse_list_style_type_value(c, token, &v);
+					error = css__parse_list_style_type_value(
+						c, token, &v);
 					if (error != CSS_OK) {
 						*ctx = orig_ctx;
 						return error;
@@ -245,19 +279,23 @@ css_error css__parse_content(css_language *c,
 
 					consumeWhitespace(vector, ctx);
 				} else {
-					opv |= LIST_STYLE_TYPE_DECIMAL <<
-						CONTENT_COUNTER_STYLE_SHIFT;
+					opv |= LIST_STYLE_TYPE_DECIMAL
+					       << CONTENT_COUNTER_STYLE_SHIFT;
 				}
 
 				/* Expect ')' */
 				token = parserutils_vector_iterate(vector, ctx);
-				if (token == NULL || tokenIsChar(token,	')') == false) {
+				if (token == NULL ||
+				    tokenIsChar(token, ')') == false) {
 					*ctx = orig_ctx;
 					return CSS_INVALID;
 				}
 
 
-				error = css__stylesheet_string_add(c->sheet, lwc_string_ref(name), &snumber);
+				error = css__stylesheet_string_add(
+					c->sheet,
+					lwc_string_ref(name),
+					&snumber);
 				if (error != CSS_OK) {
 					*ctx = orig_ctx;
 					return error;
@@ -269,11 +307,14 @@ css_error css__parse_content(css_language *c,
 					return error;
 				}
 
-				error = css__stylesheet_style_append(result, snumber);
+				error = css__stylesheet_style_append(result,
+								     snumber);
 			} else if (token->type == CSS_TOKEN_FUNCTION &&
 				   (lwc_string_caseless_isequal(
-					   token->idata, c->strings[COUNTERS],
-					   &match) == lwc_error_ok && match)) {
+					    token->idata,
+					    c->strings[COUNTERS],
+					    &match) == lwc_error_ok &&
+				    match)) {
 				lwc_string *name;
 				lwc_string *sep;
 				uint32_t name_snumber;
@@ -286,7 +327,8 @@ css_error css__parse_content(css_language *c,
 
 				/* Expect IDENT */
 				token = parserutils_vector_iterate(vector, ctx);
-				if (token == NULL || token->type != CSS_TOKEN_IDENT) {
+				if (token == NULL ||
+				    token->type != CSS_TOKEN_IDENT) {
 					*ctx = orig_ctx;
 					return CSS_INVALID;
 				}
@@ -297,7 +339,8 @@ css_error css__parse_content(css_language *c,
 
 				/* Expect ',' */
 				token = parserutils_vector_iterate(vector, ctx);
-				if (token == NULL || tokenIsChar(token, ',') == false) {
+				if (token == NULL ||
+				    tokenIsChar(token, ',') == false) {
 					*ctx = orig_ctx;
 					return CSS_INVALID;
 				}
@@ -306,7 +349,8 @@ css_error css__parse_content(css_language *c,
 
 				/* Expect STRING */
 				token = parserutils_vector_iterate(vector, ctx);
-				if (token == NULL || token->type != CSS_TOKEN_STRING) {
+				if (token == NULL ||
+				    token->type != CSS_TOKEN_STRING) {
 					*ctx = orig_ctx;
 					return CSS_INVALID;
 				}
@@ -332,45 +376,54 @@ css_error css__parse_content(css_language *c,
 					consumeWhitespace(vector, ctx);
 
 					/* Expect IDENT */
-					token = parserutils_vector_peek(vector, *ctx);
-					if (token == NULL || token->type !=
-					    CSS_TOKEN_IDENT) {
+					token = parserutils_vector_peek(vector,
+									*ctx);
+					if (token == NULL ||
+					    token->type != CSS_TOKEN_IDENT) {
 						*ctx = orig_ctx;
 						return CSS_INVALID;
 					}
 
-					error = css__parse_list_style_type_value(c,
-									    token, &v);
+					error = css__parse_list_style_type_value(
+						c, token, &v);
 					if (error != CSS_OK) {
 						*ctx = orig_ctx;
 						return error;
 					}
 
-					opv |= v << CONTENT_COUNTERS_STYLE_SHIFT;
+					opv |= v
+					       << CONTENT_COUNTERS_STYLE_SHIFT;
 
 					parserutils_vector_iterate(vector, ctx);
 
 					consumeWhitespace(vector, ctx);
 				} else {
-					opv |= LIST_STYLE_TYPE_DECIMAL <<
-						CONTENT_COUNTERS_STYLE_SHIFT;
+					opv |= LIST_STYLE_TYPE_DECIMAL
+					       << CONTENT_COUNTERS_STYLE_SHIFT;
 				}
 
 				/* Expect ')' */
 				token = parserutils_vector_iterate(vector, ctx);
-				if (token == NULL || tokenIsChar(token, ')') == false) {
+				if (token == NULL ||
+				    tokenIsChar(token, ')') == false) {
 					*ctx = orig_ctx;
 					return CSS_INVALID;
 				}
 
 
-				error = css__stylesheet_string_add(c->sheet, lwc_string_ref(name), &name_snumber);
+				error = css__stylesheet_string_add(
+					c->sheet,
+					lwc_string_ref(name),
+					&name_snumber);
 				if (error != CSS_OK) {
 					*ctx = orig_ctx;
 					return error;
 				}
 
-				error = css__stylesheet_string_add(c->sheet, lwc_string_ref(sep), &sep_snumber);
+				error = css__stylesheet_string_add(
+					c->sheet,
+					lwc_string_ref(sep),
+					&sep_snumber);
 				if (error != CSS_OK) {
 					*ctx = orig_ctx;
 					return error;
@@ -382,18 +435,21 @@ css_error css__parse_content(css_language *c,
 					return error;
 				}
 
-				error = css__stylesheet_style_append(result, name_snumber);
+				error = css__stylesheet_style_append(
+					result, name_snumber);
 				if (error != CSS_OK) {
 					*ctx = orig_ctx;
 					return error;
 				}
 
-				error = css__stylesheet_style_append(result, sep_snumber);
+				error = css__stylesheet_style_append(
+					result, sep_snumber);
 			} else if (first) {
 				/* Invalid if this is the first iteration */
 				error = CSS_INVALID;
 			} else {
-				/* Give up, ensuring current token is reprocessed */
+				/* Give up, ensuring current token is
+				 * reprocessed */
 				*ctx = prev_ctx;
 				error = CSS_OK;
 				break;
@@ -422,4 +478,3 @@ css_error css__parse_content(css_language *c,
 
 	return error;
 }
-

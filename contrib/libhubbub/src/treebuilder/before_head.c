@@ -21,8 +21,8 @@
  * \param token        The token to handle
  * \return True to reprocess token, false otherwise
  */
-hubbub_error handle_before_head(hubbub_treebuilder *treebuilder, 
-		const hubbub_token *token)
+hubbub_error
+handle_before_head(hubbub_treebuilder *treebuilder, const hubbub_token *token)
 {
 	hubbub_error err = HUBBUB_OK;
 	bool handled = false;
@@ -30,20 +30,24 @@ hubbub_error handle_before_head(hubbub_treebuilder *treebuilder,
 	switch (token->type) {
 	case HUBBUB_TOKEN_CHARACTER:
 		err = process_characters_expect_whitespace(treebuilder,
-				token, false);
+							   token,
+							   false);
 		break;
 	case HUBBUB_TOKEN_COMMENT:
-		err = process_comment_append(treebuilder, token, 
-				treebuilder->context.element_stack[
-				treebuilder->context.current_node].node);
+		err = process_comment_append(
+			treebuilder,
+			token,
+			treebuilder->context
+				.element_stack[treebuilder->context
+						       .current_node]
+				.node);
 		break;
 	case HUBBUB_TOKEN_DOCTYPE:
 		/** \todo parse error */
 		break;
-	case HUBBUB_TOKEN_START_TAG:
-	{
-		element_type type = element_type_from_name(treebuilder,
-				&token->data.tag.name);
+	case HUBBUB_TOKEN_START_TAG: {
+		element_type type = element_type_from_name(
+			treebuilder, &token->data.tag.name);
 
 		if (type == HTML) {
 			/* Process as if "in body" */
@@ -53,21 +57,18 @@ hubbub_error handle_before_head(hubbub_treebuilder *treebuilder,
 		} else {
 			err = HUBBUB_REPROCESS;
 		}
-	}
-		break;
-	case HUBBUB_TOKEN_END_TAG:
-	{
-		element_type type = element_type_from_name(treebuilder,
-				&token->data.tag.name);
+	} break;
+	case HUBBUB_TOKEN_END_TAG: {
+		element_type type = element_type_from_name(
+			treebuilder, &token->data.tag.name);
 
-		if (type == HTML || type == BODY ||
-				type == HEAD || type == BR) {
+		if (type == HTML || type == BODY || type == HEAD ||
+		    type == BR) {
 			err = HUBBUB_REPROCESS;
 		} else {
 			/** \todo parse error */
 		}
-	}
-		break;
+	} break;
 	case HUBBUB_TOKEN_EOF:
 		err = HUBBUB_REPROCESS;
 		break;
@@ -80,7 +81,7 @@ hubbub_error handle_before_head(hubbub_treebuilder *treebuilder,
 		if (err == HUBBUB_REPROCESS) {
 			/* Manufacture head tag */
 			tag.ns = HUBBUB_NS_HTML;
-			tag.name.ptr = (const uint8_t *) "head";
+			tag.name.ptr = (const uint8_t *)"head";
 			tag.name.len = SLEN("head");
 
 			tag.n_attributes = 0;
@@ -94,17 +95,20 @@ hubbub_error handle_before_head(hubbub_treebuilder *treebuilder,
 			return e;
 
 		treebuilder->tree_handler->ref_node(
-				treebuilder->tree_handler->ctx,
-				treebuilder->context.element_stack[
-				treebuilder->context.current_node].node);
+			treebuilder->tree_handler->ctx,
+			treebuilder->context
+				.element_stack[treebuilder->context
+						       .current_node]
+				.node);
 
-		treebuilder->context.head_element = 
-				treebuilder->context.element_stack[
-				treebuilder->context.current_node].node;
+		treebuilder->context.head_element =
+			treebuilder->context
+				.element_stack[treebuilder->context
+						       .current_node]
+				.node;
 
 		treebuilder->context.mode = IN_HEAD;
 	}
 
 	return err;
 }
-

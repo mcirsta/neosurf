@@ -35,8 +35,12 @@
 static nserror
 monkey_plot_clip(const struct redraw_context *ctx, const struct rect *clip)
 {
-	moutf(MOUT_PLOT, "CLIP X0 %d Y0 %d X1 %d Y1 %d",
-		clip->x0, clip->y0, clip->x1, clip->y1);
+	moutf(MOUT_PLOT,
+	      "CLIP X0 %d Y0 %d X1 %d Y1 %d",
+	      clip->x0,
+	      clip->y0,
+	      clip->x1,
+	      clip->y1);
 	return NSERROR_OK;
 }
 
@@ -57,13 +61,21 @@ monkey_plot_clip(const struct redraw_context *ctx, const struct rect *clip)
  * \param angle2 The finish angle of the arc.
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-monkey_plot_arc(const struct redraw_context *ctx,
-		const plot_style_t *style,
-		int x, int y, int radius, int angle1, int angle2)
+static nserror monkey_plot_arc(const struct redraw_context *ctx,
+			       const plot_style_t *style,
+			       int x,
+			       int y,
+			       int radius,
+			       int angle1,
+			       int angle2)
 {
-	moutf(MOUT_PLOT, "ARC X %d Y %d RADIUS %d ANGLE1 %d ANGLE2 %d",
-	      x, y, radius, angle1, angle2);
+	moutf(MOUT_PLOT,
+	      "ARC X %d Y %d RADIUS %d ANGLE1 %d ANGLE2 %d",
+	      x,
+	      y,
+	      radius,
+	      angle1,
+	      angle2);
 	return NSERROR_OK;
 }
 
@@ -80,10 +92,11 @@ monkey_plot_arc(const struct redraw_context *ctx,
  * \param radius circle radius.
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-monkey_plot_disc(const struct redraw_context *ctx,
-		 const plot_style_t *style,
-		 int x, int y, int radius)
+static nserror monkey_plot_disc(const struct redraw_context *ctx,
+				const plot_style_t *style,
+				int x,
+				int y,
+				int radius)
 {
 	moutf(MOUT_PLOT, "DISC X %d Y %d RADIUS %d", x, y, radius);
 	return NSERROR_OK;
@@ -101,13 +114,16 @@ monkey_plot_disc(const struct redraw_context *ctx,
  * \param line A rectangle defining the line to be drawn
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-monkey_plot_line(const struct redraw_context *ctx,
-		 const plot_style_t *style,
-		 const struct rect *line)
+static nserror monkey_plot_line(const struct redraw_context *ctx,
+				const plot_style_t *style,
+				const struct rect *line)
 {
-	moutf(MOUT_PLOT, "LINE X0 %d Y0 %d X1 %d Y1 %d",
-		line->x0, line->y0, line->x1, line->y1);
+	moutf(MOUT_PLOT,
+	      "LINE X0 %d Y0 %d X1 %d Y1 %d",
+	      line->x0,
+	      line->y0,
+	      line->x1,
+	      line->y1);
 	return NSERROR_OK;
 }
 
@@ -125,13 +141,16 @@ monkey_plot_line(const struct redraw_context *ctx,
  * \param rect A rectangle defining the line to be drawn
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-monkey_plot_rectangle(const struct redraw_context *ctx,
-		      const plot_style_t *style,
-		      const struct rect *rect)
+static nserror monkey_plot_rectangle(const struct redraw_context *ctx,
+				     const plot_style_t *style,
+				     const struct rect *rect)
 {
-	moutf(MOUT_PLOT, "RECT X0 %d Y0 %d X1 %d Y1 %d",
-		rect->x0, rect->y0, rect->x1, rect->y1);
+	moutf(MOUT_PLOT,
+	      "RECT X0 %d Y0 %d X1 %d Y1 %d",
+	      rect->x0,
+	      rect->y0,
+	      rect->x1,
+	      rect->y1);
 	return NSERROR_OK;
 }
 
@@ -150,11 +169,10 @@ monkey_plot_rectangle(const struct redraw_context *ctx,
  * \param n number of verticies.
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-monkey_plot_polygon(const struct redraw_context *ctx,
-		    const plot_style_t *style,
-		    const int *p,
-		    unsigned int n)
+static nserror monkey_plot_polygon(const struct redraw_context *ctx,
+				   const plot_style_t *style,
+				   const int *p,
+				   unsigned int n)
 {
 	moutf(MOUT_PLOT, "POLYGON VERTICIES %d", n);
 	return NSERROR_OK;
@@ -174,15 +192,16 @@ monkey_plot_polygon(const struct redraw_context *ctx,
  * \param transform A transform to apply to the path.
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-monkey_plot_path(const struct redraw_context *ctx,
-		 const plot_style_t *pstyle,
-		 const float *p,
-		 unsigned int n,
-		 const float transform[6])
+static nserror monkey_plot_path(const struct redraw_context *ctx,
+				const plot_style_t *pstyle,
+				const float *p,
+				unsigned int n,
+				const float transform[6])
 {
-	moutf(MOUT_PLOT, "PATH VERTICIES %d WIDTH %f",
-		n, plot_style_fixed_to_float(pstyle->stroke_width));
+	moutf(MOUT_PLOT,
+	      "PATH VERTICIES %d WIDTH %f",
+	      n,
+	      plot_style_fixed_to_float(pstyle->stroke_width));
 	return NSERROR_OK;
 }
 
@@ -211,17 +230,21 @@ monkey_plot_path(const struct redraw_context *ctx,
  * \param flags the flags controlling the type of plot operation
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-monkey_plot_bitmap(const struct redraw_context *ctx,
-		   struct bitmap *bitmap,
-		   int x, int y,
-		   int width,
-		   int height,
-		   colour bg,
-		   bitmap_flags_t flags)
+static nserror monkey_plot_bitmap(const struct redraw_context *ctx,
+				  struct bitmap *bitmap,
+				  int x,
+				  int y,
+				  int width,
+				  int height,
+				  colour bg,
+				  bitmap_flags_t flags)
 {
-	moutf(MOUT_PLOT, "BITMAP X %d Y %d WIDTH %d HEIGHT %d",
-	      x, y, width, height);
+	moutf(MOUT_PLOT,
+	      "BITMAP X %d Y %d WIDTH %d HEIGHT %d",
+	      x,
+	      y,
+	      width,
+	      height);
 	return NSERROR_OK;
 }
 
@@ -237,13 +260,12 @@ monkey_plot_bitmap(const struct redraw_context *ctx,
  * \param length length of string, in bytes
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-monkey_plot_text(const struct redraw_context *ctx,
-		 const struct plot_font_style *fstyle,
-		 int x,
-		 int y,
-		 const char *text,
-		 size_t length)
+static nserror monkey_plot_text(const struct redraw_context *ctx,
+				const struct plot_font_style *fstyle,
+				int x,
+				int y,
+				const char *text,
+				size_t length)
 {
 	moutf(MOUT_PLOT, "TEXT X %d Y %d STR %.*s", x, y, (int)length, text);
 	return NSERROR_OK;
@@ -264,4 +286,4 @@ static const struct plotter_table plotters = {
 	.option_knockout = true,
 };
 
-const struct plotter_table* monkey_plotters = &plotters;
+const struct plotter_table *monkey_plotters = &plotters;

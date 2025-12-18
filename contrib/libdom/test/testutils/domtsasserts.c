@@ -14,8 +14,10 @@
 
 #include "domts.h"
 
-void __assert2(const char *expr, const char *function,
-		const char *file, int line)
+void __assert2(const char *expr,
+	       const char *function,
+	       const char *file,
+	       int line)
 {
 	UNUSED(function);
 	UNUSED(file);
@@ -58,7 +60,7 @@ bool is_same_unsigned_int32_t(uint32_t expected, uint32_t actual)
 bool is_equals_int(int expected, int actual, bool dummy)
 {
 	UNUSED(dummy);
-	
+
 	return expected == actual;
 }
 
@@ -85,20 +87,20 @@ bool is_equals_unsigned_long(dom_ulong expected, dom_ulong actual, bool dummy)
 
 /**
  * Test whether two string are equal
- * 
+ *
  * \param expected	The expected string
  * \param actual	The actual string
  * \param ignoreCase	Whether to ignore letter case
  */
-bool is_equals_string(const char *expected, dom_string *actual, 
-		bool ignoreCase)
+bool is_equals_string(const char *expected, dom_string *actual, bool ignoreCase)
 {
 	dom_string *exp;
 	dom_exception err;
 	bool ret;
 
-	err = dom_string_create((const uint8_t *)expected, strlen(expected),
-			&exp);
+	err = dom_string_create((const uint8_t *)expected,
+				strlen(expected),
+				&exp);
 	if (err != DOM_NO_ERR)
 		return false;
 
@@ -106,14 +108,15 @@ bool is_equals_string(const char *expected, dom_string *actual,
 		ret = dom_string_caseless_isequal(exp, actual);
 	else
 		ret = dom_string_isequal(exp, actual);
-	
+
 	dom_string_unref(exp);
 	return ret;
 }
 
 /* Compare whether two dom_string are equal */
-bool is_equals_domstring(dom_string *expected, dom_string *actual, 
-		bool ignoreCase)
+bool is_equals_domstring(dom_string *expected,
+			 dom_string *actual,
+			 bool ignoreCase)
 {
 	if (ignoreCase == true)
 		return dom_string_caseless_isequal(expected, actual);
@@ -130,39 +133,38 @@ bool is_equals_list(list *expected, list *actual, bool ignoreCase)
 	comparator cmp = NULL;
 	comparator rcmp = NULL;
 
-	if (expected->type == INT)
-	{
+	if (expected->type == INT) {
 		cmp = int_comparator;
 		rcmp = int_comparator;
 	}
 	if (expected->type == STRING) {
 		if (actual->type == DOM_STRING) {
-			cmp = ignoreCase? str_icmp : str_cmp;
-			rcmp = ignoreCase? str_icmp_r : str_cmp_r;
+			cmp = ignoreCase ? str_icmp : str_cmp;
+			rcmp = ignoreCase ? str_icmp_r : str_cmp_r;
 		}
 	}
 	if (expected->type == DOM_STRING) {
 		if (actual->type == STRING) {
-			cmp = ignoreCase? str_icmp_r : str_cmp_r;
-			rcmp = ignoreCase? str_icmp : str_cmp;
+			cmp = ignoreCase ? str_icmp_r : str_cmp_r;
+			rcmp = ignoreCase ? str_icmp : str_cmp;
 		}
 	}
 
 	assert(cmp != NULL);
 	assert(rcmp != NULL);
 
-	return list_contains_all(expected, actual, cmp) && list_contains_all(actual, expected, rcmp);
+	return list_contains_all(expected, actual, cmp) &&
+	       list_contains_all(actual, expected, rcmp);
 }
-
 
 
 bool is_instanceof(const char *type, dom_node *node)
 {
 	assert("There is no instanceOf in the test-suite" == NULL);
-        
-        (void)type;
-        (void)node;
-        
+
+	(void)type;
+	(void)node;
+
 	return false;
 }
 
@@ -201,9 +203,14 @@ bool is_size_list(uint32_t size, list *list)
 }
 
 
-bool is_uri_equals(const char *scheme, const char *path, const char *host,
-		   const char *file, const char *name, const char *query,
-		   const char *fragment, const char *isAbsolute,
+bool is_uri_equals(const char *scheme,
+		   const char *path,
+		   const char *host,
+		   const char *file,
+		   const char *name,
+		   const char *query,
+		   const char *fragment,
+		   const char *isAbsolute,
 		   dom_string *actual)
 {
 	const char *_ptr = actual != NULL ? dom_string_data(actual) : NULL;
@@ -211,7 +218,7 @@ bool is_uri_equals(const char *scheme, const char *path, const char *host,
 	char *_sptr = actual != NULL ? domts_strndup(_ptr, slen) : NULL;
 	char *sptr = _sptr;
 	bool result = false;
-	
+
 	/* Used farther down */
 	const char *firstColon = NULL;
 	const char *firstSlash = NULL;
@@ -220,13 +227,13 @@ bool is_uri_equals(const char *scheme, const char *path, const char *host,
 	char *actualHost = NULL;
 	char *actualFile = NULL;
 	char *actualName = NULL;
-	
+
 	assert(sptr != NULL);
-	
+
 	/* Note, from here on down, this is essentially a semi-direct
 	 * reimplementation of assertURIEquals in the Java DOMTS.
 	 */
-	
+
 	/* Attempt to check fragment */
 	{
 		char *fptr = strrchr(sptr, '#');
@@ -255,7 +262,7 @@ bool is_uri_equals(const char *scheme, const char *path, const char *host,
 				goto out;
 		}
 	}
-	
+
 	/* Scheme and path */
 	firstColon = strchr(sptr, ':');
 	firstSlash = strchr(sptr, '/');
@@ -275,22 +282,21 @@ bool is_uri_equals(const char *scheme, const char *path, const char *host,
 		if (strcmp(path, actualPath) != 0)
 			goto out;
 	}
-	
+
 	/* host */
 	if (host != NULL) {
-		if (actualPath[0] == '/' &&
-		    actualPath[1] == '/') {
+		if (actualPath[0] == '/' && actualPath[1] == '/') {
 			const char *termslash = strchr(actualPath + 2, '/');
-			actualHost = domts_strndup(actualPath, 
-					     termslash - actualPath);
+			actualHost = domts_strndup(actualPath,
+						   termslash - actualPath);
 		} else {
 			actualHost = strdup("");
 		}
 		if (strcmp(actualHost, host) != 0)
 			goto out;
 	}
-	
-	
+
+
 	/* file */
 	actualFile = strdup(actualPath);
 	if (file != NULL || name != NULL) {
@@ -304,20 +310,20 @@ bool is_uri_equals(const char *scheme, const char *path, const char *host,
 				goto out;
 		}
 	}
-	
+
 	/* name */
 	if (name != NULL) {
 		const char *finalPeriod = strrchr(actualFile, '.');
 		if (finalPeriod != NULL) {
-			actualName = domts_strndup(actualFile, 
-					     finalPeriod - actualFile);
+			actualName = domts_strndup(actualFile,
+						   finalPeriod - actualFile);
 		} else {
 			actualName = strdup(actualFile);
 		}
 		if (strcmp(actualName, name) != 0)
 			goto out;
 	}
-	
+
 	/* isAbsolute */
 	if (isAbsolute != NULL) {
 		bool startslash = *actualPath == '/';

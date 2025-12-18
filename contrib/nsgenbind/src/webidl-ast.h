@@ -1,4 +1,4 @@
-/* Web IDL AST interface 
+/* Web IDL AST interface
  *
  * This file is part of nsgenbind.
  * Licensed under the MIT License,
@@ -16,9 +16,9 @@ enum webidl_node_type {
 	/** access modifier e.g. for attributes or types */
 	WEBIDL_NODE_TYPE_MODIFIER,
 	/** a list of nodes (interface members, arguments)  */
-	WEBIDL_NODE_TYPE_LIST, 
+	WEBIDL_NODE_TYPE_LIST,
 
-        /* non structural node types */
+	/* non structural node types */
 	WEBIDL_NODE_TYPE_INTERFACE, /**< node is an interface*/
 	WEBIDL_NODE_TYPE_INTERFACE_IMPLEMENTS,
 
@@ -31,7 +31,7 @@ enum webidl_node_type {
 	WEBIDL_NODE_TYPE_INHERITANCE, /**< node has inheritance */
 	WEBIDL_NODE_TYPE_SPECIAL,
 	WEBIDL_NODE_TYPE_ARGUMENT,
-        WEBIDL_NODE_TYPE_OPTIONAL,
+	WEBIDL_NODE_TYPE_OPTIONAL,
 	WEBIDL_NODE_TYPE_ELLIPSIS,
 	WEBIDL_NODE_TYPE_TYPE,
 	WEBIDL_NODE_TYPE_TYPE_BASE,
@@ -49,7 +49,7 @@ enum webidl_node_type {
 };
 
 enum webidl_type {
-        WEBIDL_TYPE_ANY, /**< 0 - The type is unconstrained */
+	WEBIDL_TYPE_ANY, /**< 0 - The type is unconstrained */
 	WEBIDL_TYPE_USER, /**< 1 - The type is a dictionary or interface */
 	WEBIDL_TYPE_BOOL, /**< 2 - The type is boolean */
 	WEBIDL_TYPE_BYTE, /**< 3 - The type is a byte */
@@ -68,7 +68,7 @@ enum webidl_type {
 
 /** modifiers for operations, attributes and arguments */
 enum webidl_type_modifier {
-        WEBIDL_TYPE_MODIFIER_NONE,
+	WEBIDL_TYPE_MODIFIER_NONE,
 	WEBIDL_TYPE_MODIFIER_UNSIGNED,
 	WEBIDL_TYPE_MODIFIER_UNRESTRICTED,
 	WEBIDL_TYPE_MODIFIER_READONLY,
@@ -78,35 +78,41 @@ enum webidl_type_modifier {
 
 /* the type of special node */
 enum webidl_type_special {
-        WEBIDL_TYPE_SPECIAL_GETTER,
-        WEBIDL_TYPE_SPECIAL_SETTER,
-        WEBIDL_TYPE_SPECIAL_CREATOR,
-        WEBIDL_TYPE_SPECIAL_DELETER,
-        WEBIDL_TYPE_SPECIAL_LEGACYCALLER,
+	WEBIDL_TYPE_SPECIAL_GETTER,
+	WEBIDL_TYPE_SPECIAL_SETTER,
+	WEBIDL_TYPE_SPECIAL_CREATOR,
+	WEBIDL_TYPE_SPECIAL_DELETER,
+	WEBIDL_TYPE_SPECIAL_LEGACYCALLER,
 };
 
 struct webidl_node;
 
 /** callback for search and iteration routines */
-typedef int (webidl_callback_t)(struct webidl_node *node, void *ctx);
+typedef int(webidl_callback_t)(struct webidl_node *node, void *ctx);
 
 int webidl_cmp_node_type(struct webidl_node *node, void *ctx);
 
 /**
  * create a new node with a pointer value
  */
-struct webidl_node *webidl_node_new(enum webidl_node_type, struct webidl_node *l, void *r);
+struct webidl_node *
+webidl_node_new(enum webidl_node_type, struct webidl_node *l, void *r);
 
 /**
  * create a new node with an integer value
  */
-struct webidl_node *webidl_new_number_node(enum webidl_node_type type, struct webidl_node *l, int number);
+struct webidl_node *webidl_new_number_node(enum webidl_node_type type,
+					   struct webidl_node *l,
+					   int number);
 
 
-struct webidl_node *webidl_node_prepend(struct webidl_node *list, struct webidl_node *node);
-struct webidl_node *webidl_node_append(struct webidl_node *list, struct webidl_node *node);
+struct webidl_node *
+webidl_node_prepend(struct webidl_node *list, struct webidl_node *node);
+struct webidl_node *
+webidl_node_append(struct webidl_node *list, struct webidl_node *node);
 
-struct webidl_node *webidl_node_add(struct webidl_node *node, struct webidl_node *list);
+struct webidl_node *
+webidl_node_add(struct webidl_node *node, struct webidl_node *list);
 
 /* node contents acessors */
 char *webidl_node_gettext(struct webidl_node *node);
@@ -125,29 +131,25 @@ enum webidl_node_type webidl_node_gettype(struct webidl_node *node);
  * called with a context value.
  */
 int webidl_node_for_each_type(struct webidl_node *node,
-                              enum webidl_node_type type,
-                              webidl_callback_t *cb,
+			      enum webidl_node_type type,
+			      webidl_callback_t *cb,
 			      void *ctx);
 
 int webidl_node_enumerate_type(struct webidl_node *node,
-                               enum webidl_node_type type);
+			       enum webidl_node_type type);
 
-struct webidl_node *
-webidl_node_find(struct webidl_node *node,
-                 struct webidl_node *prev,
-                 webidl_callback_t *cb,
-		 void *ctx);
+struct webidl_node *webidl_node_find(struct webidl_node *node,
+				     struct webidl_node *prev,
+				     webidl_callback_t *cb,
+				     void *ctx);
 
-struct webidl_node *
-webidl_node_find_type(struct webidl_node *node,
-                      struct webidl_node *prev,
-		      enum webidl_node_type type);
+struct webidl_node *webidl_node_find_type(struct webidl_node *node,
+					  struct webidl_node *prev,
+					  enum webidl_node_type type);
 
-struct webidl_node *
-webidl_node_find_type_ident(struct webidl_node *root_node, 
-			    enum webidl_node_type type, 
-			    const char *ident);
-
+struct webidl_node *webidl_node_find_type_ident(struct webidl_node *root_node,
+						enum webidl_node_type type,
+						const char *ident);
 
 
 /**

@@ -64,8 +64,10 @@ static inline char xdigit_to_hex(char c)
 
 
 /* exported interface documented in utils/url.h */
-nserror url_unescape(const char *str, size_t length,
-		size_t *length_out, char **result_out)
+nserror url_unescape(const char *str,
+		     size_t length,
+		     size_t *length_out,
+		     char **result_out)
 {
 	const char *str_end;
 	size_t new_len;
@@ -128,8 +130,10 @@ nserror url_unescape(const char *str, size_t length,
 
 
 /* exported interface documented in utils/url.h */
-nserror url_escape(const char *unescaped, bool sptoplus,
-		const char *escexceptions, char **result)
+nserror url_escape(const char *unescaped,
+		   bool sptoplus,
+		   const char *escexceptions,
+		   char **result)
 {
 	size_t len, new_len;
 	char *escaped, *pos;
@@ -153,12 +157,12 @@ nserror url_escape(const char *unescaped, bool sptoplus,
 		 * you believe the spec; however, leaving it unescaped
 		 * breaks a bunch of websites, so we escape it anyway. */
 		if (!isascii(*c) ||
-				(strchr(":/?#[]@" /* gen-delims */
-				 "!$&'()*+,;=" /* sub-delims */
-				 "<>%\"{}|\\^`~" /* others */, *c) &&
-				 (!escexceptions ||
-				  !strchr(escexceptions, *c))) ||
-				*c <= 0x20 || *c == 0x7f) {
+		    (strchr(":/?#[]@" /* gen-delims */
+			    "!$&'()*+,;=" /* sub-delims */
+			    "<>%\"{}|\\^`~" /* others */,
+			    *c) &&
+		     (!escexceptions || !strchr(escexceptions, *c))) ||
+		    *c <= 0x20 || *c == 0x7f) {
 			if (*c == 0x20 && sptoplus) {
 				*pos++ = '+';
 			} else {

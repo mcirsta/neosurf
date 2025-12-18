@@ -48,19 +48,19 @@
 #define FIGURE_MIN_HEIGHT 100
 
 enum chart_type {
-		 CHART_TYPE_UNKNOWN,
-		 CHART_TYPE_PIE,
+	CHART_TYPE_UNKNOWN,
+	CHART_TYPE_PIE,
 };
 
 /* type of chart key */
 enum key_type {
-	       CHART_KEY_UNSET,
-	       CHART_KEY_NONE,
-	       CHART_KEY_LEFT,
-	       CHART_KEY_RIGHT,
-	       CHART_KEY_TOP,
-	       CHART_KEY_BOT,
-	       CHART_KEY_END
+	CHART_KEY_UNSET,
+	CHART_KEY_NONE,
+	CHART_KEY_LEFT,
+	CHART_KEY_RIGHT,
+	CHART_KEY_TOP,
+	CHART_KEY_BOT,
+	CHART_KEY_END
 };
 
 
@@ -82,7 +82,6 @@ struct chart_data {
 
 	unsigned int label_len; /* number of labels */
 	struct chart_label *label;
-
 };
 
 /**
@@ -105,17 +104,16 @@ struct chart_param {
 
 #define DEF_COLOUR_NUM 8
 /** default colour series */
-static unsigned int colour_series[DEF_COLOUR_NUM] =
-	{
-	 0x00ff00, /* green */
-	 0x0000ff, /* blue */
-	 0xff0000, /* red */
-	 0xffff00, /* yellow */
-	 0x00ffff, /* cyan */
-	 0xff00ff, /* pink */
-	 0x777777, /* grey */
-	 0x000000, /* black */
-	};
+static unsigned int colour_series[DEF_COLOUR_NUM] = {
+	0x00ff00, /* green */
+	0x0000ff, /* blue */
+	0xff0000, /* red */
+	0xffff00, /* yellow */
+	0x00ffff, /* cyan */
+	0xff00ff, /* pink */
+	0x777777, /* grey */
+	0x000000, /* black */
+};
 
 
 /* ensures there are labels present for every value */
@@ -140,8 +138,10 @@ static nserror ensure_label_count(struct chart_param *chart, unsigned int count)
 
 	for (lidx = chart->data.label_len; lidx < count; lidx++) {
 		chart->data.label[lidx].title = calloc(1, 20);
-		snprintf(chart->data.label[lidx].title, 19, "item %d", lidx + 1);
-		chart->data.label[lidx].colour = colour_series[lidx % DEF_COLOUR_NUM];
+		snprintf(
+			chart->data.label[lidx].title, 19, "item %d", lidx + 1);
+		chart->data.label[lidx].colour =
+			colour_series[lidx % DEF_COLOUR_NUM];
 	}
 
 	chart->data.label_len = count;
@@ -152,15 +152,14 @@ static nserror ensure_label_count(struct chart_param *chart, unsigned int count)
 /**
  * extract values for a series
  */
-static nserror
-extract_series_values(struct chart_param *chart,
-		      unsigned int series_num,
-		      const char *valstr,
-		      size_t valstrlen)
+static nserror extract_series_values(struct chart_param *chart,
+				     unsigned int series_num,
+				     const char *valstr,
+				     size_t valstrlen)
 {
 	nserror res;
 	unsigned int valcur;
-	size_t valstart;/* value start in valstr */
+	size_t valstart; /* value start in valstr */
 	size_t vallen; /* value end in valstr */
 	struct chart_series *series;
 
@@ -172,7 +171,7 @@ extract_series_values(struct chart_param *chart,
 	}
 
 	/* count how many values present */
-	for (series->len = 1, valstart=0; valstart < valstrlen; valstart++) {
+	for (series->len = 1, valstart = 0; valstart < valstrlen; valstart++) {
 		if (valstr[valstart] == ',') {
 			series->len++;
 		}
@@ -208,10 +207,9 @@ extract_series_values(struct chart_param *chart,
 /**
  * extract values for next series
  */
-static nserror
-extract_next_series_values(struct chart_param *chart,
-		      const char *valstr,
-		      size_t valstrlen)
+static nserror extract_next_series_values(struct chart_param *chart,
+					  const char *valstr,
+					  size_t valstrlen)
 {
 	nserror res;
 
@@ -219,10 +217,8 @@ extract_next_series_values(struct chart_param *chart,
 		return NSERROR_NOSPACE;
 	}
 
-	res = extract_series_values(chart,
-				    chart->data.series_len,
-				    valstr,
-				    valstrlen);
+	res = extract_series_values(
+		chart, chart->data.series_len, valstr, valstrlen);
 	if (res == NSERROR_OK) {
 		chart->data.series_len++;
 	}
@@ -234,18 +230,17 @@ extract_next_series_values(struct chart_param *chart,
 /**
  * extract label title
  */
-static nserror
-extract_series_labels(struct chart_param *chart,
-		      const char *valstr,
-		      size_t valstrlen)
+static nserror extract_series_labels(struct chart_param *chart,
+				     const char *valstr,
+				     size_t valstrlen)
 {
 	nserror res;
 	unsigned int valcount; /* count of values in valstr */
 	unsigned int valcur;
-	size_t valstart;/* value start in valstr */
+	size_t valstart; /* value start in valstr */
 	size_t vallen; /* value end in valstr */
 
-	for (valcount = 1, valstart=0; valstart < valstrlen; valstart++) {
+	for (valcount = 1, valstart = 0; valstart < valstrlen; valstart++) {
 		if (valstr[valstart] == ',') {
 			valcount++;
 		}
@@ -267,7 +262,8 @@ extract_series_labels(struct chart_param *chart,
 			vallen++;
 		}
 
-		chart->data.label[valcur].title = strndup(valstr + valstart, vallen);
+		chart->data.label[valcur].title = strndup(valstr + valstart,
+							  vallen);
 		vallen++; /* account for , separator */
 	}
 	return NSERROR_OK;
@@ -277,10 +273,9 @@ extract_series_labels(struct chart_param *chart,
 /**
  * extract labels colour
  */
-static nserror
-extract_series_colours(struct chart_param *chart,
-		      const char *valstr,
-		      size_t valstrlen)
+static nserror extract_series_colours(struct chart_param *chart,
+				      const char *valstr,
+				      size_t valstrlen)
 {
 	return NSERROR_OK;
 }
@@ -293,44 +288,34 @@ process_query_section(const char *str, size_t len, struct chart_param *chart)
 {
 	nserror res = NSERROR_OK;
 
-	if ((len > 6) &&
-	    (strncmp(str, "width=", 6) == 0)) {
+	if ((len > 6) && (strncmp(str, "width=", 6) == 0)) {
 		/* figure width */
 		chart->width = strtoul(str + 6, NULL, 10);
-	} else if ((len > 7) &&
-	    (strncmp(str, "height=", 7) == 0)) {
+	} else if ((len > 7) && (strncmp(str, "height=", 7) == 0)) {
 		/* figure height */
 		chart->height = strtoul(str + 7, NULL, 10);
-	} else if ((len > 8) &&
-	    (strncmp(str, "cawidth=", 8) == 0)) {
+	} else if ((len > 8) && (strncmp(str, "cawidth=", 8) == 0)) {
 		/* chart area width */
 		chart->area.width = strtoul(str + 8, NULL, 10);
-	} else if ((len > 9) &&
-	    (strncmp(str, "caheight=", 9) == 0)) {
+	} else if ((len > 9) && (strncmp(str, "caheight=", 9) == 0)) {
 		/* chart area height */
 		chart->area.height = strtoul(str + 9, NULL, 10);
-	} else if ((len > 4) &&
-	    (strncmp(str, "key=", 4) == 0)) {
+	} else if ((len > 4) && (strncmp(str, "key=", 4) == 0)) {
 		/* figure has key */
 		chart->key = strtoul(str + 4, NULL, 10);
-	} else if ((len > 6) &&
-	    (strncmp(str, "title=", 6) == 0)) {
+	} else if ((len > 6) && (strncmp(str, "title=", 6) == 0)) {
 		chart->title = strndup(str + 6, len - 6);
-	} else if ((len > 5) &&
-	    (strncmp(str, "type=", 5) == 0)) {
+	} else if ((len > 5) && (strncmp(str, "type=", 5) == 0)) {
 		if (strncmp(str + 5, "pie", len - 5) == 0) {
 			chart->type = CHART_TYPE_PIE;
 		} else {
 			chart->type = CHART_TYPE_UNKNOWN;
 		}
-	} else if ((len > 7) &&
-	    (strncmp(str, "values=", 7) == 0)) {
+	} else if ((len > 7) && (strncmp(str, "values=", 7) == 0)) {
 		res = extract_next_series_values(chart, str + 7, len - 7);
-	} else if ((len > 7) &&
-	    (strncmp(str, "labels=", 7) == 0)) {
+	} else if ((len > 7) && (strncmp(str, "labels=", 7) == 0)) {
 		res = extract_series_labels(chart, str + 7, len - 7);
-	} else if ((len > 8) &&
-	    (strncmp(str, "colours=", 8) == 0)) {
+	} else if ((len > 8) && (strncmp(str, "colours=", 8) == 0)) {
 		res = extract_series_colours(chart, str + 8, len - 8);
 	}
 
@@ -338,14 +323,12 @@ process_query_section(const char *str, size_t len, struct chart_param *chart)
 }
 
 
-
-static nserror
-chart_from_query(struct nsurl *url, struct chart_param *chart)
+static nserror chart_from_query(struct nsurl *url, struct chart_param *chart)
 {
 	nserror res;
 	char *querystr;
 	size_t querylen;
-	size_t kvstart;/* key value start */
+	size_t kvstart; /* key value start */
 	size_t kvlen; /* key value end */
 
 	res = nsurl_get(url, NSURL_QUERY, &querystr, &querylen);
@@ -389,8 +372,7 @@ chart_from_query(struct nsurl *url, struct chart_param *chart)
 	}
 
 	/* ensure legend type correct */
-	if ((chart->key == CHART_KEY_UNSET) ||
-	    (chart->key >= CHART_KEY_END )) {
+	if ((chart->key == CHART_KEY_UNSET) || (chart->key >= CHART_KEY_END)) {
 		/* default to putting key on right */
 		chart->key = CHART_KEY_RIGHT;
 	}
@@ -418,22 +400,25 @@ output_pie_legend(struct fetch_about_context *ctx, struct chart_param *chart)
 		legend_height = chart->height;
 		vertical_spacing = legend_height / (chart->data.label_len + 1);
 
-		for(lblidx = 0; lblidx < chart->data.label_len ; lblidx++) {
-			res = fetch_about_ssenddataf(ctx,
+		for (lblidx = 0; lblidx < chart->data.label_len; lblidx++) {
+			res = fetch_about_ssenddataf(
+				ctx,
 				"<rect  x=\"%d\" y=\"%d\" width=\"%d\" height=\"%d\" fill=\"#%06x\" />",
 				chart->width - legend_width,
-				(vertical_spacing * lblidx) + (vertical_spacing/2),
+				(vertical_spacing * lblidx) +
+					(vertical_spacing / 2),
 				vertical_spacing * 2 / 3,
 				vertical_spacing * 2 / 3,
 				chart->data.label[lblidx].colour);
 			if (res != NSERROR_OK) {
 				return res;
 			}
-			res = fetch_about_ssenddataf(ctx,
+			res = fetch_about_ssenddataf(
+				ctx,
 				"<text x=\"%d\" y=\"%d\" fill=\"#%06x\" >%s</text>",
 				chart->width - legend_width + vertical_spacing,
-				vertical_spacing * (lblidx+1),
-			     chart->data.label[lblidx].colour,
+				vertical_spacing * (lblidx + 1),
+				chart->data.label[lblidx].colour,
 				chart->data.label[lblidx].title);
 			if (res != NSERROR_OK) {
 				return res;
@@ -453,8 +438,7 @@ compute_series_total(struct chart_param *chart, unsigned int series)
 	float total;
 	unsigned int curdata;
 
-	for (total = 0, curdata = 0;
-	     curdata < chart->data.series[series].len;
+	for (total = 0, curdata = 0; curdata < chart->data.series[series].len;
 	     curdata++) {
 		total += chart->data.series[series].value[curdata];
 	}
@@ -503,9 +487,11 @@ pie_chart(struct fetch_about_context *ctx, struct chart_param *chart)
 		 *  width and height
 		 */
 		if (chart->width > chart->height) {
-			chart->area.width = chart->area.height = (chart->height - chart->area.x);
+			chart->area.width = chart->area.height =
+				(chart->height - chart->area.x);
 		} else {
-			chart->area.width = chart->area.height = (chart->width - chart->area.y);
+			chart->area.width = chart->area.height =
+				(chart->width - chart->area.y);
 		}
 	}
 
@@ -514,7 +500,7 @@ pie_chart(struct fetch_about_context *ctx, struct chart_param *chart)
 
 	/* content type */
 	if (fetch_about_send_header(ctx,
-			"Content-Type: image/svg; charset=utf-8")) {
+				    "Content-Type: image/svg; charset=utf-8")) {
 		goto aborted;
 	}
 
@@ -529,9 +515,10 @@ pie_chart(struct fetch_about_context *ctx, struct chart_param *chart)
 
 	/* svg header */
 	res = fetch_about_ssenddataf(ctx,
-			"<svg width=\"%u\" height=\"%u\" "
-			"xmlns=\"http://www.w3.org/2000/svg\">\n",
-			chart->width, chart->height);
+				     "<svg width=\"%u\" height=\"%u\" "
+				     "xmlns=\"http://www.w3.org/2000/svg\">\n",
+				     chart->width,
+				     chart->height);
 	if (res != NSERROR_OK) {
 		goto aborted;
 	}
@@ -548,8 +535,10 @@ pie_chart(struct fetch_about_context *ctx, struct chart_param *chart)
 	last_y = (rb * sin(start));
 
 	/* iterate over each data point creating a slice o pie */
-	for (curdata=0; curdata < chart->data.series[0].len; curdata++) {
-		extent = ((chart->data.series[0].value[curdata] / series_total) * 2 * M_PI);
+	for (curdata = 0; curdata < chart->data.series[0].len; curdata++) {
+		extent = ((chart->data.series[0].value[curdata] /
+			   series_total) *
+			  2 * M_PI);
 		end_x = (ra * cos(start + extent));
 		end_y = (rb * sin(start + extent));
 
@@ -559,25 +548,26 @@ pie_chart(struct fetch_about_context *ctx, struct chart_param *chart)
 			large = false;
 		}
 
-		res = fetch_about_ssenddataf(
-			ctx,
-			"<path d=\"M %g %g\n"
-			"A %g %g 0 %d 1 %g %g\n"
-			"L %g %g Z\" fill=\"#%06x\" />\n",
-			circle_centre_x + last_x,
-			circle_centre_y + last_y,
-			ra, rb, large?1:0,
-			circle_centre_x + end_x,
-			circle_centre_y + end_y,
-			circle_centre_x,
-			circle_centre_y,
-			chart->data.label[curdata].colour);
+		res = fetch_about_ssenddataf(ctx,
+					     "<path d=\"M %g %g\n"
+					     "A %g %g 0 %d 1 %g %g\n"
+					     "L %g %g Z\" fill=\"#%06x\" />\n",
+					     circle_centre_x + last_x,
+					     circle_centre_y + last_y,
+					     ra,
+					     rb,
+					     large ? 1 : 0,
+					     circle_centre_x + end_x,
+					     circle_centre_y + end_y,
+					     circle_centre_x,
+					     circle_centre_y,
+					     chart->data.label[curdata].colour);
 		if (res != NSERROR_OK) {
 			goto aborted;
 		}
 		last_x = end_x;
 		last_y = end_y;
-		start +=extent;
+		start += extent;
 	}
 
 	res = fetch_about_ssenddataf(ctx, "</svg>\n");
@@ -589,10 +579,9 @@ pie_chart(struct fetch_about_context *ctx, struct chart_param *chart)
 
 	return true;
 
- aborted:
+aborted:
 
 	return false;
-
 }
 
 /**
@@ -626,5 +615,4 @@ bool fetch_about_chart_handler(struct fetch_about_context *ctx)
 aborted:
 
 	return false;
-
 }

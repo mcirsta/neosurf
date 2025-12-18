@@ -28,8 +28,9 @@
  *		   If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_pause(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+			   const parserutils_vector *vector,
+			   int32_t *ctx,
+			   css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	css_error error;
@@ -51,7 +52,7 @@ css_error css__parse_pause(css_language *c,
 		consumeWhitespace(vector, ctx);
 
 		token = parserutils_vector_peek(vector, *ctx);
-		if (token == NULL)  {
+		if (token == NULL) {
 			/* no second token, re-parse the first */
 			*ctx = orig_ctx;
 			error = css__parse_pause_after(c, vector, ctx, result);
@@ -66,20 +67,25 @@ css_error css__parse_pause(css_language *c,
 				 * which is bogus */
 				error = CSS_INVALID;
 			} else {
-				error = css__parse_pause_after(c, vector, ctx, result);
+				error = css__parse_pause_after(
+					c, vector, ctx, result);
 				if (error == CSS_OK) {
 					/* second token parsed */
-					flag_value = get_css_flag_value(c, first_token);
+					flag_value = get_css_flag_value(
+						c, first_token);
 
 					if (flag_value != FLAG_VALUE__NONE) {
 						/* valid second token after
-						 * generic property reset value */
+						 * generic property reset value
+						 */
 						error = CSS_INVALID;
 					}
 				} else {
-					/* second token appears to be junk re-try with first */
+					/* second token appears to be junk
+					 * re-try with first */
 					*ctx = orig_ctx;
-					error = css__parse_pause_after(c, vector, ctx, result);
+					error = css__parse_pause_after(
+						c, vector, ctx, result);
 				}
 			}
 		}

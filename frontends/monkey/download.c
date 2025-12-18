@@ -42,8 +42,7 @@ struct gui_download_window {
 static struct gui_download_window *dw_ring = NULL;
 
 static struct gui_download_window *
-gui_download_window_create(download_context *ctx,
-                           struct gui_window *parent)
+gui_download_window_create(download_context *ctx, struct gui_window *parent)
 {
 	struct gui_download_window *ret = calloc(1, sizeof(*ret));
 	if (ret == NULL)
@@ -51,33 +50,36 @@ gui_download_window_create(download_context *ctx,
 	ret->g = parent;
 	ret->dwin_num = dwin_ctr++;
 	ret->dlctx = ctx;
-  
+
 	RING_INSERT(dw_ring, ret);
-  
-	moutf(MOUT_DOWNLOAD, "CREATE DWIN %u WIN %u",
-	      ret->dwin_num, parent->win_num);
-  
+
+	moutf(MOUT_DOWNLOAD,
+	      "CREATE DWIN %u WIN %u",
+	      ret->dwin_num,
+	      parent->win_num);
+
 	return ret;
 }
 
-static nserror 
-gui_download_window_data(struct gui_download_window *dw, 
-                         const char *data, unsigned int size)
+static nserror gui_download_window_data(struct gui_download_window *dw,
+					const char *data,
+					unsigned int size)
 {
-	moutf(MOUT_DOWNLOAD, "DATA DWIN %u SIZE %u DATA %s",
-		dw->dwin_num, size, data);
+	moutf(MOUT_DOWNLOAD,
+	      "DATA DWIN %u SIZE %u DATA %s",
+	      dw->dwin_num,
+	      size,
+	      data);
 	return NSERROR_OK;
 }
 
 static void
-gui_download_window_error(struct gui_download_window *dw,
-                          const char *error_msg)
+gui_download_window_error(struct gui_download_window *dw, const char *error_msg)
 {
 	moutf(MOUT_DOWNLOAD, "ERROR DWIN %u ERROR %s", dw->dwin_num, error_msg);
 }
 
-static void
-gui_download_window_done(struct gui_download_window *dw)
+static void gui_download_window_done(struct gui_download_window *dw)
 {
 	moutf(MOUT_DOWNLOAD, "DONE DWIN %u", dw->dwin_num);
 	RING_REMOVE(dw_ring, dw);

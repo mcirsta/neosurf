@@ -45,55 +45,43 @@ static const struct cli_table_entry cli_entries[] = {
 		.v.b = &nsgif_options.help,
 		.d = "Print this text.",
 	},
-	{
-		.s = 'i',
-		.l = "info",
-		.t = CLI_BOOL,
-		.v.b = &nsgif_options.info,
-		.d = "Dump GIF info to stdout."
-	},
-	{
-		.s = 'l',
-		.l = "loops",
-		.t = CLI_UINT,
-		.v.u = &nsgif_options.loops,
-		.d = "Loop through decoding all frames N times. "
-		     "The default is 1."
-	},
-	{
-		.s = 'm',
-		.l = "ppm",
-		.t = CLI_STRING,
-		.v.s = &nsgif_options.ppm,
-		.d = "Convert frames to PPM image at given path."
-	},
-	{
-		.s = 'p',
-		.l = "palette",
-		.t = CLI_BOOL,
-		.v.b = &nsgif_options.palette,
-		.d = "Save palette images."
-	},
-	{
-		.s = 'V',
-		.l = "version",
-		.t = CLI_BOOL,
-		.no_pos = true,
-		.v.b = &nsgif_options.version,
-		.d = "Print version number."
-	},
-	{
-		.p = true,
-		.l = "FILE",
-		.t = CLI_STRING,
-		.v.s = &nsgif_options.file,
-		.d = "Path to GIF file to load."
-	},
+	{.s = 'i',
+	 .l = "info",
+	 .t = CLI_BOOL,
+	 .v.b = &nsgif_options.info,
+	 .d = "Dump GIF info to stdout."},
+	{.s = 'l',
+	 .l = "loops",
+	 .t = CLI_UINT,
+	 .v.u = &nsgif_options.loops,
+	 .d = "Loop through decoding all frames N times. "
+	      "The default is 1."},
+	{.s = 'm',
+	 .l = "ppm",
+	 .t = CLI_STRING,
+	 .v.s = &nsgif_options.ppm,
+	 .d = "Convert frames to PPM image at given path."},
+	{.s = 'p',
+	 .l = "palette",
+	 .t = CLI_BOOL,
+	 .v.b = &nsgif_options.palette,
+	 .d = "Save palette images."},
+	{.s = 'V',
+	 .l = "version",
+	 .t = CLI_BOOL,
+	 .no_pos = true,
+	 .v.b = &nsgif_options.version,
+	 .d = "Print version number."},
+	{.p = true,
+	 .l = "FILE",
+	 .t = CLI_STRING,
+	 .v.s = &nsgif_options.file,
+	 .d = "Path to GIF file to load."},
 };
 
 const struct cli_table cli = {
 	.entries = cli_entries,
-	.count = (sizeof(cli_entries))/(sizeof(*cli_entries)),
+	.count = (sizeof(cli_entries)) / (sizeof(*cli_entries)),
 	.min_positional = 1,
 	.d = "NSGIF - A utility for inspecting and decoding GIFs with libnsgif",
 };
@@ -140,8 +128,9 @@ static uint8_t *load_file(const char *path, size_t *data_size)
 
 	buffer = malloc(size);
 	if (!buffer) {
-		fprintf(stderr, "Unable to allocate %lld bytes\n",
-			(long long) size);
+		fprintf(stderr,
+			"Unable to allocate %lld bytes\n",
+			(long long)size);
 		exit(EXIT_FAILURE);
 	}
 
@@ -164,18 +153,20 @@ static void warning(const char *context, nsgif_error err)
 
 static void print_gif_info(const nsgif_info_t *info)
 {
-	const uint8_t *bg = (uint8_t *) &info->background;
+	const uint8_t *bg = (uint8_t *)&info->background;
 
 	fprintf(stdout, "gif:\n");
-	fprintf(stdout, "  width: %"PRIu32"\n", info->width);
-	fprintf(stdout, "  height: %"PRIu32"\n", info->height);
-	fprintf(stdout, "  max-loops: %"PRIu32"\n", info->loop_max);
-	fprintf(stdout, "  frame-count: %"PRIu32"\n", info->frame_count);
-	fprintf(stdout, "  global palette: %s\n", info->global_palette ? "yes" : "no");
+	fprintf(stdout, "  width: %" PRIu32 "\n", info->width);
+	fprintf(stdout, "  height: %" PRIu32 "\n", info->height);
+	fprintf(stdout, "  max-loops: %" PRIu32 "\n", info->loop_max);
+	fprintf(stdout, "  frame-count: %" PRIu32 "\n", info->frame_count);
+	fprintf(stdout,
+		"  global palette: %s\n",
+		info->global_palette ? "yes" : "no");
 	fprintf(stdout, "  background:\n");
-	fprintf(stdout, "    red: 0x%"PRIx8"\n", bg[0]);
-	fprintf(stdout, "    green: 0x%"PRIx8"\n", bg[1]);
-	fprintf(stdout, "    blue: 0x%"PRIx8"\n", bg[2]);
+	fprintf(stdout, "    red: 0x%" PRIx8 "\n", bg[0]);
+	fprintf(stdout, "    green: 0x%" PRIx8 "\n", bg[1]);
+	fprintf(stdout, "    blue: 0x%" PRIx8 "\n", bg[2]);
 	fprintf(stdout, "  frames:\n");
 }
 
@@ -183,25 +174,34 @@ static void print_gif_frame_info(const nsgif_frame_info_t *info, uint32_t i)
 {
 	const char *disposal = nsgif_str_disposal(info->disposal);
 
-	fprintf(stdout, "  - frame: %"PRIu32"\n", i);
-	fprintf(stdout, "    local palette: %s\n", info->local_palette ? "yes" : "no");
+	fprintf(stdout, "  - frame: %" PRIu32 "\n", i);
+	fprintf(stdout,
+		"    local palette: %s\n",
+		info->local_palette ? "yes" : "no");
 	fprintf(stdout, "    disposal-method: %s\n", disposal);
-	fprintf(stdout, "    transparency: %s\n", info->transparency ? "yes" : "no");
-	fprintf(stdout, "    interlaced: %s\n", info->interlaced ? "yes" : "no");
+	fprintf(stdout,
+		"    transparency: %s\n",
+		info->transparency ? "yes" : "no");
+	fprintf(stdout,
+		"    interlaced: %s\n",
+		info->interlaced ? "yes" : "no");
 	fprintf(stdout, "    display: %s\n", info->display ? "yes" : "no");
-	fprintf(stdout, "    delay: %"PRIu32"\n", info->delay);
+	fprintf(stdout, "    delay: %" PRIu32 "\n", info->delay);
 	fprintf(stdout, "    rect:\n");
-	fprintf(stdout, "      x: %"PRIu32"\n", info->rect.x0);
-	fprintf(stdout, "      y: %"PRIu32"\n", info->rect.y0);
-	fprintf(stdout, "      w: %"PRIu32"\n", info->rect.x1 - info->rect.x0);
-	fprintf(stdout, "      h: %"PRIu32"\n", info->rect.y1 - info->rect.y0);
+	fprintf(stdout, "      x: %" PRIu32 "\n", info->rect.x0);
+	fprintf(stdout, "      y: %" PRIu32 "\n", info->rect.y0);
+	fprintf(stdout,
+		"      w: %" PRIu32 "\n",
+		info->rect.x1 - info->rect.x0);
+	fprintf(stdout,
+		"      h: %" PRIu32 "\n",
+		info->rect.y1 - info->rect.y0);
 }
 
-static bool save_palette(
-		const char *img_filename,
-		const char *palette_filename,
-		const uint32_t palette[NSGIF_MAX_COLOURS],
-		size_t used_entries)
+static bool save_palette(const char *img_filename,
+			 const char *palette_filename,
+			 const uint32_t palette[NSGIF_MAX_COLOURS],
+			 size_t used_entries)
 {
 	enum {
 		SIZE = 32,
@@ -212,8 +212,9 @@ static bool save_palette(
 
 	f = fopen(palette_filename, "w+");
 	if (f == NULL) {
-		fprintf(stderr, "Unable to open %s for writing\n",
-				palette_filename);
+		fprintf(stderr,
+			"Unable to open %s for writing\n",
+			palette_filename);
 		return false;
 	}
 
@@ -230,10 +231,11 @@ static bool save_palette(
 				size_t offset = y / SIZE * COUNT + x / SIZE;
 				uint8_t *entry = (uint8_t *)&palette[offset];
 
-				fprintf(f, "%u %u %u ",
-						entry[0],
-						entry[1],
-						entry[2]);
+				fprintf(f,
+					"%u %u %u ",
+					entry[0],
+					entry[1],
+					entry[2]);
 			}
 		}
 
@@ -252,8 +254,8 @@ static bool save_global_palette(const nsgif_t *gif)
 
 	nsgif_global_palette(gif, table, &entries);
 
-	return save_palette(nsgif_options.file, "global-palette.ppm",
-			table, entries);
+	return save_palette(
+		nsgif_options.file, "global-palette.ppm", table, entries);
 }
 
 static bool save_local_palette(const nsgif_t *gif, uint32_t frame)
@@ -262,8 +264,10 @@ static bool save_local_palette(const nsgif_t *gif, uint32_t frame)
 	char filename[64];
 	size_t entries;
 
-	snprintf(filename, sizeof(filename), "local-palette-%"PRIu32".ppm",
-			frame);
+	snprintf(filename,
+		 sizeof(filename),
+		 "local-palette-%" PRIu32 ".ppm",
+		 frame);
 
 	if (!nsgif_local_palette(gif, frame, table, &entries)) {
 		return false;
@@ -272,7 +276,7 @@ static bool save_local_palette(const nsgif_t *gif, uint32_t frame)
 	return save_palette(nsgif_options.file, filename, table, entries);
 }
 
-static void decode(FILE* ppm, const char *name, nsgif_t *gif, bool first)
+static void decode(FILE *ppm, const char *name, nsgif_t *gif, bool first)
 {
 	nsgif_error err;
 	uint32_t frame_prev = 0;
@@ -287,8 +291,10 @@ static void decode(FILE* ppm, const char *name, nsgif_t *gif, bool first)
 		fprintf(ppm, "# height               %u \n", info->height);
 		fprintf(ppm, "# frame_count          %u \n", info->frame_count);
 		fprintf(ppm, "# loop_max             %u \n", info->loop_max);
-		fprintf(ppm, "%u %u 256\n", info->width,
-				info->height * info->frame_count);
+		fprintf(ppm,
+			"%u %u 256\n",
+			info->width,
+			info->height * info->frame_count);
 	}
 
 	if (first && nsgif_options.info) {
@@ -306,8 +312,7 @@ static void decode(FILE* ppm, const char *name, nsgif_t *gif, bool first)
 		uint32_t delay_cs;
 		nsgif_rect_t area;
 
-		err = nsgif_frame_prepare(gif, &area,
-				&delay_cs, &frame_new);
+		err = nsgif_frame_prepare(gif, &area, &delay_cs, &frame_new);
 		if (err != NSGIF_OK) {
 			warning("nsgif_frame_prepare", err);
 			return;
@@ -334,21 +339,24 @@ static void decode(FILE* ppm, const char *name, nsgif_t *gif, bool first)
 
 		err = nsgif_frame_decode(gif, frame_new, &bitmap);
 		if (err != NSGIF_OK) {
-			fprintf(stderr, "Frame %"PRIu32": "
-					"nsgif_decode_frame failed: %s\n",
-					frame_new, nsgif_strerror(err));
+			fprintf(stderr,
+				"Frame %" PRIu32 ": "
+				"nsgif_decode_frame failed: %s\n",
+				frame_new,
+				nsgif_strerror(err));
 			/* Continue decoding the rest of the frames. */
 
 		} else if (first && ppm != NULL) {
 			fprintf(ppm, "# frame %u:\n", frame_new);
-			image = (const uint8_t *) bitmap;
+			image = (const uint8_t *)bitmap;
 			for (uint32_t y = 0; y != info->height; y++) {
 				for (uint32_t x = 0; x != info->width; x++) {
 					size_t z = (y * info->width + x) * 4;
-					fprintf(ppm, "%u %u %u ",
-							image[z],
-							image[z + 1],
-							image[z + 2]);
+					fprintf(ppm,
+						"%u %u %u ",
+						image[z],
+						image[z + 1],
+						image[z + 2]);
 				}
 				fprintf(ppm, "\n");
 			}
@@ -364,8 +372,8 @@ static void decode(FILE* ppm, const char *name, nsgif_t *gif, bool first)
 int main(int argc, char *argv[])
 {
 	const nsgif_bitmap_cb_vt bitmap_callbacks = {
-		.create     = bitmap_create,
-		.destroy    = bitmap_destroy,
+		.create = bitmap_create,
+		.destroy = bitmap_destroy,
 		.get_buffer = bitmap_get_buffer,
 	};
 	size_t size;
@@ -393,8 +401,9 @@ int main(int argc, char *argv[])
 	if (nsgif_options.ppm != NULL) {
 		ppm = fopen(nsgif_options.ppm, "w+");
 		if (ppm == NULL) {
-			fprintf(stderr, "Unable to open %s for writing\n",
-					nsgif_options.ppm);
+			fprintf(stderr,
+				"Unable to open %s for writing\n",
+				nsgif_options.ppm);
 			return EXIT_FAILURE;
 		}
 	}

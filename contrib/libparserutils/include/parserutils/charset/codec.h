@@ -9,8 +9,7 @@
 #define parserutils_charset_codec_h_
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #include <inttypes.h>
@@ -61,9 +60,9 @@ typedef struct parserutils_charset_codec parserutils_charset_codec;
  */
 typedef enum parserutils_charset_codec_errormode {
 	/** Abort processing if unrepresentable character encountered */
-	PARSERUTILS_CHARSET_CODEC_ERROR_STRICT   = 0,
+	PARSERUTILS_CHARSET_CODEC_ERROR_STRICT = 0,
 	/** Replace unrepresentable characters with single alternate */
-	PARSERUTILS_CHARSET_CODEC_ERROR_LOOSE    = 1,
+	PARSERUTILS_CHARSET_CODEC_ERROR_LOOSE = 1,
 	/** Transliterate unrepresentable characters, if possible */
 	PARSERUTILS_CHARSET_CODEC_ERROR_TRANSLIT = 2
 } parserutils_charset_codec_errormode;
@@ -73,7 +72,7 @@ typedef enum parserutils_charset_codec_errormode {
  */
 typedef enum parserutils_charset_codec_opttype {
 	/** Set codec error mode */
-	PARSERUTILS_CHARSET_CODEC_ERROR_MODE  = 1
+	PARSERUTILS_CHARSET_CODEC_ERROR_MODE = 1
 } parserutils_charset_codec_opttype;
 
 /**
@@ -89,33 +88,38 @@ typedef union parserutils_charset_codec_optparams {
 
 
 /* Create a charset codec */
-parserutils_error parserutils_charset_codec_create(const char *charset,
-		parserutils_charset_codec **codec);
+parserutils_error
+parserutils_charset_codec_create(const char *charset,
+				 parserutils_charset_codec **codec);
 /* Destroy a charset codec */
-parserutils_error parserutils_charset_codec_destroy(
-		parserutils_charset_codec *codec);
+parserutils_error
+parserutils_charset_codec_destroy(parserutils_charset_codec *codec);
 
 /* Configure a charset codec */
-parserutils_error parserutils_charset_codec_setopt(
-		parserutils_charset_codec *codec,
-		parserutils_charset_codec_opttype type, 
-		parserutils_charset_codec_optparams *params);
+parserutils_error
+parserutils_charset_codec_setopt(parserutils_charset_codec *codec,
+				 parserutils_charset_codec_opttype type,
+				 parserutils_charset_codec_optparams *params);
 
 /* Encode a chunk of UCS-4 data into a codec's charset */
-parserutils_error parserutils_charset_codec_encode(
-		parserutils_charset_codec *codec,
-		const uint8_t **source, size_t *sourcelen,
-		uint8_t **dest, size_t *destlen);
+parserutils_error
+parserutils_charset_codec_encode(parserutils_charset_codec *codec,
+				 const uint8_t **source,
+				 size_t *sourcelen,
+				 uint8_t **dest,
+				 size_t *destlen);
 
 /* Decode a chunk of data in a codec's charset into UCS-4 */
-parserutils_error parserutils_charset_codec_decode(
-		parserutils_charset_codec *codec,
-		const uint8_t **source, size_t *sourcelen,
-		uint8_t **dest, size_t *destlen);
+parserutils_error
+parserutils_charset_codec_decode(parserutils_charset_codec *codec,
+				 const uint8_t **source,
+				 size_t *sourcelen,
+				 uint8_t **dest,
+				 size_t *destlen);
 
 /* Reset a charset codec */
-parserutils_error parserutils_charset_codec_reset(
-		parserutils_charset_codec *codec);
+parserutils_error
+parserutils_charset_codec_reset(parserutils_charset_codec *codec);
 
 #ifdef __cplusplus
 }

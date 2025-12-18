@@ -49,14 +49,13 @@
  *
  * create a content object for the webp
  */
-static nserror
-webp_create(const content_handler *handler,
-	      lwc_string *imime_type,
-	      const struct http_parameter *params,
-	      llcache_handle *llcache,
-	      const char *fallback_charset,
-	      bool quirks,
-	      struct content **c)
+static nserror webp_create(const content_handler *handler,
+			   lwc_string *imime_type,
+			   const struct http_parameter *params,
+			   llcache_handle *llcache,
+			   const char *fallback_charset,
+			   bool quirks,
+			   struct content **c)
 {
 	struct content *webp_c; /* webp content object */
 	nserror res;
@@ -86,8 +85,7 @@ webp_create(const content_handler *handler,
 /**
  * create a bitmap from webp content.
  */
-static struct bitmap *
-webp_cache_convert(struct content *c)
+static struct bitmap *webp_cache_convert(struct content *c)
 {
 	const uint8_t *source_data; /* webp source data */
 	size_t source_size; /* length of webp source data */
@@ -98,10 +96,10 @@ webp_cache_convert(struct content *c)
 	uint8_t *decoded;
 	size_t rowstride;
 	struct bitmap *bitmap = NULL;
-    bitmap_fmt_t webp_fmt = {
-        .layout = bitmap_fmt.layout,
-        .pma    = bitmap_fmt.pma,
-    };
+	bitmap_fmt_t webp_fmt = {
+		.layout = bitmap_fmt.layout,
+		.pma = bitmap_fmt.pma,
+	};
 
 	source_data = content__get_source_data(c, &source_size);
 
@@ -111,11 +109,11 @@ webp_cache_convert(struct content *c)
 		return NULL;
 	}
 
-    if (webpfeatures.has_alpha == 0) {
-        bmap_flags = BITMAP_OPAQUE;
-    } else {
-        bmap_flags = BITMAP_NONE;
-    }
+	if (webpfeatures.has_alpha == 0) {
+		bmap_flags = BITMAP_OPAQUE;
+	} else {
+		bmap_flags = BITMAP_NONE;
+	}
 
 	/* create bitmap */
 	bitmap = guit->bitmap->create(webpfeatures.width,
@@ -135,65 +133,81 @@ webp_cache_convert(struct content *c)
 
 	rowstride = guit->bitmap->get_rowstride(bitmap);
 
-    if (bitmap_fmt.pma) {
-        WebPDecoderConfig cfg;
-        if (!WebPInitDecoderConfig(&cfg)) {
-            guit->bitmap->destroy(bitmap);
-            return NULL;
-        }
-        cfg.output.u.RGBA.rgba = pixels;
-        cfg.output.u.RGBA.stride = rowstride;
-        cfg.output.u.RGBA.size = rowstride * webpfeatures.height;
-        cfg.output.is_external_memory = 1;
-        switch (webp_fmt.layout) {
-        default:
-            webp_fmt.layout = BITMAP_LAYOUT_R8G8B8A8;
-            cfg.output.colorspace = MODE_rgbA;
-            break;
-        case BITMAP_LAYOUT_R8G8B8A8:
-            cfg.output.colorspace = MODE_rgbA;
-            break;
-        case BITMAP_LAYOUT_B8G8R8A8:
-            cfg.output.colorspace = MODE_bgrA;
-            break;
-        case BITMAP_LAYOUT_A8R8G8B8:
-            cfg.output.colorspace = MODE_Argb;
-            break;
-        }
-        webpres = WebPDecode(source_data, source_size, &cfg);
-        if (webpres != VP8_STATUS_OK) {
-            guit->bitmap->destroy(bitmap);
-            return NULL;
-        }
-        decoded = pixels;
-    } else {
-        switch (webp_fmt.layout) {
-        default:
-            webp_fmt.layout = BITMAP_LAYOUT_R8G8B8A8;
-            decoded = WebPDecodeRGBAInto(source_data, source_size, pixels,
-                    rowstride * webpfeatures.height, rowstride);
-            break;
-        case BITMAP_LAYOUT_R8G8B8A8:
-            decoded = WebPDecodeRGBAInto(source_data, source_size, pixels,
-                    rowstride * webpfeatures.height, rowstride);
-            break;
-        case BITMAP_LAYOUT_B8G8R8A8:
-            decoded = WebPDecodeBGRAInto(source_data, source_size, pixels,
-                    rowstride * webpfeatures.height, rowstride);
-            break;
-        case BITMAP_LAYOUT_A8R8G8B8:
-            decoded = WebPDecodeARGBInto(source_data, source_size, pixels,
-                    rowstride * webpfeatures.height, rowstride);
-            break;
-        }
-    }
+	if (bitmap_fmt.pma) {
+		WebPDecoderConfig cfg;
+		if (!WebPInitDecoderConfig(&cfg)) {
+			guit->bitmap->destroy(bitmap);
+			return NULL;
+		}
+		cfg.output.u.RGBA.rgba = pixels;
+		cfg.output.u.RGBA.stride = rowstride;
+		cfg.output.u.RGBA.size = rowstride * webpfeatures.height;
+		cfg.output.is_external_memory = 1;
+		switch (webp_fmt.layout) {
+		default:
+			webp_fmt.layout = BITMAP_LAYOUT_R8G8B8A8;
+			cfg.output.colorspace = MODE_rgbA;
+			break;
+		case BITMAP_LAYOUT_R8G8B8A8:
+			cfg.output.colorspace = MODE_rgbA;
+			break;
+		case BITMAP_LAYOUT_B8G8R8A8:
+			cfg.output.colorspace = MODE_bgrA;
+			break;
+		case BITMAP_LAYOUT_A8R8G8B8:
+			cfg.output.colorspace = MODE_Argb;
+			break;
+		}
+		webpres = WebPDecode(source_data, source_size, &cfg);
+		if (webpres != VP8_STATUS_OK) {
+			guit->bitmap->destroy(bitmap);
+			return NULL;
+		}
+		decoded = pixels;
+	} else {
+		switch (webp_fmt.layout) {
+		default:
+			webp_fmt.layout = BITMAP_LAYOUT_R8G8B8A8;
+			decoded = WebPDecodeRGBAInto(
+				source_data,
+				source_size,
+				pixels,
+				rowstride * webpfeatures.height,
+				rowstride);
+			break;
+		case BITMAP_LAYOUT_R8G8B8A8:
+			decoded = WebPDecodeRGBAInto(
+				source_data,
+				source_size,
+				pixels,
+				rowstride * webpfeatures.height,
+				rowstride);
+			break;
+		case BITMAP_LAYOUT_B8G8R8A8:
+			decoded = WebPDecodeBGRAInto(
+				source_data,
+				source_size,
+				pixels,
+				rowstride * webpfeatures.height,
+				rowstride);
+			break;
+		case BITMAP_LAYOUT_A8R8G8B8:
+			decoded = WebPDecodeARGBInto(
+				source_data,
+				source_size,
+				pixels,
+				rowstride * webpfeatures.height,
+				rowstride);
+			break;
+		}
+	}
 	if (decoded == NULL) {
 		/* decode failed */
 		guit->bitmap->destroy(bitmap);
 		return NULL;
 	}
 
-    bitmap_format_to_client(bitmap, &webp_fmt);
+	bitmap_format_to_client(bitmap, &webp_fmt);
 	guit->bitmap->modified(bitmap);
 
 	return bitmap;
@@ -212,7 +226,7 @@ webp_cache_convert(struct content *c)
 static bool webp_convert(struct content *c)
 {
 	int res;
-	const uint8_t* data;
+	const uint8_t *data;
 	size_t data_size;
 	int width;
 	int height;
@@ -282,8 +296,6 @@ static const content_handler webp_content_handler = {
 	.no_share = false,
 };
 
-static const char *webp_types[] = {
-	"image/webp"
-};
+static const char *webp_types[] = {"image/webp"};
 
 CONTENT_FACTORY_REGISTER_TYPES(nswebp, webp_types, webp_content_handler);

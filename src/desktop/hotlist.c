@@ -138,7 +138,9 @@ static nserror hotlist_save(const char *path)
 	/* Replace any old hotlist file with the one we just saved */
 	if (rename(temp_path, path) != 0) {
 		res = NSERROR_SAVE_FAILED;
-		NSLOG(neosurf, INFO, "Error renaming hotlist: %s.",
+		NSLOG(neosurf,
+		      INFO,
+		      "Error renaming hotlist: %s.",
 		      strerror(errno));
 		goto cleanup;
 	}
@@ -171,7 +173,8 @@ static nserror hotlist_schedule_save(void)
 {
 	if (hl_ctx.save_scheduled == false && hl_ctx.save_path != NULL) {
 		nserror err = guit->misc->schedule(10 * 1000,
-				hotlist_schedule_save_cb, NULL);
+						   hotlist_schedule_save_cb,
+						   NULL);
 		if (err != NSERROR_OK) {
 			return err;
 		}
@@ -189,8 +192,9 @@ static nserror hotlist_schedule_save(void)
  * \param data Data associated with entry's URL.
  * \return NSERROR_OK on success, appropriate error otherwise.
  */
-static nserror hotlist_create_treeview_field_visits_data(
-		struct hotlist_entry *e, const struct url_data *data)
+static nserror
+hotlist_create_treeview_field_visits_data(struct hotlist_entry *e,
+					  const struct url_data *data)
 {
 	char buffer[16];
 	char *last_visited = NULL;
@@ -204,9 +208,10 @@ static nserror hotlist_create_treeview_field_visits_data(
 		if ((lvtime = localtime(&data->last_visit)) != NULL) {
 			last_visited = malloc(lvsize);
 			if (last_visited != NULL) {
-				len = strftime(last_visited, lvsize,
-						"%a %b %e %H:%M:%S %Y",
-						lvtime);
+				len = strftime(last_visited,
+					       lvsize,
+					       "%a %b %e %H:%M:%S %Y",
+					       lvtime);
 			}
 		}
 	} else {
@@ -231,7 +236,7 @@ static nserror hotlist_create_treeview_field_visits_data(
 	e->data[HL_VISITS].field = hl_ctx.fields[HL_VISITS].field;
 	e->data[HL_VISITS].value = strdup(buffer);
 	if (e->data[HL_VISITS].value == NULL) {
-		free((void*)e->data[HL_LAST_VISIT].value);
+		free((void *)e->data[HL_LAST_VISIT].value);
 		return NSERROR_NOMEM;
 	}
 	e->data[HL_VISITS].value_len = len;
@@ -248,9 +253,9 @@ static nserror hotlist_create_treeview_field_visits_data(
  * \param data  Data associated with entry's URL
  * \return NSERROR_OK on success, appropriate error otherwise
  */
-static nserror hotlist_create_treeview_field_data(
-		struct hotlist_entry *e, const char *title,
-		const struct url_data *data)
+static nserror hotlist_create_treeview_field_data(struct hotlist_entry *e,
+						  const char *title,
+						  const struct url_data *data)
 {
 	nserror err;
 
@@ -262,8 +267,8 @@ static nserror hotlist_create_treeview_field_data(
 	/* "Title" field */
 	if (title == NULL) {
 		/* Title not provided; use one from URL data */
-		title = (data->title != NULL) ?
-				data->title : nsurl_access(e->url);
+		title = (data->title != NULL) ? data->title
+					      : nsurl_access(e->url);
 	}
 
 	e->data[HL_TITLE].field = hl_ctx.fields[HL_TITLE].field;
@@ -271,13 +276,14 @@ static nserror hotlist_create_treeview_field_data(
 	if (e->data[HL_TITLE].value == NULL) {
 		return NSERROR_NOMEM;
 	}
-	e->data[HL_TITLE].value_len = (e->data[HL_TITLE].value != NULL) ?
-			strlen(title) : 0;
+	e->data[HL_TITLE].value_len = (e->data[HL_TITLE].value != NULL)
+					      ? strlen(title)
+					      : 0;
 
 	/* "Last visited" and "Visits" fields */
 	err = hotlist_create_treeview_field_visits_data(e, data);
 	if (err != NSERROR_OK) {
-		free((void*)e->data[HL_TITLE].value);
+		free((void *)e->data[HL_TITLE].value);
 		return NSERROR_OK;
 	}
 
@@ -297,14 +303,21 @@ static nserror hotlist_create_treeview_field_data(
  * hotlist table
  */
 static nserror hotlist_entry_insert(struct hotlist_entry *e,
-		treeview_node *relation, enum treeview_relationship rel)
+				    treeview_node *relation,
+				    enum treeview_relationship rel)
 {
 	nserror err;
 
-	err = treeview_create_node_entry(hl_ctx.tree, &(e->entry),
-			relation, rel, e->data, e, hl_ctx.built ?
-			TREE_OPTION_NONE : TREE_OPTION_SUPPRESS_RESIZE |
-					TREE_OPTION_SUPPRESS_REDRAW);
+	err = treeview_create_node_entry(
+		hl_ctx.tree,
+		&(e->entry),
+		relation,
+		rel,
+		e->data,
+		e,
+		hl_ctx.built ? TREE_OPTION_NONE
+			     : TREE_OPTION_SUPPRESS_RESIZE |
+				       TREE_OPTION_SUPPRESS_REDRAW);
 	if (err != NSERROR_OK) {
 		return err;
 	}
@@ -346,8 +359,10 @@ static void hotlist_delete_entry_internal(struct hotlist_entry *e)
  * \param entry		Updated to new hotlist entry data
  * \return NSERROR_OK on success, or appropriate error otherwise
  */
-static nserror hotlist_create_entry(nsurl *url, const char *title,
-		const struct url_data *data, struct hotlist_entry **entry)
+static nserror hotlist_create_entry(nsurl *url,
+				    const char *title,
+				    const struct url_data *data,
+				    struct hotlist_entry **entry)
 {
 	nserror err;
 	struct hotlist_entry *e;
@@ -403,9 +418,12 @@ static nserror hotlist_create_entry(nsurl *url, const char *title,
  * \param entry		Updated to new treeview entry node
  * \return NSERROR_OK on success, or appropriate error otherwise
  */
-static nserror hotlist_add_entry_internal(nsurl *url, const char *title,
-		const struct url_data *data, treeview_node *relation,
-		enum treeview_relationship rel, treeview_node **entry)
+static nserror hotlist_add_entry_internal(nsurl *url,
+					  const char *title,
+					  const struct url_data *data,
+					  treeview_node *relation,
+					  enum treeview_relationship rel,
+					  treeview_node **entry)
 {
 	nserror err;
 	struct hotlist_entry *e;
@@ -440,10 +458,11 @@ static nserror hotlist_add_entry_internal(nsurl *url, const char *title,
  * \param default_folder Add to the default folder.
  * \return NSERROR_OK on success, or appropriate error otherwise
  */
-static nserror hotlist_add_folder_internal(
-		const char *title, treeview_node *relation,
-		enum treeview_relationship rel, struct hotlist_folder **folder,
-		bool default_folder)
+static nserror hotlist_add_folder_internal(const char *title,
+					   treeview_node *relation,
+					   enum treeview_relationship rel,
+					   struct hotlist_folder **folder,
+					   bool default_folder)
 {
 	struct hotlist_folder *f;
 	treeview_node_options_flags flags = TREE_OPTION_NONE;
@@ -469,14 +488,14 @@ static nserror hotlist_add_folder_internal(
 
 	if (!hl_ctx.built)
 		flags |= TREE_OPTION_SUPPRESS_RESIZE |
-				TREE_OPTION_SUPPRESS_REDRAW;
+			 TREE_OPTION_SUPPRESS_REDRAW;
 	if (default_folder)
 		flags |= TREE_OPTION_SPECIAL_DIR;
 
-	err = treeview_create_node_folder(hl_ctx.tree,
-			&n, relation, rel, &f->data, f, flags);
+	err = treeview_create_node_folder(
+		hl_ctx.tree, &n, relation, rel, &f->data, f, flags);
 	if (err != NSERROR_OK) {
-		free((void*)f->data.value); /* Eww */
+		free((void *)f->data.value); /* Eww */
 		free(f);
 		return err;
 	}
@@ -488,8 +507,8 @@ static nserror hotlist_add_folder_internal(
 }
 
 
-static nserror hotlist_tree_node_folder_cb(
-		struct treeview_node_msg msg, void *data)
+static nserror
+hotlist_tree_node_folder_cb(struct treeview_node_msg msg, void *data)
 {
 	struct hotlist_folder *f = data;
 	const char *old_text;
@@ -499,16 +518,16 @@ static nserror hotlist_tree_node_folder_cb(
 	case TREE_MSG_NODE_DELETE:
 		if (f == hl_ctx.default_folder)
 			hl_ctx.default_folder = NULL;
-		free((void*)f->data.value); /* Eww */
+		free((void *)f->data.value); /* Eww */
 		free(f);
 		break;
 
 	case TREE_MSG_NODE_EDIT:
 		if (lwc_string_isequal(hl_ctx.fields[HL_FOLDER].field,
-				msg.data.node_edit.field, &match) ==
-				lwc_error_ok && match == true &&
-				msg.data.node_edit.text != NULL &&
-				msg.data.node_edit.text[0] != '\0') {
+				       msg.data.node_edit.field,
+				       &match) == lwc_error_ok &&
+		    match == true && msg.data.node_edit.text != NULL &&
+		    msg.data.node_edit.text[0] != '\0') {
 			/* Requst to change the folder title text */
 			old_text = f->data.value;
 			f->data.value = strdup(msg.data.node_edit.text);
@@ -517,8 +536,8 @@ static nserror hotlist_tree_node_folder_cb(
 				f->data.value = old_text;
 			} else {
 				f->data.value_len = strlen(f->data.value);
-				treeview_update_node_folder(hl_ctx.tree,
-						f->folder, &f->data, f);
+				treeview_update_node_folder(
+					hl_ctx.tree, f->folder, &f->data, f);
 				free((void *)old_text);
 			}
 		}
@@ -554,32 +573,32 @@ hotlist_tree_node_entry_cb(struct treeview_node_msg msg, void *data)
 
 	case TREE_MSG_NODE_EDIT:
 		if (lwc_string_isequal(hl_ctx.fields[HL_TITLE].field,
-				msg.data.node_edit.field, &match) ==
-				lwc_error_ok && match == true &&
-				msg.data.node_edit.text != NULL &&
-				msg.data.node_edit.text[0] != '\0') {
+				       msg.data.node_edit.field,
+				       &match) == lwc_error_ok &&
+		    match == true && msg.data.node_edit.text != NULL &&
+		    msg.data.node_edit.text[0] != '\0') {
 			/* Requst to change the entry title text */
 			old_text = e->data[HL_TITLE].value;
-			e->data[HL_TITLE].value =
-					strdup(msg.data.node_edit.text);
+			e->data[HL_TITLE].value = strdup(
+				msg.data.node_edit.text);
 
 			if (e->data[HL_TITLE].value == NULL) {
 				e->data[HL_TITLE].value = old_text;
 			} else {
-				e->data[HL_TITLE].value_len =
-						strlen(e->data[HL_TITLE].value);
-				treeview_update_node_entry(hl_ctx.tree,
-						e->entry, e->data, e);
+				e->data[HL_TITLE].value_len = strlen(
+					e->data[HL_TITLE].value);
+				treeview_update_node_entry(
+					hl_ctx.tree, e->entry, e->data, e);
 				free((void *)old_text);
 			}
 
 			err = hotlist_schedule_save();
 
 		} else if (lwc_string_isequal(hl_ctx.fields[HL_URL].field,
-				msg.data.node_edit.field, &match) ==
-				lwc_error_ok && match == true &&
-				msg.data.node_edit.text != NULL &&
-				msg.data.node_edit.text[0] != '\0') {
+					      msg.data.node_edit.field,
+					      &match) == lwc_error_ok &&
+			   match == true && msg.data.node_edit.text != NULL &&
+			   msg.data.node_edit.text[0] != '\0') {
 			/* Requst to change the entry URL text */
 			err = nsurl_create(msg.data.node_edit.text, &url);
 			if (err == NSERROR_OK) {
@@ -587,10 +606,11 @@ hotlist_tree_node_entry_cb(struct treeview_node_msg msg, void *data)
 
 				e->url = url;
 				e->data[HL_URL].value = nsurl_access(url);
-				e->data[HL_URL].value_len = nsurl_length(e->url);
+				e->data[HL_URL].value_len = nsurl_length(
+					e->url);
 
-				treeview_update_node_entry(hl_ctx.tree,
-						   e->entry, e->data, e);
+				treeview_update_node_entry(
+					hl_ctx.tree, e->entry, e->data, e);
 				nsurl_unref(old_url);
 
 				err = hotlist_schedule_save();
@@ -598,34 +618,30 @@ hotlist_tree_node_entry_cb(struct treeview_node_msg msg, void *data)
 		}
 		break;
 
-	case TREE_MSG_NODE_LAUNCH:
-	{
+	case TREE_MSG_NODE_LAUNCH: {
 		struct browser_window *existing = NULL;
 		enum browser_window_create_flags flags = BW_CREATE_HISTORY;
 
 		/* TODO: Set existing to window that new tab appears in */
 
 		if (msg.data.node_launch.mouse &
-				(BROWSER_MOUSE_MOD_1 | BROWSER_MOUSE_MOD_2) ||
-				existing == NULL) {
+			    (BROWSER_MOUSE_MOD_1 | BROWSER_MOUSE_MOD_2) ||
+		    existing == NULL) {
 			/* Shift or Ctrl launch, open in new window rather
 			 * than tab. */
 			/* TODO: flags ^= BW_CREATE_TAB; */
 		}
 
-		err = browser_window_create(flags, e->url, NULL,
-				existing, NULL);
-	}
-		break;
+		err = browser_window_create(
+			flags, e->url, NULL, existing, NULL);
+	} break;
 	}
 	return err;
 }
 
 struct treeview_callback_table hl_tree_cb_t = {
 	.folder = hotlist_tree_node_folder_cb,
-	.entry = hotlist_tree_node_entry_cb
-};
-
+	.entry = hotlist_tree_node_entry_cb};
 
 
 typedef struct {
@@ -687,7 +703,9 @@ static nserror hotlist_load_entry(dom_node *li, hotlist_load_ctx *ctx)
 	dom_string_unref(url1);
 
 	if (err != NSERROR_OK) {
-		NSLOG(neosurf, INFO, "Failed normalising '%s'",
+		NSLOG(neosurf,
+		      INFO,
+		      "Failed normalising '%s'",
 		      dom_string_data(url1));
 
 		if (title1 != NULL) {
@@ -698,8 +716,8 @@ static nserror hotlist_load_entry(dom_node *li, hotlist_load_ctx *ctx)
 	}
 
 	/* Add the entry */
-	err = hotlist_add_entry_internal(url, title, NULL, ctx->rel,
-			ctx->relshp, &ctx->rel);
+	err = hotlist_add_entry_internal(
+		url, title, NULL, ctx->rel, ctx->relshp, &ctx->rel);
 	nsurl_unref(url);
 	if (title1 != NULL) {
 		dom_string_unref(title1);
@@ -736,7 +754,8 @@ static nserror hotlist_load_directory(dom_node *ul, hotlist_load_ctx *ctx)
 	assert(ctx != NULL);
 
 	return libdom_iterate_child_elements(ul,
-			hotlist_load_directory_cb, ctx);
+					     hotlist_load_directory_cb,
+					     ctx);
 }
 
 
@@ -768,8 +787,7 @@ nserror hotlist_load_directory_cb(dom_node *node, void *ctx)
 
 		error = dom_node_get_text_content(node, &title);
 		if (error != DOM_NO_ERR || title == NULL) {
-			NSLOG(neosurf, INFO,
-			      "Empty <h4> or memory exhausted.");
+			NSLOG(neosurf, INFO, "Empty <h4> or memory exhausted.");
 			dom_string_unref(name);
 			return NSERROR_DOM;
 		}
@@ -780,8 +798,7 @@ nserror hotlist_load_directory_cb(dom_node *node, void *ctx)
 		current_ctx->last_was_h4 = true;
 
 	} else if (current_ctx->last_was_h4 &&
-			dom_string_caseless_lwc_isequal(name, 
-					corestring_lwc_ul)) {
+		   dom_string_caseless_lwc_isequal(name, corestring_lwc_ul)) {
 		/* Directory handling, part 2: Make node, and handle children */
 		const char *title;
 		dom_string *id;
@@ -806,8 +823,11 @@ nserror hotlist_load_directory_cb(dom_node *node, void *ctx)
 		title = dom_string_data(current_ctx->title);
 
 		/* Add folder node */
-		err = hotlist_add_folder_internal(title, current_ctx->rel,
-				current_ctx->relshp, &f, default_folder);
+		err = hotlist_add_folder_internal(title,
+						  current_ctx->rel,
+						  current_ctx->relshp,
+						  &f,
+						  default_folder);
 		if (err != NSERROR_OK) {
 			dom_string_unref(name);
 			return NSERROR_NOMEM;
@@ -889,11 +909,12 @@ static nserror hotlist_load(const char *path, bool *loaded)
 	free(temp_path);
 
 	/* Find HTML element */
-	html = libdom_find_first_element((dom_node *) document,
-			corestring_lwc_html);
+	html = libdom_find_first_element((dom_node *)document,
+					 corestring_lwc_html);
 	if (html == NULL) {
 		dom_node_unref(document);
-		NSLOG(neosurf, WARNING,
+		NSLOG(neosurf,
+		      WARNING,
 		      "%s (<html> not found)",
 		      messages_get("TreeLoadError"));
 		return NSERROR_OK;
@@ -904,7 +925,8 @@ static nserror hotlist_load(const char *path, bool *loaded)
 	if (body == NULL) {
 		dom_node_unref(html);
 		dom_node_unref(document);
-		NSLOG(neosurf, WARNING,
+		NSLOG(neosurf,
+		      WARNING,
 		      "%s (<html>...<body> not found)",
 		      messages_get("TreeLoadError"));
 		return NSERROR_OK;
@@ -916,7 +938,8 @@ static nserror hotlist_load(const char *path, bool *loaded)
 		dom_node_unref(body);
 		dom_node_unref(html);
 		dom_node_unref(document);
-		NSLOG(neosurf, WARNING,
+		NSLOG(neosurf,
+		      WARNING,
 		      "%s (<html>...<body>...<ul> not found.)",
 		      messages_get("TreeLoadError"));
 		return NSERROR_OK;
@@ -942,7 +965,8 @@ static nserror hotlist_load(const char *path, bool *loaded)
 	dom_node_unref(document);
 
 	if (err != NSERROR_OK) {
-		NSLOG(neosurf, WARNING,
+		NSLOG(neosurf,
+		      WARNING,
 		      "%s (Failed building tree.)",
 		      messages_get("TreeLoadError"));
 		return NSERROR_OK;
@@ -971,22 +995,19 @@ static nserror hotlist_generate(void)
 		const char *url;
 		const char *msg_key;
 	} default_entries[] = {
-		{ "https://www.netsurf-browser.org/",
-				"HotlistHomepage" },
-		{ "https://www.netsurf-browser.org/downloads/",
-				"HotlistDownloads" },
-		{ "https://www.netsurf-browser.org/documentation",
-				"HotlistDocumentation" },
-		{ "https://www.netsurf-browser.org/contact",
-				"HotlistContact" }
-	};
+		{"https://www.netsurf-browser.org/", "HotlistHomepage"},
+		{"https://www.netsurf-browser.org/downloads/",
+		 "HotlistDownloads"},
+		{"https://www.netsurf-browser.org/documentation",
+		 "HotlistDocumentation"},
+		{"https://www.netsurf-browser.org/contact", "HotlistContact"}};
 	const int n_entries = sizeof(default_entries) /
-			sizeof(default_entries[0]);
+			      sizeof(default_entries[0]);
 
 	/* First make "NeoSurf" folder for defualt entries */
 	title = "NeoSurf";
-	err = hotlist_add_folder_internal(title, NULL,
-			TREE_REL_FIRST_CHILD, &f, false);
+	err = hotlist_add_folder_internal(
+		title, NULL, TREE_REL_FIRST_CHILD, &f, false);
 	if (err != NSERROR_OK) {
 		return err;
 	}
@@ -1002,8 +1023,8 @@ static nserror hotlist_generate(void)
 		title = messages_get(default_entries[i].msg_key);
 
 		/* Build the node */
-		err = hotlist_add_entry_internal(url, title,
-				NULL, f->folder, TREE_REL_FIRST_CHILD, &e);
+		err = hotlist_add_entry_internal(
+			url, title, NULL, f->folder, TREE_REL_FIRST_CHILD, &e);
 		nsurl_unref(url);
 
 		if (err != NSERROR_OK) {
@@ -1020,8 +1041,10 @@ struct treeview_export_walk_ctx {
 };
 
 /** Callback for treeview_walk node entering */
-static nserror hotlist_export_enter_cb(void *ctx, void *node_data,
-		enum treeview_node_type type, bool *abort)
+static nserror hotlist_export_enter_cb(void *ctx,
+				       void *node_data,
+				       enum treeview_node_type type,
+				       bool *abort)
 {
 	struct treeview_export_walk_ctx *tw = ctx;
 	nserror ret;
@@ -1031,20 +1054,26 @@ static nserror hotlist_export_enter_cb(void *ctx, void *node_data,
 		char *t_text;
 		char *u_text;
 
-		ret = utf8_to_html(e->data[HL_TITLE].value, "iso-8859-1",
-				e->data[HL_TITLE].value_len, &t_text);
+		ret = utf8_to_html(e->data[HL_TITLE].value,
+				   "iso-8859-1",
+				   e->data[HL_TITLE].value_len,
+				   &t_text);
 		if (ret != NSERROR_OK)
 			return NSERROR_SAVE_FAILED;
 
-		ret = utf8_to_html(e->data[HL_URL].value, "iso-8859-1",
-				e->data[HL_URL].value_len, &u_text);
+		ret = utf8_to_html(e->data[HL_URL].value,
+				   "iso-8859-1",
+				   e->data[HL_URL].value_len,
+				   &u_text);
 		if (ret != NSERROR_OK) {
 			free(t_text);
 			return NSERROR_SAVE_FAILED;
 		}
 
-		fprintf(tw->fp, "<li><a href=\"%s\">%s</a></li>\n",
-			u_text, t_text);
+		fprintf(tw->fp,
+			"<li><a href=\"%s\">%s</a></li>\n",
+			u_text,
+			t_text);
 
 		free(t_text);
 		free(u_text);
@@ -1053,14 +1082,17 @@ static nserror hotlist_export_enter_cb(void *ctx, void *node_data,
 		struct hotlist_folder *f = node_data;
 		char *f_text;
 
-		ret = utf8_to_html(f->data.value, "iso-8859-1",
-				f->data.value_len, &f_text);
+		ret = utf8_to_html(f->data.value,
+				   "iso-8859-1",
+				   f->data.value_len,
+				   &f_text);
 		if (ret != NSERROR_OK)
 			return NSERROR_SAVE_FAILED;
 
 		if (f == hl_ctx.default_folder) {
-			fprintf(tw->fp, "<h4>%s</h4>\n<ul id=\"default\">\n",
-					f_text);
+			fprintf(tw->fp,
+				"<h4>%s</h4>\n<ul id=\"default\">\n",
+				f_text);
 		} else {
 			fprintf(tw->fp, "<h4>%s</h4>\n<ul>\n", f_text);
 		}
@@ -1071,8 +1103,10 @@ static nserror hotlist_export_enter_cb(void *ctx, void *node_data,
 	return NSERROR_OK;
 }
 /** Callback for treeview_walk node leaving */
-static nserror hotlist_export_leave_cb(void *ctx, void *node_data,
-		enum treeview_node_type type, bool *abort)
+static nserror hotlist_export_leave_cb(void *ctx,
+				       void *node_data,
+				       enum treeview_node_type type,
+				       bool *abort)
 {
 	struct treeview_export_walk_ctx *tw = ctx;
 
@@ -1100,19 +1134,23 @@ nserror hotlist_export(const char *path, const char *title)
 	 * claming to be valid.
 	 * [*] Why? */
 	fputs("<!DOCTYPE html "
-		"PUBLIC \"//W3C/DTD HTML 4.01//EN\" "
-		"\"http://www.w3.org/TR/html4/strict.dtd\">\n", fp);
+	      "PUBLIC \"//W3C/DTD HTML 4.01//EN\" "
+	      "\"http://www.w3.org/TR/html4/strict.dtd\">\n",
+	      fp);
 	fputs("<html>\n<head>\n", fp);
 	fputs("<meta http-equiv=\"Content-Type\" "
-		"content=\"text/html; charset=iso-8859-1\">\n", fp);
+	      "content=\"text/html; charset=iso-8859-1\">\n",
+	      fp);
 	fprintf(fp, "<title>%s</title>\n", title);
 	fputs("</head>\n<body>\n<ul>\n", fp);
 
 	tw.fp = fp;
-	err = treeview_walk(hl_ctx.tree, NULL,
-			hotlist_export_enter_cb,
-			hotlist_export_leave_cb,
-			&tw, TREE_NODE_ENTRY | TREE_NODE_FOLDER);
+	err = treeview_walk(hl_ctx.tree,
+			    NULL,
+			    hotlist_export_enter_cb,
+			    hotlist_export_leave_cb,
+			    &tw,
+			    TREE_NODE_ENTRY | TREE_NODE_FOLDER);
 	if (err != NSERROR_OK)
 		return err;
 
@@ -1131,15 +1169,16 @@ struct hotlist_iterate_ctx {
 	void *ctx;
 };
 /** Callback for hotlist_iterate node entering */
-static nserror hotlist_iterate_enter_cb(void *ctx, void *node_data,
-		enum treeview_node_type type, bool *abort)
+static nserror hotlist_iterate_enter_cb(void *ctx,
+					void *node_data,
+					enum treeview_node_type type,
+					bool *abort)
 {
 	struct hotlist_iterate_ctx *data = ctx;
 
 	if (type == TREE_NODE_ENTRY && data->address_cb != NULL) {
 		struct hotlist_entry *e = node_data;
-		data->address_cb(data->ctx, e->url,
-				e->data[HL_TITLE].value);
+		data->address_cb(data->ctx, e->url, e->data[HL_TITLE].value);
 
 	} else if (type == TREE_NODE_FOLDER && data->enter_cb != NULL) {
 		struct hotlist_folder *f = node_data;
@@ -1149,8 +1188,10 @@ static nserror hotlist_iterate_enter_cb(void *ctx, void *node_data,
 	return NSERROR_OK;
 }
 /** Callback for hotlist_iterate node leaving */
-static nserror hotlist_iterate_leave_cb(void *ctx, void *node_data,
-		enum treeview_node_type type, bool *abort)
+static nserror hotlist_iterate_leave_cb(void *ctx,
+					void *node_data,
+					enum treeview_node_type type,
+					bool *abort)
 {
 	struct hotlist_iterate_ctx *data = ctx;
 
@@ -1162,9 +1203,9 @@ static nserror hotlist_iterate_leave_cb(void *ctx, void *node_data,
 }
 /* Exported interface, documented in hotlist.h */
 nserror hotlist_iterate(void *ctx,
-		hotlist_folder_enter_cb enter_cb,
-		hotlist_address_cb address_cb,
-		hotlist_folder_leave_cb leave_cb)
+			hotlist_folder_enter_cb enter_cb,
+			hotlist_address_cb address_cb,
+			hotlist_folder_leave_cb leave_cb)
 {
 	struct hotlist_iterate_ctx data;
 	nserror err;
@@ -1174,10 +1215,12 @@ nserror hotlist_iterate(void *ctx,
 	data.leave_cb = leave_cb;
 	data.ctx = ctx;
 
-	err = treeview_walk(hl_ctx.tree, NULL,
-			hotlist_iterate_enter_cb,
-			hotlist_iterate_leave_cb,
-			&data, TREE_NODE_ENTRY | TREE_NODE_FOLDER);
+	err = treeview_walk(hl_ctx.tree,
+			    NULL,
+			    hotlist_iterate_enter_cb,
+			    hotlist_iterate_leave_cb,
+			    &data,
+			    TREE_NODE_ENTRY | TREE_NODE_FOLDER);
 	if (err != NSERROR_OK)
 		return err;
 
@@ -1198,53 +1241,53 @@ static nserror hotlist_initialise_entry_fields(void)
 	for (i = 0; i < HL_N_FIELDS; i++)
 		hl_ctx.fields[i].field = NULL;
 
-	hl_ctx.fields[HL_TITLE].flags = TREE_FLAG_DEFAULT | 
-			TREE_FLAG_ALLOW_EDIT;
+	hl_ctx.fields[HL_TITLE].flags = TREE_FLAG_DEFAULT |
+					TREE_FLAG_ALLOW_EDIT;
 	label = "TreeviewLabelTitle";
 	label = messages_get(label);
-	if (lwc_intern_string(label, strlen(label),
-			&hl_ctx.fields[HL_TITLE].field) !=
-			lwc_error_ok) {
+	if (lwc_intern_string(label,
+			      strlen(label),
+			      &hl_ctx.fields[HL_TITLE].field) != lwc_error_ok) {
 		goto error;
 	}
 
-	hl_ctx.fields[HL_URL].flags =
-			TREE_FLAG_ALLOW_EDIT |
-			TREE_FLAG_COPY_TEXT |
-			TREE_FLAG_SEARCHABLE;
+	hl_ctx.fields[HL_URL].flags = TREE_FLAG_ALLOW_EDIT |
+				      TREE_FLAG_COPY_TEXT |
+				      TREE_FLAG_SEARCHABLE;
 	label = "TreeviewLabelURL";
 	label = messages_get(label);
-	if (lwc_intern_string(label, strlen(label),
-			&hl_ctx.fields[HL_URL].field) !=
-			lwc_error_ok) {
+	if (lwc_intern_string(label,
+			      strlen(label),
+			      &hl_ctx.fields[HL_URL].field) != lwc_error_ok) {
 		goto error;
 	}
 
 	hl_ctx.fields[HL_LAST_VISIT].flags = TREE_FLAG_SHOW_NAME;
 	label = "TreeviewLabelLastVisit";
 	label = messages_get(label);
-	if (lwc_intern_string(label, strlen(label),
-			&hl_ctx.fields[HL_LAST_VISIT].field) !=
-			lwc_error_ok) {
+	if (lwc_intern_string(label,
+			      strlen(label),
+			      &hl_ctx.fields[HL_LAST_VISIT].field) !=
+	    lwc_error_ok) {
 		goto error;
 	}
 
 	hl_ctx.fields[HL_VISITS].flags = TREE_FLAG_SHOW_NAME;
 	label = "TreeviewLabelVisits";
 	label = messages_get(label);
-	if (lwc_intern_string(label, strlen(label),
-			&hl_ctx.fields[HL_VISITS].field) !=
-			lwc_error_ok) {
+	if (lwc_intern_string(
+		    label, strlen(label), &hl_ctx.fields[HL_VISITS].field) !=
+	    lwc_error_ok) {
 		goto error;
 	}
 
-	hl_ctx.fields[HL_FOLDER].flags = TREE_FLAG_DEFAULT | 
-			TREE_FLAG_ALLOW_EDIT;
+	hl_ctx.fields[HL_FOLDER].flags = TREE_FLAG_DEFAULT |
+					 TREE_FLAG_ALLOW_EDIT;
 	label = "TreeviewLabelFolder";
 	label = messages_get(label);
-	if (lwc_intern_string(label, strlen(label),
-			&hl_ctx.fields[HL_FOLDER].field) !=
-			lwc_error_ok) {
+	if (lwc_intern_string(
+		    label, strlen(label), &hl_ctx.fields[HL_FOLDER].field) !=
+	    lwc_error_ok) {
 		return false;
 	}
 
@@ -1287,9 +1330,7 @@ static nserror hotlist_populate(const char *path)
 
 
 /* Exported interface, documented in hotlist.h */
-nserror hotlist_init(
-		const char *load_path,
-		const char *save_path)
+nserror hotlist_init(const char *load_path, const char *save_path)
 {
 	nserror err;
 
@@ -1323,9 +1364,12 @@ nserror hotlist_init(
 	}
 
 	/* Create the hotlist treeview */
-	err = treeview_create(&hl_ctx.tree, &hl_tree_cb_t,
-			HL_N_FIELDS, hl_ctx.fields, NULL,
-			TREEVIEW_SEARCHABLE);
+	err = treeview_create(&hl_ctx.tree,
+			      &hl_tree_cb_t,
+			      HL_N_FIELDS,
+			      hl_ctx.fields,
+			      NULL,
+			      TREEVIEW_SEARCHABLE);
 	if (err != NSERROR_OK) {
 		free(hl_ctx.save_path);
 		hl_ctx.tree = NULL;
@@ -1406,7 +1450,9 @@ nserror hotlist_fini(void)
 	/* Destroy the hotlist treeview */
 	err = treeview_destroy(hl_ctx.tree);
 	if (err != NSERROR_OK) {
-		NSLOG(neosurf, INFO, "Problem destroying the hotlist treeview.");
+		NSLOG(neosurf,
+		      INFO,
+		      "Problem destroying the hotlist treeview.");
 	}
 	hl_ctx.built = false;
 
@@ -1440,8 +1486,8 @@ nserror hotlist_add_url(nsurl *url)
 	if (hl_ctx.default_folder == NULL) {
 		const char *temp = messages_get("HotlistDefaultFolderName");
 		struct hotlist_folder *f;
-		err = hotlist_add_folder_internal(temp, NULL,
-				TREE_REL_FIRST_CHILD, &f, true);
+		err = hotlist_add_folder_internal(
+			temp, NULL, TREE_REL_FIRST_CHILD, &f, true);
 		if (err != NSERROR_OK)
 			return err;
 
@@ -1452,9 +1498,12 @@ nserror hotlist_add_url(nsurl *url)
 	}
 
 	/* Add new entry to default folder */
-	err = hotlist_add_entry_internal(url, NULL, NULL,
-			hl_ctx.default_folder->folder,
-			TREE_REL_FIRST_CHILD, &entry);
+	err = hotlist_add_entry_internal(url,
+					 NULL,
+					 NULL,
+					 hl_ctx.default_folder->folder,
+					 TREE_REL_FIRST_CHILD,
+					 &entry);
 	if (err != NSERROR_OK)
 		return err;
 
@@ -1472,8 +1521,10 @@ struct treeview_has_url_walk_ctx {
 	bool found;
 };
 /** Callback for treeview_walk */
-static nserror hotlist_has_url_walk_cb(void *ctx, void *node_data,
-		enum treeview_node_type type, bool *abort)
+static nserror hotlist_has_url_walk_cb(void *ctx,
+				       void *node_data,
+				       enum treeview_node_type type,
+				       bool *abort)
 {
 	struct treeview_has_url_walk_ctx *tw = ctx;
 
@@ -1493,16 +1544,17 @@ static nserror hotlist_has_url_walk_cb(void *ctx, void *node_data,
 bool hotlist_has_url(nsurl *url)
 {
 	nserror err;
-	struct treeview_has_url_walk_ctx tw = {
-		.url = url,
-		.found = false
-	};
+	struct treeview_has_url_walk_ctx tw = {.url = url, .found = false};
 
 	if (hl_ctx.built == false)
 		return false;
 
-	err = treeview_walk(hl_ctx.tree, NULL, hotlist_has_url_walk_cb, NULL,
-			&tw, TREE_NODE_ENTRY);
+	err = treeview_walk(hl_ctx.tree,
+			    NULL,
+			    hotlist_has_url_walk_cb,
+			    NULL,
+			    &tw,
+			    TREE_NODE_ENTRY);
 	if (err != NSERROR_OK)
 		return false;
 
@@ -1514,8 +1566,10 @@ struct treeview_remove_url_walk_ctx {
 	nsurl *url;
 };
 /** Callback for treeview_walk */
-static nserror hotlist_remove_url_walk_cb(void *ctx, void *node_data,
-		enum treeview_node_type type, bool *abort)
+static nserror hotlist_remove_url_walk_cb(void *ctx,
+					  void *node_data,
+					  enum treeview_node_type type,
+					  bool *abort)
 {
 	struct treeview_remove_url_walk_ctx *tw = ctx;
 
@@ -1524,8 +1578,9 @@ static nserror hotlist_remove_url_walk_cb(void *ctx, void *node_data,
 
 		if (nsurl_compare(e->url, tw->url, NSURL_COMPLETE) == true) {
 			/* Found what we're looking for: delete it */
-			treeview_delete_node(hl_ctx.tree, e->entry,
-					TREE_OPTION_NONE);
+			treeview_delete_node(hl_ctx.tree,
+					     e->entry,
+					     TREE_OPTION_NONE);
 		}
 	}
 
@@ -1535,15 +1590,17 @@ static nserror hotlist_remove_url_walk_cb(void *ctx, void *node_data,
 void hotlist_remove_url(nsurl *url)
 {
 	nserror err;
-	struct treeview_remove_url_walk_ctx tw = {
-		.url = url
-	};
+	struct treeview_remove_url_walk_ctx tw = {.url = url};
 
 	if (hl_ctx.built == false)
 		return;
 
-	err = treeview_walk(hl_ctx.tree, NULL, NULL, hotlist_remove_url_walk_cb,
-			&tw, TREE_NODE_ENTRY);
+	err = treeview_walk(hl_ctx.tree,
+			    NULL,
+			    NULL,
+			    hotlist_remove_url_walk_cb,
+			    &tw,
+			    TREE_NODE_ENTRY);
 	if (err != NSERROR_OK)
 		return;
 
@@ -1556,8 +1613,10 @@ struct treeview_update_url_walk_ctx {
 	const struct url_data *data;
 };
 /** Callback for treeview_walk */
-static nserror hotlist_update_url_walk_cb(void *ctx, void *node_data,
-		enum treeview_node_type type, bool *abort)
+static nserror hotlist_update_url_walk_cb(void *ctx,
+					  void *node_data,
+					  enum treeview_node_type type,
+					  bool *abort)
 {
 	struct treeview_update_url_walk_ctx *tw = ctx;
 	struct hotlist_entry *e = node_data;
@@ -1590,8 +1649,8 @@ static nserror hotlist_update_url_walk_cb(void *ctx, void *node_data,
 		if (err != NSERROR_OK)
 			return err;
 
-		err = treeview_update_node_entry(hl_ctx.tree,
-				e->entry, e->data, e);
+		err = treeview_update_node_entry(
+			hl_ctx.tree, e->entry, e->data, e);
 		if (err != NSERROR_OK)
 			return err;
 	}
@@ -1602,16 +1661,17 @@ static nserror hotlist_update_url_walk_cb(void *ctx, void *node_data,
 void hotlist_update_url(nsurl *url)
 {
 	nserror err;
-	struct treeview_update_url_walk_ctx tw = {
-		.url = url,
-		.data = NULL
-	};
+	struct treeview_update_url_walk_ctx tw = {.url = url, .data = NULL};
 
 	if (hl_ctx.built == false)
 		return;
 
-	err = treeview_walk(hl_ctx.tree, NULL, hotlist_update_url_walk_cb, NULL,
-			&tw, TREE_NODE_ENTRY);
+	err = treeview_walk(hl_ctx.tree,
+			    NULL,
+			    hotlist_update_url_walk_cb,
+			    NULL,
+			    &tw,
+			    TREE_NODE_ENTRY);
 	if (err != NSERROR_OK)
 		return;
 
@@ -1643,8 +1703,8 @@ nserror hotlist_add_entry(nsurl *url, const char *title, bool at_y, int y)
 		return err;
 	}
 
-	err = hotlist_add_entry_internal(url, title, NULL,
-			relation, rel, &entry);
+	err = hotlist_add_entry_internal(
+		url, title, NULL, relation, rel, &entry);
 	if (err != NSERROR_OK) {
 		nsurl_unref(url);
 		return err;
@@ -1679,8 +1739,10 @@ nserror hotlist_add_folder(const char *title, bool at_y, int y)
 
 
 /* Exported interface, documented in hotlist.h */
-void hotlist_redraw(int x, int y, struct rect *clip,
-		const struct redraw_context *ctx)
+void hotlist_redraw(int x,
+		    int y,
+		    struct rect *clip,
+		    const struct redraw_context *ctx)
 {
 	treeview_redraw(hl_ctx.tree, x, y, clip, ctx);
 }
@@ -1748,4 +1810,3 @@ nserror hotlist_contract(bool all)
 {
 	return treeview_contract(hl_ctx.tree, all);
 }
-

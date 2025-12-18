@@ -162,10 +162,16 @@ typedef void (*fetch_callback)(const fetch_msg *msg, void *p);
  * \param fetch_out ponter to recive new fetch object.
  * \return NSERROR_OK and fetch_out updated else appropriate error code
  */
-nserror fetch_start(nsurl *url, nsurl *referer, fetch_callback callback,
-		    void *p, bool only_2xx, const struct fetch_postdata *postdata,
-		    bool verifiable, bool downgrade_tls,
-		    const char *headers[], struct fetch **fetch_out);
+nserror fetch_start(nsurl *url,
+		    nsurl *referer,
+		    fetch_callback callback,
+		    void *p,
+		    bool only_2xx,
+		    const struct fetch_postdata *postdata,
+		    bool verifiable,
+		    bool downgrade_tls,
+		    const char *headers[],
+		    struct fetch **fetch_out);
 
 /**
  * Abort a fetch.
@@ -184,7 +190,9 @@ bool fetch_can_fetch(const nsurl *url);
 /**
  * Change the callback function for a fetch.
  */
-void fetch_change_callback(struct fetch *fetch, fetch_callback callback, void *p);
+void fetch_change_callback(struct fetch *fetch,
+			   fetch_callback callback,
+			   void *p);
 
 /**
  * Get the HTTP response code.
@@ -205,7 +213,8 @@ void fetch_multipart_data_destroy(struct fetch_multipart_data *list);
  * \param list  List to clone
  * \return Pointer to head of cloned list, or NULL on failure
  */
-struct fetch_multipart_data *fetch_multipart_data_clone(const struct fetch_multipart_data *list);
+struct fetch_multipart_data *
+fetch_multipart_data_clone(const struct fetch_multipart_data *list);
 
 /**
  * Find an entry in a fetch_multipart_data
@@ -280,6 +289,9 @@ void fetch_set_cookie(struct fetch *fetch, const char *data);
  * \param[out] maxfd The highest fd number in the set or -1 if no fd available.
  * \return NSERROR_OK on success or appropriate error code.
  */
-nserror fetch_fdset(fd_set *read_fd_set, fd_set *write_fd_set, fd_set *except_fd_set, int *maxfd);
+nserror fetch_fdset(fd_set *read_fd_set,
+		    fd_set *write_fd_set,
+		    fd_set *except_fd_set,
+		    int *maxfd);
 
 #endif

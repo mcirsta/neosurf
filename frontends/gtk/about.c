@@ -72,10 +72,9 @@ static void about_open(const char *url_text)
  * \param response_id The response ID from the user clicking.
  * \param user_data The value from the signal connection.
  */
-static void
-nsgtk_about_dialog_response(GtkDialog *dialog,
-			    gint response_id,
-			    gpointer user_data)
+static void nsgtk_about_dialog_response(GtkDialog *dialog,
+					gint response_id,
+					gpointer user_data)
 {
 	switch (response_id) {
 
@@ -102,55 +101,67 @@ void nsgtk_about_dialog_init(GtkWindow *parent)
 	dialog = gtk_dialog_new_with_buttons("About NeoSurf",
 					     parent,
 					     GTK_DIALOG_DESTROY_WITH_PARENT,
-					     "License", ABOUT_RESPONSE_ID_LICENCE,
-					     "Credits", ABOUT_RESPONSE_ID_CREDITS,
-					     "Close", GTK_RESPONSE_CANCEL,
-					     NULL, NULL);
+					     "License",
+					     ABOUT_RESPONSE_ID_LICENCE,
+					     "Credits",
+					     ABOUT_RESPONSE_ID_CREDITS,
+					     "Close",
+					     GTK_RESPONSE_CANCEL,
+					     NULL,
+					     NULL);
 
 	vbox = nsgtk_vbox_new(FALSE, 8);
 
-	gtk_box_pack_start(GTK_BOX(nsgtk_dialog_get_content_area(GTK_DIALOG(dialog))), vbox, TRUE, TRUE, 0);
+	gtk_box_pack_start(
+		GTK_BOX(nsgtk_dialog_get_content_area(GTK_DIALOG(dialog))),
+		vbox,
+		TRUE,
+		TRUE,
+		0);
 
 	/* NeoSurf icon */
 	pixbufs = gtk_window_get_default_icon_list();
 	if (pixbufs != NULL) {
 		GtkWidget *image;
 
-		image = nsgtk_image_new_from_pixbuf_icon(GDK_PIXBUF(g_list_nth_data(pixbufs, 0)),
-							 GTK_ICON_SIZE_DIALOG);
+		image = nsgtk_image_new_from_pixbuf_icon(
+			GDK_PIXBUF(g_list_nth_data(pixbufs, 0)),
+			GTK_ICON_SIZE_DIALOG);
 		g_list_free(pixbufs);
 
 		gtk_box_pack_start(GTK_BOX(vbox), image, FALSE, FALSE, 0);
 	}
 
 	/* version string */
-	label = gtk_label_new (NULL);
-	name_string = g_markup_printf_escaped("<span size=\"xx-large\" weight=\"bold\">NeoSurf %d</span>", neosurf_version);
-	gtk_label_set_markup (GTK_LABEL (label), name_string);
+	label = gtk_label_new(NULL);
+	name_string = g_markup_printf_escaped(
+		"<span size=\"xx-large\" weight=\"bold\">NeoSurf %d</span>",
+		neosurf_version);
+	gtk_label_set_markup(GTK_LABEL(label), name_string);
 	g_free(name_string);
-	gtk_label_set_selectable (GTK_LABEL (label), TRUE);
-	gtk_label_set_justify (GTK_LABEL (label), GTK_JUSTIFY_CENTER);
-	gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
+	gtk_label_set_selectable(GTK_LABEL(label), TRUE);
+	gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
+	gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
 	label = gtk_label_new(messages_get("AboutDesc"));
-	gtk_label_set_selectable(GTK_LABEL (label), TRUE);
-	gtk_label_set_justify (GTK_LABEL (label), GTK_JUSTIFY_CENTER);
-	gtk_label_set_line_wrap (GTK_LABEL (label), TRUE);
-	gtk_box_pack_start (GTK_BOX (vbox), label, FALSE, FALSE, 0);
+	gtk_label_set_selectable(GTK_LABEL(label), TRUE);
+	gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
+	gtk_label_set_line_wrap(GTK_LABEL(label), TRUE);
+	gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
 	label = gtk_label_new(messages_get("NeoSurfCopyright"));
 	gtk_label_set_selectable(GTK_LABEL(label), TRUE);
 	gtk_label_set_justify(GTK_LABEL(label), GTK_JUSTIFY_CENTER);
-	gtk_box_pack_start(GTK_BOX (vbox), label, FALSE, FALSE, 0);
+	gtk_box_pack_start(GTK_BOX(vbox), label, FALSE, FALSE, 0);
 
 	/* Remove separator */
-	nsgtk_dialog_set_has_separator(GTK_DIALOG (dialog), FALSE);
+	nsgtk_dialog_set_has_separator(GTK_DIALOG(dialog), FALSE);
 
 	/* Ensure that the dialog box response is processed. */
 	g_signal_connect_swapped(dialog,
-				  "response",
-				  G_CALLBACK(nsgtk_about_dialog_response),
-				  dialog);
+				 "response",
+				 G_CALLBACK(nsgtk_about_dialog_response),
+				 dialog);
 
 	/* Add the label, and show everything we've added to the dialog. */
 	gtk_widget_show_all(dialog);

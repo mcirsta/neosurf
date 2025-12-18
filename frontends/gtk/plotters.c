@@ -50,10 +50,10 @@ static GdkRectangle cliprect;
  */
 void nsgtk_set_colour(colour c)
 {
-	cairo_set_source_rgba(current_cr, 
-			      (c & 0xff) / 255.0, 
-			      ((c & 0xff00) >> 8) / 255.0, 
-			      ((c & 0xff0000) >> 16) / 255.0, 
+	cairo_set_source_rgba(current_cr,
+			      (c & 0xff) / 255.0,
+			      ((c & 0xff00) >> 8) / 255.0,
+			      ((c & 0xff0000) >> 16) / 255.0,
 			      1.0);
 }
 
@@ -73,7 +73,7 @@ static inline void nsgtk_set_solid(void)
  */
 static inline void nsgtk_set_dotted(void)
 {
-	double cdashes[] = { 1.0, 2.0 };
+	double cdashes[] = {1.0, 2.0};
 	cairo_set_dash(current_cr, cdashes, 2, 0);
 }
 
@@ -83,7 +83,7 @@ static inline void nsgtk_set_dotted(void)
  */
 static inline void nsgtk_set_dashed(void)
 {
-	double cdashes[] = { 8.0, 2.0 };
+	double cdashes[] = {8.0, 2.0};
 	cairo_set_dash(current_cr, cdashes, 2, 0);
 }
 
@@ -97,7 +97,7 @@ static inline void nsgtk_set_line_width(plot_style_fixed width)
 		cairo_set_line_width(current_cr, 1);
 	} else {
 		cairo_set_line_width(current_cr,
-				plot_style_fixed_to_double(width));
+				     plot_style_fixed_to_double(width));
 	}
 }
 
@@ -114,8 +114,11 @@ static nserror
 nsgtk_plot_clip(const struct redraw_context *ctx, const struct rect *clip)
 {
 	cairo_reset_clip(current_cr);
-	cairo_rectangle(current_cr, clip->x0, clip->y0,
-			clip->x1 - clip->x0, clip->y1 - clip->y0);
+	cairo_rectangle(current_cr,
+			clip->x0,
+			clip->y0,
+			clip->x1 - clip->x0,
+			clip->y1 - clip->y0);
 	cairo_clip(current_cr);
 
 	cliprect.x = clip->x0;
@@ -143,16 +146,22 @@ nsgtk_plot_clip(const struct redraw_context *ctx, const struct rect *clip)
  * \param angle2 The finish angle of the arc.
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-nsgtk_plot_arc(const struct redraw_context *ctx,
-	       const plot_style_t *style,
-	       int x, int y, int radius, int angle1, int angle2)
+static nserror nsgtk_plot_arc(const struct redraw_context *ctx,
+			      const plot_style_t *style,
+			      int x,
+			      int y,
+			      int radius,
+			      int angle1,
+			      int angle2)
 {
 	nsgtk_set_colour(style->fill_colour);
 	nsgtk_set_solid();
 
 	cairo_set_line_width(current_cr, 1);
-	cairo_arc(current_cr, x, y, radius,
+	cairo_arc(current_cr,
+		  x,
+		  y,
+		  radius,
 		  (angle1 + 90) * (M_PI / 180),
 		  (angle2 + 90) * (M_PI / 180));
 	cairo_stroke(current_cr);
@@ -173,10 +182,11 @@ nsgtk_plot_arc(const struct redraw_context *ctx,
  * \param radius circle radius.
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-nsgtk_plot_disc(const struct redraw_context *ctx,
-		const plot_style_t *style,
-		int x, int y, int radius)
+static nserror nsgtk_plot_disc(const struct redraw_context *ctx,
+			       const plot_style_t *style,
+			       int x,
+			       int y,
+			       int radius)
 {
 	if (style->fill_type != PLOT_OP_TYPE_NONE) {
 		nsgtk_set_colour(style->fill_colour);
@@ -227,10 +237,9 @@ nsgtk_plot_disc(const struct redraw_context *ctx,
  * \param line A rectangle defining the line to be drawn
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-nsgtk_plot_line(const struct redraw_context *ctx,
-		const plot_style_t *style,
-		const struct rect *line)
+static nserror nsgtk_plot_line(const struct redraw_context *ctx,
+			       const plot_style_t *style,
+			       const struct rect *line)
 {
 	nsgtk_set_colour(style->stroke_colour);
 
@@ -302,10 +311,9 @@ void nsgtk_plot_caret(int x, int y, int h)
  * \param rect A rectangle defining the line to be drawn
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-nsgtk_plot_rectangle(const struct redraw_context *ctx,
-		     const plot_style_t *style,
-		     const struct rect *rect)
+static nserror nsgtk_plot_rectangle(const struct redraw_context *ctx,
+				    const plot_style_t *style,
+				    const struct rect *rect)
 {
 	if (style->fill_type != PLOT_OP_TYPE_NONE) {
 		nsgtk_set_colour(style->fill_colour);
@@ -366,11 +374,10 @@ nsgtk_plot_rectangle(const struct redraw_context *ctx,
  * \param n number of verticies.
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-nsgtk_plot_polygon(const struct redraw_context *ctx,
-		   const plot_style_t *style,
-		   const int *p,
-		   unsigned int n)
+static nserror nsgtk_plot_polygon(const struct redraw_context *ctx,
+				  const plot_style_t *style,
+				  const int *p,
+				  unsigned int n)
 {
 	unsigned int i;
 
@@ -414,12 +421,11 @@ nsgtk_plot_polygon(const struct redraw_context *ctx,
  * \param transform A transform to apply to the path.
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-nsgtk_plot_path(const struct redraw_context *ctx,
-		const plot_style_t *pstyle,
-		const float *p,
-		unsigned int n,
-		const float transform[6])
+static nserror nsgtk_plot_path(const struct redraw_context *ctx,
+			       const plot_style_t *pstyle,
+			       const float *p,
+			       unsigned int n,
+			       const float transform[6])
 {
 	unsigned int i;
 	cairo_matrix_t old_ctm, n_ctm;
@@ -450,20 +456,24 @@ nsgtk_plot_path(const struct redraw_context *ctx,
 	cairo_set_matrix(current_cr, &n_ctm);
 
 	/* Construct path */
-	for (i = 0; i < n; ) {
+	for (i = 0; i < n;) {
 		if (p[i] == PLOTTER_PATH_MOVE) {
-			cairo_move_to(current_cr, p[i+1], p[i+2]);
+			cairo_move_to(current_cr, p[i + 1], p[i + 2]);
 			i += 3;
 		} else if (p[i] == PLOTTER_PATH_CLOSE) {
 			cairo_close_path(current_cr);
 			i++;
 		} else if (p[i] == PLOTTER_PATH_LINE) {
-			cairo_line_to(current_cr, p[i+1], p[i+2]);
+			cairo_line_to(current_cr, p[i + 1], p[i + 2]);
 			i += 3;
 		} else if (p[i] == PLOTTER_PATH_BEZIER) {
-			cairo_curve_to(current_cr, p[i+1], p[i+2],
-				       p[i+3], p[i+4],
-				       p[i+5], p[i+6]);
+			cairo_curve_to(current_cr,
+				       p[i + 1],
+				       p[i + 2],
+				       p[i + 3],
+				       p[i + 4],
+				       p[i + 5],
+				       p[i + 6]);
 			i += 7;
 		} else {
 			NSLOG(neosurf, INFO, "bad path command %f", p[i]);
@@ -523,14 +533,14 @@ nsgtk_plot_path(const struct redraw_context *ctx,
  * \param flags the flags controlling the type of plot operation
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-nsgtk_plot_bitmap(const struct redraw_context *ctx,
-		  struct bitmap *bitmap,
-		  int x, int y,
-		  int width,
-		  int height,
-		  colour bg,
-		  bitmap_flags_t flags)
+static nserror nsgtk_plot_bitmap(const struct redraw_context *ctx,
+				 struct bitmap *bitmap,
+				 int x,
+				 int y,
+				 int width,
+				 int height,
+				 colour bg,
+				 bitmap_flags_t flags)
 {
 	bool repeat_x = (flags & BITMAPF_REPEAT_X);
 	bool repeat_y = (flags & BITMAPF_REPEAT_Y);
@@ -585,9 +595,8 @@ nsgtk_plot_bitmap(const struct redraw_context *ctx,
 
 		/* Enable tiling if we're repeating */
 		if (repeat_x || repeat_y) {
-			cairo_pattern_set_extend(
-					cairo_get_source(current_cr),
-					CAIRO_EXTEND_REPEAT);
+			cairo_pattern_set_extend(cairo_get_source(current_cr),
+						 CAIRO_EXTEND_REPEAT);
 		}
 
 		/* Render the bitmap */
@@ -606,14 +615,13 @@ nsgtk_plot_bitmap(const struct redraw_context *ctx,
 		cairo_save(current_cr);
 		cairo_scale(current_cr, scale_x, scale_y);
 
-		cairo_set_source_surface(current_cr, img_surface,
-				x / scale_x, y / scale_y);
+		cairo_set_source_surface(
+			current_cr, img_surface, x / scale_x, y / scale_y);
 
 		/* Enable tiling if we're repeating */
 		if (repeat_x || repeat_y) {
-			cairo_pattern_set_extend(
-					cairo_get_source(current_cr),
-					CAIRO_EXTEND_REPEAT);
+			cairo_pattern_set_extend(cairo_get_source(current_cr),
+						 CAIRO_EXTEND_REPEAT);
 		}
 
 		/* Render the bitmap */
@@ -643,28 +651,25 @@ nsgtk_plot_bitmap(const struct redraw_context *ctx,
  * \param length length of string, in bytes
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-nsgtk_plot_text(const struct redraw_context *ctx,
-		const struct plot_font_style *fstyle,
-		int x,
-		int y,
-		const char *text,
-		size_t length)
+static nserror nsgtk_plot_text(const struct redraw_context *ctx,
+			       const struct plot_font_style *fstyle,
+			       int x,
+			       int y,
+			       const char *text,
+			       size_t length)
 {
 	return nsfont_paint(x, y, text, length, fstyle);
 }
 
 
 /** GTK plotter table */
-const struct plotter_table nsgtk_plotters = {
-	.clip = nsgtk_plot_clip,
-	.arc = nsgtk_plot_arc,
-	.disc = nsgtk_plot_disc,
-	.line = nsgtk_plot_line,
-	.rectangle = nsgtk_plot_rectangle,
-	.polygon = nsgtk_plot_polygon,
-	.path = nsgtk_plot_path,
-	.bitmap = nsgtk_plot_bitmap,
-	.text = nsgtk_plot_text,
-	.option_knockout = true
-};
+const struct plotter_table nsgtk_plotters = {.clip = nsgtk_plot_clip,
+					     .arc = nsgtk_plot_arc,
+					     .disc = nsgtk_plot_disc,
+					     .line = nsgtk_plot_line,
+					     .rectangle = nsgtk_plot_rectangle,
+					     .polygon = nsgtk_plot_polygon,
+					     .path = nsgtk_plot_path,
+					     .bitmap = nsgtk_plot_bitmap,
+					     .text = nsgtk_plot_text,
+					     .option_knockout = true};

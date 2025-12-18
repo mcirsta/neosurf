@@ -47,7 +47,9 @@ bool NS_Global_history::key_press(uint32_t nskey)
 	return global_history_keypress(nskey);
 }
 
-void NS_Global_history::mouse_action(browser_mouse_state mouse_state, int x, int y)
+void NS_Global_history::mouse_action(browser_mouse_state mouse_state,
+				     int x,
+				     int y)
 {
 	global_history_mouse_action(mouse_state, x, y);
 }

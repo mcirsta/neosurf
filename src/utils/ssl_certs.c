@@ -37,10 +37,9 @@
  *
  * exported interface documented in netsurf/ssl_certs.h
  */
-nserror
-cert_chain_alloc(size_t depth, struct cert_chain **chain_out)
+nserror cert_chain_alloc(size_t depth, struct cert_chain **chain_out)
 {
-	struct cert_chain* chain;
+	struct cert_chain *chain;
 
 	chain = calloc(1, sizeof(struct cert_chain));
 	if (chain == NULL) {
@@ -77,7 +76,8 @@ cert_chain_dup_into(const struct cert_chain *src, struct cert_chain *dst)
 		dst->certs[depth].err = src->certs[depth].err;
 		dst->certs[depth].der_length = src->certs[depth].der_length;
 		if (src->certs[depth].der != NULL) {
-			dst->certs[depth].der = malloc(src->certs[depth].der_length);
+			dst->certs[depth].der = malloc(
+				src->certs[depth].der_length);
 			if (dst->certs[depth].der == NULL) {
 				return NSERROR_NOMEM;
 			}
@@ -85,7 +85,6 @@ cert_chain_dup_into(const struct cert_chain *src, struct cert_chain *dst)
 			       src->certs[depth].der,
 			       src->certs[depth].der_length);
 		}
-
 	}
 
 	return NSERROR_OK;
@@ -100,7 +99,7 @@ cert_chain_dup_into(const struct cert_chain *src, struct cert_chain *dst)
 nserror
 cert_chain_dup(const struct cert_chain *src, struct cert_chain **dst_out)
 {
-	struct cert_chain* dst;
+	struct cert_chain *dst;
 	size_t depth;
 	nserror res;
 
@@ -113,7 +112,8 @@ cert_chain_dup(const struct cert_chain *src, struct cert_chain **dst_out)
 		dst->certs[depth].err = src->certs[depth].err;
 		dst->certs[depth].der_length = src->certs[depth].der_length;
 		if (src->certs[depth].der != NULL) {
-			dst->certs[depth].der = malloc(src->certs[depth].der_length);
+			dst->certs[depth].der = malloc(
+				src->certs[depth].der_length);
 			if (dst->certs[depth].der == NULL) {
 				cert_chain_free(dst);
 				return NSERROR_NOMEM;
@@ -122,7 +122,6 @@ cert_chain_dup(const struct cert_chain *src, struct cert_chain **dst_out)
 			       src->certs[depth].der,
 			       src->certs[depth].der_length);
 		}
-
 	}
 
 	*dst_out = dst;
@@ -136,12 +135,11 @@ cert_chain_dup(const struct cert_chain *src, struct cert_chain **dst_out)
  * process a part of a query extracting the certificate of an error code
  */
 static nserror
-process_query_section(const char *str, size_t len, struct cert_chain* chain)
+process_query_section(const char *str, size_t len, struct cert_chain *chain)
 {
 	nsuerror nsures;
 
-	if ((len > (5 + MIN_CERT_LEN)) &&
-	    (strncmp(str, "cert=", 5) == 0)) {
+	if ((len > (5 + MIN_CERT_LEN)) && (strncmp(str, "cert=", 5) == 0)) {
 		/* possible certificate entry */
 		nsures = nsu_base64_decode_alloc_url(
 			(const uint8_t *)str + 5,
@@ -151,11 +149,12 @@ process_query_section(const char *str, size_t len, struct cert_chain* chain)
 		if (nsures == NSUERROR_OK) {
 			chain->depth++;
 		}
-	} else if ((len > 8) &&
-		   (strncmp(str, "certerr=", 8) == 0)) {
+	} else if ((len > 8) && (strncmp(str, "certerr=", 8) == 0)) {
 		/* certificate entry error code */
 		if (chain->depth > 0) {
-			chain->certs[chain->depth - 1].err = strtoul(str + 8, NULL, 10);
+			chain->certs[chain->depth - 1].err = strtoul(str + 8,
+								     NULL,
+								     10);
 		}
 	}
 	return NSERROR_OK;
@@ -168,7 +167,7 @@ process_query_section(const char *str, size_t len, struct cert_chain* chain)
  */
 nserror cert_chain_from_query(struct nsurl *url, struct cert_chain **chain_out)
 {
-	struct cert_chain* chain;
+	struct cert_chain *chain;
 	nserror res;
 	char *querystr;
 	size_t querylen;
@@ -223,7 +222,7 @@ nserror cert_chain_from_query(struct nsurl *url, struct cert_chain **chain_out)
  *
  * exported interface documented in netsurf/ssl_certs.h
  */
-nserror cert_chain_to_query(struct cert_chain *chain, struct nsurl **url_out )
+nserror cert_chain_to_query(struct cert_chain *chain, struct nsurl **url_out)
 {
 	nserror res;
 	nsurl *url;
@@ -253,8 +252,8 @@ nserror cert_chain_to_query(struct cert_chain *chain, struct nsurl **url_out )
 		size_t output_length;
 
 		written = snprintf((char *)urlstr + urlstrlen,
-					allocsize - urlstrlen,
-					"&cert=");
+				   allocsize - urlstrlen,
+				   "&cert=");
 		if (written < 0) {
 			free(urlstr);
 			return NSERROR_UNKNOWN;
@@ -267,11 +266,10 @@ nserror cert_chain_to_query(struct cert_chain *chain, struct nsurl **url_out )
 		urlstrlen += (size_t)written;
 
 		output_length = allocsize - urlstrlen;
-		nsures = nsu_base64_encode_url(
-			chain->certs[depth].der,
-			chain->certs[depth].der_length,
-			(uint8_t *)urlstr + urlstrlen,
-			&output_length);
+		nsures = nsu_base64_encode_url(chain->certs[depth].der,
+					       chain->certs[depth].der_length,
+					       (uint8_t *)urlstr + urlstrlen,
+					       &output_length);
 		if (nsures != NSUERROR_OK) {
 			free(urlstr);
 			return (nserror)nsures;
@@ -280,9 +278,9 @@ nserror cert_chain_to_query(struct cert_chain *chain, struct nsurl **url_out )
 
 		if (chain->certs[depth].err != SSL_CERT_ERR_OK) {
 			written = snprintf((char *)urlstr + urlstrlen,
-					allocsize - urlstrlen,
-					"&certerr=%d",
-					chain->certs[depth].err);
+					   allocsize - urlstrlen,
+					   "&certerr=%d",
+					   chain->certs[depth].err);
 			if (written < 0) {
 				free(urlstr);
 				return NSERROR_UNKNOWN;
@@ -294,7 +292,6 @@ nserror cert_chain_to_query(struct cert_chain *chain, struct nsurl **url_out )
 
 			urlstrlen += (size_t)written;
 		}
-
 	}
 	urlstr[17] = '?';
 	urlstr[urlstrlen] = 0;
@@ -314,7 +311,7 @@ nserror cert_chain_to_query(struct cert_chain *chain, struct nsurl **url_out )
  *
  * exported interface documented in netsurf/ssl_certs.h
  */
-nserror cert_chain_free(struct cert_chain* chain)
+nserror cert_chain_free(struct cert_chain *chain)
 {
 	size_t depth;
 

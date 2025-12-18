@@ -21,10 +21,7 @@
 /**
  * Type of a DOM string
  */
-enum dom_string_type {
-	DOM_STRING_CDATA = 0,
-	DOM_STRING_INTERNED = 1
-};
+enum dom_string_type { DOM_STRING_CDATA = 0, DOM_STRING_INTERNED = 1 };
 
 /**
  * A DOM string
@@ -36,27 +33,25 @@ typedef struct dom_string_internal {
 
 	union {
 		struct {
-			uint8_t *ptr;	/**< Pointer to string data */
-			size_t len;	/**< Byte length of string */
+			uint8_t *ptr; /**< Pointer to string data */
+			size_t len; /**< Byte length of string */
 		} cdata;
-		lwc_string *intern;	/**< Interned string */
+		lwc_string *intern; /**< Interned string */
 	} data;
 
-	enum dom_string_type type;	/**< String type */
+	enum dom_string_type type; /**< String type */
 } dom_string_internal;
 
 /**
  * Empty string, for comparisons against NULL
  */
-static const dom_string_internal empty_string = {
-	{ 0 },
-	{ { (uint8_t *) "", 0 } },
-	DOM_STRING_CDATA
-};
+static const dom_string_internal empty_string = {{0},
+						 {{(uint8_t *)"", 0}},
+						 DOM_STRING_CDATA};
 
 void dom_string_destroy(dom_string *str)
 {
-	dom_string_internal *istr = (void *) str;
+	dom_string_internal *istr = (void *)str;
 	if (str != NULL) {
 		assert(istr->base.refcnt == 0);
 		switch (istr->type) {
@@ -83,16 +78,16 @@ void dom_string_destroy(dom_string *str)
  * The returned string will already be referenced, so there is no need
  * to explicitly reference it.
  *
- * The string of characters passed in will be copied for use by the 
+ * The string of characters passed in will be copied for use by the
  * returned DOM string.
  */
-dom_exception dom_string_create(const uint8_t *ptr, size_t len, 
-		dom_string **str)
+dom_exception
+dom_string_create(const uint8_t *ptr, size_t len, dom_string **str)
 {
 	dom_string_internal *ret;
 
 	if (ptr == NULL || len == 0) {
-		ptr = (const uint8_t *) "";
+		ptr = (const uint8_t *)"";
 		len = 0;
 	}
 
@@ -131,16 +126,16 @@ dom_exception dom_string_create(const uint8_t *ptr, size_t len,
  * The returned string will already be referenced, so there is no need
  * to explicitly reference it.
  *
- * The string of characters passed in will be copied for use by the 
+ * The string of characters passed in will be copied for use by the
  * returned DOM string.
  */
-dom_exception dom_string_create_interned(const uint8_t *ptr, size_t len, 
-		dom_string **str)
+dom_exception
+dom_string_create_interned(const uint8_t *ptr, size_t len, dom_string **str)
 {
 	dom_string_internal *ret;
 
 	if (ptr == NULL || len == 0) {
-		ptr = (const uint8_t *) "";
+		ptr = (const uint8_t *)"";
 		len = 0;
 	}
 
@@ -148,8 +143,8 @@ dom_exception dom_string_create_interned(const uint8_t *ptr, size_t len,
 	if (ret == NULL)
 		return DOM_NO_MEM_ERR;
 
-	if (lwc_intern_string((const char *) ptr, len, 
-			&ret->data.intern) != lwc_error_ok) {
+	if (lwc_intern_string((const char *)ptr, len, &ret->data.intern) !=
+	    lwc_error_ok) {
 		free(ret);
 		return DOM_NO_MEM_ERR;
 	}
@@ -167,20 +162,20 @@ dom_exception dom_string_create_interned(const uint8_t *ptr, size_t len,
  * Make the dom_string be interned
  *
  * \param str     The dom_string to be interned
- * \param lwcstr  The result lwc_string	
+ * \param lwcstr  The result lwc_string
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception dom_string_intern(dom_string *str, 
-		struct lwc_string_s **lwcstr)
+dom_exception dom_string_intern(dom_string *str, struct lwc_string_s **lwcstr)
 {
-	dom_string_internal *istr = (void *) str;
+	dom_string_internal *istr = (void *)str;
 	/* If this string is already interned, do nothing */
 	if (istr->type != DOM_STRING_INTERNED) {
 		lwc_string *ret;
 		lwc_error lerr;
 
-		lerr = lwc_intern_string((const char *) istr->data.cdata.ptr, 
-				istr->data.cdata.len, &ret);
+		lerr = lwc_intern_string((const char *)istr->data.cdata.ptr,
+					 istr->data.cdata.len,
+					 &ret);
 		if (lerr != lwc_error_ok) {
 			return _dom_exception_from_lwc_error(lerr);
 		}
@@ -207,8 +202,8 @@ dom_exception dom_string_intern(dom_string *str,
 bool dom_string_isequal(const dom_string *s1, const dom_string *s2)
 {
 	size_t len;
-	const dom_string_internal *is1 = (void *) s1;
-	const dom_string_internal *is2 = (void *) s2;
+	const dom_string_internal *is1 = (void *)s1;
+	const dom_string_internal *is2 = (void *)s2;
 
 	if (s1 == NULL)
 		is1 = &empty_string;
@@ -216,22 +211,25 @@ bool dom_string_isequal(const dom_string *s1, const dom_string *s2)
 	if (s2 == NULL)
 		is2 = &empty_string;
 
-	if (is1->type == DOM_STRING_INTERNED && 
-			is2->type == DOM_STRING_INTERNED) {
+	if (is1->type == DOM_STRING_INTERNED &&
+	    is2->type == DOM_STRING_INTERNED) {
 		bool match;
 
-		(void) lwc_string_isequal(is1->data.intern, is2->data.intern,
-			&match);
+		(void)lwc_string_isequal(is1->data.intern,
+					 is2->data.intern,
+					 &match);
 
 		return match;
 	}
 
-	len = dom_string_byte_length((dom_string *) is1);
+	len = dom_string_byte_length((dom_string *)is1);
 
 	if (len != dom_string_byte_length((dom_string *)is2))
 		return false;
 
-	return 0 == memcmp(dom_string_data((dom_string *) is1), dom_string_data((dom_string *)is2), len);
+	return 0 == memcmp(dom_string_data((dom_string *)is1),
+			   dom_string_data((dom_string *)is2),
+			   len);
 }
 
 /**
@@ -256,8 +254,8 @@ bool dom_string_caseless_isequal(const dom_string *s1, const dom_string *s2)
 	const uint8_t *d1 = NULL;
 	const uint8_t *d2 = NULL;
 	size_t len;
-	const dom_string_internal *is1 = (void *) s1;
-	const dom_string_internal *is2 = (void *) s2;
+	const dom_string_internal *is1 = (void *)s1;
+	const dom_string_internal *is2 = (void *)s2;
 
 	if (s1 == NULL)
 		is1 = &empty_string;
@@ -265,24 +263,25 @@ bool dom_string_caseless_isequal(const dom_string *s1, const dom_string *s2)
 	if (s2 == NULL)
 		is2 = &empty_string;
 
-	if (is1->type == DOM_STRING_INTERNED && 
-			is2->type == DOM_STRING_INTERNED) {
+	if (is1->type == DOM_STRING_INTERNED &&
+	    is2->type == DOM_STRING_INTERNED) {
 		bool match;
 
 		if (lwc_string_caseless_isequal(is1->data.intern,
-				is2->data.intern, &match) != lwc_error_ok)
+						is2->data.intern,
+						&match) != lwc_error_ok)
 			return false;
 
 		return match;
 	}
 
-	len = dom_string_byte_length((dom_string *) is1);
+	len = dom_string_byte_length((dom_string *)is1);
 
 	if (len != dom_string_byte_length((dom_string *)is2))
 		return false;
 
-	d1 = (const uint8_t *) dom_string_data((dom_string *) is1);
-	d2 = (const uint8_t *) dom_string_data((dom_string *)is2);
+	d1 = (const uint8_t *)dom_string_data((dom_string *)is1);
+	d2 = (const uint8_t *)dom_string_data((dom_string *)is2);
 
 	while (len > 0) {
 		if (dolower(*d1) != dolower(*d2))
@@ -309,7 +308,7 @@ bool dom_string_caseless_isequal(const dom_string *s1, const dom_string *s2)
 bool dom_string_lwc_isequal(const dom_string *s1, lwc_string *s2)
 {
 	size_t len;
-	dom_string_internal *is1 = (void *) s1;
+	dom_string_internal *is1 = (void *)s1;
 
 	if (s1 == NULL || s2 == NULL)
 		return false;
@@ -317,7 +316,7 @@ bool dom_string_lwc_isequal(const dom_string *s1, lwc_string *s2)
 	if (is1->type == DOM_STRING_INTERNED) {
 		bool match;
 
-		(void) lwc_string_isequal(is1->data.intern, s2, &match);
+		(void)lwc_string_isequal(is1->data.intern, s2, &match);
 
 		return match;
 	}
@@ -346,7 +345,7 @@ bool dom_string_caseless_lwc_isequal(const dom_string *s1, lwc_string *s2)
 	size_t len;
 	const uint8_t *d1 = NULL;
 	const uint8_t *d2 = NULL;
-	dom_string_internal *is1 = (void *) s1;
+	dom_string_internal *is1 = (void *)s1;
 
 	if (s1 == NULL || s2 == NULL)
 		return false;
@@ -354,7 +353,8 @@ bool dom_string_caseless_lwc_isequal(const dom_string *s1, lwc_string *s2)
 	if (is1->type == DOM_STRING_INTERNED) {
 		bool match;
 
-		if (lwc_string_caseless_isequal(is1->data.intern, s2, &match) != lwc_error_ok)
+		if (lwc_string_caseless_isequal(is1->data.intern, s2, &match) !=
+		    lwc_error_ok)
 			return false;
 
 		return match;
@@ -365,8 +365,8 @@ bool dom_string_caseless_lwc_isequal(const dom_string *s1, lwc_string *s2)
 	if (len != lwc_string_length(s2))
 		return false;
 
-	d1 = (const uint8_t *) dom_string_data(s1);
-	d2 = (const uint8_t *) lwc_string_data(s2);
+	d1 = (const uint8_t *)dom_string_data(s1);
+	d2 = (const uint8_t *)lwc_string_data(s2);
 
 	while (len > 0) {
 		if (dolower(*d1) != dolower(*d2))
@@ -382,11 +382,11 @@ bool dom_string_caseless_lwc_isequal(const dom_string *s1, lwc_string *s2)
 
 
 /**
- * Get the index of the first occurrence of a character in a dom string 
- * 
+ * Get the index of the first occurrence of a character in a dom string
+ *
  * \param str  The string to search in
  * \param chr  UCS4 value to look for
- * \return Character index of found character, or -1 if none found 
+ * \return Character index of found character, or -1 if none found
  */
 uint32_t dom_string_index(dom_string *str, uint32_t chr)
 {
@@ -395,7 +395,7 @@ uint32_t dom_string_index(dom_string *str, uint32_t chr)
 	uint32_t c, index;
 	parserutils_error err;
 
-	s = (const uint8_t *) dom_string_data(str);
+	s = (const uint8_t *)dom_string_data(str);
 	slen = dom_string_byte_length(str);
 
 	index = 0;
@@ -403,7 +403,7 @@ uint32_t dom_string_index(dom_string *str, uint32_t chr)
 	while (slen > 0) {
 		err = parserutils_charset_utf8_to_ucs4(s, slen, &c, &clen);
 		if (err != PARSERUTILS_OK) {
-			return (uint32_t) -1;
+			return (uint32_t)-1;
 		}
 
 		if (c == chr) {
@@ -415,12 +415,12 @@ uint32_t dom_string_index(dom_string *str, uint32_t chr)
 		index++;
 	}
 
-	return (uint32_t) -1;
+	return (uint32_t)-1;
 }
 
 /**
- * Get the index of the last occurrence of a character in a dom string 
- * 
+ * Get the index of the last occurrence of a character in a dom string
+ *
  * \param str  The string to search in
  * \param chr  UCS4 value to look for
  * \return Character index of found character, or -1 if none found
@@ -432,21 +432,20 @@ uint32_t dom_string_rindex(dom_string *str, uint32_t chr)
 	uint32_t c, coff, index;
 	parserutils_error err;
 
-	s = (const uint8_t *) dom_string_data(str);
+	s = (const uint8_t *)dom_string_data(str);
 	slen = dom_string_byte_length(str);
 
 	index = dom_string_length(str);
 
 	while (slen > 0) {
-		err = parserutils_charset_utf8_prev(s, slen, 
-				(uint32_t *) &coff);
+		err = parserutils_charset_utf8_prev(s, slen, (uint32_t *)&coff);
 		if (err == PARSERUTILS_OK) {
-			err = parserutils_charset_utf8_to_ucs4(s + coff, 
-					slen - clen, &c, &clen);
+			err = parserutils_charset_utf8_to_ucs4(
+				s + coff, slen - clen, &c, &clen);
 		}
 
 		if (err != PARSERUTILS_OK) {
-			return (uint32_t) -1;
+			return (uint32_t)-1;
 		}
 
 		if (c == chr) {
@@ -457,7 +456,7 @@ uint32_t dom_string_rindex(dom_string *str, uint32_t chr)
 		index--;
 	}
 
-	return (uint32_t) -1;
+	return (uint32_t)-1;
 }
 
 /**
@@ -472,7 +471,7 @@ uint32_t dom_string_length(dom_string *str)
 	size_t slen, clen;
 	parserutils_error err;
 
-	s = (const uint8_t *) dom_string_data(str);
+	s = (const uint8_t *)dom_string_data(str);
 	slen = dom_string_byte_length(str);
 
 	err = parserutils_charset_utf8_length(s, slen, &clen);
@@ -490,15 +489,14 @@ uint32_t dom_string_length(dom_string *str)
  * \param ch     The UCS4 character
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception dom_string_at(dom_string *str, uint32_t index, 
-		uint32_t *ch)
+dom_exception dom_string_at(dom_string *str, uint32_t index, uint32_t *ch)
 {
 	const uint8_t *s;
 	size_t clen, slen;
 	uint32_t c, i;
 	parserutils_error err;
 
-	s = (const uint8_t *) dom_string_data(str);
+	s = (const uint8_t *)dom_string_data(str);
 	slen = dom_string_byte_length(str);
 
 	i = 0;
@@ -506,7 +504,7 @@ dom_exception dom_string_at(dom_string *str, uint32_t index,
 	while (slen > 0) {
 		err = parserutils_charset_utf8_char_byte_length(s, &clen);
 		if (err != PARSERUTILS_OK) {
-			return (uint32_t) -1;
+			return (uint32_t)-1;
 		}
 
 		i++;
@@ -520,7 +518,7 @@ dom_exception dom_string_at(dom_string *str, uint32_t index,
 	if (i == index + 1) {
 		err = parserutils_charset_utf8_to_ucs4(s, slen, &c, &clen);
 		if (err != PARSERUTILS_OK) {
-			return (uint32_t) -1;
+			return (uint32_t)-1;
 		}
 
 		*ch = c;
@@ -530,9 +528,9 @@ dom_exception dom_string_at(dom_string *str, uint32_t index,
 	}
 }
 
-/** 
- * Concatenate two dom strings 
- * 
+/**
+ * Concatenate two dom strings
+ *
  * \param s1      The first string
  * \param s2      The second string
  * \param result  Pointer to location to receive result
@@ -541,8 +539,8 @@ dom_exception dom_string_at(dom_string *str, uint32_t index,
  * The returned string will be referenced. The client
  * should dereference it once it has finished with it.
  */
-dom_exception dom_string_concat(dom_string *s1, dom_string *s2,
-		dom_string **result)
+dom_exception
+dom_string_concat(dom_string *s1, dom_string *s2, dom_string **result)
 {
 	dom_string_internal *concat;
 	const uint8_t *s1ptr, *s2ptr;
@@ -551,8 +549,8 @@ dom_exception dom_string_concat(dom_string *s1, dom_string *s2,
 	assert(s1 != NULL);
 	assert(s2 != NULL);
 
-	s1ptr = (const uint8_t *) dom_string_data(s1);
-	s2ptr = (const uint8_t *) dom_string_data(s2);
+	s1ptr = (const uint8_t *)dom_string_data(s1);
+	s2ptr = (const uint8_t *)dom_string_data(s2);
 	s1len = dom_string_byte_length(s1);
 	s2len = dom_string_byte_length(s2);
 
@@ -586,7 +584,7 @@ dom_exception dom_string_concat(dom_string *s1, dom_string *s2,
 }
 
 /**
- * Extract a substring from a dom string 
+ * Extract a substring from a dom string
  *
  * \param str     The string to extract from
  * \param i1      The character index of the start of the substring
@@ -597,8 +595,10 @@ dom_exception dom_string_concat(dom_string *s1, dom_string *s2,
  * The returned string will have its reference count increased. The client
  * should dereference it once it has finished with it.
  */
-dom_exception dom_string_substr(dom_string *str, 
-		uint32_t i1, uint32_t i2, dom_string **result)
+dom_exception dom_string_substr(dom_string *str,
+				uint32_t i1,
+				uint32_t i2,
+				dom_string **result)
 {
 	const uint8_t *s;
 	size_t slen;
@@ -609,7 +609,7 @@ dom_exception dom_string_substr(dom_string *str,
 	if (str == NULL)
 		str = (dom_string *)&empty_string;
 
-	s = (const uint8_t *) dom_string_data(str);
+	s = (const uint8_t *)dom_string_data(str);
 	slen = dom_string_byte_length(str);
 
 	/* Initialise the byte index of the start to 0 */
@@ -651,16 +651,17 @@ dom_exception dom_string_substr(dom_string *str,
  * \param source  Pointer to string to insert
  * \param offset  Character offset of location to insert at
  * \param result  Pointer to location to receive result
- * \return DOM_NO_ERR          on success, 
+ * \return DOM_NO_ERR          on success,
  *         DOM_NO_MEM_ERR      on memory exhaustion,
  *         DOM_INDEX_SIZE_ERR  if ::offset > len(::target).
  *
  * The returned string will have its reference count increased. The client
- * should dereference it once it has finished with it. 
+ * should dereference it once it has finished with it.
  */
 dom_exception dom_string_insert(dom_string *target,
-		dom_string *source, uint32_t offset,
-		dom_string **result)
+				dom_string *source,
+				uint32_t offset,
+				dom_string **result)
 {
 	dom_string_internal *res;
 	const uint8_t *t, *s;
@@ -672,9 +673,9 @@ dom_exception dom_string_insert(dom_string *target,
 	if (target == NULL)
 		target = (dom_string *)&empty_string;
 
-	t = (const uint8_t *) dom_string_data(target);
+	t = (const uint8_t *)dom_string_data(target);
 	tlen = dom_string_byte_length(target);
-	s = (const uint8_t *) dom_string_data(source);
+	s = (const uint8_t *)dom_string_data(source);
 	slen = dom_string_byte_length(source);
 
 	clen = dom_string_length(target);
@@ -688,8 +689,7 @@ dom_exception dom_string_insert(dom_string *target,
 		ins = tlen;
 	} else {
 		while (offset > 0) {
-			err = parserutils_charset_utf8_next(t, tlen, 
-					ins, &ins);
+			err = parserutils_charset_utf8_next(t, tlen, ins, &ins);
 
 			if (err != PARSERUTILS_OK) {
 				return DOM_NO_MEM_ERR;
@@ -738,7 +738,7 @@ dom_exception dom_string_insert(dom_string *target,
 	return DOM_NO_ERR;
 }
 
-/** 
+/**
  * Replace a section of a dom string
  *
  * \param target  Pointer to string of which to replace a section
@@ -749,11 +749,13 @@ dom_exception dom_string_insert(dom_string *target,
  * \return DOM_NO_ERR on success, DOM_NO_MEM_ERR on memory exhaustion.
  *
  * The returned string will have its reference count increased. The client
- * should dereference it once it has finished with it. 
+ * should dereference it once it has finished with it.
  */
 dom_exception dom_string_replace(dom_string *target,
-		dom_string *source, uint32_t i1, uint32_t i2,
-		dom_string **result)
+				 dom_string *source,
+				 uint32_t i1,
+				 uint32_t i2,
+				 dom_string **result)
 {
 	dom_string_internal *res;
 	const uint8_t *t, *s;
@@ -765,9 +767,9 @@ dom_exception dom_string_replace(dom_string *target,
 	if (target == NULL)
 		target = (dom_string *)&empty_string;
 
-	t = (const uint8_t *) dom_string_data(target);
+	t = (const uint8_t *)dom_string_data(target);
 	tlen = dom_string_byte_length(target);
-	s = (const uint8_t *) dom_string_data(source);
+	s = (const uint8_t *)dom_string_data(source);
 	slen = dom_string_byte_length(source);
 
 	/* Initialise the byte index of the start to 0 */
@@ -842,14 +844,14 @@ dom_exception dom_string_replace(dom_string *target,
 }
 
 /**
- * Calculate a hash value from a dom string 
+ * Calculate a hash value from a dom string
  *
  * \param str  The string to calculate a hash of
  * \return The hash value associated with the string
  */
 uint32_t dom_string_hash(dom_string *str)
 {
-	const uint8_t *s = (const uint8_t *) dom_string_data(str);
+	const uint8_t *s = (const uint8_t *)dom_string_data(str);
 	size_t slen = dom_string_byte_length(str);
 	uint32_t hash = 0x811c9dc5;
 
@@ -866,7 +868,7 @@ uint32_t dom_string_hash(dom_string *str)
 
 /**
  * Convert a lwc_error to a dom_exception
- * 
+ *
  * \param err  The input lwc_error
  * \return the dom_exception
  */
@@ -890,26 +892,26 @@ dom_exception _dom_exception_from_lwc_error(lwc_error err)
  * \param str	The dom_string object
  * \return      The C string pointer
  *
- * @note: This function is just provided for the convenience of accessing the 
+ * @note: This function is just provided for the convenience of accessing the
  * raw C string character, no change on the result string is allowed.
  */
 const char *dom_string_data(const dom_string *str)
 {
-	dom_string_internal *istr = (void *) str;
+	dom_string_internal *istr = (void *)str;
 	if (istr->type == DOM_STRING_CDATA) {
-		return (const char *) istr->data.cdata.ptr;
+		return (const char *)istr->data.cdata.ptr;
 	} else {
 		return lwc_string_data(istr->data.intern);
 	}
 }
 
-/** Get the byte length of this dom_string 
+/** Get the byte length of this dom_string
  *
  * \param str	The dom_string object
  */
 size_t dom_string_byte_length(const dom_string *str)
 {
-	dom_string_internal *istr = (void *) str;
+	dom_string_internal *istr = (void *)str;
 	if (istr->type == DOM_STRING_CDATA) {
 		return istr->data.cdata.len;
 	} else {
@@ -919,7 +921,7 @@ size_t dom_string_byte_length(const dom_string *str)
 
 /** Convert the given string to uppercase
  *
- * \param source 
+ * \param source
  * \param ascii_only  Whether to only convert [a-z] to [A-Z]
  * \param upper       Result pointer for uppercase string.  Caller owns ref
  *
@@ -930,42 +932,43 @@ size_t dom_string_byte_length(const dom_string *str)
 dom_exception
 dom_string_toupper(dom_string *source, bool ascii_only, dom_string **upper)
 {
-	const uint8_t *orig_s = (const uint8_t *) dom_string_data(source);
+	const uint8_t *orig_s = (const uint8_t *)dom_string_data(source);
 	const size_t nbytes = dom_string_byte_length(source);
 	uint8_t *copy_s;
 	size_t index = 0;
 	dom_exception exc;
-	
+
 	if (ascii_only == false)
 		return DOM_NOT_SUPPORTED_ERR;
-	
+
 	copy_s = malloc(nbytes);
 	if (copy_s == NULL)
 		return DOM_NO_MEM_ERR;
 	memcpy(copy_s, orig_s, nbytes);
-	
+
 	while (index < nbytes) {
 		if (orig_s[index] >= 'a' && orig_s[index] <= 'z') {
 			copy_s[index] -= 'a' - 'A';
 		}
-		
+
 		index++;
 	}
-	
-	if (((dom_string_internal *) ((void *) source))->type == DOM_STRING_CDATA) {
+
+	if (((dom_string_internal *)((void *)source))->type ==
+	    DOM_STRING_CDATA) {
 		exc = dom_string_create(copy_s, nbytes, upper);
 	} else {
 		exc = dom_string_create_interned(copy_s, nbytes, upper);
 	}
-	
+
 	free(copy_s);
-	
+
 	return exc;
 }
 
 /** Convert the given string to lowercase
  *
- * \param source 
+ * \param source
  * \param ascii_only  Whether to only convert [a-z] to [A-Z]
  * \param lower       Result pointer for lowercase string.  Caller owns ref
  *
@@ -976,15 +979,15 @@ dom_string_toupper(dom_string *source, bool ascii_only, dom_string **upper)
 dom_exception
 dom_string_tolower(dom_string *source, bool ascii_only, dom_string **lower)
 {
-	dom_string_internal *isource = (void *) source;
+	dom_string_internal *isource = (void *)source;
 	dom_exception exc = DOM_NO_ERR;
 
 	if (ascii_only == false)
 		return DOM_NOT_SUPPORTED_ERR;
 
 	if (isource->type == DOM_STRING_CDATA) {
-		const uint8_t *orig_s = (const uint8_t *)
-				dom_string_data(source);
+		const uint8_t *orig_s = (const uint8_t *)dom_string_data(
+			source);
 		const size_t nbytes = dom_string_byte_length(source);
 		size_t index = 0;
 		uint8_t *copy_s;
@@ -1015,27 +1018,30 @@ dom_string_tolower(dom_string *source, bool ascii_only, dom_string **lower)
 		}
 
 		if (lwc_string_isequal(isource->data.intern, l, &equal) ==
-				lwc_error_ok && equal == true) {
+			    lwc_error_ok &&
+		    equal == true) {
 			/* String is already lower case. */
 			*lower = dom_string_ref(source);
 		} else {
 			/* TODO: create dom_string wrapper around existing
 			 *       lwc string. */
 			exc = dom_string_create_interned(
-					(const uint8_t *)lwc_string_data(l),
-					lwc_string_length(l), lower);
+				(const uint8_t *)lwc_string_data(l),
+				lwc_string_length(l),
+				lower);
 		}
 		lwc_string_unref(l);
 	}
-	
+
 	return exc;
 }
 
 /* exported function documented in string.h */
 dom_exception dom_string_whitespace_op(dom_string *s,
-		enum dom_whitespace_op op, dom_string **ret)
+				       enum dom_whitespace_op op,
+				       dom_string **ret)
 {
-	const uint8_t *src_text = (const uint8_t *) dom_string_data(s);
+	const uint8_t *src_text = (const uint8_t *)dom_string_data(s);
 	size_t len = dom_string_byte_length(s);
 	const uint8_t *src_pos;
 	const uint8_t *src_end;
@@ -1058,7 +1064,7 @@ dom_exception dom_string_whitespace_op(dom_string *s,
 
 	if (op & DOM_WHITESPACE_STRIP_LEADING) {
 		while (src_pos < src_end) {
-			if (*src_pos == ' '  || *src_pos == '\t' ||
+			if (*src_pos == ' ' || *src_pos == '\t' ||
 			    *src_pos == '\n' || *src_pos == '\r' ||
 			    *src_pos == '\f')
 				src_pos++;
@@ -1069,17 +1075,16 @@ dom_exception dom_string_whitespace_op(dom_string *s,
 
 	while (src_pos < src_end) {
 		if ((op & DOM_WHITESPACE_COLLAPSE) &&
-				(*src_pos == ' ' || *src_pos == '\t' ||
-				*src_pos == '\n' || *src_pos == '\r' ||
-				*src_pos == '\f')) {
+		    (*src_pos == ' ' || *src_pos == '\t' || *src_pos == '\n' ||
+		     *src_pos == '\r' || *src_pos == '\f')) {
 			/* Got a whitespace character */
 			do {
 				/* Skip all adjacent whitespace */
 				src_pos++;
 			} while (src_pos < src_end &&
-					(*src_pos == ' ' || *src_pos == '\t' ||
-					*src_pos == '\n' || *src_pos == '\r' ||
-					*src_pos == '\f'));
+				 (*src_pos == ' ' || *src_pos == '\t' ||
+				  *src_pos == '\n' || *src_pos == '\r' ||
+				  *src_pos == '\f'));
 			/* Gets replaced with single space in output */
 			*temp_pos++ = ' ';
 		} else {
@@ -1091,7 +1096,7 @@ dom_exception dom_string_whitespace_op(dom_string *s,
 	if (op & DOM_WHITESPACE_STRIP_TRAILING) {
 		while (temp_pos > temp) {
 			temp_pos--;
-			if (*temp_pos != ' '  && *temp_pos != '\t' &&
+			if (*temp_pos != ' ' && *temp_pos != '\t' &&
 			    *temp_pos != '\n' && *temp_pos != '\r' &&
 			    *temp_pos != '\f') {
 				temp_pos++;
@@ -1104,7 +1109,7 @@ dom_exception dom_string_whitespace_op(dom_string *s,
 	len = temp_pos - temp;
 
 	/* Make new string */
-	if (((dom_string_internal *) ((void *) s))->type == DOM_STRING_CDATA) {
+	if (((dom_string_internal *)((void *)s))->type == DOM_STRING_CDATA) {
 		exc = dom_string_create(temp, len, ret);
 	} else {
 		exc = dom_string_create_interned(temp, len, ret);
@@ -1114,4 +1119,3 @@ dom_exception dom_string_whitespace_op(dom_string *s,
 
 	return exc;
 }
-

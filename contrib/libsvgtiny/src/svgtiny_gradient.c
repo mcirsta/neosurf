@@ -22,20 +22,22 @@
 /**
  * Get the bounding box of path.
  */
-static void
-svgtiny_path_bbox(float *p,
-		  unsigned int n,
-		  float *x0, float *y0, float *x1, float *y1)
+static void svgtiny_path_bbox(float *p,
+			      unsigned int n,
+			      float *x0,
+			      float *y0,
+			      float *x1,
+			      float *y1)
 {
 	unsigned int j;
 
 	*x0 = *x1 = p[1];
 	*y0 = *y1 = p[2];
 
-	for (j = 0; j != n; ) {
+	for (j = 0; j != n;) {
 		unsigned int points = 0;
 		unsigned int k;
-		switch ((int) p[j]) {
+		switch ((int)p[j]) {
 		case svgtiny_PATH_MOVE:
 		case svgtiny_PATH_LINE:
 			points = 1;
@@ -121,25 +123,22 @@ parse_gradient_stops(dom_element *linear,
 		svgtiny_colour color = svgtiny_TRANSPARENT;
 		svgtiny_code res;
 		struct svgtiny_parse_internal_operation ops[] = {
-			{
-				state->interned_stop_color,
-				SVGTIOP_COLOR,
-				NULL,
-				&color,
-				NULL
-			}, {
-				state->interned_offset,
-				SVGTIOP_OFFSET,
-				NULL,
-				&offset,
-				NULL
-			}, {
-				NULL, SVGTIOP_NONE, NULL, NULL
-			},
+			{state->interned_stop_color,
+			 SVGTIOP_COLOR,
+			 NULL,
+			 &color,
+			 NULL},
+			{state->interned_offset,
+			 SVGTIOP_OFFSET,
+			 NULL,
+			 &offset,
+			 NULL},
+			{NULL, SVGTIOP_NONE, NULL, NULL},
 		};
 
 
-		exc = dom_nodelist_item(stops, stopnr,
+		exc = dom_nodelist_item(stops,
+					stopnr,
 					(dom_node **)(void *)&stop);
 		if (exc != DOM_NO_ERR)
 			continue;
@@ -224,12 +223,12 @@ svgtiny_parse_linear_gradient(dom_element *linear,
 		attr = NULL;
 	}
 
-	exc = dom_element_get_attribute(linear, state->interned_gradientUnits,
+	exc = dom_element_get_attribute(linear,
+					state->interned_gradientUnits,
 					&attr);
 	if (exc == DOM_NO_ERR && attr != NULL) {
-		grad->gradient_user_space_on_use =
-			dom_string_isequal(attr,
-					   state->interned_userSpaceOnUse);
+		grad->gradient_user_space_on_use = dom_string_isequal(
+			attr, state->interned_userSpaceOnUse);
 		dom_string_unref(attr);
 	}
 
@@ -238,15 +237,20 @@ svgtiny_parse_linear_gradient(dom_element *linear,
 					&attr);
 	if (exc == DOM_NO_ERR && attr != NULL) {
 		struct svgtiny_transformation_matrix tm = {
-			.a = 1, .b = 0, .c = 0, .d = 1, .e = 0, .f = 0
-		};
+			.a = 1, .b = 0, .c = 0, .d = 1, .e = 0, .f = 0};
 		svgtiny_parse_transform(dom_string_data(attr),
 					dom_string_byte_length(attr),
 					&tm);
 
 #ifdef GRADIENT_DEBUG
-		fprintf(stderr, "transform %g %g %g %g %g %g\n",
-			tm.a, tm.b, tm.c, tm.d, tm.e, tm.f);
+		fprintf(stderr,
+			"transform %g %g %g %g %g %g\n",
+			tm.a,
+			tm.b,
+			tm.c,
+			tm.d,
+			tm.e,
+			tm.f);
 #endif
 		grad->gradient_transform.a = tm.a;
 		grad->gradient_transform.b = tm.b;
@@ -255,7 +259,7 @@ svgtiny_parse_linear_gradient(dom_element *linear,
 		grad->gradient_transform.e = tm.e;
 		grad->gradient_transform.f = tm.f;
 		dom_string_unref(attr);
-        }
+	}
 
 	return parse_gradient_stops(linear, grad, state);
 }
@@ -273,20 +277,23 @@ struct grad_vector {
 };
 
 
-static void
-compute_gradient_vector(float *p,
-			unsigned int n,
-			struct svgtiny_parse_state *state,
-			struct svgtiny_parse_state_gradient *grad,
-			struct grad_vector *vector)
+static void compute_gradient_vector(float *p,
+				    unsigned int n,
+				    struct svgtiny_parse_state *state,
+				    struct svgtiny_parse_state_gradient *grad,
+				    struct grad_vector *vector)
 {
 	float object_x0, object_y0, object_x1, object_y1;
 
 	/* determine object bounding box */
 	svgtiny_path_bbox(p, n, &object_x0, &object_y0, &object_x1, &object_y1);
 #ifdef GRADIENT_DEBUG_VECTOR
-	fprintf(stderr, "object bbox: (%g %g) (%g %g)\n",
-		object_x0, object_y0, object_x1, object_y1);
+	fprintf(stderr,
+		"object bbox: (%g %g) (%g %g)\n",
+		object_x0,
+		object_y0,
+		object_x1,
+		object_y1);
 #endif
 
 	if (!grad->gradient_user_space_on_use) {
@@ -334,10 +341,13 @@ compute_gradient_vector(float *p,
 	}
 
 #ifdef GRADIENT_DEBUG_VECTOR
-	fprintf(stderr, "gradient vector: (%g %g) => (%g %g)\n",
-		vector->x0, vector->y0, vector->x1, vector->y1);
+	fprintf(stderr,
+		"gradient vector: (%g %g) => (%g %g)\n",
+		vector->x0,
+		vector->y0,
+		vector->x1,
+		vector->y1);
 #endif
-
 }
 
 
@@ -357,17 +367,19 @@ compute_grad_points(float *p,
 	float min_r = 1000;
 	float x0 = 0, y0 = 0, x0_trans, y0_trans, r0; /* segment start point */
 	float x1, y1, x1_trans, y1_trans, r1; /* segment end point */
-	float c0x = 0, c0y = 0, c1x = 0, c1y = 0; /* segment control points (beziers only) */
+	float c0x = 0, c0y = 0, c1x = 0,
+	      c1y = 0; /* segment control points (beziers only) */
 	unsigned int steps = 10;
 
 	gradient_dx = vector->x1 - vector->x0;
 	gradient_dy = vector->y1 - vector->y0;
 
-	gradient_norm_squared = gradient_dx * gradient_dx + gradient_dy * gradient_dy;
+	gradient_norm_squared = gradient_dx * gradient_dx +
+				gradient_dy * gradient_dy;
 
 	/* r, r0, r1 are distance along gradient vector */
-	for (j = 0; j != n; ) {
-		int segment_type = (int) p[j];
+	for (j = 0; j != n;) {
+		int segment_type = (int)p[j];
 		struct grad_point *point;
 		unsigned int z;
 
@@ -387,7 +399,7 @@ compute_grad_points(float *p,
 		y0_trans = trans->b * x0 + trans->d * y0 + trans->f;
 		r0 = ((x0_trans - vector->x0) * gradient_dx +
 		      (y0_trans - vector->y0) * gradient_dy) /
-			gradient_norm_squared;
+		     gradient_norm_squared;
 		point = svgtiny_list_push(pts);
 		if (!point) {
 			return svgtiny_OUT_OF_MEMORY;
@@ -422,11 +434,11 @@ compute_grad_points(float *p,
 		y1_trans = trans->b * x1 + trans->d * y1 + trans->f;
 		r1 = ((x1_trans - vector->x0) * gradient_dx +
 		      (y1_trans - vector->y0) * gradient_dy) /
-			gradient_norm_squared;
+		     gradient_norm_squared;
 
 		/* determine steps from change in r */
 
-		if(isnan(r0) || isnan(r1)) {
+		if (isnan(r0) || isnan(r1)) {
 			steps = 1;
 		} else {
 			steps = ceilf(fabsf(r1 - r0) / 0.05);
@@ -442,25 +454,23 @@ compute_grad_points(float *p,
 		for (z = 1; z != steps; z++) {
 			float t, x, y, x_trans, y_trans, r;
 			struct grad_point *point;
-			t = (float) z / (float) steps;
+			t = (float)z / (float)steps;
 			if (segment_type == svgtiny_PATH_BEZIER) {
-				x = (1-t) * (1-t) * (1-t) * x0 +
-					3 * t * (1-t) * (1-t) * c0x +
-					3 * t * t * (1-t) * c1x +
-					t * t * t * x1;
-				y = (1-t) * (1-t) * (1-t) * y0 +
-					3 * t * (1-t) * (1-t) * c0y +
-					3 * t * t * (1-t) * c1y +
-					t * t * t * y1;
+				x = (1 - t) * (1 - t) * (1 - t) * x0 +
+				    3 * t * (1 - t) * (1 - t) * c0x +
+				    3 * t * t * (1 - t) * c1x + t * t * t * x1;
+				y = (1 - t) * (1 - t) * (1 - t) * y0 +
+				    3 * t * (1 - t) * (1 - t) * c0y +
+				    3 * t * t * (1 - t) * c1y + t * t * t * y1;
 			} else {
-				x = (1-t) * x0 + t * x1;
-				y = (1-t) * y0 + t * y1;
+				x = (1 - t) * x0 + t * x1;
+				y = (1 - t) * y0 + t * y1;
 			}
 			x_trans = trans->a * x + trans->c * y + trans->e;
 			y_trans = trans->b * x + trans->d * y + trans->f;
 			r = ((x_trans - vector->x0) * gradient_dx +
 			     (y_trans - vector->y0) * gradient_dy) /
-				gradient_norm_squared;
+			    gradient_norm_squared;
 #ifdef GRADIENT_DEBUG
 			fprintf(stderr, "(%g %g [%g]) ", x, y, r);
 #endif
@@ -485,8 +495,11 @@ compute_grad_points(float *p,
 		y0 = y1;
 	}
 #ifdef GRADIENT_DEBUG
-	fprintf(stderr, "pts size %i, min_pt %i, min_r %.3f\n",
-		svgtiny_list_size(pts), *min_pt, min_r);
+	fprintf(stderr,
+		"pts size %i, min_pt %i, min_r %.3f\n",
+		svgtiny_list_size(pts),
+		*min_pt,
+		min_r);
 #endif
 	return svgtiny_OK;
 }
@@ -496,23 +509,27 @@ compute_grad_points(float *p,
 /**
  * show theoretical gradient strips for debugging
  */
-static svgtiny_code
-add_debug_gradient_strips(struct svgtiny_parse_state *state,
-			  struct grad_vector *vector)
+static svgtiny_code add_debug_gradient_strips(struct svgtiny_parse_state *state,
+					      struct grad_vector *vector)
 {
 	float gradient_dx = vector->x1 - vector->x0;
 	float gradient_dy = vector->y1 - vector->y0;
 	unsigned int strips = 10;
 	for (unsigned int z = 0; z != strips; z++) {
 		float f0, fd, strip_x0, strip_y0, strip_dx, strip_dy;
-		f0 = (float) z / (float) strips;
-		fd = (float) 1 / (float) strips;
+		f0 = (float)z / (float)strips;
+		fd = (float)1 / (float)strips;
 		strip_x0 = vector->x0 + f0 * gradient_dx;
 		strip_y0 = vector->y0 + f0 * gradient_dy;
 		strip_dx = fd * gradient_dx;
 		strip_dy = fd * gradient_dy;
-		fprintf(stderr, "strip %i vector: (%g %g) + (%g %g)\n",
-			z, strip_x0, strip_y0, strip_dx, strip_dy);
+		fprintf(stderr,
+			"strip %i vector: (%g %g) + (%g %g)\n",
+			z,
+			strip_x0,
+			strip_y0,
+			strip_dx,
+			strip_dy);
 
 		float *p = malloc(13 * sizeof p[0]);
 		if (!p)
@@ -565,9 +582,9 @@ add_debug_gradient_vertices(struct svgtiny_parse_state *state,
 		sprintf(text, "%i=%.3f", i, point->r);
 		shape->text = text;
 		shape->text_x = state->ctm.a * point->x +
-			state->ctm.c * point->y + state->ctm.e;
+				state->ctm.c * point->y + state->ctm.e;
 		shape->text_y = state->ctm.b * point->x +
-			state->ctm.d * point->y + state->ctm.f;
+				state->ctm.d * point->y + state->ctm.f;
 		shape->fill = svgtiny_RGB(0, 0, 0);
 		shape->stroke = svgtiny_TRANSPARENT;
 		state->diagram->shape_count++;
@@ -582,9 +599,8 @@ add_debug_gradient_vertices(struct svgtiny_parse_state *state,
 /**
  * render gradient vector for debugging
  */
-static svgtiny_code
-add_debug_gradient_vector(struct svgtiny_parse_state *state,
-			  struct grad_vector *vector)
+static svgtiny_code add_debug_gradient_vector(struct svgtiny_parse_state *state,
+					      struct grad_vector *vector)
 {
 	float *p = malloc(7 * sizeof p[0]);
 	if (!p)
@@ -629,8 +645,8 @@ struct grad_color {
 /**
  * initalise gradiant colour state to first stop
  */
-static inline void
-init_grad_color(struct svgtiny_parse_state_gradient *grad, struct grad_color* gc)
+static inline void init_grad_color(struct svgtiny_parse_state_gradient *grad,
+				   struct grad_color *gc)
 {
 	assert(2 <= grad->linear_gradient_stop_count);
 
@@ -651,7 +667,7 @@ init_grad_color(struct svgtiny_parse_state_gradient *grad, struct grad_color* gc
  * \param tgt_t distance along gradient vector to advance to
  */
 static inline svgtiny_colour
-advance_grad_color(struct grad_color* gc, float tgt_r)
+advance_grad_color(struct grad_color *gc, float tgt_r)
 {
 	svgtiny_colour current_color = 0;
 
@@ -681,11 +697,11 @@ advance_grad_color(struct grad_color* gc, float tgt_r)
 		current_color = gc->stops[gc->stop_count - 1].color;
 	} else {
 		float stop_r = (tgt_r - gc->last_stop_r) /
-			(gc->current_stop_r - gc->last_stop_r);
+			       (gc->current_stop_r - gc->last_stop_r);
 		current_color = svgtiny_RGB(
-			(int) ((1 - stop_r) * gc->red0   + stop_r * gc->red1),
-			(int) ((1 - stop_r) * gc->green0 + stop_r * gc->green1),
-			(int) ((1 - stop_r) * gc->blue0  + stop_r * gc->blue1));
+			(int)((1 - stop_r) * gc->red0 + stop_r * gc->red1),
+			(int)((1 - stop_r) * gc->green0 + stop_r * gc->green1),
+			(int)((1 - stop_r) * gc->blue0 + stop_r * gc->blue1));
 	}
 	return current_color;
 }
@@ -716,9 +732,15 @@ add_gradient_triangles(struct svgtiny_parse_state *state,
 		float *p;
 		struct svgtiny_shape *shape;
 #ifdef GRADIENT_DEBUG
-		fprintf(stderr, "triangle: t %i %.3f a %i %.3f b %i %.3f "
+		fprintf(stderr,
+			"triangle: t %i %.3f a %i %.3f b %i %.3f "
 			"mean_r %.3f\n",
-			t, pts[t].r, a, pts[a].r, b, pts[b].r,
+			t,
+			pts[t].r,
+			a,
+			pts[a].r,
+			b,
+			pts[b].r,
 			mean_r);
 #endif
 		p = malloc(10 * sizeof p[0]);
@@ -776,14 +798,15 @@ add_gradient_lines(struct svgtiny_parse_state *state,
 	struct grad_point *point_b;
 	int dir;
 
-	for (dir=0;dir <2;dir++) {
+	for (dir = 0; dir < 2; dir++) {
 		init_grad_color(grad, &gc);
 
 		point_a = svgtiny_list_get(pts, min_pt);
-		if (dir==0) {
+		if (dir == 0) {
 			b = (min_pt + 1) % svgtiny_list_size(pts);
 		} else {
-			b = min_pt == 0 ? svgtiny_list_size(pts) - 1 : min_pt - 1;
+			b = min_pt == 0 ? svgtiny_list_size(pts) - 1
+					: min_pt - 1;
 		}
 		point_b = svgtiny_list_get(pts, b);
 		while (point_a->r <= point_b->r) {
@@ -796,8 +819,14 @@ add_gradient_lines(struct svgtiny_parse_state *state,
 				"line: a (x:%.3f y:%.3f r:%.3f) "
 				"b (i:%i x:%.3f y:%.3f r:%.3f) "
 				"mean_r %.3f\n",
-				point_a->x,point_a->y,point_a->r,
-				b, point_b->x,point_b->y,point_b->r, mean_r);
+				point_a->x,
+				point_a->y,
+				point_a->r,
+				b,
+				point_b->x,
+				point_b->y,
+				point_b->r,
+				mean_r);
 #endif
 
 			p = malloc(7 * sizeof p[0]);
@@ -825,13 +854,12 @@ add_gradient_lines(struct svgtiny_parse_state *state,
 			state->diagram->shape_count++;
 
 			point_a = point_b;
-			if (dir==0) {
+			if (dir == 0) {
 				b = (b + 1) % svgtiny_list_size(pts);
 			} else {
 				b = b == 0 ? svgtiny_list_size(pts) - 1 : b - 1;
 			}
 			point_b = svgtiny_list_get(pts, b);
-
 		}
 	}
 
@@ -841,10 +869,9 @@ add_gradient_lines(struct svgtiny_parse_state *state,
 /**
  * update a gradient from a dom element
  */
-svgtiny_code
-svgtiny_update_gradient(dom_element *grad_element,
-			struct svgtiny_parse_state *state,
-			struct svgtiny_parse_state_gradient *grad)
+svgtiny_code svgtiny_update_gradient(dom_element *grad_element,
+				     struct svgtiny_parse_state *state,
+				     struct svgtiny_parse_state_gradient *grad)
 {
 	dom_string *name;
 	dom_exception exc;
@@ -884,7 +911,8 @@ svgtiny_update_gradient(dom_element *grad_element,
 	dom_string_unref(name);
 
 #ifdef GRADIENT_DEBUG
-	fprintf(stderr, "linear_gradient_stop_count %i\n",
+	fprintf(stderr,
+		"linear_gradient_stop_count %i\n",
 		grad->linear_gradient_stop_count);
 #endif
 
@@ -896,10 +924,9 @@ svgtiny_update_gradient(dom_element *grad_element,
  * Add a path with a linear gradient stroke to the diagram.
  *
  */
-svgtiny_code
-svgtiny_gradient_add_stroke_path(float *p,
-				 unsigned int n,
-				 struct svgtiny_parse_state *state)
+svgtiny_code svgtiny_gradient_add_stroke_path(float *p,
+					      unsigned int n,
+					      struct svgtiny_parse_state *state)
 {
 	struct grad_vector vector; /* gradient vector */
 	struct svgtiny_transformation_matrix trans;
@@ -928,7 +955,7 @@ svgtiny_gradient_add_stroke_path(float *p,
 	svgtiny_invert_matrix(&grad->gradient_transform, &trans);
 
 	/* compute points on the path for vertices */
-	pts = svgtiny_list_create(sizeof (struct grad_point));
+	pts = svgtiny_list_create(sizeof(struct grad_point));
 	if (!pts) {
 		return svgtiny_OUT_OF_MEMORY;
 	}
@@ -939,10 +966,10 @@ svgtiny_gradient_add_stroke_path(float *p,
 	}
 
 	/* There must be at least a single point for the gradient */
-        if (svgtiny_list_size(pts) == 0) {
+	if (svgtiny_list_size(pts) == 0) {
 		svgtiny_list_free(pts);
 		return svgtiny_OK;
-        }
+	}
 
 	/* render lines */
 	res = add_gradient_lines(state, grad, pts, min_pt);
@@ -956,10 +983,9 @@ svgtiny_gradient_add_stroke_path(float *p,
 /**
  * Add a path with a linear gradient fill to the diagram.
  */
-svgtiny_code
-svgtiny_gradient_add_fill_path(float *p,
-			       unsigned int n,
-			       struct svgtiny_parse_state *state)
+svgtiny_code svgtiny_gradient_add_fill_path(float *p,
+					    unsigned int n,
+					    struct svgtiny_parse_state *state)
 {
 	struct grad_vector vector; /* gradient vector */
 	struct svgtiny_transformation_matrix trans;
@@ -996,13 +1022,18 @@ svgtiny_gradient_add_fill_path(float *p,
 	/* invert gradient transform for applying to vertices */
 	svgtiny_invert_matrix(&grad->gradient_transform, &trans);
 #ifdef GRADIENT_DEBUG
-	fprintf(stderr, "inverse transform %g %g %g %g %g %g\n",
-		trans[0], trans[1], trans[2], trans[3],
-		trans[4], trans[5]);
+	fprintf(stderr,
+		"inverse transform %g %g %g %g %g %g\n",
+		trans[0],
+		trans[1],
+		trans[2],
+		trans[3],
+		trans[4],
+		trans[5]);
 #endif
 
 	/* compute points on the path for triangle vertices */
-	pts = svgtiny_list_create(sizeof (struct grad_point));
+	pts = svgtiny_list_create(sizeof(struct grad_point));
 	if (!pts) {
 		return svgtiny_OUT_OF_MEMORY;
 	}
@@ -1012,11 +1043,11 @@ svgtiny_gradient_add_fill_path(float *p,
 		return res;
 	}
 
-        /* There must be at least a single point for the gradient */
-        if (svgtiny_list_size(pts) == 0) {
+	/* There must be at least a single point for the gradient */
+	if (svgtiny_list_size(pts) == 0) {
 		svgtiny_list_free(pts);
 		return svgtiny_OK;
-        }
+	}
 
 	/* render triangles */
 	res = add_gradient_triangles(state, grad, pts, min_pt);

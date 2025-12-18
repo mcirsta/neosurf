@@ -12,11 +12,11 @@
 #include <inttypes.h>
 
 #ifndef max
-#define max(a,b) ((a)>(b)?(a):(b))
+#define max(a, b) ((a) > (b) ? (a) : (b))
 #endif
 
 #ifndef min
-#define min(a,b) ((a)<(b)?(a):(b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
 #ifndef SLEN
@@ -29,9 +29,8 @@
 #endif
 
 void *myrealloc(void *ptr, size_t len, void *pw);
-void mymsg(uint32_t severity, void *ctx, const char *msg, ...); 
+void mymsg(uint32_t severity, void *ctx, const char *msg, ...);
 
 char *domts_strndup(const char *s, size_t len);
 
 #endif
-

@@ -31,8 +31,8 @@
 struct http_parameter {
 	http__item base;
 
-	lwc_string *name;		/**< Parameter name */
-	lwc_string *value;		/**< Parameter value */
+	lwc_string *name; /**< Parameter name */
+	lwc_string *value; /**< Parameter value */
 };
 
 /**
@@ -42,7 +42,7 @@ struct http_parameter {
  */
 static void http_destroy_parameter(http__item *item)
 {
-	http_parameter *self = (http_parameter *) item;
+	http_parameter *self = (http_parameter *)item;
 
 	lwc_string_unref(self->name);
 	lwc_string_unref(self->value);
@@ -106,7 +106,7 @@ nserror http__parse_parameter(const char **input, http__item **parameter)
 	param->name = name;
 	param->value = value;
 
-	*parameter = (http__item *) param;
+	*parameter = (http__item *)param;
 	*input = pos;
 
 	return NSERROR_OK;
@@ -114,16 +114,18 @@ nserror http__parse_parameter(const char **input, http__item **parameter)
 
 /* See parameter.h for documentation */
 nserror http_parameter_list_find_item(const http_parameter *list,
-		lwc_string *name, lwc_string **value)
+				      lwc_string *name,
+				      lwc_string **value)
 {
 	bool match;
 
 	while (list != NULL) {
-		if (lwc_string_caseless_isequal(name, list->name, 
-				&match) == lwc_error_ok && match)
+		if (lwc_string_caseless_isequal(name, list->name, &match) ==
+			    lwc_error_ok &&
+		    match)
 			break;
 
-		list = (http_parameter *) list->base.next;
+		list = (http_parameter *)list->base.next;
 	}
 
 	if (list == NULL)
@@ -136,7 +138,8 @@ nserror http_parameter_list_find_item(const http_parameter *list,
 
 /* See parameter.h for documentation */
 const http_parameter *http_parameter_list_iterate(const http_parameter *cur,
-		lwc_string **name, lwc_string **value)
+						  lwc_string **name,
+						  lwc_string **value)
 {
 	if (cur == NULL)
 		return NULL;
@@ -144,7 +147,7 @@ const http_parameter *http_parameter_list_iterate(const http_parameter *cur,
 	*name = lwc_string_ref(cur->name);
 	*value = lwc_string_ref(cur->value);
 
-	return (http_parameter *) cur->base.next;
+	return (http_parameter *)cur->base.next;
 }
 
 /* See parameter.h for documentation */
@@ -152,4 +155,3 @@ void http_parameter_list_destroy(http_parameter *list)
 {
 	http__item_list_destroy(list);
 }
-

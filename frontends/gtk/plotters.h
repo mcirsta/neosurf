@@ -37,4 +37,3 @@ void nsgtk_set_colour(colour c);
 void nsgtk_plot_caret(int x, int y, int h);
 
 #endif /* NETSURF_GTK_PLOTTERS_H */
-

@@ -49,7 +49,7 @@ nserror nsgtk_scaffolding_destroy_all(void);
 /**
  * Update scaffolding window when throbber state changes
  */
-nserror nsgtk_scaffolding_throbber(struct gui_window* gw, bool active);
+nserror nsgtk_scaffolding_throbber(struct gui_window *gw, bool active);
 
 /**
  * open the toolbar context menu
@@ -106,10 +106,12 @@ struct gui_window *nsgtk_scaffolding_top_level(struct nsgtk_scaffolding *g);
 /**
  * Iterate through available scaffolding.
  */
-struct nsgtk_scaffolding *nsgtk_scaffolding_iterate(struct nsgtk_scaffolding *g);
+struct nsgtk_scaffolding *
+nsgtk_scaffolding_iterate(struct nsgtk_scaffolding *g);
 
 
-void nsgtk_scaffolding_toggle_search_bar_visibility(struct nsgtk_scaffolding *g);
+void nsgtk_scaffolding_toggle_search_bar_visibility(
+	struct nsgtk_scaffolding *g);
 
 /**
  * Set the current active top level gui window.
@@ -145,7 +147,9 @@ void nsgtk_scaffolding_set_sensitivity(struct nsgtk_scaffolding *g);
  * \param x The x co-ordinate.
  * \param y The y co-ordinate.
  */
-void nsgtk_scaffolding_context_menu(struct nsgtk_scaffolding *g, gdouble x, gdouble y);
+void nsgtk_scaffolding_context_menu(struct nsgtk_scaffolding *g,
+				    gdouble x,
+				    gdouble y);
 
 /**
  * set the title in the window
@@ -161,6 +165,7 @@ void nsgtk_scaffolding_set_title(struct gui_window *gw, const char *title);
  * \param notebook The notebook to search for.
  * \return The scaffolding containing the notebook or NULL if not found
  */
-struct nsgtk_scaffolding *nsgtk_scaffolding_from_notebook(GtkNotebook *notebook);
+struct nsgtk_scaffolding *
+nsgtk_scaffolding_from_notebook(GtkNotebook *notebook);
 
 #endif /* NETSURF_GTK_SCAFFOLDING_H */

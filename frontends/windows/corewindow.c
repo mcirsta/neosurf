@@ -53,8 +53,7 @@ static const char windowclassname_corewindow[] = "nswscorewindowwindow";
 /**
  * update the scrollbar visibility and size
  */
-static void
-update_scrollbars(struct nsw32_corewindow *nsw32_cw)
+static void update_scrollbars(struct nsw32_corewindow *nsw32_cw)
 {
 	RECT rc;
 	SCROLLINFO si;
@@ -106,7 +105,6 @@ update_scrollbars(struct nsw32_corewindow *nsw32_cw)
 			ShowScrollBar(nsw32_cw->hWnd, SB_BOTH, FALSE);
 		}
 	}
-
 }
 
 
@@ -147,10 +145,9 @@ nsw32_corewindow_paint(struct nsw32_corewindow *nsw32_cw, HWND hwnd)
 	return 0;
 }
 
-static LRESULT
-nsw32_corewindow_vscroll(struct nsw32_corewindow *nsw32_cw,
-			 HWND hwnd,
-			 WPARAM wparam)
+static LRESULT nsw32_corewindow_vscroll(struct nsw32_corewindow *nsw32_cw,
+					HWND hwnd,
+					WPARAM wparam)
 {
 	SCROLLINFO si; /* current scroll information */
 	SCROLLINFO usi; /* updated scroll infomation for scrollwindowex */
@@ -162,7 +159,7 @@ nsw32_corewindow_vscroll(struct nsw32_corewindow *nsw32_cw,
 	GetScrollInfo(hwnd, SB_VERT, &si);
 	usi = si;
 
-	switch (LOWORD(wparam))	{
+	switch (LOWORD(wparam)) {
 	case SB_TOP:
 		usi.nPos = si.nMin;
 		break;
@@ -222,10 +219,9 @@ nsw32_corewindow_vscroll(struct nsw32_corewindow *nsw32_cw,
 }
 
 
-static LRESULT
-nsw32_corewindow_hscroll(struct nsw32_corewindow *nsw32_cw,
-			 HWND hwnd,
-			 WPARAM wparam)
+static LRESULT nsw32_corewindow_hscroll(struct nsw32_corewindow *nsw32_cw,
+					HWND hwnd,
+					WPARAM wparam)
 {
 	SCROLLINFO si; /* current scroll information */
 	SCROLLINFO usi; /* updated scroll infomation for scrollwindowex */
@@ -237,7 +233,7 @@ nsw32_corewindow_hscroll(struct nsw32_corewindow *nsw32_cw,
 	GetScrollInfo(hwnd, SB_HORZ, &si);
 	usi = si;
 
-	switch (LOWORD(wparam))	{
+	switch (LOWORD(wparam)) {
 	case SB_LINELEFT:
 		usi.nPos -= 30;
 		break;
@@ -284,11 +280,11 @@ nsw32_corewindow_hscroll(struct nsw32_corewindow *nsw32_cw,
 }
 
 
-static LRESULT
-nsw32_corewindow_mousedown(struct nsw32_corewindow *nsw32_cw,
-			 HWND hwnd,
-			   int x, int y,
-			   browser_mouse_state button)
+static LRESULT nsw32_corewindow_mousedown(struct nsw32_corewindow *nsw32_cw,
+					  HWND hwnd,
+					  int x,
+					  int y,
+					  browser_mouse_state button)
 {
 	SCROLLINFO si; /* scroll information */
 
@@ -304,11 +300,11 @@ nsw32_corewindow_mousedown(struct nsw32_corewindow *nsw32_cw,
 	return 0;
 }
 
-static LRESULT
-nsw32_corewindow_mouseup(struct nsw32_corewindow *nsw32_cw,
-			 HWND hwnd,
-			 int x, int y,
-			 browser_mouse_state button)
+static LRESULT nsw32_corewindow_mouseup(struct nsw32_corewindow *nsw32_cw,
+					HWND hwnd,
+					int x,
+					int y,
+					browser_mouse_state button)
 {
 	SCROLLINFO si; /* scroll information */
 
@@ -324,8 +320,7 @@ nsw32_corewindow_mouseup(struct nsw32_corewindow *nsw32_cw,
 	return 0;
 }
 
-static LRESULT
-nsw32_corewindow_close(struct nsw32_corewindow *nsw32_cw)
+static LRESULT nsw32_corewindow_close(struct nsw32_corewindow *nsw32_cw)
 {
 	nsw32_cw->close(nsw32_cw);
 	return 0;
@@ -339,11 +334,10 @@ nsw32_corewindow_close(struct nsw32_corewindow *nsw32_cw)
  * \param wparam The w win32 parameter
  * \param lparam The l win32 parameter
  */
-static LRESULT CALLBACK
-nsw32_window_corewindow_event_callback(HWND hwnd,
-				    UINT msg,
-				    WPARAM wparam,
-				    LPARAM lparam)
+static LRESULT CALLBACK nsw32_window_corewindow_event_callback(HWND hwnd,
+							       UINT msg,
+							       WPARAM wparam,
+							       LPARAM lparam)
 {
 	struct nsw32_corewindow *nsw32_cw;
 
@@ -364,25 +358,31 @@ nsw32_window_corewindow_event_callback(HWND hwnd,
 			return nsw32_corewindow_hscroll(nsw32_cw, hwnd, wparam);
 
 		case WM_LBUTTONDOWN:
-			return nsw32_corewindow_mousedown(nsw32_cw, hwnd,
-							  GET_X_LPARAM(lparam),
-							  GET_Y_LPARAM(lparam),
-							  BROWSER_MOUSE_PRESS_1);
+			return nsw32_corewindow_mousedown(
+				nsw32_cw,
+				hwnd,
+				GET_X_LPARAM(lparam),
+				GET_Y_LPARAM(lparam),
+				BROWSER_MOUSE_PRESS_1);
 
 		case WM_RBUTTONDOWN:
-			return nsw32_corewindow_mousedown(nsw32_cw, hwnd,
-							   GET_X_LPARAM(lparam),
-							   GET_Y_LPARAM(lparam),
-							   BROWSER_MOUSE_PRESS_2);
+			return nsw32_corewindow_mousedown(
+				nsw32_cw,
+				hwnd,
+				GET_X_LPARAM(lparam),
+				GET_Y_LPARAM(lparam),
+				BROWSER_MOUSE_PRESS_2);
 
 		case WM_LBUTTONUP:
-			return nsw32_corewindow_mouseup(nsw32_cw, hwnd,
+			return nsw32_corewindow_mouseup(nsw32_cw,
+							hwnd,
 							GET_X_LPARAM(lparam),
 							GET_Y_LPARAM(lparam),
 							BROWSER_MOUSE_CLICK_1);
 
 		case WM_RBUTTONUP:
-			return nsw32_corewindow_mouseup(nsw32_cw, hwnd,
+			return nsw32_corewindow_mouseup(nsw32_cw,
+							hwnd,
 							GET_X_LPARAM(lparam),
 							GET_Y_LPARAM(lparam),
 							BROWSER_MOUSE_CLICK_2);
@@ -457,16 +457,14 @@ nsw32_cw_update_size(struct core_window *cw, int width, int height)
 }
 
 
-static nserror
-nsw32_cw_set_scroll(struct core_window *cw, int x, int y)
+static nserror nsw32_cw_set_scroll(struct core_window *cw, int x, int y)
 {
 	/** /todo call setscroll apropriately */
 	return NSERROR_OK;
 }
 
 
-static nserror
-nsw32_cw_get_scroll(const struct core_window *cw, int *x, int *y)
+static nserror nsw32_cw_get_scroll(const struct core_window *cw, int *x, int *y)
 {
 	/** /todo call getscroll apropriately */
 	return NSERROR_NOT_IMPLEMENTED;
@@ -480,9 +478,9 @@ nsw32_cw_get_scroll(const struct core_window *cw, int *x, int *y)
  * \param[out] width to be set to viewport width in px
  * \param[out] height to be set to viewport height in px
  */
-static nserror
-nsw32_cw_get_window_dimensions(const struct core_window *cw,
-		int *width, int *height)
+static nserror nsw32_cw_get_window_dimensions(const struct core_window *cw,
+					      int *width,
+					      int *height)
 {
 	struct nsw32_corewindow *nsw32_cw = (struct nsw32_corewindow *)cw;
 
@@ -509,16 +507,14 @@ struct core_window_table nsw32_cw_cb_table = {
 	.set_scroll = nsw32_cw_set_scroll,
 	.get_scroll = nsw32_cw_get_scroll,
 	.get_dimensions = nsw32_cw_get_window_dimensions,
-	.drag_status = nsw32_cw_drag_status
-};
+	.drag_status = nsw32_cw_drag_status};
 
 struct core_window_table *win32_core_window_table = &nsw32_cw_cb_table;
 
 /* exported function documented nsw32/corewindow.h */
-nserror
-nsw32_corewindow_init(HINSTANCE hInstance,
-		      HWND hWndParent,
-		      struct nsw32_corewindow *nsw32_cw)
+nserror nsw32_corewindow_init(HINSTANCE hInstance,
+			      HWND hWndParent,
+			      struct nsw32_corewindow *nsw32_cw)
 {
 	DWORD dwStyle;
 
@@ -530,16 +526,10 @@ nsw32_corewindow_init(HINSTANCE hInstance,
 	nsw32_cw->content_height = -1;
 
 	if (hWndParent != NULL) {
-		dwStyle = WS_CHILDWINDOW |
-			WS_VISIBLE |
-			CS_DBLCLKS;
+		dwStyle = WS_CHILDWINDOW | WS_VISIBLE | CS_DBLCLKS;
 	} else {
-		dwStyle = WS_OVERLAPPEDWINDOW |
-			WS_HSCROLL |
-			WS_VSCROLL |
-			WS_CLIPSIBLINGS |
-			WS_CLIPCHILDREN |
-			CS_DBLCLKS;
+		dwStyle = WS_OVERLAPPEDWINDOW | WS_HSCROLL | WS_VSCROLL |
+			  WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CS_DBLCLKS;
 	}
 
 	NSLOG(neosurf, INFO, "creating hInstance %p core window", hInstance);

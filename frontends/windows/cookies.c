@@ -69,10 +69,10 @@ nsw32_cookie_key(struct nsw32_corewindow *nsw32_cw, uint32_t nskey)
  * \param y location of event
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror
-nsw32_cookie_mouse(struct nsw32_corewindow *nsw32_cw,
-		   browser_mouse_state mouse_state,
-		   int x, int y)
+static nserror nsw32_cookie_mouse(struct nsw32_corewindow *nsw32_cw,
+				  browser_mouse_state mouse_state,
+				  int x,
+				  int y)
 {
 	cookie_manager_mouse_action(mouse_state, x, y);
 
@@ -89,17 +89,14 @@ nsw32_cookie_mouse(struct nsw32_corewindow *nsw32_cw,
  * \param r The rectangle of the window that needs updating.
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror
-nsw32_cookie_draw(struct nsw32_corewindow *nsw32_cw,
-		  int scrollx,
-		  int scrolly,
-		  struct rect *r)
+static nserror nsw32_cookie_draw(struct nsw32_corewindow *nsw32_cw,
+				 int scrollx,
+				 int scrolly,
+				 struct rect *r)
 {
-	struct redraw_context ctx = {
-		.interactive = true,
-		.background_images = true,
-		.plot = &win_plotters
-	};
+	struct redraw_context ctx = {.interactive = true,
+				     .background_images = true,
+				     .plot = &win_plotters};
 
 	cookie_manager_redraw(-scrollx, -scrolly, r, &ctx);
 
@@ -113,8 +110,7 @@ nsw32_cookie_draw(struct nsw32_corewindow *nsw32_cw,
  * \param nsw32_cw The nsw32 core window structure.
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror
-nsw32_cookie_close(struct nsw32_corewindow *nsw32_cw)
+static nserror nsw32_cookie_close(struct nsw32_corewindow *nsw32_cw)
 {
 	ShowWindow(nsw32_cw->hWnd, SW_HIDE);
 

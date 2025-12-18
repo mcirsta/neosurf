@@ -39,17 +39,22 @@ bool fetch_about_set_http_code(struct fetch_about_context *ctx, long code);
  * \param fmt The format specifier of the header
  * \return true if the fetch has been aborted else false
  */
-bool fetch_about_send_header(struct fetch_about_context *ctx, const char *fmt, ...);
+bool fetch_about_send_header(struct fetch_about_context *ctx,
+			     const char *fmt,
+			     ...);
 
 /**
  * send data on the about response
  */
-nserror fetch_about_senddata(struct fetch_about_context *ctx, const uint8_t *data, size_t data_len);
+nserror fetch_about_senddata(struct fetch_about_context *ctx,
+			     const uint8_t *data,
+			     size_t data_len);
 
 /**
  * send formatted data on the about response
  */
-nserror fetch_about_ssenddataf(struct fetch_about_context *ctx, const char *fmt, ...);
+nserror
+fetch_about_ssenddataf(struct fetch_about_context *ctx, const char *fmt, ...);
 
 /**
  * complete the about fetch response
@@ -72,7 +77,8 @@ struct nsurl *fetch_about_get_url(struct fetch_about_context *ctx);
 /**
  * get multipart fetch data
  */
-const struct fetch_multipart_data *fetch_about_get_multipart(struct fetch_about_context *ctx);
+const struct fetch_multipart_data *
+fetch_about_get_multipart(struct fetch_about_context *ctx);
 
 
 /**

@@ -14,10 +14,13 @@
  * used to quote in values.
  *
  * Examples:
- * list_style_image:CSS_PROP_LIST_STYLE_IMAGE IDENT:( INHERIT: NONE:0,LIST_STYLE_IMAGE_NONE IDENT:) URI:LIST_STYLE_IMAGE_URI
+ * list_style_image:CSS_PROP_LIST_STYLE_IMAGE IDENT:( INHERIT:
+ * NONE:0,LIST_STYLE_IMAGE_NONE IDENT:) URI:LIST_STYLE_IMAGE_URI
  *
- * list_style_position:CSS_PROP_LIST_STYLE_POSITION IDENT:( INHERIT: INSIDE:0,LIST_STYLE_POSITION_INSIDE OUTSIDE:0,LIST_STYLE_POSITION_OUTSIDE IDENT:)
-*/
+ * list_style_position:CSS_PROP_LIST_STYLE_POSITION IDENT:( INHERIT:
+ * INSIDE:0,LIST_STYLE_POSITION_INSIDE OUTSIDE:0,LIST_STYLE_POSITION_OUTSIDE
+ * IDENT:)
+ */
 
 typedef enum {
 	CALC_ANY,
@@ -70,15 +73,17 @@ struct keyval *get_keyval(char **pos)
 	*pos += kvlen; /* update position */
 
 	/* skip spaces */
-	while ((*pos[0] != 0) &&
-	       (*pos[0] == ' ')) {
+	while ((*pos[0] != 0) && (*pos[0] == ' ')) {
 		(*pos)++;
 	}
 
 	return nkeyval;
 }
 
-void output_header(FILE *outputf, const char *descriptor, struct keyval *parser_id, bool is_generic)
+void output_header(FILE *outputf,
+		   const char *descriptor,
+		   struct keyval *parser_id,
+		   bool is_generic)
 {
 	fprintf(outputf,
 		"/*\n"
@@ -122,13 +127,19 @@ void output_header(FILE *outputf, const char *descriptor, struct keyval *parser_
 		"{\n",
 		descriptor,
 		parser_id->key,
-		is_generic ? " * \\param op	 Bytecode OpCode for CSS property to encode\n" : "",
+		is_generic
+			? " * \\param op	 Bytecode OpCode for CSS property to encode\n"
+			: "",
 		parser_id->key,
 		is_generic ? ", enum css_properties_e op" : "");
 }
 
 
-void output_token_type_check(FILE *outputf, bool do_token_check, struct keyval_list *IDENT, struct keyval_list *URI, struct keyval_list *NUMBER)
+void output_token_type_check(FILE *outputf,
+			     bool do_token_check,
+			     struct keyval_list *IDENT,
+			     struct keyval_list *URI,
+			     struct keyval_list *NUMBER)
 {
 	fprintf(outputf,
 		"	int32_t orig_ctx = *ctx;\n"
@@ -142,24 +153,26 @@ void output_token_type_check(FILE *outputf, bool do_token_check, struct keyval_l
 
 	if (do_token_check) {
 		bool prev = false; /* there was a previous check - add && */
-		fprintf(outputf," || (");
+		fprintf(outputf, " || (");
 
 		if (IDENT->count > 0) {
-			fprintf(outputf,"(token->type != CSS_TOKEN_IDENT)");
+			fprintf(outputf, "(token->type != CSS_TOKEN_IDENT)");
 			prev = true;
 		}
 		if (URI->count > 0) {
-			if (prev) fprintf(outputf," && ");
-			fprintf(outputf,"(token->type != CSS_TOKEN_URI)");
+			if (prev)
+				fprintf(outputf, " && ");
+			fprintf(outputf, "(token->type != CSS_TOKEN_URI)");
 			prev = true;
 		}
 		if (NUMBER->count > 0) {
-			if (prev) fprintf(outputf," && ");
-			fprintf(outputf,"(token->type != CSS_TOKEN_NUMBER)");
+			if (prev)
+				fprintf(outputf, " && ");
+			fprintf(outputf, "(token->type != CSS_TOKEN_NUMBER)");
 			prev = true;
 		}
 
-		fprintf(outputf,")");
+		fprintf(outputf, ")");
 	}
 
 	fprintf(outputf,
@@ -169,58 +182,61 @@ void output_token_type_check(FILE *outputf, bool do_token_check, struct keyval_l
 		"\t}\n\n\t");
 }
 
-void output_ident(FILE *outputf, bool only_ident, struct keyval *parseid, struct keyval_list *IDENT)
+void output_ident(FILE *outputf,
+		  bool only_ident,
+		  struct keyval *parseid,
+		  struct keyval_list *IDENT)
 {
 	int ident_count;
 
-	for (ident_count = 0 ; ident_count < IDENT->count; ident_count++) {
+	for (ident_count = 0; ident_count < IDENT->count; ident_count++) {
 		struct keyval *ckv = IDENT->item[ident_count];
 
-		fprintf(outputf,
-			"if (");
+		fprintf(outputf, "if (");
 		if (!only_ident) {
 			fprintf(outputf,
-			"(token->type == CSS_TOKEN_IDENT) &&\n\t\t\t");
+				"(token->type == CSS_TOKEN_IDENT) &&\n\t\t\t");
 		}
 		fprintf(outputf,
 			"(lwc_string_caseless_isequal(\n"
 			"\t\t\ttoken->idata, c->strings[%s],\n"
 			"\t\t\t&match) == lwc_error_ok && match)) {\n",
 			ckv->key);
-		if (strcmp(ckv->key,"INHERIT") == 0) {
-		fprintf(outputf,
-			"\t\terror = css_stylesheet_style_inherit(result,\n"
-			"\t\t\t\t%s);\n\n",
-			parseid->val);
-		} else if (strcmp(ckv->key,"INITIAL") == 0) {
-		fprintf(outputf,
-			"\t\terror = css_stylesheet_style_initial(result,\n"
-			"\t\t\t\t%s);\n\n",
-			parseid->val);
-		} else if (strcmp(ckv->key,"REVERT") == 0) {
-		fprintf(outputf,
-			"\t\terror = css_stylesheet_style_revert(result,\n"
-			"\t\t\t\t%s);\n\n",
-			parseid->val);
-		} else if (strcmp(ckv->key,"UNSET") == 0) {
-		fprintf(outputf,
-			"\t\terror = css_stylesheet_style_unset(result,\n"
-			"\t\t\t\t%s);\n\n",
-			parseid->val);
+		if (strcmp(ckv->key, "INHERIT") == 0) {
+			fprintf(outputf,
+				"\t\terror = css_stylesheet_style_inherit(result,\n"
+				"\t\t\t\t%s);\n\n",
+				parseid->val);
+		} else if (strcmp(ckv->key, "INITIAL") == 0) {
+			fprintf(outputf,
+				"\t\terror = css_stylesheet_style_initial(result,\n"
+				"\t\t\t\t%s);\n\n",
+				parseid->val);
+		} else if (strcmp(ckv->key, "REVERT") == 0) {
+			fprintf(outputf,
+				"\t\terror = css_stylesheet_style_revert(result,\n"
+				"\t\t\t\t%s);\n\n",
+				parseid->val);
+		} else if (strcmp(ckv->key, "UNSET") == 0) {
+			fprintf(outputf,
+				"\t\terror = css_stylesheet_style_unset(result,\n"
+				"\t\t\t\t%s);\n\n",
+				parseid->val);
 		} else {
-		fprintf(outputf,
-			"\t\terror = css__stylesheet_style_appendOPV(result,\n"
-			"\t\t\t\t%s,\n"
-			"\t\t\t\t%s);\n\n",
-			parseid->val,
-			ckv->val);
+			fprintf(outputf,
+				"\t\terror = css__stylesheet_style_appendOPV(result,\n"
+				"\t\t\t\t%s,\n"
+				"\t\t\t\t%s);\n\n",
+				parseid->val,
+				ckv->val);
 		}
-		fprintf(outputf,
-			"\t} else ");
+		fprintf(outputf, "\t} else ");
 	}
 }
 
-void output_uri(FILE *outputf, struct keyval *parseid, struct keyval_list *kvlist)
+void output_uri(FILE *outputf,
+		struct keyval *parseid,
+		struct keyval_list *kvlist)
 {
 	struct keyval *ckv = kvlist->item[0];
 
@@ -255,7 +271,9 @@ void output_uri(FILE *outputf, struct keyval *parseid, struct keyval_list *kvlis
 		ckv->val);
 }
 
-void output_number(FILE *outputf, struct keyval *parseid, struct keyval_list *kvlist)
+void output_number(FILE *outputf,
+		   struct keyval *parseid,
+		   struct keyval_list *kvlist)
 {
 	struct keyval *ckv = kvlist->item[0];
 	int ident_count;
@@ -272,7 +290,7 @@ void output_number(FILE *outputf, struct keyval *parseid, struct keyval_list *kv
 		"\t\t}\n",
 		ckv->key);
 
-	for (ident_count = 1 ; ident_count < kvlist->count; ident_count++) {
+	for (ident_count = 1; ident_count < kvlist->count; ident_count++) {
 		struct keyval *ulkv = kvlist->item[ident_count];
 
 		if (strcmp(ulkv->key, "RANGE") == 0) {
@@ -283,7 +301,6 @@ void output_number(FILE *outputf, struct keyval *parseid, struct keyval_list *kv
 				"\t\t}\n\n",
 				ulkv->val);
 		}
-
 	}
 
 	fprintf(outputf,
@@ -298,7 +315,9 @@ void output_number(FILE *outputf, struct keyval *parseid, struct keyval_list *kv
 		ckv->val);
 }
 
-void output_color(FILE *outputf, struct keyval *parseid, struct keyval_list *kvlist)
+void output_color(FILE *outputf,
+		  struct keyval *parseid,
+		  struct keyval_list *kvlist)
 {
 	fprintf(outputf,
 		"{\n"
@@ -322,7 +341,9 @@ void output_color(FILE *outputf, struct keyval *parseid, struct keyval_list *kvl
 		parseid->val);
 }
 
-void output_calc(FILE *outputf, struct keyval *parseid, struct keyval_list *kvlist)
+void output_calc(FILE *outputf,
+		 struct keyval *parseid,
+		 struct keyval_list *kvlist)
 {
 	struct keyval *ckv = kvlist->item[0];
 	const char *kind;
@@ -342,11 +363,12 @@ void output_calc(FILE *outputf, struct keyval *parseid, struct keyval_list *kvli
 		"\t} else ",
 		parseid->val,
 		ckv->val,
-		kind
-	);
+		kind);
 }
 
-void output_length_unit(FILE *outputf, struct keyval *parseid, struct keyval_list *kvlist)
+void output_length_unit(FILE *outputf,
+			struct keyval *parseid,
+			struct keyval_list *kvlist)
 {
 	struct keyval *ckv = kvlist->item[0];
 	int ident_count;
@@ -363,7 +385,7 @@ void output_length_unit(FILE *outputf, struct keyval *parseid, struct keyval_lis
 		"\t\t}\n\n",
 		ckv->key);
 
-	for (ident_count = 1 ; ident_count < kvlist->count; ident_count++) {
+	for (ident_count = 1; ident_count < kvlist->count; ident_count++) {
 		struct keyval *ulkv = kvlist->item[ident_count];
 
 		if (strcmp(ulkv->key, "ALLOW") == 0) {
@@ -395,7 +417,6 @@ void output_length_unit(FILE *outputf, struct keyval *parseid, struct keyval_lis
 				"\t\t}\n\n",
 				ulkv->val);
 		}
-
 	}
 
 	fprintf(outputf,
@@ -411,10 +432,9 @@ void output_length_unit(FILE *outputf, struct keyval *parseid, struct keyval_lis
 		ckv->val);
 }
 
-void
-output_ident_list(FILE *outputf,
-		  struct keyval *parseid,
-		  struct keyval_list *kvlist)
+void output_ident_list(FILE *outputf,
+		       struct keyval *parseid,
+		       struct keyval_list *kvlist)
 {
 	struct keyval *ckv = kvlist->item[0]; /* list type : opv value */
 	struct keyval *ikv;
@@ -425,7 +445,9 @@ output_ident_list(FILE *outputf,
 	}
 
 	if (kvlist->count < 2) {
-		fprintf(stderr, "Not enough parameters to IDENT list type %s\n", ckv->key);
+		fprintf(stderr,
+			"Not enough parameters to IDENT list type %s\n",
+			ckv->key);
 		exit(4);
 	}
 
@@ -510,7 +532,9 @@ void output_footer(FILE *outputf)
 		"}\n\n");
 }
 
-void output_wrap(FILE *outputf, struct keyval *parseid, struct keyval_list *WRAP)
+void output_wrap(FILE *outputf,
+		 struct keyval *parseid,
+		 struct keyval_list *WRAP)
 {
 	struct keyval *ckv = WRAP->item[0];
 	fprintf(outputf,
@@ -562,13 +586,17 @@ int main(int argc, char **argv)
 	int ret = 0;
 
 	if (argc < 2) {
-		fprintf(stderr,"Usage: %s [-o <filename>] <descriptor>\n", argv[0]);
+		fprintf(stderr,
+			"Usage: %s [-o <filename>] <descriptor>\n",
+			argv[0]);
 		return 1;
 	}
 
 	if ((argv[1][0] == '-') && (argv[1][1] == 'o')) {
 		if (argc != 4) {
-			fprintf(stderr,"Usage: %s [-o <filename>] <descriptor>\n", argv[0]);
+			fprintf(stderr,
+				"Usage: %s [-o <filename>] <descriptor>\n",
+				argv[0]);
 			return 1;
 		}
 		outputf = fopen(argv[2], "w");
@@ -582,7 +610,8 @@ int main(int argc, char **argv)
 		descriptor = strdup(argv[1]);
 	}
 	if (!descriptor) {
-		if (outputf != stdout) fclose(outputf);
+		if (outputf != stdout)
+			fclose(outputf);
 		return 2;
 	}
 	curpos = descriptor;
@@ -593,8 +622,9 @@ int main(int argc, char **argv)
 		bool rkv_needs_free = true;
 		rkv = get_keyval(&curpos);
 		if (rkv == NULL) {
-			fprintf(stderr,"Token error at offset %ld\n",
-					(long)(curpos - descriptor));
+			fprintf(stderr,
+				"Token error at offset %ld\n",
+				(long)(curpos - descriptor));
 			ret = 2;
 			goto cleanup;
 		}
@@ -603,7 +633,8 @@ int main(int argc, char **argv)
 			WRAP.item[WRAP.count++] = rkv;
 			rkv_needs_free = false;
 			only_ident = false;
-		} else if (curlist == &base && strcmp(rkv->key, "NUMBER") == 0) {
+		} else if (curlist == &base &&
+			   strcmp(rkv->key, "NUMBER") == 0) {
 			if (rkv->val[0] == '(') {
 				curlist = &NUMBER;
 			} else if (rkv->val[0] == ')') {
@@ -670,7 +701,9 @@ int main(int argc, char **argv)
 	}
 
 	if (base.count != 1) {
-		fprintf(stderr, "Incorrect base element count (got %d expected 1)\n", base.count);
+		fprintf(stderr,
+			"Incorrect base element count (got %d expected 1)\n",
+			base.count);
 		ret = 3;
 		goto cleanup;
 	}
@@ -682,7 +715,8 @@ int main(int argc, char **argv)
 		output_wrap(outputf, base.item[0], &WRAP);
 	} else {
 		/* check token type is correct */
-		output_token_type_check(outputf, do_token_check,  &IDENT, &URI, &NUMBER);
+		output_token_type_check(
+			outputf, do_token_check, &IDENT, &URI, &NUMBER);
 
 		if (IDENT.count > 0)
 			output_ident(outputf, only_ident, base.item[0], &IDENT);
@@ -717,20 +751,30 @@ cleanup:
 		free(base.item[i]);
 	}
 	for (int i = 0; i < IDENT.count; i++) {
-		if (IDENT.item[i] != &ident_inherit && IDENT.item[i] != &ident_initial &&
-		    IDENT.item[i] != &ident_revert && IDENT.item[i] != &ident_unset) {
+		if (IDENT.item[i] != &ident_inherit &&
+		    IDENT.item[i] != &ident_initial &&
+		    IDENT.item[i] != &ident_revert &&
+		    IDENT.item[i] != &ident_unset) {
 			free(IDENT.item[i]);
 		}
 	}
-	for (int i = 0; i < URI.count; i++) free(URI.item[i]);
-	for (int i = 0; i < WRAP.count; i++) free(WRAP.item[i]);
-	for (int i = 0; i < NUMBER.count; i++) free(NUMBER.item[i]);
-	for (int i = 0; i < COLOR.count; i++) free(COLOR.item[i]);
-	for (int i = 0; i < LENGTH_UNIT.count; i++) free(LENGTH_UNIT.item[i]);
-	for (int i = 0; i < IDENT_LIST.count; i++) free(IDENT_LIST.item[i]);
-	for (int i = 0; i < CALC.count; i++) free(CALC.item[i]);
+	for (int i = 0; i < URI.count; i++)
+		free(URI.item[i]);
+	for (int i = 0; i < WRAP.count; i++)
+		free(WRAP.item[i]);
+	for (int i = 0; i < NUMBER.count; i++)
+		free(NUMBER.item[i]);
+	for (int i = 0; i < COLOR.count; i++)
+		free(COLOR.item[i]);
+	for (int i = 0; i < LENGTH_UNIT.count; i++)
+		free(LENGTH_UNIT.item[i]);
+	for (int i = 0; i < IDENT_LIST.count; i++)
+		free(IDENT_LIST.item[i]);
+	for (int i = 0; i < CALC.count; i++)
+		free(CALC.item[i]);
 	free(descriptor);
-	if (outputf != stdout) fclose(outputf);
+	if (outputf != stdout)
+		fclose(outputf);
 
 	return ret;
 }

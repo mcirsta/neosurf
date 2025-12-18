@@ -30,23 +30,25 @@ struct gui_window;
 struct browser_window;
 struct beos_scaffolding;
 
-class NSBrowserFrameView : public BView {
-public:
+class NSBrowserFrameView : public BView
+{
+      public:
 	NSBrowserFrameView(BRect frame, struct gui_window *gui);
-	virtual	~NSBrowserFrameView();
+	virtual ~NSBrowserFrameView();
 
 	virtual void MessageReceived(BMessage *message);
 	virtual void Draw(BRect updateRect);
 
-        //virtual void FrameMoved(BPoint new_location);
+	// virtual void FrameMoved(BPoint new_location);
 	virtual void FrameResized(float new_width, float new_height);
 
 	virtual void KeyDown(const char *bytes, int32 numBytes);
 	virtual void MouseDown(BPoint where);
 	virtual void MouseUp(BPoint where);
-	virtual void MouseMoved(BPoint where, uint32 transit, const BMessage *msg);
+	virtual void
+	MouseMoved(BPoint where, uint32 transit, const BMessage *msg);
 
-private:
+      private:
 	struct gui_window *fGuiWindow;
 };
 

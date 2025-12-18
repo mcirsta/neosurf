@@ -23,6 +23,6 @@
 
 /** Initialise prefernces window
  */
-GtkWidget* nsgtk_preferences(struct browser_window *bw, GtkWindow *parent);
+GtkWidget *nsgtk_preferences(struct browser_window *bw, GtkWindow *parent);
 
 #endif

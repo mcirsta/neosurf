@@ -14,8 +14,9 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_empty_cells(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error css__cascade_empty_cells(uint32_t opv,
+				   css_style *style,
+				   css_select_state *state)
 {
 	uint16_t value = CSS_EMPTY_CELLS_INHERIT;
 
@@ -32,16 +33,18 @@ css_error css__cascade_empty_cells(uint32_t opv, css_style *style,
 		}
 	}
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			getFlagValue(opv))) {
+	if (css__outranks_existing(getOpcode(opv),
+				   isImportant(opv),
+				   state,
+				   getFlagValue(opv))) {
 		return set_empty_cells(state->computed, value);
 	}
 
 	return CSS_OK;
 }
 
-css_error css__set_empty_cells_from_hint(const css_hint *hint,
-		css_computed_style *style)
+css_error
+css__set_empty_cells_from_hint(const css_hint *hint, css_computed_style *style)
 {
 	return set_empty_cells(style, hint->status);
 }
@@ -51,9 +54,8 @@ css_error css__initial_empty_cells(css_select_state *state)
 	return set_empty_cells(state->computed, CSS_EMPTY_CELLS_SHOW);
 }
 
-css_error css__copy_empty_cells(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error
+css__copy_empty_cells(const css_computed_style *from, css_computed_style *to)
 {
 	if (from == to) {
 		return CSS_OK;
@@ -63,13 +65,11 @@ css_error css__copy_empty_cells(
 }
 
 css_error css__compose_empty_cells(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+				   const css_computed_style *child,
+				   css_computed_style *result)
 {
 	uint8_t type = get_empty_cells(child);
 
 	return css__copy_empty_cells(
-			type == CSS_EMPTY_CELLS_INHERIT ? parent : child,
-			result);
+		type == CSS_EMPTY_CELLS_INHERIT ? parent : child, result);
 }
-

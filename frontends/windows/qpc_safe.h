@@ -15,10 +15,10 @@
  * QPC reliability test results
  */
 enum qpc_reliability {
-    QPC_RELIABILITY_UNKNOWN = 0,
-    QPC_RELIABILITY_GOOD,
-    QPC_RELIABILITY_BAD,
-    QPC_RELIABILITY_UNSTABLE
+	QPC_RELIABILITY_UNKNOWN = 0,
+	QPC_RELIABILITY_GOOD,
+	QPC_RELIABILITY_BAD,
+	QPC_RELIABILITY_UNSTABLE
 };
 
 /**
@@ -26,7 +26,7 @@ enum qpc_reliability {
  *
  * Performs comprehensive tests to detect QPC bugs on XP systems:
  * - Multi-core consistency check
- * - Monotonicity verification  
+ * - Monotonicity verification
  * - Timing accuracy validation
  *
  * @return QPC reliability status

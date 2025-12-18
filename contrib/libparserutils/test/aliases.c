@@ -5,7 +5,7 @@
 
 #include "testutils.h"
 
-int main (int argc, char **argv)
+int main(int argc, char **argv)
 {
 	parserutils_charset_aliases_canon *c;
 
@@ -42,8 +42,8 @@ int main (int argc, char **argv)
 		return 1;
 	}
 
-	printf("%d\n", parserutils_charset_mibenum_from_name(c->name,
-			strlen(c->name)));
+	printf("%d\n",
+	       parserutils_charset_mibenum_from_name(c->name, strlen(c->name)));
 
 	printf("%s\n", parserutils_charset_mibenum_to_name(c->mib_enum));
 

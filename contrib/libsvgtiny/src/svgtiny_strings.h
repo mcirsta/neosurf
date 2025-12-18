@@ -8,7 +8,7 @@
 #error No action defined
 #endif
 
-#define SVGTINY_STRING_ACTION(s) SVGTINY_STRING_ACTION2(s,s)
+#define SVGTINY_STRING_ACTION(s) SVGTINY_STRING_ACTION2(s, s)
 
 SVGTINY_STRING_ACTION(svg)
 SVGTINY_STRING_ACTION(viewBox)
@@ -50,17 +50,17 @@ SVGTINY_STRING_ACTION(gradientUnits)
 SVGTINY_STRING_ACTION(gradientTransform)
 SVGTINY_STRING_ACTION(userSpaceOnUse)
 SVGTINY_STRING_ACTION(use)
-SVGTINY_STRING_ACTION2(stroke_width,stroke-width)
-SVGTINY_STRING_ACTION2(stop_color,stop-color)
-SVGTINY_STRING_ACTION2(zero_percent,0%)
-SVGTINY_STRING_ACTION2(hundred_percent,100%)
-SVGTINY_STRING_ACTION2(fill_opacity,fill-opacity)
-SVGTINY_STRING_ACTION2(stroke_opacity,stroke-opacity)
-SVGTINY_STRING_ACTION2(fill_rule,fill-rule)
-SVGTINY_STRING_ACTION2(stroke_linecap,stroke-linecap)
-SVGTINY_STRING_ACTION2(stroke_linejoin,stroke-linejoin)
-SVGTINY_STRING_ACTION2(stroke_miterlimit,stroke-miterlimit)
-SVGTINY_STRING_ACTION2(stroke_dasharray,stroke-dasharray)
-SVGTINY_STRING_ACTION2(stroke_dashoffset,stroke-dashoffset)
+SVGTINY_STRING_ACTION2(stroke_width, stroke - width)
+SVGTINY_STRING_ACTION2(stop_color, stop - color)
+SVGTINY_STRING_ACTION2(zero_percent, 0 %)
+SVGTINY_STRING_ACTION2(hundred_percent, 100 %)
+SVGTINY_STRING_ACTION2(fill_opacity, fill - opacity)
+SVGTINY_STRING_ACTION2(stroke_opacity, stroke - opacity)
+SVGTINY_STRING_ACTION2(fill_rule, fill - rule)
+SVGTINY_STRING_ACTION2(stroke_linecap, stroke - linecap)
+SVGTINY_STRING_ACTION2(stroke_linejoin, stroke - linejoin)
+SVGTINY_STRING_ACTION2(stroke_miterlimit, stroke - miterlimit)
+SVGTINY_STRING_ACTION2(stroke_dasharray, stroke - dasharray)
+SVGTINY_STRING_ACTION2(stroke_dashoffset, stroke - dashoffset)
 
 #undef SVGTINY_STRING_ACTION

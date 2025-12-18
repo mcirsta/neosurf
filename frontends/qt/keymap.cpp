@@ -166,7 +166,7 @@ uint32_t qkeyevent_to_nskey(QKeyEvent *event)
 	if (nskey == 0) {
 		QList<uint> lst = event->text().toUcs4();
 		if (lst.isEmpty() == false) {
-			nskey =	(uint32_t)lst[0];
+			nskey = (uint32_t)lst[0];
 		}
 	}
 

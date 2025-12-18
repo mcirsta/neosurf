@@ -14,17 +14,19 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_right(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error
+css__cascade_right(uint32_t opv, css_style *style, css_select_state *state)
 {
 	return css__cascade_length_auto(opv, style, state, set_right);
 }
 
-css_error css__set_right_from_hint(const css_hint *hint,
-		css_computed_style *style)
+css_error
+css__set_right_from_hint(const css_hint *hint, css_computed_style *style)
 {
-	return set_right(style, hint->status,
-			hint->data.length.value, hint->data.length.unit);
+	return set_right(style,
+			 hint->status,
+			 hint->data.length.value,
+			 hint->data.length.unit);
 }
 
 css_error css__initial_right(css_select_state *state)
@@ -32,9 +34,8 @@ css_error css__initial_right(css_select_state *state)
 	return set_right(state->computed, CSS_RIGHT_AUTO, 0, CSS_UNIT_PX);
 }
 
-css_error css__copy_right(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error
+css__copy_right(const css_computed_style *from, css_computed_style *to)
 {
 	css_fixed length = 0;
 	css_unit unit = CSS_UNIT_PX;
@@ -48,15 +49,13 @@ css_error css__copy_right(
 }
 
 css_error css__compose_right(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+			     const css_computed_style *child,
+			     css_computed_style *result)
 {
 	css_fixed length = 0;
 	css_unit unit = CSS_UNIT_PX;
 	uint8_t type = get_right(child, &length, &unit);
 
-	return css__copy_right(
-			type == CSS_RIGHT_INHERIT ? parent : child,
-			result);
+	return css__copy_right(type == CSS_RIGHT_INHERIT ? parent : child,
+			       result);
 }
-

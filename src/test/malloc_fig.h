@@ -29,6 +29,6 @@
 
 void malloc_limit(unsigned int count);
 
-void* malloc(size_t size);
+void *malloc(size_t size);
 
 #endif

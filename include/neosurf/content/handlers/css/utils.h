@@ -30,8 +30,8 @@ extern css_fixed nscss_screen_dpi;
  * Temporary helper wrappers for for libcss computed style getter, while
  * we don't support all values of display.
  */
-static inline uint8_t ns_computed_display(
-		const css_computed_style *style, bool root)
+static inline uint8_t
+ns_computed_display(const css_computed_style *style, bool root)
 {
 	uint8_t value = css_computed_display(style, root);
 
@@ -53,8 +53,8 @@ static inline uint8_t ns_computed_display(
  * Temporary helper wrappers for for libcss computed style getter, while
  * we don't support all values of display.
  */
-static inline uint8_t ns_computed_display_static(
-		const css_computed_style *style)
+static inline uint8_t
+ns_computed_display_static(const css_computed_style *style)
 {
 	uint8_t value = css_computed_display_static(style);
 
@@ -72,9 +72,9 @@ static inline uint8_t ns_computed_display_static(
 	return value;
 }
 
-static inline uint8_t ns_computed_min_height(
-		const css_computed_style *style,
-		css_fixed *length, css_unit *unit)
+static inline uint8_t ns_computed_min_height(const css_computed_style *style,
+					     css_fixed *length,
+					     css_unit *unit)
 {
 	uint8_t value = css_computed_min_height(style, length, unit);
 
@@ -88,9 +88,9 @@ static inline uint8_t ns_computed_min_height(
 }
 
 
-static inline uint8_t ns_computed_min_width(
-		const css_computed_style *style,
-		css_fixed *length, css_unit *unit)
+static inline uint8_t ns_computed_min_width(const css_computed_style *style,
+					    css_fixed *length,
+					    css_unit *unit)
 {
 	uint8_t value = css_computed_min_width(style, length, unit);
 

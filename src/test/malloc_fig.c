@@ -37,12 +37,12 @@ static unsigned int count = UINT_MAX;
 void malloc_limit(unsigned int newcount)
 {
 	count = newcount;
-	//fprintf(stderr, "malloc_limit %d\n", count);
+	// fprintf(stderr, "malloc_limit %d\n", count);
 }
 
-void* malloc(size_t size)
+void *malloc(size_t size)
 {
-	static void* (*real_malloc)(size_t) = NULL;
+	static void *(*real_malloc)(size_t) = NULL;
 	void *p = NULL;
 
 	if (real_malloc == NULL) {
@@ -53,6 +53,6 @@ void* malloc(size_t size)
 		p = real_malloc(size);
 		count--;
 	}
-	//fprintf(stderr, "malloc(%d) = %p remian:%d\n", size, p, count);
+	// fprintf(stderr, "malloc(%d) = %p remian:%d\n", size, p, count);
 	return p;
 }

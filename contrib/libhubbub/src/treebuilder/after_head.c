@@ -21,8 +21,8 @@
  * \param token        The token to process
  * \return True to reprocess the token, false otherwise
  */
-hubbub_error handle_after_head(hubbub_treebuilder *treebuilder,
-		const hubbub_token *token)
+hubbub_error
+handle_after_head(hubbub_treebuilder *treebuilder, const hubbub_token *token)
 {
 	hubbub_error err = HUBBUB_OK;
 	bool handled = false;
@@ -30,20 +30,24 @@ hubbub_error handle_after_head(hubbub_treebuilder *treebuilder,
 	switch (token->type) {
 	case HUBBUB_TOKEN_CHARACTER:
 		err = process_characters_expect_whitespace(treebuilder,
-				token, true);
+							   token,
+							   true);
 		break;
 	case HUBBUB_TOKEN_COMMENT:
-		err = process_comment_append(treebuilder, token,
-				treebuilder->context.element_stack[
-				treebuilder->context.current_node].node);
+		err = process_comment_append(
+			treebuilder,
+			token,
+			treebuilder->context
+				.element_stack[treebuilder->context
+						       .current_node]
+				.node);
 		break;
 	case HUBBUB_TOKEN_DOCTYPE:
 		/** \todo parse error */
 		break;
-	case HUBBUB_TOKEN_START_TAG:
-	{
-		element_type type = element_type_from_name(treebuilder,
-				&token->data.tag.name);
+	case HUBBUB_TOKEN_START_TAG: {
+		element_type type = element_type_from_name(
+			treebuilder, &token->data.tag.name);
 
 		if (type == HTML) {
 			/* Process as if "in body" */
@@ -51,13 +55,14 @@ hubbub_error handle_after_head(hubbub_treebuilder *treebuilder,
 		} else if (type == BODY) {
 			handled = true;
 		} else if (type == FRAMESET) {
-			err = insert_element(treebuilder, &token->data.tag, 
-				true);
+			err = insert_element(treebuilder,
+					     &token->data.tag,
+					     true);
 			if (err == HUBBUB_OK)
 				treebuilder->context.mode = IN_FRAMESET;
 		} else if (type == BASE || type == LINK || type == META ||
-				type == NOFRAMES || type == SCRIPT ||
-				type == STYLE || type == TITLE) {
+			   type == NOFRAMES || type == SCRIPT ||
+			   type == STYLE || type == TITLE) {
 			hubbub_ns ns;
 			element_type otype;
 			void *node;
@@ -65,10 +70,11 @@ hubbub_error handle_after_head(hubbub_treebuilder *treebuilder,
 
 			/** \todo parse error */
 
-			err = element_stack_push(treebuilder,
-					HUBBUB_NS_HTML,
-					HEAD,
-					treebuilder->context.head_element);
+			err = element_stack_push(
+				treebuilder,
+				HUBBUB_NS_HTML,
+				HEAD,
+				treebuilder->context.head_element);
 			if (err != HUBBUB_OK)
 				return err;
 
@@ -77,8 +83,8 @@ hubbub_error handle_after_head(hubbub_treebuilder *treebuilder,
 			/* Process as "in head" */
 			err = handle_in_head(treebuilder, token);
 
-			element_stack_remove(treebuilder, index,
-					&ns, &otype, &node);
+			element_stack_remove(
+				treebuilder, index, &ns, &otype, &node);
 
 			/* No need to unref node as we never increased
 			 * its reference count when pushing it on the stack */
@@ -87,20 +93,17 @@ hubbub_error handle_after_head(hubbub_treebuilder *treebuilder,
 		} else {
 			err = HUBBUB_REPROCESS;
 		}
-	}
-		break;
-	case HUBBUB_TOKEN_END_TAG:
-	{
-		element_type type = element_type_from_name(treebuilder,
-				&token->data.tag.name);
+	} break;
+	case HUBBUB_TOKEN_END_TAG: {
+		element_type type = element_type_from_name(
+			treebuilder, &token->data.tag.name);
 
 		if (type == HTML || type == BODY || type == BR) {
 			err = HUBBUB_REPROCESS;
 		} else {
 			/** \todo parse error */
 		}
-	}
-		break;
+	} break;
 	case HUBBUB_TOKEN_EOF:
 		err = HUBBUB_REPROCESS;
 		break;
@@ -113,7 +116,7 @@ hubbub_error handle_after_head(hubbub_treebuilder *treebuilder,
 		if (err == HUBBUB_REPROCESS) {
 			/* Manufacture body */
 			tag.ns = HUBBUB_NS_HTML;
-			tag.name.ptr = (const uint8_t *) "body";
+			tag.name.ptr = (const uint8_t *)"body";
 			tag.name.len = SLEN("body");
 
 			tag.n_attributes = 0;
@@ -131,4 +134,3 @@ hubbub_error handle_after_head(hubbub_treebuilder *treebuilder,
 
 	return err;
 }
-

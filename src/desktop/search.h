@@ -27,11 +27,11 @@
 struct browser_window;
 
 typedef enum {
-	SEARCH_FLAG_NONE		= 0,
-	SEARCH_FLAG_CASE_SENSITIVE 	= (1 << 0),
-	SEARCH_FLAG_FORWARDS 		= (1 << 1),
-	SEARCH_FLAG_BACKWARDS 		= (1 << 2),
-	SEARCH_FLAG_SHOWALL 		= (1 << 3)
+	SEARCH_FLAG_NONE = 0,
+	SEARCH_FLAG_CASE_SENSITIVE = (1 << 0),
+	SEARCH_FLAG_FORWARDS = (1 << 1),
+	SEARCH_FLAG_BACKWARDS = (1 << 2),
+	SEARCH_FLAG_SHOWALL = (1 << 3)
 } search_flags_t;
 
 /**
@@ -42,7 +42,10 @@ typedef enum {
  * \param flags	Flags controlling the search operation.
  * \param string The string being searched for.
  */
-void browser_window_search(struct browser_window *bw, void *context, search_flags_t flags, const char *string);
+void browser_window_search(struct browser_window *bw,
+			   void *context,
+			   search_flags_t flags,
+			   const char *string);
 
 /**
  * Clear up a search.

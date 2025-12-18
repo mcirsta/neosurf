@@ -54,7 +54,7 @@ struct nsgtk_view_menu {
 	GtkMenu *view_menu; /* gtk menu attached to menu item */
 
 	GtkWidget *scaleview_menuitem;
-	struct nsgtk_scaleview_submenu	*scaleview_submenu;
+	struct nsgtk_scaleview_submenu *scaleview_submenu;
 	GtkWidget *fullscreen_menuitem;
 	GtkWidget *toolbars_menuitem;
 	struct nsgtk_toolbars_submenu *toolbars_submenu;
@@ -80,8 +80,8 @@ struct nsgtk_nav_menu {
 };
 
 struct nsgtk_tools_menu {
-	GtkMenuItem  *tools; /* Tools menu item on menubar */
-	GtkMenu	*tools_menu;
+	GtkMenuItem *tools; /* Tools menu item on menubar */
+	GtkMenu *tools_menu;
 
 	GtkWidget *showcookies_menuitem;
 	GtkWidget *downloads_menuitem;
@@ -128,7 +128,7 @@ struct nsgtk_toolbars_submenu {
 };
 
 struct nsgtk_developer_submenu {
-	GtkMenu   *developer_menu;
+	GtkMenu *developer_menu;
 
 	GtkWidget *viewsource_menuitem;
 	GtkWidget *toggledebugging_menuitem;
@@ -140,17 +140,17 @@ struct nsgtk_developer_submenu {
  * main menubar
  */
 struct nsgtk_bar_submenu {
-	GtkMenuBar		*bar_menu;
-	struct nsgtk_file_menu	*file_submenu;
-	struct nsgtk_edit_menu	*edit_submenu;
-	struct nsgtk_view_menu	*view_submenu;
-	struct nsgtk_nav_menu	*nav_submenu;
-	struct nsgtk_tools_menu	*tools_submenu;
-	struct nsgtk_help_menu	*help_submenu;
+	GtkMenuBar *bar_menu;
+	struct nsgtk_file_menu *file_submenu;
+	struct nsgtk_edit_menu *edit_submenu;
+	struct nsgtk_view_menu *view_submenu;
+	struct nsgtk_nav_menu *nav_submenu;
+	struct nsgtk_tools_menu *tools_submenu;
+	struct nsgtk_help_menu *help_submenu;
 };
 
 struct nsgtk_burger_menu {
-	GtkMenu	*burger_menu;
+	GtkMenu *burger_menu;
 
 	GtkWidget *file_menuitem;
 	struct nsgtk_file_menu *file_submenu;
@@ -172,7 +172,7 @@ struct nsgtk_burger_menu {
 };
 
 struct nsgtk_popup_menu {
-	GtkMenu	*popup_menu;
+	GtkMenu *popup_menu;
 
 	/* navigation entries */
 	GtkWidget *back_menuitem;
@@ -196,7 +196,7 @@ struct nsgtk_popup_menu {
 };
 
 struct nsgtk_link_menu {
-	GtkMenu	*link_menu;
+	GtkMenu *link_menu;
 
 	GtkWidget *opentab_menuitem;
 	GtkWidget *openwin_menuitem;
@@ -210,7 +210,8 @@ struct nsgtk_link_menu {
 /**
  * Create main menubar menu.
  */
-struct nsgtk_bar_submenu *nsgtk_menu_bar_create(GtkMenuShell *menubar, GtkAccelGroup *group);
+struct nsgtk_bar_submenu *
+nsgtk_menu_bar_create(GtkMenuShell *menubar, GtkAccelGroup *group);
 
 
 /**

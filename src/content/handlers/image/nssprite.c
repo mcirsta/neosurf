@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright 2008 James Shaw <js102@zepler.net>
  *
  * This file is part of NetSurf, http://www.netsurf-browser.org/
@@ -43,33 +43,39 @@
 
 typedef struct nssprite_content {
 	struct content base;
-	struct bitmap *bitmap;	/**< Created NetSurf bitmap */
+	struct bitmap *bitmap; /**< Created NetSurf bitmap */
 
-	struct rosprite_area* sprite_area;
+	struct rosprite_area *sprite_area;
 } nssprite_content;
 
 
-#define ERRCHK(x) do { \
-	rosprite_error err = x; \
-	if (err == ROSPRITE_EOF) { \
-		NSLOG(netsurf, INFO, "Got ROSPRITE_EOF when loading sprite file"); \
-		goto ro_sprite_error; \
-	} else if (err == ROSPRITE_BADMODE) { \
-		NSLOG(netsurf, INFO, "Got ROSPRITE_BADMODE when loading sprite file"); \
-		goto ro_sprite_error; \
-	} else if (err == ROSPRITE_OK) { \
-	} else { \
-		goto ro_sprite_error; \
-	} \
-} while(0)
-
-
+#define ERRCHK(x)                                                               \
+	do {                                                                    \
+		rosprite_error err = x;                                         \
+		if (err == ROSPRITE_EOF) {                                      \
+			NSLOG(netsurf,                                          \
+			      INFO,                                             \
+			      "Got ROSPRITE_EOF when loading sprite file");     \
+			goto ro_sprite_error;                                   \
+		} else if (err == ROSPRITE_BADMODE) {                           \
+			NSLOG(netsurf,                                          \
+			      INFO,                                             \
+			      "Got ROSPRITE_BADMODE when loading sprite file"); \
+			goto ro_sprite_error;                                   \
+		} else if (err == ROSPRITE_OK) {                                \
+		} else {                                                        \
+			goto ro_sprite_error;                                   \
+		}                                                               \
+	} while (0)
 
 
 static nserror nssprite_create(const content_handler *handler,
-		lwc_string *imime_type, const struct http_parameter *params,
-		struct llcache_handle *llcache, const char *fallback_charset,
-		bool quirks, struct content **c)
+			       lwc_string *imime_type,
+			       const struct http_parameter *params,
+			       struct llcache_handle *llcache,
+			       const char *fallback_charset,
+			       bool quirks,
+			       struct content **c)
 {
 	nssprite_content *sprite;
 	nserror error;
@@ -78,14 +84,19 @@ static nserror nssprite_create(const content_handler *handler,
 	if (sprite == NULL)
 		return NSERROR_NOMEM;
 
-	error = content__init(&sprite->base, handler, imime_type, params,
-			llcache, fallback_charset, quirks);
+	error = content__init(&sprite->base,
+			      handler,
+			      imime_type,
+			      params,
+			      llcache,
+			      fallback_charset,
+			      quirks);
 	if (error != NSERROR_OK) {
 		free(sprite);
 		return error;
 	}
 
-	*c = (struct content *) sprite;
+	*c = (struct content *)sprite;
 
 	return NSERROR_OK;
 }
@@ -98,9 +109,9 @@ static nserror nssprite_create(const content_handler *handler,
 
 static bool nssprite_convert(struct content *c)
 {
-	nssprite_content *nssprite = (nssprite_content *) c;
+	nssprite_content *nssprite = (nssprite_content *)c;
 
-	struct rosprite_mem_context* ctx = NULL;
+	struct rosprite_mem_context *ctx = NULL;
 
 	const uint8_t *data;
 	size_t size;
@@ -108,23 +119,26 @@ static bool nssprite_convert(struct content *c)
 
 	data = content__get_source_data(c, &size);
 
-	ERRCHK(rosprite_create_mem_context((uint8_t *) data, size, &ctx));
+	ERRCHK(rosprite_create_mem_context((uint8_t *)data, size, &ctx));
 
-	struct rosprite_area* sprite_area;
+	struct rosprite_area *sprite_area;
 	ERRCHK(rosprite_load(rosprite_mem_reader, ctx, &sprite_area));
 	rosprite_destroy_mem_context(ctx);
 	nssprite->sprite_area = sprite_area;
 
 	assert(sprite_area->sprite_count > 0);
 
-	struct rosprite* sprite = sprite_area->sprites[0];
+	struct rosprite *sprite = sprite_area->sprites[0];
 
-	nssprite->bitmap = guit->bitmap->create(sprite->width, sprite->height, BITMAP_NONE);
+	nssprite->bitmap = guit->bitmap->create(sprite->width,
+						sprite->height,
+						BITMAP_NONE);
 	if (!nssprite->bitmap) {
 		content_broadcast_error(c, NSERROR_NOMEM, NULL);
 		return false;
 	}
-	uint32_t* imagebuf = (uint32_t *)(void *)guit->bitmap->get_buffer(nssprite->bitmap);
+	uint32_t *imagebuf = (uint32_t *)(void *)guit->bitmap->get_buffer(
+		nssprite->bitmap);
 	if (!imagebuf) {
 		content_broadcast_error(c, NSERROR_NOMEM, NULL);
 		return false;
@@ -138,18 +152,21 @@ static bool nssprite_convert(struct content *c)
 
 	/* set title text */
 	title = messages_get_buff("SpriteTitle",
-			nsurl_access_leaf(llcache_handle_get_url(c->llcache)),
-			c->width, c->height);
+				  nsurl_access_leaf(
+					  llcache_handle_get_url(c->llcache)),
+				  c->width,
+				  c->height);
 	if (title != NULL) {
 		content__set_title(c, title);
 		free(title);
 	}
 
-    bitmap_format_to_client(nssprite->bitmap, &(bitmap_fmt_t) {
-        .layout = BITMAP_LAYOUT_A8B8G8R8,
-        .pma = false,
-    });
-    guit->bitmap->modified(nssprite->bitmap);
+	bitmap_format_to_client(nssprite->bitmap,
+				&(bitmap_fmt_t){
+					.layout = BITMAP_LAYOUT_A8B8G8R8,
+					.pma = false,
+				});
+	guit->bitmap->modified(nssprite->bitmap);
 
 	content_set_ready(c);
 	content_set_done(c);
@@ -173,7 +190,7 @@ ro_sprite_error:
 
 static void nssprite_destroy(struct content *c)
 {
-	nssprite_content *nssprite = (nssprite_content *) c;
+	nssprite_content *nssprite = (nssprite_content *)c;
 
 	if (nssprite->sprite_area != NULL)
 		rosprite_destroy_sprite_area(nssprite->sprite_area);
@@ -186,13 +203,12 @@ static void nssprite_destroy(struct content *c)
  * Redraw a CONTENT_SPRITE.
  */
 
-static bool
-nssprite_redraw(struct content *c,
-		struct content_redraw_data *data,
-		const struct rect *clip,
-		const struct redraw_context *ctx)
+static bool nssprite_redraw(struct content *c,
+			    struct content_redraw_data *data,
+			    const struct rect *clip,
+			    const struct redraw_context *ctx)
 {
-	nssprite_content *nssprite = (nssprite_content *) c;
+	nssprite_content *nssprite = (nssprite_content *)c;
 	bitmap_flags_t flags = BITMAPF_NONE;
 
 	if (data->repeat_x) {
@@ -204,8 +220,10 @@ nssprite_redraw(struct content *c,
 
 	return (ctx->plot->bitmap(ctx,
 				  nssprite->bitmap,
-				  data->x, data->y,
-				  data->width, data->height,
+				  data->x,
+				  data->y,
+				  data->width,
+				  data->height,
 				  data->background_colour,
 				  flags) == NSERROR_OK);
 }
@@ -228,21 +246,21 @@ static nserror nssprite_clone(const struct content *old, struct content **newc)
 
 	/* Simply replay convert */
 	if (old->status == CONTENT_STATUS_READY ||
-			old->status == CONTENT_STATUS_DONE) {
+	    old->status == CONTENT_STATUS_DONE) {
 		if (nssprite_convert(&sprite->base) == false) {
 			content_destroy(&sprite->base);
 			return NSERROR_CLONE_FAILED;
 		}
 	}
 
-	*newc = (struct content *) sprite;
+	*newc = (struct content *)sprite;
 
 	return NSERROR_OK;
 }
 
 static void *nssprite_get_internal(const struct content *c, void *context)
 {
-	nssprite_content *nssprite = (nssprite_content *) c;
+	nssprite_content *nssprite = (nssprite_content *)c;
 
 	return nssprite->bitmap;
 }
@@ -255,7 +273,7 @@ static content_type nssprite_content_type(void)
 
 static bool nssprite_content_is_opaque(struct content *c)
 {
-	nssprite_content *nssprite = (nssprite_content *) c;
+	nssprite_content *nssprite = (nssprite_content *)c;
 
 	if (nssprite->bitmap != NULL) {
 		return guit->bitmap->get_opaque(nssprite->bitmap);
@@ -276,8 +294,8 @@ static const content_handler nssprite_content_handler = {
 	.no_share = false,
 };
 
-static const char *nssprite_types[] = {
-	"image/x-riscos-sprite"
-};
+static const char *nssprite_types[] = {"image/x-riscos-sprite"};
 
-CONTENT_FACTORY_REGISTER_TYPES(nssprite, nssprite_types, nssprite_content_handler);
+CONTENT_FACTORY_REGISTER_TYPES(nssprite,
+			       nssprite_types,
+			       nssprite_content_handler);

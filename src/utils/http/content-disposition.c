@@ -26,7 +26,7 @@
 
 /* See content-disposition.h for documentation */
 nserror http_parse_content_disposition(const char *header_value,
-		http_content_disposition **result)
+				       http_content_disposition **result)
 {
 	const char *pos = header_value;
 	lwc_string *mtype;
@@ -45,8 +45,8 @@ nserror http_parse_content_disposition(const char *header_value,
 	http__skip_LWS(&pos);
 
 	if (*pos == ';') {
-		error = http__item_list_parse(&pos,
-				http__parse_parameter, NULL, &params);
+		error = http__item_list_parse(
+			&pos, http__parse_parameter, NULL, &params);
 		if (error != NSERROR_OK && error != NSERROR_NOT_FOUND) {
 			lwc_string_unref(mtype);
 			return error;
@@ -75,4 +75,3 @@ void http_content_disposition_destroy(http_content_disposition *victim)
 	http_parameter_list_destroy(victim->parameters);
 	free(victim);
 }
-

@@ -76,9 +76,9 @@ struct treeview_globals {
  * Section type of a treeview at a point
  */
 enum treeview_node_part {
-	TV_NODE_PART_TOGGLE,	/**< Expansion toggle */
-	TV_NODE_PART_ON_NODE,	/**< Node content (text, icon) */
-	TV_NODE_PART_NONE	/**< Empty area */
+	TV_NODE_PART_TOGGLE, /**< Expansion toggle */
+	TV_NODE_PART_ON_NODE, /**< Node content (text, icon) */
+	TV_NODE_PART_NONE /**< Empty area */
 };
 
 
@@ -86,9 +86,9 @@ enum treeview_node_part {
  * Text within a treeview field or node
  */
 struct treeview_text {
-	const char *data;	/**< Text string */
-	uint32_t len;		/**< Length of string in bytes */
-	int width;		/**< Width of text in px */
+	const char *data; /**< Text string */
+	uint32_t len; /**< Length of string in bytes */
+	int width; /**< Width of text in px */
 };
 
 
@@ -108,11 +108,11 @@ struct treeview_field {
  * flags indicating render state of node.
  */
 enum treeview_node_flags {
-	TV_NFLAGS_NONE     = 0,		/**< No node flags set */
-	TV_NFLAGS_EXPANDED = (1 << 0),	/**< Whether node is expanded */
-	TV_NFLAGS_SELECTED = (1 << 1),	/**< Whether node is selected */
-	TV_NFLAGS_SPECIAL  = (1 << 2),	/**< Render as special node */
-	TV_NFLAGS_MATCHED  = (1 << 3),	/**< Whether node matches search */
+	TV_NFLAGS_NONE = 0, /**< No node flags set */
+	TV_NFLAGS_EXPANDED = (1 << 0), /**< Whether node is expanded */
+	TV_NFLAGS_SELECTED = (1 << 1), /**< Whether node is selected */
+	TV_NFLAGS_SPECIAL = (1 << 2), /**< Render as special node */
+	TV_NFLAGS_MATCHED = (1 << 3), /**< Whether node matches search */
 };
 
 
@@ -131,18 +131,18 @@ enum treeview_target_pos {
  * Treeview node
  */
 struct treeview_node {
-	enum treeview_node_flags flags;	/**< Node flags */
-	enum treeview_node_type type;	/**< Node type */
+	enum treeview_node_flags flags; /**< Node flags */
+	enum treeview_node_type type; /**< Node type */
 
-	int height;	/**< Includes height of any descendants (pixels) */
-	int inset;	/**< Node's inset depending on tree depth (pixels) */
+	int height; /**< Includes height of any descendants (pixels) */
+	int inset; /**< Node's inset depending on tree depth (pixels) */
 
 	treeview_node *parent; /**< parent node */
 	treeview_node *prev_sib; /**< previous sibling node */
 	treeview_node *next_sib; /**< next sibling node */
 	treeview_node *children; /**< first child node */
 
-	void *client_data;  /**< Passed to client on node event msg callback */
+	void *client_data; /**< Passed to client on node event msg callback */
 
 	struct treeview_text text; /** Text to show for node (default field) */
 };
@@ -164,10 +164,10 @@ struct treeview_node_entry {
  * A mouse position wrt treeview
  */
 struct treeview_pos {
-	int x;		/**< Mouse X coordinate */
-	int y;		/**< Mouse Y coordinate */
-	int node_y;	/**< Top of node at y */
-	int node_h;	/**< Height of node at y */
+	int x; /**< Mouse X coordinate */
+	int y; /**< Mouse Y coordinate */
+	int node_y; /**< Top of node at y */
+	int node_h; /**< Height of node at y */
 };
 
 
@@ -181,12 +181,12 @@ struct treeview_drag {
 		TV_DRAG_MOVE,
 		TV_DRAG_TEXTAREA,
 		TV_DRAG_SEARCH,
-	} type;	/**< Drag type */
-	treeview_node *start_node;	/**< Start node */
-	bool selected;			/**< Start node is selected */
-	enum treeview_node_part part;	/**< Node part at start */
-	struct treeview_pos start;	/**< Start pos */
-	struct treeview_pos prev;	/**< Previous pos */
+	} type; /**< Drag type */
+	treeview_node *start_node; /**< Start node */
+	bool selected; /**< Start node is selected */
+	enum treeview_node_part part; /**< Node part at start */
+	struct treeview_pos start; /**< Start pos */
+	struct treeview_pos prev; /**< Previous pos */
 };
 
 
@@ -194,10 +194,10 @@ struct treeview_drag {
  * Treeview node move details
  */
 struct treeview_move {
-	treeview_node *root;		/**< Head of yanked node list */
-	treeview_node *target;		/**< Move target */
-	struct rect target_area;	/**< Pos/size of target indicator */
-	enum treeview_target_pos target_pos;	/**< Pos wrt render node */
+	treeview_node *root; /**< Head of yanked node list */
+	treeview_node *target; /**< Move target */
+	struct rect target_area; /**< Pos/size of target indicator */
+	enum treeview_target_pos target_pos; /**< Pos wrt render node */
 };
 
 
@@ -205,13 +205,13 @@ struct treeview_move {
  * Treeview node edit details
  */
 struct treeview_edit {
-	treeview_node *node;		/**< Node being edited, or NULL */
-	struct textarea *textarea;	/**< Textarea for edit, or NULL */
-	lwc_string *field;		/**< The field being edited, or NULL */
-	int x;		/**< Textarea x position */
-	int y;		/**< Textarea y position */
-	int w;		/**< Textarea width */
-	int h;		/**< Textarea height */
+	treeview_node *node; /**< Node being edited, or NULL */
+	struct textarea *textarea; /**< Textarea for edit, or NULL */
+	lwc_string *field; /**< The field being edited, or NULL */
+	int x; /**< Textarea x position */
+	int y; /**< Textarea y position */
+	int w; /**< Textarea width */
+	int h; /**< Textarea height */
 };
 
 
@@ -219,10 +219,10 @@ struct treeview_edit {
  * Treeview search box details
  */
 struct treeview_search {
-	struct textarea *textarea;  /**< Search box. */
-	bool active;                /**< Whether the search box has focus. */
-	bool search;                /**< Whether we have a search term. */
-	int height;                 /**< Current search display height. */
+	struct textarea *textarea; /**< Search box. */
+	bool active; /**< Whether the search box has focus. */
+	bool search; /**< Whether we have a search term. */
+	int height; /**< Current search display height. */
 };
 
 
@@ -236,7 +236,7 @@ struct treeview {
 
 	treeview_node *root; /**< Root node */
 
-	struct treeview_field *fields;	/**< Array of fields */
+	struct treeview_field *fields; /**< Array of fields */
 	int n_fields; /**< fields[n_fields] is folder, lower are entry fields */
 	int field_width; /**< Max width of shown field names */
 
@@ -266,12 +266,12 @@ enum treeview_furniture_id {
  * style for a node
  */
 struct treeview_node_style {
-	plot_style_t bg;	  /**< Background */
-	plot_font_style_t text;	  /**< Text */
-	plot_font_style_t itext;  /**< Entry field text */
+	plot_style_t bg; /**< Background */
+	plot_font_style_t text; /**< Text */
+	plot_font_style_t itext; /**< Entry field text */
 
-	plot_style_t sbg;	  /**< Selected background */
-	plot_font_style_t stext;  /**< Selected text */
+	plot_style_t sbg; /**< Selected background */
+	plot_font_style_t stext; /**< Selected text */
 	plot_font_style_t sitext; /**< Selected entry field text */
 
 	struct {
@@ -322,12 +322,11 @@ enum treeview_resource_id {
  * Treeview content resources
  */
 static struct treeview_resource treeview_res[TREE_RES_LAST] = {
-	{ "resource:icons/arrow-l.png", NULL, 0, false },
-	{ "resource:icons/content.png", NULL, 0, false },
-	{ "resource:icons/directory.png", NULL, 0, false },
-	{ "resource:icons/directory2.png", NULL, 0, false },
-	{ "resource:icons/search.png", NULL, 0, false }
-};
+	{"resource:icons/arrow-l.png", NULL, 0, false},
+	{"resource:icons/content.png", NULL, 0, false},
+	{"resource:icons/directory.png", NULL, 0, false},
+	{"resource:icons/directory2.png", NULL, 0, false},
+	{"resource:icons/search.png", NULL, 0, false}};
 
 
 /**
@@ -338,9 +337,8 @@ static struct treeview_resource treeview_res[TREE_RES_LAST] = {
  */
 static inline int treeview__get_display_height(const treeview *tree)
 {
-	return (tree->search.search == false) ?
-			tree->root->height :
-			tree->search.height;
+	return (tree->search.search == false) ? tree->root->height
+					      : tree->search.height;
 }
 
 
@@ -350,9 +348,8 @@ static inline int treeview__get_display_height(const treeview *tree)
  * \param[in] tree The treeview to request redraw on.
  * \param[in] r rectangle to redraw
  */
-static inline void treeview__cw_invalidate_area(
-		const struct treeview *tree,
-		const struct rect *r)
+static inline void
+treeview__cw_invalidate_area(const struct treeview *tree, const struct rect *r)
 {
 	if (tree->cw_h != NULL) {
 		guit->corewindow->invalidate(tree->cw_h, r);
@@ -365,8 +362,7 @@ static inline void treeview__cw_invalidate_area(
  *
  * \param[in] tree The treeview to request redraw on.
  */
-static inline void treeview__cw_full_redraw(
-		const struct treeview *tree)
+static inline void treeview__cw_full_redraw(const struct treeview *tree)
 {
 	if (tree->cw_h != NULL) {
 		static const struct rect r = {
@@ -386,11 +382,9 @@ static inline void treeview__cw_full_redraw(
  * \param tree    Treeview object to check.
  * \return height used by search bar in pixels.
  */
-static inline unsigned treeview__get_search_height(
-		const treeview *tree)
+static inline unsigned treeview__get_search_height(const treeview *tree)
 {
-	return (tree->flags & TREEVIEW_SEARCHABLE) ?
-			tree_g.line_height : 0;
+	return (tree->flags & TREEVIEW_SEARCHABLE) ? tree_g.line_height : 0;
 }
 
 
@@ -401,14 +395,14 @@ static inline unsigned treeview__get_search_height(
  * \param[in] width the width in px, or negative if don't care
  * \param[in] height the height in px, or negative if don't care
  */
-static inline void treeview__cw_update_size(
-	const struct treeview *tree,
-	int width, int height)
+static inline void
+treeview__cw_update_size(const struct treeview *tree, int width, int height)
 {
 	if (tree->cw_h != NULL) {
-		guit->corewindow->set_extent(tree->cw_h,
-				     width,
-				     height + treeview__get_search_height(tree));
+		guit->corewindow->set_extent(
+			tree->cw_h,
+			width,
+			height + treeview__get_search_height(tree));
 	}
 }
 
@@ -418,8 +412,7 @@ static inline void treeview__cw_update_size(
  *
  * \param[in] tree  The treeview to scroll.
  */
-static inline void treeview__cw_scroll_top(
-		const struct treeview *tree)
+static inline void treeview__cw_scroll_top(const struct treeview *tree)
 {
 	struct rect r = {
 		.x0 = 0,
@@ -438,9 +431,10 @@ static inline void treeview__cw_scroll_top(
  * \param[out] width to be set to viewport width in px
  * \param[out] height to be set to viewport height in px
  */
-static inline void treeview__cw_get_window_dimensions(
-	const struct treeview *tree,
-	int *width, int *height)
+static inline void
+treeview__cw_get_window_dimensions(const struct treeview *tree,
+				   int *width,
+				   int *height)
 {
 	if (tree->cw_h != NULL) {
 		guit->corewindow->get_dimensions(tree->cw_h, width, height);
@@ -454,9 +448,8 @@ static inline void treeview__cw_get_window_dimensions(
  * \param[in] tree The treeview to report status on.
  * \param[in] ds the current drag status
  */
-static inline void treeview__cw_drag_status(
-	const struct treeview *tree,
-	core_window_drag_status ds)
+static inline void treeview__cw_drag_status(const struct treeview *tree,
+					    core_window_drag_status ds)
 {
 	if (tree->cw_h != NULL) {
 		guit->corewindow->drag_status(tree->cw_h, ds);
@@ -495,7 +488,7 @@ treeview_get_text_for_field(treeview *tree, treeview_node *n, int i)
  * \param full Iff true, visit children of collapsed nodes
  * \return next node, or NULL if \a node is last node
  */
-static inline treeview_node * treeview_node_next(treeview_node *node, bool full)
+static inline treeview_node *treeview_node_next(treeview_node *node, bool full)
 {
 	assert(node != NULL);
 
@@ -531,7 +524,7 @@ static inline treeview_node * treeview_node_next(treeview_node *node, bool full)
  * \param target_y Target y-position
  * \return node at y_target
  */
-static treeview_node * treeview_y_node(treeview *tree, int target_y)
+static treeview_node *treeview_y_node(treeview *tree, int target_y)
 {
 	int y = treeview__get_search_height(tree);
 	treeview_node *n;
@@ -542,8 +535,8 @@ static treeview_node * treeview_y_node(treeview *tree, int target_y)
 	n = treeview_node_next(tree->root, false);
 
 	while (n != NULL) {
-		int h = (n->type == TREE_NODE_ENTRY) ?
-			n->height : tree_g.line_height;
+		int h = (n->type == TREE_NODE_ENTRY) ? n->height
+						     : tree_g.line_height;
 		if (target_y >= y && target_y < y + h)
 			return n;
 		y += h;
@@ -562,9 +555,7 @@ static treeview_node * treeview_y_node(treeview *tree, int target_y)
  * \param node Node to get position of
  * \return node's y position
  */
-static int treeview_node_y(
-		const treeview *tree,
-		const treeview_node *node)
+static int treeview_node_y(const treeview *tree, const treeview_node *node)
 {
 	treeview_node *n;
 	int y = treeview__get_search_height(tree);
@@ -575,8 +566,8 @@ static int treeview_node_y(
 	n = treeview_node_next(tree->root, false);
 
 	while (n != NULL && n != node) {
-		y += (n->type == TREE_NODE_ENTRY) ?
-			n->height : tree_g.line_height;
+		y += (n->type == TREE_NODE_ENTRY) ? n->height
+						  : tree_g.line_height;
 
 		n = treeview_node_next(n, false);
 	}
@@ -591,16 +582,16 @@ static int treeview_node_y(
  * \param[in] tree  The treeview to scroll.
  * \param[in] node  The treeview node to scroll to visibility.
  */
-static inline void treeview__cw_scroll_to_node(
-		const struct treeview *tree,
-		const struct treeview_node *node)
+static inline void treeview__cw_scroll_to_node(const struct treeview *tree,
+					       const struct treeview_node *node)
 {
 	struct rect r = {
 		.x0 = 0,
 		.y0 = treeview_node_y(tree, node),
 		.x1 = 1,
-		.y1 = (((node != NULL) && (node->type == TREE_NODE_ENTRY)) ?
-		       node->height : tree_g.line_height),
+		.y1 = (((node != NULL) && (node->type == TREE_NODE_ENTRY))
+			       ? node->height
+			       : tree_g.line_height),
 	};
 
 	r.y1 += r.y0; /* Apply the Y offset to the second Y coordinate */
@@ -615,16 +606,15 @@ static inline void treeview__cw_scroll_to_node(
  * \param[in] tree  Tree to redraw from node in.
  * \param[in] node  Node to redraw from.
  */
-static void treeview__redraw_from_node(
-		const treeview *tree,
-		const treeview_node *node)
+static void
+treeview__redraw_from_node(const treeview *tree, const treeview_node *node)
 {
 	struct rect r = {
 		.x0 = 0,
 		.y0 = treeview_node_y(tree, node),
 		.x1 = REDRAW_MAX,
 		.y1 = treeview__get_display_height(tree) +
-				treeview__get_search_height(tree),
+		      treeview__get_search_height(tree),
 	};
 
 	assert(tree != NULL);
@@ -671,23 +661,19 @@ enum treeview_walk_mode {
  * \note Any node deletion must happen in callback_bwd.
  */
 static nserror treeview_walk_internal(
-		treeview *tree,
-		treeview_node *root,
-		enum treeview_walk_mode mode,
-		nserror (*callback_bwd)(
-				treeview_node *n,
-				void *ctx,
-				bool *end),
-		nserror (*callback_fwd)(
-				treeview_node *n,
+	treeview *tree,
+	treeview_node *root,
+	enum treeview_walk_mode mode,
+	nserror (*callback_bwd)(treeview_node *n, void *ctx, bool *end),
+	nserror (*callback_fwd)(treeview_node *n,
 				void *ctx,
 				bool *skip_children,
 				bool *end),
-		void *ctx)
+	void *ctx)
 {
 	treeview_node *node, *child, *parent, *next_sibling;
 	bool walking_search = (mode == TREEVIEW_WALK_MODE_DISPLAY &&
-			tree->search.search == true);
+			       tree->search.search == true);
 	bool skip_children = false;
 	bool abort = false;
 	bool full = false;
@@ -704,8 +690,8 @@ static nserror treeview_walk_internal(
 	node = root;
 	parent = node->parent;
 	next_sibling = node->next_sib;
-	child = (full || (node->flags & TV_NFLAGS_EXPANDED)) ?
-		node->children : NULL;
+	child = (full || (node->flags & TV_NFLAGS_EXPANDED)) ? node->children
+							     : NULL;
 
 	while (node != NULL) {
 
@@ -720,7 +706,7 @@ static nserror treeview_walk_internal(
 			while (node != root && next_sibling == NULL) {
 				entry = (node->type == TREE_NODE_ENTRY);
 				if (callback_bwd != NULL &&
-						(entry || !walking_search)) {
+				    (entry || !walking_search)) {
 					/* Backwards callback */
 					err = callback_bwd(node, ctx, &abort);
 
@@ -764,11 +750,12 @@ static nserror treeview_walk_internal(
 
 		parent = node->parent;
 		next_sibling = node->next_sib;
-		child = (full || (node->flags & TV_NFLAGS_EXPANDED)) ?
-			node->children : NULL;
+		child = (full || (node->flags & TV_NFLAGS_EXPANDED))
+				? node->children
+				: NULL;
 
-		if (walking_search && (!entry ||
-				!(node->flags & TV_NFLAGS_MATCHED))) {
+		if (walking_search &&
+		    (!entry || !(node->flags & TV_NFLAGS_MATCHED))) {
 			continue;
 		}
 
@@ -793,10 +780,10 @@ static nserror treeview_walk_internal(
  * Data used when doing a treeview walk for search.
  */
 struct treeview_search_walk_data {
-	treeview *tree;          /**< The treeview to search. */
-	const char *text;        /**< The string being searched for. */
-	const unsigned int len;  /**< Length of string being searched for. */
-	int window_height;       /**< Accumulate height for matching entries. */
+	treeview *tree; /**< The treeview to search. */
+	const char *text; /**< The string being searched for. */
+	const unsigned int len; /**< Length of string being searched for. */
+	int window_height; /**< Accumulate height for matching entries. */
 };
 
 
@@ -809,11 +796,10 @@ struct treeview_search_walk_data {
  * \param[in,out] end            Flag to allow iteration to be finished early.
  * \return NSERROR_OK on success else error code.
  */
-static nserror treeview__search_walk_cb(
-		treeview_node *n,
-		void *ctx,
-		bool *skip_children,
-		bool *end)
+static nserror treeview__search_walk_cb(treeview_node *n,
+					void *ctx,
+					bool *skip_children,
+					bool *end)
 {
 	struct treeview_search_walk_data *sw = ctx;
 
@@ -834,8 +820,8 @@ static nserror treeview__search_walk_cb(
 	for (int i = 0; i < sw->tree->n_fields; i++) {
 		struct treeview_field *ef = &(sw->tree->fields[i + 1]);
 		if (ef->flags & TREE_FLAG_SEARCHABLE) {
-			if (strcasestr(entry->fields[i].value.data,
-				       sw->text) != NULL) {
+			if (strcasestr(entry->fields[i].value.data, sw->text) !=
+			    NULL) {
 				matched = true;
 				break;
 			}
@@ -865,10 +851,8 @@ static nserror treeview__search_walk_cb(
  * \param[in] len   Byte length of UTF-8 string.
  * \return NSERROR_OK on success, appropriate error otherwise.
  */
-static nserror treeview__search(
-		treeview *tree,
-		const char *text,
-		unsigned int len)
+static nserror
+treeview__search(treeview *tree, const char *text, unsigned int len)
 {
 	nserror err;
 	uint32_t height;
@@ -892,9 +876,12 @@ static nserror treeview__search(
 		return NSERROR_OK;
 	}
 
-	err = treeview_walk_internal(tree, tree->root,
-			TREEVIEW_WALK_MODE_LOGICAL_COMPLETE, NULL,
-			treeview__search_walk_cb, &sw);
+	err = treeview_walk_internal(tree,
+				     tree->root,
+				     TREEVIEW_WALK_MODE_LOGICAL_COMPLETE,
+				     NULL,
+				     treeview__search_walk_cb,
+				     &sw);
 	if (err != NSERROR_OK) {
 		return err;
 	}
@@ -960,8 +947,7 @@ static void treeview__search_cancel(treeview *tree, bool drop_focus)
  * \param[in]  tree  A treeview.
  * \return Core window drag type.
  */
-static core_window_drag_status treeview__get_cw_drag_type(
-		const treeview *tree)
+static core_window_drag_status treeview__get_cw_drag_type(const treeview *tree)
 {
 	assert(tree != NULL);
 
@@ -989,8 +975,8 @@ static core_window_drag_status treeview__get_cw_drag_type(
  * \param data treeview context
  * \param msg textarea message
  */
-static void treeview_textarea_search_callback(void *data,
-		struct textarea_msg *msg)
+static void
+treeview_textarea_search_callback(void *data, struct textarea_msg *msg)
 {
 	treeview *tree = data;
 	struct rect *r;
@@ -1009,7 +995,7 @@ static void treeview_textarea_search_callback(void *data,
 			tree->drag.type = TV_DRAG_SEARCH;
 		}
 		treeview__cw_drag_status(tree,
-				treeview__get_cw_drag_type(tree));
+					 treeview__get_cw_drag_type(tree));
 		break;
 
 	case TEXTAREA_MSG_REDRAW_REQUEST:
@@ -1026,8 +1012,8 @@ static void treeview_textarea_search_callback(void *data,
 	case TEXTAREA_MSG_TEXT_MODIFIED:
 		/* Textarea length includes trailing NULL, so subtract it. */
 		treeview__search(tree,
-				msg->data.modified.text,
-				msg->data.modified.len - 1);
+				 msg->data.modified.text,
+				 msg->data.modified.len - 1);
 		break;
 
 	default:
@@ -1041,8 +1027,7 @@ static void treeview_textarea_search_callback(void *data,
  *
  * \param[in] tree  The tree to update.
  */
-static void treeview__search_update_display(
-		treeview *tree)
+static void treeview__search_update_display(treeview *tree)
 {
 	const char *string;
 	unsigned int len;
@@ -1109,11 +1094,10 @@ static nserror treeview_create_node_root(treeview_node **root)
  * \param[out] skip_children set to false so child nodes are not skipped.
  * \param[out] end unused flag so treewalk in not terminated early.
  */
-static nserror
-treeview_set_inset_from_parent(treeview_node *n,
-			       void *ctx,
-			       bool *skip_children,
-			       bool *end)
+static nserror treeview_set_inset_from_parent(treeview_node *n,
+					      void *ctx,
+					      bool *skip_children,
+					      bool *end)
 {
 	if (n->parent != NULL)
 		n->inset = n->parent->inset + tree_g.step_width;
@@ -1131,12 +1115,10 @@ treeview_set_inset_from_parent(treeview_node *n,
  * \param b     tree node to insert a as a relation of
  * \param rel The relationship between \a a and \a b
  */
-static inline void
-treeview_insert_node(
-		treeview *tree,
-		treeview_node *a,
-		treeview_node *b,
-		enum treeview_relationship rel)
+static inline void treeview_insert_node(treeview *tree,
+					treeview_node *a,
+					treeview_node *b,
+					enum treeview_relationship rel)
 {
 	assert(a != NULL);
 	assert(a->parent == NULL);
@@ -1171,9 +1153,12 @@ treeview_insert_node(
 
 	a->inset = a->parent->inset + tree_g.step_width;
 	if (a->children != NULL) {
-		treeview_walk_internal(tree, a,
-				TREEVIEW_WALK_MODE_LOGICAL_COMPLETE, NULL,
-				treeview_set_inset_from_parent, NULL);
+		treeview_walk_internal(tree,
+				       a,
+				       TREEVIEW_WALK_MODE_LOGICAL_COMPLETE,
+				       NULL,
+				       treeview_set_inset_from_parent,
+				       NULL);
 	}
 
 	if (a->parent->flags & TV_NFLAGS_EXPANDED) {
@@ -1196,14 +1181,13 @@ treeview_insert_node(
 
 
 /* Exported interface, documented in treeview.h */
-nserror
-treeview_create_node_folder(treeview *tree,
-			    treeview_node **folder,
-			    treeview_node *relation,
-			    enum treeview_relationship rel,
-			    const struct treeview_field_data *field,
-			    void *data,
-			    treeview_node_options_flags flags)
+nserror treeview_create_node_folder(treeview *tree,
+				    treeview_node **folder,
+				    treeview_node *relation,
+				    enum treeview_relationship rel,
+				    const struct treeview_field_data *field,
+				    void *data,
+				    treeview_node_options_flags flags)
 {
 	treeview_node *n;
 
@@ -1221,8 +1205,8 @@ treeview_create_node_folder(treeview *tree,
 		return NSERROR_NOMEM;
 	}
 
-	n->flags = (flags & TREE_OPTION_SPECIAL_DIR) ?
-		TV_NFLAGS_SPECIAL : TV_NFLAGS_NONE;
+	n->flags = (flags & TREE_OPTION_SPECIAL_DIR) ? TV_NFLAGS_SPECIAL
+						     : TV_NFLAGS_NONE;
 	n->type = TREE_NODE_FOLDER;
 
 	n->height = tree_g.line_height;
@@ -1243,8 +1227,7 @@ treeview_create_node_folder(treeview *tree,
 	if (n->parent->flags & TV_NFLAGS_EXPANDED) {
 		/* Inform front end of change in dimensions */
 		if (!(flags & TREE_OPTION_SUPPRESS_RESIZE))
-			treeview__cw_update_size(tree, -1,
-						 tree->root->height);
+			treeview__cw_update_size(tree, -1, tree->root->height);
 
 		/* Redraw */
 		if (!(flags & TREE_OPTION_SUPPRESS_REDRAW)) {
@@ -1264,11 +1247,10 @@ treeview_create_node_folder(treeview *tree,
 
 
 /* Exported interface, documented in treeview.h */
-nserror
-treeview_update_node_folder(treeview *tree,
-			    treeview_node *folder,
-			    const struct treeview_field_data *field,
-			    void *data)
+nserror treeview_update_node_folder(treeview *tree,
+				    treeview_node *folder,
+				    const struct treeview_field_data *field,
+				    void *data)
 {
 	bool match;
 
@@ -1280,7 +1262,8 @@ treeview_update_node_folder(treeview *tree,
 
 	assert(field != NULL);
 	assert(lwc_string_isequal(tree->fields[tree->n_fields].field,
-				  field->field, &match) == lwc_error_ok &&
+				  field->field,
+				  &match) == lwc_error_ok &&
 	       match == true);
 	folder->text.data = field->value;
 	folder->text.len = field->value_len;
@@ -1312,11 +1295,10 @@ treeview_update_node_folder(treeview *tree,
 
 
 /* Exported interface, documented in treeview.h */
-nserror
-treeview_update_node_entry(treeview *tree,
-			   treeview_node *entry,
-			   const struct treeview_field_data fields[],
-			   void *data)
+nserror treeview_update_node_entry(treeview *tree,
+				   treeview_node *entry,
+				   const struct treeview_field_data fields[],
+				   void *data)
 {
 	bool match;
 	struct treeview_node_entry *e = (struct treeview_node_entry *)entry;
@@ -1331,7 +1313,8 @@ treeview_update_node_entry(treeview *tree,
 	assert(fields != NULL);
 	assert(fields[0].field != NULL);
 	assert(lwc_string_isequal(tree->fields[0].field,
-				  fields[0].field, &match) == lwc_error_ok &&
+				  fields[0].field,
+				  &match) == lwc_error_ok &&
 	       match == true);
 	entry->text.data = fields[0].value;
 	entry->text.len = fields[0].value_len;
@@ -1351,7 +1334,8 @@ treeview_update_node_entry(treeview *tree,
 	for (i = 1; i < tree->n_fields; i++) {
 		assert(fields[i].field != NULL);
 		assert(lwc_string_isequal(tree->fields[i].field,
-					  fields[i].field, &match) == lwc_error_ok &&
+					  fields[i].field,
+					  &match) == lwc_error_ok &&
 		       match == true);
 
 		e->fields[i - 1].value.data = fields[i].value;
@@ -1386,14 +1370,13 @@ treeview_update_node_entry(treeview *tree,
 
 
 /* Exported interface, documented in treeview.h */
-nserror
-treeview_create_node_entry(treeview *tree,
-			   treeview_node **entry,
-			   treeview_node *relation,
-			   enum treeview_relationship rel,
-			   const struct treeview_field_data fields[],
-			   void *data,
-			   treeview_node_options_flags flags)
+nserror treeview_create_node_entry(treeview *tree,
+				   treeview_node **entry,
+				   treeview_node *relation,
+				   enum treeview_relationship rel,
+				   const struct treeview_field_data fields[],
+				   void *data,
+				   treeview_node_options_flags flags)
 {
 	bool match;
 	struct treeview_node_entry *e;
@@ -1410,13 +1393,13 @@ treeview_create_node_entry(treeview *tree,
 	}
 
 	e = malloc(sizeof(struct treeview_node_entry) +
-			(tree->n_fields - 1) * sizeof(struct treeview_field));
+		   (tree->n_fields - 1) * sizeof(struct treeview_field));
 	if (e == NULL) {
 		return NSERROR_NOMEM;
 	}
 
 
-	n = (treeview_node *) e;
+	n = (treeview_node *)e;
 
 	n->flags = TV_NFLAGS_NONE;
 	n->type = TREE_NODE_ENTRY;
@@ -1426,8 +1409,9 @@ treeview_create_node_entry(treeview *tree,
 	assert(fields != NULL);
 	assert(fields[0].field != NULL);
 	assert(lwc_string_isequal(tree->fields[0].field,
-			fields[0].field, &match) == lwc_error_ok &&
-			match == true);
+				  fields[0].field,
+				  &match) == lwc_error_ok &&
+	       match == true);
 	n->text.data = fields[0].value;
 	n->text.len = fields[0].value_len;
 	n->text.width = 0;
@@ -1442,8 +1426,9 @@ treeview_create_node_entry(treeview *tree,
 	for (i = 1; i < tree->n_fields; i++) {
 		assert(fields[i].field != NULL);
 		assert(lwc_string_isequal(tree->fields[i].field,
-				fields[i].field, &match) == lwc_error_ok &&
-				match == true);
+					  fields[i].field,
+					  &match) == lwc_error_ok &&
+		       match == true);
 
 		e->fields[i - 1].value.data = fields[i].value;
 		e->fields[i - 1].value.len = fields[i].value_len;
@@ -1455,8 +1440,7 @@ treeview_create_node_entry(treeview *tree,
 	if (n->parent->flags & TV_NFLAGS_EXPANDED) {
 		/* Inform front end of change in dimensions */
 		if (!(flags & TREE_OPTION_SUPPRESS_RESIZE))
-			treeview__cw_update_size(tree, -1,
-						 tree->root->height);
+			treeview__cw_update_size(tree, -1, tree->root->height);
 
 		/* Redraw */
 		if (!(flags & TREE_OPTION_SUPPRESS_REDRAW)) {
@@ -1496,11 +1480,10 @@ struct treeview_walk_ctx {
  * \param skip_children set if child nodes should be skipped
  * \param end set if iteration should end early
  */
-static nserror
-treeview_walk_fwd_cb(treeview_node *n,
-		     void *ctx,
-		     bool *skip_children,
-		     bool *end)
+static nserror treeview_walk_fwd_cb(treeview_node *n,
+				    void *ctx,
+				    bool *skip_children,
+				    bool *end)
 {
 	struct treeview_walk_ctx *tw = ctx;
 
@@ -1532,20 +1515,17 @@ static nserror treeview_walk_bwd_cb(treeview_node *n, void *ctx, bool *end)
 
 
 /* Exported interface, documented in treeview.h */
-nserror
-treeview_walk(treeview *tree,
-	      treeview_node *root,
-	      treeview_walk_cb enter_cb,
-	      treeview_walk_cb leave_cb,
-	      void *ctx,
-	      enum treeview_node_type type)
+nserror treeview_walk(treeview *tree,
+		      treeview_node *root,
+		      treeview_walk_cb enter_cb,
+		      treeview_walk_cb leave_cb,
+		      void *ctx,
+		      enum treeview_node_type type)
 {
-	struct treeview_walk_ctx tw = {
-		.enter_cb = enter_cb,
-		.leave_cb = leave_cb,
-		.ctx = ctx,
-		.type = type
-	};
+	struct treeview_walk_ctx tw = {.enter_cb = enter_cb,
+				       .leave_cb = leave_cb,
+				       .ctx = ctx,
+				       .type = type};
 
 	assert(tree != NULL);
 	assert(tree->root != NULL);
@@ -1553,11 +1533,13 @@ treeview_walk(treeview *tree,
 	if (root == NULL)
 		root = tree->root;
 
-	return treeview_walk_internal(tree, root,
-			TREEVIEW_WALK_MODE_LOGICAL_COMPLETE,
-			(leave_cb != NULL) ? treeview_walk_bwd_cb : NULL,
-			(enter_cb != NULL) ? treeview_walk_fwd_cb : NULL,
-			&tw);
+	return treeview_walk_internal(
+		tree,
+		root,
+		TREEVIEW_WALK_MODE_LOGICAL_COMPLETE,
+		(leave_cb != NULL) ? treeview_walk_bwd_cb : NULL,
+		(enter_cb != NULL) ? treeview_walk_fwd_cb : NULL,
+		&tw);
 }
 
 
@@ -1585,8 +1567,7 @@ static inline bool treeview_unlink_node(treeview_node *n)
 	}
 
 	/* Reduce ancestor heights */
-	if ((n->parent != NULL) &&
-	    (n->parent->flags & TV_NFLAGS_EXPANDED)) {
+	if ((n->parent != NULL) && (n->parent->flags & TV_NFLAGS_EXPANDED)) {
 		return true;
 	}
 
@@ -1635,7 +1616,7 @@ static void treeview_edit_cancel(treeview *tree, bool redraw)
 static void treeview_edit_done(treeview *tree)
 {
 	int len, error;
-	char* new_text;
+	char *new_text;
 	treeview_node *n = tree->edit.node;
 	struct treeview_node_msg msg;
 	msg.msg = TREE_MSG_NODE_EDIT;
@@ -1713,8 +1694,9 @@ treeview_delete_node_walk_cb(treeview_node *n, void *ctx, bool *end)
 	assert(n->children == NULL);
 
 	if (treeview_unlink_node(n))
-		nd->h_reduction += (n->type == TREE_NODE_ENTRY) ?
-			n->height : tree_g.line_height;
+		nd->h_reduction += (n->type == TREE_NODE_ENTRY)
+					   ? n->height
+					   : tree_g.line_height;
 
 	/* Handle any special treatment */
 	switch (n->type) {
@@ -1734,8 +1716,7 @@ treeview_delete_node_walk_cb(treeview_node *n, void *ctx, bool *end)
 	}
 
 	/* Cancel any edit of this node */
-	if (nd->tree->edit.textarea != NULL &&
-	    nd->tree->edit.node == n) {
+	if (nd->tree->edit.textarea != NULL && nd->tree->edit.node == n) {
 		treeview_edit_cancel(nd->tree, false);
 	}
 
@@ -1763,28 +1744,28 @@ treeview_delete_node_walk_cb(treeview_node *n, void *ctx, bool *end)
  * \param flags		Treeview node options flags
  * \return NSERROR_OK on success, appropriate error otherwise
  */
-static nserror
-treeview_delete_node_internal(treeview *tree,
-			      treeview_node *n,
-			      bool interaction,
-			      treeview_node_options_flags flags)
+static nserror treeview_delete_node_internal(treeview *tree,
+					     treeview_node *n,
+					     bool interaction,
+					     treeview_node_options_flags flags)
 {
 	nserror err;
 	treeview_node *p = n->parent;
-	struct treeview_node_delete nd = {
-		.tree = tree,
-		.h_reduction = 0,
-		.user_interaction = interaction
-	};
+	struct treeview_node_delete nd = {.tree = tree,
+					  .h_reduction = 0,
+					  .user_interaction = interaction};
 
 	if (interaction && (tree->flags & TREEVIEW_NO_DELETES)) {
 		return NSERROR_OK;
 	}
 
 	/* Delete any children first */
-	err = treeview_walk_internal(tree, n,
-			TREEVIEW_WALK_MODE_LOGICAL_COMPLETE,
-			treeview_delete_node_walk_cb, NULL, &nd);
+	err = treeview_walk_internal(tree,
+				     n,
+				     TREEVIEW_WALK_MODE_LOGICAL_COMPLETE,
+				     treeview_delete_node_walk_cb,
+				     NULL,
+				     &nd);
 	if (err != NSERROR_OK) {
 		return err;
 	}
@@ -1806,10 +1787,8 @@ treeview_delete_node_internal(treeview *tree,
 
 	/* Inform front end of change in dimensions */
 	if (tree->root != NULL && p != NULL && p->flags & TV_NFLAGS_EXPANDED &&
-	    nd.h_reduction > 0 &&
-	    !(flags & TREE_OPTION_SUPPRESS_RESIZE)) {
-		treeview__cw_update_size(tree, -1,
-					 tree->root->height);
+	    nd.h_reduction > 0 && !(flags & TREE_OPTION_SUPPRESS_RESIZE)) {
+		treeview__cw_update_size(tree, -1, tree->root->height);
 	}
 
 	treeview__search_update_display(tree);
@@ -1834,11 +1813,9 @@ static nserror treeview_delete_empty_nodes(treeview *tree, bool interaction)
 	treeview_node *node, *child, *parent, *next_sibling, *p;
 	bool abort = false;
 	nserror err;
-	struct treeview_node_delete nd = {
-		.tree = tree,
-		.h_reduction = 0,
-		.user_interaction = interaction
-	};
+	struct treeview_node_delete nd = {.tree = tree,
+					  .h_reduction = 0,
+					  .user_interaction = interaction};
 
 	assert(tree != NULL);
 	assert(tree->root != NULL);
@@ -1858,8 +1835,7 @@ static nserror treeview_delete_empty_nodes(treeview *tree, bool interaction)
 			 * go to next sibling if present, or nearest ancestor
 			 * with a next sibling. */
 
-			while (node->parent != NULL &&
-			       next_sibling == NULL) {
+			while (node->parent != NULL && next_sibling == NULL) {
 				if (node->type == TREE_NODE_FOLDER &&
 				    node->children == NULL) {
 					/* Delete node */
@@ -1872,8 +1848,7 @@ static nserror treeview_delete_empty_nodes(treeview *tree, bool interaction)
 
 					/* Reduce ancestor heights */
 					while (p != NULL &&
-					       p->flags &
-					       TV_NFLAGS_EXPANDED) {
+					       p->flags & TV_NFLAGS_EXPANDED) {
 						p->height -= nd.h_reduction;
 						p = p->parent;
 					}
@@ -1891,8 +1866,9 @@ static nserror treeview_delete_empty_nodes(treeview *tree, bool interaction)
 			    node->children == NULL) {
 				/* Delete node */
 				p = node->parent;
-				err = treeview_delete_node_walk_cb(
-					node, &nd, &abort);
+				err = treeview_delete_node_walk_cb(node,
+								   &nd,
+								   &abort);
 				if (err != NSERROR_OK) {
 					return err;
 				}
@@ -1913,8 +1889,8 @@ static nserror treeview_delete_empty_nodes(treeview *tree, bool interaction)
 
 		parent = node->parent;
 		next_sibling = node->next_sib;
-		child = (node->flags & TV_NFLAGS_EXPANDED) ?
-			node->children : NULL;
+		child = (node->flags & TV_NFLAGS_EXPANDED) ? node->children
+							   : NULL;
 	}
 
 	return NSERROR_OK;
@@ -1922,10 +1898,9 @@ static nserror treeview_delete_empty_nodes(treeview *tree, bool interaction)
 
 
 /* Exported interface, documented in treeview.h */
-nserror
-treeview_delete_node(treeview *tree,
-		     treeview_node *n,
-		     treeview_node_options_flags flags)
+nserror treeview_delete_node(treeview *tree,
+			     treeview_node *n,
+			     treeview_node_options_flags flags)
 {
 	nserror err;
 	struct rect r;
@@ -1955,7 +1930,8 @@ treeview_delete_node(treeview *tree,
 		if (tree->root->height != h) {
 			r.y0 = 0;
 			if (!(flags & TREE_OPTION_SUPPRESS_RESIZE)) {
-				treeview__cw_update_size(tree, -1,
+				treeview__cw_update_size(tree,
+							 -1,
 							 tree->root->height);
 			}
 		}
@@ -1985,15 +1961,15 @@ treeview_delete_node(treeview *tree,
  * \param[in] ta_callback  The textarea callback function to give the textarea.
  * \return the textarea pointer on success, or NULL on failure.
  */
-static struct textarea *treeview__create_textarea(
-		treeview *tree,
-		int width,
-		int height,
-		colour border,
-		colour background,
-		colour foreground,
-		plot_font_style_t text,
-		textarea_client_callback ta_callback)
+static struct textarea *
+treeview__create_textarea(treeview *tree,
+			  int width,
+			  int height,
+			  colour border,
+			  colour background,
+			  colour foreground,
+			  plot_font_style_t text,
+			  textarea_client_callback ta_callback)
 {
 	/* Configure the textarea */
 	textarea_flags ta_flags = TEXTAREA_INTERNAL_CARET;
@@ -2020,13 +1996,12 @@ static struct textarea *treeview__create_textarea(
 
 
 /* Exported interface, documented in treeview.h */
-nserror
-treeview_create(treeview **treeout,
-		const struct treeview_callback_table *callbacks,
-		int n_fields,
-		struct treeview_field_desc fields[],
-		struct core_window *cw,
-		treeview_flags flags)
+nserror treeview_create(treeview **treeout,
+			const struct treeview_callback_table *callbacks,
+			int n_fields,
+			struct treeview_field_desc fields[],
+			struct core_window *cw,
+			treeview_flags flags)
 {
 	treeview *tree;
 	nserror error;
@@ -2103,12 +2078,14 @@ treeview_create(treeview **treeout,
 
 	if (flags & TREEVIEW_SEARCHABLE) {
 		tree->search.textarea = treeview__create_textarea(
-				tree, 600, tree_g.line_height,
-				nscolours[NSCOLOUR_TEXT_INPUT_BG],
-				nscolours[NSCOLOUR_TEXT_INPUT_BG],
-				nscolours[NSCOLOUR_TEXT_INPUT_FG],
-				plot_style_odd.text,
-				treeview_textarea_search_callback);
+			tree,
+			600,
+			tree_g.line_height,
+			nscolours[NSCOLOUR_TEXT_INPUT_BG],
+			nscolours[NSCOLOUR_TEXT_INPUT_BG],
+			nscolours[NSCOLOUR_TEXT_INPUT_FG],
+			plot_style_odd.text,
+			treeview_textarea_search_callback);
 		if (tree->search.textarea == NULL) {
 			treeview_destroy(tree);
 			return NSERROR_NOMEM;
@@ -2130,8 +2107,7 @@ treeview_create(treeview **treeout,
 
 
 /* Exported interface, documented in treeview.h */
-nserror
-treeview_cw_attach(treeview *tree, struct core_window *cw)
+nserror treeview_cw_attach(treeview *tree, struct core_window *cw)
 {
 	assert(cw != NULL);
 
@@ -2170,9 +2146,11 @@ nserror treeview_destroy(treeview *tree)
 	}
 
 	/* Destroy nodes */
-	treeview_delete_node_internal(tree, tree->root, false,
+	treeview_delete_node_internal(tree,
+				      tree->root,
+				      false,
 				      TREE_OPTION_SUPPRESS_RESIZE |
-				      TREE_OPTION_SUPPRESS_REDRAW);
+					      TREE_OPTION_SUPPRESS_REDRAW);
 
 	/* Destroy feilds */
 	for (f = 0; f <= tree->n_fields; f++) {
@@ -2243,10 +2221,11 @@ treeview_node_expand_internal(treeview *tree, treeview_node *node)
 		for (i = 0; i < tree->n_fields - 1; i++) {
 
 			if (e->fields[i].value.width == 0) {
-				guit->layout->width(&plot_style_odd.text,
-						    e->fields[i].value.data,
-						    e->fields[i].value.len,
-						    &(e->fields[i].value.width));
+				guit->layout->width(
+					&plot_style_odd.text,
+					e->fields[i].value.data,
+					e->fields[i].value.len,
+					&(e->fields[i].value.width));
 			}
 
 			/* Add height for field */
@@ -2267,22 +2246,22 @@ treeview_node_expand_internal(treeview *tree, treeview_node *node)
 
 	/* And node heights */
 	for (struct treeview_node *n = node;
-			(n != NULL) && (n->flags & TV_NFLAGS_EXPANDED);
-			n = n->parent) {
+	     (n != NULL) && (n->flags & TV_NFLAGS_EXPANDED);
+	     n = n->parent) {
 		n->height += additional_height_entries +
-				additional_height_folders;
+			     additional_height_folders;
 	}
 
-	if (tree->search.search &&
-			node->type == TREE_NODE_ENTRY &&
-			node->flags & TV_NFLAGS_MATCHED) {
+	if (tree->search.search && node->type == TREE_NODE_ENTRY &&
+	    node->flags & TV_NFLAGS_MATCHED) {
 		tree->search.height += additional_height_entries;
 	}
 
 	/* Inform front end of change in dimensions */
 	if (additional_height_entries + additional_height_folders != 0) {
-		treeview__cw_update_size(tree, -1,
-				treeview__get_display_height(tree));
+		treeview__cw_update_size(tree,
+					 -1,
+					 treeview__get_display_height(tree));
 	}
 
 	return NSERROR_OK;
@@ -2357,8 +2336,8 @@ static nserror treeview_node_contract_cb(treeview_node *n, void *ctx, bool *end)
 
 	assert(h_reduction_folder + h_reduction_entry >= 0);
 	for (struct treeview_node *node = n;
-			(node != NULL) && (node->flags & TV_NFLAGS_EXPANDED);
-			node = node->parent) {
+	     (node != NULL) && (node->flags & TV_NFLAGS_EXPANDED);
+	     node = node->parent) {
 		node->height -= h_reduction_folder + h_reduction_entry;
 	}
 
@@ -2397,8 +2376,12 @@ treeview_node_contract_internal(treeview *tree, treeview_node *node)
 	selected = node->flags & TV_NFLAGS_SELECTED;
 
 	/* Contract children. */
-	treeview_walk_internal(tree, node, TREEVIEW_WALK_MODE_LOGICAL_EXPANDED,
-			treeview_node_contract_cb, NULL, &data);
+	treeview_walk_internal(tree,
+			       node,
+			       TREEVIEW_WALK_MODE_LOGICAL_EXPANDED,
+			       treeview_node_contract_cb,
+			       NULL,
+			       &data);
 
 	/* Contract node */
 	treeview_node_contract_cb(node, &data, false);
@@ -2460,9 +2443,12 @@ nserror treeview_contract(treeview *tree, bool all)
 		selected = n->flags & TV_NFLAGS_SELECTED;
 
 		/* Contract children. */
-		treeview_walk_internal(tree, n,
-				TREEVIEW_WALK_MODE_LOGICAL_EXPANDED,
-				treeview_node_contract_cb, NULL, &data);
+		treeview_walk_internal(tree,
+				       n,
+				       TREEVIEW_WALK_MODE_LOGICAL_EXPANDED,
+				       treeview_node_contract_cb,
+				       NULL,
+				       &data);
 
 		/* Contract node */
 		treeview_node_contract_cb(n, &data, false);
@@ -2500,10 +2486,7 @@ struct treeview_expand_data {
  * \return NSERROR_OK on success else error code.
  */
 static nserror
-treeview_expand_cb(treeview_node *n,
-		   void *ctx,
-		   bool *skip_children,
-		   bool *end)
+treeview_expand_cb(treeview_node *n, void *ctx, bool *skip_children, bool *end)
 {
 	struct treeview_expand_data *data = ctx;
 	nserror err;
@@ -2536,9 +2519,12 @@ nserror treeview_expand(treeview *tree, bool only_folders)
 	data.tree = tree;
 	data.only_folders = only_folders;
 
-	res = treeview_walk_internal(tree, tree->root,
-			TREEVIEW_WALK_MODE_LOGICAL_COMPLETE,
-			NULL, treeview_expand_cb, &data);
+	res = treeview_walk_internal(tree,
+				     tree->root,
+				     TREEVIEW_WALK_MODE_LOGICAL_COMPLETE,
+				     NULL,
+				     treeview_expand_cb,
+				     &data);
 	if (res == NSERROR_OK) {
 		/* expansion succeeded, schedule redraw */
 
@@ -2564,14 +2550,13 @@ nserror treeview_expand(treeview *tree, bool only_folders)
  * \param[in]     data      Redraw data for rendering contents.
  * \param[in]     ctx       Current render context.
  */
-static void treeview_redraw_tree(
-		treeview *tree,
-		const int x,
-		const int y,
-		int *render_y_in_out,
-		const struct rect *r,
-		struct content_redraw_data *data,
-		const struct redraw_context *ctx)
+static void treeview_redraw_tree(treeview *tree,
+				 const int x,
+				 const int y,
+				 int *render_y_in_out,
+				 const struct rect *r,
+				 struct content_redraw_data *data,
+				 const struct redraw_context *ctx)
 {
 	struct treeview_node_style *style = &plot_style_odd;
 	enum treeview_resource_id res = TREE_RES_CONTENT;
@@ -2604,8 +2589,8 @@ static void treeview_redraw_tree(
 		int height;
 		int i;
 
-		next = (node->flags & TV_NFLAGS_EXPANDED) ?
-			node->children : NULL;
+		next = (node->flags & TV_NFLAGS_EXPANDED) ? node->children
+							  : NULL;
 
 		if (next != NULL) {
 			/* down to children */
@@ -2615,8 +2600,7 @@ static void treeview_redraw_tree(
 			 * go to next sibling if present, or nearest ancestor
 			 * with a next sibling. */
 
-			while (node != root &&
-			       node->next_sib == NULL) {
+			while (node != root && node->next_sib == NULL) {
 				node = node->parent;
 			}
 
@@ -2633,8 +2617,8 @@ static void treeview_redraw_tree(
 
 		count++;
 		inset = x + node->inset;
-		height = (node->type == TREE_NODE_ENTRY) ? node->height :
-			tree_g.line_height;
+		height = (node->type == TREE_NODE_ENTRY) ? node->height
+							 : tree_g.line_height;
 
 		if ((render_y + height) < r->y0) {
 			/* This node's line is above clip region */
@@ -2644,28 +2628,28 @@ static void treeview_redraw_tree(
 
 		style = (count & 0x1) ? &plot_style_odd : &plot_style_even;
 		if (tree->drag.type == TV_DRAG_SELECTION &&
-		    (render_y + height >= sel_min &&
-		     render_y < sel_max)) {
+		    (render_y + height >= sel_min && render_y < sel_max)) {
 			invert_selection = true;
 		} else {
 			invert_selection = false;
 		}
 		if ((node->flags & TV_NFLAGS_SELECTED && !invert_selection) ||
-		    (!(node->flags & TV_NFLAGS_SELECTED) &&
-		     invert_selection)) {
+		    (!(node->flags & TV_NFLAGS_SELECTED) && invert_selection)) {
 			bg_style = &style->sbg;
 			text_style = &style->stext;
 			infotext_style = &style->sitext;
-			furniture = (node->flags & TV_NFLAGS_EXPANDED) ?
-				style->furn[TREE_FURN_CONTRACT].sel :
-				style->furn[TREE_FURN_EXPAND].sel;
+			furniture =
+				(node->flags & TV_NFLAGS_EXPANDED)
+					? style->furn[TREE_FURN_CONTRACT].sel
+					: style->furn[TREE_FURN_EXPAND].sel;
 		} else {
 			bg_style = &style->bg;
 			text_style = &style->text;
 			infotext_style = &style->itext;
-			furniture = (node->flags & TV_NFLAGS_EXPANDED) ?
-				style->furn[TREE_FURN_CONTRACT].bmp :
-				style->furn[TREE_FURN_EXPAND].bmp;
+			furniture =
+				(node->flags & TV_NFLAGS_EXPANDED)
+					? style->furn[TREE_FURN_CONTRACT].bmp
+					: style->furn[TREE_FURN_EXPAND].bmp;
 		}
 
 		/* Render background */
@@ -2677,13 +2661,13 @@ static void treeview_redraw_tree(
 
 		/* Render toggle */
 		ctx->plot->bitmap(ctx,
-				furniture,
-				inset,
-				render_y + tree_g.line_height / 4,
-				style->furn[TREE_FURN_EXPAND].size,
-				style->furn[TREE_FURN_EXPAND].size,
-				bg_style->fill_colour,
-				BITMAPF_NONE);
+				  furniture,
+				  inset,
+				  render_y + tree_g.line_height / 4,
+				  style->furn[TREE_FURN_EXPAND].size,
+				  style->furn[TREE_FURN_EXPAND].size,
+				  bg_style->fill_colour,
+				  BITMAPF_NONE);
 
 		/* Render icon */
 		if (node->type == TREE_NODE_ENTRY) {
@@ -2698,7 +2682,8 @@ static void treeview_redraw_tree(
 			/* Icon resource is available */
 			data->x = inset + tree_g.step_width;
 			data->y = render_y + ((tree_g.line_height -
-					      treeview_res[res].height + 1) / 2);
+					       treeview_res[res].height + 1) /
+					      2);
 			data->background_colour = bg_style->fill_colour;
 
 			content_redraw(treeview_res[res].c, data, r, ctx);
@@ -2708,7 +2693,8 @@ static void treeview_redraw_tree(
 		x0 = inset + tree_g.step_width + tree_g.icon_step;
 		ctx->plot->text(ctx,
 				text_style,
-				x0, render_y + baseline,
+				x0,
+				render_y + baseline,
 				node->text.data,
 				node->text.len);
 
@@ -2736,7 +2722,9 @@ static void treeview_redraw_tree(
 
 				ctx->plot->text(ctx,
 						infotext_style,
-						x0 + max_width - ef->value.width - tree_g.step_width,
+						x0 + max_width -
+							ef->value.width -
+							tree_g.step_width,
 						render_y + baseline,
 						ef->value.data,
 						ef->value.len);
@@ -2750,7 +2738,8 @@ static void treeview_redraw_tree(
 			} else {
 				ctx->plot->text(ctx,
 						infotext_style,
-						x0, render_y + baseline,
+						x0,
+						render_y + baseline,
 						entry->fields[i].value.data,
 						entry->fields[i].value.len);
 			}
@@ -2783,14 +2772,13 @@ static void treeview_redraw_tree(
  * \param[in]     data      Redraw data for rendering contents.
  * \param[in]     ctx       Current render context.
  */
-static void treeview_redraw_search(
-		treeview *tree,
-		const int x,
-		const int y,
-		int *render_y_in_out,
-		const struct rect *r,
-		struct content_redraw_data *data,
-		const struct redraw_context *ctx)
+static void treeview_redraw_search(treeview *tree,
+				   const int x,
+				   const int y,
+				   int *render_y_in_out,
+				   const struct rect *r,
+				   struct content_redraw_data *data,
+				   const struct redraw_context *ctx)
 {
 	struct treeview_node_style *style = &plot_style_odd;
 	enum treeview_resource_id res = TREE_RES_CONTENT;
@@ -2833,8 +2821,7 @@ static void treeview_redraw_search(
 			 * go to next sibling if present, or nearest ancestor
 			 * with a next sibling. */
 
-			while (node != root &&
-			       node->next_sib == NULL) {
+			while (node != root && node->next_sib == NULL) {
 				node = node->parent;
 			}
 
@@ -2850,7 +2837,7 @@ static void treeview_redraw_search(
 		       node->type == TREE_NODE_ENTRY);
 
 		if (node->type == TREE_NODE_FOLDER ||
-				!(node->flags & TV_NFLAGS_MATCHED)) {
+		    !(node->flags & TV_NFLAGS_MATCHED)) {
 			continue;
 		}
 
@@ -2866,28 +2853,28 @@ static void treeview_redraw_search(
 
 		style = (count & 0x1) ? &plot_style_odd : &plot_style_even;
 		if (tree->drag.type == TV_DRAG_SELECTION &&
-		    (render_y + height >= sel_min &&
-		     render_y < sel_max)) {
+		    (render_y + height >= sel_min && render_y < sel_max)) {
 			invert_selection = true;
 		} else {
 			invert_selection = false;
 		}
 		if ((node->flags & TV_NFLAGS_SELECTED && !invert_selection) ||
-		    (!(node->flags & TV_NFLAGS_SELECTED) &&
-		     invert_selection)) {
+		    (!(node->flags & TV_NFLAGS_SELECTED) && invert_selection)) {
 			bg_style = &style->sbg;
 			text_style = &style->stext;
 			infotext_style = &style->sitext;
-			furniture = (node->flags & TV_NFLAGS_EXPANDED) ?
-				style->furn[TREE_FURN_CONTRACT].sel :
-				style->furn[TREE_FURN_EXPAND].sel;
+			furniture =
+				(node->flags & TV_NFLAGS_EXPANDED)
+					? style->furn[TREE_FURN_CONTRACT].sel
+					: style->furn[TREE_FURN_EXPAND].sel;
 		} else {
 			bg_style = &style->bg;
 			text_style = &style->text;
 			infotext_style = &style->itext;
-			furniture = (node->flags & TV_NFLAGS_EXPANDED) ?
-				style->furn[TREE_FURN_CONTRACT].bmp :
-				style->furn[TREE_FURN_EXPAND].bmp;
+			furniture =
+				(node->flags & TV_NFLAGS_EXPANDED)
+					? style->furn[TREE_FURN_CONTRACT].bmp
+					: style->furn[TREE_FURN_EXPAND].bmp;
 		}
 
 		/* Render background */
@@ -2899,13 +2886,13 @@ static void treeview_redraw_search(
 
 		/* Render toggle */
 		ctx->plot->bitmap(ctx,
-				furniture,
-				inset,
-				render_y + tree_g.line_height / 4,
-				style->furn[TREE_FURN_EXPAND].size,
-				style->furn[TREE_FURN_EXPAND].size,
-				bg_style->fill_colour,
-				BITMAPF_NONE);
+				  furniture,
+				  inset,
+				  render_y + tree_g.line_height / 4,
+				  style->furn[TREE_FURN_EXPAND].size,
+				  style->furn[TREE_FURN_EXPAND].size,
+				  bg_style->fill_colour,
+				  BITMAPF_NONE);
 
 		/* Render icon */
 		if (node->type == TREE_NODE_ENTRY) {
@@ -2920,7 +2907,8 @@ static void treeview_redraw_search(
 			/* Icon resource is available */
 			data->x = inset + tree_g.step_width;
 			data->y = render_y + ((tree_g.line_height -
-					      treeview_res[res].height + 1) / 2);
+					       treeview_res[res].height + 1) /
+					      2);
 			data->background_colour = bg_style->fill_colour;
 
 			content_redraw(treeview_res[res].c, data, r, ctx);
@@ -2930,7 +2918,8 @@ static void treeview_redraw_search(
 		x0 = inset + tree_g.step_width + tree_g.icon_step;
 		ctx->plot->text(ctx,
 				text_style,
-				x0, render_y + baseline,
+				x0,
+				render_y + baseline,
 				node->text.data,
 				node->text.len);
 
@@ -2958,7 +2947,9 @@ static void treeview_redraw_search(
 
 				ctx->plot->text(ctx,
 						infotext_style,
-						x0 + max_width - ef->value.width - tree_g.step_width,
+						x0 + max_width -
+							ef->value.width -
+							tree_g.step_width,
 						render_y + baseline,
 						ef->value.data,
 						ef->value.len);
@@ -2972,7 +2963,8 @@ static void treeview_redraw_search(
 			} else {
 				ctx->plot->text(ctx,
 						infotext_style,
-						x0, render_y + baseline,
+						x0,
+						render_y + baseline,
 						entry->fields[i].value.data,
 						entry->fields[i].value.len);
 			}
@@ -2995,12 +2987,11 @@ static void treeview_redraw_search(
 
 
 /* Exported interface, documented in treeview.h */
-void
-treeview_redraw(treeview *tree,
-		const int x,
-		const int y,
-		struct rect *clip,
-		const struct redraw_context *ctx)
+void treeview_redraw(treeview *tree,
+		     const int x,
+		     const int y,
+		     struct rect *clip,
+		     const struct redraw_context *ctx)
 {
 	struct redraw_context new_ctx = *ctx;
 	struct content_redraw_data data;
@@ -3040,38 +3031,45 @@ treeview_redraw(treeview *tree,
 			rect.y0 = render_y;
 			rect.x1 = r.x1;
 			rect.y1 = render_y + tree_g.line_height;
-			new_ctx.plot->rectangle(&new_ctx, &plot_style_even.bg,
-					&rect);
+			new_ctx.plot->rectangle(&new_ctx,
+						&plot_style_even.bg,
+						&rect);
 
 			if (treeview_res[icon].ready) {
 				/* Icon resource is available */
 				data.x = tree_g.window_padding;
-				data.y = render_y + ((tree_g.line_height -
-						treeview_res[icon].height + 1) /
-						2);
-				data.background_colour = plot_style_even.bg.
-						fill_colour;
+				data.y = render_y +
+					 ((tree_g.line_height -
+					   treeview_res[icon].height + 1) /
+					  2);
+				data.background_colour =
+					plot_style_even.bg.fill_colour;
 
 				content_redraw(treeview_res[icon].c,
-						&data, &r, &new_ctx);
+					       &data,
+					       &r,
+					       &new_ctx);
 			}
 
 			textarea_redraw(tree->search.textarea,
 					x + tree_g.window_padding +
-							tree_g.icon_step, y,
-					plot_style_even.bg.fill_colour, 1.0,
-					&r, &new_ctx);
+						tree_g.icon_step,
+					y,
+					plot_style_even.bg.fill_colour,
+					1.0,
+					&r,
+					&new_ctx);
 		}
 		render_y += tree_g.line_height;
 	}
 
 	/* Render the treeview data */
 	if (tree->search.search == true) {
-		treeview_redraw_search(tree, x, y,
-				&render_y, &r, &data, &new_ctx);
+		treeview_redraw_search(
+			tree, x, y, &render_y, &r, &data, &new_ctx);
 	} else {
-		treeview_redraw_tree(tree, x, y,
-				&render_y, &r, &data, &new_ctx);
+		treeview_redraw_tree(
+			tree, x, y, &render_y, &r, &data, &new_ctx);
 	}
 
 	if (render_y < r.y1) {
@@ -3091,14 +3089,18 @@ treeview_redraw(treeview *tree,
 		data.y = tree->move.target_area.y0 + y;
 		data.background_colour = plot_style_even.bg.fill_colour;
 
-		content_redraw(treeview_res[TREE_RES_ARROW].c, &data, &r, &new_ctx);
+		content_redraw(
+			treeview_res[TREE_RES_ARROW].c, &data, &r, &new_ctx);
 
 	} else if (tree->edit.textarea != NULL) {
 		/* Edit in progress; render textarea */
 		textarea_redraw(tree->edit.textarea,
-				tree->edit.x + x, tree->edit.y + y,
-				plot_style_even.bg.fill_colour, 1.0,
-				&r, &new_ctx);
+				tree->edit.x + x,
+				tree->edit.y + y,
+				plot_style_even.bg.fill_colour,
+				1.0,
+				&r,
+				&new_ctx);
 	}
 
 	/* Rendering complete */
@@ -3159,11 +3161,10 @@ struct treeview_selection_walk_data {
  * \param end flag to allow iteration to be finished early.
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-treeview_node_selection_walk_cb(treeview_node *n,
-				void *ctx,
-				bool *skip_children,
-				bool *end)
+static nserror treeview_node_selection_walk_cb(treeview_node *n,
+					       void *ctx,
+					       bool *skip_children,
+					       bool *end)
 {
 	struct treeview_selection_walk_data *sw = ctx;
 	int height;
@@ -3192,8 +3193,8 @@ treeview_node_selection_walk_cb(treeview_node *n,
 
 	case TREEVIEW_WALK_DELETE_SELECTION:
 		if (n->flags & TV_NFLAGS_SELECTED) {
-			err = treeview_delete_node_internal(sw->tree, n, true,
-							    TREE_OPTION_NONE);
+			err = treeview_delete_node_internal(
+				sw->tree, n, true, TREE_OPTION_NONE);
 			if (err != NSERROR_OK) {
 				return err;
 			}
@@ -3227,8 +3228,7 @@ treeview_node_selection_walk_cb(treeview_node *n,
 
 	case TREEVIEW_WALK_COMMIT_SELECT_DRAG:
 		if (sw->current_y >= sw->data.drag.sel_min &&
-		    sw->current_y - height <
-		    sw->data.drag.sel_max) {
+		    sw->current_y - height < sw->data.drag.sel_max) {
 			n->flags ^= TV_NFLAGS_SELECTED;
 		}
 		return NSERROR_OK;
@@ -3284,9 +3284,10 @@ treeview_node_selection_walk_cb(treeview_node *n,
 					continue;
 				}
 				val = treeview_get_text_for_field(sw->tree,
-								  n, i);
+								  n,
+								  i);
 				text = val->data;
-				len  = val->len;
+				len = val->len;
 
 				temp = realloc(sw->data.copy.text,
 					       sw->data.copy.len + len + 1);
@@ -3332,9 +3333,12 @@ bool treeview_has_selection(treeview *tree)
 	sw.purpose = TREEVIEW_WALK_HAS_SELECTION;
 	sw.data.has_selection = false;
 
-	treeview_walk_internal(tree, tree->root,
-			TREEVIEW_WALK_MODE_DISPLAY, NULL,
-			treeview_node_selection_walk_cb, &sw);
+	treeview_walk_internal(tree,
+			       tree->root,
+			       TREEVIEW_WALK_MODE_DISPLAY,
+			       NULL,
+			       treeview_node_selection_walk_cb,
+			       &sw);
 
 	return sw.data.has_selection;
 }
@@ -3346,24 +3350,26 @@ bool treeview_has_selection(treeview *tree)
  * \param tree Treeview object in which to create folder
  * \return the first selected treeview node, or NULL
  */
-static treeview_node * treeview_get_first_selected(treeview *tree)
+static treeview_node *treeview_get_first_selected(treeview *tree)
 {
 	struct treeview_selection_walk_data sw;
 
 	sw.purpose = TREEVIEW_WALK_GET_FIRST_SELECTED;
 	sw.data.first.n = NULL;
 
-	treeview_walk_internal(tree, tree->root,
-			TREEVIEW_WALK_MODE_DISPLAY, NULL,
-			treeview_node_selection_walk_cb, &sw);
+	treeview_walk_internal(tree,
+			       tree->root,
+			       TREEVIEW_WALK_MODE_DISPLAY,
+			       NULL,
+			       treeview_node_selection_walk_cb,
+			       &sw);
 
 	return sw.data.first.n;
 }
 
 
 /* Exported interface, documented in treeview.h */
-enum treeview_node_type treeview_get_selection(treeview *tree,
-					       void **node_data)
+enum treeview_node_type treeview_get_selection(treeview *tree, void **node_data)
 {
 	treeview_node *n;
 
@@ -3402,9 +3408,12 @@ static bool treeview_clear_selection(treeview *tree, struct rect *rect)
 	sw.data.redraw.rect = rect;
 	sw.current_y = treeview__get_search_height(tree);
 
-	treeview_walk_internal(tree, tree->root,
-			TREEVIEW_WALK_MODE_DISPLAY, NULL,
-			treeview_node_selection_walk_cb, &sw);
+	treeview_walk_internal(tree,
+			       tree->root,
+			       TREEVIEW_WALK_MODE_DISPLAY,
+			       NULL,
+			       treeview_node_selection_walk_cb,
+			       &sw);
 
 	return sw.data.redraw.required;
 }
@@ -3431,9 +3440,12 @@ static bool treeview_select_all(treeview *tree, struct rect *rect)
 	sw.data.redraw.rect = rect;
 	sw.current_y = treeview__get_search_height(tree);
 
-	treeview_walk_internal(tree, tree->root,
-			TREEVIEW_WALK_MODE_DISPLAY, NULL,
-			treeview_node_selection_walk_cb, &sw);
+	treeview_walk_internal(tree,
+			       tree->root,
+			       TREEVIEW_WALK_MODE_DISPLAY,
+			       NULL,
+			       treeview_node_selection_walk_cb,
+			       &sw);
 
 	return sw.data.redraw.required;
 }
@@ -3459,9 +3471,12 @@ static void treeview_commit_selection_drag(treeview *tree)
 		sw.data.drag.sel_max = tree->drag.prev.y;
 	}
 
-	treeview_walk_internal(tree, tree->root,
-			TREEVIEW_WALK_MODE_DISPLAY, NULL,
-			treeview_node_selection_walk_cb, &sw);
+	treeview_walk_internal(tree,
+			       tree->root,
+			       TREEVIEW_WALK_MODE_DISPLAY,
+			       NULL,
+			       treeview_node_selection_walk_cb,
+			       &sw);
 }
 
 
@@ -3480,9 +3495,12 @@ static void treeview_move_yank_selection(treeview *tree, treeview_node *fixed)
 	sw.data.yank.prev = NULL;
 	sw.tree = tree;
 
-	treeview_walk_internal(tree, tree->root,
-			TREEVIEW_WALK_MODE_DISPLAY, NULL,
-			treeview_node_selection_walk_cb, &sw);
+	treeview_walk_internal(tree,
+			       tree->root,
+			       TREEVIEW_WALK_MODE_DISPLAY,
+			       NULL,
+			       treeview_node_selection_walk_cb,
+			       &sw);
 }
 
 
@@ -3501,16 +3519,19 @@ static void treeview_copy_selection(treeview *tree)
 	sw.data.copy.len = 0;
 	sw.tree = tree;
 
-	err = treeview_walk_internal(tree, tree->root,
-			TREEVIEW_WALK_MODE_DISPLAY, NULL,
-			treeview_node_selection_walk_cb, &sw);
+	err = treeview_walk_internal(tree,
+				     tree->root,
+				     TREEVIEW_WALK_MODE_DISPLAY,
+				     NULL,
+				     treeview_node_selection_walk_cb,
+				     &sw);
 	if (err != NSERROR_OK) {
 		return;
 	}
 
 	if (sw.data.copy.text != NULL) {
-		guit->clipboard->set(sw.data.copy.text,
-				     sw.data.copy.len - 1, NULL, 0);
+		guit->clipboard->set(
+			sw.data.copy.text, sw.data.copy.len - 1, NULL, 0);
 		free(sw.data.copy.text);
 	}
 }
@@ -3541,9 +3562,12 @@ static bool treeview_delete_selection(treeview *tree, struct rect *rect)
 	sw.current_y = treeview__get_search_height(tree);
 	sw.tree = tree;
 
-	treeview_walk_internal(tree, tree->root,
-			TREEVIEW_WALK_MODE_DISPLAY, NULL,
-			treeview_node_selection_walk_cb, &sw);
+	treeview_walk_internal(tree,
+			       tree->root,
+			       TREEVIEW_WALK_MODE_DISPLAY,
+			       NULL,
+			       treeview_node_selection_walk_cb,
+			       &sw);
 
 	return sw.data.redraw.required;
 }
@@ -3574,9 +3598,12 @@ static bool treeview_propagate_selection(treeview *tree, struct rect *rect)
 	sw.current_y = treeview__get_search_height(tree);
 	sw.tree = tree;
 
-	treeview_walk_internal(tree, tree->root,
-			TREEVIEW_WALK_MODE_DISPLAY, NULL,
-			treeview_node_selection_walk_cb, &sw);
+	treeview_walk_internal(tree,
+			       tree->root,
+			       TREEVIEW_WALK_MODE_DISPLAY,
+			       NULL,
+			       treeview_node_selection_walk_cb,
+			       &sw);
 
 	return sw.data.redraw.required;
 }
@@ -3722,11 +3749,10 @@ treeview_node_launch_walk_bwd_cb(treeview_node *n, void *ctx, bool *end)
  * \param end flag to allow iteration to be finished early.
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-treeview_node_launch_walk_fwd_cb(treeview_node *n,
-				 void *ctx,
-				 bool *skip_children,
-				 bool *end)
+static nserror treeview_node_launch_walk_fwd_cb(treeview_node *n,
+						void *ctx,
+						bool *skip_children,
+						bool *end)
 {
 	struct treeview_launch_walk_data *lw = ctx;
 	nserror ret = NSERROR_OK;
@@ -3735,8 +3761,7 @@ treeview_node_launch_walk_fwd_cb(treeview_node *n,
 		lw->selected_depth++;
 
 	} else if (n->type == TREE_NODE_ENTRY &&
-		   (n->flags & TV_NFLAGS_SELECTED ||
-		    lw->selected_depth > 0)) {
+		   (n->flags & TV_NFLAGS_SELECTED || lw->selected_depth > 0)) {
 		struct treeview_node_msg msg;
 		msg.msg = TREE_MSG_NODE_LAUNCH;
 		msg.data.node_launch.mouse = BROWSER_MOUSE_HOVER;
@@ -3766,20 +3791,21 @@ static nserror treeview_launch_selection(treeview *tree)
 	lw.selected_depth = 0;
 	lw.tree = tree;
 
-	return treeview_walk_internal(tree, tree->root,
-			TREEVIEW_WALK_MODE_LOGICAL_COMPLETE,
-			treeview_node_launch_walk_bwd_cb,
-			treeview_node_launch_walk_fwd_cb, &lw);
+	return treeview_walk_internal(tree,
+				      tree->root,
+				      TREEVIEW_WALK_MODE_LOGICAL_COMPLETE,
+				      treeview_node_launch_walk_bwd_cb,
+				      treeview_node_launch_walk_fwd_cb,
+				      &lw);
 }
 
 
 /* Exported interface, documented in treeview.h */
-nserror
-treeview_get_relation(treeview *tree,
-		      treeview_node **relation,
-		      enum treeview_relationship *rel,
-		      bool at_y,
-		      int y)
+nserror treeview_get_relation(treeview *tree,
+			      treeview_node **relation,
+			      enum treeview_relationship *rel,
+			      bool at_y,
+			      int y)
 {
 	treeview_node *n;
 
@@ -3844,11 +3870,10 @@ struct treeview_nav_state {
  * \param end flag to allow iteration to be finished early.
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-treeview_node_nav_cb(treeview_node *node,
-		     void *ctx,
-		     bool *skip_children,
-		     bool *end)
+static nserror treeview_node_nav_cb(treeview_node *node,
+				    void *ctx,
+				    bool *skip_children,
+				    bool *end)
 {
 	struct treeview_nav_state *ns = ctx;
 
@@ -3890,15 +3915,13 @@ treeview_node_nav_cb(treeview_node *node,
 static bool
 treeview_keyboard_navigation(treeview *tree, uint32_t key, struct rect *rect)
 {
-	struct treeview_nav_state ns = {
-		.tree = tree,
-		.prev = NULL,
-		.curr = NULL,
-		.next = NULL,
-		.last = NULL,
-		.n_selected = 0,
-		.prev_n_selected = 0
-	};
+	struct treeview_nav_state ns = {.tree = tree,
+					.prev = NULL,
+					.curr = NULL,
+					.next = NULL,
+					.last = NULL,
+					.n_selected = 0,
+					.prev_n_selected = 0};
 	int search_height = treeview__get_search_height(tree);
 	int h = treeview__get_display_height(tree) + search_height;
 	bool redraw = false;
@@ -3906,9 +3929,12 @@ treeview_keyboard_navigation(treeview *tree, uint32_t key, struct rect *rect)
 
 	/* Fill out the nav. state struct, by examining the current selection
 	 * state */
-	treeview_walk_internal(tree, tree->root,
-			TREEVIEW_WALK_MODE_DISPLAY, NULL,
-			treeview_node_nav_cb, &ns);
+	treeview_walk_internal(tree,
+			       tree->root,
+			       TREEVIEW_WALK_MODE_DISPLAY,
+			       NULL,
+			       treeview_node_nav_cb,
+			       &ns);
 
 	scroll_to_node = ns.curr;
 
@@ -3927,8 +3953,7 @@ treeview_keyboard_navigation(treeview *tree, uint32_t key, struct rect *rect)
 		if (tree->search.search == true) {
 			break;
 		}
-		if (ns.curr != NULL &&
-		    ns.curr->parent != NULL &&
+		if (ns.curr != NULL && ns.curr->parent != NULL &&
 		    ns.curr->parent->type != TREE_NODE_ROOT) {
 			/* Step to parent */
 			ns.curr->parent->flags |= TV_NFLAGS_SELECTED;
@@ -4007,7 +4032,7 @@ treeview_keyboard_navigation(treeview *tree, uint32_t key, struct rect *rect)
 /* Exported interface, documented in treeview.h */
 bool treeview_keypress(treeview *tree, uint32_t key)
 {
-	struct rect r;	/**< Redraw rectangle */
+	struct rect r; /**< Redraw rectangle */
 	bool redraw = false;
 
 	assert(tree != NULL);
@@ -4058,7 +4083,8 @@ bool treeview_keypress(treeview *tree, uint32_t key)
 			/* Inform front end of change in dimensions */
 			if (tree->root->height != h) {
 				r.y0 = 0;
-				treeview__cw_update_size(tree, -1,
+				treeview__cw_update_size(tree,
+							 -1,
 							 tree->root->height);
 			}
 		}
@@ -4101,14 +4127,13 @@ bool treeview_keypress(treeview *tree, uint32_t key)
  * \param rect		Redraw rectangle (if redraw required)
  * \return true iff redraw required
  */
-static bool
-treeview_set_move_indicator(treeview *tree,
-			    bool need_redraw,
-			    treeview_node *target,
-			    int node_height,
-			    int node_y,
-			    int mouse_y,
-			    struct rect *rect)
+static bool treeview_set_move_indicator(treeview *tree,
+					bool need_redraw,
+					treeview_node *target,
+					int node_height,
+					int node_y,
+					int mouse_y,
+					struct rect *rect)
 {
 	treeview_node *orig = target;
 	enum treeview_target_pos target_pos;
@@ -4134,7 +4159,8 @@ treeview_set_move_indicator(treeview *tree,
 		}
 		target_pos = TV_TARGET_ABOVE;
 
-	} else switch (target->type) {
+	} else
+		switch (target->type) {
 		case TREE_NODE_FOLDER:
 			if (mouse_pos <= node_height / 4) {
 				target_pos = TV_TARGET_ABOVE;
@@ -4193,8 +4219,9 @@ treeview_set_move_indicator(treeview *tree,
 	}
 
 	/* Oftsets are all relative to centred (INSIDE) */
-	node_y += (tree_g.line_height -
-		   treeview_res[TREE_RES_ARROW].height + 1) / 2;
+	node_y += (tree_g.line_height - treeview_res[TREE_RES_ARROW].height +
+		   1) /
+		  2;
 
 	x = target->inset + tree_g.move_offset;
 
@@ -4248,7 +4275,7 @@ static void treeview_textarea_callback(void *data, struct textarea_msg *msg)
 			tree->drag.type = TV_DRAG_TEXTAREA;
 		}
 		treeview__cw_drag_status(tree,
-				treeview__get_cw_drag_type(tree));
+					 treeview__get_cw_drag_type(tree));
 		break;
 
 	case TEXTAREA_MSG_REDRAW_REQUEST:
@@ -4279,13 +4306,12 @@ static void treeview_textarea_callback(void *data, struct textarea_msg *msg)
  * \param rect Redraw rectangle (if redraw required)
  * \return true iff redraw required
  */
-static bool
-treeview_edit_node_at_point(treeview *tree,
-			    treeview_node *n,
-			    int node_y,
-			    int mouse_x,
-			    int mouse_y,
-			    struct rect *rect)
+static bool treeview_edit_node_at_point(treeview *tree,
+					treeview_node *n,
+					int node_y,
+					int mouse_x,
+					int mouse_y,
+					struct rect *rect)
 {
 	struct treeview_text *field_data = NULL;
 	struct treeview_field *ef, *field_desc = NULL;
@@ -4317,8 +4343,8 @@ treeview_edit_node_at_point(treeview *tree,
 
 			ef = &(tree->fields[i + 1]);
 			pos += tree_g.line_height;
-			if (mouse_y <= pos && (ef->flags &
-					       TREE_FLAG_ALLOW_EDIT)) {
+			if (mouse_y <= pos &&
+			    (ef->flags & TREE_FLAG_ALLOW_EDIT)) {
 				field_data = &e->fields[i].value;
 				field_desc = ef;
 				field_y = pos - tree_g.line_height;
@@ -4340,9 +4366,15 @@ treeview_edit_node_at_point(treeview *tree,
 	height = tree_g.line_height;
 
 	/* Create text area */
-	tree->edit.textarea = treeview__create_textarea(tree, width, height,
-			0x000000, 0xffffff, 0x000000, plot_style_odd.text,
-			treeview_textarea_callback);
+	tree->edit.textarea = treeview__create_textarea(
+		tree,
+		width,
+		height,
+		0x000000,
+		0xffffff,
+		0x000000,
+		plot_style_odd.text,
+		treeview_textarea_callback);
 	if (tree->edit.textarea == NULL) {
 		return false;
 	}
@@ -4365,7 +4397,8 @@ treeview_edit_node_at_point(treeview *tree,
 
 	textarea_mouse_action(tree->edit.textarea,
 			      BROWSER_MOUSE_PRESS_1 | BROWSER_MOUSE_CLICK_1,
-			      mouse_x, tree_g.line_height / 2);
+			      mouse_x,
+			      tree_g.line_height / 2);
 
 	/* Position the textarea */
 	tree->edit.x = field_x;
@@ -4408,8 +4441,8 @@ void treeview_edit_selection(treeview *tree)
 	y = treeview_node_y(tree, n);
 
 	/* Edit node at y */
-	redraw = treeview_edit_node_at_point(tree, n, y,
-					     0, y + tree_g.line_height / 2, &rect);
+	redraw = treeview_edit_node_at_point(
+		tree, n, y, 0, y + tree_g.line_height / 2, &rect);
 
 	if (redraw == false)
 		return;
@@ -4431,7 +4464,7 @@ struct treeview_mouse_action {
 	browser_mouse_state mouse;
 	int x;
 	int y;
-	int current_y;	/* Y coordinate value of top of current node */
+	int current_y; /* Y coordinate value of top of current node */
 	int search_height;
 };
 
@@ -4445,11 +4478,10 @@ struct treeview_mouse_action {
  * \param end flag to allow iteration to be finished early.
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-treeview_node_mouse_action_cb(treeview_node *node,
-			      void *ctx,
-			      bool *skip_children,
-			      bool *end)
+static nserror treeview_node_mouse_action_cb(treeview_node *node,
+					     void *ctx,
+					     bool *skip_children,
+					     bool *end)
 {
 	struct treeview_mouse_action *ma = ctx;
 	struct rect r;
@@ -4457,8 +4489,8 @@ treeview_node_mouse_action_cb(treeview_node *node,
 	bool click;
 	int height;
 	enum {
-		TV_NODE_ACTION_NONE		= 0,
-		TV_NODE_ACTION_SELECTION	= (1 << 0)
+		TV_NODE_ACTION_NONE = 0,
+		TV_NODE_ACTION_SELECTION = (1 << 0)
 	} action = TV_NODE_ACTION_NONE;
 	enum treeview_node_part part = TV_NODE_PART_NONE;
 	nserror err;
@@ -4466,8 +4498,8 @@ treeview_node_mouse_action_cb(treeview_node *node,
 	r.x0 = 0;
 	r.x1 = REDRAW_MAX;
 
-	height = (node->type == TREE_NODE_ENTRY) ? node->height :
-		tree_g.line_height;
+	height = (node->type == TREE_NODE_ENTRY) ? node->height
+						 : tree_g.line_height;
 
 	/* Skip line if we've not reached mouse y */
 	if (ma->y > ma->current_y + height) {
@@ -4481,14 +4513,14 @@ treeview_node_mouse_action_cb(treeview_node *node,
 		if (ma->tree->search.search == true) {
 			inset = tree_g.window_padding;
 		}
-		if (ma->x >= inset - 1 &&
-				ma->x < inset + tree_g.step_width) {
+		if (ma->x >= inset - 1 && ma->x < inset + tree_g.step_width) {
 			/* Over expansion toggle */
 			part = TV_NODE_PART_TOGGLE;
 
 		} else if (ma->x >= inset + tree_g.step_width &&
-				ma->x < inset + tree_g.step_width +
-				tree_g.icon_step + node->text.width) {
+			   ma->x < inset + tree_g.step_width +
+					   tree_g.icon_step +
+					   node->text.width) {
 			/* On node */
 			part = TV_NODE_PART_ON_NODE;
 		}
@@ -4512,21 +4544,22 @@ treeview_node_mouse_action_cb(treeview_node *node,
 				int max_width = ma->tree->field_width;
 
 				if (ma->x >= x + max_width - ef->value.width -
-				    tree_g.step_width &&
-				    ma->x < x + max_width -
-				    tree_g.step_width) {
+						     tree_g.step_width &&
+				    ma->x < x + max_width - tree_g.step_width) {
 					/* On a field name */
 					part = TV_NODE_PART_ON_NODE;
 
 				} else if (ma->x >= x + max_width &&
 					   ma->x < x + max_width +
-					   entry->fields[i].value.width) {
+							   entry->fields[i]
+								   .value
+								   .width) {
 					/* On a field value */
 					part = TV_NODE_PART_ON_NODE;
 				}
 			} else {
-				if (ma->x >= x && ma->x < x +
-				    entry->fields[i].value.width) {
+				if (ma->x >= x &&
+				    ma->x < x + entry->fields[i].value.width) {
 					/* On a field value */
 					part = TV_NODE_PART_ON_NODE;
 				}
@@ -4586,14 +4619,14 @@ treeview_node_mouse_action_cb(treeview_node *node,
 
 	/* Handle active drags */
 	switch (ma->tree->drag.type) {
-	case TV_DRAG_SELECTION:
-	{
+	case TV_DRAG_SELECTION: {
 		int curr_y1 = ma->current_y + height;
 		int prev_y1 = ma->tree->drag.prev.node_y +
-			ma->tree->drag.prev.node_h;
+			      ma->tree->drag.prev.node_h;
 
-		r.y0 = (ma->current_y < ma->tree->drag.prev.node_y) ?
-			ma->current_y : ma->tree->drag.prev.node_y;
+		r.y0 = (ma->current_y < ma->tree->drag.prev.node_y)
+			       ? ma->current_y
+			       : ma->tree->drag.prev.node_y;
 		r.y1 = (curr_y1 > prev_y1) ? curr_y1 : prev_y1;
 
 		redraw = true;
@@ -4602,13 +4635,16 @@ treeview_node_mouse_action_cb(treeview_node *node,
 		ma->tree->drag.prev.y = ma->y;
 		ma->tree->drag.prev.node_y = ma->current_y;
 		ma->tree->drag.prev.node_h = height;
-	}
-		break;
+	} break;
 
 	case TV_DRAG_MOVE:
-		redraw |= treeview_set_move_indicator(ma->tree, redraw,
-						      node, height,
-						      ma->current_y, ma->y, &r);
+		redraw |= treeview_set_move_indicator(ma->tree,
+						      redraw,
+						      node,
+						      height,
+						      ma->current_y,
+						      ma->y,
+						      &r);
 		break;
 
 	default:
@@ -4621,7 +4657,7 @@ treeview_node_mouse_action_cb(treeview_node *node,
 	     (ma->mouse & BROWSER_MOUSE_DOUBLE_CLICK) && click) ||
 	    (part == TV_NODE_PART_TOGGLE && click)) {
 		int h = treeview__get_display_height(ma->tree) +
-				ma->search_height;
+			ma->search_height;
 
 		/* Clear any existing selection */
 		redraw |= treeview_clear_selection(ma->tree, &r);
@@ -4644,7 +4680,7 @@ treeview_node_mouse_action_cb(treeview_node *node,
 			r.y1 = h;
 		} else {
 			r.y1 = treeview__get_display_height(ma->tree) +
-				ma->search_height;
+			       ma->search_height;
 		}
 		redraw = true;
 
@@ -4667,21 +4703,18 @@ treeview_node_mouse_action_cb(treeview_node *node,
 		action |= TV_NODE_ACTION_SELECTION;
 
 	} else if (ma->mouse & BROWSER_MOUSE_CLICK_1 &&
-		   ma->mouse &
-		   (BROWSER_MOUSE_MOD_1 | BROWSER_MOUSE_MOD_3) &&
+		   ma->mouse & (BROWSER_MOUSE_MOD_1 | BROWSER_MOUSE_MOD_3) &&
 		   part != TV_NODE_PART_TOGGLE) {
 
 		/* Clear any existing selection */
 		redraw |= treeview_clear_selection(ma->tree, &r);
 
 		/* Edit node */
-		redraw |= treeview_edit_node_at_point(ma->tree, node,
-						      ma->current_y, ma->x,
-						      ma->y, &r);
+		redraw |= treeview_edit_node_at_point(
+			ma->tree, node, ma->current_y, ma->x, ma->y, &r);
 
 	} else if (ma->mouse & BROWSER_MOUSE_PRESS_1 &&
-		   !(ma->mouse &
-		     (BROWSER_MOUSE_MOD_1 | BROWSER_MOUSE_MOD_3)) &&
+		   !(ma->mouse & (BROWSER_MOUSE_MOD_1 | BROWSER_MOUSE_MOD_3)) &&
 		   !(node->flags & TV_NFLAGS_SELECTED) &&
 		   part != TV_NODE_PART_TOGGLE) {
 		/* Clear any existing selection */
@@ -4689,7 +4722,6 @@ treeview_node_mouse_action_cb(treeview_node *node,
 
 		/* Select node */
 		action |= TV_NODE_ACTION_SELECTION;
-
 	}
 
 	if (action & TV_NODE_ACTION_SELECTION) {
@@ -4721,8 +4753,10 @@ treeview_node_mouse_action_cb(treeview_node *node,
 
 
 /* Exported interface, documented in treeview.h */
-void
-treeview_mouse_action(treeview *tree, browser_mouse_state mouse, int x, int y)
+void treeview_mouse_action(treeview *tree,
+			   browser_mouse_state mouse,
+			   int x,
+			   int y)
 {
 	struct rect r;
 	bool redraw = false;
@@ -4738,8 +4772,10 @@ treeview_mouse_action(treeview *tree, browser_mouse_state mouse, int x, int y)
 
 	/* Handle mouse drag captured by textarea */
 	if (tree->drag.type == TV_DRAG_TEXTAREA) {
-		textarea_mouse_action(tree->edit.textarea, mouse,
-				      x - tree->edit.x, y - tree->edit.y);
+		textarea_mouse_action(tree->edit.textarea,
+				      mouse,
+				      x - tree->edit.x,
+				      y - tree->edit.y);
 		return;
 	} else if (tree->drag.type == TV_DRAG_SEARCH) {
 		if (tree->search.active == false) {
@@ -4748,9 +4784,11 @@ treeview_mouse_action(treeview *tree, browser_mouse_state mouse, int x, int y)
 				treeview__cw_invalidate_area(tree, &r);
 			}
 		}
-		textarea_mouse_action(tree->search.textarea, mouse,
-				x - tree_g.window_padding - tree_g.icon_size,
-				y);
+		textarea_mouse_action(tree->search.textarea,
+				      mouse,
+				      x - tree_g.window_padding -
+					      tree_g.icon_size,
+				      y);
 		return;
 	} else if (mouse & (BROWSER_MOUSE_PRESS_1 | BROWSER_MOUSE_PRESS_2) &&
 		   y < search_height && tree->search.active == false) {
@@ -4758,12 +4796,14 @@ treeview_mouse_action(treeview *tree, browser_mouse_state mouse, int x, int y)
 		if (treeview_clear_selection(tree, &r)) {
 			treeview__cw_invalidate_area(tree, &r);
 		}
-		textarea_mouse_action(tree->search.textarea, mouse,
-				x - tree_g.window_padding - tree_g.icon_size,
-				y);
+		textarea_mouse_action(tree->search.textarea,
+				      mouse,
+				      x - tree_g.window_padding -
+					      tree_g.icon_size,
+				      y);
 		return;
 	} else if (mouse & (BROWSER_MOUSE_PRESS_1 | BROWSER_MOUSE_PRESS_2) &&
-			tree->search.active == true) {
+		   tree->search.active == true) {
 
 		tree->search.active = false;
 		textarea_set_caret(tree->search.textarea, -1);
@@ -4779,11 +4819,11 @@ treeview_mouse_action(treeview *tree, browser_mouse_state mouse, int x, int y)
 		int ta_x = x - tree->edit.x;
 		int ta_y = y - tree->edit.y;
 
-		if (ta_x > 0 && ta_x < tree->edit.w &&
-		    ta_y > 0 && ta_y < tree->edit.h) {
+		if (ta_x > 0 && ta_x < tree->edit.w && ta_y > 0 &&
+		    ta_y < tree->edit.h) {
 			/* Inside textarea */
-			textarea_mouse_action(tree->edit.textarea, mouse,
-					      ta_x, ta_y);
+			textarea_mouse_action(
+				tree->edit.textarea, mouse, ta_x, ta_y);
 			return;
 
 		} else if (mouse != BROWSER_MOUSE_HOVER) {
@@ -4848,12 +4888,12 @@ treeview_mouse_action(treeview *tree, browser_mouse_state mouse, int x, int y)
 			    tree->drag.selected == false &&
 			    tree->drag.part == TV_NODE_PART_NONE) {
 				tree->drag.type = TV_DRAG_SELECTION;
-				treeview__cw_drag_status(tree,
-						CORE_WINDOW_DRAG_SELECTION);
+				treeview__cw_drag_status(
+					tree, CORE_WINDOW_DRAG_SELECTION);
 			} else if (mouse & BROWSER_MOUSE_DRAG_2) {
 				tree->drag.type = TV_DRAG_SELECTION;
-				treeview__cw_drag_status(tree,
-						CORE_WINDOW_DRAG_SELECTION);
+				treeview__cw_drag_status(
+					tree, CORE_WINDOW_DRAG_SELECTION);
 			}
 
 			if (tree->drag.start_node != NULL &&
@@ -4867,7 +4907,7 @@ treeview_mouse_action(treeview *tree, browser_mouse_state mouse, int x, int y)
 		if (tree->drag.type == TV_DRAG_SELECTION) {
 			int curr_y1 = tree->root->height;
 			int prev_y1 = tree->drag.prev.node_y +
-				tree->drag.prev.node_h;
+				      tree->drag.prev.node_h;
 
 			r.y0 = tree->drag.prev.node_y;
 			r.y1 = (curr_y1 > prev_y1) ? curr_y1 : prev_y1;
@@ -4900,9 +4940,12 @@ treeview_mouse_action(treeview *tree, browser_mouse_state mouse, int x, int y)
 			.search_height = search_height,
 		};
 
-		treeview_walk_internal(tree, tree->root,
-				TREEVIEW_WALK_MODE_DISPLAY, NULL,
-				treeview_node_mouse_action_cb, &ma);
+		treeview_walk_internal(tree,
+				       tree->root,
+				       TREEVIEW_WALK_MODE_DISPLAY,
+				       NULL,
+				       treeview_node_mouse_action_cb,
+				       &ma);
 	}
 }
 
@@ -4921,9 +4964,7 @@ int treeview_get_height(treeview *tree)
 }
 
 /* Exported interface, documented in treeview.h */
-nserror treeview_set_search_string(
-		treeview *tree,
-		const char *string)
+nserror treeview_set_search_string(treeview *tree, const char *string)
 {
 	if (!(tree->flags & TREEVIEW_SEARCHABLE)) {
 		return NSERROR_BAD_PARAMETER;
@@ -4974,7 +5015,8 @@ static nserror treeview_init_plot_styles(int font_pt_size)
 
 	/* Entry field text colour */
 	plot_style_even.itext = plot_style_even.text;
-	plot_style_even.itext.foreground = nscolours[NSCOLOUR_WIN_EVEN_FG_FADED];
+	plot_style_even.itext.foreground =
+		nscolours[NSCOLOUR_WIN_EVEN_FG_FADED];
 
 	/* Selected background colour */
 	plot_style_even.sbg = plot_style_even.bg;
@@ -5012,10 +5054,9 @@ static nserror treeview_init_plot_styles(int font_pt_size)
  * \param event The event that occurred on the content
  * \param pw treeview resource context
  */
-static nserror
-treeview_res_cb(struct hlcache_handle *handle,
-		const hlcache_event *event,
-		void *pw)
+static nserror treeview_res_cb(struct hlcache_handle *handle,
+			       const hlcache_event *event,
+			       void *pw)
 {
 	struct treeview_resource *r = pw;
 
@@ -5046,9 +5087,13 @@ static void treeview_init_resources(void)
 		treeview_res[i].ready = false;
 		treeview_res[i].height = 0;
 		if (nsurl_create(treeview_res[i].url, &url) == NSERROR_OK) {
-			hlcache_handle_retrieve(url, 0, NULL, NULL,
+			hlcache_handle_retrieve(url,
+						0,
+						NULL,
+						NULL,
 						treeview_res_cb,
-						&(treeview_res[i]), NULL,
+						&(treeview_res[i]),
+						NULL,
 						CONTENT_IMAGE,
 						&(treeview_res[i].c));
 			nsurl_unref(url);
@@ -5096,8 +5141,10 @@ treeview_generate_triangle_bitmap(colour bg, colour fg, int size)
 			/* Top half */
 			for (x = 0; x < y * 2; x++) {
 				pos[bitmap_layout.r] = red_from_colour(colour4);
-				pos[bitmap_layout.g] = green_from_colour(colour4);
-				pos[bitmap_layout.b] = blue_from_colour(colour4);
+				pos[bitmap_layout.g] = green_from_colour(
+					colour4);
+				pos[bitmap_layout.b] = blue_from_colour(
+					colour4);
 				pos[bitmap_layout.a] = 0xff;
 				pos += 4;
 			}
@@ -5111,10 +5158,12 @@ treeview_generate_triangle_bitmap(colour bg, colour fg, int size)
 			pos[bitmap_layout.b] = blue_from_colour(colour1);
 			pos[bitmap_layout.a] = 0xff;
 			pos += 4;
-			for (x = y * 2 + 2; x < size ; x++) {
+			for (x = y * 2 + 2; x < size; x++) {
 				pos[bitmap_layout.r] = red_from_colour(colour0);
-				pos[bitmap_layout.g] = green_from_colour(colour0);
-				pos[bitmap_layout.b] = blue_from_colour(colour0);
+				pos[bitmap_layout.g] = green_from_colour(
+					colour0);
+				pos[bitmap_layout.b] = blue_from_colour(
+					colour0);
 				pos[bitmap_layout.a] = 0xff;
 				pos += 4;
 			}
@@ -5122,8 +5171,10 @@ treeview_generate_triangle_bitmap(colour bg, colour fg, int size)
 			/* Middle row */
 			for (x = 0; x < size - 1; x++) {
 				pos[bitmap_layout.r] = red_from_colour(colour4);
-				pos[bitmap_layout.g] = green_from_colour(colour4);
-				pos[bitmap_layout.b] = blue_from_colour(colour4);
+				pos[bitmap_layout.g] = green_from_colour(
+					colour4);
+				pos[bitmap_layout.b] = blue_from_colour(
+					colour4);
 				pos[bitmap_layout.a] = 0xff;
 				pos += 4;
 			}
@@ -5136,8 +5187,10 @@ treeview_generate_triangle_bitmap(colour bg, colour fg, int size)
 			/* Bottom half */
 			for (x = 0; x < (size - y - 1) * 2; x++) {
 				pos[bitmap_layout.r] = red_from_colour(colour4);
-				pos[bitmap_layout.g] = green_from_colour(colour4);
-				pos[bitmap_layout.b] = blue_from_colour(colour4);
+				pos[bitmap_layout.g] = green_from_colour(
+					colour4);
+				pos[bitmap_layout.b] = blue_from_colour(
+					colour4);
 				pos[bitmap_layout.a] = 0xff;
 				pos += 4;
 			}
@@ -5151,10 +5204,12 @@ treeview_generate_triangle_bitmap(colour bg, colour fg, int size)
 			pos[bitmap_layout.b] = blue_from_colour(colour1);
 			pos[bitmap_layout.a] = 0xff;
 			pos += 4;
-			for (x = (size - y) * 2; x < size ; x++) {
+			for (x = (size - y) * 2; x < size; x++) {
 				pos[bitmap_layout.r] = red_from_colour(colour0);
-				pos[bitmap_layout.g] = green_from_colour(colour0);
-				pos[bitmap_layout.b] = blue_from_colour(colour0);
+				pos[bitmap_layout.g] = green_from_colour(
+					colour0);
+				pos[bitmap_layout.b] = blue_from_colour(
+					colour0);
 				pos[bitmap_layout.a] = 0xff;
 				pos += 4;
 			}
@@ -5258,7 +5313,6 @@ treeview_generate_rotate_bitmap(struct bitmap *orig, int size)
 			*(pos++) = *(orig_pos++);
 			*(pos++) = *(orig_pos);
 			*(pos++) = 0xff;
-
 		}
 
 		rpos += stride;
@@ -5289,17 +5343,20 @@ static nserror treeview_init_furniture(void)
 	plot_style_odd.furn[TREE_FURN_EXPAND].bmp =
 		treeview_generate_triangle_bitmap(
 			plot_style_odd.bg.fill_colour,
-			plot_style_odd.itext.foreground, size);
+			plot_style_odd.itext.foreground,
+			size);
 	plot_style_odd.furn[TREE_FURN_EXPAND].sel =
 		treeview_generate_triangle_bitmap(
 			plot_style_odd.sbg.fill_colour,
-			plot_style_odd.sitext.foreground, size);
+			plot_style_odd.sitext.foreground,
+			size);
 
 	plot_style_even.furn[TREE_FURN_EXPAND].size = size;
 	plot_style_even.furn[TREE_FURN_EXPAND].bmp =
 		treeview_generate_triangle_bitmap(
 			plot_style_even.bg.fill_colour,
-			plot_style_even.itext.foreground, size);
+			plot_style_even.itext.foreground,
+			size);
 	plot_style_even.furn[TREE_FURN_EXPAND].sel =
 		treeview_generate_copy_bitmap(
 			plot_style_odd.furn[TREE_FURN_EXPAND].sel, size);
@@ -5355,8 +5412,8 @@ nserror treeview_init(void)
 		font_pt_size = 11 * 10;
 	}
 
-	font_px_size = (font_pt_size * FIXTOINT(nscss_screen_dpi) /
-			10 + 36) / 72;
+	font_px_size = (font_pt_size * FIXTOINT(nscss_screen_dpi) / 10 + 36) /
+		       72;
 	tree_g.line_height = (font_px_size * 8 + 3) / 6;
 
 	res = treeview_init_plot_styles(font_pt_size * PLOT_STYLE_SCALE / 10);
@@ -5395,7 +5452,8 @@ nserror treeview_fini(void)
 		return NSERROR_OK;
 
 	} else if (tree_g.initialised == 0) {
-		NSLOG(neosurf, INFO,
+		NSLOG(neosurf,
+		      INFO,
 		      "Warning: tried to finalise uninitialised treeview module");
 		return NSERROR_OK;
 	}

@@ -14,8 +14,9 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_border_collapse(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error css__cascade_border_collapse(uint32_t opv,
+				       css_style *style,
+				       css_select_state *state)
 {
 	uint16_t value = CSS_BORDER_COLLAPSE_INHERIT;
 
@@ -32,8 +33,10 @@ css_error css__cascade_border_collapse(uint32_t opv, css_style *style,
 		}
 	}
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			getFlagValue(opv))) {
+	if (css__outranks_existing(getOpcode(opv),
+				   isImportant(opv),
+				   state,
+				   getFlagValue(opv))) {
 		return set_border_collapse(state->computed, value);
 	}
 
@@ -41,19 +44,19 @@ css_error css__cascade_border_collapse(uint32_t opv, css_style *style,
 }
 
 css_error css__set_border_collapse_from_hint(const css_hint *hint,
-		css_computed_style *style)
+					     css_computed_style *style)
 {
 	return set_border_collapse(style, hint->status);
 }
 
 css_error css__initial_border_collapse(css_select_state *state)
 {
-	return set_border_collapse(state->computed, CSS_BORDER_COLLAPSE_SEPARATE);
+	return set_border_collapse(state->computed,
+				   CSS_BORDER_COLLAPSE_SEPARATE);
 }
 
-css_error css__copy_border_collapse(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error css__copy_border_collapse(const css_computed_style *from,
+				    css_computed_style *to)
 {
 	if (from == to) {
 		return CSS_OK;
@@ -63,13 +66,11 @@ css_error css__copy_border_collapse(
 }
 
 css_error css__compose_border_collapse(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+				       const css_computed_style *child,
+				       css_computed_style *result)
 {
 	uint8_t type = get_border_collapse(child);
 
 	return css__copy_border_collapse(
-			type == CSS_BORDER_COLLAPSE_INHERIT ? parent : child,
-			result);
+		type == CSS_BORDER_COLLAPSE_INHERIT ? parent : child, result);
 }
-

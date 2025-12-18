@@ -13,20 +13,22 @@
 #include "testutils.h"
 
 static void dump_sheet(css_stylesheet *sheet, char *buf, size_t *len);
-static void dump_rule_selector(css_rule_selector *s, char **buf,
-		size_t *buflen, uint32_t depth);
+static void dump_rule_selector(css_rule_selector *s,
+			       char **buf,
+			       size_t *buflen,
+			       uint32_t depth);
 static void dump_rule_charset(css_rule_charset *s, char **buf, size_t *buflen);
 static void dump_rule_import(css_rule_import *s, char **buf, size_t *buflen);
 static void dump_rule_media(css_rule_media *s, char **buf, size_t *buflen);
 static void dump_rule_page(css_rule_page *s, char **buf, size_t *buflen);
-static void dump_rule_font_face(css_rule_font_face *s,
-		char **buf, size_t *buflen);
+static void
+dump_rule_font_face(css_rule_font_face *s, char **buf, size_t *buflen);
 static void dump_selector_list(css_selector *list, char **ptr);
 static void dump_selector(css_selector *selector, char **ptr);
 static void dump_selector_detail(css_selector_detail *detail, char **ptr);
 static void dump_bytecode(css_style *style, char **ptr, uint32_t depth);
 static void dump_string(lwc_string *string, char **ptr);
-static void dump_font_face(css_font_face *font_face, char**ptr);
+static void dump_font_face(css_font_face *font_face, char **ptr);
 
 void dump_sheet(css_stylesheet *sheet, char *buf, size_t *buflen)
 {
@@ -35,44 +37,44 @@ void dump_sheet(css_stylesheet *sheet, char *buf, size_t *buflen)
 	for (rule = sheet->rule_list; rule != NULL; rule = rule->next) {
 		switch (rule->type) {
 		case CSS_RULE_SELECTOR:
-			dump_rule_selector((css_rule_selector *) rule,
-				&buf, buflen, 1);
+			dump_rule_selector(
+				(css_rule_selector *)rule, &buf, buflen, 1);
 			break;
 		case CSS_RULE_CHARSET:
-			dump_rule_charset((css_rule_charset *) rule,
-				&buf, buflen);
+			dump_rule_charset((css_rule_charset *)rule,
+					  &buf,
+					  buflen);
 			break;
 		case CSS_RULE_IMPORT:
-			dump_rule_import((css_rule_import *) rule,
-				&buf, buflen);
+			dump_rule_import((css_rule_import *)rule, &buf, buflen);
 			break;
 		case CSS_RULE_MEDIA:
-			dump_rule_media((css_rule_media *) rule,
-				&buf, buflen);
+			dump_rule_media((css_rule_media *)rule, &buf, buflen);
 			break;
 		case CSS_RULE_PAGE:
-			dump_rule_page((css_rule_page *) rule,
-				&buf, buflen);
+			dump_rule_page((css_rule_page *)rule, &buf, buflen);
 			break;
 		case CSS_RULE_FONT_FACE:
-			dump_rule_font_face((css_rule_font_face *) rule,
-				&buf, buflen);
+			dump_rule_font_face((css_rule_font_face *)rule,
+					    &buf,
+					    buflen);
 			break;
-		default:
-		{
-			int written = sprintf(buf, "Unhandled rule type %d\n",
-				rule->type);
+		default: {
+			int written = sprintf(buf,
+					      "Unhandled rule type %d\n",
+					      rule->type);
 
 			*buflen -= written;
 			buf += written;
-		}
-			break;
+		} break;
 		}
 	}
 }
 
-void dump_rule_selector(css_rule_selector *s, char **buf, size_t *buflen,
-		uint32_t depth)
+void dump_rule_selector(css_rule_selector *s,
+			char **buf,
+			size_t *buflen,
+			uint32_t depth)
 {
 	uint32_t i;
 	char *ptr = *buf;
@@ -84,7 +86,7 @@ void dump_rule_selector(css_rule_selector *s, char **buf, size_t *buflen,
 	/* Build selector string */
 	for (i = 0; i < s->base.items; i++) {
 		dump_selector_list(s->selectors[i], &ptr);
-		if (i != (uint32_t) (s->base.items - 1)) {
+		if (i != (uint32_t)(s->base.items - 1)) {
 			memcpy(ptr, ", ", 2);
 			ptr += 2;
 		}
@@ -115,8 +117,10 @@ void dump_rule_import(css_rule_import *s, char **buf, size_t *buflen)
 {
 	char *ptr = *buf;
 
-	ptr += sprintf(ptr, "| @import url(\"%.*s\")",
-                       (int) lwc_string_length(s->url), lwc_string_data(s->url));
+	ptr += sprintf(ptr,
+		       "| @import url(\"%.*s\")",
+		       (int)lwc_string_length(s->url),
+		       lwc_string_data(s->url));
 
 	/** \todo media list */
 
@@ -131,9 +135,10 @@ void dump_rule_media(css_rule_media *s, char **buf, size_t *buflen)
 	char *ptr = *buf;
 	css_rule *rule;
 
-	ptr += sprintf(ptr, "| @media %s%03" PRIx64,
-			s->media->negate_type ? "not " : "",
-			s->media->type);
+	ptr += sprintf(ptr,
+		       "| @media %s%03" PRIx64,
+		       s->media->negate_type ? "not " : "",
+		       s->media->type);
 
 	/* \todo media list */
 
@@ -142,7 +147,7 @@ void dump_rule_media(css_rule_media *s, char **buf, size_t *buflen)
 	for (rule = s->first_child; rule != NULL; rule = rule->next) {
 		size_t len = *buflen - (ptr - *buf);
 
-		dump_rule_selector((css_rule_selector *) rule, &ptr, &len, 2);
+		dump_rule_selector((css_rule_selector *)rule, &ptr, &len, 2);
 	}
 
 	*buflen -= ptr - *buf;
@@ -235,12 +240,12 @@ void dump_selector_detail(css_selector_detail *detail, char **ptr)
 
 	switch (detail->type) {
 	case CSS_SELECTOR_ELEMENT:
-                if (lwc_string_length(detail->qname.name) == 1 &&
-                    lwc_string_data(detail->qname.name)[0] == '*' &&
-				detail->next == 0) {
+		if (lwc_string_length(detail->qname.name) == 1 &&
+		    lwc_string_data(detail->qname.name)[0] == '*' &&
+		    detail->next == 0) {
 			dump_string(detail->qname.name, ptr);
 		} else if (lwc_string_length(detail->qname.name) != 1 ||
-                           lwc_string_data(detail->qname.name)[0] != '*') {
+			   lwc_string_data(detail->qname.name)[0] != '*') {
 			dump_string(detail->qname.name, ptr);
 		}
 		break;
@@ -268,7 +273,8 @@ void dump_selector_detail(css_selector_detail *detail, char **ptr)
 				*ptr += 1;
 			}
 		} else {
-			*ptr += sprintf(*ptr, "(%dn+%d)",
+			*ptr += sprintf(*ptr,
+					"(%dn+%d)",
 					detail->value.nth.a,
 					detail->value.nth.b);
 		}
@@ -651,11 +657,12 @@ static void dump_unit(css_fixed val, uint32_t unit, char **ptr)
 	}
 }
 
-static void dump_counter(lwc_string *name, uint32_t value,
-		char **ptr)
+static void dump_counter(lwc_string *name, uint32_t value, char **ptr)
 {
-	*ptr += sprintf(*ptr, "counter(%.*s",
-                        (int) lwc_string_length(name), lwc_string_data(name));
+	*ptr += sprintf(*ptr,
+			"counter(%.*s",
+			(int)lwc_string_length(name),
+			lwc_string_data(name));
 
 	value >>= CONTENT_COUNTER_STYLE_SHIFT;
 
@@ -709,14 +716,17 @@ static void dump_counter(lwc_string *name, uint32_t value,
 	*ptr += sprintf(*ptr, ")");
 }
 
-static void dump_counters(lwc_string *name, lwc_string *separator,
-		uint32_t value, char **ptr)
+static void dump_counters(lwc_string *name,
+			  lwc_string *separator,
+			  uint32_t value,
+			  char **ptr)
 {
-	*ptr += sprintf(*ptr, "counter(%.*s, %.*s",
-			(int) lwc_string_length(name),
-                        lwc_string_data(name),
-			(int) lwc_string_length(separator),
-                        lwc_string_data(separator));
+	*ptr += sprintf(*ptr,
+			"counter(%.*s, %.*s",
+			(int)lwc_string_length(name),
+			lwc_string_data(name),
+			(int)lwc_string_length(separator),
+			lwc_string_data(separator));
 
 	value >>= CONTENT_COUNTER_STYLE_SHIFT;
 
@@ -776,15 +786,16 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 	size_t length = (style->used * sizeof(css_code_t));
 	uint32_t offset = 0;
 
-#define ADVANCE(n) do {					\
-	offset += (n);					\
-	bytecode = ((uint8_t *) bytecode) + (n);	\
-} while(0)
+#define ADVANCE(n)                                                             \
+	do {                                                                   \
+		offset += (n);                                                 \
+		bytecode = ((uint8_t *)bytecode) + (n);                        \
+	} while (0)
 
 	while (offset < length) {
 		opcode_t op;
 		uint32_t value;
-		uint32_t opv = *((uint32_t *) bytecode);
+		uint32_t opv = *((uint32_t *)bytecode);
 		uint32_t i;
 
 		ADVANCE(sizeof(opv));
@@ -815,12 +826,16 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 			/* Second entry is an lwc_string of the expression */
 			snum = *((uint32_t *)bytecode);
 			ADVANCE(sizeof(snum));
-			css__stylesheet_string_get(style->sheet, snum, &calc_expr);
+			css__stylesheet_string_get(style->sheet,
+						   snum,
+						   &calc_expr);
 			codeptr = (const uint8_t *)lwc_string_data(calc_expr);
 			*ptr += sprintf(*ptr, "/* -> ");
 			dump_unit(0, unit, ptr);
 			*ptr += sprintf(*ptr, " */ calc(");
-			while ((calc_opcode = *((css_code_t *)(void *)codeptr)) != CALC_FINISH) {
+			while ((calc_opcode = *(
+					(css_code_t *)(void *)codeptr)) !=
+			       CALC_FINISH) {
 				codeptr += sizeof(calc_opcode);
 				switch (calc_opcode) {
 				case CALC_ADD:
@@ -836,23 +851,28 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 					*ptr += sprintf(*ptr, "/ ");
 					break;
 				case CALC_PUSH_VALUE: {
-					css_fixed num = *((css_fixed *)(void *)codeptr);
+					css_fixed num = *(
+						(css_fixed *)(void *)codeptr);
 					codeptr += sizeof(num);
-					uint32_t unit = *((uint32_t *)(void *)codeptr);
+					uint32_t unit = *(
+						(uint32_t *)(void *)codeptr);
 					codeptr += sizeof(unit);
 					dump_unit(num, unit, ptr);
 					*ptr += sprintf(*ptr, " ");
 					break;
 				}
 				case CALC_PUSH_NUMBER: {
-					css_fixed num = *((css_fixed *)(void *)codeptr);
+					css_fixed num = *(
+						(css_fixed *)(void *)codeptr);
 					codeptr += sizeof(num);
 					dump_number(num, ptr);
 					*ptr += sprintf(*ptr, " ");
 					break;
 				}
 				default:
-					*ptr += sprintf(*ptr, "??%d ", calc_opcode);
+					*ptr += sprintf(*ptr,
+							"??%d ",
+							calc_opcode);
 					break;
 				}
 			}
@@ -929,16 +949,15 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				break;
 			case CSS_PROP_AZIMUTH:
 				switch (value & ~AZIMUTH_BEHIND) {
-				case AZIMUTH_ANGLE:
-				{
+				case AZIMUTH_ANGLE: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				case AZIMUTH_LEFTWARDS:
 					*ptr += sprintf(*ptr, "leftwards");
 					break;
@@ -993,14 +1012,14 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 			case CSS_PROP_BACKGROUND_COLOR:
 			case CSS_PROP_COLUMN_RULE_COLOR:
 				assert(BACKGROUND_COLOR_TRANSPARENT ==
-						(enum op_background_color)
-						BORDER_COLOR_TRANSPARENT);
+				       (enum op_background_color)
+					       BORDER_COLOR_TRANSPARENT);
 				assert(BACKGROUND_COLOR_CURRENT_COLOR ==
-						(enum op_background_color)
-						BORDER_COLOR_CURRENT_COLOR);
+				       (enum op_background_color)
+					       BORDER_COLOR_CURRENT_COLOR);
 				assert(BACKGROUND_COLOR_SET ==
-						(enum op_background_color)
-						BORDER_COLOR_SET);
+				       (enum op_background_color)
+					       BORDER_COLOR_SET);
 
 				switch (value) {
 				case BACKGROUND_COLOR_TRANSPARENT:
@@ -1009,14 +1028,12 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				case BACKGROUND_COLOR_CURRENT_COLOR:
 					*ptr += sprintf(*ptr, "currentColor");
 					break;
-				case BACKGROUND_COLOR_SET:
-				{
-					uint32_t colour =
-						*((uint32_t *) bytecode);
+				case BACKGROUND_COLOR_SET: {
+					uint32_t colour = *(
+						(uint32_t *)bytecode);
 					ADVANCE(sizeof(colour));
 					*ptr += sprintf(*ptr, "#%08x", colour);
-				}
-					break;
+				} break;
 				}
 				break;
 			case CSS_PROP_BACKGROUND_IMAGE:
@@ -1024,55 +1041,53 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 			case CSS_PROP_CUE_BEFORE:
 			case CSS_PROP_LIST_STYLE_IMAGE:
 				assert(BACKGROUND_IMAGE_NONE ==
-						(enum op_background_image)
-						CUE_AFTER_NONE);
+				       (enum op_background_image)
+					       CUE_AFTER_NONE);
 				assert(BACKGROUND_IMAGE_URI ==
-						(enum op_background_image)
-						CUE_AFTER_URI);
+				       (enum op_background_image)CUE_AFTER_URI);
 				assert(BACKGROUND_IMAGE_NONE ==
-						(enum op_background_image)
-						CUE_BEFORE_NONE);
+				       (enum op_background_image)
+					       CUE_BEFORE_NONE);
 				assert(BACKGROUND_IMAGE_URI ==
-						(enum op_background_image)
-						CUE_BEFORE_URI);
+				       (enum op_background_image)
+					       CUE_BEFORE_URI);
 				assert(BACKGROUND_IMAGE_NONE ==
-						(enum op_background_image)
-						LIST_STYLE_IMAGE_NONE);
+				       (enum op_background_image)
+					       LIST_STYLE_IMAGE_NONE);
 				assert(BACKGROUND_IMAGE_URI ==
-						(enum op_background_image)
-						LIST_STYLE_IMAGE_URI);
+				       (enum op_background_image)
+					       LIST_STYLE_IMAGE_URI);
 
 				switch (value) {
 				case BACKGROUND_IMAGE_NONE:
 					*ptr += sprintf(*ptr, "none");
 					break;
-				case BACKGROUND_IMAGE_URI:
-				{
-					uint32_t snum = *((uint32_t *) bytecode);
+				case BACKGROUND_IMAGE_URI: {
+					uint32_t snum = *((uint32_t *)bytecode);
 					lwc_string *he;
 					css__stylesheet_string_get(style->sheet,
-								  snum,
-								  &he);
+								   snum,
+								   &he);
 					ADVANCE(sizeof(snum));
-					*ptr += sprintf(*ptr, "url('%.*s')",
-							(int) lwc_string_length(he),
+					*ptr += sprintf(*ptr,
+							"url('%.*s')",
+							(int)lwc_string_length(
+								he),
 							lwc_string_data(he));
-				}
-					break;
+				} break;
 				}
 				break;
 			case CSS_PROP_BACKGROUND_POSITION:
 				switch (value & 0xf0) {
-				case BACKGROUND_POSITION_HORZ_SET:
-				{
+				case BACKGROUND_POSITION_HORZ_SET: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				case BACKGROUND_POSITION_HORZ_CENTER:
 					*ptr += sprintf(*ptr, "center");
 					break;
@@ -1085,16 +1100,15 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				}
 				*ptr += sprintf(*ptr, " ");
 				switch (value & 0x0f) {
-				case BACKGROUND_POSITION_VERT_SET:
-				{
+				case BACKGROUND_POSITION_VERT_SET: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				case BACKGROUND_POSITION_VERT_CENTER:
 					*ptr += sprintf(*ptr, "center");
 					break;
@@ -1134,22 +1148,21 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				break;
 			case CSS_PROP_BORDER_SPACING:
 				switch (value) {
-				case BORDER_SPACING_SET:
-				{
+				case BORDER_SPACING_SET: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
 
-					val = *((css_fixed *) bytecode);
+					val = *((css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				}
 				break;
 			case CSS_PROP_BOX_SIZING:
@@ -1169,65 +1182,65 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 			case CSS_PROP_COLUMN_RULE_STYLE:
 			case CSS_PROP_OUTLINE_STYLE:
 				assert(BORDER_STYLE_NONE ==
-						(enum op_border_style)
-						OUTLINE_STYLE_NONE);
+				       (enum op_border_style)
+					       OUTLINE_STYLE_NONE);
 				assert(BORDER_STYLE_NONE ==
-						(enum op_border_style)
-						COLUMN_RULE_STYLE_NONE);
+				       (enum op_border_style)
+					       COLUMN_RULE_STYLE_NONE);
 				assert(BORDER_STYLE_HIDDEN ==
-						(enum op_border_style)
-						OUTLINE_STYLE_HIDDEN);
+				       (enum op_border_style)
+					       OUTLINE_STYLE_HIDDEN);
 				assert(BORDER_STYLE_HIDDEN ==
-						(enum op_border_style)
-						COLUMN_RULE_STYLE_HIDDEN);
+				       (enum op_border_style)
+					       COLUMN_RULE_STYLE_HIDDEN);
 				assert(BORDER_STYLE_DOTTED ==
-						(enum op_border_style)
-						OUTLINE_STYLE_DOTTED);
+				       (enum op_border_style)
+					       OUTLINE_STYLE_DOTTED);
 				assert(BORDER_STYLE_DOTTED ==
-						(enum op_border_style)
-						COLUMN_RULE_STYLE_DOTTED);
+				       (enum op_border_style)
+					       COLUMN_RULE_STYLE_DOTTED);
 				assert(BORDER_STYLE_DASHED ==
-						(enum op_border_style)
-						OUTLINE_STYLE_DASHED);
+				       (enum op_border_style)
+					       OUTLINE_STYLE_DASHED);
 				assert(BORDER_STYLE_DASHED ==
-						(enum op_border_style)
-						COLUMN_RULE_STYLE_DASHED);
+				       (enum op_border_style)
+					       COLUMN_RULE_STYLE_DASHED);
 				assert(BORDER_STYLE_SOLID ==
-						(enum op_border_style)
-						OUTLINE_STYLE_SOLID);
+				       (enum op_border_style)
+					       OUTLINE_STYLE_SOLID);
 				assert(BORDER_STYLE_SOLID ==
-						(enum op_border_style)
-						COLUMN_RULE_STYLE_SOLID);
+				       (enum op_border_style)
+					       COLUMN_RULE_STYLE_SOLID);
 				assert(BORDER_STYLE_DOUBLE ==
-						(enum op_border_style)
-						OUTLINE_STYLE_DOUBLE);
+				       (enum op_border_style)
+					       OUTLINE_STYLE_DOUBLE);
 				assert(BORDER_STYLE_DOUBLE ==
-						(enum op_border_style)
-						COLUMN_RULE_STYLE_DOUBLE);
+				       (enum op_border_style)
+					       COLUMN_RULE_STYLE_DOUBLE);
 				assert(BORDER_STYLE_GROOVE ==
-						(enum op_border_style)
-						OUTLINE_STYLE_GROOVE);
+				       (enum op_border_style)
+					       OUTLINE_STYLE_GROOVE);
 				assert(BORDER_STYLE_GROOVE ==
-						(enum op_border_style)
-						COLUMN_RULE_STYLE_GROOVE);
+				       (enum op_border_style)
+					       COLUMN_RULE_STYLE_GROOVE);
 				assert(BORDER_STYLE_RIDGE ==
-						(enum op_border_style)
-						OUTLINE_STYLE_RIDGE);
+				       (enum op_border_style)
+					       OUTLINE_STYLE_RIDGE);
 				assert(BORDER_STYLE_RIDGE ==
-						(enum op_border_style)
-						COLUMN_RULE_STYLE_RIDGE);
+				       (enum op_border_style)
+					       COLUMN_RULE_STYLE_RIDGE);
 				assert(BORDER_STYLE_INSET ==
-						(enum op_border_style)
-						OUTLINE_STYLE_INSET);
+				       (enum op_border_style)
+					       OUTLINE_STYLE_INSET);
 				assert(BORDER_STYLE_INSET ==
-						(enum op_border_style)
-						COLUMN_RULE_STYLE_INSET);
+				       (enum op_border_style)
+					       COLUMN_RULE_STYLE_INSET);
 				assert(BORDER_STYLE_OUTSET ==
-						(enum op_border_style)
-						OUTLINE_STYLE_OUTSET);
+				       (enum op_border_style)
+					       OUTLINE_STYLE_OUTSET);
 				assert(BORDER_STYLE_OUTSET ==
-						(enum op_border_style)
-						COLUMN_RULE_STYLE_OUTSET);
+				       (enum op_border_style)
+					       COLUMN_RULE_STYLE_OUTSET);
 
 				switch (value) {
 				case BORDER_STYLE_NONE:
@@ -1269,29 +1282,27 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 			case CSS_PROP_COLUMN_RULE_WIDTH:
 			case CSS_PROP_OUTLINE_WIDTH:
 				assert(BORDER_WIDTH_SET ==
-						(enum op_border_width)
-						OUTLINE_WIDTH_SET);
+				       (enum op_border_width)OUTLINE_WIDTH_SET);
 				assert(BORDER_WIDTH_THIN ==
-						(enum op_border_width)
-						OUTLINE_WIDTH_THIN);
+				       (enum op_border_width)
+					       OUTLINE_WIDTH_THIN);
 				assert(BORDER_WIDTH_MEDIUM ==
-						(enum op_border_width)
-						OUTLINE_WIDTH_MEDIUM);
+				       (enum op_border_width)
+					       OUTLINE_WIDTH_MEDIUM);
 				assert(BORDER_WIDTH_THICK ==
-						(enum op_border_width)
-						OUTLINE_WIDTH_THICK);
+				       (enum op_border_width)
+					       OUTLINE_WIDTH_THICK);
 
 				switch (value) {
-				case BORDER_WIDTH_SET:
-				{
+				case BORDER_WIDTH_SET: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				case BORDER_WIDTH_THIN:
 					*ptr += sprintf(*ptr, "thin");
 					break;
@@ -1314,48 +1325,40 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 			case CSS_PROP_HEIGHT:
 			case CSS_PROP_WIDTH:
 			case CSS_PROP_COLUMN_WIDTH:
-				assert(BOTTOM_SET ==
-						(enum op_bottom) LEFT_SET);
+				assert(BOTTOM_SET == (enum op_bottom)LEFT_SET);
 				assert(BOTTOM_AUTO ==
-						(enum op_bottom) LEFT_AUTO);
-				assert(BOTTOM_SET ==
-						(enum op_bottom) RIGHT_SET);
+				       (enum op_bottom)LEFT_AUTO);
+				assert(BOTTOM_SET == (enum op_bottom)RIGHT_SET);
 				assert(BOTTOM_AUTO ==
-						(enum op_bottom) RIGHT_AUTO);
+				       (enum op_bottom)RIGHT_AUTO);
+				assert(BOTTOM_SET == (enum op_bottom)TOP_SET);
+				assert(BOTTOM_AUTO == (enum op_bottom)TOP_AUTO);
 				assert(BOTTOM_SET ==
-						(enum op_bottom) TOP_SET);
+				       (enum op_bottom)HEIGHT_SET);
 				assert(BOTTOM_AUTO ==
-						(enum op_bottom) TOP_AUTO);
+				       (enum op_bottom)HEIGHT_AUTO);
 				assert(BOTTOM_SET ==
-						(enum op_bottom) HEIGHT_SET);
+				       (enum op_bottom)MARGIN_SET);
 				assert(BOTTOM_AUTO ==
-						(enum op_bottom) HEIGHT_AUTO);
+				       (enum op_bottom)MARGIN_AUTO);
+				assert(BOTTOM_SET == (enum op_bottom)WIDTH_SET);
+				assert(BOTTOM_AUTO ==
+				       (enum op_bottom)WIDTH_AUTO);
 				assert(BOTTOM_SET ==
-						(enum op_bottom) MARGIN_SET);
+				       (enum op_bottom)COLUMN_WIDTH_SET);
 				assert(BOTTOM_AUTO ==
-						(enum op_bottom) MARGIN_AUTO);
-				assert(BOTTOM_SET ==
-						(enum op_bottom) WIDTH_SET);
-				assert(BOTTOM_AUTO ==
-						(enum op_bottom) WIDTH_AUTO);
-				assert(BOTTOM_SET ==
-						(enum op_bottom)
-							COLUMN_WIDTH_SET);
-				assert(BOTTOM_AUTO ==
-						(enum op_bottom)
-							COLUMN_WIDTH_AUTO);
+				       (enum op_bottom)COLUMN_WIDTH_AUTO);
 
 				switch (value) {
-				case BOTTOM_SET:
-				{
+				case BOTTOM_SET: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				case BOTTOM_AUTO:
 					*ptr += sprintf(*ptr, "auto");
 					break;
@@ -1364,32 +1367,27 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 			case CSS_PROP_BREAK_AFTER:
 			case CSS_PROP_BREAK_BEFORE:
 				assert(BREAK_AFTER_AUTO ==
-						(enum op_break_after)
-						BREAK_BEFORE_AUTO);
+				       (enum op_break_after)BREAK_BEFORE_AUTO);
 				assert(BREAK_AFTER_ALWAYS ==
-						(enum op_break_after)
-						BREAK_BEFORE_ALWAYS);
+				       (enum op_break_after)
+					       BREAK_BEFORE_ALWAYS);
 				assert(BREAK_AFTER_AVOID ==
-						(enum op_break_after)
-						BREAK_BEFORE_AVOID);
+				       (enum op_break_after)BREAK_BEFORE_AVOID);
 				assert(BREAK_AFTER_LEFT ==
-						(enum op_break_after)
-						BREAK_BEFORE_LEFT);
+				       (enum op_break_after)BREAK_BEFORE_LEFT);
 				assert(BREAK_AFTER_RIGHT ==
-						(enum op_break_after)
-						BREAK_BEFORE_RIGHT);
+				       (enum op_break_after)BREAK_BEFORE_RIGHT);
 				assert(BREAK_AFTER_PAGE ==
-						(enum op_break_after)
-						BREAK_BEFORE_PAGE);
+				       (enum op_break_after)BREAK_BEFORE_PAGE);
 				assert(BREAK_AFTER_COLUMN ==
-						(enum op_break_after)
-						BREAK_BEFORE_COLUMN);
+				       (enum op_break_after)
+					       BREAK_BEFORE_COLUMN);
 				assert(BREAK_AFTER_AVOID_PAGE ==
-						(enum op_break_after)
-						BREAK_BEFORE_AVOID_PAGE);
+				       (enum op_break_after)
+					       BREAK_BEFORE_AVOID_PAGE);
 				assert(BREAK_AFTER_AVOID_COLUMN ==
-						(enum op_break_after)
-						BREAK_BEFORE_AVOID_COLUMN);
+				       (enum op_break_after)
+					       BREAK_BEFORE_AVOID_COLUMN);
 
 				switch (value) {
 				case BREAK_AFTER_AUTO:
@@ -1465,16 +1463,16 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				break;
 			case CSS_PROP_CLIP:
 				if ((value & CLIP_SHAPE_MASK) ==
-						CLIP_SHAPE_RECT) {
+				    CLIP_SHAPE_RECT) {
 					*ptr += sprintf(*ptr, "rect(");
 					if (value & CLIP_RECT_TOP_AUTO) {
 						*ptr += sprintf(*ptr, "auto");
 					} else {
 						uint32_t unit;
-						css_fixed val =
-							*((css_fixed *) bytecode);
+						css_fixed val = *(
+							(css_fixed *)bytecode);
 						ADVANCE(sizeof(val));
-						unit = *((uint32_t *) bytecode);
+						unit = *((uint32_t *)bytecode);
 						ADVANCE(sizeof(unit));
 						dump_unit(val, unit, ptr);
 					}
@@ -1483,10 +1481,10 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 						*ptr += sprintf(*ptr, "auto");
 					} else {
 						uint32_t unit;
-						css_fixed val =
-							*((css_fixed *) bytecode);
+						css_fixed val = *(
+							(css_fixed *)bytecode);
 						ADVANCE(sizeof(val));
-						unit = *((uint32_t *) bytecode);
+						unit = *((uint32_t *)bytecode);
 						ADVANCE(sizeof(unit));
 						dump_unit(val, unit, ptr);
 					}
@@ -1495,10 +1493,10 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 						*ptr += sprintf(*ptr, "auto");
 					} else {
 						uint32_t unit;
-						css_fixed val =
-							*((css_fixed *) bytecode);
+						css_fixed val = *(
+							(css_fixed *)bytecode);
 						ADVANCE(sizeof(val));
-						unit = *((uint32_t *) bytecode);
+						unit = *((uint32_t *)bytecode);
 						ADVANCE(sizeof(unit));
 						dump_unit(val, unit, ptr);
 					}
@@ -1507,10 +1505,10 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 						*ptr += sprintf(*ptr, "auto");
 					} else {
 						uint32_t unit;
-						css_fixed val =
-							*((css_fixed *) bytecode);
+						css_fixed val = *(
+							(css_fixed *)bytecode);
 						ADVANCE(sizeof(val));
-						unit = *((uint32_t *) bytecode);
+						unit = *((uint32_t *)bytecode);
 						ADVANCE(sizeof(unit));
 						dump_unit(val, unit, ptr);
 					}
@@ -1526,25 +1524,22 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				case COLOR_CURRENT_COLOR:
 					*ptr += sprintf(*ptr, "currentColor");
 					break;
-				case COLOR_SET:
-				{
-					uint32_t colour =
-						*((uint32_t *) bytecode);
+				case COLOR_SET: {
+					uint32_t colour = *(
+						(uint32_t *)bytecode);
 					ADVANCE(sizeof(colour));
 					*ptr += sprintf(*ptr, "#%08x", colour);
-				}
-					break;
+				} break;
 				}
 				break;
 			case CSS_PROP_COLUMN_COUNT:
 				switch (value) {
-				case COLUMN_COUNT_SET:
-				{
-					css_fixed val = *((css_fixed *) bytecode);
+				case COLUMN_COUNT_SET: {
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
 					dump_number(val, ptr);
-				}
-					break;
+				} break;
 				case COLUMN_COUNT_AUTO:
 					*ptr += sprintf(*ptr, "auto");
 					break;
@@ -1562,16 +1557,15 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				break;
 			case CSS_PROP_COLUMN_GAP:
 				switch (value) {
-				case COLUMN_GAP_SET:
-				{
+				case COLUMN_GAP_SET: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				case COLUMN_GAP_NORMAL:
 					*ptr += sprintf(*ptr, "normal");
 					break;
@@ -1597,68 +1591,85 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				}
 
 				while (value != CONTENT_NORMAL) {
-					uint32_t snum = *((uint32_t *) bytecode);
+					uint32_t snum = *((uint32_t *)bytecode);
 					lwc_string *he;
 					const char *end = "";
 
 					switch (value & 0xff) {
 					case CONTENT_COUNTER:
-						css__stylesheet_string_get(style->sheet, snum, &he);
+						css__stylesheet_string_get(
+							style->sheet,
+							snum,
+							&he);
 						ADVANCE(sizeof(snum));
 						dump_counter(he, value, ptr);
 						break;
 
-					case CONTENT_COUNTERS:
-					{
+					case CONTENT_COUNTERS: {
 						lwc_string *sep;
-						css__stylesheet_string_get(style->sheet, snum, &he);
+						css__stylesheet_string_get(
+							style->sheet,
+							snum,
+							&he);
 						ADVANCE(sizeof(snum));
 
-						sep = *((lwc_string **) bytecode);
+						sep = *((
+							lwc_string **)bytecode);
 						ADVANCE(sizeof(sep));
 
-						dump_counters(he, sep, value,
-							ptr);
-					}
-						break;
+						dump_counters(
+							he, sep, value, ptr);
+					} break;
 
 					case CONTENT_URI:
 					case CONTENT_ATTR:
 					case CONTENT_STRING:
-						css__stylesheet_string_get(style->sheet, snum, &he);
+						css__stylesheet_string_get(
+							style->sheet,
+							snum,
+							&he);
 						if (value == CONTENT_URI)
-							*ptr += sprintf(*ptr, "url(");
+							*ptr += sprintf(*ptr,
+									"url(");
 						if (value == CONTENT_ATTR)
-							*ptr += sprintf(*ptr, "attr(");
+							*ptr += sprintf(
+								*ptr, "attr(");
 						if (value != CONTENT_STRING)
 							end = ")";
 
 						ADVANCE(sizeof(snum));
 
-						*ptr += sprintf(*ptr, "'%.*s'%s",
-                                                                (int) lwc_string_length(he),
-                                                                lwc_string_data(he),
+						*ptr += sprintf(
+							*ptr,
+							"'%.*s'%s",
+							(int)lwc_string_length(
+								he),
+							lwc_string_data(he),
 							end);
 						break;
 
 					case CONTENT_OPEN_QUOTE:
-						*ptr += sprintf(*ptr, "open-quote");
+						*ptr += sprintf(*ptr,
+								"open-quote");
 						break;
 
 					case CONTENT_CLOSE_QUOTE:
-						*ptr += sprintf(*ptr, "close-quote");
+						*ptr += sprintf(*ptr,
+								"close-quote");
 						break;
 
 					case CONTENT_NO_OPEN_QUOTE:
-						*ptr += sprintf(*ptr, "no-open-quote");
+						*ptr += sprintf(
+							*ptr, "no-open-quote");
 						break;
 
 					case CONTENT_NO_CLOSE_QUOTE:
-						*ptr += sprintf(*ptr, "no-close-quote");
+						*ptr += sprintf(
+							*ptr, "no-close-quote");
 						break;
 					}
 
-					value = *((uint32_t *) bytecode);
+					value = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(value));
 
 					if (value != CONTENT_NORMAL)
@@ -1668,33 +1679,40 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 			case CSS_PROP_COUNTER_INCREMENT:
 			case CSS_PROP_COUNTER_RESET:
 				assert(COUNTER_INCREMENT_NONE ==
-						(enum op_counter_increment)
-						COUNTER_RESET_NONE);
+				       (enum op_counter_increment)
+					       COUNTER_RESET_NONE);
 				assert(COUNTER_INCREMENT_NAMED ==
-						(enum op_counter_increment)
-						COUNTER_RESET_NAMED);
+				       (enum op_counter_increment)
+					       COUNTER_RESET_NAMED);
 
 				switch (value) {
 				case COUNTER_INCREMENT_NAMED:
-					while (value != COUNTER_INCREMENT_NONE) {
+					while (value !=
+					       COUNTER_INCREMENT_NONE) {
 						css_fixed val;
-					uint32_t snum = *((uint32_t *) bytecode);					lwc_string *he;
-					css__stylesheet_string_get(style->sheet,
-								  snum,
-								  &he);
+						uint32_t snum = *(
+							(uint32_t *)bytecode);
+						lwc_string *he;
+						css__stylesheet_string_get(
+							style->sheet,
+							snum,
+							&he);
 						ADVANCE(sizeof(snum));
-						*ptr += sprintf(*ptr, "%.*s ",
-                                                                (int)lwc_string_length(he),
-                                                                lwc_string_data(he));
-						val = *((css_fixed *) bytecode);
+						*ptr += sprintf(
+							*ptr,
+							"%.*s ",
+							(int)lwc_string_length(
+								he),
+							lwc_string_data(he));
+						val = *((css_fixed *)bytecode);
 						ADVANCE(sizeof(val));
 						dump_number(val, ptr);
 
-						value = *((uint32_t *) bytecode);
+						value = *((uint32_t *)bytecode);
 						ADVANCE(sizeof(value));
 
 						if (value !=
-							COUNTER_INCREMENT_NONE)
+						    COUNTER_INCREMENT_NONE)
 							*ptr += sprintf(*ptr,
 									" ");
 					}
@@ -1706,16 +1724,19 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				break;
 			case CSS_PROP_CURSOR:
 				while (value == CURSOR_URI) {
-					uint32_t snum = *((uint32_t *) bytecode);					lwc_string *he;
+					uint32_t snum = *((uint32_t *)bytecode);
+					lwc_string *he;
 					css__stylesheet_string_get(style->sheet,
-								  snum,
-								  &he);
+								   snum,
+								   &he);
 					ADVANCE(sizeof(snum));
-					*ptr += sprintf(*ptr, "url('%.*s'), ",
-							(int) lwc_string_length(he),
+					*ptr += sprintf(*ptr,
+							"url('%.*s'), ",
+							(int)lwc_string_length(
+								he),
 							lwc_string_data(he));
 
-					value = *((uint32_t *) bytecode);
+					value = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(value));
 				}
 
@@ -1807,19 +1828,23 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 					*ptr += sprintf(*ptr, "inline-table");
 					break;
 				case DISPLAY_TABLE_ROW_GROUP:
-					*ptr += sprintf(*ptr, "table-row-group");
+					*ptr += sprintf(*ptr,
+							"table-row-group");
 					break;
 				case DISPLAY_TABLE_HEADER_GROUP:
-					*ptr += sprintf(*ptr, "table-header-group");
+					*ptr += sprintf(*ptr,
+							"table-header-group");
 					break;
 				case DISPLAY_TABLE_FOOTER_GROUP:
-					*ptr += sprintf(*ptr, "table-footer-group");
+					*ptr += sprintf(*ptr,
+							"table-footer-group");
 					break;
 				case DISPLAY_TABLE_ROW:
 					*ptr += sprintf(*ptr, "table-row");
 					break;
 				case DISPLAY_TABLE_COLUMN_GROUP:
-					*ptr += sprintf(*ptr, "table-column-group");
+					*ptr += sprintf(*ptr,
+							"table-column-group");
 					break;
 				case DISPLAY_TABLE_COLUMN:
 					*ptr += sprintf(*ptr, "table-column");
@@ -1843,16 +1868,15 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				break;
 			case CSS_PROP_ELEVATION:
 				switch (value) {
-				case ELEVATION_ANGLE:
-				{
+				case ELEVATION_ANGLE: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				case ELEVATION_BELOW:
 					*ptr += sprintf(*ptr, "below");
 					break;
@@ -1882,24 +1906,22 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				break;
 			case CSS_PROP_FILL_OPACITY:
 				switch (value) {
-				case FILL_OPACITY_SET:
-				{
-					css_fixed val = *((css_fixed *) bytecode);
+				case FILL_OPACITY_SET: {
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
 					dump_number(val, ptr);
-				}
-					break;
+				} break;
 				}
 				break;
 			case CSS_PROP_STROKE_OPACITY:
 				switch (value) {
-				case STROKE_OPACITY_SET:
-				{
-					css_fixed val = *((css_fixed *) bytecode);
+				case STROKE_OPACITY_SET: {
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
 					dump_number(val, ptr);
-				}
-					break;
+				} break;
 				}
 				break;
 			case CSS_PROP_FLEX_BASIS:
@@ -1910,16 +1932,15 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				case FLEX_BASIS_CONTENT:
 					*ptr += sprintf(*ptr, "content");
 					break;
-				case FLEX_BASIS_SET:
-				{
+				case FLEX_BASIS_SET: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				}
 				break;
 			case CSS_PROP_FLEX_DIRECTION:
@@ -1940,24 +1961,22 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				break;
 			case CSS_PROP_FLEX_GROW:
 				switch (value) {
-				case FLEX_GROW_SET:
-				{
-					css_fixed val = *((css_fixed *) bytecode);
+				case FLEX_GROW_SET: {
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
 					dump_number(val, ptr);
-				}
-					break;
+				} break;
 				}
 				break;
 			case CSS_PROP_FLEX_SHRINK:
 				switch (value) {
-				case FLEX_SHRINK_SET:
-				{
-					css_fixed val = *((css_fixed *) bytecode);
+				case FLEX_SHRINK_SET: {
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
 					dump_number(val, ptr);
-				}
-					break;
+				} break;
 				}
 				break;
 			case CSS_PROP_FLEX_WRAP:
@@ -1990,35 +2009,44 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				while (value != FONT_FAMILY_END) {
 					switch (value) {
 					case FONT_FAMILY_STRING:
-					case FONT_FAMILY_IDENT_LIST:
-					{
-						uint32_t snum = *((uint32_t *) bytecode);
+					case FONT_FAMILY_IDENT_LIST: {
+						uint32_t snum = *(
+							(uint32_t *)bytecode);
 						lwc_string *he;
-						css__stylesheet_string_get(style->sheet, snum, &he);
+						css__stylesheet_string_get(
+							style->sheet,
+							snum,
+							&he);
 						ADVANCE(sizeof(snum));
-						*ptr += sprintf(*ptr, "'%.*s'",
-                                                                (int) lwc_string_length(he),
-                                                                lwc_string_data(he));
-					}
-						break;
+						*ptr += sprintf(
+							*ptr,
+							"'%.*s'",
+							(int)lwc_string_length(
+								he),
+							lwc_string_data(he));
+					} break;
 					case FONT_FAMILY_SERIF:
 						*ptr += sprintf(*ptr, "serif");
 						break;
 					case FONT_FAMILY_SANS_SERIF:
-						*ptr += sprintf(*ptr, "sans-serif");
+						*ptr += sprintf(*ptr,
+								"sans-serif");
 						break;
 					case FONT_FAMILY_CURSIVE:
-						*ptr += sprintf(*ptr, "cursive");
+						*ptr += sprintf(*ptr,
+								"cursive");
 						break;
 					case FONT_FAMILY_FANTASY:
-						*ptr += sprintf(*ptr, "fantasy");
+						*ptr += sprintf(*ptr,
+								"fantasy");
 						break;
 					case FONT_FAMILY_MONOSPACE:
-						*ptr += sprintf(*ptr, "monospace");
+						*ptr += sprintf(*ptr,
+								"monospace");
 						break;
 					}
 
-					value = *((uint32_t *) bytecode);
+					value = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(value));
 
 					if (value != FONT_FAMILY_END)
@@ -2027,16 +2055,15 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				break;
 			case CSS_PROP_FONT_SIZE:
 				switch (value) {
-				case FONT_SIZE_DIMENSION:
-				{
+				case FONT_SIZE_DIMENSION: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				case FONT_SIZE_XX_SMALL:
 					*ptr += sprintf(*ptr, "xx-small");
 					break;
@@ -2154,27 +2181,26 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 					break;
 				}
 				break;
-	
+
 			case CSS_PROP_LETTER_SPACING:
 			case CSS_PROP_WORD_SPACING:
 				assert(LETTER_SPACING_SET ==
-						(enum op_letter_spacing)
-						WORD_SPACING_SET);
+				       (enum op_letter_spacing)
+					       WORD_SPACING_SET);
 				assert(LETTER_SPACING_NORMAL ==
-						(enum op_letter_spacing)
-						WORD_SPACING_NORMAL);
+				       (enum op_letter_spacing)
+					       WORD_SPACING_NORMAL);
 
 				switch (value) {
-				case LETTER_SPACING_SET:
-				{
+				case LETTER_SPACING_SET: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				case LETTER_SPACING_NORMAL:
 					*ptr += sprintf(*ptr, "normal");
 					break;
@@ -2182,23 +2208,21 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				break;
 			case CSS_PROP_LINE_HEIGHT:
 				switch (value) {
-				case LINE_HEIGHT_NUMBER:
-				{
-					css_fixed val = *((css_fixed *) bytecode);
+				case LINE_HEIGHT_NUMBER: {
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
 					dump_number(val, ptr);
-				}
-					break;
-				case LINE_HEIGHT_DIMENSION:
-				{
+				} break;
+				case LINE_HEIGHT_DIMENSION: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				case LINE_HEIGHT_NORMAL:
 					*ptr += sprintf(*ptr, "normal");
 					break;
@@ -2229,7 +2253,8 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 					*ptr += sprintf(*ptr, "decimal");
 					break;
 				case LIST_STYLE_TYPE_DECIMAL_LEADING_ZERO:
-					*ptr += sprintf(*ptr, "decimal-leading-zero");
+					*ptr += sprintf(*ptr,
+							"decimal-leading-zero");
 					break;
 				case LIST_STYLE_TYPE_LOWER_ROMAN:
 					*ptr += sprintf(*ptr, "lower-roman");
@@ -2266,23 +2291,20 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 			case CSS_PROP_MAX_HEIGHT:
 			case CSS_PROP_MAX_WIDTH:
 				assert(MAX_HEIGHT_SET ==
-						(enum op_max_height)
-						MAX_WIDTH_SET);
+				       (enum op_max_height)MAX_WIDTH_SET);
 				assert(MAX_HEIGHT_NONE ==
-						(enum op_max_height)
-						MAX_WIDTH_NONE);
+				       (enum op_max_height)MAX_WIDTH_NONE);
 
 				switch (value) {
-				case MAX_HEIGHT_SET:
-				{
+				case MAX_HEIGHT_SET: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				case MAX_HEIGHT_NONE:
 					*ptr += sprintf(*ptr, "none");
 					break;
@@ -2291,23 +2313,20 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 			case CSS_PROP_MIN_HEIGHT:
 			case CSS_PROP_MIN_WIDTH:
 				assert(MIN_HEIGHT_SET ==
-						(enum op_min_height)
-						MIN_WIDTH_SET);
+				       (enum op_min_height)MIN_WIDTH_SET);
 				assert(MIN_HEIGHT_AUTO ==
-						(enum op_min_height)
-						MIN_WIDTH_AUTO);
+				       (enum op_min_height)MIN_WIDTH_AUTO);
 
 				switch (value) {
-				case MIN_HEIGHT_SET:
-				{
+				case MIN_HEIGHT_SET: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				case MIN_HEIGHT_AUTO:
 					*ptr += sprintf(*ptr, "auto");
 					break;
@@ -2315,24 +2334,22 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				break;
 			case CSS_PROP_OPACITY:
 				switch (value) {
-				case OPACITY_SET:
-				{
-					css_fixed val = *((css_fixed *) bytecode);
+				case OPACITY_SET: {
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
 					dump_number(val, ptr);
-				}
-					break;
+				} break;
 				}
 				break;
 			case CSS_PROP_ORDER:
 				switch (value) {
-				case ORDER_SET:
-				{
-					css_fixed val = *((css_fixed *) bytecode);
+				case ORDER_SET: {
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
 					dump_number(val, ptr);
-				}
-					break;
+				} break;
 				}
 				break;
 			case CSS_PROP_PADDING_TOP:
@@ -2343,26 +2360,22 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 			case CSS_PROP_PAUSE_BEFORE:
 			case CSS_PROP_TEXT_INDENT:
 				assert(TEXT_INDENT_SET ==
-						(enum op_text_indent)
-						PADDING_SET);
+				       (enum op_text_indent)PADDING_SET);
 				assert(TEXT_INDENT_SET ==
-						(enum op_text_indent)
-						PAUSE_AFTER_SET);
+				       (enum op_text_indent)PAUSE_AFTER_SET);
 				assert(TEXT_INDENT_SET ==
-						(enum op_text_indent)
-						PAUSE_BEFORE_SET);
+				       (enum op_text_indent)PAUSE_BEFORE_SET);
 
 				switch (value) {
-				case TEXT_INDENT_SET:
-				{
+				case TEXT_INDENT_SET: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				}
 				break;
 			case CSS_PROP_ORPHANS:
@@ -2371,26 +2384,21 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 			case CSS_PROP_STRESS:
 			case CSS_PROP_WIDOWS:
 				assert(ORPHANS_SET ==
-						(enum op_orphans)
-						PITCH_RANGE_SET);
+				       (enum op_orphans)PITCH_RANGE_SET);
 				assert(ORPHANS_SET ==
-						(enum op_orphans)
-						RICHNESS_SET);
+				       (enum op_orphans)RICHNESS_SET);
 				assert(ORPHANS_SET ==
-						(enum op_orphans)
-						STRESS_SET);
+				       (enum op_orphans)STRESS_SET);
 				assert(ORPHANS_SET ==
-						(enum op_orphans)
-						WIDOWS_SET);
+				       (enum op_orphans)WIDOWS_SET);
 
 				switch (value) {
-				case ORPHANS_SET:
-				{
-					css_fixed val = *((css_fixed *) bytecode);
+				case ORPHANS_SET: {
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
 					dump_number(val, ptr);
-				}
-					break;
+				} break;
 				}
 				break;
 			case CSS_PROP_OUTLINE_COLOR:
@@ -2401,14 +2409,12 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				case OUTLINE_COLOR_CURRENT_COLOR:
 					*ptr += sprintf(*ptr, "currentColor");
 					break;
-				case OUTLINE_COLOR_SET:
-				{
-					uint32_t colour =
-						*((uint32_t *) bytecode);
+				case OUTLINE_COLOR_SET: {
+					uint32_t colour = *(
+						(uint32_t *)bytecode);
 					ADVANCE(sizeof(colour));
 					*ptr += sprintf(*ptr, "#%08x", colour);
-				}
-					break;
+				} break;
 				case OUTLINE_COLOR_INVERT:
 					*ptr += sprintf(*ptr, "invert");
 					break;
@@ -2434,20 +2440,20 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 			case CSS_PROP_PAGE_BREAK_AFTER:
 			case CSS_PROP_PAGE_BREAK_BEFORE:
 				assert(PAGE_BREAK_AFTER_AUTO ==
-						(enum op_page_break_after)
-						PAGE_BREAK_BEFORE_AUTO);
+				       (enum op_page_break_after)
+					       PAGE_BREAK_BEFORE_AUTO);
 				assert(PAGE_BREAK_AFTER_ALWAYS ==
-						(enum op_page_break_after)
-						PAGE_BREAK_BEFORE_ALWAYS);
+				       (enum op_page_break_after)
+					       PAGE_BREAK_BEFORE_ALWAYS);
 				assert(PAGE_BREAK_AFTER_AVOID ==
-						(enum op_page_break_after)
-						PAGE_BREAK_BEFORE_AVOID);
+				       (enum op_page_break_after)
+					       PAGE_BREAK_BEFORE_AVOID);
 				assert(PAGE_BREAK_AFTER_LEFT ==
-						(enum op_page_break_after)
-						PAGE_BREAK_BEFORE_LEFT);
+				       (enum op_page_break_after)
+					       PAGE_BREAK_BEFORE_LEFT);
 				assert(PAGE_BREAK_AFTER_RIGHT ==
-						(enum op_page_break_after)
-						PAGE_BREAK_BEFORE_RIGHT);
+				       (enum op_page_break_after)
+					       PAGE_BREAK_BEFORE_RIGHT);
 
 				switch (value) {
 				case PAGE_BREAK_AFTER_AUTO:
@@ -2479,16 +2485,15 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				break;
 			case CSS_PROP_PITCH:
 				switch (value) {
-				case PITCH_FREQUENCY:
-				{
+				case PITCH_FREQUENCY: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				case PITCH_X_LOW:
 					*ptr += sprintf(*ptr, "x-low");
 					break;
@@ -2508,17 +2513,19 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				break;
 			case CSS_PROP_PLAY_DURING:
 				switch (value) {
-				case PLAY_DURING_URI:
-				{
-					uint32_t snum = *((uint32_t *) bytecode);
+				case PLAY_DURING_URI: {
+					uint32_t snum = *((uint32_t *)bytecode);
 					lwc_string *he;
-					css__stylesheet_string_get(style->sheet, snum, &he);
+					css__stylesheet_string_get(style->sheet,
+								   snum,
+								   &he);
 					ADVANCE(sizeof(snum));
-					*ptr += sprintf(*ptr, "'%.*s'",
-                                                        (int) lwc_string_length(he),
-                                                        lwc_string_data(he));
-				}
-					break;
+					*ptr += sprintf(*ptr,
+							"'%.*s'",
+							(int)lwc_string_length(
+								he),
+							lwc_string_data(he));
+				} break;
 				case PLAY_DURING_AUTO:
 					*ptr += sprintf(*ptr, "auto");
 					break;
@@ -2552,21 +2559,34 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				switch (value) {
 				case QUOTES_STRING:
 					while (value != QUOTES_NONE) {
-						uint32_t snum = *((uint32_t *) bytecode);
+						uint32_t snum = *(
+							(uint32_t *)bytecode);
 						lwc_string *he;
-						css__stylesheet_string_get(style->sheet, snum, &he);
+						css__stylesheet_string_get(
+							style->sheet,
+							snum,
+							&he);
 						ADVANCE(sizeof(snum));
-						*ptr += sprintf(*ptr, " '%.*s' ",
-                                                                (int) lwc_string_length(he),
-                                                                lwc_string_data(he));
+						*ptr += sprintf(
+							*ptr,
+							" '%.*s' ",
+							(int)lwc_string_length(
+								he),
+							lwc_string_data(he));
 
-						css__stylesheet_string_get(style->sheet, snum, &he);
+						css__stylesheet_string_get(
+							style->sheet,
+							snum,
+							&he);
 						ADVANCE(sizeof(he));
-						*ptr += sprintf(*ptr, " '%.*s' ",
-                                                                (int) lwc_string_length(he),
-                                                                lwc_string_data(he));
+						*ptr += sprintf(
+							*ptr,
+							" '%.*s' ",
+							(int)lwc_string_length(
+								he),
+							lwc_string_data(he));
 
-						value = *((uint32_t *) bytecode);
+						value = *((uint32_t *)bytecode);
 						ADVANCE(sizeof(value));
 					}
 					break;
@@ -2620,13 +2640,12 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				break;
 			case CSS_PROP_SPEECH_RATE:
 				switch (value) {
-				case SPEECH_RATE_SET:
-				{
-					css_fixed val = *((css_fixed *) bytecode);
+				case SPEECH_RATE_SET: {
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
 					dump_number(val, ptr);
-				}
-					break;
+				} break;
 				case SPEECH_RATE_X_SLOW:
 					*ptr += sprintf(*ptr, "x-slow");
 					break;
@@ -2729,16 +2748,15 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				break;
 			case CSS_PROP_VERTICAL_ALIGN:
 				switch (value) {
-				case VERTICAL_ALIGN_SET:
-				{
+				case VERTICAL_ALIGN_SET: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				case VERTICAL_ALIGN_BASELINE:
 					*ptr += sprintf(*ptr, "baseline");
 					break;
@@ -2782,17 +2800,22 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				while (value != VOICE_FAMILY_END) {
 					switch (value) {
 					case VOICE_FAMILY_STRING:
-					case VOICE_FAMILY_IDENT_LIST:
-					{
-						uint32_t snum = *((uint32_t *) bytecode);
+					case VOICE_FAMILY_IDENT_LIST: {
+						uint32_t snum = *(
+							(uint32_t *)bytecode);
 						lwc_string *he;
-						css__stylesheet_string_get(style->sheet, snum, &he);
+						css__stylesheet_string_get(
+							style->sheet,
+							snum,
+							&he);
 						ADVANCE(sizeof(snum));
-						*ptr += sprintf(*ptr, "'%.*s'",
-                                                                (int) lwc_string_length(he),
-                                                                lwc_string_data(he));
-					}
-						break;
+						*ptr += sprintf(
+							*ptr,
+							"'%.*s'",
+							(int)lwc_string_length(
+								he),
+							lwc_string_data(he));
+					} break;
 					case VOICE_FAMILY_MALE:
 						*ptr += sprintf(*ptr, "male");
 						break;
@@ -2804,7 +2827,7 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 						break;
 					}
 
-					value = *((uint32_t *) bytecode);
+					value = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(value));
 
 					if (value != VOICE_FAMILY_END)
@@ -2813,23 +2836,21 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				break;
 			case CSS_PROP_VOLUME:
 				switch (value) {
-				case VOLUME_NUMBER:
-				{
-					css_fixed val = *((css_fixed *) bytecode);
+				case VOLUME_NUMBER: {
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
 					dump_number(val, ptr);
-				}
-					break;
-				case VOLUME_DIMENSION:
-				{
+				} break;
+				case VOLUME_DIMENSION: {
 					uint32_t unit;
-					css_fixed val = *((css_fixed *) bytecode);
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
-					unit = *((uint32_t *) bytecode);
+					unit = *((uint32_t *)bytecode);
 					ADVANCE(sizeof(unit));
 					dump_unit(val, unit, ptr);
-				}
-					break;
+				} break;
 				case VOLUME_SILENT:
 					*ptr += sprintf(*ptr, "silent");
 					break;
@@ -2884,13 +2905,12 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 				break;
 			case CSS_PROP_Z_INDEX:
 				switch (value) {
-				case Z_INDEX_SET:
-				{
-					css_fixed val = *((css_fixed *) bytecode);
+				case Z_INDEX_SET: {
+					css_fixed val = *(
+						(css_fixed *)bytecode);
 					ADVANCE(sizeof(val));
 					dump_number(val, ptr);
-				}
-					break;
+				} break;
 				case Z_INDEX_AUTO:
 					*ptr += sprintf(*ptr, "auto");
 					break;
@@ -2909,14 +2929,14 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 	}
 
 #undef ADVANCE
-
 }
 
 void dump_string(lwc_string *string, char **ptr)
 {
-	*ptr += sprintf(*ptr, "%.*s",
-                        (int) lwc_string_length(string),
-                        lwc_string_data(string));
+	*ptr += sprintf(*ptr,
+			"%.*s",
+			(int)lwc_string_length(string),
+			lwc_string_data(string));
 }
 
 void dump_font_face(css_font_face *font_face, char **ptr)
@@ -2925,8 +2945,9 @@ void dump_font_face(css_font_face *font_face, char **ptr)
 
 	if (font_face->font_family != NULL) {
 		*(*ptr)++ = '\n';
-		*ptr += sprintf(*ptr, "|  font-family: %.*s",
-				(int) lwc_string_length(font_face->font_family),
+		*ptr += sprintf(*ptr,
+				"|  font-family: %.*s",
+				(int)lwc_string_length(font_face->font_family),
 				lwc_string_data(font_face->font_family));
 	}
 
@@ -3031,7 +3052,7 @@ void dump_font_face(css_font_face *font_face, char **ptr)
 				*ptr += sprintf(*ptr, "\n|   location: ");
 
 				switch (css_font_face_src_location_type(
-						&srcs[i])) {
+					&srcs[i])) {
 				case CSS_FONT_FACE_LOCATION_TYPE_LOCAL:
 					*ptr += sprintf(*ptr, "local");
 					break;
@@ -3043,10 +3064,12 @@ void dump_font_face(css_font_face *font_face, char **ptr)
 					break;
 				}
 
-				*ptr += sprintf(*ptr, "(%.*s)",
-					(int) lwc_string_length(
+				*ptr += sprintf(*ptr,
+						"(%.*s)",
+						(int)lwc_string_length(
 							srcs[i].location),
-					lwc_string_data(srcs[i].location));
+						lwc_string_data(
+							srcs[i].location));
 			}
 		}
 	}

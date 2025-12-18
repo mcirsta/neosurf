@@ -31,9 +31,9 @@
 #include "neosurf/plot_style.h"
 
 typedef struct nsnsclipboard_styles {
-	size_t start;			/**< Start of run */
+	size_t start; /**< Start of run */
 
-	plot_font_style_t style;	/**< Style to give text run */
+	plot_font_style_t style; /**< Style to give text run */
 } nsclipboard_styles;
 
 /**
@@ -43,7 +43,8 @@ struct gui_clipboard_table {
 	/**
 	 * Core asks front end for clipboard contents.
 	 *
-	 * \param  buffer  UTF-8 text, allocated by front end, ownership yeilded to core
+	 * \param  buffer  UTF-8 text, allocated by front end, ownership yeilded
+	 * to core
 	 * \param  length  Byte length of UTF-8 text in buffer
 	 */
 	void (*get)(char **buffer, size_t *length);
@@ -53,10 +54,14 @@ struct gui_clipboard_table {
 	 *
 	 * \param  buffer    UTF-8 text, owned by core
 	 * \param  length    Byte length of UTF-8 text in buffer
-	 * \param  styles    Array of styles given to text runs, owned by core, or NULL
+	 * \param  styles    Array of styles given to text runs, owned by core,
+	 * or NULL
 	 * \param  n_styles  Number of text run styles in array
 	 */
-	void (*set)(const char *buffer, size_t length, nsclipboard_styles styles[], int n_styles);
+	void (*set)(const char *buffer,
+		    size_t length,
+		    nsclipboard_styles styles[],
+		    int n_styles);
 };
 
 #endif

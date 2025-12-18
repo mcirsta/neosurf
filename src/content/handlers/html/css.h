@@ -43,7 +43,8 @@ void html_css_fini(void);
  * \param select_ctx A pointer to receive the new context.
  * \return NSERROR_OK on success and \a select_ctx updated else error code
  */
-nserror html_css_new_selection_context(struct html_content *c, css_select_ctx **select_ctx);
+nserror html_css_new_selection_context(struct html_content *c,
+				       css_select_ctx **select_ctx);
 
 /**
  * Initialise core stylesheets for a content
@@ -62,7 +63,7 @@ nserror html_css_new_stylesheets(struct html_content *c);
 nserror html_css_quirks_stylesheets(struct html_content *c);
 
 /**
- * Free all css stylesheets associated with an HTML content. 
+ * Free all css stylesheets associated with an HTML content.
  *
  * \param html The HTML content to free stylesheets from.
  * \return NSERROR_OK on success or error code.
@@ -78,28 +79,28 @@ nserror html_css_free_stylesheets(struct html_content *html);
 bool html_css_saw_insecure_stylesheets(struct html_content *htmlc);
 
 /**
- * process a css stylesheet dom LINK node 
+ * process a css stylesheet dom LINK node
  *
  * \param htmlc The HTML content.
- * \param node the DOM link node to process. 
+ * \param node the DOM link node to process.
  * \return true on success else false.
  */
 bool html_css_process_link(struct html_content *htmlc, dom_node *node);
 
 /**
- * process a css style dom node 
+ * process a css style dom node
  *
  * \param htmlc The HTML content.
- * \param node the DOM node to process. 
+ * \param node the DOM node to process.
  * \return true on success else false.
  */
 bool html_css_process_style(struct html_content *htmlc, dom_node *node);
 
 /**
- * process a css style dom node update 
+ * process a css style dom node update
  *
  * \param htmlc The HTML content.
- * \param node the DOM node to process. 
+ * \param node the DOM node to process.
  * \return true on success else false.
  */
 bool html_css_update_style(struct html_content *htmlc, dom_node *node);

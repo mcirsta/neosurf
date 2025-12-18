@@ -53,7 +53,7 @@ START_TEST(corestrings_test)
 	res = corestrings_fini();
 
 	malloc_limit(UINT_MAX);
-	
+
 	if (_i < CORESTRING_TEST_COUNT) {
 		ck_assert_int_eq(ires, NSERROR_NOMEM);
 	} else {

@@ -87,23 +87,23 @@ static scheme_fetcher fetchers[MAX_FETCHERS];
 
 /** Information for a single fetch. */
 struct fetch {
-	fetch_callback callback;/**< Callback function. */
-	nsurl *url;		/**< URL. */
-	nsurl *referer;		/**< Referer URL. */
-	bool verifiable;	/**< Transaction is verifiable */
-	void *p;		/**< Private data for callback. */
-	lwc_string *host;	/**< Host part of URL, interned */
-	long http_code;		/**< HTTP response code, or 0. */
-	int fetcherd;           /**< Fetcher descriptor for this fetch */
-	void *fetcher_handle;	/**< The handle for the fetcher. */
-	bool fetch_is_active;	/**< This fetch is active. */
-	fetch_msg_type last_msg;/**< The last message sent for this fetch */
-	struct fetch *r_prev;	/**< Previous active fetch in ::fetch_ring. */
-	struct fetch *r_next;	/**< Next active fetch in ::fetch_ring. */
+	fetch_callback callback; /**< Callback function. */
+	nsurl *url; /**< URL. */
+	nsurl *referer; /**< Referer URL. */
+	bool verifiable; /**< Transaction is verifiable */
+	void *p; /**< Private data for callback. */
+	lwc_string *host; /**< Host part of URL, interned */
+	long http_code; /**< HTTP response code, or 0. */
+	int fetcherd; /**< Fetcher descriptor for this fetch */
+	void *fetcher_handle; /**< The handle for the fetcher. */
+	bool fetch_is_active; /**< This fetch is active. */
+	fetch_msg_type last_msg; /**< The last message sent for this fetch */
+	struct fetch *r_prev; /**< Previous active fetch in ::fetch_ring. */
+	struct fetch *r_next; /**< Next active fetch in ::fetch_ring. */
 };
 
-static struct fetch *fetch_ring = NULL;	/**< Ring of active fetches. */
-static struct fetch *queue_ring = NULL;	/**< Ring of queued fetches */
+static struct fetch *fetch_ring = NULL; /**< Ring of active fetches. */
+static struct fetch *queue_ring = NULL; /**< Ring of queued fetches */
 
 /******************************************************************************
  * fetch internals							      *
@@ -134,10 +134,11 @@ static int get_fetcher_for_scheme(lwc_string *scheme)
 	for (fetcherd = 0; fetcherd < MAX_FETCHERS; fetcherd++) {
 		if ((fetchers[fetcherd].refcount > 0) &&
 		    (lwc_string_isequal(fetchers[fetcherd].scheme,
-					scheme, &match) == lwc_error_ok) &&
+					scheme,
+					&match) == lwc_error_ok) &&
 		    (match == true)) {
 			return fetcherd;
-	       }
+		}
 	}
 	return -1;
 }
@@ -148,13 +149,16 @@ static int get_fetcher_for_scheme(lwc_string *scheme)
 static bool fetch_dispatch_job(struct fetch *fetch)
 {
 	RING_REMOVE(queue_ring, fetch);
-	NSLOG(fetch, DEBUG,
-	      "Attempting to start fetch %p, fetcher %p, url %s", fetch,
+	NSLOG(fetch,
+	      DEBUG,
+	      "Attempting to start fetch %p, fetcher %p, url %s",
+	      fetch,
 	      fetch->fetcher_handle,
 	      nsurl_access(fetch->url));
 
 	if (!fetchers[fetch->fetcherd].ops.start(fetch->fetcher_handle)) {
-		RING_INSERT(queue_ring, fetch); /* Put it back on the end of the queue */
+		RING_INSERT(queue_ring,
+			    fetch); /* Put it back on the end of the queue */
 		return false;
 	} else {
 		RING_INSERT(fetch_ring, fetch);
@@ -180,8 +184,8 @@ static bool fetch_choose_and_dispatch(void)
 		 * fetch ring
 		 */
 		int countbyhost;
-		RING_COUNTBYLWCHOST(struct fetch, fetch_ring, countbyhost,
-				    queueitem->host);
+		RING_COUNTBYLWCHOST(
+			struct fetch, fetch_ring, countbyhost, queueitem->host);
 		if (countbyhost < nsoption_int(max_fetchers_per_host)) {
 			/* We can dispatch this item in theory */
 			return fetch_dispatch_job(queueitem);
@@ -190,8 +194,9 @@ static bool fetch_choose_and_dispatch(void)
 		same_host = true;
 		while (same_host == true && queueitem->r_next != queue_ring) {
 			if (lwc_string_isequal(queueitem->host,
-					       queueitem->r_next->host, &same_host) ==
-			    lwc_error_ok && same_host == true) {
+					       queueitem->r_next->host,
+					       &same_host) == lwc_error_ok &&
+			    same_host == true) {
 				queueitem = queueitem->r_next;
 			}
 		}
@@ -208,7 +213,9 @@ static void dump_rings(void)
 	q = queue_ring;
 	if (q) {
 		do {
-			NSLOG(fetch, DEBUG, "queue_ring: %s",
+			NSLOG(fetch,
+			      DEBUG,
+			      "queue_ring: %s",
 			      nsurl_access(q->url));
 			q = q->r_next;
 		} while (q != queue_ring);
@@ -216,7 +223,9 @@ static void dump_rings(void)
 	f = fetch_ring;
 	if (f) {
 		do {
-			NSLOG(fetch, DEBUG, "fetch_ring: %s",
+			NSLOG(fetch,
+			      DEBUG,
+			      "fetch_ring: %s",
 			      nsurl_access(f->url));
 			f = f->r_next;
 		} while (f != fetch_ring);
@@ -236,21 +245,22 @@ static bool fetch_dispatch_jobs(void)
 	RING_GETSIZE(struct fetch, queue_ring, all_queued);
 	RING_GETSIZE(struct fetch, fetch_ring, all_active);
 
-	NSLOG(fetch, DEBUG,
+	NSLOG(fetch,
+	      DEBUG,
 	      "queue_ring %i, fetch_ring %i",
 	      all_queued,
 	      all_active);
 	dump_rings();
 
-	while ((all_queued != 0) &&
-	       (all_active < nsoption_int(max_fetchers)) &&
+	while ((all_queued != 0) && (all_active < nsoption_int(max_fetchers)) &&
 	       fetch_choose_and_dispatch()) {
-			all_queued--;
-			all_active++;
-			NSLOG(fetch, DEBUG,
-			      "%d queued, %d fetching",
-			      all_queued,
-			      all_active);
+		all_queued--;
+		all_active++;
+		NSLOG(fetch,
+		      DEBUG,
+		      "%d queued, %d fetching",
+		      all_queued,
+		      all_active);
 	}
 
 	NSLOG(fetch, DEBUG, "Fetch ring is now %d elements.", all_active);
@@ -268,7 +278,8 @@ static void fetcher_poll(void *unused)
 		for (fetcherd = 0; fetcherd < MAX_FETCHERS; fetcherd++) {
 			if (fetchers[fetcherd].refcount > 0) {
 				/* fetcher present */
-				fetchers[fetcherd].ops.poll(fetchers[fetcherd].scheme);
+				fetchers[fetcherd].ops.poll(
+					fetchers[fetcherd].scheme);
 			}
 		}
 
@@ -338,7 +349,8 @@ void fetcher_quit(void)
 			 * the reference count to allow the fetcher to
 			 * be stopped.
 			 */
-			NSLOG(fetch, INFO,
+			NSLOG(fetch,
+			      INFO,
 			      "Fetcher for scheme %s still has %d active users at quit.",
 			      lwc_string_data(fetchers[fetcherd].scheme),
 			      fetchers[fetcherd].refcount);
@@ -381,11 +393,10 @@ fetcher_add(lwc_string *scheme, const struct fetcher_operation_table *ops)
 }
 
 /* exported interface documented in content/fetch.h */
-nserror
-fetch_fdset(fd_set *read_fd_set,
-		      fd_set *write_fd_set,
-		      fd_set *except_fd_set,
-		      int *maxfd_out)
+nserror fetch_fdset(fd_set *read_fd_set,
+		    fd_set *write_fd_set,
+		    fd_set *except_fd_set,
+		    int *maxfd_out)
 {
 	int maxfd = -1;
 	int fetcherd; /* fetcher index */
@@ -415,8 +426,10 @@ fetch_fdset(fd_set *read_fd_set,
 			/* fetcher present */
 			int fetcher_maxfd;
 			fetcher_maxfd = fetchers[fetcherd].ops.fdset(
-				fetchers[fetcherd].scheme, read_fd_set,
-				write_fd_set, except_fd_set);
+				fetchers[fetcherd].scheme,
+				read_fd_set,
+				write_fd_set,
+				except_fd_set);
 			if (fetcher_maxfd > maxfd)
 				maxfd = fetcher_maxfd;
 		}
@@ -445,22 +458,21 @@ fetch_fdset(fd_set *read_fd_set,
 }
 
 /* exported interface documented in content/fetch.h */
-nserror
-fetch_start(nsurl *url,
-	    nsurl *referer,
-	    fetch_callback callback,
-	    void *p,
-	    bool only_2xx,
-	    const struct fetch_postdata *postdata,
-	    bool verifiable,
-	    bool downgrade_tls,
-	    const char *headers[],
-	    struct fetch **fetch_out)
+nserror fetch_start(nsurl *url,
+		    nsurl *referer,
+		    fetch_callback callback,
+		    void *p,
+		    bool only_2xx,
+		    const struct fetch_postdata *postdata,
+		    bool verifiable,
+		    bool downgrade_tls,
+		    const char *headers[],
+		    struct fetch **fetch_out)
 {
 	struct fetch *fetch;
 	lwc_string *scheme;
 
-	fetch = calloc(1, sizeof (*fetch));
+	fetch = calloc(1, sizeof(*fetch));
 	if (fetch == NULL) {
 		return NSERROR_NOMEM;
 	}
@@ -491,10 +503,8 @@ fetch_start(nsurl *url,
 	}
 
 	/* try and set up the fetch */
-	fetch->fetcher_handle = fetchers[fetch->fetcherd].ops.setup(fetch, url,
-						only_2xx, downgrade_tls,
-						postdata,
-						headers);
+	fetch->fetcher_handle = fetchers[fetch->fetcherd].ops.setup(
+		fetch, url, only_2xx, downgrade_tls, postdata, headers);
 	if (fetch->fetcher_handle == NULL) {
 
 		if (fetch->host != NULL)
@@ -509,9 +519,9 @@ fetch_start(nsurl *url,
 		free(fetch);
 
 
-	/** \todo The fetchers setup should return nserror and that be
-	 * passed back rather than assuming a bad url
-	 */
+		/** \todo The fetchers setup should return nserror and that be
+		 * passed back rather than assuming a bad url
+		 */
 		return NSERROR_BAD_URL;
 	}
 
@@ -537,9 +547,12 @@ void fetch_abort(struct fetch *f)
 {
 	assert(f);
 	f->last_msg = FETCH__INTERNAL_ABORTED;
-	NSLOG(fetch, DEBUG,
-	      "fetch %p, fetcher %p, url '%s'", f, f->fetcher_handle,
-	     nsurl_access(f->url));
+	NSLOG(fetch,
+	      DEBUG,
+	      "fetch %p, fetcher %p, url '%s'",
+	      f,
+	      f->fetcher_handle,
+	      nsurl_access(f->url));
 	fetchers[f->fetcherd].ops.abort(f->fetcher_handle);
 }
 
@@ -553,14 +566,16 @@ void fetch_free(struct fetch *f)
 		msg.type = FETCH_ERROR;
 		msg.data.error = "FetchFailedToFinish";
 
-		NSLOG(fetch, CRITICAL,
+		NSLOG(fetch,
+		      CRITICAL,
 		      "During the fetch of %s, the fetcher did not finish.",
 		      nsurl_access(f->url));
 
 		fetch_send_callback(&msg, f);
 	}
 
-	NSLOG(fetch, DEBUG,
+	NSLOG(fetch,
+	      DEBUG,
 	      "Freeing fetch %p, fetcher %p",
 	      f,
 	      f->fetcher_handle);
@@ -578,7 +593,6 @@ void fetch_free(struct fetch *f)
 	}
 	free(f);
 }
-
 
 
 /* exported interface documented in content/fetch.h */
@@ -681,9 +695,8 @@ fetch_multipart_data_clone(const struct fetch_multipart_data *list)
 
 
 /* exported interface documented in content/fetch.h */
-const char *
-fetch_multipart_data_find(const struct fetch_multipart_data *list,
-			  const char *name)
+const char *fetch_multipart_data_find(const struct fetch_multipart_data *list,
+				      const char *name)
 {
 	while (list != NULL) {
 		if (strcmp(list->name, name) == 0) {
@@ -706,8 +719,10 @@ void fetch_multipart_data_destroy(struct fetch_multipart_data *list)
 		free(list->name);
 		free(list->value);
 		if (list->file) {
-			NSLOG(fetch, DEBUG,
-			      "Freeing rawfile: %s", list->rawfile);
+			NSLOG(fetch,
+			      DEBUG,
+			      "Freeing rawfile: %s",
+			      list->rawfile);
 			free(list->rawfile);
 		}
 		free(list);
@@ -716,10 +731,9 @@ void fetch_multipart_data_destroy(struct fetch_multipart_data *list)
 
 
 /* exported interface documented in content/fetch.h */
-nserror
-fetch_multipart_data_new_kv(struct fetch_multipart_data **list,
-			    const char *name,
-			    const char *value)
+nserror fetch_multipart_data_new_kv(struct fetch_multipart_data **list,
+				    const char *name,
+				    const char *value)
 {
 	struct fetch_multipart_data *newdata;
 
@@ -752,8 +766,7 @@ fetch_multipart_data_new_kv(struct fetch_multipart_data **list,
 
 
 /* exported interface documented in content/fetch.h */
-void
-fetch_send_callback(const fetch_msg *msg, struct fetch *fetch)
+void fetch_send_callback(const fetch_msg *msg, struct fetch *fetch)
 {
 	/* Bump the last_msg to the greatest seen msg */
 	if (msg->type > fetch->last_msg)
@@ -768,7 +781,8 @@ void fetch_remove_from_queues(struct fetch *fetch)
 	int all_active;
 	int all_queued;
 
-	NSLOG(fetch, DEBUG,
+	NSLOG(fetch,
+	      DEBUG,
 	      "Fetch %p, fetcher %p can be freed",
 	      fetch,
 	      fetch->fetcher_handle);

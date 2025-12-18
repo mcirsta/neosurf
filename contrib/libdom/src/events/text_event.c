@@ -13,17 +13,16 @@
 static void _virtual_dom_text_event_destroy(struct dom_event *evt);
 
 static const struct dom_event_private_vtable _event_vtable = {
-	_virtual_dom_text_event_destroy
-};
+	_virtual_dom_text_event_destroy};
 
 /* Constructor */
 dom_exception _dom_text_event_create(struct dom_text_event **evt)
 {
 	*evt = malloc(sizeof(dom_text_event));
-	if (*evt == NULL) 
+	if (*evt == NULL)
 		return DOM_NO_MEM_ERR;
-	
-	((struct dom_event *) *evt)->vtable = &_event_vtable;
+
+	((struct dom_event *)*evt)->vtable = &_event_vtable;
 
 	return _dom_text_event_initialise(*evt);
 }
@@ -53,7 +52,7 @@ void _dom_text_event_finalise(struct dom_text_event *evt)
 /* The virtual destroy function */
 void _virtual_dom_text_event_destroy(struct dom_event *evt)
 {
-	_dom_text_event_destroy((dom_text_event *) evt);
+	_dom_text_event_destroy((dom_text_event *)evt);
 }
 
 /*----------------------------------------------------------------------*/
@@ -66,8 +65,7 @@ void _virtual_dom_text_event_destroy(struct dom_event *evt)
  * \param data  The internal data of this Event
  * \return DOM_NO_ERR.
  */
-dom_exception _dom_text_event_get_data(dom_text_event *evt, 
-		dom_string **data)
+dom_exception _dom_text_event_get_data(dom_text_event *evt, dom_string **data)
 {
 	*data = evt->data;
 	dom_string_ref(*data);
@@ -87,14 +85,17 @@ dom_exception _dom_text_event_get_data(dom_text_event *evt,
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception _dom_text_event_init(dom_text_event *evt,
-		dom_string *type, bool bubble, bool cancelable, 
-		struct dom_abstract_view *view, dom_string *data)
+				   dom_string *type,
+				   bool bubble,
+				   bool cancelable,
+				   struct dom_abstract_view *view,
+				   dom_string *data)
 {
 	evt->data = data;
 	dom_string_ref(data);
 
-	return _dom_ui_event_init(&evt->base, type, bubble, cancelable,
-			view, 0);
+	return _dom_ui_event_init(
+		&evt->base, type, bubble, cancelable, view, 0);
 }
 
 /**
@@ -109,15 +110,17 @@ dom_exception _dom_text_event_init(dom_text_event *evt,
  * \param data        The text data
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_text_event_init_ns(dom_text_event *evt, 
-		dom_string *namespace_name, dom_string *type,
-		bool bubble, bool cancelable, struct dom_abstract_view *view, 
-		dom_string *data)
+dom_exception _dom_text_event_init_ns(dom_text_event *evt,
+				      dom_string *namespace_name,
+				      dom_string *type,
+				      bool bubble,
+				      bool cancelable,
+				      struct dom_abstract_view *view,
+				      dom_string *data)
 {
 	evt->data = data;
 	dom_string_ref(data);
 
-	return _dom_ui_event_init_ns(&evt->base, namespace_name, type, bubble,
-			cancelable, view, 0);
+	return _dom_ui_event_init_ns(
+		&evt->base, namespace_name, type, bubble, cancelable, view, 0);
 }
-

@@ -38,7 +38,11 @@ static void dump_css_fixed(FILE *stream, css_fixed f)
 	uint32_t fracpart = ((NSCSS_ABS(f) & 0x3ff) * 1000 + 500) / (1 << 10);
 #undef NSCSS_ABS
 
-	fprintf(stream, "%s%"PRIu32".%03"PRIu32, f < 0 ? "-" : "", uintpart, fracpart);
+	fprintf(stream,
+		"%s%" PRIu32 ".%03" PRIu32,
+		f < 0 ? "-" : "",
+		uintpart,
+		fracpart);
 }
 
 /**
@@ -50,7 +54,7 @@ static void dump_css_fixed(FILE *stream, css_fixed f)
 static void dump_css_number(FILE *stream, css_fixed val)
 {
 	if (INTTOFIX(FIXTOINT(val)) == val)
-		fprintf(stream, "%"PRId32, FIXTOINT(val));
+		fprintf(stream, "%" PRId32, FIXTOINT(val));
 	else
 		dump_css_fixed(stream, val);
 }
@@ -174,9 +178,18 @@ void nscss_dump_computed_style(FILE *stream, const css_computed_style *style)
 	lwc_string *url = NULL;
 	css_fixed len1 = 0, len2 = 0;
 	css_unit unit1 = CSS_UNIT_PX, unit2 = CSS_UNIT_PX;
-	css_computed_clip_rect rect = { 0, 0, 0, 0, CSS_UNIT_PX, CSS_UNIT_PX,
-					CSS_UNIT_PX, CSS_UNIT_PX, true, true,
-					true, true };
+	css_computed_clip_rect rect = {0,
+				       0,
+				       0,
+				       0,
+				       CSS_UNIT_PX,
+				       CSS_UNIT_PX,
+				       CSS_UNIT_PX,
+				       CSS_UNIT_PX,
+				       true,
+				       true,
+				       true,
+				       true};
 	const css_computed_content_item *content = NULL;
 	const css_computed_counter *counter = NULL;
 	lwc_string **string_list = NULL;
@@ -201,7 +214,7 @@ void nscss_dump_computed_style(FILE *stream, const css_computed_style *style)
 	val = css_computed_background_color(style, &color);
 	switch (val) {
 	case CSS_BACKGROUND_COLOR_COLOR:
-		fprintf(stream, "background-color: #%08"PRIx32" ", color);
+		fprintf(stream, "background-color: #%08" PRIx32 " ", color);
 		break;
 	default:
 		break;
@@ -210,16 +223,17 @@ void nscss_dump_computed_style(FILE *stream, const css_computed_style *style)
 	/* background-image */
 	val = css_computed_background_image(style, &url);
 	if (val == CSS_BACKGROUND_IMAGE_IMAGE && url != NULL) {
-		fprintf(stream, "background-image: url('%.*s') ",
-				(int) lwc_string_length(url),
-				lwc_string_data(url));
+		fprintf(stream,
+			"background-image: url('%.*s') ",
+			(int)lwc_string_length(url),
+			lwc_string_data(url));
 	} else if (val == CSS_BACKGROUND_IMAGE_NONE) {
 		fprintf(stream, "background-image: none ");
 	}
 
 	/* background-position */
-	val = css_computed_background_position(style, &len1, &unit1,
-			&len2, &unit2);
+	val = css_computed_background_position(
+		style, &len1, &unit1, &len2, &unit2);
 	if (val == CSS_BACKGROUND_POSITION_SET) {
 		fprintf(stream, "background-position: ");
 		dump_css_unit(stream, len1, unit1);
@@ -275,7 +289,7 @@ void nscss_dump_computed_style(FILE *stream, const css_computed_style *style)
 	val = css_computed_border_top_color(style, &color);
 	switch (val) {
 	case CSS_BORDER_COLOR_COLOR:
-		fprintf(stream, "border-top-color: #%08"PRIx32" ", color);
+		fprintf(stream, "border-top-color: #%08" PRIx32 " ", color);
 		break;
 	default:
 		break;
@@ -285,7 +299,7 @@ void nscss_dump_computed_style(FILE *stream, const css_computed_style *style)
 	val = css_computed_border_right_color(style, &color);
 	switch (val) {
 	case CSS_BORDER_COLOR_COLOR:
-		fprintf(stream, "border-right-color: #%08"PRIx32" ", color);
+		fprintf(stream, "border-right-color: #%08" PRIx32 " ", color);
 		break;
 	default:
 		break;
@@ -295,7 +309,7 @@ void nscss_dump_computed_style(FILE *stream, const css_computed_style *style)
 	val = css_computed_border_bottom_color(style, &color);
 	switch (val) {
 	case CSS_BORDER_COLOR_COLOR:
-		fprintf(stream, "border-bottom-color: #%08"PRIx32" ", color);
+		fprintf(stream, "border-bottom-color: #%08" PRIx32 " ", color);
 		break;
 	default:
 		break;
@@ -305,7 +319,7 @@ void nscss_dump_computed_style(FILE *stream, const css_computed_style *style)
 	val = css_computed_border_left_color(style, &color);
 	switch (val) {
 	case CSS_BORDER_COLOR_COLOR:
-		fprintf(stream, "border-left-color: #%08"PRIx32" ", color);
+		fprintf(stream, "border-left-color: #%08" PRIx32 " ", color);
 		break;
 	default:
 		break;
@@ -630,7 +644,7 @@ void nscss_dump_computed_style(FILE *stream, const css_computed_style *style)
 	/* color */
 	val = css_computed_color(style, &color);
 	if (val == CSS_COLOR_COLOR) {
-		fprintf(stream, "color: #%08"PRIx32" ", color);
+		fprintf(stream, "color: #%08" PRIx32 " ", color);
 	}
 
 	/* content */
@@ -650,43 +664,45 @@ void nscss_dump_computed_style(FILE *stream, const css_computed_style *style)
 
 			switch (content->type) {
 			case CSS_COMPUTED_CONTENT_STRING:
-				fprintf(stream,	"\"%.*s\"",
-						(int) lwc_string_length(
+				fprintf(stream,
+					"\"%.*s\"",
+					(int)lwc_string_length(
 						content->data.string),
-						lwc_string_data(
-						content->data.string));
+					lwc_string_data(content->data.string));
 				break;
 			case CSS_COMPUTED_CONTENT_URI:
-				fprintf(stream,	"uri(\"%.*s\")",
-						(int) lwc_string_length(
+				fprintf(stream,
+					"uri(\"%.*s\")",
+					(int)lwc_string_length(
 						content->data.uri),
-						lwc_string_data(
-						content->data.uri));
+					lwc_string_data(content->data.uri));
 				break;
 			case CSS_COMPUTED_CONTENT_COUNTER:
-				fprintf(stream, "counter(%.*s)",
-						(int) lwc_string_length(
+				fprintf(stream,
+					"counter(%.*s)",
+					(int)lwc_string_length(
 						content->data.counter.name),
-						lwc_string_data(
+					lwc_string_data(
 						content->data.counter.name));
 				break;
 			case CSS_COMPUTED_CONTENT_COUNTERS:
-				fprintf(stream, "counters(%.*s, \"%.*s\")",
-						(int) lwc_string_length(
+				fprintf(stream,
+					"counters(%.*s, \"%.*s\")",
+					(int)lwc_string_length(
 						content->data.counters.name),
-						lwc_string_data(
+					lwc_string_data(
 						content->data.counters.name),
-						(int) lwc_string_length(
+					(int)lwc_string_length(
 						content->data.counters.sep),
-						lwc_string_data(
+					lwc_string_data(
 						content->data.counters.sep));
 				break;
 			case CSS_COMPUTED_CONTENT_ATTR:
-				fprintf(stream, "attr(%.*s)",
-						(int) lwc_string_length(
+				fprintf(stream,
+					"attr(%.*s)",
+					(int)lwc_string_length(
 						content->data.attr),
-						lwc_string_data(
-						content->data.attr));
+					lwc_string_data(content->data.attr));
 				break;
 			case CSS_COMPUTED_CONTENT_OPEN_QUOTE:
 				fprintf(stream, "open-quote");
@@ -719,9 +735,10 @@ void nscss_dump_computed_style(FILE *stream, const css_computed_style *style)
 		fprintf(stream, "counter-increment:");
 
 		while (counter->name != NULL) {
-			fprintf(stream, " %.*s ",
-					(int) lwc_string_length(counter->name),
-					lwc_string_data(counter->name));
+			fprintf(stream,
+				" %.*s ",
+				(int)lwc_string_length(counter->name),
+				lwc_string_data(counter->name));
 
 			dump_css_fixed(stream, counter->value);
 
@@ -739,9 +756,10 @@ void nscss_dump_computed_style(FILE *stream, const css_computed_style *style)
 		fprintf(stream, "counter-reset:");
 
 		while (counter->name != NULL) {
-			fprintf(stream, " %.*s ",
-					(int) lwc_string_length(counter->name),
-					lwc_string_data(counter->name));
+			fprintf(stream,
+				" %.*s ",
+				(int)lwc_string_length(counter->name),
+				lwc_string_data(counter->name));
 
 			dump_css_fixed(stream, counter->value);
 
@@ -757,9 +775,10 @@ void nscss_dump_computed_style(FILE *stream, const css_computed_style *style)
 
 	if (string_list != NULL) {
 		while (*string_list != NULL) {
-			fprintf(stream, " url\"%.*s\")",
-					(int) lwc_string_length(*string_list),
-					lwc_string_data(*string_list));
+			fprintf(stream,
+				" url\"%.*s\")",
+				(int)lwc_string_length(*string_list),
+				lwc_string_data(*string_list));
 
 			string_list++;
 		}
@@ -930,8 +949,9 @@ void nscss_dump_computed_style(FILE *stream, const css_computed_style *style)
 
 		if (string_list != NULL) {
 			while (*string_list != NULL) {
-				fprintf(stream, " \"%.*s\"",
-					(int) lwc_string_length(*string_list),
+				fprintf(stream,
+					" \"%.*s\"",
+					(int)lwc_string_length(*string_list),
 					lwc_string_data(*string_list));
 
 				string_list++;
@@ -1150,9 +1170,10 @@ void nscss_dump_computed_style(FILE *stream, const css_computed_style *style)
 	/* list-style-image */
 	val = css_computed_list_style_image(style, &url);
 	if (url != NULL) {
-		fprintf(stream, "list-style-image: url('%.*s') ",
-				(int) lwc_string_length(url),
-				lwc_string_data(url));
+		fprintf(stream,
+			"list-style-image: url('%.*s') ",
+			(int)lwc_string_length(url),
+			lwc_string_data(url));
 	} else if (val == CSS_LIST_STYLE_IMAGE_NONE) {
 		fprintf(stream, "list-style-image: none ");
 	}
@@ -1373,7 +1394,7 @@ void nscss_dump_computed_style(FILE *stream, const css_computed_style *style)
 		fprintf(stream, "outline-color: invert ");
 		break;
 	case CSS_OUTLINE_COLOR_COLOR:
-		fprintf(stream, "outline-color: #%08"PRIx32" ", color);
+		fprintf(stream, "outline-color: #%08" PRIx32 " ", color);
 		break;
 	default:
 		break;
@@ -1555,8 +1576,9 @@ void nscss_dump_computed_style(FILE *stream, const css_computed_style *style)
 		fprintf(stream, "quotes:");
 
 		while (*string_list != NULL) {
-			fprintf(stream, " \"%.*s\"",
-				(int) lwc_string_length(*string_list),
+			fprintf(stream,
+				" \"%.*s\"",
+				(int)lwc_string_length(*string_list),
 				lwc_string_data(*string_list));
 
 			string_list++;
@@ -1840,7 +1862,7 @@ void nscss_dump_computed_style(FILE *stream, const css_computed_style *style)
 		fprintf(stream, "z-index: auto ");
 		break;
 	case CSS_Z_INDEX_SET:
-		fprintf(stream, "z-index: %"PRId32" ", zindex);
+		fprintf(stream, "z-index: %" PRId32 " ", zindex);
 		break;
 	default:
 		break;

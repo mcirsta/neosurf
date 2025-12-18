@@ -17,19 +17,14 @@
  * A DOM processing instruction
  */
 struct dom_processing_instruction {
-	dom_node_internal base;		/**< Base node */
+	dom_node_internal base; /**< Base node */
 };
 
-static const struct dom_node_vtable pi_vtable = {
-	{
-		DOM_NODE_EVENT_TARGET_VTABLE
-	},
-	DOM_NODE_VTABLE
-};
+static const struct dom_node_vtable pi_vtable = {{DOM_NODE_EVENT_TARGET_VTABLE},
+						 DOM_NODE_VTABLE};
 
 static const struct dom_node_protect_vtable pi_protect_vtable = {
-	DOM_PI_PROTECT_VTABLE
-};
+	DOM_PI_PROTECT_VTABLE};
 /**
  * Create a processing instruction
  *
@@ -44,9 +39,11 @@ static const struct dom_node_protect_vtable pi_protect_vtable = {
  *
  * The returned node will already be referenced.
  */
-dom_exception _dom_processing_instruction_create(dom_document *doc,
-		dom_string *name, dom_string *value,
-		dom_processing_instruction **result)
+dom_exception
+_dom_processing_instruction_create(dom_document *doc,
+				   dom_string *name,
+				   dom_string *value,
+				   dom_processing_instruction **result)
 {
 	dom_processing_instruction *p;
 	dom_exception err;
@@ -55,14 +52,19 @@ dom_exception _dom_processing_instruction_create(dom_document *doc,
 	p = malloc(sizeof(dom_processing_instruction));
 	if (p == NULL)
 		return DOM_NO_MEM_ERR;
-	
+
 	p->base.base.vtable = &pi_vtable;
 	p->base.vtable = &pi_protect_vtable;
 
 	/* And initialise the node */
-	err = _dom_processing_instruction_initialise(&p->base, doc,
-			DOM_PROCESSING_INSTRUCTION_NODE,
-			name, value, NULL, NULL);
+	err = _dom_processing_instruction_initialise(
+		&p->base,
+		doc,
+		DOM_PROCESSING_INSTRUCTION_NODE,
+		name,
+		value,
+		NULL,
+		NULL);
 	if (err != DOM_NO_ERR) {
 		free(p);
 		return err;
@@ -96,8 +98,7 @@ void _dom_processing_instruction_destroy(dom_processing_instruction *pi)
 /* The virtual destroy function of this class */
 void _dom_pi_destroy(dom_node_internal *node)
 {
-	_dom_processing_instruction_destroy(
-			(dom_processing_instruction *) node);
+	_dom_processing_instruction_destroy((dom_processing_instruction *)node);
 }
 
 /* The copy constructor of this class */
@@ -116,8 +117,7 @@ dom_exception _dom_pi_copy(dom_node_internal *old, dom_node_internal **copy)
 		return err;
 	}
 
-	*copy = (dom_node_internal *) copy;
+	*copy = (dom_node_internal *)copy;
 
 	return DOM_NO_ERR;
 }
-

@@ -40,7 +40,7 @@
 
 
 struct hash_entry {
-	char *pairing;		 /**< block containing 'key\0value\0' */
+	char *pairing; /**< block containing 'key\0value\0' */
 	unsigned int key_length; /**< length of key */
 	struct hash_entry *next; /**< next entry */
 };
@@ -81,7 +81,6 @@ static inline unsigned int hash_string_fnv(const char *datum, unsigned int *len)
 }
 
 
-
 /**
  * process a line of input.
  *
@@ -90,8 +89,7 @@ static inline unsigned int hash_string_fnv(const char *datum, unsigned int *len)
  * \param lnlen The length of \ln
  * \return NSERROR_OK on success else NSERROR_INVALID
  */
-static nserror
-process_line(struct hash_table *hash, uint8_t *ln, int lnlen)
+static nserror process_line(struct hash_table *hash, uint8_t *ln, int lnlen)
 {
 	uint8_t *key;
 	uint8_t *value;
@@ -102,8 +100,7 @@ process_line(struct hash_table *hash, uint8_t *ln, int lnlen)
 	value = ln + lnlen; /* set value to end of line */
 
 	/* skip leading whitespace */
-	while ((key < value) &&
-	       ((*key == ' ') || (*key == '\t'))) {
+	while ((key < value) && ((*key == ' ') || (*key == '\t'))) {
 		key++;
 	}
 
@@ -123,13 +120,16 @@ process_line(struct hash_table *hash, uint8_t *ln, int lnlen)
 		return NSERROR_INVALID;
 	}
 
-	*colon = 0;  /* terminate key */
+	*colon = 0; /* terminate key */
 	value = colon + 1;
 
 	res = hash_add(hash, (char *)key, (char *)value);
 	if (res != NSERROR_OK) {
-		NSLOG(netsurf, INFO,
-		      "Unable to add %s:%s to hash table", ln, value);
+		NSLOG(netsurf,
+		      INFO,
+		      "Unable to add %s:%s to hash table",
+		      ln,
+		      value);
 		return NSERROR_INVALID;
 	}
 	return NSERROR_OK;
@@ -231,8 +231,8 @@ hash_add_inline_gzip(struct hash_table *ht, const uint8_t *data, size_t size)
 			}
 
 			/* move data down */
-			memmove(&s[0], nl + 1, used - ((nl + 1) - &s[0]) );
-			used -= ((nl +1) - &s[0]);
+			memmove(&s[0], nl + 1, used - ((nl + 1) - &s[0]));
+			used -= ((nl + 1) - &s[0]);
 		}
 		if (used == sizeof(s)) {
 			/* entire buffer used and no newline */
@@ -248,7 +248,6 @@ hash_add_inline_gzip(struct hash_table *ht, const uint8_t *data, size_t size)
 		return NSERROR_INVALID;
 	}
 	return NSERROR_OK;
-
 }
 
 
@@ -266,8 +265,10 @@ struct hash_table *hash_create(unsigned int chains)
 	r->chain = calloc(chains, sizeof(struct hash_entry *));
 
 	if (r->chain == NULL) {
-		NSLOG(neosurf, INFO,
-		      "Not enough memory for %d hash table chains.", chains);
+		NSLOG(neosurf,
+		      INFO,
+		      "Not enough memory for %d hash table chains.",
+		      chains);
 		free(r);
 		return NULL;
 	}
@@ -319,10 +320,11 @@ nserror hash_add(struct hash_table *ht, const char *key, const char *value)
 	h = hash_string_fnv(key, &(e->key_length));
 	c = h % ht->nchains;
 
-	v = strlen(value) ;
+	v = strlen(value);
 	e->pairing = malloc(v + e->key_length + 2);
 	if (e->pairing == NULL) {
-		NSLOG(neosurf, INFO,
+		NSLOG(neosurf,
+		      INFO,
 		      "Not enough memory for string duplication.");
 		free(e);
 		return NSERROR_NOMEM;
@@ -360,7 +362,6 @@ const char *hash_get(struct hash_table *ht, const char *key)
 }
 
 
-
 /* exported interface documented in utils/hashtable.h */
 nserror hash_add_file(struct hash_table *ht, const char *path)
 {
@@ -374,8 +375,10 @@ nserror hash_add_file(struct hash_table *ht, const char *path)
 
 	fp = gzopen(path, "r");
 	if (!fp) {
-		NSLOG(neosurf, INFO,
-		      "Unable to open file \"%.100s\": %s", path,
+		NSLOG(neosurf,
+		      INFO,
+		      "Unable to open file \"%.100s\": %s",
+		      path,
 		      strerror(errno));
 
 		return NSERROR_NOT_FOUND;
@@ -383,7 +386,7 @@ nserror hash_add_file(struct hash_table *ht, const char *path)
 
 	while (gzgets(fp, s, sizeof s)) {
 		int slen = strlen(s);
-		s[--slen] = 0;  /* remove \n at end */
+		s[--slen] = 0; /* remove \n at end */
 
 		res = process_line(ht, (uint8_t *)s, slen);
 		if (res != NSERROR_OK) {
@@ -400,7 +403,7 @@ nserror hash_add_file(struct hash_table *ht, const char *path)
 /* exported interface documented in utils/hashtable.h */
 nserror hash_add_inline(struct hash_table *ht, const uint8_t *data, size_t size)
 {
-	if ((data[0]==0x1f) && (data[1] == 0x8b)) {
+	if ((data[0] == 0x1f) && (data[1] == 0x8b)) {
 		/* gzip header detected */
 		return hash_add_inline_gzip(ht, data, size);
 	}

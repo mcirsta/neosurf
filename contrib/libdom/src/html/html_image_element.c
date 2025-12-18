@@ -19,11 +19,8 @@
 #include "utils/utils.h"
 
 static const struct dom_element_protected_vtable _protect_vtable = {
-	{
-		DOM_NODE_PROTECT_VTABLE_HTML_IMAGE_ELEMENT
-	},
-	DOM_HTML_IMAGE_ELEMENT_PROTECT_VTABLE
-};
+	{DOM_NODE_PROTECT_VTABLE_HTML_IMAGE_ELEMENT},
+	DOM_HTML_IMAGE_ELEMENT_PROTECT_VTABLE};
 
 /**
  * Create a dom_html_image_element object
@@ -32,9 +29,9 @@ static const struct dom_element_protected_vtable _protect_vtable = {
  * \param ele     The returned element object
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_html_image_element_create(
-		struct dom_html_element_create_params *params,
-		struct dom_html_image_element **ele)
+dom_exception
+_dom_html_image_element_create(struct dom_html_element_create_params *params,
+			       struct dom_html_image_element **ele)
 {
 	struct dom_node_internal *node;
 
@@ -43,7 +40,7 @@ dom_exception _dom_html_image_element_create(
 		return DOM_NO_MEM_ERR;
 
 	/* Set up vtables */
-	node = (struct dom_node_internal *) *ele;
+	node = (struct dom_node_internal *)*ele;
 	node->base.vtable = &_dom_html_element_vtable;
 	node->vtable = &_protect_vtable;
 
@@ -58,8 +55,8 @@ dom_exception _dom_html_image_element_create(
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception _dom_html_image_element_initialise(
-		struct dom_html_element_create_params *params,
-		struct dom_html_image_element *ele)
+	struct dom_html_element_create_params *params,
+	struct dom_html_image_element *ele)
 {
 	return _dom_html_element_initialise(params, &ele->base);
 }
@@ -91,8 +88,9 @@ void _dom_html_image_element_destroy(struct dom_html_image_element *ele)
 /* The virtual function used to parse attribute value, see src/core/element.c
  * for detail */
 dom_exception _dom_html_image_element_parse_attribute(dom_element *ele,
-		dom_string *name, dom_string *value,
-		dom_string **parsed)
+						      dom_string *name,
+						      dom_string *value,
+						      dom_string **parsed)
 {
 	UNUSED(ele);
 	UNUSED(name);
@@ -106,12 +104,12 @@ dom_exception _dom_html_image_element_parse_attribute(dom_element *ele,
 /* The virtual destroy function, see src/core/node.c for detail */
 void _dom_virtual_html_image_element_destroy(dom_node_internal *node)
 {
-	_dom_html_image_element_destroy((struct dom_html_image_element *) node);
+	_dom_html_image_element_destroy((struct dom_html_image_element *)node);
 }
 
 /* The virtual copy function, see src/core/node.c for detail */
-dom_exception _dom_html_image_element_copy(
-		dom_node_internal *old, dom_node_internal **copy)
+dom_exception
+_dom_html_image_element_copy(dom_node_internal *old, dom_node_internal **copy)
 {
 	dom_html_image_element *new_node;
 	dom_exception err;
@@ -126,14 +124,13 @@ dom_exception _dom_html_image_element_copy(
 		return err;
 	}
 
-	*copy = (dom_node_internal *) new_node;
+	*copy = (dom_node_internal *)new_node;
 
 	return DOM_NO_ERR;
 }
 
-dom_exception _dom_html_image_element_copy_internal(
-		dom_html_image_element *old,
-		dom_html_image_element *new)
+dom_exception _dom_html_image_element_copy_internal(dom_html_image_element *old,
+						    dom_html_image_element *new)
 {
 	dom_exception err;
 
@@ -148,39 +145,39 @@ dom_exception _dom_html_image_element_copy_internal(
 /*-----------------------------------------------------------------------*/
 /* API functions */
 
-#define SIMPLE_GET(attr)						\
-	dom_exception dom_html_image_element_get_##attr(		\
-		dom_html_image_element *element,			\
-		dom_string **attr)					\
-	{								\
-		dom_exception ret;					\
-		dom_string *_memo_##attr;				\
-									\
-		_memo_##attr =						\
-			((struct dom_html_document *)			\
-			 ((struct dom_node_internal *)element)->owner)->\
-			memoised[hds_##attr];				\
-									\
-		ret = dom_element_get_attribute(element, _memo_##attr, attr); \
-									\
-		return ret;						\
+#define SIMPLE_GET(attr)                                                       \
+	dom_exception dom_html_image_element_get_##attr(                       \
+		dom_html_image_element *element, dom_string **attr)            \
+	{                                                                      \
+		dom_exception ret;                                             \
+		dom_string *_memo_##attr;                                      \
+                                                                               \
+		_memo_##attr =                                                 \
+			((struct dom_html_document                             \
+				  *)((struct dom_node_internal *)element)      \
+				 ->owner)                                      \
+				->memoised[hds_##attr];                        \
+                                                                               \
+		ret = dom_element_get_attribute(element, _memo_##attr, attr);  \
+                                                                               \
+		return ret;                                                    \
 	}
-#define SIMPLE_SET(attr)						\
-dom_exception dom_html_image_element_set_##attr(			\
-		dom_html_image_element *element,			\
-		dom_string *attr)					\
-	{								\
-		dom_exception ret;					\
-		dom_string *_memo_##attr;				\
-									\
-		_memo_##attr =						\
-			((struct dom_html_document *)			\
-			 ((struct dom_node_internal *)element)->owner)->\
-			memoised[hds_##attr];				\
-									\
-		ret = dom_element_set_attribute(element, _memo_##attr, attr); \
-									\
-		return ret;						\
+#define SIMPLE_SET(attr)                                                       \
+	dom_exception dom_html_image_element_set_##attr(                       \
+		dom_html_image_element *element, dom_string *attr)             \
+	{                                                                      \
+		dom_exception ret;                                             \
+		dom_string *_memo_##attr;                                      \
+                                                                               \
+		_memo_##attr =                                                 \
+			((struct dom_html_document                             \
+				  *)((struct dom_node_internal *)element)      \
+				 ->owner)                                      \
+				->memoised[hds_##attr];                        \
+                                                                               \
+		ret = dom_element_set_attribute(element, _memo_##attr, attr);  \
+                                                                               \
+		return ret;                                                    \
 	}
 
 #define SIMPLE_GET_SET(attr) SIMPLE_GET(attr) SIMPLE_SET(attr)
@@ -193,60 +190,60 @@ SIMPLE_GET_SET(long_desc);
 SIMPLE_GET_SET(src);
 SIMPLE_GET_SET(use_map);
 
-dom_exception dom_html_image_element_get_height(
-	dom_html_image_element *image, dom_ulong *height)
+dom_exception dom_html_image_element_get_height(dom_html_image_element *image,
+						dom_ulong *height)
 {
-	return dom_html_element_get_dom_ulong_property(&image->base, "height",
-			SLEN("height"), height);
+	return dom_html_element_get_dom_ulong_property(
+		&image->base, "height", SLEN("height"), height);
 }
 
-dom_exception dom_html_image_element_set_height(
-	dom_html_image_element *image, dom_ulong height)
+dom_exception dom_html_image_element_set_height(dom_html_image_element *image,
+						dom_ulong height)
 {
-	return dom_html_element_set_dom_ulong_property(&image->base, "height",
-			SLEN("height"), height);
+	return dom_html_element_set_dom_ulong_property(
+		&image->base, "height", SLEN("height"), height);
 }
 
-dom_exception dom_html_image_element_get_hspace(
-	dom_html_image_element *image, dom_ulong *hspace)
+dom_exception dom_html_image_element_get_hspace(dom_html_image_element *image,
+						dom_ulong *hspace)
 {
-	return dom_html_element_get_dom_ulong_property(&image->base, "hspace",
-			SLEN("hspace"), hspace);
+	return dom_html_element_get_dom_ulong_property(
+		&image->base, "hspace", SLEN("hspace"), hspace);
 }
 
-dom_exception dom_html_image_element_set_hspace(
-	dom_html_image_element *image, dom_ulong hspace)
+dom_exception dom_html_image_element_set_hspace(dom_html_image_element *image,
+						dom_ulong hspace)
 {
-	return dom_html_element_set_dom_ulong_property(&image->base, "hspace",
-			SLEN("hspace"), hspace);
+	return dom_html_element_set_dom_ulong_property(
+		&image->base, "hspace", SLEN("hspace"), hspace);
 }
 
-dom_exception dom_html_image_element_get_vspace(
-	dom_html_image_element *image, dom_ulong *vspace)
+dom_exception dom_html_image_element_get_vspace(dom_html_image_element *image,
+						dom_ulong *vspace)
 {
-	return dom_html_element_get_dom_ulong_property(&image->base, "vspace",
-			SLEN("cspace"), vspace);
+	return dom_html_element_get_dom_ulong_property(
+		&image->base, "vspace", SLEN("cspace"), vspace);
 }
 
-dom_exception dom_html_image_element_set_vspace(
-	dom_html_image_element *image, dom_ulong vspace)
+dom_exception dom_html_image_element_set_vspace(dom_html_image_element *image,
+						dom_ulong vspace)
 {
-	return dom_html_element_set_dom_ulong_property(&image->base, "vspace",
-			SLEN("vsapce"), vspace);
+	return dom_html_element_set_dom_ulong_property(
+		&image->base, "vspace", SLEN("vsapce"), vspace);
 }
 
-dom_exception dom_html_image_element_get_width(
-	dom_html_image_element *image, dom_ulong *width)
+dom_exception dom_html_image_element_get_width(dom_html_image_element *image,
+					       dom_ulong *width)
 {
-	return dom_html_element_get_dom_ulong_property(&image->base, "width",
-			SLEN("width"), width);
+	return dom_html_element_get_dom_ulong_property(
+		&image->base, "width", SLEN("width"), width);
 }
 
-dom_exception dom_html_image_element_set_width(
-	dom_html_image_element *image, dom_ulong width)
+dom_exception
+dom_html_image_element_set_width(dom_html_image_element *image, dom_ulong width)
 {
-	return dom_html_element_set_dom_ulong_property(&image->base, "width",
-			SLEN("width"), width);
+	return dom_html_element_set_dom_ulong_property(
+		&image->base, "width", SLEN("width"), width);
 }
 
 /**
@@ -254,13 +251,14 @@ dom_exception dom_html_image_element_set_width(
  *
  * \param ele		The dom_html_image_element object
  * \param is_map	The status
- * \return 		DOM_NO_ERR on success, appropriate dom_exception on failure.
+ * \return 		DOM_NO_ERR on success, appropriate dom_exception on
+ * failure.
  */
-dom_exception dom_html_image_element_get_is_map(dom_html_image_element *ele,
-				                bool *is_map)
+dom_exception
+dom_html_image_element_get_is_map(dom_html_image_element *ele, bool *is_map)
 {
-	return dom_html_element_get_bool_property(&ele->base, "ismap",
-			SLEN("ismap"), is_map);
+	return dom_html_element_get_bool_property(
+		&ele->base, "ismap", SLEN("ismap"), is_map);
 }
 
 /**
@@ -268,12 +266,12 @@ dom_exception dom_html_image_element_get_is_map(dom_html_image_element *ele,
  *
  * \param ele		The dom_html_image_element object
  * \param is_map	The status
- * \return 		DOM_NO_ERR on success, appropriate dom_exception on failure.
+ * \return 		DOM_NO_ERR on success, appropriate dom_exception on
+ * failure.
  */
-dom_exception dom_html_image_element_set_is_map(dom_html_image_element *ele,
-				                bool is_map)
+dom_exception
+dom_html_image_element_set_is_map(dom_html_image_element *ele, bool is_map)
 {
-	return dom_html_element_set_bool_property(&ele->base, "ismap",
-			SLEN("ismap"), is_map);
+	return dom_html_element_set_bool_property(
+		&ele->base, "ismap", SLEN("ismap"), is_map);
 }
-

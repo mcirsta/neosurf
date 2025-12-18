@@ -36,6 +36,7 @@ struct core_window;
  * \param[in] r     The rectangle to make visisble by scrolling.
  * \return NSERROR_OK on success or appropriate error code
  */
-nserror cw_helper_scroll_visible(struct core_window *cw_h, const struct rect *r);
+nserror
+cw_helper_scroll_visible(struct core_window *cw_h, const struct rect *r);
 
 #endif

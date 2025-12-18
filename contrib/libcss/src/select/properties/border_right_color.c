@@ -14,15 +14,16 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_border_right_color(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error css__cascade_border_right_color(uint32_t opv,
+					  css_style *style,
+					  css_select_state *state)
 {
-	return css__cascade_bg_border_color(opv, style, state,
-			set_border_right_color);
+	return css__cascade_bg_border_color(
+		opv, style, state, set_border_right_color);
 }
 
 css_error css__set_border_right_color_from_hint(const css_hint *hint,
-		css_computed_style *style)
+						css_computed_style *style)
 {
 	return set_border_right_color(style, hint->status, hint->data.color);
 }
@@ -30,12 +31,12 @@ css_error css__set_border_right_color_from_hint(const css_hint *hint,
 css_error css__initial_border_right_color(css_select_state *state)
 {
 	return set_border_right_color(state->computed,
-			CSS_BORDER_COLOR_CURRENT_COLOR, 0);
+				      CSS_BORDER_COLOR_CURRENT_COLOR,
+				      0);
 }
 
-css_error css__copy_border_right_color(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error css__copy_border_right_color(const css_computed_style *from,
+				       css_computed_style *to)
 {
 	css_color color;
 	uint8_t type = get_border_right_color(from, &color);
@@ -48,14 +49,12 @@ css_error css__copy_border_right_color(
 }
 
 css_error css__compose_border_right_color(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+					  const css_computed_style *child,
+					  css_computed_style *result)
 {
 	css_color color;
 	uint8_t type = get_border_right_color(child, &color);
 
 	return css__copy_border_right_color(
-			type == CSS_BORDER_COLOR_INHERIT ? parent : child,
-			result);
+		type == CSS_BORDER_COLOR_INHERIT ? parent : child, result);
 }
-

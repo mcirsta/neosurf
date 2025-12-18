@@ -27,8 +27,8 @@
 #include "utils/http/primitives.h"
 
 /* See content-type.h for documentation */
-nserror http_parse_content_type(const char *header_value,
-		http_content_type **result)
+nserror
+http_parse_content_type(const char *header_value, http_content_type **result)
 {
 	const char *pos = header_value;
 	lwc_string *type;
@@ -68,8 +68,8 @@ nserror http_parse_content_type(const char *header_value,
 	http__skip_LWS(&pos);
 
 	if (*pos == ';') {
-		error = http__item_list_parse(&pos,
-				http__parse_parameter, NULL, &params);
+		error = http__item_list_parse(
+			&pos, http__parse_parameter, NULL, &params);
 		if (error != NSERROR_OK && error != NSERROR_NOT_FOUND) {
 			lwc_string_unref(subtype);
 			lwc_string_unref(type);
@@ -88,9 +88,12 @@ nserror http_parse_content_type(const char *header_value,
 		return NSERROR_NOMEM;
 	}
 
-	sprintf(mime, "%.*s/%.*s", 
-		(int) lwc_string_length(type), lwc_string_data(type), 
-		(int) lwc_string_length(subtype), lwc_string_data(subtype));
+	sprintf(mime,
+		"%.*s/%.*s",
+		(int)lwc_string_length(type),
+		lwc_string_data(type),
+		(int)lwc_string_length(subtype),
+		lwc_string_data(subtype));
 
 	lwc_string_unref(subtype);
 	lwc_string_unref(type);
@@ -125,4 +128,3 @@ void http_content_type_destroy(http_content_type *victim)
 	http_parameter_list_destroy(victim->parameters);
 	free(victim);
 }
-

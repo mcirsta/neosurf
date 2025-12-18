@@ -35,12 +35,15 @@
 
 static void test_lwc_iterator(lwc_string *str, void *pw)
 {
-    unsigned *count = (unsigned *)pw;
-    if (count != NULL) {
-        (*count)++;
-    }
-    fprintf(stderr, "[lwc] [%3u] %.*s\n", str->refcnt,
-            (int)lwc_string_length(str), lwc_string_data(str));
+	unsigned *count = (unsigned *)pw;
+	if (count != NULL) {
+		(*count)++;
+	}
+	fprintf(stderr,
+		"[lwc] [%3u] %.*s\n",
+		str->refcnt,
+		(int)lwc_string_length(str),
+		lwc_string_data(str));
 }
 
 #define BLOOM_SIZE 8192
@@ -168,9 +171,7 @@ static TCase *bloom_match_case_create(void)
 
 	tc = tcase_create("Match");
 
-	tcase_add_checked_fixture(tc,
-				  dict_bloom_create,
-				  dict_bloom_teardown);
+	tcase_add_checked_fixture(tc, dict_bloom_create, dict_bloom_teardown);
 
 	tcase_add_test(tc, bloom_match_test);
 
@@ -202,8 +203,8 @@ START_TEST(bloom_falsepositive_test)
 	fclose(dictf);
 
 	printf("false positive rate %d%%/%d%%\n",
-	       (false_positives * 100)/BLOOM_SIZE,
-		FALSE_POSITIVE_RATE);
+	       (false_positives * 100) / BLOOM_SIZE,
+	       FALSE_POSITIVE_RATE);
 	ck_assert(false_positives < ((BLOOM_SIZE * FALSE_POSITIVE_RATE) / 100));
 }
 END_TEST
@@ -218,9 +219,7 @@ static TCase *bloom_rate_case_create(void)
 
 	tc = tcase_create("False positive rate");
 
-	tcase_add_checked_fixture(tc,
-				  dict_bloom_create,
-				  dict_bloom_teardown);
+	tcase_add_checked_fixture(tc, dict_bloom_create, dict_bloom_teardown);
 
 	tcase_add_test(tc, bloom_falsepositive_test);
 
@@ -230,36 +229,36 @@ static TCase *bloom_rate_case_create(void)
 
 static Suite *bloom_suite(void)
 {
-    Suite *s;
-    s = suite_create("Bloom filter");
+	Suite *s;
+	s = suite_create("Bloom filter");
 
-    suite_add_tcase(s, bloom_api_case_create());
+	suite_add_tcase(s, bloom_api_case_create());
 #ifndef _WIN32
-    suite_add_tcase(s, bloom_match_case_create());
-    suite_add_tcase(s, bloom_rate_case_create());
+	suite_add_tcase(s, bloom_match_case_create());
+	suite_add_tcase(s, bloom_rate_case_create());
 #endif
 
-    return s;
+	return s;
 }
 
 int main(int argc, char **argv)
 {
-    int number_failed;
-    Suite *s;
-    SRunner *sr;
+	int number_failed;
+	Suite *s;
+	SRunner *sr;
 
 	s = bloom_suite();
 
 	sr = srunner_create(s);
 	srunner_run_all(sr, CK_ENV);
 
-    number_failed = srunner_ntests_failed(sr);
-    srunner_free(sr);
+	number_failed = srunner_ntests_failed(sr);
+	srunner_free(sr);
 
-    fprintf(stderr, "[lwc] Remaining lwc strings:\n");
-    unsigned lwc_count = 0;
-    lwc_iterate_strings(test_lwc_iterator, &lwc_count);
-    fprintf(stderr, "[lwc] Remaining lwc strings count: %u\n", lwc_count);
+	fprintf(stderr, "[lwc] Remaining lwc strings:\n");
+	unsigned lwc_count = 0;
+	lwc_iterate_strings(test_lwc_iterator, &lwc_count);
+	fprintf(stderr, "[lwc] Remaining lwc strings count: %u\n", lwc_count);
 
-    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+	return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -28,8 +28,9 @@
  *		   If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_border_style(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+				  const parserutils_vector *vector,
+				  int32_t *ctx,
+				  css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	int prev_ctx;
@@ -48,23 +49,23 @@ css_error css__parse_border_style(css_language *c,
 	flag_value = get_css_flag_value(c, token);
 
 	if (flag_value != FLAG_VALUE__NONE) {
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BORDER_TOP_STYLE);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BORDER_TOP_STYLE);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BORDER_RIGHT_STYLE);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BORDER_RIGHT_STYLE);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BORDER_BOTTOM_STYLE);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BORDER_BOTTOM_STYLE);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BORDER_LEFT_STYLE);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BORDER_LEFT_STYLE);
 		if (error == CSS_OK)
 			parserutils_vector_iterate(vector, ctx);
 
@@ -83,25 +84,56 @@ css_error css__parse_border_style(css_language *c,
 		if (token->type != CSS_TOKEN_IDENT)
 			break;
 
-		if ((lwc_string_caseless_isequal(token->idata, c->strings[NONE], &match) == lwc_error_ok && match)) {
+		if ((lwc_string_caseless_isequal(token->idata,
+						 c->strings[NONE],
+						 &match) == lwc_error_ok &&
+		     match)) {
 			side_val[side_count] = BORDER_STYLE_NONE;
-		} else if ((lwc_string_caseless_isequal(token->idata, c->strings[HIDDEN], &match) == lwc_error_ok && match)) {
+		} else if ((lwc_string_caseless_isequal(
+				    token->idata, c->strings[HIDDEN], &match) ==
+				    lwc_error_ok &&
+			    match)) {
 			side_val[side_count] = BORDER_STYLE_HIDDEN;
-		} else if ((lwc_string_caseless_isequal(token->idata, c->strings[DOTTED], &match) == lwc_error_ok && match)) {
+		} else if ((lwc_string_caseless_isequal(
+				    token->idata, c->strings[DOTTED], &match) ==
+				    lwc_error_ok &&
+			    match)) {
 			side_val[side_count] = BORDER_STYLE_DOTTED;
-		} else if ((lwc_string_caseless_isequal(token->idata, c->strings[DASHED], &match) == lwc_error_ok && match)) {
+		} else if ((lwc_string_caseless_isequal(
+				    token->idata, c->strings[DASHED], &match) ==
+				    lwc_error_ok &&
+			    match)) {
 			side_val[side_count] = BORDER_STYLE_DASHED;
-		} else if ((lwc_string_caseless_isequal(token->idata, c->strings[SOLID], &match) == lwc_error_ok && match)) {
+		} else if ((lwc_string_caseless_isequal(
+				    token->idata, c->strings[SOLID], &match) ==
+				    lwc_error_ok &&
+			    match)) {
 			side_val[side_count] = BORDER_STYLE_SOLID;
-		} else if ((lwc_string_caseless_isequal(token->idata, c->strings[LIBCSS_DOUBLE], &match) == lwc_error_ok && match)) {
+		} else if ((lwc_string_caseless_isequal(
+				    token->idata,
+				    c->strings[LIBCSS_DOUBLE],
+				    &match) == lwc_error_ok &&
+			    match)) {
 			side_val[side_count] = BORDER_STYLE_DOUBLE;
-		} else if ((lwc_string_caseless_isequal(token->idata, c->strings[GROOVE], &match) == lwc_error_ok && match)) {
+		} else if ((lwc_string_caseless_isequal(
+				    token->idata, c->strings[GROOVE], &match) ==
+				    lwc_error_ok &&
+			    match)) {
 			side_val[side_count] = BORDER_STYLE_GROOVE;
-		} else if ((lwc_string_caseless_isequal(token->idata, c->strings[RIDGE], &match) == lwc_error_ok && match)) {
+		} else if ((lwc_string_caseless_isequal(
+				    token->idata, c->strings[RIDGE], &match) ==
+				    lwc_error_ok &&
+			    match)) {
 			side_val[side_count] = BORDER_STYLE_RIDGE;
-		} else if ((lwc_string_caseless_isequal(token->idata, c->strings[INSET], &match) == lwc_error_ok && match)) {
+		} else if ((lwc_string_caseless_isequal(
+				    token->idata, c->strings[INSET], &match) ==
+				    lwc_error_ok &&
+			    match)) {
 			side_val[side_count] = BORDER_STYLE_INSET;
-		} else if ((lwc_string_caseless_isequal(token->idata, c->strings[OUTSET], &match) == lwc_error_ok && match)) {
+		} else if ((lwc_string_caseless_isequal(
+				    token->idata, c->strings[OUTSET], &match) ==
+				    lwc_error_ok &&
+			    match)) {
 			side_val[side_count] = BORDER_STYLE_OUTSET;
 		} else {
 			break;
@@ -117,10 +149,11 @@ css_error css__parse_border_style(css_language *c,
 	} while ((*ctx != prev_ctx) && (token != NULL) && (side_count < 4));
 
 
-#define SIDE_APPEND(OP,NUM)								\
-	error = css__stylesheet_style_appendOPV(result, (OP), 0, side_val[(NUM)]);	\
-	if (error != CSS_OK)								\
-		break
+#define SIDE_APPEND(OP, NUM)                                                   \
+	error = css__stylesheet_style_appendOPV(                               \
+		result, (OP), 0, side_val[(NUM)]);                             \
+	if (error != CSS_OK)                                                   \
+	break
 
 	switch (side_count) {
 	case 1:

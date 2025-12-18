@@ -23,13 +23,12 @@
  * \param[out] cmd_out  Walk instruction from client.
  * \return false for early termination of walk, true otherwise.
  */
-static inline dom_exception dom_walk__cb(
-		enum dom_walk_enable mask,
-		enum dom_walk_stage stage,
-		dom_node *node,
-		dom_walk_cb cb,
-		void *pw,
-		enum dom_walk_cmd *cmd_out)
+static inline dom_exception dom_walk__cb(enum dom_walk_enable mask,
+					 enum dom_walk_stage stage,
+					 dom_node *node,
+					 dom_walk_cb cb,
+					 void *pw,
+					 enum dom_walk_cmd *cmd_out)
 {
 	if ((1 << stage) & mask) {
 		dom_node_type type;
@@ -47,11 +46,10 @@ static inline dom_exception dom_walk__cb(
 }
 
 /* exported interface documented in include/dom/walk.h */
-dom_exception libdom_treewalk(
-		enum dom_walk_enable mask,
-		dom_walk_cb cb,
-		dom_node *root,
-		void *pw)
+dom_exception libdom_treewalk(enum dom_walk_enable mask,
+			      dom_walk_cb cb,
+			      dom_node *root,
+			      void *pw)
 {
 	dom_node *node;
 	dom_exception exc;
@@ -76,8 +74,12 @@ dom_exception libdom_treewalk(
 		} else {
 			/* No children; siblings & ancestor's siblings */
 			while (node != root) {
-				exc = dom_walk__cb(mask, DOM_WALK_STAGE_LEAVE,
-						node, cb, pw, &cmd);
+				exc = dom_walk__cb(mask,
+						   DOM_WALK_STAGE_LEAVE,
+						   node,
+						   cb,
+						   pw,
+						   &cmd);
 				if (exc != DOM_NO_ERR ||
 				    cmd == DOM_WALK_CMD_ABORT) {
 					dom_node_unref(node);
@@ -117,8 +119,8 @@ dom_exception libdom_treewalk(
 		assert(node != NULL);
 		assert(node != root);
 
-		exc = dom_walk__cb(mask, DOM_WALK_STAGE_ENTER, node,
-				cb, pw, &cmd);
+		exc = dom_walk__cb(
+			mask, DOM_WALK_STAGE_ENTER, node, cb, pw, &cmd);
 		if (exc != DOM_NO_ERR) {
 			return exc;
 		}

@@ -56,15 +56,18 @@
 
 static char nsjpeg_error_buffer[JMSG_LENGTH_MAX];
 
-static unsigned char nsjpeg_eoi[] = { 0xff, JPEG_EOI };
+static unsigned char nsjpeg_eoi[] = {0xff, JPEG_EOI};
 
 /**
  * Content create entry point.
  */
 static nserror nsjpeg_create(const content_handler *handler,
-		lwc_string *imime_type, const struct http_parameter *params,
-		llcache_handle *llcache, const char *fallback_charset,
-		bool quirks, struct content **c)
+			     lwc_string *imime_type,
+			     const struct http_parameter *params,
+			     llcache_handle *llcache,
+			     const char *fallback_charset,
+			     bool quirks,
+			     struct content **c)
 {
 	struct content *jpeg;
 	nserror error;
@@ -73,8 +76,13 @@ static nserror nsjpeg_create(const content_handler *handler,
 	if (jpeg == NULL)
 		return NSERROR_NOMEM;
 
-	error = content__init(jpeg, handler, imime_type, params,
-			      llcache, fallback_charset, quirks);
+	error = content__init(jpeg,
+			      handler,
+			      imime_type,
+			      params,
+			      llcache,
+			      fallback_charset,
+			      quirks);
 	if (error != NSERROR_OK) {
 		free(jpeg);
 		return error;
@@ -103,7 +111,7 @@ static boolean nsjpeg_fill_input_buffer(j_decompress_ptr cinfo)
 {
 	cinfo->src->next_input_byte = nsjpeg_eoi;
 	cinfo->src->bytes_in_buffer = 2;
- 	return TRUE;
+	return TRUE;
 }
 
 
@@ -113,7 +121,7 @@ static boolean nsjpeg_fill_input_buffer(j_decompress_ptr cinfo)
 
 static void nsjpeg_skip_input_data(j_decompress_ptr cinfo, long num_bytes)
 {
-	if ((long) cinfo->src->bytes_in_buffer < num_bytes) {
+	if ((long)cinfo->src->bytes_in_buffer < num_bytes) {
 		cinfo->src->next_input_byte = 0;
 		cinfo->src->bytes_in_buffer = 0;
 	} else {
@@ -152,7 +160,7 @@ static void nsjpeg_error_log(j_common_ptr cinfo)
  */
 static void nsjpeg_error_exit(j_common_ptr cinfo)
 {
-	jmp_buf *setjmp_buffer = (jmp_buf *) cinfo->client_data;
+	jmp_buf *setjmp_buffer = (jmp_buf *)cinfo->client_data;
 
 	cinfo->err->format_message(cinfo, nsjpeg_error_buffer);
 	NSLOG(neosurf, INFO, "%s", nsjpeg_error_buffer);
@@ -163,17 +171,16 @@ static void nsjpeg_error_exit(j_common_ptr cinfo)
 /**
  * Convert scan lines from CMYK to core client bitmap layout.
  */
-static inline void nsjpeg__decode_cmyk(
-		struct jpeg_decompress_struct *cinfo,
-		uint8_t * volatile pixels,
-		size_t rowstride)
+static inline void nsjpeg__decode_cmyk(struct jpeg_decompress_struct *cinfo,
+				       uint8_t *volatile pixels,
+				       size_t rowstride)
 {
 	int width = cinfo->output_width * 4;
 
 	do {
 		JSAMPROW scanlines[1] = {
-			[0] = (JSAMPROW)
-				(pixels + rowstride * cinfo->output_scanline),
+			[0] = (JSAMPROW)(pixels +
+					 rowstride * cinfo->output_scanline),
 		};
 		jpeg_read_scanlines(cinfo, scanlines, 1);
 
@@ -201,10 +208,9 @@ static inline void nsjpeg__decode_cmyk(
 /**
  * Convert scan lines from CMYK to core client bitmap layout.
  */
-static inline void nsjpeg__decode_rgb(
-		struct jpeg_decompress_struct *cinfo,
-		uint8_t * volatile pixels,
-		size_t rowstride)
+static inline void nsjpeg__decode_rgb(struct jpeg_decompress_struct *cinfo,
+				      uint8_t *volatile pixels,
+				      size_t rowstride)
 {
 #if RGB_RED != 0 || RGB_GREEN != 1 || RGB_BLUE != 2 || RGB_PIXELSIZE != 4
 	int width = cinfo->output_width;
@@ -212,8 +218,8 @@ static inline void nsjpeg__decode_rgb(
 
 	do {
 		JSAMPROW scanlines[1] = {
-			[0] = (JSAMPROW)
-				(pixels + rowstride * cinfo->output_scanline),
+			[0] = (JSAMPROW)(pixels +
+					 rowstride * cinfo->output_scanline),
 		};
 		jpeg_read_scanlines(cinfo, scanlines, 1);
 
@@ -236,15 +242,15 @@ static inline void nsjpeg__decode_rgb(
 /**
  * Convert scan lines from CMYK to core client bitmap layout.
  */
-static inline void nsjpeg__decode_client_fmt(
-		struct jpeg_decompress_struct *cinfo,
-		uint8_t * volatile pixels,
-		size_t rowstride)
+static inline void
+nsjpeg__decode_client_fmt(struct jpeg_decompress_struct *cinfo,
+			  uint8_t *volatile pixels,
+			  size_t rowstride)
 {
 	do {
 		JSAMPROW scanlines[1] = {
-			[0] = (JSAMPROW)
-				(pixels + rowstride * cinfo->output_scanline),
+			[0] = (JSAMPROW)(pixels +
+					 rowstride * cinfo->output_scanline),
 		};
 		jpeg_read_scanlines(cinfo, scanlines, 1);
 	} while (cinfo->output_scanline != cinfo->output_height);
@@ -253,31 +259,28 @@ static inline void nsjpeg__decode_client_fmt(
 /**
  * create a bitmap from jpeg content.
  */
-static struct bitmap *
-jpeg_cache_convert(struct content *c)
+static struct bitmap *jpeg_cache_convert(struct content *c)
 {
 	const uint8_t *source_data; /* Jpeg source data */
 	size_t source_size; /* length of Jpeg source data */
 	struct jpeg_decompress_struct cinfo;
 	struct jpeg_error_mgr jerr;
 	jmp_buf setjmp_buffer;
-	struct bitmap * volatile bitmap = NULL;
-	uint8_t * volatile pixels = NULL;
+	struct bitmap *volatile bitmap = NULL;
+	uint8_t *volatile pixels = NULL;
 	size_t rowstride;
-	struct jpeg_source_mgr source_mgr = {
-		0,
-		0,
-		nsjpeg_init_source,
-		nsjpeg_fill_input_buffer,
-		nsjpeg_skip_input_data,
-		jpeg_resync_to_restart,
-		nsjpeg_term_source };
+	struct jpeg_source_mgr source_mgr = {0,
+					     0,
+					     nsjpeg_init_source,
+					     nsjpeg_fill_input_buffer,
+					     nsjpeg_skip_input_data,
+					     jpeg_resync_to_restart,
+					     nsjpeg_term_source};
 
 	/* obtain jpeg source data and perfom minimal sanity checks */
 	source_data = content__get_source_data(c, &source_size);
 
-	if ((source_data == NULL) ||
-	    (source_size < MIN_JPEG_SIZE)) {
+	if ((source_data == NULL) || (source_size < MIN_JPEG_SIZE)) {
 		return NULL;
 	}
 
@@ -323,8 +326,10 @@ jpeg_cache_convert(struct content *c)
 			cinfo.out_color_space = JCS_EXT_ABGR;
 			break;
 		default:
-			NSLOG(netsurf, ERROR, "Unexpected bitmap format: %u",
-					bitmap_fmt.layout);
+			NSLOG(netsurf,
+			      ERROR,
+			      "Unexpected bitmap format: %u",
+			      bitmap_fmt.layout);
 			jpeg_destroy_decompress(&cinfo);
 			return NULL;
 		}
@@ -338,9 +343,9 @@ jpeg_cache_convert(struct content *c)
 	jpeg_start_decompress(&cinfo);
 
 	/* create opaque bitmap (jpegs cannot be transparent) */
-	bitmap = guit->bitmap->create(
-			cinfo.output_width,
-			cinfo.output_height, BITMAP_OPAQUE);
+	bitmap = guit->bitmap->create(cinfo.output_width,
+				      cinfo.output_height,
+				      BITMAP_OPAQUE);
 	if (bitmap == NULL) {
 		/* empty bitmap could not be created */
 		jpeg_destroy_decompress(&cinfo);
@@ -388,10 +393,13 @@ static bool nsjpeg_convert(struct content *c)
 	struct jpeg_decompress_struct cinfo;
 	struct jpeg_error_mgr jerr;
 	jmp_buf setjmp_buffer;
-	struct jpeg_source_mgr source_mgr = { 0, 0,
-		nsjpeg_init_source, nsjpeg_fill_input_buffer,
-		nsjpeg_skip_input_data, jpeg_resync_to_restart,
-		nsjpeg_term_source };
+	struct jpeg_source_mgr source_mgr = {0,
+					     0,
+					     nsjpeg_init_source,
+					     nsjpeg_fill_input_buffer,
+					     nsjpeg_skip_input_data,
+					     jpeg_resync_to_restart,
+					     nsjpeg_term_source};
 	union content_msg_data msg_data;
 	const uint8_t *data;
 	size_t size;
@@ -415,7 +423,7 @@ static bool nsjpeg_convert(struct content *c)
 
 	cinfo.client_data = &setjmp_buffer;
 	jpeg_create_decompress(&cinfo);
-	source_mgr.next_input_byte = (unsigned char *) data;
+	source_mgr.next_input_byte = (unsigned char *)data;
 	source_mgr.bytes_in_buffer = size;
 	cinfo.src = &source_mgr;
 	jpeg_read_header(&cinfo, TRUE);
@@ -434,20 +442,21 @@ static bool nsjpeg_convert(struct content *c)
 
 	/* set title text */
 	title = messages_get_buff("JPEGTitle",
-			nsurl_access_leaf(llcache_handle_get_url(c->llcache)),
-			c->width, c->height);
+				  nsurl_access_leaf(
+					  llcache_handle_get_url(c->llcache)),
+				  c->width,
+				  c->height);
 	if (title != NULL) {
 		content__set_title(c, title);
 		free(title);
 	}
 
 	content_set_ready(c);
-	content_set_done(c);	
+	content_set_done(c);
 	content_set_status(c, ""); /* Done: update status bar */
 
 	return true;
 }
-
 
 
 /**
@@ -494,10 +503,6 @@ static const content_handler nsjpeg_content_handler = {
 	.no_share = false,
 };
 
-static const char *nsjpeg_types[] = {
-	"image/jpeg",
-	"image/jpg",
-	"image/pjpeg"
-};
+static const char *nsjpeg_types[] = {"image/jpeg", "image/jpg", "image/pjpeg"};
 
 CONTENT_FACTORY_REGISTER_TYPES(nsjpeg, nsjpeg_types, nsjpeg_content_handler);

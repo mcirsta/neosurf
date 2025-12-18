@@ -95,7 +95,8 @@ GtkLayout *nsgtk_window_get_layout(struct gui_window *gw);
  * \param gw The gui window handle
  * \param itemid The id of the item to activate
  */
-nserror nsgtk_window_item_activate(struct gui_window *gw, nsgtk_toolbar_button itemid);
+nserror
+nsgtk_window_item_activate(struct gui_window *gw, nsgtk_toolbar_button itemid);
 
 /**
  * position page_info appropriately

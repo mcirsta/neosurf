@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define __STDBOOL_H__	1
+#define __STDBOOL_H__ 1
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,14 +45,16 @@ struct nsbeos_throbber *nsbeos_throbber = NULL;
 bool nsbeos_throbber_initialise_from_png(const int frames, ...)
 {
 	va_list filenames;
-	struct nsbeos_throbber *throb;		/**< structure we generate */
-	bool errors_when_loading = false;	/**< true if a frame failed */
-	
+	struct nsbeos_throbber *throb; /**< structure we generate */
+	bool errors_when_loading = false; /**< true if a frame failed */
+
 	if (frames < 2) {
 		/* we need at least two frames - one for idle, one for active */
-		NSLOG(netsurf, INFO,
+		NSLOG(netsurf,
+		      INFO,
 		      "Insufficent number of frames in throbber animation!");
-		NSLOG(netsurf, INFO,
+		NSLOG(netsurf,
+		      INFO,
 		      "(called with %d frames, where 2 is a minimum.)",
 		      frames);
 		return false;
@@ -66,10 +68,11 @@ bool nsbeos_throbber_initialise_from_png(const int frames, ...)
 
 	throb = (struct nsbeos_throbber *)malloc(sizeof(*throb));
 	throb->nframes = frames;
-	throb->framedata = (BBitmap **)malloc(sizeof(BBitmap *) * throb->nframes);
-	
+	throb->framedata = (BBitmap **)malloc(sizeof(BBitmap *) *
+					      throb->nframes);
+
 	va_start(filenames, frames);
-	
+
 	for (int i = 0; i < frames; i++) {
 		const char *fn = va_arg(filenames, const char *);
 		const void *data;
@@ -77,7 +80,9 @@ bool nsbeos_throbber_initialise_from_png(const int frames, ...)
 		data = res->LoadResource('data', fn, &size);
 		throb->framedata[i] = NULL;
 		if (!data) {
-			NSLOG(netsurf, INFO, "Error when loading resource %s",
+			NSLOG(netsurf,
+			      INFO,
+			      "Error when loading resource %s",
 			      fn);
 			errors_when_loading = true;
 			continue;
@@ -85,15 +90,16 @@ bool nsbeos_throbber_initialise_from_png(const int frames, ...)
 		BMemoryIO mem(data, size);
 		throb->framedata[i] = BTranslationUtils::GetBitmap(&mem);
 		if (throb->framedata[i] == NULL) {
-			NSLOG(netsurf, INFO,
+			NSLOG(netsurf,
+			      INFO,
 			      "Error when loading %s: GetBitmap() returned NULL",
 			      fn);
 			errors_when_loading = true;
 		}
 	}
-	
+
 	va_end(filenames);
-	
+
 	if (errors_when_loading == true) {
 		for (int i = 0; i < frames; i++) {
 			delete throb->framedata[i];
@@ -101,12 +107,12 @@ bool nsbeos_throbber_initialise_from_png(const int frames, ...)
 
 		free(throb->framedata);
 		free(throb);
-		
-		return false;		
+
+		return false;
 	}
-	
+
 	nsbeos_throbber = throb;
-	
+
 	return true;
 }
 

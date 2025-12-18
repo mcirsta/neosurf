@@ -14,17 +14,16 @@
 
 typedef struct dom_html_base_element dom_html_base_element;
 
-dom_exception dom_html_base_element_get_href(
-		        dom_html_base_element *element, dom_string **href);
+dom_exception dom_html_base_element_get_href(dom_html_base_element *element,
+					     dom_string **href);
 
-dom_exception dom_html_base_element_set_href(
-		        dom_html_base_element *element, dom_string *href);
+dom_exception dom_html_base_element_set_href(dom_html_base_element *element,
+					     dom_string *href);
 
-dom_exception dom_html_base_element_get_target(
-		        dom_html_base_element *element, dom_string **target);
+dom_exception dom_html_base_element_get_target(dom_html_base_element *element,
+					       dom_string **target);
 
-dom_exception dom_html_base_element_set_target(
-		        dom_html_base_element *element, dom_string *target);
+dom_exception dom_html_base_element_set_target(dom_html_base_element *element,
+					       dom_string *target);
 
 #endif
-

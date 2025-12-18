@@ -39,7 +39,8 @@ struct gui_search_web_table {
 	 * \param ico_bitmap The bitmap of the search icon may be NULL
 	 * if no icon is yet available.
 	 */
-	nserror (*provider_update)(const char *provider_name, struct bitmap *ico_bitmap);
+	nserror (*provider_update)(const char *provider_name,
+				   struct bitmap *ico_bitmap);
 };
 
 /**
@@ -70,7 +71,9 @@ enum search_web_omni_flags {
  * \param url_out The ourput url on success.
  * \return NSERROR_OK on success or appropriate error code.
  */
-nserror search_web_omni(const char *term, enum search_web_omni_flags flags, struct nsurl **url_out);
+nserror search_web_omni(const char *term,
+			enum search_web_omni_flags flags,
+			struct nsurl **url_out);
 
 
 /**

@@ -10,8 +10,8 @@
 #include "testutils.h"
 
 #ifdef __riscos
-const char * const __dynamic_da_name = "InputStream";
-int __dynamic_da_max_size = 128*1024*1024;
+const char *const __dynamic_da_name = "InputStream";
+int __dynamic_da_max_size = 128 * 1024 * 1024;
 #endif
 
 int main(int argc, char **argv)
@@ -29,8 +29,8 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	assert(parserutils_inputstream_create("UTF-8", 1, NULL,
-			&stream) == PARSERUTILS_OK);
+	assert(parserutils_inputstream_create("UTF-8", 1, NULL, &stream) ==
+	       PARSERUTILS_OK);
 
 	fp = fopen(argv[1], "rb");
 	if (fp == NULL) {
@@ -46,18 +46,20 @@ int main(int argc, char **argv)
 		size_t read = fread(buf, 1, CHUNK_SIZE, fp);
 		assert(read == CHUNK_SIZE);
 
-		assert(parserutils_inputstream_append(stream,
-				buf, CHUNK_SIZE) == PARSERUTILS_OK);
+		assert(parserutils_inputstream_append(
+			       stream, buf, CHUNK_SIZE) == PARSERUTILS_OK);
 
 		len -= CHUNK_SIZE;
 
 		while (parserutils_inputstream_peek(stream, 0, &c, &clen) !=
-				PARSERUTILS_NEEDDATA) {
+		       PARSERUTILS_NEEDDATA) {
 			parserutils_inputstream_advance(stream, clen);
 			if (*c == 'a') {
-				assert(parserutils_inputstream_insert(stream,
-						(const uint8_t *) "hello!!!",
-						SLEN("hello!!!")) == PARSERUTILS_OK);
+				assert(parserutils_inputstream_insert(
+					       stream,
+					       (const uint8_t *)"hello!!!",
+					       SLEN("hello!!!")) ==
+				       PARSERUTILS_OK);
 			}
 		}
 	}
@@ -66,23 +68,23 @@ int main(int argc, char **argv)
 		size_t read = fread(buf, 1, len, fp);
 		assert(read == len);
 
-		assert(parserutils_inputstream_append(stream,
-				buf, len) == PARSERUTILS_OK);
+		assert(parserutils_inputstream_append(stream, buf, len) ==
+		       PARSERUTILS_OK);
 
 		len = 0;
 	}
 
 	fclose(fp);
 
-	assert(parserutils_inputstream_insert(stream,
-			(const uint8_t *) "hello!!!",
-			SLEN("hello!!!")) == PARSERUTILS_OK);
+	assert(parserutils_inputstream_insert(
+		       stream, (const uint8_t *)"hello!!!", SLEN("hello!!!")) ==
+	       PARSERUTILS_OK);
 
 	assert(parserutils_inputstream_append(stream, NULL, 0) ==
-			PARSERUTILS_OK);
+	       PARSERUTILS_OK);
 
 	while (parserutils_inputstream_peek(stream, 0, &c, &clen) !=
-			PARSERUTILS_EOF) {
+	       PARSERUTILS_EOF) {
 		parserutils_inputstream_advance(stream, clen);
 	}
 
@@ -92,4 +94,3 @@ int main(int argc, char **argv)
 
 	return 0;
 }
-

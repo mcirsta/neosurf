@@ -17,8 +17,8 @@
  */
 
 /** \file
-  * Text selection within browser windows (interface).
-  */
+ * Text selection within browser windows (interface).
+ */
 
 #ifndef NETSURF_DESKTOP_SELECTION_H_
 #define NETSURF_DESKTOP_SELECTION_H_
@@ -130,7 +130,10 @@ void selection_set_position(struct selection *s, unsigned start, unsigned end);
  * \param idx byte offset within textual representation
  * \return true iff the click has been handled by the selection code
  */
-bool selection_click(struct selection *s, struct browser_window *top, browser_mouse_state mouse, unsigned idx);
+bool selection_click(struct selection *s,
+		     struct browser_window *top,
+		     browser_mouse_state mouse,
+		     unsigned idx);
 
 /**
  * Handles movements related to the selection, eg. dragging of start and
@@ -142,7 +145,9 @@ bool selection_click(struct selection *s, struct browser_window *top, browser_mo
  * \param  mouse  state of mouse buttons and modifier keys
  * \param  idx    byte offset within text representation
  */
-void selection_track(struct selection *s, browser_mouse_state mouse, unsigned idx);
+void selection_track(struct selection *s,
+		     browser_mouse_state mouse,
+		     unsigned idx);
 
 /**
  * Copy the selected contents to the clipboard
@@ -175,17 +180,21 @@ char *selection_get_copy(struct selection *s);
  * \param  s          the selection object
  * \param  start      byte offset of start of text
  * \param  end        byte offset of end of text
- * \param  start_idx  receives the start index (in bytes) of the highlighted portion
+ * \param  start_idx  receives the start index (in bytes) of the highlighted
+ * portion
  * \param  end_idx    receives the end index (in bytes)
  * \return true iff part of the given box lies within the selection
  */
-bool selection_highlighted(const struct selection *s, unsigned start, unsigned end, unsigned *start_idx, unsigned *end_idx);
+bool selection_highlighted(const struct selection *s,
+			   unsigned start,
+			   unsigned end,
+			   unsigned *start_idx,
+			   unsigned *end_idx);
 
-bool
-selection_string_append(const char *text,
-			size_t length,
-			bool space,
-			struct plot_font_style *style,
-			struct selection_string *sel_string);
+bool selection_string_append(const char *text,
+			     size_t length,
+			     bool space,
+			     struct plot_font_style *style,
+			     struct selection_string *sel_string);
 
 #endif

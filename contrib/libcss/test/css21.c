@@ -13,8 +13,8 @@
 
 #include "testutils.h"
 
-static css_error resolve_url(void *pw,
-		const char *base, lwc_string *rel, lwc_string **abs)
+static css_error
+resolve_url(void *pw, const char *base, lwc_string *rel, lwc_string **abs)
 {
 	UNUSED(pw);
 	UNUSED(base);
@@ -75,8 +75,9 @@ int main(int argc, char **argv)
 			size_t read = fread(buf, 1, CHUNK_SIZE, fp);
 			assert(read == CHUNK_SIZE);
 
-			error = css_stylesheet_append_data(sheet, buf,
-					CHUNK_SIZE);
+			error = css_stylesheet_append_data(sheet,
+							   buf,
+							   CHUNK_SIZE);
 			assert(error == CSS_OK || error == CSS_NEEDDATA);
 
 			len -= CHUNK_SIZE;
@@ -107,20 +108,21 @@ int main(int argc, char **argv)
 				css_stylesheet *import;
 				char *buf = malloc(lwc_string_length(url) + 1);
 
-				memcpy(buf, lwc_string_data(url),
-						lwc_string_length(url));
+				memcpy(buf,
+				       lwc_string_data(url),
+				       lwc_string_length(url));
 				buf[lwc_string_length(url)] = '\0';
 
 				params.url = buf;
 
-				assert(css_stylesheet_create(&params,
-					&import) == CSS_OK);
+				assert(css_stylesheet_create(
+					       &params, &import) == CSS_OK);
 
 				assert(css_stylesheet_data_done(import) ==
-					CSS_OK);
+				       CSS_OK);
 
-				assert(css_stylesheet_register_import(sheet,
-					import) == CSS_OK);
+				assert(css_stylesheet_register_import(
+					       sheet, import) == CSS_OK);
 
 				css_stylesheet_destroy(import);
 
@@ -133,7 +135,7 @@ int main(int argc, char **argv)
 #if DUMP_CSS
 		{
 #ifndef max
-#define max(a,b) ((a) > (b) ? (a) : (b))
+#define max(a, b) ((a) > (b) ? (a) : (b))
 #endif
 			char *out;
 			size_t outsize = max(16384, origlen * 8);
@@ -155,4 +157,3 @@ int main(int argc, char **argv)
 
 	return 0;
 }
-

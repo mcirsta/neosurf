@@ -26,14 +26,14 @@ int main(int argc, char **argv)
 		data[i] = '4';
 
 	assert(parserutils_buffer_append(buf, data, BUFF_LEN) ==
-			PARSERUTILS_OK);
+	       PARSERUTILS_OK);
 
 	/* Double the size, appending 'c's */
 	for (i = 0; i < BUFF_LEN; i++)
 		data[i] = 'c';
 
 	assert(parserutils_buffer_append(buf, data, BUFF_LEN) ==
-			PARSERUTILS_OK);
+	       PARSERUTILS_OK);
 	assert(buf->length == 2 * BUFF_LEN);
 
 	/* Now reduce the length by half */
@@ -42,7 +42,7 @@ int main(int argc, char **argv)
 
 	/* Now discard half of the 4s from the middle of the buffer */
 	assert(parserutils_buffer_discard(buf, BUFF_LEN / 4, BUFF_LEN / 2) ==
-			PARSERUTILS_OK);
+	       PARSERUTILS_OK);
 
 	/* Now check that the length is what we expect */
 	assert(buf->length == BUFF_LEN / 2);
@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 	 * what the buffer_ code is allowed to move. */
 	for (i = BUFF_LEN / 2; i < BUFF_LEN; i++)
 		assert(buf->data[i] != 'c');
-	
+
 
 	assert(parserutils_buffer_destroy(buf) == PARSERUTILS_OK);
 
@@ -64,4 +64,3 @@ int main(int argc, char **argv)
 
 	return 0;
 }
-

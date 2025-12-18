@@ -51,7 +51,8 @@ bool fetch_about_nscolours_handler(struct fetch_about_context *ctx)
 	fetch_about_set_http_code(ctx, 200);
 
 	/* content type */
-	if (fetch_about_send_header(ctx, "Content-Type: text/css; charset=utf-8")) {
+	if (fetch_about_send_header(ctx,
+				    "Content-Type: text/css; charset=utf-8")) {
 		goto aborted;
 	}
 
@@ -61,12 +62,13 @@ bool fetch_about_nscolours_handler(struct fetch_about_context *ctx)
 	}
 
 	res = fetch_about_ssenddataf(ctx,
-			"html {\n"
-			"\tbackground-color: #%06x;\n"
-			"}\n"
-			"%s",
-			colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_BG]),
-			stylesheet);
+				     "html {\n"
+				     "\tbackground-color: #%06x;\n"
+				     "}\n"
+				     "%s",
+				     colour_rb_swap(
+					     nscolours[NSCOLOUR_WIN_ODD_BG]),
+				     stylesheet);
 	if (res != NSERROR_OK) {
 		goto aborted;
 	}

@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 	ctx.buf = malloc(ctx.buflen);
 	if (ctx.buf == NULL) {
 		printf("Failed allocating %u bytes\n",
-				(unsigned int) ctx.buflen);
+		       (unsigned int)ctx.buflen);
 		return 1;
 	}
 
@@ -68,7 +68,7 @@ int main(int argc, char **argv)
 
 bool handle_line(const char *data, size_t datalen, void *pw)
 {
-	line_ctx *ctx = (line_ctx *) pw;
+	line_ctx *ctx = (line_ctx *)pw;
 
 	if (data[0] == '#') {
 		if (ctx->inenc) {
@@ -84,8 +84,8 @@ bool handle_line(const char *data, size_t datalen, void *pw)
 			ctx->bufused = 0;
 		}
 
-		ctx->indata = (strncasecmp(data+1, "data", 4) == 0);
-		ctx->inenc  = (strncasecmp(data+1, "encoding", 8) == 0);
+		ctx->indata = (strncasecmp(data + 1, "data", 4) == 0);
+		ctx->inenc = (strncasecmp(data + 1, "encoding", 8) == 0);
 	} else {
 		if (ctx->indata) {
 			memcpy(ctx->buf + ctx->bufused, data, datalen);
@@ -107,17 +107,20 @@ void run_test(const uint8_t *data, size_t len, char *expected)
 	hubbub_charset_source source = HUBBUB_CHARSET_UNKNOWN;
 	static int testnum;
 
-	assert(hubbub_charset_extract(data, len,
-			&mibenum, &source) == PARSERUTILS_OK);
+	assert(hubbub_charset_extract(data, len, &mibenum, &source) ==
+	       PARSERUTILS_OK);
 
 	assert(mibenum != 0);
 
 	printf("%d: Detected charset %s (%d) Source %d Expected %s (%d)\n",
-			++testnum, parserutils_charset_mibenum_to_name(mibenum),
-			mibenum, source, expected,
-			parserutils_charset_mibenum_from_name(
-					expected, strlen(expected)));
+	       ++testnum,
+	       parserutils_charset_mibenum_to_name(mibenum),
+	       mibenum,
+	       source,
+	       expected,
+	       parserutils_charset_mibenum_from_name(expected,
+						     strlen(expected)));
 
 	assert(mibenum == parserutils_charset_mibenum_from_name(
-			expected, strlen(expected)));
+				  expected, strlen(expected)));
 }

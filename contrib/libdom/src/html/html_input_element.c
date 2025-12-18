@@ -18,11 +18,8 @@
 #include "utils/utils.h"
 
 static const struct dom_element_protected_vtable _protect_vtable = {
-	{
-		DOM_NODE_PROTECT_VTABLE_HTML_INPUT_ELEMENT
-	},
-	DOM_HTML_INPUT_ELEMENT_PROTECT_VTABLE
-};
+	{DOM_NODE_PROTECT_VTABLE_HTML_INPUT_ELEMENT},
+	DOM_HTML_INPUT_ELEMENT_PROTECT_VTABLE};
 
 /**
  * Create a dom_html_input_element object
@@ -31,9 +28,9 @@ static const struct dom_element_protected_vtable _protect_vtable = {
  * \param ele     The returned element object
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_html_input_element_create(
-		struct dom_html_element_create_params *params,
-		struct dom_html_input_element **ele)
+dom_exception
+_dom_html_input_element_create(struct dom_html_element_create_params *params,
+			       struct dom_html_input_element **ele)
 {
 	struct dom_node_internal *node;
 
@@ -42,7 +39,7 @@ dom_exception _dom_html_input_element_create(
 		return DOM_NO_MEM_ERR;
 
 	/* Set up vtables */
-	node = (struct dom_node_internal *) *ele;
+	node = (struct dom_node_internal *)*ele;
 	node->base.vtable = &_dom_html_element_vtable;
 	node->vtable = &_protect_vtable;
 
@@ -57,8 +54,8 @@ dom_exception _dom_html_input_element_create(
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception _dom_html_input_element_initialise(
-		struct dom_html_element_create_params *params,
-		struct dom_html_input_element *ele)
+	struct dom_html_element_create_params *params,
+	struct dom_html_input_element *ele)
 {
 	ele->form = NULL;
 	ele->default_checked = false;
@@ -107,11 +104,11 @@ void _dom_html_input_element_destroy(struct dom_html_input_element *ele)
  * \param disabled  The returned status
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception dom_html_input_element_get_disabled(dom_html_input_element *ele,
-		bool *disabled)
+dom_exception
+dom_html_input_element_get_disabled(dom_html_input_element *ele, bool *disabled)
 {
-	return dom_html_element_get_bool_property(&ele->base, "disabled",
-			SLEN("disabled"), disabled);
+	return dom_html_element_get_bool_property(
+		&ele->base, "disabled", SLEN("disabled"), disabled);
 }
 
 /**
@@ -121,11 +118,11 @@ dom_exception dom_html_input_element_get_disabled(dom_html_input_element *ele,
  * \param disabled  The status
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception dom_html_input_element_set_disabled(dom_html_input_element *ele,
-		bool disabled)
+dom_exception
+dom_html_input_element_set_disabled(dom_html_input_element *ele, bool disabled)
 {
-	return dom_html_element_set_bool_property(&ele->base, "disabled",
-			SLEN("disabled"), disabled);
+	return dom_html_element_set_bool_property(
+		&ele->base, "disabled", SLEN("disabled"), disabled);
 }
 
 /**
@@ -136,10 +133,10 @@ dom_exception dom_html_input_element_set_disabled(dom_html_input_element *ele,
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception dom_html_input_element_get_read_only(dom_html_input_element *ele,
-		bool *read_only)
+						   bool *read_only)
 {
-	return dom_html_element_get_bool_property(&ele->base, "readonly",
-			SLEN("readonly"), read_only);
+	return dom_html_element_get_bool_property(
+		&ele->base, "readonly", SLEN("readonly"), read_only);
 }
 
 /**
@@ -150,10 +147,10 @@ dom_exception dom_html_input_element_get_read_only(dom_html_input_element *ele,
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception dom_html_input_element_set_read_only(dom_html_input_element *ele,
-		bool read_only)
+						   bool read_only)
 {
-	return dom_html_element_set_bool_property(&ele->base, "readonly",
-			SLEN("readonly"), read_only);
+	return dom_html_element_set_bool_property(
+		&ele->base, "readonly", SLEN("readonly"), read_only);
 }
 
 /**
@@ -163,16 +160,16 @@ dom_exception dom_html_input_element_set_read_only(dom_html_input_element *ele,
  * \param disabled  The returned status
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception dom_html_input_element_get_checked(dom_html_input_element *ele,
-		bool *checked)
+dom_exception
+dom_html_input_element_get_checked(dom_html_input_element *ele, bool *checked)
 {
-	if(ele->checked_set) {
+	if (ele->checked_set) {
 		*checked = ele->checked;
 		return DOM_NO_ERR;
 	}
 
-	return dom_html_element_get_bool_property(&ele->base, "checked",
-			SLEN("checked"), checked);
+	return dom_html_element_get_bool_property(
+		&ele->base, "checked", SLEN("checked"), checked);
 }
 
 /**
@@ -182,11 +179,11 @@ dom_exception dom_html_input_element_get_checked(dom_html_input_element *ele,
  * \param disabled  The status
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception dom_html_input_element_set_checked(dom_html_input_element *ele,
-		bool checked)
+dom_exception
+dom_html_input_element_set_checked(dom_html_input_element *ele, bool checked)
 {
-	return dom_html_element_set_bool_property(&ele->base, "checked",
-			SLEN("checked"), checked);
+	return dom_html_element_set_bool_property(
+		&ele->base, "checked", SLEN("checked"), checked);
 }
 
 /**
@@ -196,8 +193,9 @@ dom_exception dom_html_input_element_set_checked(dom_html_input_element *ele,
  * \param disabled  The returned status
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception dom_html_input_element_get_default_value(
-	dom_html_input_element *ele, dom_string **default_value)
+dom_exception
+dom_html_input_element_get_default_value(dom_html_input_element *ele,
+					 dom_string **default_value)
 {
 	*default_value = ele->default_value;
 
@@ -214,8 +212,9 @@ dom_exception dom_html_input_element_get_default_value(
  * \param disabled  The status
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception dom_html_input_element_set_default_value(
-	dom_html_input_element *ele, dom_string *default_value)
+dom_exception
+dom_html_input_element_set_default_value(dom_html_input_element *ele,
+					 dom_string *default_value)
 {
 	if (ele->default_value != NULL)
 		dom_string_unref(ele->default_value);
@@ -236,8 +235,9 @@ dom_exception dom_html_input_element_set_default_value(
  * \param disabled  The returned status
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception dom_html_input_element_get_default_checked(
-	dom_html_input_element *ele, bool *default_checked)
+dom_exception
+dom_html_input_element_get_default_checked(dom_html_input_element *ele,
+					   bool *default_checked)
 {
 	*default_checked = ele->default_checked;
 
@@ -251,8 +251,9 @@ dom_exception dom_html_input_element_get_default_checked(
  * \param disabled  The status
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception dom_html_input_element_set_default_checked(
-	dom_html_input_element *ele, bool default_checked)
+dom_exception
+dom_html_input_element_set_default_checked(dom_html_input_element *ele,
+					   bool default_checked)
 {
 	ele->default_checked = default_checked;
 	ele->default_checked_set = true;
@@ -266,8 +267,9 @@ dom_exception dom_html_input_element_set_default_checked(
 /* The virtual function used to parse attribute value, see src/core/element.c
  * for detail */
 dom_exception _dom_html_input_element_parse_attribute(dom_element *ele,
-		dom_string *name, dom_string *value,
-		dom_string **parsed)
+						      dom_string *name,
+						      dom_string *value,
+						      dom_string **parsed)
 {
 	dom_html_input_element *input = (dom_html_input_element *)ele;
 	dom_html_document *html = (dom_html_document *)(ele->base.owner);
@@ -299,12 +301,12 @@ dom_exception _dom_html_input_element_parse_attribute(dom_element *ele,
 /* The virtual destroy function, see src/core/node.c for detail */
 void _dom_virtual_html_input_element_destroy(dom_node_internal *node)
 {
-	_dom_html_input_element_destroy((struct dom_html_input_element *) node);
+	_dom_html_input_element_destroy((struct dom_html_input_element *)node);
 }
 
 /* The virtual copy function, see src/core/node.c for detail */
-dom_exception _dom_html_input_element_copy(
-		dom_node_internal *old, dom_node_internal **copy)
+dom_exception
+_dom_html_input_element_copy(dom_node_internal *old, dom_node_internal **copy)
 {
 	dom_html_input_element *new_node;
 	dom_exception err;
@@ -319,14 +321,13 @@ dom_exception _dom_html_input_element_copy(
 		return err;
 	}
 
-	*copy = (dom_node_internal *) new_node;
+	*copy = (dom_node_internal *)new_node;
 
 	return DOM_NO_ERR;
 }
 
-dom_exception _dom_html_input_element_copy_internal(
-		dom_html_input_element *old,
-		dom_html_input_element *new)
+dom_exception _dom_html_input_element_copy_internal(dom_html_input_element *old,
+						    dom_html_input_element *new)
 {
 	dom_exception err;
 
@@ -341,8 +342,9 @@ dom_exception _dom_html_input_element_copy_internal(
 
 	new->default_checked = old->default_checked;
 	new->default_checked_set = old->default_checked_set;
-	new->default_value = old->default_value == NULL ?
-			NULL : dom_string_ref(old->default_value);
+	new->default_value = old->default_value == NULL
+				     ? NULL
+				     : dom_string_ref(old->default_value);
 	new->default_value_set = old->default_value_set;
 	new->checked = old->checked;
 	new->checked_set = old->checked_set;
@@ -353,39 +355,39 @@ dom_exception _dom_html_input_element_copy_internal(
 /*-----------------------------------------------------------------------*/
 /* API functions */
 
-#define SIMPLE_GET(attr)						\
-	dom_exception dom_html_input_element_get_##attr(		\
-		dom_html_input_element *element,			\
-		dom_string **attr)					\
-	{								\
-		dom_exception ret;					\
-		dom_string *_memo_##attr;				\
-									\
-		_memo_##attr =						\
-			((struct dom_html_document *)			\
-			 ((struct dom_node_internal *)element)->owner)->\
-			memoised[hds_##attr];				\
-									\
-		ret = dom_element_get_attribute(element, _memo_##attr, attr); \
-									\
-		return ret;						\
+#define SIMPLE_GET(attr)                                                       \
+	dom_exception dom_html_input_element_get_##attr(                       \
+		dom_html_input_element *element, dom_string **attr)            \
+	{                                                                      \
+		dom_exception ret;                                             \
+		dom_string *_memo_##attr;                                      \
+                                                                               \
+		_memo_##attr =                                                 \
+			((struct dom_html_document                             \
+				  *)((struct dom_node_internal *)element)      \
+				 ->owner)                                      \
+				->memoised[hds_##attr];                        \
+                                                                               \
+		ret = dom_element_get_attribute(element, _memo_##attr, attr);  \
+                                                                               \
+		return ret;                                                    \
 	}
-#define SIMPLE_SET(attr)						\
-dom_exception dom_html_input_element_set_##attr(			\
-		dom_html_input_element *element,			\
-		dom_string *attr)					\
-	{								\
-		dom_exception ret;					\
-		dom_string *_memo_##attr;				\
-									\
-		_memo_##attr =						\
-			((struct dom_html_document *)			\
-			 ((struct dom_node_internal *)element)->owner)->\
-			memoised[hds_##attr];				\
-									\
-		ret = dom_element_set_attribute(element, _memo_##attr, attr); \
-									\
-		return ret;						\
+#define SIMPLE_SET(attr)                                                       \
+	dom_exception dom_html_input_element_set_##attr(                       \
+		dom_html_input_element *element, dom_string *attr)             \
+	{                                                                      \
+		dom_exception ret;                                             \
+		dom_string *_memo_##attr;                                      \
+                                                                               \
+		_memo_##attr =                                                 \
+			((struct dom_html_document                             \
+				  *)((struct dom_node_internal *)element)      \
+				 ->owner)                                      \
+				->memoised[hds_##attr];                        \
+                                                                               \
+		ret = dom_element_set_attribute(element, _memo_##attr, attr);  \
+                                                                               \
+		return ret;                                                    \
 	}
 
 #define SIMPLE_GET_SET(attr) SIMPLE_GET(attr) SIMPLE_SET(attr)
@@ -400,49 +402,53 @@ SIMPLE_GET(type);
 SIMPLE_GET_SET(use_map);
 SIMPLE_GET_SET(value);
 
-dom_exception dom_html_input_element_get_size(
-	dom_html_input_element *input, dom_ulong *size)
+dom_exception
+dom_html_input_element_get_size(dom_html_input_element *input, dom_ulong *size)
 {
-	return dom_html_element_get_dom_ulong_property(&input->base, "size",
-			SLEN("size"), size);
+	return dom_html_element_get_dom_ulong_property(
+		&input->base, "size", SLEN("size"), size);
 }
 
-dom_exception dom_html_input_element_set_size(
-	dom_html_input_element *input, dom_ulong size)
+dom_exception
+dom_html_input_element_set_size(dom_html_input_element *input, dom_ulong size)
 {
-	return dom_html_element_set_dom_ulong_property(&input->base, "size",
-			SLEN("size"), size);
+	return dom_html_element_set_dom_ulong_property(
+		&input->base, "size", SLEN("size"), size);
 }
-dom_exception dom_html_input_element_get_tab_index(
-	dom_html_input_element *input, int32_t *tab_index)
+dom_exception
+dom_html_input_element_get_tab_index(dom_html_input_element *input,
+				     int32_t *tab_index)
 {
-	return dom_html_element_get_int32_t_property(&input->base, "tabindex",
-			SLEN("tabindex"), tab_index);
-}
-
-dom_exception dom_html_input_element_set_tab_index(
-	dom_html_input_element *input, uint32_t tab_index)
-{
-	return dom_html_element_set_int32_t_property(&input->base, "tabindex",
-			SLEN("tabindex"), tab_index);
+	return dom_html_element_get_int32_t_property(
+		&input->base, "tabindex", SLEN("tabindex"), tab_index);
 }
 
-dom_exception dom_html_input_element_get_max_length(
-	dom_html_input_element *input, int32_t *max_length)
+dom_exception
+dom_html_input_element_set_tab_index(dom_html_input_element *input,
+				     uint32_t tab_index)
 {
-	return dom_html_element_get_int32_t_property(&input->base, "maxlength",
-			SLEN("maxlength"), max_length);
+	return dom_html_element_set_int32_t_property(
+		&input->base, "tabindex", SLEN("tabindex"), tab_index);
 }
 
-dom_exception dom_html_input_element_set_max_length(
-	dom_html_input_element *input, uint32_t max_length)
+dom_exception
+dom_html_input_element_get_max_length(dom_html_input_element *input,
+				      int32_t *max_length)
 {
-	return dom_html_element_set_int32_t_property(&input->base, "maxlength",
-			SLEN("maxlength"), max_length);
+	return dom_html_element_get_int32_t_property(
+		&input->base, "maxlength", SLEN("maxlength"), max_length);
 }
 
-dom_exception dom_html_input_element_get_form(
-	dom_html_input_element *input, dom_html_form_element **form)
+dom_exception
+dom_html_input_element_set_max_length(dom_html_input_element *input,
+				      uint32_t max_length)
+{
+	return dom_html_element_set_int32_t_property(
+		&input->base, "maxlength", SLEN("maxlength"), max_length);
+}
+
+dom_exception dom_html_input_element_get_form(dom_html_input_element *input,
+					      dom_html_form_element **form)
 {
 	*form = input->form;
 
@@ -452,8 +458,8 @@ dom_exception dom_html_input_element_get_form(
 	return DOM_NO_ERR;
 }
 
-dom_exception _dom_html_input_element_set_form(
-	dom_html_input_element *input, dom_html_form_element *form)
+dom_exception _dom_html_input_element_set_form(dom_html_input_element *input,
+					       dom_html_form_element *form)
 {
 	input->form = form;
 
@@ -468,16 +474,18 @@ dom_exception _dom_html_input_element_set_form(
  */
 dom_exception dom_html_input_element_blur(dom_html_input_element *ele)
 {
-	struct dom_html_document *doc =
-		(dom_html_document *) dom_node_get_owner(ele);
+	struct dom_html_document *doc = (dom_html_document *)dom_node_get_owner(
+		ele);
 	bool success = false;
 	assert(doc != NULL);
 
 	/** \todo Is this event (a) default (b) bubbling and (c) cancelable? */
-	return _dom_dispatch_generic_event((dom_document *) doc,
-					   (dom_event_target *) ele,
-					   doc->memoised[hds_blur], true,
-					   true, &success);
+	return _dom_dispatch_generic_event((dom_document *)doc,
+					   (dom_event_target *)ele,
+					   doc->memoised[hds_blur],
+					   true,
+					   true,
+					   &success);
 }
 
 /**
@@ -488,16 +496,18 @@ dom_exception dom_html_input_element_blur(dom_html_input_element *ele)
  */
 dom_exception dom_html_input_element_focus(dom_html_input_element *ele)
 {
-	struct dom_html_document *doc =
-		(dom_html_document *) dom_node_get_owner(ele);
+	struct dom_html_document *doc = (dom_html_document *)dom_node_get_owner(
+		ele);
 	bool success = false;
 	assert(doc != NULL);
 
 	/** \this event doesnt bubble and is non-cancelable src:wikipedia*/
 	return _dom_dispatch_generic_event((dom_document *)doc,
-					   (dom_event_target *) ele,
-					   doc->memoised[hds_focus], false,
-					   false, &success);
+					   (dom_event_target *)ele,
+					   doc->memoised[hds_focus],
+					   false,
+					   false,
+					   &success);
 }
 
 /**
@@ -508,16 +518,18 @@ dom_exception dom_html_input_element_focus(dom_html_input_element *ele)
  */
 dom_exception dom_html_input_element_select(dom_html_input_element *ele)
 {
-	struct dom_html_document *doc =
-		(dom_html_document *) dom_node_get_owner(ele);
+	struct dom_html_document *doc = (dom_html_document *)dom_node_get_owner(
+		ele);
 	bool success = false;
 	assert(doc != NULL);
 
 	/** \this event bubbles and non-cancelable src:wikipedia*/
 	return _dom_dispatch_generic_event((dom_document *)doc,
-					   (dom_event_target *) ele,
-					   doc->memoised[hds_select], true,
-					   false, &success);
+					   (dom_event_target *)ele,
+					   doc->memoised[hds_select],
+					   true,
+					   false,
+					   &success);
 }
 
 /**
@@ -528,8 +540,8 @@ dom_exception dom_html_input_element_select(dom_html_input_element *ele)
  */
 dom_exception dom_html_input_element_click(dom_html_input_element *ele)
 {
-	struct dom_html_document *doc =
-		(dom_html_document *) dom_node_get_owner(ele);
+	struct dom_html_document *doc = (dom_html_document *)dom_node_get_owner(
+		ele);
 	bool success = false;
 	dom_exception err;
 	assert(doc != NULL);
@@ -537,10 +549,12 @@ dom_exception dom_html_input_element_click(dom_html_input_element *ele)
 
 	/** \This event bubbles & is cancelable src:Wikipedia*/
 	err = _dom_dispatch_generic_event((dom_document *)doc,
-					   (dom_event_target *) ele,
-					   doc->memoised[hds_click], true,
-					   true, &success);
-	if(err != DOM_NO_ERR)
+					  (dom_event_target *)ele,
+					  doc->memoised[hds_click],
+					  true,
+					  true,
+					  &success);
+	if (err != DOM_NO_ERR)
 		return err;
 
 	ele->checked = true;
@@ -548,4 +562,3 @@ dom_exception dom_html_input_element_click(dom_html_input_element *ele)
 
 	return DOM_NO_ERR;
 }
-

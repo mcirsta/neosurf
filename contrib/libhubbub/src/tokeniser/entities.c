@@ -10,12 +10,12 @@
 
 /** Node in our entity tree */
 typedef struct hubbub_entity_node {
-        /* Do not reorder this without fixing make-entities.pl */
-	uint8_t split;	/**< Data to split on */
-	int32_t lt;	/**< Subtree for data less than split */
-	int32_t eq;	/**< Subtree for data equal to split */
-	int32_t gt;	/**< Subtree for data greater than split */
-	uint32_t value;	/**< Data for this node */
+	/* Do not reorder this without fixing make-entities.pl */
+	uint8_t split; /**< Data to split on */
+	int32_t lt; /**< Subtree for data less than split */
+	int32_t eq; /**< Subtree for data equal to split */
+	int32_t gt; /**< Subtree for data greater than split */
+	uint32_t value; /**< Data for this node */
 } hubbub_entity_node;
 
 #include "entities.inc"
@@ -37,8 +37,8 @@ typedef struct hubbub_entity_node {
  * The location pointed to by \p result will be set to NULL unless a match
  * is found.
  */
-static hubbub_error hubbub_entity_tree_search_step(uint8_t c,
-		uint32_t *result, int32_t *context)
+static hubbub_error
+hubbub_entity_tree_search_step(uint8_t c, uint32_t *result, int32_t *context)
 {
 	bool match = false;
 	int32_t p;
@@ -59,7 +59,8 @@ static hubbub_error hubbub_entity_tree_search_step(uint8_t c,
 			if (dict[p].split == '\0') {
 				match = true;
 				p = -1;
-			} else if (dict[p].eq != -1 && dict[dict[p].eq].split == '\0') {
+			} else if (dict[p].eq != -1 &&
+				   dict[dict[p].eq].split == '\0') {
 				match = true;
 				*result = dict[dict[p].eq].value;
 				p = dict[p].eq;
@@ -79,8 +80,9 @@ static hubbub_error hubbub_entity_tree_search_step(uint8_t c,
 
 	*context = p;
 
-	return (match) ? HUBBUB_OK :
-			(p == -1) ? HUBBUB_INVALID : HUBBUB_NEEDDATA;
+	return (match)	   ? HUBBUB_OK
+	       : (p == -1) ? HUBBUB_INVALID
+			   : HUBBUB_NEEDDATA;
 }
 
 /**
@@ -100,13 +102,13 @@ static hubbub_error hubbub_entity_tree_search_step(uint8_t c,
  * The location pointed to by \p result will be set to U+FFFD unless a match
  * is found.
  */
-hubbub_error hubbub_entities_search_step(uint8_t c, uint32_t *result,
-		int32_t *context)
+hubbub_error
+hubbub_entities_search_step(uint8_t c, uint32_t *result, int32_t *context)
 {
 	if (result == NULL)
 		return HUBBUB_BADPARM;
 
-        *result = 0xFFFD;
-        
+	*result = 0xFFFD;
+
 	return hubbub_entity_tree_search_step(c, result, context);
 }

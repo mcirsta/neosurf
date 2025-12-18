@@ -37,39 +37,39 @@ typedef union hubbub_tokeniser_optparams {
 	struct {
 		hubbub_token_handler handler;
 		void *pw;
-	} token_handler;		/**< Token handling callback */
+	} token_handler; /**< Token handling callback */
 
 	struct {
 		hubbub_error_handler handler;
 		void *pw;
-	} error_handler;		/**< Error handling callback */
+	} error_handler; /**< Error handling callback */
 
 	struct {
 		hubbub_content_model model;
-	} content_model;		/**< Current content model */
+	} content_model; /**< Current content model */
 
-	bool process_cdata;		/**< Whether to process CDATA sections*/
+	bool process_cdata; /**< Whether to process CDATA sections*/
 
-	bool pause_parse;		/**< Pause parsing */
+	bool pause_parse; /**< Pause parsing */
 } hubbub_tokeniser_optparams;
 
 /* Create a hubbub tokeniser */
 hubbub_error hubbub_tokeniser_create(parserutils_inputstream *input,
-		hubbub_tokeniser **tokeniser);
+				     hubbub_tokeniser **tokeniser);
 /* Destroy a hubbub tokeniser */
 hubbub_error hubbub_tokeniser_destroy(hubbub_tokeniser *tokeniser);
 
 /* Configure a hubbub tokeniser */
 hubbub_error hubbub_tokeniser_setopt(hubbub_tokeniser *tokeniser,
-		hubbub_tokeniser_opttype type,
-		hubbub_tokeniser_optparams *params);
+				     hubbub_tokeniser_opttype type,
+				     hubbub_tokeniser_optparams *params);
 
 /* Insert a chunk of data into the input stream */
 hubbub_error hubbub_tokeniser_insert_chunk(hubbub_tokeniser *tokeniser,
-		const uint8_t *data, size_t len);
+					   const uint8_t *data,
+					   size_t len);
 
 /* Process remaining data in the input stream */
 hubbub_error hubbub_tokeniser_run(hubbub_tokeniser *tokeniser);
 
 #endif
-

@@ -13,7 +13,7 @@
 #include "comparators.h"
 
 /* The element type in the list
- * 
+ *
  * The high byte is used for category type
  * The low byte is used for concrete type
  */
@@ -26,45 +26,45 @@ typedef enum TYPE {
 
 
 struct list_elt {
-	void* data;
-	struct list_elt* next;
+	void *data;
+	struct list_elt *next;
 };
 
 typedef struct list {
 	unsigned int size;
 	TYPE type;
-	struct list_elt* head;
-	struct list_elt* tail;
+	struct list_elt *head;
+	struct list_elt *tail;
 } list;
 
-struct list* list_new(TYPE type);
-void list_destroy(struct list* list);
+struct list *list_new(TYPE type);
+void list_destroy(struct list *list);
 
 /**
  * Add data to the tail of the list.
  */
-void list_add(struct list* list, void* data);
+void list_add(struct list *list, void *data);
 
 /**
  * Remove element containing data from list.
  * The list element is freed, but the caller must free the data itself
  * if necessary.
- * 
+ *
  * Returns true if data was found in the list.
  */
-bool list_remove(struct list* list, void* data);
+bool list_remove(struct list *list, void *data);
 
-struct list* list_clone(struct list* list);
+struct list *list_clone(struct list *list);
 /**
  * Tests if data is equal to any element in the list.
  */
-bool list_contains(struct list* list, void* data,
-		comparator comparator);
+bool list_contains(struct list *list, void *data, comparator comparator);
 
 /**
  * Tests if superlist contains all elements in sublist.  Order is not important.
  */
-bool list_contains_all(struct list* superList, struct list* subList, 
-		comparator comparator);
+bool list_contains_all(struct list *superList,
+		       struct list *subList,
+		       comparator comparator);
 
 #endif

@@ -94,9 +94,8 @@ static inline void try_rebase(parserutils_buffer *buffer)
  * \param[in]  len     Number of bytes to ensure there is space for.
  * \return PARSERUTILS_OK on success, appropriate error otherwise.
  */
-static inline parserutils_error ensure_space(
-		parserutils_buffer *buffer,
-		size_t len)
+static inline parserutils_error
+ensure_space(parserutils_buffer *buffer, size_t len)
 {
 	try_rebase(buffer);
 
@@ -117,8 +116,9 @@ static inline parserutils_error ensure_space(
  * \param len     The length, in bytes, of the data to append
  * \return PARSERUTILS_OK on success, appropriate error otherwise.
  */
-parserutils_error parserutils_buffer_append(parserutils_buffer *buffer, 
-		const uint8_t *data, size_t len)
+parserutils_error parserutils_buffer_append(parserutils_buffer *buffer,
+					    const uint8_t *data,
+					    size_t len)
 {
 	parserutils_error error = ensure_space(buffer, len);
 	if (error != PARSERUTILS_OK)
@@ -140,9 +140,9 @@ parserutils_error parserutils_buffer_append(parserutils_buffer *buffer,
  * \param count   The number of data blocks to append
  * \param ...     The pairs of pointer and size
  * \return PARSERUTILS_OK on success, appropriate error otherwise.
-*/
-parserutils_error parserutils_buffer_appendv(parserutils_buffer *buffer,
-		size_t count, ...)
+ */
+parserutils_error
+parserutils_buffer_appendv(parserutils_buffer *buffer, size_t count, ...)
 {
 	va_list ap;
 	parserutils_error error = PARSERUTILS_OK;
@@ -172,8 +172,10 @@ parserutils_error parserutils_buffer_appendv(parserutils_buffer *buffer,
  * \param len     The length, in bytes, of the data to insert
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error parserutils_buffer_insert(parserutils_buffer *buffer, 
-		size_t offset, const uint8_t *data, size_t len)
+parserutils_error parserutils_buffer_insert(parserutils_buffer *buffer,
+					    size_t offset,
+					    const uint8_t *data,
+					    size_t len)
 {
 	parserutils_error error;
 
@@ -188,7 +190,8 @@ parserutils_error parserutils_buffer_insert(parserutils_buffer *buffer,
 		return error;
 
 	memmove(buffer->data + offset + len,
-			buffer->data + offset, buffer->length - offset);
+		buffer->data + offset,
+		buffer->length - offset);
 
 	memcpy(buffer->data + offset, data, len);
 
@@ -205,8 +208,9 @@ parserutils_error parserutils_buffer_insert(parserutils_buffer *buffer,
  * \param len     The number of bytes to discard
  * \return PARSERUTILS_OK on success, appropriate error otherwise.
  */
-parserutils_error parserutils_buffer_discard(parserutils_buffer *buffer, 
-		size_t offset, size_t len)
+parserutils_error parserutils_buffer_discard(parserutils_buffer *buffer,
+					     size_t offset,
+					     size_t len)
 {
 	if (offset >= buffer->length || offset + len > buffer->length)
 		return PARSERUTILS_BADPARM;
@@ -218,8 +222,9 @@ parserutils_error parserutils_buffer_discard(parserutils_buffer *buffer,
 		return PARSERUTILS_OK;
 	}
 
-	memmove(buffer->data + offset, buffer->data + offset + len, 
-			buffer->length - (len + offset));
+	memmove(buffer->data + offset,
+		buffer->data + offset + len,
+		buffer->length - (len + offset));
 
 	buffer->length -= len;
 
@@ -273,4 +278,3 @@ parserutils_error parserutils_buffer_randomise(parserutils_buffer *buffer)
 
 	return PARSERUTILS_OK;
 }
-

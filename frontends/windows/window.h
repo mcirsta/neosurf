@@ -29,12 +29,12 @@ extern struct gui_window_table *win32_window_table;
 #include "neosurf/mouse.h"
 
 struct browser_mouse {
-       struct gui_window *gui;
+	struct gui_window *gui;
 
-       double pressed_x;
-       double pressed_y;
-       bool waiting;
-       browser_mouse_state state;
+	double pressed_x;
+	double pressed_y;
+	bool waiting;
+	browser_mouse_state state;
 };
 
 struct gui_window {
@@ -54,7 +54,8 @@ struct gui_window {
 
 	HMENU mainmenu; /**< the main menu */
 	HMENU rclick; /**< the right-click menu */
-	struct nsws_localhistory *localhistory;	/**< handle to local history window */
+	struct nsws_localhistory
+		*localhistory; /**< handle to local history window */
 	int width; /**< width of window */
 	int height; /**< height of drawing area */
 

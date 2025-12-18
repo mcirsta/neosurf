@@ -40,8 +40,8 @@ css_error css_calculator_create(css_calculator **out)
 	}
 #endif
 
-	(*out)->stack =
-	    calloc(DEFAULT_STACK_SIZE, sizeof(css_calculator_stack_entry));
+	(*out)->stack = calloc(DEFAULT_STACK_SIZE,
+			       sizeof(css_calculator_stack_entry));
 	if ((*out)->stack == NULL) {
 #ifndef NDEBUG
 		lwc_string_unref((*out)->canary);
@@ -80,13 +80,14 @@ void css_calculator_unref(css_calculator *calc)
 
 /****************************** Helpers ************************************/
 
-static css_error css__calculator_push(css_calculator *calc, unit unit,
-				      css_fixed value)
+static css_error
+css__calculator_push(css_calculator *calc, unit unit, css_fixed value)
 {
 	if (calc->stack_ptr == calc->stack_alloc) {
-		css_calculator_stack_entry *newstack =
-		    realloc(calc->stack, sizeof(css_calculator_stack_entry) *
-					     2 * calc->stack_alloc);
+		css_calculator_stack_entry *newstack = realloc(
+			calc->stack,
+			sizeof(css_calculator_stack_entry) * 2 *
+				calc->stack_alloc);
 		if (newstack == NULL) {
 			return CSS_NOMEM;
 		}
@@ -100,8 +101,8 @@ static css_error css__calculator_push(css_calculator *calc, unit unit,
 	return CSS_OK;
 }
 
-static css_error css__calculator_pop(css_calculator *calc, unit *unit,
-				     css_fixed *value)
+static css_error
+css__calculator_pop(css_calculator *calc, unit *unit, css_fixed *value)
 {
 	if (calc->stack_ptr == 0) {
 		return CSS_INVALID;
@@ -139,11 +140,13 @@ static css_error css__calculator_pop(css_calculator *calc, unit *unit,
  */
 static css_error css__normalise_unit(const css_unit_ctx *unit_ctx,
 				     const css_computed_style *style,
-				     int32_t available, unit *u, css_fixed *v)
+				     int32_t available,
+				     unit *u,
+				     css_fixed *v)
 {
 	if (*u & UNIT_LENGTH) {
-		css_fixed px = css_unit_len2css_px(style, unit_ctx, *v,
-						   css__to_css_unit(*u));
+		css_fixed px = css_unit_len2css_px(
+			style, unit_ctx, *v, css__to_css_unit(*u));
 		*v = px;
 		*u = UNIT_PX;
 		return CSS_OK;
@@ -194,9 +197,11 @@ static css_error css__normalise_unit(const css_unit_ctx *unit_ctx,
 /* Exported function, documented in calc.h */
 css_error css_calculator_calculate(css_calculator *calc,
 				   const css_unit_ctx *unit_ctx,
-				   int32_t available, lwc_string *expr,
+				   int32_t available,
+				   lwc_string *expr,
 				   const css_computed_style *style,
-				   css_unit *unit_out, css_fixed *value_out)
+				   css_unit *unit_out,
+				   css_fixed *value_out)
 {
 	css_error ret = CSS_OK;
 	/* Alignment note: lwc string data is always very well aligned */
@@ -212,8 +217,8 @@ css_error css_calculator_calculate(css_calculator *calc,
 		case CALC_PUSH_VALUE: {
 			css_fixed v = (css_fixed)(*codeptr++);
 			unit u = (unit)(*codeptr++);
-			ret = css__normalise_unit(unit_ctx, style, available,
-						  &u, &v);
+			ret = css__normalise_unit(
+				unit_ctx, style, available, &u, &v);
 			if (ret != CSS_OK) {
 				return ret;
 			}

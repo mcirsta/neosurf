@@ -31,8 +31,7 @@ extern "C" {
 #include "qt/local_history.cls.h"
 
 NS_Local_history::NS_Local_history(QWidget *parent, struct browser_window *bw)
-	: NS_Corewindow(parent, Qt::Popup),
-	  m_session(nullptr)
+	: NS_Corewindow(parent, Qt::Popup), m_session(nullptr)
 {
 	setMaximumSize(bw);
 	local_history_init((struct core_window *)m_core_window, bw, &m_session);
@@ -69,10 +68,14 @@ bool NS_Local_history::key_press(uint32_t nskey)
 	return local_history_keypress(m_session, nskey);
 }
 
-void NS_Local_history::mouse_action(browser_mouse_state mouse_state, int x, int y)
+void NS_Local_history::mouse_action(browser_mouse_state mouse_state,
+				    int x,
+				    int y)
 {
-	if (((mouse_state) && (!geometry().contains(mapToGlobal(QPoint(x,y))))) ||
-	    (local_history_mouse_action(m_session, mouse_state, x, y) == NSERROR_OK)) {
+	if (((mouse_state) &&
+	     (!geometry().contains(mapToGlobal(QPoint(x, y))))) ||
+	    (local_history_mouse_action(m_session, mouse_state, x, y) ==
+	     NSERROR_OK)) {
 		close();
 	}
 }

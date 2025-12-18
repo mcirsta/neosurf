@@ -114,8 +114,8 @@ static int plot_font_weight(enum css_font_weight_e css)
  * \param variant  CSS font variant
  * \return Computed plot flags
  */
-static plot_font_flags_t plot_font_flags(enum css_font_style_e style,
-		enum css_font_variant_e variant)
+static plot_font_flags_t
+plot_font_flags(enum css_font_style_e style, enum css_font_variant_e variant)
 {
 	plot_font_flags_t flags = FONTF_NONE;
 
@@ -132,10 +132,9 @@ static plot_font_flags_t plot_font_flags(enum css_font_style_e style,
 
 
 /* exported function documented in html/font.h */
-void font_plot_style_from_css(
-		const css_unit_ctx *unit_len_ctx,
-		const css_computed_style *css,
-		plot_font_style_t *fstyle)
+void font_plot_style_from_css(const css_unit_ctx *unit_len_ctx,
+			      const css_computed_style *css,
+			      plot_font_style_t *fstyle)
 {
 	lwc_string **families;
 	css_fixed length = 0;
@@ -143,21 +142,24 @@ void font_plot_style_from_css(
 	css_color col;
 
 	fstyle->family = plot_font_generic_family(
-			css_computed_font_family(css, &families));
+		css_computed_font_family(css, &families));
 	fstyle->families = families;
 
 	css_computed_font_size(css, &length, &unit);
-	fstyle->size = FIXTOINT(FMUL(css_unit_font_size_len2pt(css,
-				      unit_len_ctx, length, unit),
-				      INTTOFIX(PLOT_STYLE_SCALE)));
+	fstyle->size = FIXTOINT(
+		FMUL(css_unit_font_size_len2pt(css, unit_len_ctx, length, unit),
+		     INTTOFIX(PLOT_STYLE_SCALE)));
 
 	/* Clamp font size to configured minimum */
-	if (fstyle->size < (nsoption_int(font_min_size) * PLOT_STYLE_SCALE) / 10)
-		fstyle->size = (nsoption_int(font_min_size) * PLOT_STYLE_SCALE) / 10;
+	if (fstyle->size <
+	    (nsoption_int(font_min_size) * PLOT_STYLE_SCALE) / 10)
+		fstyle->size = (nsoption_int(font_min_size) *
+				PLOT_STYLE_SCALE) /
+			       10;
 
 	fstyle->weight = plot_font_weight(css_computed_font_weight(css));
 	fstyle->flags = plot_font_flags(css_computed_font_style(css),
-			css_computed_font_variant(css));
+					css_computed_font_variant(css));
 
 	css_computed_color(css, &col);
 	fstyle->foreground = nscss_color_to_ns(col);

@@ -60,7 +60,7 @@ typedef struct gif_content {
 	struct content base;
 
 	nsgif_t *gif; /**< GIF animation data */
-	uint32_t current_frame;   /**< current frame to display [0...(max-1)] */
+	uint32_t current_frame; /**< current frame to display [0...(max-1)] */
 } gif_content;
 
 static inline nserror gif__nsgif_error_to_ns(nsgif_error gif_res)
@@ -96,14 +96,22 @@ static void *gif_bitmap_create(int width, int height)
  */
 static nsgif_bitmap_fmt_t nsgif__get_bitmap_format(void)
 {
-	ns_static_assert((int)BITMAP_LAYOUT_R8G8B8A8 == (int)NSGIF_BITMAP_FMT_R8G8B8A8);
-	ns_static_assert((int)BITMAP_LAYOUT_B8G8R8A8 == (int)NSGIF_BITMAP_FMT_B8G8R8A8);
-	ns_static_assert((int)BITMAP_LAYOUT_A8R8G8B8 == (int)NSGIF_BITMAP_FMT_A8R8G8B8);
-	ns_static_assert((int)BITMAP_LAYOUT_A8B8G8R8 == (int)NSGIF_BITMAP_FMT_A8B8G8R8);
-	ns_static_assert((int)BITMAP_LAYOUT_RGBA8888 == (int)NSGIF_BITMAP_FMT_RGBA8888);
-	ns_static_assert((int)BITMAP_LAYOUT_BGRA8888 == (int)NSGIF_BITMAP_FMT_BGRA8888);
-	ns_static_assert((int)BITMAP_LAYOUT_ARGB8888 == (int)NSGIF_BITMAP_FMT_ARGB8888);
-	ns_static_assert((int)BITMAP_LAYOUT_ABGR8888 == (int)NSGIF_BITMAP_FMT_ABGR8888);
+	ns_static_assert((int)BITMAP_LAYOUT_R8G8B8A8 ==
+			 (int)NSGIF_BITMAP_FMT_R8G8B8A8);
+	ns_static_assert((int)BITMAP_LAYOUT_B8G8R8A8 ==
+			 (int)NSGIF_BITMAP_FMT_B8G8R8A8);
+	ns_static_assert((int)BITMAP_LAYOUT_A8R8G8B8 ==
+			 (int)NSGIF_BITMAP_FMT_A8R8G8B8);
+	ns_static_assert((int)BITMAP_LAYOUT_A8B8G8R8 ==
+			 (int)NSGIF_BITMAP_FMT_A8B8G8R8);
+	ns_static_assert((int)BITMAP_LAYOUT_RGBA8888 ==
+			 (int)NSGIF_BITMAP_FMT_RGBA8888);
+	ns_static_assert((int)BITMAP_LAYOUT_BGRA8888 ==
+			 (int)NSGIF_BITMAP_FMT_BGRA8888);
+	ns_static_assert((int)BITMAP_LAYOUT_ARGB8888 ==
+			 (int)NSGIF_BITMAP_FMT_ARGB8888);
+	ns_static_assert((int)BITMAP_LAYOUT_ABGR8888 ==
+			 (int)NSGIF_BITMAP_FMT_ABGR8888);
 
 	return (nsgif_bitmap_fmt_t)bitmap_fmt.layout;
 }
@@ -121,7 +129,8 @@ static nserror gif_create_gif_data(gif_content *c)
 	};
 
 	gif_res = nsgif_create(&gif_bitmap_callbacks,
-			nsgif__get_bitmap_format(), &c->gif);
+			       nsgif__get_bitmap_format(),
+			       &c->gif);
 	if (gif_res != NSGIF_OK) {
 		nserror err = gif__nsgif_error_to_ns(gif_res);
 		content_broadcast_error(&c->base, err, NULL);
@@ -132,9 +141,12 @@ static nserror gif_create_gif_data(gif_content *c)
 }
 
 static nserror gif_create(const content_handler *handler,
-		lwc_string *imime_type, const struct http_parameter *params,
-		llcache_handle *llcache, const char *fallback_charset,
-		bool quirks, struct content **c)
+			  lwc_string *imime_type,
+			  const struct http_parameter *params,
+			  llcache_handle *llcache,
+			  const char *fallback_charset,
+			  bool quirks,
+			  struct content **c)
 {
 	gif_content *result;
 	nserror error;
@@ -143,8 +155,13 @@ static nserror gif_create(const content_handler *handler,
 	if (result == NULL)
 		return NSERROR_NOMEM;
 
-	error = content__init(&result->base, handler, imime_type, params,
-			llcache, fallback_charset, quirks);
+	error = content__init(&result->base,
+			      handler,
+			      imime_type,
+			      params,
+			      llcache,
+			      fallback_charset,
+			      quirks);
 	if (error != NSERROR_OK) {
 		free(result);
 		return error;
@@ -156,7 +173,7 @@ static nserror gif_create(const content_handler *handler,
 		return error;
 	}
 
-	*c = (struct content *) result;
+	*c = (struct content *)result;
 
 	return NSERROR_OK;
 }
@@ -165,14 +182,14 @@ static nserror gif_create(const content_handler *handler,
  * Scheduler callback. Performs any necessary animation.
  *
  * \param p  The content to animate
-*/
+ */
 static void gif_animate_cb(void *p);
 
 /**
  * Performs any necessary animation.
  *
  * \param p  The content to animate
-*/
+ */
 static nserror gif__animate(gif_content *gif, bool redraw)
 {
 	nsgif_error gif_res;
@@ -198,7 +215,7 @@ static nserror gif__animate(gif_content *gif, bool redraw)
 		/* area within gif to redraw */
 		data.redraw.x = rect.x0;
 		data.redraw.y = rect.y0;
-		data.redraw.width  = rect.x1 - rect.x0;
+		data.redraw.width = rect.x1 - rect.x0;
 		data.redraw.height = rect.y1 - rect.y0;
 
 		content_broadcast(&gif->base, CONTENT_MSG_REDRAW, &data);
@@ -216,7 +233,7 @@ static void gif_animate_cb(void *p)
 
 static bool gif_convert(struct content *c)
 {
-	gif_content *gif = (gif_content *) c;
+	gif_content *gif = (gif_content *)c;
 	const nsgif_info_t *gif_info;
 	const uint8_t *data;
 	nsgif_error gif_err;
@@ -257,8 +274,10 @@ static bool gif_convert(struct content *c)
 
 	/* set title text */
 	title = messages_get_buff("GIFTitle",
-			nsurl_access_leaf(llcache_handle_get_url(c->llcache)),
-			c->width, c->height);
+				  nsurl_access_leaf(
+					  llcache_handle_get_url(c->llcache)),
+				  c->width,
+				  c->height);
 	if (title != NULL) {
 		content__set_title(c, title);
 		free(title);
@@ -285,8 +304,7 @@ static bool gif_convert(struct content *c)
  * \param gif The gif context to update.
  * \return NSGIF_OK on success else apropriate error code.
  */
-static nsgif_error gif_get_frame(gif_content *gif,
-		nsgif_bitmap_t **bitmap)
+static nsgif_error gif_get_frame(gif_content *gif, nsgif_bitmap_t **bitmap)
 {
 	uint32_t current_frame = gif->current_frame;
 	if (!nsoption_bool(animate_images)) {
@@ -296,10 +314,12 @@ static nsgif_error gif_get_frame(gif_content *gif,
 	return nsgif_frame_decode(gif->gif, current_frame, bitmap);
 }
 
-static bool gif_redraw(struct content *c, struct content_redraw_data *data,
-		const struct rect *clip, const struct redraw_context *ctx)
+static bool gif_redraw(struct content *c,
+		       struct content_redraw_data *data,
+		       const struct rect *clip,
+		       const struct redraw_context *ctx)
 {
-	gif_content *gif = (gif_content *) c;
+	gif_content *gif = (gif_content *)c;
 	nsgif_bitmap_t *bitmap;
 
 	if (gif_get_frame(gif, &bitmap) != NSGIF_OK) {
@@ -311,7 +331,7 @@ static bool gif_redraw(struct content *c, struct content_redraw_data *data,
 
 static void gif_destroy(struct content *c)
 {
-	gif_content *gif = (gif_content *) c;
+	gif_content *gif = (gif_content *)c;
 
 	/* Free all the associated memory buffers */
 	guit->misc->schedule(-1, gif_animate_cb, c);
@@ -341,28 +361,31 @@ static nserror gif_clone(const struct content *old, struct content **newc)
 	}
 
 	if (old->status == CONTENT_STATUS_READY ||
-			old->status == CONTENT_STATUS_DONE) {
+	    old->status == CONTENT_STATUS_DONE) {
 		if (gif_convert(&gif->base) == false) {
 			content_destroy(&gif->base);
 			return NSERROR_CLONE_FAILED;
 		}
 	}
 
-	*newc = (struct content *) gif;
+	*newc = (struct content *)gif;
 
 	return NSERROR_OK;
 }
 
 static void gif_add_user(struct content *c)
 {
-	gif_content *gif = (gif_content *) c;
+	gif_content *gif = (gif_content *)c;
 
 	/* Ensure this content has already been converted.
-	 * If it hasn't, the animation will start at the conversion phase instead. */
-	if (gif->gif == NULL) return;
+	 * If it hasn't, the animation will start at the conversion phase
+	 * instead. */
+	if (gif->gif == NULL)
+		return;
 
 	if (content_count_users(c) == 1) {
-		/* First user, and content already converted, so start the animation. */
+		/* First user, and content already converted, so start the
+		 * animation. */
 		if (nsgif_reset(gif->gif) == NSGIF_OK) {
 			gif__animate(gif, true);
 		}
@@ -372,15 +395,15 @@ static void gif_add_user(struct content *c)
 static void gif_remove_user(struct content *c)
 {
 	if (content_count_users(c) == 1) {
-		/* Last user is about to be removed from this content, so stop the animation. */
+		/* Last user is about to be removed from this content, so stop
+		 * the animation. */
 		guit->misc->schedule(-1, gif_animate_cb, c);
 	}
 }
 
-static nsgif_bitmap_t *gif_get_bitmap(
-		const struct content *c, void *context)
+static nsgif_bitmap_t *gif_get_bitmap(const struct content *c, void *context)
 {
-	gif_content *gif = (gif_content *) c;
+	gif_content *gif = (gif_content *)c;
 	nsgif_bitmap_t *bitmap;
 
 	if (gif_get_frame(gif, &bitmap) != NSGIF_OK) {
@@ -397,7 +420,7 @@ static content_type gif_content_type(void)
 
 static bool gif_content_is_opaque(struct content *c)
 {
-	gif_content *gif = (gif_content *) c;
+	gif_content *gif = (gif_content *)c;
 	nsgif_bitmap_t *bitmap;
 
 	if (gif_get_frame(gif, &bitmap) != NSGIF_OK) {
@@ -421,8 +444,6 @@ static const content_handler gif_content_handler = {
 	.no_share = false,
 };
 
-static const char *gif_types[] = {
-	"image/gif"
-};
+static const char *gif_types[] = {"image/gif"};
 
 CONTENT_FACTORY_REGISTER_TYPES(nsgif, gif_types, gif_content_handler);

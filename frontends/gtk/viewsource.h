@@ -22,4 +22,3 @@
 nserror nsgtk_viewsource(GtkWindow *parent, struct browser_window *bw);
 
 #endif
-

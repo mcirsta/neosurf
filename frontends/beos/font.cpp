@@ -23,7 +23,7 @@
  */
 
 
-#define __STDBOOL_H__	1
+#define __STDBOOL_H__ 1
 #include <stdbool.h>
 #include <assert.h>
 #include <stdio.h>
@@ -99,22 +99,24 @@ void nsbeos_style_to_font(BFont &font, const struct plot_font_style *fstyle)
 		face |= B_LIGHT_FACE;
 	}
 #endif
-/*
-	case CSS_FONT_WEIGHT_100: weight = 100; break;
-	case CSS_FONT_WEIGHT_200: weight = 200; break;
-	case CSS_FONT_WEIGHT_300: weight = 300; break;
-	case CSS_FONT_WEIGHT_400: weight = 400; break;
-	case CSS_FONT_WEIGHT_500: weight = 500; break;
-	case CSS_FONT_WEIGHT_600: weight = 600; break;
-	case CSS_FONT_WEIGHT_700: weight = 700; break;
-	case CSS_FONT_WEIGHT_800: weight = 800; break;
-	case CSS_FONT_WEIGHT_900: weight = 900; break;
-*/
+	/*
+		case CSS_FONT_WEIGHT_100: weight = 100; break;
+		case CSS_FONT_WEIGHT_200: weight = 200; break;
+		case CSS_FONT_WEIGHT_300: weight = 300; break;
+		case CSS_FONT_WEIGHT_400: weight = 400; break;
+		case CSS_FONT_WEIGHT_500: weight = 500; break;
+		case CSS_FONT_WEIGHT_600: weight = 600; break;
+		case CSS_FONT_WEIGHT_700: weight = 700; break;
+		case CSS_FONT_WEIGHT_800: weight = 800; break;
+		case CSS_FONT_WEIGHT_900: weight = 900; break;
+	*/
 
 	if (!face)
 		face = B_REGULAR_FACE;
 
-//fprintf(stderr, "nsbeos_style_to_font: %d, %d, %d -> '%s' %04x\n", style->font_family, style->font_style, style->font_weight, family, face);
+	// fprintf(stderr, "nsbeos_style_to_font: %d, %d, %d -> '%s' %04x\n",
+	// style->font_family, style->font_style, style->font_weight, family,
+	// face);
 
 	if (family) {
 		font_family beos_family;
@@ -125,15 +127,18 @@ void nsbeos_style_to_font(BFont &font, const struct plot_font_style *fstyle)
 
 		font.SetFamilyAndFace(beos_family, face);
 	} else {
-		//XXX not used
+		// XXX not used
 		font = be_plain_font;
 		font.SetFace(face);
 	}
 
-//fprintf(stderr, "nsbeos_style_to_font: value %f unit %d\n", style->font_size.value.length.value, style->font_size.value.length.unit);
+	// fprintf(stderr, "nsbeos_style_to_font: value %f unit %d\n",
+	// style->font_size.value.length.value,
+	// style->font_size.value.length.unit);
 	size = fstyle->size / PLOT_STYLE_SCALE;
 
-//fprintf(stderr, "nsbeos_style_to_font: %f %d\n", size, style->font_size.value.length.unit);
+	// fprintf(stderr, "nsbeos_style_to_font: %f %d\n", size,
+	// style->font_size.value.length.unit);
 
 	font.SetSize(size);
 }
@@ -149,10 +154,11 @@ void nsbeos_style_to_font(BFont &font, const struct plot_font_style *fstyle)
  * \return  true on success, false on error and error reported
  */
 static nserror beos_font_width(const plot_font_style_t *fstyle,
-		const char *string, size_t length,
-		int *width)
+			       const char *string,
+			       size_t length,
+			       int *width)
 {
-	//fprintf(stderr, "%s(, '%s', %d, )\n", __FUNCTION__, string, length);
+	// fprintf(stderr, "%s(, '%s', %d, )\n", __FUNCTION__, string, length);
 	BFont font;
 
 	if (length == 0) {
@@ -202,11 +208,18 @@ static int utf8_char_len(const char *c)
  * \return  true on success, false on error and error reported
  */
 static nserror beos_font_position(const plot_font_style_t *fstyle,
-		const char *string, size_t length,
-		int x, size_t *char_offset, int *actual_x)
+				  const char *string,
+				  size_t length,
+				  int x,
+				  size_t *char_offset,
+				  int *actual_x)
 {
-	NSLOG(netsurf, DEEPDEBUG, "(, '%s', %" PRIsizet ", %d, , )",
-	      string, length, x);
+	NSLOG(netsurf,
+	      DEEPDEBUG,
+	      "(, '%s', %" PRIsizet ", %d, , )",
+	      string,
+	      length,
+	      x);
 
 	int index;
 	BFont font;
@@ -231,7 +244,7 @@ static nserror beos_font_position(const plot_font_style_t *fstyle,
 			break;
 	}
 	*actual_x = (int)current;
-	*char_offset = i; //index;
+	*char_offset = i; // index;
 
 	return NSERROR_OK;
 }
@@ -260,11 +273,18 @@ static nserror beos_font_position(const plot_font_style_t *fstyle,
  * Returning char_offset == length means no split possible
  */
 static nserror beos_font_split(const plot_font_style_t *fstyle,
-		const char *string, size_t length,
-		int x, size_t *char_offset, int *actual_x)
+			       const char *string,
+			       size_t length,
+			       int x,
+			       size_t *char_offset,
+			       int *actual_x)
 {
-	NSLOG(netsurf, DEEPDEBUG, "(, '%s', %" PRIsizet ", %d, , )",
-	      string, length, x);
+	NSLOG(netsurf,
+	      DEEPDEBUG,
+	      "(, '%s', %" PRIsizet ", %d, , )",
+	      string,
+	      length,
+	      x);
 	int index = 0;
 	BFont font;
 
@@ -288,7 +308,8 @@ static nserror beos_font_split(const plot_font_style_t *fstyle,
 		if (x < current && last_space != 0) {
 			*actual_x = (int)last_x;
 			*char_offset = last_space;
-			return NSERROR_OK;;
+			return NSERROR_OK;
+			;
 		}
 		esc += escapements[i];
 		current = font.Size() * esc;
@@ -313,11 +334,13 @@ static nserror beos_font_split(const plot_font_style_t *fstyle,
  */
 
 bool nsfont_paint(const plot_font_style_t *fstyle,
-		const char *string, size_t length,
-		int x, int y)
+		  const char *string,
+		  size_t length,
+		  int x,
+		  int y)
 {
-	//fprintf(stderr, "%s(, '%s', %d, %d, %d, )\n", __FUNCTION__, string, length, x, y);
-	//CALLED();
+	// fprintf(stderr, "%s(, '%s', %d, %d, %d, )\n", __FUNCTION__, string,
+	// length, x, y); CALLED();
 	BFont font;
 	rgb_color oldbg;
 	rgb_color background;
@@ -332,7 +355,7 @@ bool nsfont_paint(const plot_font_style_t *fstyle,
 	background = nsbeos_rgb_colour(fstyle->background);
 	foreground = nsbeos_rgb_colour(fstyle->foreground);
 
-	view = nsbeos_current_gc/*_lock*/();
+	view = nsbeos_current_gc /*_lock*/ ();
 	if (view == NULL) {
 		beos_warn_user("No GC", 0);
 		return false;
@@ -342,9 +365,9 @@ bool nsfont_paint(const plot_font_style_t *fstyle,
 	drawing_mode oldmode = view->DrawingMode();
 	view->SetLowColor(B_TRANSPARENT_32_BIT);
 
-	//view->SetScale() XXX
+	// view->SetScale() XXX
 
-//printf("nsfont_paint: Size: %f\n", font.Size());
+	// printf("nsfont_paint: Size: %f\n", font.Size());
 	size = (float)font.Size();
 #warning XXX use scale
 
@@ -356,21 +379,20 @@ bool nsfont_paint(const plot_font_style_t *fstyle,
 
 	BPoint where(x, y + 1);
 	view->DrawString(line.String(), where);
-	
+
 	view->SetDrawingMode(oldmode);
 	if (memcmp(&oldbg, &background, sizeof(rgb_color)))
 		view->SetLowColor(oldbg);
 
-	//nsbeos_current_gc_unlock();
+	// nsbeos_current_gc_unlock();
 
 	return true;
 }
 
 
 static struct gui_layout_table layout_table = {
-  /*.width = */beos_font_width,
-  /*.position = */beos_font_position,
-  /*.split = */beos_font_split
-};
+	/*.width = */ beos_font_width,
+	/*.position = */ beos_font_position,
+	/*.split = */ beos_font_split};
 
 struct gui_layout_table *beos_layout_table = &layout_table;

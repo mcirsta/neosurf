@@ -14,8 +14,8 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_font_size(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error
+css__cascade_font_size(uint32_t opv, css_style *style, css_select_state *state)
 {
 	uint16_t value = CSS_FONT_SIZE_INHERIT;
 	css_fixed size = 0;
@@ -26,10 +26,10 @@ css_error css__cascade_font_size(uint32_t opv, css_style *style,
 		case FONT_SIZE_DIMENSION:
 			value = CSS_FONT_SIZE_DIMENSION;
 
-			size = *((css_fixed *) style->bytecode);
+			size = *((css_fixed *)style->bytecode);
 			advance_bytecode(style, sizeof(size));
 
-			unit = *((uint32_t *) style->bytecode);
+			unit = *((uint32_t *)style->bytecode);
 			advance_bytecode(style, sizeof(unit));
 			break;
 		case FONT_SIZE_XX_SMALL:
@@ -71,30 +71,33 @@ css_error css__cascade_font_size(uint32_t opv, css_style *style,
 
 	unit = css__to_css_unit(unit);
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			getFlagValue(opv))) {
+	if (css__outranks_existing(getOpcode(opv),
+				   isImportant(opv),
+				   state,
+				   getFlagValue(opv))) {
 		return set_font_size(state->computed, value, size, unit);
 	}
 
 	return CSS_OK;
 }
 
-css_error css__set_font_size_from_hint(const css_hint *hint,
-		css_computed_style *style)
+css_error
+css__set_font_size_from_hint(const css_hint *hint, css_computed_style *style)
 {
-	return set_font_size(style, hint->status,
-			hint->data.length.value, hint->data.length.unit);
+	return set_font_size(style,
+			     hint->status,
+			     hint->data.length.value,
+			     hint->data.length.unit);
 }
 
 css_error css__initial_font_size(css_select_state *state)
 {
-	return set_font_size(state->computed, CSS_FONT_SIZE_MEDIUM,
-			0, CSS_UNIT_PX);
+	return set_font_size(
+		state->computed, CSS_FONT_SIZE_MEDIUM, 0, CSS_UNIT_PX);
 }
 
-css_error css__copy_font_size(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error
+css__copy_font_size(const css_computed_style *from, css_computed_style *to)
 {
 	css_fixed size = 0;
 	css_unit unit = CSS_UNIT_PX;
@@ -108,15 +111,13 @@ css_error css__copy_font_size(
 }
 
 css_error css__compose_font_size(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+				 const css_computed_style *child,
+				 css_computed_style *result)
 {
 	css_fixed size = 0;
 	css_unit unit = CSS_UNIT_PX;
 	uint8_t type = get_font_size(child, &size, &unit);
 
 	return css__copy_font_size(
-			type == CSS_FONT_SIZE_INHERIT ? parent : child,
-			result);
+		type == CSS_FONT_SIZE_INHERIT ? parent : child, result);
 }
-

@@ -15,10 +15,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 #include <windows.h>
 
 extern const struct plotter_table win_plotters;
- 
-extern HDC plot_hdc;
 
+extern HDC plot_hdc;

@@ -67,14 +67,18 @@ static html_css_fetcher_context *ring = NULL;
 
 static bool html_css_fetcher_initialise(lwc_string *scheme)
 {
-	NSLOG(neosurf, INFO, "html_css_fetcher_initialise called for %s",
+	NSLOG(neosurf,
+	      INFO,
+	      "html_css_fetcher_initialise called for %s",
 	      lwc_string_data(scheme));
 	return true;
 }
 
 static void html_css_fetcher_finalise(lwc_string *scheme)
 {
-	NSLOG(neosurf, INFO, "html_css_fetcher_finalise called for %s",
+	NSLOG(neosurf,
+	      INFO,
+	      "html_css_fetcher_finalise called for %s",
 	      lwc_string_data(scheme));
 }
 
@@ -83,9 +87,12 @@ static bool html_css_fetcher_can_fetch(const nsurl *url)
 	return true;
 }
 
-static void *html_css_fetcher_setup(struct fetch *parent_fetch, nsurl *url,
-		 bool only_2xx, bool downgrade_tls, const struct fetch_postdata *postdata,
-		 const char **headers)
+static void *html_css_fetcher_setup(struct fetch *parent_fetch,
+				    nsurl *url,
+				    bool only_2xx,
+				    bool downgrade_tls,
+				    const struct fetch_postdata *postdata,
+				    const char **headers)
 {
 	html_css_fetcher_context *ctx;
 	lwc_string *path;
@@ -172,7 +179,7 @@ static void html_css_fetcher_abort(void *ctx)
 }
 
 static void html_css_fetcher_send_callback(const fetch_msg *msg,
-		html_css_fetcher_context *c)
+					   html_css_fetcher_context *c)
 {
 	c->locked = true;
 	fetch_send_callback(msg, c->parent_fetch);
@@ -184,7 +191,8 @@ static void html_css_fetcher_poll(lwc_string *scheme)
 	fetch_msg msg;
 	html_css_fetcher_context *c, *next;
 
-	if (ring == NULL) return;
+	if (ring == NULL)
+		return;
 
 	/* Iterate over ring, processing each pending fetch */
 	c = ring;
@@ -213,41 +221,43 @@ static void html_css_fetcher_poll(lwc_string *scheme)
 			 * Therefore, we _must_ check for this after _every_
 			 * call to html_css_fetcher_send_callback().
 			 */
-			snprintf(header, sizeof header,
-				"Content-Type: text/css; charset=utf-8");
+			snprintf(header,
+				 sizeof header,
+				 "Content-Type: text/css; charset=utf-8");
 			msg.type = FETCH_HEADER;
-			msg.data.header_or_data.buf = (const uint8_t *) header;
+			msg.data.header_or_data.buf = (const uint8_t *)header;
 			msg.data.header_or_data.len = strlen(header);
 			html_css_fetcher_send_callback(&msg, c);
 
 			if (c->aborted == false) {
-				snprintf(header, sizeof header,
-					"Content-Length: %"PRIsizet,
-					dom_string_byte_length(c->item->data));
+				snprintf(header,
+					 sizeof header,
+					 "Content-Length: %" PRIsizet,
+					 dom_string_byte_length(c->item->data));
 				msg.type = FETCH_HEADER;
-				msg.data.header_or_data.buf =
-						(const uint8_t *) header;
+				msg.data.header_or_data.buf = (const uint8_t *)
+					header;
 				msg.data.header_or_data.len = strlen(header);
 				html_css_fetcher_send_callback(&msg, c);
 			}
 
 			if (c->aborted == false) {
-				snprintf(header, sizeof header,
-					"X-NS-Base: %.*s",
-					(int) nsurl_length(c->item->base_url),
-					nsurl_access(c->item->base_url));
+				snprintf(header,
+					 sizeof header,
+					 "X-NS-Base: %.*s",
+					 (int)nsurl_length(c->item->base_url),
+					 nsurl_access(c->item->base_url));
 				msg.type = FETCH_HEADER;
-				msg.data.header_or_data.buf =
-						(const uint8_t *) header;
+				msg.data.header_or_data.buf = (const uint8_t *)
+					header;
 				msg.data.header_or_data.len = strlen(header);
 				html_css_fetcher_send_callback(&msg, c);
 			}
 
 			if (c->aborted == false) {
 				msg.type = FETCH_DATA;
-				msg.data.header_or_data.buf =
-						(const uint8_t *)
-						dom_string_data(c->item->data);
+				msg.data.header_or_data.buf = (const uint8_t *)
+					dom_string_data(c->item->data);
 				msg.data.header_or_data.len =
 					dom_string_byte_length(c->item->data);
 				html_css_fetcher_send_callback(&msg, c);
@@ -258,7 +268,9 @@ static void html_css_fetcher_poll(lwc_string *scheme)
 				html_css_fetcher_send_callback(&msg, c);
 			}
 		} else {
-			NSLOG(neosurf, INFO, "Processing of %s failed!",
+			NSLOG(neosurf,
+			      INFO,
+			      "Processing of %s failed!",
 			      nsurl_access(c->url));
 
 			/* Ensure that we're unlocked here. If we aren't,
@@ -278,7 +290,7 @@ static void html_css_fetcher_poll(lwc_string *scheme)
 		/* Advance to next ring entry, exiting if we've reached
 		 * the start of the ring or the ring has become empty
 		 */
-	} while ( (c = next) != ring && ring != NULL);
+	} while ((c = next) != ring && ring != NULL);
 }
 
 /* exported interface documented in html_internal.h */
@@ -292,11 +304,10 @@ nserror html_css_fetcher_register(void)
 		.abort = html_css_fetcher_abort,
 		.free = html_css_fetcher_free,
 		.poll = html_css_fetcher_poll,
-		.finalise = html_css_fetcher_finalise
-	};
+		.finalise = html_css_fetcher_finalise};
 
 	return fetcher_add(lwc_string_ref(corestring_lwc_x_ns_css),
-			&html_css_fetcher_ops);
+			   &html_css_fetcher_ops);
 }
 
 /* exported interface documented in html_internal.h */

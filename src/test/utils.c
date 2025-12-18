@@ -36,43 +36,46 @@
 
 static void test_lwc_iterator(lwc_string *str, void *pw)
 {
-    unsigned *count = (unsigned *)pw;
-    if (count != NULL) {
-        (*count)++;
-    }
-    fprintf(stderr, "[lwc] [%3u] %.*s\n", str->refcnt,
-            (int)lwc_string_length(str), lwc_string_data(str));
+	unsigned *count = (unsigned *)pw;
+	if (count != NULL) {
+		(*count)++;
+	}
+	fprintf(stderr,
+		"[lwc] [%3u] %.*s\n",
+		str->refcnt,
+		(int)lwc_string_length(str),
+		lwc_string_data(str));
 }
 
-#define NELEMS(x)  (sizeof(x) / sizeof((x)[0]))
+#define NELEMS(x) (sizeof(x) / sizeof((x)[0]))
 #define SLEN(x) (sizeof((x)) - 1)
 
 struct test_pairs {
 	const unsigned long long int test;
-	const char* res;
+	const char *res;
 };
 
 static const struct test_pairs human_friendly_bytesize_test_vec[] = {
-	{                  0ULL,         "0Bytes" },
-	{               0x2AULL,        "42Bytes" },
-	{              0x400ULL,      "1024Bytes" },
-	{              0x401ULL,    "1.00KiBytes" },
-	{             0xA9AEULL,   "42.42KiBytes" },
-	{           0x100000ULL, "1024.00KiBytes" },
-	{           0x100001ULL,    "1.00MiBytes" },
-	{          0x2A6B852ULL,   "42.42MiBytes" },
-	{         0x40000000ULL, "1024.00MiBytes" },
-	{         0x40000001ULL,    "1.00GiBytes" },
-	{         0x80000000ULL,    "2.00GiBytes" },
-	{         0xC0000000ULL,    "3.00GiBytes" },
-	{        0x100000000ULL,    "4.00GiBytes" },
-	{      0x10000000000ULL, "1024.00GiBytes" },
-	{      0x10000000001ULL,    "1.00TiBytes" },
-	{    0x4000000000000ULL, "1024.00TiBytes" },
-	{    0x4000000000001ULL,    "1.00PiBytes" },
-	{ 0x1000000000000000ULL, "1024.00PiBytes" },
-	{ 0x1000000000000100ULL,    "1.00EiBytes" }, /* precision loss */
-	{ 0xFFFFFFFFFFFFFFFFULL,   "16.00EiBytes" },
+	{0ULL, "0Bytes"},
+	{0x2AULL, "42Bytes"},
+	{0x400ULL, "1024Bytes"},
+	{0x401ULL, "1.00KiBytes"},
+	{0xA9AEULL, "42.42KiBytes"},
+	{0x100000ULL, "1024.00KiBytes"},
+	{0x100001ULL, "1.00MiBytes"},
+	{0x2A6B852ULL, "42.42MiBytes"},
+	{0x40000000ULL, "1024.00MiBytes"},
+	{0x40000001ULL, "1.00GiBytes"},
+	{0x80000000ULL, "2.00GiBytes"},
+	{0xC0000000ULL, "3.00GiBytes"},
+	{0x100000000ULL, "4.00GiBytes"},
+	{0x10000000000ULL, "1024.00GiBytes"},
+	{0x10000000001ULL, "1.00TiBytes"},
+	{0x4000000000000ULL, "1024.00TiBytes"},
+	{0x4000000000001ULL, "1.00PiBytes"},
+	{0x1000000000000000ULL, "1024.00PiBytes"},
+	{0x1000000000000100ULL, "1.00EiBytes"}, /* precision loss */
+	{0xFFFFFFFFFFFFFFFFULL, "16.00EiBytes"},
 };
 
 /**
@@ -115,8 +118,10 @@ static TCase *human_friendly_bytesize_case_create(void)
 	TCase *tc;
 	tc = tcase_create("Human friendly bytesize");
 
-	tcase_add_loop_test(tc, human_friendly_bytesize_test,
-			    0, NELEMS(human_friendly_bytesize_test_vec));
+	tcase_add_loop_test(tc,
+			    human_friendly_bytesize_test,
+			    0,
+			    NELEMS(human_friendly_bytesize_test_vec));
 
 	tcase_add_test(tc, human_friendly_bytesize_all_test);
 
@@ -124,21 +129,19 @@ static TCase *human_friendly_bytesize_case_create(void)
 }
 
 struct test_strings {
-	const char* test;
-	const char* res;
+	const char *test;
+	const char *res;
 };
 
 static const struct test_strings squash_whitespace_test_vec[] = {
-	{ "", "" },
-	{ " ", " " },
-	{ "    ", " " },
-	{ " \n\r\t   ", " " },
-	{ " a ", " a " },
-	{ " a   b ", " a b " },
-	{
-		"   A string  with \t  \r \n  \t   lots\tof\nwhitespace\r    ",
-		" A string with lots of whitespace "
-	},
+	{"", ""},
+	{" ", " "},
+	{"    ", " "},
+	{" \n\r\t   ", " "},
+	{" a ", " a "},
+	{" a   b ", " a b "},
+	{"   A string  with \t  \r \n  \t   lots\tof\nwhitespace\r    ",
+	 " A string with lots of whitespace "},
 };
 
 START_TEST(squash_whitespace_test)
@@ -169,15 +172,17 @@ END_TEST
 
 static TCase *squash_whitespace_case_create(void)
 {
-    TCase *tc;
-    tc = tcase_create("Squash whitespace");
+	TCase *tc;
+	tc = tcase_create("Squash whitespace");
 
-    #ifndef _WIN32
-    tcase_add_test_raise_signal(tc, squash_whitespace_api_test, 6);
-    #endif
+#ifndef _WIN32
+	tcase_add_test_raise_signal(tc, squash_whitespace_api_test, 6);
+#endif
 
-	tcase_add_loop_test(tc, squash_whitespace_test,
-			    0, NELEMS(squash_whitespace_test_vec));
+	tcase_add_loop_test(tc,
+			    squash_whitespace_test,
+			    0,
+			    NELEMS(squash_whitespace_test_vec));
 
 	return tc;
 }
@@ -235,16 +240,30 @@ static TCase *corestrings_case_create(void)
 }
 
 
-
 START_TEST(string_utils_cnv_space2nbsp_test)
 {
 	char *res;
 	char comparison[64];
 
-	snprintf(comparison, 64,
+	snprintf(comparison,
+		 64,
 		 "%c%cA%c%cstring%c%c%c%cwith%c%c%c%c%c%cwhitespace%c%c",
-		 0xC2, 0xA0, 0xC2, 0xA0, 0xC2, 0xA0, 0xC2, 0xA0,
-		 0xC2, 0xA0, 0xC2, 0xA0, 0xC2, 0xA0, 0xC2, 0xA0);
+		 0xC2,
+		 0xA0,
+		 0xC2,
+		 0xA0,
+		 0xC2,
+		 0xA0,
+		 0xC2,
+		 0xA0,
+		 0xC2,
+		 0xA0,
+		 0xC2,
+		 0xA0,
+		 0xC2,
+		 0xA0,
+		 0xC2,
+		 0xA0);
 
 	res = cnv_space2nbsp(" A string  with \t whitespace ");
 	ck_assert(res != NULL);
@@ -258,7 +277,8 @@ START_TEST(string_utils_strcasestr_test)
 {
 
 	char *res;
-	const char *haystack = "A big old long haystack string that has a small Needle in the middle of it with a different case";
+	const char *haystack =
+		"A big old long haystack string that has a small Needle in the middle of it with a different case";
 
 	res = strcasestr(haystack, "notfound");
 	ck_assert(res == NULL);
@@ -267,7 +287,6 @@ START_TEST(string_utils_strcasestr_test)
 	ck_assert(res != NULL);
 
 	ck_assert_str_eq(res, haystack + 48);
-
 }
 END_TEST
 
@@ -275,7 +294,8 @@ START_TEST(string_utils_strchrnul_test)
 {
 
 	char *res;
-	const char *haystack = "A big old long haystack string that has a small Needle in the middle of it with a different case";
+	const char *haystack =
+		"A big old long haystack string that has a small Needle in the middle of it with a different case";
 
 	res = strchrnul(haystack, 'Z');
 	ck_assert(res != NULL);
@@ -285,7 +305,6 @@ START_TEST(string_utils_strchrnul_test)
 	ck_assert(res != NULL);
 
 	ck_assert_str_eq(res, haystack + 48);
-
 }
 END_TEST
 
@@ -332,7 +351,6 @@ START_TEST(string_utils_snstrjoin_api_test)
 	resstrlen = 1;
 	res = snstrjoin(&resstr, &resstrlen, ',', 4, "1", "2", "3", "4");
 	ck_assert_int_eq(res, NSERROR_NOSPACE);
-
 }
 END_TEST
 
@@ -425,20 +443,20 @@ static Suite *utils_suite_create(void)
 
 int main(int argc, char **argv)
 {
-    int number_failed;
-    SRunner *sr;
+	int number_failed;
+	SRunner *sr;
 
-    sr = srunner_create(utils_suite_create());
+	sr = srunner_create(utils_suite_create());
 
 	srunner_run_all(sr, CK_ENV);
 
-    number_failed = srunner_ntests_failed(sr);
-    srunner_free(sr);
+	number_failed = srunner_ntests_failed(sr);
+	srunner_free(sr);
 
-    fprintf(stderr, "[lwc] Remaining lwc strings:\n");
-    unsigned lwc_count = 0;
-    lwc_iterate_strings(test_lwc_iterator, &lwc_count);
-    fprintf(stderr, "[lwc] Remaining lwc strings count: %u\n", lwc_count);
+	fprintf(stderr, "[lwc] Remaining lwc strings:\n");
+	unsigned lwc_count = 0;
+	lwc_iterate_strings(test_lwc_iterator, &lwc_count);
+	fprintf(stderr, "[lwc] Remaining lwc strings count: %u\n", lwc_count);
 
-    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+	return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

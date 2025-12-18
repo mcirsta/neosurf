@@ -24,7 +24,7 @@ static FILE *webidl_parsetracef;
 
 extern int webidl_debug;
 extern int webidl__flex_debug;
-extern void webidl_restart(FILE*);
+extern void webidl_restart(FILE *);
 extern int webidl_parse(struct webidl_node **webidl_ast);
 
 struct webidl_node {
@@ -34,7 +34,7 @@ struct webidl_node {
 		void *value;
 		struct webidl_node *node; /* node has a list of nodes */
 		char *text; /* node data is text */
-                float *flt;
+		float *flt;
 		int number; /* node data is an integer */
 	} r;
 };
@@ -113,7 +113,7 @@ webidl_node_add(struct webidl_node *node, struct webidl_node *list)
 		return list;
 	}
 
-	node->r.node =	webidl_node_prepend(node->r.node, list);
+	node->r.node = webidl_node_prepend(node->r.node, list);
 
 	return node;
 }
@@ -121,9 +121,7 @@ webidl_node_add(struct webidl_node *node, struct webidl_node *list)
 
 struct webidl_node *
 /* exported interface documented in webidl-ast.h */
-webidl_node_new(enum webidl_node_type type,
-		struct webidl_node *l,
-		void *r)
+webidl_node_new(enum webidl_node_type type, struct webidl_node *l, void *r)
 {
 	struct webidl_node *nn;
 	nn = calloc(1, sizeof(struct webidl_node));
@@ -134,10 +132,9 @@ webidl_node_new(enum webidl_node_type type,
 }
 
 /* exported interface documented in webidl-ast.h */
-struct webidl_node *
-webidl_new_number_node(enum webidl_node_type type,
-                       struct webidl_node *l,
-                       int number)
+struct webidl_node *webidl_new_number_node(enum webidl_node_type type,
+					   struct webidl_node *l,
+					   int number)
 {
 	struct webidl_node *nn;
 	nn = calloc(1, sizeof(struct webidl_node));
@@ -148,11 +145,10 @@ webidl_new_number_node(enum webidl_node_type type,
 }
 
 
-int
-webidl_node_for_each_type(struct webidl_node *node,
-			   enum webidl_node_type type,
-			   webidl_callback_t *cb,
-			   void *ctx)
+int webidl_node_for_each_type(struct webidl_node *node,
+			      enum webidl_node_type type,
+			      webidl_callback_t *cb,
+			      void *ctx)
 {
 	int ret;
 
@@ -188,24 +184,19 @@ static int webidl_enumerate_node(struct webidl_node *node, void *ctx)
 }
 
 /* exported interface defined in nsgenbind-ast.h */
-int
-webidl_node_enumerate_type(struct webidl_node *node,
-			    enum webidl_node_type type)
+int webidl_node_enumerate_type(struct webidl_node *node,
+			       enum webidl_node_type type)
 {
 	int count = 0;
-	webidl_node_for_each_type(node,
-				  type,
-				  webidl_enumerate_node,
-				  &count);
+	webidl_node_for_each_type(node, type, webidl_enumerate_node, &count);
 	return count;
 }
 
 /* exported interface defined in webidl-ast.h */
-struct webidl_node *
-webidl_node_find(struct webidl_node *node,
-		  struct webidl_node *prev,
-		  webidl_callback_t *cb,
-		  void *ctx)
+struct webidl_node *webidl_node_find(struct webidl_node *node,
+				     struct webidl_node *prev,
+				     webidl_callback_t *cb,
+				     void *ctx)
 {
 	struct webidl_node *ret;
 
@@ -229,41 +220,35 @@ webidl_node_find(struct webidl_node *node,
 
 
 /* exported interface defined in webidl-ast.h */
-struct webidl_node *
-webidl_node_find_type(struct webidl_node *node,
-		  struct webidl_node *prev,
-		  enum webidl_node_type type)
+struct webidl_node *webidl_node_find_type(struct webidl_node *node,
+					  struct webidl_node *prev,
+					  enum webidl_node_type type)
 {
-	return webidl_node_find(node,
-				prev,
-				webidl_cmp_node_type,
-				(void *)type);
+	return webidl_node_find(node, prev, webidl_cmp_node_type, (void *)type);
 }
 
 
 /* exported interface defined in webidl-ast.h */
-struct webidl_node *
-webidl_node_find_type_ident(struct webidl_node *root_node,
-			    enum webidl_node_type type,
-			    const char *ident)
+struct webidl_node *webidl_node_find_type_ident(struct webidl_node *root_node,
+						enum webidl_node_type type,
+						const char *ident)
 {
 	struct webidl_node *node;
 	struct webidl_node *ident_node;
 
-	node = webidl_node_find_type(root_node,	NULL, type);
+	node = webidl_node_find_type(root_node, NULL, type);
 
 	while (node != NULL) {
 
 		ident_node = webidl_node_find_type(webidl_node_getnode(node),
-					      NULL,
-					      WEBIDL_NODE_TYPE_IDENT);
+						   NULL,
+						   WEBIDL_NODE_TYPE_IDENT);
 		if (ident_node != NULL) {
 			if (strcmp(ident_node->r.text, ident) == 0)
 				break;
 		}
 
-		node = webidl_node_find_type(root_node,	node, type);
-
+		node = webidl_node_find_type(root_node, node, type);
 	}
 	return node;
 }
@@ -274,11 +259,11 @@ char *webidl_node_gettext(struct webidl_node *node)
 {
 	if (node != NULL) {
 
-		switch(node->type) {
+		switch (node->type) {
 		case WEBIDL_NODE_TYPE_IDENT:
 		case WEBIDL_NODE_TYPE_INHERITANCE:
 		case WEBIDL_NODE_TYPE_INTERFACE_IMPLEMENTS:
-                case WEBIDL_NODE_TYPE_LITERAL_STRING:
+		case WEBIDL_NODE_TYPE_LITERAL_STRING:
 			return node->r.text;
 
 		default:
@@ -289,16 +274,15 @@ char *webidl_node_gettext(struct webidl_node *node)
 }
 
 /* exported interface defined in webidl-ast.h */
-int *
-webidl_node_getint(struct webidl_node *node)
+int *webidl_node_getint(struct webidl_node *node)
 {
 	if (node != NULL) {
-		switch(node->type) {
+		switch (node->type) {
 		case WEBIDL_NODE_TYPE_MODIFIER:
 		case WEBIDL_NODE_TYPE_TYPE_BASE:
 		case WEBIDL_NODE_TYPE_LITERAL_INT:
-                case WEBIDL_NODE_TYPE_SPECIAL:
-                case WEBIDL_NODE_TYPE_LITERAL_BOOL:
+		case WEBIDL_NODE_TYPE_SPECIAL:
+		case WEBIDL_NODE_TYPE_LITERAL_BOOL:
 			return &node->r.number;
 
 		default:
@@ -309,12 +293,11 @@ webidl_node_getint(struct webidl_node *node)
 }
 
 /* exported interface defined in webidl-ast.h */
-float *
-webidl_node_getfloat(struct webidl_node *node)
+float *webidl_node_getfloat(struct webidl_node *node)
 {
 	if (node != NULL) {
-		switch(node->type) {
-                case WEBIDL_NODE_TYPE_LITERAL_FLOAT:
+		switch (node->type) {
+		case WEBIDL_NODE_TYPE_LITERAL_FLOAT:
 			return node->r.flt;
 
 		default:
@@ -353,13 +336,12 @@ struct webidl_node *webidl_node_getnode(struct webidl_node *node)
 		}
 	}
 	return NULL;
-
 }
 
 /* exported interface defined in webidl-ast.h */
 static const char *webidl_node_type_to_str(enum webidl_node_type type)
 {
-	switch(type) {
+	switch (type) {
 	case WEBIDL_NODE_TYPE_ROOT:
 		return "root";
 
@@ -438,101 +420,100 @@ static const char *webidl_node_type_to_str(enum webidl_node_type type)
 	default:
 		return "Unknown";
 	}
-
 }
 
 /**
  * dump an integer node type
  */
-static int
-webidl_ast_dump_int(FILE *dumpf, struct webidl_node *node)
+static int webidl_ast_dump_int(FILE *dumpf, struct webidl_node *node)
 {
-        switch(node->type) {
-        case WEBIDL_NODE_TYPE_MODIFIER:
-                switch (node->r.number) {
-                case WEBIDL_TYPE_MODIFIER_NONE:
-                        fprintf(dumpf, ": none\n");
-                        break;
+	switch (node->type) {
+	case WEBIDL_NODE_TYPE_MODIFIER:
+		switch (node->r.number) {
+		case WEBIDL_TYPE_MODIFIER_NONE:
+			fprintf(dumpf, ": none\n");
+			break;
 
-                case WEBIDL_TYPE_MODIFIER_UNSIGNED:
-                        fprintf(dumpf, ": unsigned\n");
-                        break;
+		case WEBIDL_TYPE_MODIFIER_UNSIGNED:
+			fprintf(dumpf, ": unsigned\n");
+			break;
 
-                case WEBIDL_TYPE_MODIFIER_UNRESTRICTED:
-                        fprintf(dumpf, ": unrestricted\n");
-                        break;
+		case WEBIDL_TYPE_MODIFIER_UNRESTRICTED:
+			fprintf(dumpf, ": unrestricted\n");
+			break;
 
-                case WEBIDL_TYPE_MODIFIER_READONLY:
-                        fprintf(dumpf, ": readonly\n");
-                        break;
+		case WEBIDL_TYPE_MODIFIER_READONLY:
+			fprintf(dumpf, ": readonly\n");
+			break;
 
-                case WEBIDL_TYPE_MODIFIER_STATIC:
-                        fprintf(dumpf, ": static\n");
-                        break;
+		case WEBIDL_TYPE_MODIFIER_STATIC:
+			fprintf(dumpf, ": static\n");
+			break;
 
-                case WEBIDL_TYPE_MODIFIER_INHERIT:
-                        fprintf(dumpf, ": inherit\n");
-                        break;
+		case WEBIDL_TYPE_MODIFIER_INHERIT:
+			fprintf(dumpf, ": inherit\n");
+			break;
 
-                default:
-                        fprintf(dumpf, ": %d\n", node->r.number);
-                        break;
-                }
-                break;
+		default:
+			fprintf(dumpf, ": %d\n", node->r.number);
+			break;
+		}
+		break;
 
-        case WEBIDL_NODE_TYPE_TYPE_BASE:
-                fprintf(dumpf, ": %s\n",
-                        webidl_type_to_str(WEBIDL_TYPE_MODIFIER_NONE,
-                                           node->r.number));
-                break;
+	case WEBIDL_NODE_TYPE_TYPE_BASE:
+		fprintf(dumpf,
+			": %s\n",
+			webidl_type_to_str(WEBIDL_TYPE_MODIFIER_NONE,
+					   node->r.number));
+		break;
 
-        case WEBIDL_NODE_TYPE_SPECIAL:
-                switch (node->r.number) {
-                case WEBIDL_TYPE_SPECIAL_GETTER:
-                        fprintf(dumpf, ": getter\n");
-                        break;
+	case WEBIDL_NODE_TYPE_SPECIAL:
+		switch (node->r.number) {
+		case WEBIDL_TYPE_SPECIAL_GETTER:
+			fprintf(dumpf, ": getter\n");
+			break;
 
-                case WEBIDL_TYPE_SPECIAL_SETTER:
-                        fprintf(dumpf, ": setter\n");
-                        break;
+		case WEBIDL_TYPE_SPECIAL_SETTER:
+			fprintf(dumpf, ": setter\n");
+			break;
 
-                case WEBIDL_TYPE_SPECIAL_CREATOR:
-                        fprintf(dumpf, ": creator\n");
-                        break;
+		case WEBIDL_TYPE_SPECIAL_CREATOR:
+			fprintf(dumpf, ": creator\n");
+			break;
 
-                case WEBIDL_TYPE_SPECIAL_DELETER:
-                        fprintf(dumpf, ": deleter\n");
-                        break;
+		case WEBIDL_TYPE_SPECIAL_DELETER:
+			fprintf(dumpf, ": deleter\n");
+			break;
 
-                case WEBIDL_TYPE_SPECIAL_LEGACYCALLER:
-                        fprintf(dumpf, ": legacy caller\n");
-                        break;
+		case WEBIDL_TYPE_SPECIAL_LEGACYCALLER:
+			fprintf(dumpf, ": legacy caller\n");
+			break;
 
-                default:
-                        fprintf(dumpf, ": %d\n", node->r.number);
-                        break;
-                }
-                break;
+		default:
+			fprintf(dumpf, ": %d\n", node->r.number);
+			break;
+		}
+		break;
 
-        case WEBIDL_NODE_TYPE_LITERAL_BOOL:
-                if (node->r.number == 0) {
-                        fprintf(dumpf, ": false\n");
-                } else {
-                        fprintf(dumpf, ": true\n");
-                }
-                break;
+	case WEBIDL_NODE_TYPE_LITERAL_BOOL:
+		if (node->r.number == 0) {
+			fprintf(dumpf, ": false\n");
+		} else {
+			fprintf(dumpf, ": true\n");
+		}
+		break;
 
-        case WEBIDL_NODE_TYPE_LITERAL_INT:
-                fprintf(dumpf, ": %d\n", node->r.number);
-                break;
+	case WEBIDL_NODE_TYPE_LITERAL_INT:
+		fprintf(dumpf, ": %d\n", node->r.number);
+		break;
 
-        default:
-                /* no value */
-                fprintf(dumpf, "\n");
-                break;
-        }
+	default:
+		/* no value */
+		fprintf(dumpf, "\n");
+		break;
+	}
 
-        return 0;
+	return 0;
 }
 
 /**
@@ -540,11 +521,15 @@ webidl_ast_dump_int(FILE *dumpf, struct webidl_node *node)
  */
 static int webidl_ast_dump(FILE *dumpf, struct webidl_node *node, int indent)
 {
-	const char *SPACES="                                                                               ";
+	const char *SPACES =
+		"                                                                               ";
 	char *txt;
 	while (node != NULL) {
-                fprintf(dumpf, "%.*s%s", indent, SPACES,
-                        webidl_node_type_to_str(node->type));
+		fprintf(dumpf,
+			"%.*s%s",
+			indent,
+			SPACES,
+			webidl_node_type_to_str(node->type));
 
 		txt = webidl_node_gettext(node);
 		if (txt == NULL) {
@@ -557,8 +542,8 @@ static int webidl_ast_dump(FILE *dumpf, struct webidl_node *node, int indent)
 				webidl_ast_dump(dumpf, next, indent + 2);
 			} else {
 				/* not txt or node try an int */
-                                webidl_ast_dump_int(dumpf, node);
-                        }
+				webidl_ast_dump_int(dumpf, node);
+			}
 		} else {
 			fprintf(dumpf, ": \"%s\"\n", txt);
 		}
@@ -570,23 +555,23 @@ static int webidl_ast_dump(FILE *dumpf, struct webidl_node *node, int indent)
 /* exported interface documented in webidl-ast.h */
 int webidl_dump_ast(struct webidl_node *node)
 {
-        FILE *dumpf;
+	FILE *dumpf;
 
-        /* only dump AST to file if required */
-        if (!options->debug) {
-                return 0;
-        }
+	/* only dump AST to file if required */
+	if (!options->debug) {
+		return 0;
+	}
 
-        dumpf = genb_fopen("webidl-ast", "w");
-        if (dumpf == NULL) {
-                return 2;
-        }
+	dumpf = genb_fopen("webidl-ast", "w");
+	if (dumpf == NULL) {
+		return 2;
+	}
 
-        webidl_ast_dump(dumpf, node, 0);
+	webidl_ast_dump(dumpf, node, 0);
 
-        fclose(dumpf);
+	fclose(dumpf);
 
-        return 0;
+	return 0;
 }
 
 /* exported interface defined in webidl-ast.h */
@@ -619,31 +604,32 @@ static FILE *idlopen(const char *filename)
 int webidl_parsefile(char *filename, struct webidl_node **webidl_ast)
 {
 	FILE *idlfile;
-        int ret;
+	int ret;
 
 	idlfile = idlopen(filename);
 	if (!idlfile) {
-		fprintf(stderr, "Error opening %s: %s\n",
+		fprintf(stderr,
+			"Error opening %s: %s\n",
 			filename,
 			strerror(errno));
 		return 2;
 	}
 
-        /* if debugging enabled enable parser tracing and send to file */
-        if (options->debug) {
-                char *tracename;
-                int tracenamelen;
+	/* if debugging enabled enable parser tracing and send to file */
+	if (options->debug) {
+		char *tracename;
+		int tracenamelen;
 		webidl_debug = 1;
 		webidl__flex_debug = 1;
 
-                tracenamelen = SLEN("webidl--trace") + strlen(filename) + 1;
-                tracename = malloc(tracenamelen);
-                snprintf(tracename, tracenamelen,"webidl-%s-trace", filename);
-                webidl_parsetracef = genb_fopen(tracename, "w");
-                free(tracename);
-        } else {
-                webidl_parsetracef = NULL;
-        }
+		tracenamelen = SLEN("webidl--trace") + strlen(filename) + 1;
+		tracename = malloc(tracenamelen);
+		snprintf(tracename, tracenamelen, "webidl-%s-trace", filename);
+		webidl_parsetracef = genb_fopen(tracename, "w");
+		free(tracename);
+	} else {
+		webidl_parsetracef = NULL;
+	}
 
 	/* set flex to read from file */
 	webidl_restart(idlfile);
@@ -651,34 +637,33 @@ int webidl_parsefile(char *filename, struct webidl_node **webidl_ast)
 	/* parse the file */
 	ret = webidl_parse(webidl_ast);
 
-        /* close tracefile if open */
-        if (webidl_parsetracef != NULL) {
-                fclose(webidl_parsetracef);
-        }
-        return ret;
+	/* close tracefile if open */
+	if (webidl_parsetracef != NULL) {
+		fclose(webidl_parsetracef);
+	}
+	return ret;
 }
 
 /* exported interface defined in webidl-ast.h */
 int webidl_fprintf(FILE *stream, const char *format, ...)
 {
-        va_list ap;
-        int ret;
+	va_list ap;
+	int ret;
 
-        va_start(ap, format);
+	va_start(ap, format);
 
-        if (webidl_parsetracef == NULL) {
-                ret = vfprintf(stream, format, ap);
-        } else {
-                ret = vfprintf(webidl_parsetracef, format, ap);
-        }
-        va_end(ap);
+	if (webidl_parsetracef == NULL) {
+		ret = vfprintf(stream, format, ap);
+	} else {
+		ret = vfprintf(webidl_parsetracef, format, ap);
+	}
+	va_end(ap);
 
-        return ret;
+	return ret;
 }
 
 /* unlink a child node from a parent */
-static int
-webidl_unlink(struct webidl_node *parent, struct webidl_node *node)
+static int webidl_unlink(struct webidl_node *parent, struct webidl_node *node)
 {
 	struct webidl_node *child;
 
@@ -709,71 +694,72 @@ webidl_unlink(struct webidl_node *parent, struct webidl_node *node)
 
 static struct webidl_node *webidl_node_clone(struct webidl_node *node)
 {
-        struct webidl_node *new_node;
-        struct webidl_node *child = NULL;
-        void *value = NULL;
+	struct webidl_node *new_node;
+	struct webidl_node *child = NULL;
+	void *value = NULL;
 
-        if (node == NULL) return NULL;
+	if (node == NULL)
+		return NULL;
 
-        /* Handle deep copy of r.node or r.text or r.flt */
-        switch (node->type) {
-        case WEBIDL_NODE_TYPE_ROOT:
-        case WEBIDL_NODE_TYPE_INTERFACE:
-        case WEBIDL_NODE_TYPE_DICTIONARY:
-        case WEBIDL_NODE_TYPE_LIST:
-        case WEBIDL_NODE_TYPE_EXTENDED_ATTRIBUTE:
-        case WEBIDL_NODE_TYPE_ATTRIBUTE:
-        case WEBIDL_NODE_TYPE_OPERATION:
-        case WEBIDL_NODE_TYPE_OPTIONAL:
-        case WEBIDL_NODE_TYPE_ARGUMENT:
-        case WEBIDL_NODE_TYPE_TYPE:
-        case WEBIDL_NODE_TYPE_CONST:
-        case WEBIDL_NODE_TYPE_TYPE_ARRAY:
-        case WEBIDL_NODE_TYPE_TYPE_NULLABLE:
-                if (node->r.node) {
-                        child = webidl_node_clone(node->r.node);
-                        value = child;
-                }
-                break;
+	/* Handle deep copy of r.node or r.text or r.flt */
+	switch (node->type) {
+	case WEBIDL_NODE_TYPE_ROOT:
+	case WEBIDL_NODE_TYPE_INTERFACE:
+	case WEBIDL_NODE_TYPE_DICTIONARY:
+	case WEBIDL_NODE_TYPE_LIST:
+	case WEBIDL_NODE_TYPE_EXTENDED_ATTRIBUTE:
+	case WEBIDL_NODE_TYPE_ATTRIBUTE:
+	case WEBIDL_NODE_TYPE_OPERATION:
+	case WEBIDL_NODE_TYPE_OPTIONAL:
+	case WEBIDL_NODE_TYPE_ARGUMENT:
+	case WEBIDL_NODE_TYPE_TYPE:
+	case WEBIDL_NODE_TYPE_CONST:
+	case WEBIDL_NODE_TYPE_TYPE_ARRAY:
+	case WEBIDL_NODE_TYPE_TYPE_NULLABLE:
+		if (node->r.node) {
+			child = webidl_node_clone(node->r.node);
+			value = child;
+		}
+		break;
 
-        case WEBIDL_NODE_TYPE_IDENT:
-        case WEBIDL_NODE_TYPE_INHERITANCE:
-        case WEBIDL_NODE_TYPE_INTERFACE_IMPLEMENTS:
-        case WEBIDL_NODE_TYPE_LITERAL_STRING:
-                if (node->r.text) {
-                        value = strdup(node->r.text);
-                }
-                break;
+	case WEBIDL_NODE_TYPE_IDENT:
+	case WEBIDL_NODE_TYPE_INHERITANCE:
+	case WEBIDL_NODE_TYPE_INTERFACE_IMPLEMENTS:
+	case WEBIDL_NODE_TYPE_LITERAL_STRING:
+		if (node->r.text) {
+			value = strdup(node->r.text);
+		}
+		break;
 
-        case WEBIDL_NODE_TYPE_LITERAL_FLOAT:
-                if (node->r.flt) {
-                        float *f = malloc(sizeof(float));
-                        *f = *node->r.flt;
-                        value = f;
-                }
-                break;
+	case WEBIDL_NODE_TYPE_LITERAL_FLOAT:
+		if (node->r.flt) {
+			float *f = malloc(sizeof(float));
+			*f = *node->r.flt;
+			value = f;
+		}
+		break;
 
-        default:
-                value = node->r.value;
-                break;
-        }
+	default:
+		value = node->r.value;
+		break;
+	}
 
-        new_node = webidl_node_new(node->type, NULL, value);
+	new_node = webidl_node_new(node->type, NULL, value);
 
-        if (node->type == WEBIDL_NODE_TYPE_MODIFIER ||
-            node->type == WEBIDL_NODE_TYPE_TYPE_BASE ||
-            node->type == WEBIDL_NODE_TYPE_LITERAL_INT ||
-            node->type == WEBIDL_NODE_TYPE_SPECIAL ||
-            node->type == WEBIDL_NODE_TYPE_LITERAL_BOOL) {
-                new_node->r.number = node->r.number;
-        }
+	if (node->type == WEBIDL_NODE_TYPE_MODIFIER ||
+	    node->type == WEBIDL_NODE_TYPE_TYPE_BASE ||
+	    node->type == WEBIDL_NODE_TYPE_LITERAL_INT ||
+	    node->type == WEBIDL_NODE_TYPE_SPECIAL ||
+	    node->type == WEBIDL_NODE_TYPE_LITERAL_BOOL) {
+		new_node->r.number = node->r.number;
+	}
 
-        /* Recursively clone siblings */
-        if (node->l) {
-                new_node->l = webidl_node_clone(node->l);
-        }
+	/* Recursively clone siblings */
+	if (node->l) {
+		new_node->l = webidl_node_clone(node->l);
+	}
 
-        return new_node;
+	return new_node;
 }
 
 static int implements_copy_nodes(struct webidl_node *src_node,
@@ -787,8 +773,11 @@ static int implements_copy_nodes(struct webidl_node *src_node,
 
 	while (src != NULL) {
 		if (src->type == WEBIDL_NODE_TYPE_LIST) {
-			/** @todo technicaly this should copy WEBIDL_NODE_TYPE_INHERITANCE */
-			dst = webidl_node_new(src->type, dst, webidl_node_clone(src->r.node));
+			/** @todo technicaly this should copy
+			 * WEBIDL_NODE_TYPE_INHERITANCE */
+			dst = webidl_node_new(src->type,
+					      dst,
+					      webidl_node_clone(src->r.node));
 		}
 		src = src->l;
 	}
@@ -798,8 +787,7 @@ static int implements_copy_nodes(struct webidl_node *src_node,
 	return 0;
 }
 
-static int
-intercalate_implements(struct webidl_node *interface_node, void *ctx)
+static int intercalate_implements(struct webidl_node *interface_node, void *ctx)
 {
 	struct webidl_node *implements_node;
 	struct webidl_node *implements_interface_node;
@@ -821,11 +809,12 @@ intercalate_implements(struct webidl_node *interface_node, void *ctx)
 		 */
 		intercalate_implements(implements_interface_node, webidl_ast);
 
-		implements_copy_nodes(implements_interface_node, interface_node);
+		implements_copy_nodes(implements_interface_node,
+				      interface_node);
 
 		/* once we have copied the implemntation remove entry */
 		webidl_unlink(interface_node, implements_node);
-		      webidl_free_ast(implements_node);
+		webidl_free_ast(implements_node);
 
 		implements_node = webidl_node_find_type(
 			webidl_node_getnode(interface_node),
@@ -838,132 +827,133 @@ intercalate_implements(struct webidl_node *interface_node, void *ctx)
 /* exported interface defined in webidl-ast.h */
 int webidl_intercalate_implements(struct webidl_node *webidl_ast)
 {
-        int res = 0;
-        if (webidl_ast != NULL) {
-                /* for each interface:
-                 *   for each implements entry:
-                 *     find interface from implemets
-                 *     recusrse into that interface
-                 *     copy the interface into this one
-                 */
-                res = webidl_node_for_each_type(webidl_ast,
-                                                WEBIDL_NODE_TYPE_INTERFACE,
-                                                intercalate_implements,
-                                                webidl_ast);
-        }
-        return res;
+	int res = 0;
+	if (webidl_ast != NULL) {
+		/* for each interface:
+		 *   for each implements entry:
+		 *     find interface from implemets
+		 *     recusrse into that interface
+		 *     copy the interface into this one
+		 */
+		res = webidl_node_for_each_type(webidl_ast,
+						WEBIDL_NODE_TYPE_INTERFACE,
+						intercalate_implements,
+						webidl_ast);
+	}
+	return res;
 }
 
 /* exported interface defined in webidl-ast.h */
 const char *webidl_type_to_str(enum webidl_type_modifier m, enum webidl_type t)
 {
-        switch (t) {
-        case WEBIDL_TYPE_ANY: /**< 0 - The type is unconstrained */
-                return "any";
+	switch (t) {
+	case WEBIDL_TYPE_ANY: /**< 0 - The type is unconstrained */
+		return "any";
 
-        case WEBIDL_TYPE_USER: /**< 1 - The type is a dictionary or interface */
-                return "user";
+	case WEBIDL_TYPE_USER: /**< 1 - The type is a dictionary or interface */
+		return "user";
 
-        case WEBIDL_TYPE_BOOL: /**< 2 - The type is boolean */
-                return "boolean";
+	case WEBIDL_TYPE_BOOL: /**< 2 - The type is boolean */
+		return "boolean";
 
-        case WEBIDL_TYPE_BYTE: /**< 3 - The type is a byte */
-                return "byte";
+	case WEBIDL_TYPE_BYTE: /**< 3 - The type is a byte */
+		return "byte";
 
-        case WEBIDL_TYPE_OCTET: /**< 4 - The type is a octet */
-                return "octet";
+	case WEBIDL_TYPE_OCTET: /**< 4 - The type is a octet */
+		return "octet";
 
-        case WEBIDL_TYPE_FLOAT: /**< 5 - The type is a float point number */
-                return "float";
+	case WEBIDL_TYPE_FLOAT: /**< 5 - The type is a float point number */
+		return "float";
 
-        case WEBIDL_TYPE_DOUBLE: /**< 6 - The type is a double */
-                return "double";
+	case WEBIDL_TYPE_DOUBLE: /**< 6 - The type is a double */
+		return "double";
 
-        case WEBIDL_TYPE_SHORT: /**< 7 - The type is a signed 16bit */
-                if (m == WEBIDL_TYPE_MODIFIER_UNSIGNED) {
-                        return "unsigned short";
-                } else {
-                        return "short";
-                }
+	case WEBIDL_TYPE_SHORT: /**< 7 - The type is a signed 16bit */
+		if (m == WEBIDL_TYPE_MODIFIER_UNSIGNED) {
+			return "unsigned short";
+		} else {
+			return "short";
+		}
 
-        case WEBIDL_TYPE_LONG: /**< 8 - The type is a signed 32bit */
-                if (m == WEBIDL_TYPE_MODIFIER_UNSIGNED) {
-                        return "unsigned long";
-                } else {
-                        return "long";
-                }
+	case WEBIDL_TYPE_LONG: /**< 8 - The type is a signed 32bit */
+		if (m == WEBIDL_TYPE_MODIFIER_UNSIGNED) {
+			return "unsigned long";
+		} else {
+			return "long";
+		}
 
-        case WEBIDL_TYPE_LONGLONG: /**< 9 - The type is a signed 64bit */
-                return "long long";
+	case WEBIDL_TYPE_LONGLONG: /**< 9 - The type is a signed 64bit */
+		return "long long";
 
-        case WEBIDL_TYPE_STRING: /**< 10 - The type is a string */
-                return "string";
+	case WEBIDL_TYPE_STRING: /**< 10 - The type is a string */
+		return "string";
 
-        case WEBIDL_TYPE_SEQUENCE: /**< 11 - The type is a sequence */
-                return "sequence";
+	case WEBIDL_TYPE_SEQUENCE: /**< 11 - The type is a sequence */
+		return "sequence";
 
-        case WEBIDL_TYPE_OBJECT: /**< 12 - The type is a object */
-                return "object";
+	case WEBIDL_TYPE_OBJECT: /**< 12 - The type is a object */
+		return "object";
 
-        case WEBIDL_TYPE_DATE: /**< 13 - The type is a date */
-                return "date";
+	case WEBIDL_TYPE_DATE: /**< 13 - The type is a date */
+		return "date";
 
-        case WEBIDL_TYPE_VOID: /**< 14 - The type is void */
-                return "void";
-        }
-        return "Unknown";
+	case WEBIDL_TYPE_VOID: /**< 14 - The type is void */
+		return "void";
+	}
+	return "Unknown";
 }
 
 void webidl_free_ast(struct webidl_node *node)
 {
-        struct webidl_node *next;
+	struct webidl_node *next;
 
-        while (node != NULL) {
-                next = node->l;
+	while (node != NULL) {
+		next = node->l;
 
-                switch (node->type) {
-                case WEBIDL_NODE_TYPE_ROOT:
-                case WEBIDL_NODE_TYPE_INTERFACE:
-                case WEBIDL_NODE_TYPE_DICTIONARY:
-                case WEBIDL_NODE_TYPE_LIST:
-                case WEBIDL_NODE_TYPE_EXTENDED_ATTRIBUTE:
-                case WEBIDL_NODE_TYPE_ATTRIBUTE:
-                case WEBIDL_NODE_TYPE_OPERATION:
-                case WEBIDL_NODE_TYPE_OPTIONAL:
-                case WEBIDL_NODE_TYPE_ARGUMENT:
-                case WEBIDL_NODE_TYPE_TYPE:
-                case WEBIDL_NODE_TYPE_CONST:
-                case WEBIDL_NODE_TYPE_TYPE_ARRAY:
-                case WEBIDL_NODE_TYPE_TYPE_NULLABLE:
-                        /* these types contain a child node in r.node */
-                        if (node->r.node) {
-                                webidl_free_ast(node->r.node);
-                        }
-                        break;
+		switch (node->type) {
+		case WEBIDL_NODE_TYPE_ROOT:
+		case WEBIDL_NODE_TYPE_INTERFACE:
+		case WEBIDL_NODE_TYPE_DICTIONARY:
+		case WEBIDL_NODE_TYPE_LIST:
+		case WEBIDL_NODE_TYPE_EXTENDED_ATTRIBUTE:
+		case WEBIDL_NODE_TYPE_ATTRIBUTE:
+		case WEBIDL_NODE_TYPE_OPERATION:
+		case WEBIDL_NODE_TYPE_OPTIONAL:
+		case WEBIDL_NODE_TYPE_ARGUMENT:
+		case WEBIDL_NODE_TYPE_TYPE:
+		case WEBIDL_NODE_TYPE_CONST:
+		case WEBIDL_NODE_TYPE_TYPE_ARRAY:
+		case WEBIDL_NODE_TYPE_TYPE_NULLABLE:
+			/* these types contain a child node in r.node */
+			if (node->r.node) {
+				webidl_free_ast(node->r.node);
+			}
+			break;
 
-                case WEBIDL_NODE_TYPE_IDENT:
-                case WEBIDL_NODE_TYPE_INHERITANCE:
-                case WEBIDL_NODE_TYPE_INTERFACE_IMPLEMENTS:
-                case WEBIDL_NODE_TYPE_LITERAL_STRING:
-                        /* these types contain a string in r.text */
-                        if (node->r.text) {
-                                free(node->r.text);
-                        }
-                        break;
+		case WEBIDL_NODE_TYPE_IDENT:
+		case WEBIDL_NODE_TYPE_INHERITANCE:
+		case WEBIDL_NODE_TYPE_INTERFACE_IMPLEMENTS:
+		case WEBIDL_NODE_TYPE_LITERAL_STRING:
+			/* these types contain a string in r.text */
+			if (node->r.text) {
+				free(node->r.text);
+			}
+			break;
 
-                case WEBIDL_NODE_TYPE_LITERAL_FLOAT:
-                        /* these types contain a float pointer in r.flt */
-                        if (node->r.flt) {
-                                free(node->r.flt);
-                        }
-                        break;
+		case WEBIDL_NODE_TYPE_LITERAL_FLOAT:
+			/* these types contain a float pointer in r.flt */
+			if (node->r.flt) {
+				free(node->r.flt);
+			}
+			break;
 
-                default:
-                        /* other types contain int/bool/etc or nothing in r, no freeing needed */
-                        break;
-                }
+		default:
+			/* other types contain int/bool/etc or nothing in r, no
+			 * freeing needed */
+			break;
+		}
 
-                free(node);
-                node = next;
-        }
+		free(node);
+		node = next;
+	}
 }

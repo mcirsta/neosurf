@@ -60,7 +60,7 @@ struct nsgtk_pi_window {
  * destroy a previously created page information window
  */
 static gboolean
-nsgtk_pi_delete_event(GtkWidget *w, GdkEvent  *event, gpointer data)
+nsgtk_pi_delete_event(GtkWidget *w, GdkEvent *event, gpointer data)
 {
 	struct nsgtk_pi_window *pi_win;
 	pi_win = (struct nsgtk_pi_window *)data;
@@ -78,8 +78,7 @@ nsgtk_pi_delete_event(GtkWidget *w, GdkEvent  *event, gpointer data)
 /**
  * Called to cause the page-info window to close cleanly
  */
-static void
-nsgtk_pi_close_callback(void *pw)
+static void nsgtk_pi_close_callback(void *pw)
 {
 	nsgtk_pi_delete_event(NULL, NULL, pw);
 }
@@ -93,20 +92,24 @@ nsgtk_pi_close_callback(void *pw)
  * \param y location of event
  * \return NSERROR_OK on success otherwise appropriate error code
  */
-static nserror
-nsgtk_pi_mouse(struct nsgtk_corewindow *nsgtk_cw,
-		    browser_mouse_state mouse_state,
-		    int x, int y)
+static nserror nsgtk_pi_mouse(struct nsgtk_corewindow *nsgtk_cw,
+			      browser_mouse_state mouse_state,
+			      int x,
+			      int y)
 {
 	struct nsgtk_pi_window *pi_win;
 	bool did_something = false;
 	/* technically degenerate container of */
 	pi_win = (struct nsgtk_pi_window *)nsgtk_cw;
 
-	if (page_info_mouse_action(pi_win->pi, mouse_state, x, y, &did_something) == NSERROR_OK) {
+	if (page_info_mouse_action(
+		    pi_win->pi, mouse_state, x, y, &did_something) ==
+	    NSERROR_OK) {
 		if (did_something == true) {
 			/* Something happened so we need to close ourselves */
-			guit->misc->schedule(0, nsgtk_pi_close_callback, pi_win);
+			guit->misc->schedule(0,
+					     nsgtk_pi_close_callback,
+					     pi_win);
 		}
 	}
 
@@ -120,8 +123,7 @@ nsgtk_pi_mouse(struct nsgtk_corewindow *nsgtk_cw,
  * \param nskey The netsurf key code
  * \return NSERROR_OK on success otherwise appropriate error code
  */
-static nserror
-nsgtk_pi_key(struct nsgtk_corewindow *nsgtk_cw, uint32_t nskey)
+static nserror nsgtk_pi_key(struct nsgtk_corewindow *nsgtk_cw, uint32_t nskey)
 {
 	struct nsgtk_pi_window *pi_win;
 
@@ -141,14 +143,11 @@ nsgtk_pi_key(struct nsgtk_corewindow *nsgtk_cw, uint32_t nskey)
  * \param r The rectangle of the window that needs updating.
  * \return NSERROR_OK on success otherwise appropriate error code
  */
-static nserror
-nsgtk_pi_draw(struct nsgtk_corewindow *nsgtk_cw, struct rect *r)
+static nserror nsgtk_pi_draw(struct nsgtk_corewindow *nsgtk_cw, struct rect *r)
 {
-	struct redraw_context ctx = {
-		.interactive = true,
-		.background_images = true,
-		.plot = &nsgtk_plotters
-	};
+	struct redraw_context ctx = {.interactive = true,
+				     .background_images = true,
+				     .plot = &nsgtk_plotters};
 	struct nsgtk_pi_window *pi_win;
 
 	/* technically degenerate container of */
@@ -164,7 +163,8 @@ nserror nsgtk_page_info(struct browser_window *bw)
 {
 	struct nsgtk_pi_window *ncwin;
 	nserror res;
-	GtkWindow *scaffwin = nsgtk_scaffolding_window(nsgtk_current_scaffolding());
+	GtkWindow *scaffwin = nsgtk_scaffolding_window(
+		nsgtk_current_scaffolding());
 
 	ncwin = calloc(1, sizeof(struct nsgtk_pi_window));
 	if (ncwin == NULL) {
@@ -173,15 +173,18 @@ nserror nsgtk_page_info(struct browser_window *bw)
 
 	res = nsgtk_builder_new_from_resname("pageinfo", &ncwin->builder);
 	if (res != NSERROR_OK) {
-		NSLOG(neosurf, CRITICAL, "Page Info UI builder init failed %s", messages_get_errorcode(res));
+		NSLOG(neosurf,
+		      CRITICAL,
+		      "Page Info UI builder init failed %s",
+		      messages_get_errorcode(res));
 		free(ncwin);
 		return res;
 	}
 
 	gtk_builder_connect_signals(ncwin->builder, NULL);
 
-	ncwin->dlg = GTK_WINDOW(gtk_builder_get_object(ncwin->builder,
-						       "PGIWindow"));
+	ncwin->dlg = GTK_WINDOW(
+		gtk_builder_get_object(ncwin->builder, "PGIWindow"));
 
 	/* Configure for transient behaviour */
 	gtk_window_set_type_hint(GTK_WINDOW(ncwin->dlg),
@@ -247,8 +250,7 @@ nserror nsgtk_page_info(struct browser_window *bw)
 }
 
 /* exported interface documented in gtk/page_info.h */
-void
-nsgtk_page_info_set_position(struct nsgtk_pi_window *win, int x, int y)
+void nsgtk_page_info_set_position(struct nsgtk_pi_window *win, int x, int y)
 {
 	NSLOG(neosurf, INFO, "win=%p x=%d y=%d", win, x, y);
 

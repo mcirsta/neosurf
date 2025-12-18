@@ -37,7 +37,7 @@ struct hlcache_handle;
  * \param mime_type  MIME type of file content
  */
 typedef void (*save_complete_set_type_cb)(const char *path,
-		lwc_string *mime_type);
+					  lwc_string *mime_type);
 
 /**
  * Initialise save complete module.
@@ -58,7 +58,8 @@ nserror save_complete_finalise(void);
  * \param  set_type  Callback to set type of a file, or NULL
  * \return NSERROR_OK on success else error code
  */
-nserror save_complete(struct hlcache_handle *c, const char *path,
-		save_complete_set_type_cb set_type);
+nserror save_complete(struct hlcache_handle *c,
+		      const char *path,
+		      save_complete_set_type_cb set_type);
 
 #endif

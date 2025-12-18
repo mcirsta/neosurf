@@ -60,16 +60,16 @@ extern "C" {
 #include "qt/page_info.cls.h"
 
 
-//QTimer
-//QSocketNotifier
+// QTimer
+// QSocketNotifier
 
 #ifndef NEOSURF_HOMEPAGE
 #define NEOSURF_HOMEPAGE "about:welcome"
 #endif
 
-NS_Application* NS_Application::s_nsqt_instance = nullptr;
+NS_Application *NS_Application::s_nsqt_instance = nullptr;
 
-NS_Application* NS_Application::instance()
+NS_Application *NS_Application::instance()
 {
 	return NS_Application::s_nsqt_instance;
 }
@@ -92,8 +92,9 @@ static char *accept_language_from_qlocale(QLocale &loc)
 	int lidx;
 	float quality = 1.0;
 
-	for (lidx = 0;lidx < llist.size(); lidx++) {
-		QStringList lparts = llist.at(lidx).split('-', Qt::SkipEmptyParts);
+	for (lidx = 0; lidx < llist.size(); lidx++) {
+		QStringList lparts = llist.at(lidx).split('-',
+							  Qt::SkipEmptyParts);
 		if (lparts.size() == 0 || lparts.size() > 2) {
 			continue;
 		}
@@ -152,98 +153,72 @@ void NS_Application::nsOptionFromPalette(struct nsoption_s *opts)
 		QPalette::ColorRole role;
 		enum nsoption_e option;
 	} entries[] = {
-		{
-			QPalette::Active,
-			QPalette::Highlight, /* this could be Accent (qt 6.6) */
-			NSOPTION_sys_colour_AccentColor
-		}, {
-			QPalette::Active,
-			QPalette::HighlightedText,
-			NSOPTION_sys_colour_AccentColorText
-		}, {
-			QPalette::Active,
-			QPalette::BrightText,
-			NSOPTION_sys_colour_ActiveText
-		}, {
-			QPalette::Active,
-			QPalette::Light,
-			NSOPTION_sys_colour_ButtonBorder
-		}, {
-			QPalette::Active,
-			QPalette::Button,
-			NSOPTION_sys_colour_ButtonFace
-		}, {
-			QPalette::Active,
-			QPalette::ButtonText,
-			NSOPTION_sys_colour_ButtonText
-		}, {
-			QPalette::Active,
-			QPalette::Window,
-			NSOPTION_sys_colour_Canvas
-		}, {
-			QPalette::Active,
-			QPalette::WindowText,
-			NSOPTION_sys_colour_CanvasText
-		}, {
-			QPalette::Active,
-			QPalette::Base,
-			NSOPTION_sys_colour_Field
-		}, {
-			QPalette::Active,
-			QPalette::Text,
-			NSOPTION_sys_colour_FieldText
-		}, {
-			QPalette::Disabled,
-			QPalette::Text,
-			NSOPTION_sys_colour_GrayText
-		}, {
-			QPalette::Active,
-			QPalette::Highlight,
-			NSOPTION_sys_colour_Highlight
-		}, {
-			QPalette::Active,
-			QPalette::HighlightedText,
-			NSOPTION_sys_colour_HighlightText
-		}, {
-			QPalette::Active,
-			QPalette::Link,
-			NSOPTION_sys_colour_LinkText
-		}, {
-			QPalette::Active,
-			QPalette::Highlight,
-			NSOPTION_sys_colour_Mark
-		}, {
-			QPalette::Active,
-			QPalette::HighlightedText,
-			NSOPTION_sys_colour_MarkText
-		}, {
-			QPalette::Active,
-			QPalette::AlternateBase,
-			NSOPTION_sys_colour_SelectedItem
-		}, {
-			QPalette::Active,
-			QPalette::BrightText,
-			NSOPTION_sys_colour_SelectedItemText
-		}, {
-			QPalette::Active,
-			QPalette::LinkVisited,
-			NSOPTION_sys_colour_VisitedText
-		}, {
-			QPalette::Active,
-			QPalette::NoRole,
-			NSOPTION_LISTEND
-		},
+		{QPalette::Active,
+		 QPalette::Highlight, /* this could be Accent (qt 6.6) */
+		 NSOPTION_sys_colour_AccentColor},
+		{QPalette::Active,
+		 QPalette::HighlightedText,
+		 NSOPTION_sys_colour_AccentColorText},
+		{QPalette::Active,
+		 QPalette::BrightText,
+		 NSOPTION_sys_colour_ActiveText},
+		{QPalette::Active,
+		 QPalette::Light,
+		 NSOPTION_sys_colour_ButtonBorder},
+		{QPalette::Active,
+		 QPalette::Button,
+		 NSOPTION_sys_colour_ButtonFace},
+		{QPalette::Active,
+		 QPalette::ButtonText,
+		 NSOPTION_sys_colour_ButtonText},
+		{QPalette::Active,
+		 QPalette::Window,
+		 NSOPTION_sys_colour_Canvas},
+		{QPalette::Active,
+		 QPalette::WindowText,
+		 NSOPTION_sys_colour_CanvasText},
+		{QPalette::Active, QPalette::Base, NSOPTION_sys_colour_Field},
+		{QPalette::Active,
+		 QPalette::Text,
+		 NSOPTION_sys_colour_FieldText},
+		{QPalette::Disabled,
+		 QPalette::Text,
+		 NSOPTION_sys_colour_GrayText},
+		{QPalette::Active,
+		 QPalette::Highlight,
+		 NSOPTION_sys_colour_Highlight},
+		{QPalette::Active,
+		 QPalette::HighlightedText,
+		 NSOPTION_sys_colour_HighlightText},
+		{QPalette::Active,
+		 QPalette::Link,
+		 NSOPTION_sys_colour_LinkText},
+		{QPalette::Active,
+		 QPalette::Highlight,
+		 NSOPTION_sys_colour_Mark},
+		{QPalette::Active,
+		 QPalette::HighlightedText,
+		 NSOPTION_sys_colour_MarkText},
+		{QPalette::Active,
+		 QPalette::AlternateBase,
+		 NSOPTION_sys_colour_SelectedItem},
+		{QPalette::Active,
+		 QPalette::BrightText,
+		 NSOPTION_sys_colour_SelectedItemText},
+		{QPalette::Active,
+		 QPalette::LinkVisited,
+		 NSOPTION_sys_colour_VisitedText},
+		{QPalette::Active, QPalette::NoRole, NSOPTION_LISTEND},
 	};
 	const QPalette palette;
 	int idx;
-	int r,g,b;
-	for (idx=0; entries[idx].option != NSOPTION_LISTEND; idx++) {
-		palette.color(entries[idx].group,
-			      entries[idx].role).getRgb(&r,&g,&b);
-		opts[entries[idx].option].value.c =
-			((b & 0xff) << 16) |
-			((g & 0xff) << 8) |
-			(r & 0xff);
+	int r, g, b;
+	for (idx = 0; entries[idx].option != NSOPTION_LISTEND; idx++) {
+		palette.color(entries[idx].group, entries[idx].role)
+			.getRgb(&r, &g, &b);
+		opts[entries[idx].option].value.c = ((b & 0xff) << 16) |
+						    ((g & 0xff) << 8) |
+						    (r & 0xff);
 	}
 }
 
@@ -252,7 +227,8 @@ void NS_Application::nsOptionFromPalette(struct nsoption_s *opts)
  */
 nserror NS_Application::set_option_defaults(struct nsoption_s *defaults)
 {
-	QDir config_dir(QStandardPaths::writableLocation(QStandardPaths::AppConfigLocation));
+	QDir config_dir(QStandardPaths::writableLocation(
+		QStandardPaths::AppConfigLocation));
 
 	/* ensure all elements of path exist */
 	if (!config_dir.exists()) {
@@ -260,22 +236,27 @@ nserror NS_Application::set_option_defaults(struct nsoption_s *defaults)
 	}
 
 	/* cookies database default read and write paths */
-	nsoption_setnull_charp(cookie_file,
-			strdup(config_dir.absoluteFilePath("Cookies").toUtf8()));
+	nsoption_setnull_charp(
+		cookie_file,
+		strdup(config_dir.absoluteFilePath("Cookies").toUtf8()));
 
-	nsoption_setnull_charp(cookie_jar,
-			strdup(config_dir.absoluteFilePath("Cookies").toUtf8()));
+	nsoption_setnull_charp(
+		cookie_jar,
+		strdup(config_dir.absoluteFilePath("Cookies").toUtf8()));
 
 	/* url database default path */
-	nsoption_setnull_charp(url_file,
-			strdup(config_dir.absoluteFilePath("URLs").toUtf8()));
+	nsoption_setnull_charp(
+		url_file, strdup(config_dir.absoluteFilePath("URLs").toUtf8()));
 
 	/* bookmark database default path */
-	nsoption_setnull_charp(hotlist_path,
-			strdup(config_dir.absoluteFilePath("Hotlist").toUtf8()));
+	nsoption_setnull_charp(
+		hotlist_path,
+		strdup(config_dir.absoluteFilePath("Hotlist").toUtf8()));
 
 	if (nsoption_charp(hotlist_path) == NULL) {
-		NSLOG(netsurf, ERROR, "Failed initialising bookmarks resource path");
+		NSLOG(netsurf,
+		      ERROR,
+		      "Failed initialising bookmarks resource path");
 		return NSERROR_BAD_PARAMETER;
 	}
 
@@ -310,25 +291,32 @@ void NS_Application::nsOptionLoad()
 		if (settings.contains(option->key)) {
 			switch (option->type) {
 			case OPTION_BOOL:
-				option->value.b = settings.value(option->key).toBool();
+				option->value.b =
+					settings.value(option->key).toBool();
 				break;
 
 			case OPTION_INTEGER:
-				option->value.i = settings.value(option->key).toInt();
+				option->value.i =
+					settings.value(option->key).toInt();
 				break;
 
 			case OPTION_UINT:
-				option->value.u = settings.value(option->key).toUInt();
+				option->value.u =
+					settings.value(option->key).toUInt();
 				break;
 
 			case OPTION_COLOUR:
-				option->value.c = settings.value(option->key).toUInt();
+				option->value.c =
+					settings.value(option->key).toUInt();
 				break;
 
 			case OPTION_STRING:
-				nsoption_set_tbl_charp(nsoptions,
-						       (enum nsoption_e)entry,
-						       strdup(settings.value(option->key).toString().toUtf8()));
+				nsoption_set_tbl_charp(
+					nsoptions,
+					(enum nsoption_e)entry,
+					strdup(settings.value(option->key)
+						       .toString()
+						       .toUtf8()));
 				break;
 			}
 		}
@@ -359,8 +347,9 @@ static size_t set_qtsetting(struct nsoption_s *option, void *ctx)
 	case OPTION_STRING:
 		settings->setValue(option->key,
 				   QString(((option->value.s == NULL) ||
-					    (*option->value.s == 0)) ?
-					   "" : option->value.s));
+					    (*option->value.s == 0))
+						   ? ""
+						   : option->value.s));
 		break;
 	}
 
@@ -385,12 +374,11 @@ void NS_Application::nsOptionPersist()
 void NS_Application::nsOptionUpdate()
 {
 	switch (nsoption_uint(colour_selection)) {
-	case 0:
-	{
+	case 0: {
 		// automaticaly select
 		const QPalette palette;
-		const bool dark_mode = palette.base().color().lightness()
-                            < palette.windowText().color().lightness();
+		const bool dark_mode = palette.base().color().lightness() <
+				       palette.windowText().color().lightness();
 		nsoption_set_bool(prefer_dark_mode, dark_mode);
 		break;
 	}
@@ -408,13 +396,12 @@ void NS_Application::nsOptionUpdate()
 	}
 }
 
-NS_Application::NS_Application(int &argc, char **argv, struct neosurf_table *nsqt_table)
-	:QApplication(argc, argv),
-	 m_settings_window(nullptr),
-	 m_bookmarks_window(nullptr),
-	 m_local_history_window(nullptr),
-	 m_global_history_window(nullptr),
-	 m_cookies_window(nullptr)
+NS_Application::NS_Application(int &argc,
+			       char **argv,
+			       struct neosurf_table *nsqt_table)
+	: QApplication(argc, argv), m_settings_window(nullptr),
+	  m_bookmarks_window(nullptr), m_local_history_window(nullptr),
+	  m_global_history_window(nullptr), m_cookies_window(nullptr)
 {
 	nserror res;
 
@@ -423,7 +410,8 @@ NS_Application::NS_Application(int &argc, char **argv, struct neosurf_table *nsq
 	/* register operation tables */
 	res = neosurf_register(nsqt_table);
 	if (res != NSERROR_OK) {
-		throw NS_Exception("NetSurf operation table failed registration", res);
+		throw NS_Exception(
+			"NetSurf operation table failed registration", res);
 	}
 
 	/* organization setup for settings */
@@ -434,13 +422,16 @@ NS_Application::NS_Application(int &argc, char **argv, struct neosurf_table *nsq
 	// set up scheduler timer
 	m_schedule_timer = new QTimer(this);
 	m_schedule_timer->setSingleShot(true);
-	connect(m_schedule_timer, &QTimer::timeout,
-		this, &NS_Application::schedule_run);
+	connect(m_schedule_timer,
+		&QTimer::timeout,
+		this,
+		&NS_Application::schedule_run);
 
 	/* Prep the resource search paths */
-	res = nsqt_init_resource_path("${HOME}/.netsurf/:${NETSURFRES}:" QT_RESPATH);
+	res = nsqt_init_resource_path(
+		"${HOME}/.netsurf/:${NETSURFRES}:" QT_RESPATH);
 	if (res != NSERROR_OK) {
-		throw NS_Exception("Resources failed to initialise",res);
+		throw NS_Exception("Resources failed to initialise", res);
 	}
 
 	/* Initialise logging. Not fatal if it fails but not much we
@@ -449,7 +440,9 @@ NS_Application::NS_Application(int &argc, char **argv, struct neosurf_table *nsq
 	nslog_init(nslog_stream_configure, &argc, argv);
 
 	/* Initialise user options */
-	res = nsoption_init(set_option_defaults, &nsoptions, &nsoptions_default);
+	res = nsoption_init(set_option_defaults,
+			    &nsoptions,
+			    &nsoptions_default);
 	if (res != NSERROR_OK) {
 		throw NS_Exception("Options failed to initialise", res);
 	}
@@ -471,7 +464,7 @@ NS_Application::NS_Application(int &argc, char **argv, struct neosurf_table *nsq
 
 	QResource messages_res("Messages");
 	QByteArray messages_data = messages_res.uncompressedData();
-	res = messages_add_from_inline((uint8_t*)messages_data.data(),
+	res = messages_add_from_inline((uint8_t *)messages_data.data(),
 				       messages_data.size());
 
 	char *addr = NULL;
@@ -483,11 +476,13 @@ NS_Application::NS_Application(int &argc, char **argv, struct neosurf_table *nsq
 		throw NS_Exception("Netsurf core initialisation failed", res);
 	}
 
-        /* Web search engine sources */
+	/* Web search engine sources */
 	char *resource_filename = filepath_find(respaths, "SearchEngines");
 	search_web_init(resource_filename);
 	if (resource_filename != NULL) {
-		NSLOG(netsurf, INFO, "Using '%s' as Search Engines file",
+		NSLOG(netsurf,
+		      INFO,
+		      "Using '%s' as Search Engines file",
 		      resource_filename);
 		free(resource_filename);
 	}
@@ -524,7 +519,8 @@ NS_Application::NS_Application(int &argc, char **argv, struct neosurf_table *nsq
 		/* convert initial target to url */
 		res = nsurl_create(addr, &url);
 		if (res != NSERROR_OK) {
-			throw NS_Exception("failed converting initial url", res);
+			throw NS_Exception("failed converting initial url",
+					   res);
 		}
 		free(addr);
 	}
@@ -558,7 +554,9 @@ NS_Application::~NS_Application()
 
 	res = hotlist_fini();
 	if (res != NSERROR_OK) {
-		NSLOG(netsurf, INFO, "Error finalising hotlist: %s",
+		NSLOG(netsurf,
+		      INFO,
+		      "Error finalising hotlist: %s",
 		      messages_get_errorcode(res));
 	}
 
@@ -574,7 +572,7 @@ NS_Application::~NS_Application()
 	delete m_schedule_timer;
 }
 
-bool NS_Application::event(QEvent* event)
+bool NS_Application::event(QEvent *event)
 {
 	if (event->type() == QEvent::ApplicationPaletteChange) {
 		nsOptionUpdate();
@@ -599,7 +597,7 @@ void NS_Application::schedule_run()
  */
 void NS_Application::next_schedule(int ms)
 {
-	if ((m_schedule_timer->isActive()==false) ||
+	if ((m_schedule_timer->isActive() == false) ||
 	    (m_schedule_timer->remainingTime() > ms)) {
 		m_schedule_timer->start(ms);
 	}
@@ -634,7 +632,8 @@ void NS_Application::bookmarks_show()
 /**
  * show local history window
  */
-void NS_Application::local_history_show(struct browser_window *bw, const QPoint &pos)
+void NS_Application::local_history_show(struct browser_window *bw,
+					const QPoint &pos)
 {
 	if (m_local_history_window == nullptr) {
 		m_local_history_window = new NS_Local_history(nullptr, bw);
@@ -650,7 +649,8 @@ void NS_Application::local_history_show(struct browser_window *bw, const QPoint 
 /**
  * show page info window
  */
-void NS_Application::page_info_show(struct browser_window *bw, const QPoint &pos)
+void NS_Application::page_info_show(struct browser_window *bw,
+				    const QPoint &pos)
 {
 	NS_Page_info *page_info = new NS_Page_info(nullptr, bw);
 	page_info->move(pos);
@@ -700,7 +700,9 @@ nserror NS_Application::create_browser_widget(struct hlcache_handle *hlchandle,
 	if (hlchandle == NULL) {
 		return NSERROR_BAD_PARAMETER;
 	}
-	return create_browser_widget(hlcache_handle_get_url(hlchandle), existing, intab);
+	return create_browser_widget(hlcache_handle_get_url(hlchandle),
+				     existing,
+				     intab);
 }
 
 /* create a new browsing context in a tab or window */
@@ -710,7 +712,8 @@ nserror NS_Application::create_browser_widget(nsurl *url,
 {
 	nserror res = NSERROR_OK;
 	bool urlcreated = false; /* was a url created */
-	int flags = BW_CREATE_HISTORY | BW_CREATE_FOCUS_LOCATION | BW_CREATE_FOREGROUND;
+	int flags = BW_CREATE_HISTORY | BW_CREATE_FOCUS_LOCATION |
+		    BW_CREATE_FOREGROUND;
 
 	if (intab) {
 		flags |= BW_CREATE_TAB;
@@ -730,11 +733,12 @@ nserror NS_Application::create_browser_widget(nsurl *url,
 	}
 
 	if (res == NSERROR_OK) {
-		res = browser_window_create((enum browser_window_create_flags)flags,
-					    url,
-					    NULL,
-					    existing,
-					    NULL);
+		res = browser_window_create(
+			(enum browser_window_create_flags)flags,
+			url,
+			NULL,
+			existing,
+			NULL);
 	}
 
 	if (urlcreated) {

@@ -14,8 +14,9 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_voice_family(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error css__cascade_voice_family(uint32_t opv,
+				    css_style *style,
+				    css_select_state *state)
 {
 	uint16_t value = 0;
 	lwc_string **voices = NULL;
@@ -31,8 +32,9 @@ css_error css__cascade_voice_family(uint32_t opv, css_style *style,
 			switch (v) {
 			case VOICE_FAMILY_STRING:
 			case VOICE_FAMILY_IDENT_LIST:
-				css__stylesheet_string_get(style->sheet,
-					*((css_code_t *) style->bytecode),
+				css__stylesheet_string_get(
+					style->sheet,
+					*((css_code_t *)style->bytecode),
 					&voice);
 				advance_bytecode(style, sizeof(css_code_t));
 				break;
@@ -56,7 +58,8 @@ css_error css__cascade_voice_family(uint32_t opv, css_style *style,
 			/** \todo Do this at bytecode generation time? */
 			if (value == 0 && voice != NULL) {
 				temp = realloc(voices,
-					(n_voices + 1) * sizeof(lwc_string *));
+					       (n_voices + 1) *
+						       sizeof(lwc_string *));
 				if (temp == NULL) {
 					if (voices != NULL) {
 						free(voices);
@@ -71,7 +74,7 @@ css_error css__cascade_voice_family(uint32_t opv, css_style *style,
 				n_voices++;
 			}
 
-			v = *((uint32_t *) style->bytecode);
+			v = *((uint32_t *)style->bytecode);
 			advance_bytecode(style, sizeof(v));
 		}
 	}
@@ -91,8 +94,10 @@ css_error css__cascade_voice_family(uint32_t opv, css_style *style,
 		voices[n_voices] = NULL;
 	}
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			getFlagValue(opv))) {
+	if (css__outranks_existing(getOpcode(opv),
+				   isImportant(opv),
+				   state,
+				   getFlagValue(opv))) {
 		/** \todo voice-family */
 		if (n_voices > 0)
 			free(voices);
@@ -104,8 +109,8 @@ css_error css__cascade_voice_family(uint32_t opv, css_style *style,
 	return CSS_OK;
 }
 
-css_error css__set_voice_family_from_hint(const css_hint *hint,
-		css_computed_style *style)
+css_error
+css__set_voice_family_from_hint(const css_hint *hint, css_computed_style *style)
 {
 	UNUSED(hint);
 	UNUSED(style);
@@ -120,9 +125,8 @@ css_error css__initial_voice_family(css_select_state *state)
 	return CSS_OK;
 }
 
-css_error css__copy_voice_family(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error
+css__copy_voice_family(const css_computed_style *from, css_computed_style *to)
 {
 	UNUSED(from);
 	UNUSED(to);
@@ -131,8 +135,8 @@ css_error css__copy_voice_family(
 }
 
 css_error css__compose_voice_family(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+				    const css_computed_style *child,
+				    css_computed_style *result)
 {
 	UNUSED(parent);
 	UNUSED(child);
@@ -140,4 +144,3 @@ css_error css__compose_voice_family(const css_computed_style *parent,
 
 	return CSS_OK;
 }
-

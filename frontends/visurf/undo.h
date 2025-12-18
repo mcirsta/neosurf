@@ -4,15 +4,15 @@
 #include "visurf/visurf.h"
 
 enum nsvi_undo_kind {
-        UNDO_TAB,
-        UNDO_WIN,
+	UNDO_TAB,
+	UNDO_WIN,
 };
 
 struct nsvi_undo {
-        enum nsvi_undo_kind kind;
-        nsurl **urls;
-        size_t nurl;
-        struct nsvi_undo *next;
+	enum nsvi_undo_kind kind;
+	nsurl **urls;
+	size_t nurl;
+	struct nsvi_undo *next;
 };
 
 void nsvi_undo_tab_new(nsurl *url);

@@ -31,45 +31,50 @@ struct nsurl;
 
 typedef struct beos_scaffolding nsbeos_scaffolding;
 
-class NSBaseView : public BView {
-public:
-		NSBaseView(BRect frame);
-		NSBaseView(BMessage *archive);
-virtual	~NSBaseView();
+class NSBaseView : public BView
+{
+      public:
+	NSBaseView(BRect frame);
+	NSBaseView(BMessage *archive);
+	virtual ~NSBaseView();
 
-virtual void	MessageReceived(BMessage *message);
-//virtual void	Draw(BRect updateRect);
+	virtual void MessageReceived(BMessage *message);
+	// virtual void	Draw(BRect updateRect);
 
-//virtual void	FrameMoved(BPoint new_location);
-//virtual void	FrameResized(float new_width, float new_height);
+	// virtual void	FrameMoved(BPoint new_location);
+	// virtual void	FrameResized(float new_width, float new_height);
 
-virtual void		AllAttached(void);
+	virtual void AllAttached(void);
 
-virtual status_t	Archive(BMessage *archive, bool deep=true) const;
-static BArchivable	*Instantiate(BMessage *archive);
+	virtual status_t Archive(BMessage *archive, bool deep = true) const;
+	static BArchivable *Instantiate(BMessage *archive);
 
-void			SetScaffolding(struct beos_scaffolding *scaf);
-private:
+	void SetScaffolding(struct beos_scaffolding *scaf);
+
+      private:
 	struct beos_scaffolding *fScaffolding;
 };
 
-class NSBrowserWindow : public BWindow {
-public:
-		NSBrowserWindow(BRect frame, struct beos_scaffolding *scaf);
-virtual	~NSBrowserWindow();
+class NSBrowserWindow : public BWindow
+{
+      public:
+	NSBrowserWindow(BRect frame, struct beos_scaffolding *scaf);
+	virtual ~NSBrowserWindow();
 
-virtual	void	DispatchMessage(BMessage *message, BHandler *handler);
-virtual void	MessageReceived(BMessage *message);
-virtual bool	QuitRequested(void);
-void			WindowActivated(bool active);
+	virtual void DispatchMessage(BMessage *message, BHandler *handler);
+	virtual void MessageReceived(BMessage *message);
+	virtual bool QuitRequested(void);
+	void WindowActivated(bool active);
 
-struct beos_scaffolding *Scaffolding() const { return fScaffolding; };
+	struct beos_scaffolding *Scaffolding() const
+	{
+		return fScaffolding;
+	};
 
-static BWindow* activeWindow;
-private:
+	static BWindow *activeWindow;
+
+      private:
 	struct beos_scaffolding *fScaffolding;
-
-
 };
 
 
@@ -180,7 +185,8 @@ typedef enum {
 
 NSBrowserWindow *nsbeos_find_last_window(void);
 
-NSBrowserWindow *nsbeos_get_bwindow_for_scaffolding(nsbeos_scaffolding *scaffold);
+NSBrowserWindow *
+nsbeos_get_bwindow_for_scaffolding(nsbeos_scaffolding *scaffold);
 
 NSBaseView *nsbeos_get_baseview_for_scaffolding(nsbeos_scaffolding *scaffold);
 
@@ -191,20 +197,25 @@ bool nsbeos_scaffolding_is_busy(nsbeos_scaffolding *scaffold);
 void nsbeos_attach_toplevel_view(nsbeos_scaffolding *g, BView *view);
 
 
-void nsbeos_scaffolding_dispatch_event(nsbeos_scaffolding *scaffold, BMessage *message);
+void nsbeos_scaffolding_dispatch_event(nsbeos_scaffolding *scaffold,
+				       BMessage *message);
 
 void nsbeos_scaffolding_destroy(nsbeos_scaffolding *scaffold);
 
-//void nsbeos_window_destroy_event(NSBrowserWindow *window, nsbeos_scaffolding *g, BMessage *event);
+// void nsbeos_window_destroy_event(NSBrowserWindow *window, nsbeos_scaffolding
+// *g, BMessage *event);
 
 
-void nsbeos_scaffolding_popup_menu(nsbeos_scaffolding *scaffold, struct browser_window *bw, BPoint where, BPoint screenWhere);
+void nsbeos_scaffolding_popup_menu(nsbeos_scaffolding *scaffold,
+				   struct browser_window *bw,
+				   BPoint where,
+				   BPoint screenWhere);
 
 void gui_window_set_title(struct gui_window *_g, const char *title);
 nserror gui_window_set_url(struct gui_window *_g, struct nsurl *url);
 void gui_window_set_icon(struct gui_window *_g, struct hlcache_handle *icon);
 void gui_window_set_status(struct gui_window *_g, const char *text);
-void gui_window_start_throbber(struct gui_window* _g);
-void gui_window_stop_throbber(struct gui_window* _g);
+void gui_window_start_throbber(struct gui_window *_g);
+void gui_window_stop_throbber(struct gui_window *_g);
 
 #endif /* NETSURF_BEOS_SCAFFOLDING_H */

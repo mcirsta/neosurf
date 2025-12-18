@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define __STDBOOL_H__	1
+#define __STDBOOL_H__ 1
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -50,8 +50,9 @@ void nsbeos_about(struct gui_window *gui)
 	text << "Date     : " << WT_COMPILEDATE << "\n";
 	text << "cURL     : " << LIBCURL_VERSION << "\n";
 
-	BAboutWindow *alert = new BAboutWindow("About NetSurf", "application/x-vnd.NetSurf");
+	BAboutWindow *alert = new BAboutWindow("About NetSurf",
+					       "application/x-vnd.NetSurf");
 	alert->AddExtraInfo(text);
 	alert->Show();
-	//TODO: i18n-ize
+	// TODO: i18n-ize
 }

@@ -42,19 +42,19 @@ enum nsurl_scheme_type {
 };
 
 typedef enum nsurl_component {
-	NSURL_SCHEME		= (1 << 0),
-	NSURL_USERNAME		= (1 << 1),
-	NSURL_PASSWORD		= (1 << 2),
-	NSURL_CREDENTIALS	= NSURL_USERNAME | NSURL_PASSWORD,
-	NSURL_HOST		= (1 << 3),
-	NSURL_PORT		= (1 << 4),
-	NSURL_AUTHORITY		= NSURL_CREDENTIALS | NSURL_HOST | NSURL_PORT,
-	NSURL_PATH		= (1 << 5),
-	NSURL_QUERY		= (1 << 6),
-	NSURL_COMPLETE		= NSURL_SCHEME | NSURL_AUTHORITY |
-				  NSURL_PATH | NSURL_QUERY,
-	NSURL_FRAGMENT		= (1 << 7),
-	NSURL_WITH_FRAGMENT	= NSURL_COMPLETE | NSURL_FRAGMENT
+	NSURL_SCHEME = (1 << 0),
+	NSURL_USERNAME = (1 << 1),
+	NSURL_PASSWORD = (1 << 2),
+	NSURL_CREDENTIALS = NSURL_USERNAME | NSURL_PASSWORD,
+	NSURL_HOST = (1 << 3),
+	NSURL_PORT = (1 << 4),
+	NSURL_AUTHORITY = NSURL_CREDENTIALS | NSURL_HOST | NSURL_PORT,
+	NSURL_PATH = (1 << 5),
+	NSURL_QUERY = (1 << 6),
+	NSURL_COMPLETE = NSURL_SCHEME | NSURL_AUTHORITY | NSURL_PATH |
+			 NSURL_QUERY,
+	NSURL_FRAGMENT = (1 << 7),
+	NSURL_WITH_FRAGMENT = NSURL_COMPLETE | NSURL_FRAGMENT
 } nsurl_component;
 
 
@@ -70,7 +70,7 @@ typedef enum nsurl_component {
  * It is up to the client to call nsurl_unref when they are finished with
  * the created object.
  */
-nserror nsurl_create(const char * const url_s, nsurl **url);
+nserror nsurl_create(const char *const url_s, nsurl **url);
 
 
 /**
@@ -128,8 +128,8 @@ bool nsurl_compare(const nsurl *url1, const nsurl *url2, nsurl_component parts);
  * window URL bar.  'NSURL_COMPLETE &~ NSURL_PASSWORD' would remove the
  * password from a complete URL.
  */
-nserror nsurl_get(const nsurl *url, nsurl_component parts,
-		char **url_s, size_t *url_l);
+nserror
+nsurl_get(const nsurl *url, nsurl_component parts, char **url_s, size_t *url_l);
 
 
 /**
@@ -336,8 +336,8 @@ nserror nsurl_refragment(const nsurl *url, lwc_string *frag, nsurl **new_url);
  * Passing the empty string as a replacement will result in the query
  * component being removed.
  */
-nserror nsurl_replace_query(const nsurl *url, const char *query,
-		nsurl **new_url);
+nserror
+nsurl_replace_query(const nsurl *url, const char *query, nsurl **new_url);
 
 
 /**
@@ -355,8 +355,8 @@ nserror nsurl_replace_query(const nsurl *url, const char *query,
  *
  * Any scheme component in url is replaced with scheme in new_url.
  */
-nserror nsurl_replace_scheme(const nsurl *url, lwc_string *scheme,
-		nsurl **new_url);
+nserror
+nsurl_replace_scheme(const nsurl *url, lwc_string *scheme, nsurl **new_url);
 
 
 /**

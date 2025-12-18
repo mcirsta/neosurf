@@ -85,8 +85,10 @@ void css_calculator_unref(css_calculator *calc);
  */
 css_error css_calculator_calculate(css_calculator *calc,
 				   const css_unit_ctx *unit_ctx,
-				   int32_t available, lwc_string *expr,
+				   int32_t available,
+				   lwc_string *expr,
 				   const css_computed_style *style,
-				   css_unit *unit_out, css_fixed *value_out);
+				   css_unit *unit_out,
+				   css_fixed *value_out);
 
 #endif /* css_select_calc_h_ */

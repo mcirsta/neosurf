@@ -37,4 +37,4 @@ void nsws_window_init_pointers(HINSTANCE hinstance);
 HCURSOR nsws_get_pointer(gui_pointer_shape shape);
 
 
-#endif 
+#endif

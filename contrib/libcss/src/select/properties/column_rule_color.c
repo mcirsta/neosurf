@@ -14,8 +14,9 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_column_rule_color(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error css__cascade_column_rule_color(uint32_t opv,
+					 css_style *style,
+					 css_select_state *state)
 {
 	enum flag_value flag_value = getFlagValue(opv);
 	uint16_t value = CSS_COLUMN_RULE_COLOR_INHERIT;
@@ -32,14 +33,14 @@ css_error css__cascade_column_rule_color(uint32_t opv, css_style *style,
 			break;
 		case COLUMN_RULE_COLOR_SET:
 			value = CSS_COLUMN_RULE_COLOR_COLOR;
-			color = *((css_fixed *) style->bytecode);
+			color = *((css_fixed *)style->bytecode);
 			advance_bytecode(style, sizeof(color));
 			break;
 		}
 	}
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			flag_value)) {
+	if (css__outranks_existing(
+		    getOpcode(opv), isImportant(opv), state, flag_value)) {
 		return set_column_rule_color(state->computed, value, color);
 	}
 
@@ -47,7 +48,7 @@ css_error css__cascade_column_rule_color(uint32_t opv, css_style *style,
 }
 
 css_error css__set_column_rule_color_from_hint(const css_hint *hint,
-		css_computed_style *style)
+					       css_computed_style *style)
 {
 	return set_column_rule_color(style, hint->status, hint->data.color);
 }
@@ -55,12 +56,12 @@ css_error css__set_column_rule_color_from_hint(const css_hint *hint,
 css_error css__initial_column_rule_color(css_select_state *state)
 {
 	return set_column_rule_color(state->computed,
-			CSS_COLUMN_RULE_COLOR_CURRENT_COLOR, 0);
+				     CSS_COLUMN_RULE_COLOR_CURRENT_COLOR,
+				     0);
 }
 
-css_error css__copy_column_rule_color(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error css__copy_column_rule_color(const css_computed_style *from,
+				      css_computed_style *to)
 {
 	css_color color;
 	uint8_t type = get_column_rule_color(from, &color);
@@ -73,14 +74,12 @@ css_error css__copy_column_rule_color(
 }
 
 css_error css__compose_column_rule_color(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+					 const css_computed_style *child,
+					 css_computed_style *result)
 {
 	css_color color;
 	uint8_t type = get_column_rule_color(child, &color);
 
 	return css__copy_column_rule_color(
-			type == CSS_COLUMN_RULE_COLOR_INHERIT ? parent : child,
-			result);
+		type == CSS_COLUMN_RULE_COLOR_INHERIT ? parent : child, result);
 }
-

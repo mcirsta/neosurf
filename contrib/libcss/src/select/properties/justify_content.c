@@ -14,8 +14,9 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_justify_content(uint32_t opv, css_style *style, 
-		css_select_state *state)
+css_error css__cascade_justify_content(uint32_t opv,
+				       css_style *style,
+				       css_select_state *state)
 {
 	uint16_t value = CSS_JUSTIFY_CONTENT_INHERIT;
 
@@ -44,8 +45,10 @@ css_error css__cascade_justify_content(uint32_t opv, css_style *style,
 		}
 	}
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			getFlagValue(opv))) {
+	if (css__outranks_existing(getOpcode(opv),
+				   isImportant(opv),
+				   state,
+				   getFlagValue(opv))) {
 		return set_justify_content(state->computed, value);
 	}
 
@@ -53,7 +56,7 @@ css_error css__cascade_justify_content(uint32_t opv, css_style *style,
 }
 
 css_error css__set_justify_content_from_hint(const css_hint *hint,
-		css_computed_style *style)
+					     css_computed_style *style)
 {
 	return set_justify_content(style, hint->status);
 }
@@ -61,12 +64,11 @@ css_error css__set_justify_content_from_hint(const css_hint *hint,
 css_error css__initial_justify_content(css_select_state *state)
 {
 	return set_justify_content(state->computed,
-			CSS_JUSTIFY_CONTENT_FLEX_START);
+				   CSS_JUSTIFY_CONTENT_FLEX_START);
 }
 
-css_error css__copy_justify_content(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error css__copy_justify_content(const css_computed_style *from,
+				    css_computed_style *to)
 {
 	if (from == to) {
 		return CSS_OK;
@@ -76,13 +78,11 @@ css_error css__copy_justify_content(
 }
 
 css_error css__compose_justify_content(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+				       const css_computed_style *child,
+				       css_computed_style *result)
 {
 	uint8_t type = get_justify_content(child);
 
 	return css__copy_justify_content(
-			type == CSS_JUSTIFY_CONTENT_INHERIT ? parent : child,
-			result);
+		type == CSS_JUSTIFY_CONTENT_INHERIT ? parent : child, result);
 }
-

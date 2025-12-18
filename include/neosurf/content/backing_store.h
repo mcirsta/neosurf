@@ -48,7 +48,8 @@ struct gui_llcache_table {
 	 * @param parameters to configure backing store.
 	 * @return NSERROR_OK on success or error code on failure.
 	 */
-	nserror (*initialise)(const struct llcache_store_parameters *parameters);
+	nserror (*initialise)(
+		const struct llcache_store_parameters *parameters);
 
 	/**
 	 * Finalise the backing store.
@@ -71,14 +72,17 @@ struct gui_llcache_table {
 	 * The caller may not assume that the persistent storage has
 	 *  been completely written on return.
 	 *
-	 * @param[in] url The url is used as the unique primary key for the data.
+	 * @param[in] url The url is used as the unique primary key for the
+	 * data.
 	 * @param[in] flags The flags to control how the object is stored.
 	 * @param[in] data The objects data.
 	 * @param[in] datalen The length of the \a data.
 	 * @return NSERROR_OK on success or error code on failure.
 	 */
-	nserror (*store)(struct nsurl *url, enum backing_store_flags flags,
-			 uint8_t *data, const size_t datalen);
+	nserror (*store)(struct nsurl *url,
+			 enum backing_store_flags flags,
+			 uint8_t *data,
+			 const size_t datalen);
 
 	/**
 	 * Retrieve an object from the backing store.
@@ -90,20 +94,24 @@ struct gui_llcache_table {
 	 *  allocated buffers and the storage and *must* be freed by
 	 *  calling the release method.
 	 *
-	 * @param[in] url The url is used as the unique primary key for the data.
+	 * @param[in] url The url is used as the unique primary key for the
+	 * data.
 	 * @param[in] flags The flags to control how the object is retrieved.
 	 * @param[out] data The retrieved objects data.
 	 * @param[out] datalen The length of the \a data retrieved.
 	 * @return NSERROR_OK on success or error code on failure.
 	 */
-	nserror (*fetch)(struct nsurl *url, enum backing_store_flags flags,
-			 uint8_t **data, size_t *datalen);
+	nserror (*fetch)(struct nsurl *url,
+			 enum backing_store_flags flags,
+			 uint8_t **data,
+			 size_t *datalen);
 
 	/**
 	 * release a previously fetched or stored memory object.
 	 *
 	 * @param url The url is used as the unique primary key to invalidate.
-	 * @param[in] flags The flags to control how the object data is released.
+	 * @param[in] flags The flags to control how the object data is
+	 * released.
 	 * @return NSERROR_OK on success or error code on failure.
 	 */
 	nserror (*release)(struct nsurl *url, enum backing_store_flags flags);
@@ -120,10 +128,9 @@ struct gui_llcache_table {
 	 * @return NSERROR_OK on success or error code on failure.
 	 */
 	nserror (*invalidate)(struct nsurl *url);
-
 };
 
-extern struct gui_llcache_table* null_llcache_table;
-extern struct gui_llcache_table* filesystem_llcache_table;
+extern struct gui_llcache_table *null_llcache_table;
+extern struct gui_llcache_table *filesystem_llcache_table;
 
 #endif

@@ -25,14 +25,14 @@ int main(int argc, char **argv)
 	assert(parserutils__filter_create("UTF-8", &input) == PARSERUTILS_OK);
 
 	params.encoding.name = "GBK";
-	assert(parserutils__filter_setopt(input, 
-			PARSERUTILS_FILTER_SET_ENCODING, &params) == 
-			expected);
+	assert(parserutils__filter_setopt(input,
+					  PARSERUTILS_FILTER_SET_ENCODING,
+					  &params) == expected);
 
 	params.encoding.name = "GBK";
-	assert(parserutils__filter_setopt(input, 
-			PARSERUTILS_FILTER_SET_ENCODING, &params) == 
-			expected);
+	assert(parserutils__filter_setopt(input,
+					  PARSERUTILS_FILTER_SET_ENCODING,
+					  &params) == expected);
 
 	parserutils__filter_destroy(input);
 

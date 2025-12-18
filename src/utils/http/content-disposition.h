@@ -37,7 +37,7 @@ typedef struct http_content_disposition {
  *         NSERROR_NOMEM on memory exhaustion
  */
 nserror http_parse_content_disposition(const char *header_value,
-		http_content_disposition **result);
+				       http_content_disposition **result);
 
 /**
  * Destroy a content disposition object

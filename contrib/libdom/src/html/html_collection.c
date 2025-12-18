@@ -31,15 +31,15 @@
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception _dom_html_collection_create(struct dom_html_document *doc,
-		struct dom_node_internal *root,
-		dom_callback_is_in_collection ic,
-		void *ctx,
-		struct dom_html_collection **col)
+					  struct dom_node_internal *root,
+					  dom_callback_is_in_collection ic,
+					  void *ctx,
+					  struct dom_html_collection **col)
 {
 	*col = malloc(sizeof(dom_html_collection));
 	if (*col == NULL)
 		return DOM_NO_MEM_ERR;
-	
+
 	return _dom_html_collection_initialise(doc, *col, root, ic, ctx);
 }
 
@@ -54,9 +54,10 @@ dom_exception _dom_html_collection_create(struct dom_html_document *doc,
  * \return DOM_NO_ERR on success.
  */
 dom_exception _dom_html_collection_initialise(struct dom_html_document *doc,
-		struct dom_html_collection *col,
-		struct dom_node_internal *root,
-		dom_callback_is_in_collection ic, void *ctx)
+					      struct dom_html_collection *col,
+					      struct dom_node_internal *root,
+					      dom_callback_is_in_collection ic,
+					      void *ctx)
 {
 	assert(doc != NULL);
 	assert(ic != NULL);
@@ -113,14 +114,14 @@ void _dom_html_collection_destroy(struct dom_html_collection *col)
  * \param len  The returned length of this collection
  * \return DOM_NO_ERR on success.
  */
-dom_exception dom_html_collection_get_length(dom_html_collection *col,
-		uint32_t *len)
+dom_exception
+dom_html_collection_get_length(dom_html_collection *col, uint32_t *len)
 {
 	struct dom_node_internal *node = col->root;
 	*len = 0;
 
 	while (node != NULL) {
-		if (node->type == DOM_ELEMENT_NODE && 
+		if (node->type == DOM_ELEMENT_NODE &&
 		    col->ic(node, col->ctx) == true)
 			(*len)++;
 
@@ -134,11 +135,11 @@ dom_exception dom_html_collection_get_length(dom_html_collection *col,
 			struct dom_node_internal *parent = node->parent;
 
 			while (node != col->root &&
-					node == parent->last_child) {
+			       node == parent->last_child) {
 				node = parent;
 				parent = parent->parent;
 			}
-			
+
 			if (node == col->root)
 				node = NULL;
 			else
@@ -158,19 +159,19 @@ dom_exception dom_html_collection_get_length(dom_html_collection *col,
  * \return DOM_NO_ERR on success.
  */
 dom_exception dom_html_collection_item(dom_html_collection *col,
-		uint32_t index, struct dom_node **node)
+				       uint32_t index,
+				       struct dom_node **node)
 {
 	struct dom_node_internal *n = col->root;
 	uint32_t len = 0;
 
 	while (n != NULL) {
-		if (n->type == DOM_ELEMENT_NODE && 
-		    col->ic(n, col->ctx) == true)
+		if (n->type == DOM_ELEMENT_NODE && col->ic(n, col->ctx) == true)
 			len++;
 
 		if (len == index + 1) {
 			dom_node_ref(n);
-			*node = (struct dom_node *) n;
+			*node = (struct dom_node *)n;
 			return DOM_NO_ERR;
 		}
 
@@ -183,12 +184,11 @@ dom_exception dom_html_collection_item(dom_html_collection *col,
 			/* No children and siblings */
 			struct dom_node_internal *parent = n->parent;
 
-			while (n != col->root &&
-					n == parent->last_child) {
+			while (n != col->root && n == parent->last_child) {
 				n = parent;
 				parent = parent->parent;
 			}
-			
+
 			if (n == col->root)
 				n = NULL;
 			else
@@ -210,7 +210,8 @@ dom_exception dom_html_collection_item(dom_html_collection *col,
  * \return DOM_NO_ERR on success.
  */
 dom_exception dom_html_collection_named_item(dom_html_collection *col,
-		dom_string *name, struct dom_node **node)
+					     dom_string *name,
+					     struct dom_node **node)
 {
 	struct dom_node_internal *n = col->root;
 	dom_html_document *doc = (dom_html_document *)dom_node_get_owner(n);
@@ -222,8 +223,7 @@ dom_exception dom_html_collection_named_item(dom_html_collection *col,
 			dom_string *id = NULL;
 			dom_string *id_name = NULL;
 
-			err = _dom_element_get_id((struct dom_element *) n,
-					&id);
+			err = _dom_element_get_id((struct dom_element *)n, &id);
 			if (err != DOM_NO_ERR) {
 				return err;
 			}
@@ -239,9 +239,11 @@ dom_exception dom_html_collection_named_item(dom_html_collection *col,
 			}
 
 			/* Check for Name attr if id not matched/found */
-			err = _dom_element_get_attribute((dom_element *)n,
-					doc->memoised[hds_name], &id_name);
-			if(err != DOM_NO_ERR) {
+			err = _dom_element_get_attribute(
+				(dom_element *)n,
+				doc->memoised[hds_name],
+				&id_name);
+			if (err != DOM_NO_ERR) {
 				return err;
 			}
 
@@ -265,12 +267,11 @@ dom_exception dom_html_collection_named_item(dom_html_collection *col,
 			/* No children and siblings */
 			struct dom_node_internal *parent = n->parent;
 
-			while (n != col->root &&
-					n == parent->last_child) {
+			while (n != col->root && n == parent->last_child) {
 				n = parent;
 				parent = parent->parent;
 			}
-			
+
 			if (n == col->root)
 				n = NULL;
 			else
@@ -293,8 +294,8 @@ void dom_html_collection_ref(dom_html_collection *col)
 {
 	if (col == NULL)
 		return;
-	
-	col->refcnt ++;
+
+	col->refcnt++;
 }
 
 /**
@@ -306,11 +307,10 @@ void dom_html_collection_unref(dom_html_collection *col)
 {
 	if (col == NULL)
 		return;
-	
+
 	if (col->refcnt > 0)
-		col->refcnt --;
-	
+		col->refcnt--;
+
 	if (col->refcnt == 0)
 		_dom_html_collection_destroy(col);
 }
-

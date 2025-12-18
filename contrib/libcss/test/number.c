@@ -21,8 +21,8 @@ typedef struct line_ctx {
 } line_ctx;
 
 static bool handle_line(const char *data, size_t datalen, void *pw);
-static void run_test(const uint8_t *data, size_t len,
-		const char *exp, size_t explen);
+static void
+run_test(const uint8_t *data, size_t len, const char *exp, size_t explen);
 static void print_css_fixed(char *buf, size_t len, css_fixed f);
 
 int main(int argc, char **argv)
@@ -41,7 +41,7 @@ int main(int argc, char **argv)
 	ctx.buf = malloc(ctx.buflen);
 	if (ctx.buf == NULL) {
 		printf("Failed allocating %u bytes\n",
-				(unsigned int) ctx.buflen);
+		       (unsigned int)ctx.buflen);
 		return 1;
 	}
 
@@ -66,14 +66,16 @@ int main(int argc, char **argv)
 
 bool handle_line(const char *data, size_t datalen, void *pw)
 {
-	line_ctx *ctx = (line_ctx *) pw;
+	line_ctx *ctx = (line_ctx *)pw;
 
 	if (data[0] == '#') {
 		if (ctx->inexp) {
 			/* This marks end of testcase, so run it */
 
-			run_test(ctx->buf, ctx->bufused - 1,
-					ctx->exp, ctx->explen);
+			run_test(ctx->buf,
+				 ctx->bufused - 1,
+				 ctx->exp,
+				 ctx->explen);
 
 			ctx->buf[0] = '\0';
 			ctx->bufused = 0;
@@ -81,12 +83,13 @@ bool handle_line(const char *data, size_t datalen, void *pw)
 			ctx->explen = 0;
 		}
 
-		if (ctx->indata && strncasecmp(data+1, "expected", 8) == 0) {
+		if (ctx->indata && strncasecmp(data + 1, "expected", 8) == 0) {
 			ctx->indata = false;
 			ctx->inexp = true;
 		} else if (!ctx->indata) {
-			ctx->indata = (strncasecmp(data+1, "data", 4) == 0);
-			ctx->inexp  = (strncasecmp(data+1, "expected", 8) == 0);
+			ctx->indata = (strncasecmp(data + 1, "data", 4) == 0);
+			ctx->inexp = (strncasecmp(data + 1, "expected", 8) ==
+				      0);
 		} else {
 			memcpy(ctx->buf + ctx->bufused, data, datalen);
 			ctx->bufused += datalen;
@@ -110,7 +113,7 @@ bool handle_line(const char *data, size_t datalen, void *pw)
 
 void run_test(const uint8_t *data, size_t len, const char *exp, size_t explen)
 {
-        lwc_string *in;
+	lwc_string *in;
 	size_t consumed;
 	css_fixed result;
 	char buf[256];
@@ -118,13 +121,13 @@ void run_test(const uint8_t *data, size_t len, const char *exp, size_t explen)
 	UNUSED(exp);
 	UNUSED(explen);
 
-        assert(lwc_intern_string((const char *)data, len, &in) == lwc_error_ok);
+	assert(lwc_intern_string((const char *)data, len, &in) == lwc_error_ok);
 
 	result = css__number_from_lwc_string(in, false, &consumed);
 
 	print_css_fixed(buf, sizeof(buf), result);
 
-	printf("got: %s expected: %.*s\n", buf, (int) explen, exp);
+	printf("got: %s expected: %.*s\n", buf, (int)explen, exp);
 
 	assert(strncmp(buf, exp, explen) == 0);
 
@@ -197,4 +200,3 @@ void print_css_fixed(char *buf, size_t len, css_fixed f)
 		len--;
 	}
 }
-

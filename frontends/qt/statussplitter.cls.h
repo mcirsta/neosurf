@@ -34,17 +34,19 @@
  * this ensures the split between ststus and scrollbar remains at the configured
  * percentage and updates the option when the handle is moved.
  */
-class NS_StatusSplitter: public QSplitter
+class NS_StatusSplitter : public QSplitter
 {
 	Q_OBJECT
 
-public:
-	NS_StatusSplitter(QLabel *status, QScrollBar *scrollbar, QWidget *parent=nullptr);
+      public:
+	NS_StatusSplitter(QLabel *status,
+			  QScrollBar *scrollbar,
+			  QWidget *parent = nullptr);
 
-private slots:
+      private slots:
 	void moved_slot(int pos, int index);
 
-private:
+      private:
 	void resizeEvent(QResizeEvent *event);
 	bool m_resize_move;
 };

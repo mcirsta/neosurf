@@ -50,7 +50,8 @@ bool fetch_about_imagecache_handler(struct fetch_about_context *ctx)
 		goto fetch_about_imagecache_handler_aborted;
 
 	/* page head */
-	res = fetch_about_ssenddataf(ctx,
+	res = fetch_about_ssenddataf(
+		ctx,
 		"<html>\n<head>\n"
 		"<title>Image Cache Status</title>\n"
 		"<link rel=\"stylesheet\" type=\"text/css\" "
@@ -63,7 +64,9 @@ bool fetch_about_imagecache_handler(struct fetch_about_context *ctx)
 	}
 
 	/* image cache summary */
-	slen = image_cache_snsummaryf(buffer, sizeof(buffer),
+	slen = image_cache_snsummaryf(
+		buffer,
+		sizeof(buffer),
 		"<p>Configured limit of %a hysteresis of %b</p>\n"
 		"<p>Total bitmap size in use %c (in %d)</p>\n"
 		"<p>Age %es</p>\n"
@@ -73,7 +76,7 @@ bool fetch_about_imagecache_handler(struct fetch_about_context *ctx)
 		"(%pj%%/%pk%%/%pl%%/%pm%%)"
 		"<img width=200 height=100 src=\"about:chart?type=pie&width=200&height=100&labels=hit,miss,fail&values=%k,%l,%m\" />"
 		"</p>\n");
-	if (slen >= (int) (sizeof(buffer))) {
+	if (slen >= (int)(sizeof(buffer))) {
 		goto fetch_about_imagecache_handler_aborted; /* overflow */
 	}
 
@@ -83,18 +86,20 @@ bool fetch_about_imagecache_handler(struct fetch_about_context *ctx)
 	}
 
 	/* image cache summary */
-	slen = image_cache_snsummaryf(buffer, sizeof(buffer),
+	slen = image_cache_snsummaryf(
+		buffer,
+		sizeof(buffer),
 		"<p>Cache total/hit/miss/fail (size) %n/%o/%q/%r "
-				"(%pn%%/%po%%/%pq%%/%pr%%)"
+		"(%pn%%/%po%%/%pq%%/%pr%%)"
 		"<img width=200 height=100 src=\"about:chart?type=pie&width=200&height=100&labels=hit,miss,fail&values=%o,%q,%r\" /></p>\n"
 		"<p>Total images never rendered: %s "
-				"(includes %t that were converted)</p>\n"
+		"(includes %t that were converted)</p>\n"
 		"<p>Total number of excessive conversions: %u "
-				"(from %v images converted more than once)"
-				"</p>\n"
+		"(from %v images converted more than once)"
+		"</p>\n"
 		"<p>Bitmap of size %w had most (%x) conversions</p>\n"
 		"<h2 class=\"ns-border\">Current contents</h2>\n");
-	if (slen >= (int) (sizeof(buffer))) {
+	if (slen >= (int)(sizeof(buffer))) {
 		goto fetch_about_imagecache_handler_aborted; /* overflow */
 	}
 
@@ -104,17 +109,18 @@ bool fetch_about_imagecache_handler(struct fetch_about_context *ctx)
 	}
 
 	/* image cache entry table */
-	res = fetch_about_ssenddataf(ctx, "<p class=\"imagecachelist\">\n"
-			"<strong>"
-			"<span>Entry</span>"
-			"<span>Content Key</span>"
-			"<span>Redraw Count</span>"
-			"<span>Conversion Count</span>"
-			"<span>Last Redraw</span>"
-			"<span>Bitmap Age</span>"
-			"<span>Bitmap Size</span>"
-			"<span>Source</span>"
-			"</strong>\n");
+	res = fetch_about_ssenddataf(ctx,
+				     "<p class=\"imagecachelist\">\n"
+				     "<strong>"
+				     "<span>Entry</span>"
+				     "<span>Content Key</span>"
+				     "<span>Redraw Count</span>"
+				     "<span>Conversion Count</span>"
+				     "<span>Last Redraw</span>"
+				     "<span>Bitmap Age</span>"
+				     "<span>Bitmap Size</span>"
+				     "<span>Source</span>"
+				     "</strong>\n");
 	if (res != NSERROR_OK) {
 		goto fetch_about_imagecache_handler_aborted;
 	}
@@ -122,38 +128,40 @@ bool fetch_about_imagecache_handler(struct fetch_about_context *ctx)
 	slen = 0;
 	do {
 		if (even) {
-			elen = image_cache_snentryf(buffer + slen,
-						   sizeof buffer - slen,
-					cent_loop,
-					"<a href=\"%U\">"
-					"<span class=\"ns-border\">%e</span>"
-					"<span class=\"ns-border\">%k</span>"
-					"<span class=\"ns-border\">%r</span>"
-					"<span class=\"ns-border\">%c</span>"
-					"<span class=\"ns-border\">%a</span>"
-					"<span class=\"ns-border\">%g</span>"
-					"<span class=\"ns-border\">%s</span>"
-					"<span class=\"ns-border\">%o</span>"
-					"</a>\n");
+			elen = image_cache_snentryf(
+				buffer + slen,
+				sizeof buffer - slen,
+				cent_loop,
+				"<a href=\"%U\">"
+				"<span class=\"ns-border\">%e</span>"
+				"<span class=\"ns-border\">%k</span>"
+				"<span class=\"ns-border\">%r</span>"
+				"<span class=\"ns-border\">%c</span>"
+				"<span class=\"ns-border\">%a</span>"
+				"<span class=\"ns-border\">%g</span>"
+				"<span class=\"ns-border\">%s</span>"
+				"<span class=\"ns-border\">%o</span>"
+				"</a>\n");
 		} else {
-			elen = image_cache_snentryf(buffer + slen,
-						   sizeof buffer - slen,
-					cent_loop,
-					"<a class=\"ns-odd-bg\" href=\"%U\">"
-					"<span class=\"ns-border\">%e</span>"
-					"<span class=\"ns-border\">%k</span>"
-					"<span class=\"ns-border\">%r</span>"
-					"<span class=\"ns-border\">%c</span>"
-					"<span class=\"ns-border\">%a</span>"
-					"<span class=\"ns-border\">%g</span>"
-					"<span class=\"ns-border\">%s</span>"
-					"<span class=\"ns-border\">%o</span>"
-					"</a>\n");
+			elen = image_cache_snentryf(
+				buffer + slen,
+				sizeof buffer - slen,
+				cent_loop,
+				"<a class=\"ns-odd-bg\" href=\"%U\">"
+				"<span class=\"ns-border\">%e</span>"
+				"<span class=\"ns-border\">%k</span>"
+				"<span class=\"ns-border\">%r</span>"
+				"<span class=\"ns-border\">%c</span>"
+				"<span class=\"ns-border\">%a</span>"
+				"<span class=\"ns-border\">%g</span>"
+				"<span class=\"ns-border\">%s</span>"
+				"<span class=\"ns-border\">%o</span>"
+				"</a>\n");
 		}
 		if (elen <= 0)
 			break; /* last option */
 
-		if (elen >= (int) (sizeof buffer - slen)) {
+		if (elen >= (int)(sizeof buffer - slen)) {
 			/* last entry would not fit in buffer, submit buffer */
 			res = fetch_about_senddata(ctx,
 						   (const uint8_t *)buffer,
@@ -171,7 +179,8 @@ bool fetch_about_imagecache_handler(struct fetch_about_context *ctx)
 		}
 	} while (elen > 0);
 
-	slen += snprintf(buffer + slen, sizeof buffer - slen,
+	slen += snprintf(buffer + slen,
+			 sizeof buffer - slen,
 			 "</p>\n</body>\n</html>\n");
 
 	res = fetch_about_senddata(ctx, (const uint8_t *)buffer, slen);

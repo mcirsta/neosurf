@@ -32,8 +32,7 @@
 #include <neosurf/utils/string.h>
 #include "xdg-shell.h"
 
-static char *
-join_args(int argc, char *argv[])
+static char *join_args(int argc, char *argv[])
 {
 	assert(argc > 0);
 	int len = 0, i;
@@ -51,15 +50,14 @@ join_args(int argc, char *argv[])
 	return res;
 }
 
-static void
-handle_error(char *error_message) {
+static void handle_error(char *error_message)
+{
 	struct nsvi_window *win = global_state->keyboard_focus;
 	win->error_message = error_message;
 	win->mode = ERROR;
 }
 
-static int
-cmd_back(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_back(struct nsvi_state *state, int argc, char *argv[])
 {
 	if (argc != 1) {
 		NSLOG(neosurf, ERROR, "back: unexpected argument");
@@ -77,15 +75,15 @@ cmd_back(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static int
-cmd_bind(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_bind(struct nsvi_state *state, int argc, char *argv[])
 {
 	if (argc != 3) {
 		NSLOG(neosurf, ERROR, "bind: incorrect number of arguments");
 		handle_error(strdup("bind: incorrect number of arguments"));
 		return 1;
 	}
-	if (nsvi_bindings_new(&state->bindings, argv[1], argv[2]) != NSERROR_OK) {
+	if (nsvi_bindings_new(&state->bindings, argv[1], argv[2]) !=
+	    NSERROR_OK) {
 		NSLOG(neosurf, ERROR, "bind: invalid binding");
 		handle_error(strdup("bind: invalid binding"));
 		return 1;
@@ -93,8 +91,7 @@ cmd_bind(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static int
-cmd_close(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_close(struct nsvi_state *state, int argc, char *argv[])
 {
 	if (argc != 1) {
 		NSLOG(neosurf, ERROR, "close: unexpected argument");
@@ -119,8 +116,7 @@ cmd_close(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static int
-cmd_exec(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_exec(struct nsvi_state *state, int argc, char *argv[])
 {
 	char **subcmd = calloc(argc, sizeof(char *));
 	for (int i = 1; i < argc; ++i) {
@@ -131,8 +127,10 @@ cmd_exec(struct nsvi_state *state, int argc, char *argv[])
 	if (pid == 0) {
 		execvp(subcmd[0], subcmd);
 		// TODO: Bubble these errors up to the UI somehow
-		NSLOG(neosurf, ERROR, "exec: execvp failed: %s",
-			strerror(errno));
+		NSLOG(neosurf,
+		      ERROR,
+		      "exec: execvp failed: %s",
+		      strerror(errno));
 		exit(1);
 	}
 	// TODO: Keep track of the subprocess, show in UI if it exits nonzero
@@ -140,8 +138,7 @@ cmd_exec(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static int
-cmd_exline(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_exline(struct nsvi_state *state, int argc, char *argv[])
 {
 	struct nsvi_window *win = global_state->keyboard_focus;
 	if (!win) {
@@ -167,14 +164,14 @@ cmd_exline(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static void
-follow_collect_hints(struct gui_window *win, struct box *node)
+static void follow_collect_hints(struct gui_window *win, struct box *node)
 {
 	struct follow_state *follow = &win->follow;
-	if ((node->href || node->gadget) && node->width > 0 && node->height > 0) {
+	if ((node->href || node->gadget) && node->width > 0 &&
+	    node->height > 0) {
 		for (size_t i = 0; i < follow->nhint; i++) {
-			if (node->href == follow->hints[i].node->href
-					&& node->href != NULL) {
+			if (node->href == follow->hints[i].node->href &&
+			    node->href != NULL) {
 				goto end;
 			}
 		}
@@ -184,7 +181,8 @@ follow_collect_hints(struct gui_window *win, struct box *node)
 			follow->zhint = 64;
 		} else if (follow->nhint + 1 >= follow->zhint) {
 			follow->zhint *= 2;
-			follow->hints = realloc(follow->hints,
+			follow->hints = realloc(
+				follow->hints,
 				follow->zhint * sizeof(struct link_hint));
 		}
 		struct link_hint *hint = &follow->hints[follow->nhint];
@@ -200,8 +198,7 @@ end:
 	}
 }
 
-static size_t
-ceil_log(size_t n, size_t base)
+static size_t ceil_log(size_t n, size_t base)
 {
 	assert(n >= 1 && base >= 2);
 	size_t result = 1;
@@ -213,8 +210,7 @@ ceil_log(size_t n, size_t base)
 	return result;
 }
 
-static char *
-mkhint(size_t serial, const char *alphabet, size_t digits)
+static char *mkhint(size_t serial, const char *alphabet, size_t digits)
 {
 	char *hint = calloc(1, 32);
 	size_t hintln = 0;
@@ -241,15 +237,13 @@ mkhint(size_t serial, const char *alphabet, size_t digits)
 	return hint;
 }
 
-static uint32_t
-fnv1a(uint32_t hash, unsigned char c)
+static uint32_t fnv1a(uint32_t hash, unsigned char c)
 {
 	return (hash ^ c) * 16777619;
 }
 
 
-static uint32_t
-fnv1a_s(uint32_t hash, const char *str)
+static uint32_t fnv1a_s(uint32_t hash, const char *str)
 {
 	unsigned char c;
 	while ((c = *str++)) {
@@ -258,8 +252,7 @@ fnv1a_s(uint32_t hash, const char *str)
 	return hash;
 }
 
-static void
-follow_label_hints(struct gui_window *win)
+static void follow_label_hints(struct gui_window *win)
 {
 	// Based on qutebrowser's "scattered" algorithm
 	struct follow_state *follow = &win->follow;
@@ -283,8 +276,9 @@ follow_label_hints(struct gui_window *win)
 	size_t i = 0;
 	if (needed > 1) {
 		for (size_t serial = 0; serial < nshort; ++serial) {
-			follow->hints[i++].hint =
-				mkhint(serial, alphabet, needed - 1);
+			follow->hints[i++].hint = mkhint(serial,
+							 alphabet,
+							 needed - 1);
 		}
 	}
 
@@ -307,8 +301,7 @@ follow_label_hints(struct gui_window *win)
 	}
 }
 
-static int
-cmd_follow(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_follow(struct nsvi_state *state, int argc, char *argv[])
 {
 	int c;
 	ns_optind = 0;
@@ -359,8 +352,11 @@ cmd_follow(struct nsvi_state *state, int argc, char *argv[])
 		return 1;
 	}
 	if (content_get_type(handle) != CONTENT_HTML) {
-		NSLOG(neosurf, ERROR, "follow: cannot work with non-HTML content");
-		handle_error(strdup("follow: cannot work with non-HTML content"));
+		NSLOG(neosurf,
+		      ERROR,
+		      "follow: cannot work with non-HTML content");
+		handle_error(
+			strdup("follow: cannot work with non-HTML content"));
 		return 1;
 	}
 	struct box *tree = html_get_box_tree(handle);
@@ -380,8 +376,7 @@ cmd_follow(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static int
-cmd_forward(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_forward(struct nsvi_state *state, int argc, char *argv[])
 {
 	if (argc != 1) {
 		NSLOG(neosurf, ERROR, "forward: unexpected argument");
@@ -399,8 +394,7 @@ cmd_forward(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static int
-cmd_fullscreen(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_fullscreen(struct nsvi_state *state, int argc, char *argv[])
 {
 	if (argc != 1) {
 		NSLOG(neosurf, ERROR, "fullscreen: unexpected argument");
@@ -421,8 +415,7 @@ cmd_fullscreen(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static int
-cmd_insert(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_insert(struct nsvi_state *state, int argc, char *argv[])
 {
 	if (argc != 1) {
 		NSLOG(neosurf, ERROR, "insert: unexpected argument");
@@ -440,8 +433,7 @@ cmd_insert(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static int
-cmd_open(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_open(struct nsvi_state *state, int argc, char *argv[])
 {
 	bool background = false, tab = false, window = false, filter_url = true;
 
@@ -506,8 +498,8 @@ cmd_open(struct nsvi_state *state, int argc, char *argv[])
 	}
 	struct gui_window *gw = win->tabs[win->tab];
 	if (tab) {
-		enum browser_window_create_flags flags =
-			BW_CREATE_HISTORY | BW_CREATE_TAB;
+		enum browser_window_create_flags flags = BW_CREATE_HISTORY |
+							 BW_CREATE_TAB;
 		if (!background) {
 			flags |= BW_CREATE_FOREGROUND;
 		}
@@ -516,8 +508,13 @@ cmd_open(struct nsvi_state *state, int argc, char *argv[])
 		error = browser_window_create(
 			BW_CREATE_HISTORY, url, NULL, NULL, NULL);
 	} else {
-		error = browser_window_navigate(gw->bw, url, NULL,
-			BW_NAVIGATE_HISTORY, NULL, NULL, NULL);
+		error = browser_window_navigate(gw->bw,
+						url,
+						NULL,
+						BW_NAVIGATE_HISTORY,
+						NULL,
+						NULL,
+						NULL);
 	}
 	nsurl_unref(url);
 	if (error != NSERROR_OK) {
@@ -533,8 +530,7 @@ exit:
 	return ret;
 }
 
-static int
-cmd_page(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_page(struct nsvi_state *state, int argc, char *argv[])
 {
 	if (argc != 2) {
 		NSLOG(neosurf, ERROR, "page: expected argument");
@@ -566,7 +562,9 @@ cmd_page(struct nsvi_state *state, int argc, char *argv[])
 	}
 
 	if (content_get_type(handle) != CONTENT_HTML) {
-		NSLOG(neosurf, ERROR, "page: cannot work with non-HTML content");
+		NSLOG(neosurf,
+		      ERROR,
+		      "page: cannot work with non-HTML content");
 		handle_error(strdup("page: cannot work with non-HTML content"));
 		return 1;
 	}
@@ -580,9 +578,16 @@ cmd_page(struct nsvi_state *state, int argc, char *argv[])
 	lwc_intern_string(argv[1], 4, &rel);
 
 	while (link != NULL) {
-		if (lwc_string_caseless_isequal(link->rel, rel, &rel_match) == lwc_error_ok && rel_match) {
-			browser_window_navigate(bw, link->href, NULL,
-			BW_NAVIGATE_HISTORY, NULL, NULL, NULL);
+		if (lwc_string_caseless_isequal(link->rel, rel, &rel_match) ==
+			    lwc_error_ok &&
+		    rel_match) {
+			browser_window_navigate(bw,
+						link->href,
+						NULL,
+						BW_NAVIGATE_HISTORY,
+						NULL,
+						NULL,
+						NULL);
 			request_frame(win);
 			goto exit;
 		}
@@ -598,8 +603,7 @@ exit:
 	return ret;
 }
 
-static int
-cmd_paste(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_paste(struct nsvi_state *state, int argc, char *argv[])
 {
 	bool background = false, tab = false, window = false, primary = false;
 
@@ -676,8 +680,8 @@ cmd_paste(struct nsvi_state *state, int argc, char *argv[])
 
 	struct gui_window *gw = win->tabs[win->tab];
 	if (tab) {
-		enum browser_window_create_flags flags =
-			BW_CREATE_HISTORY | BW_CREATE_TAB;
+		enum browser_window_create_flags flags = BW_CREATE_HISTORY |
+							 BW_CREATE_TAB;
 		if (!background) {
 			flags |= BW_CREATE_FOREGROUND;
 		}
@@ -686,8 +690,13 @@ cmd_paste(struct nsvi_state *state, int argc, char *argv[])
 		error = browser_window_create(
 			BW_CREATE_HISTORY, url, NULL, NULL, NULL);
 	} else {
-		error = browser_window_navigate(gw->bw, url, NULL,
-			BW_NAVIGATE_HISTORY, NULL, NULL, NULL);
+		error = browser_window_navigate(gw->bw,
+						url,
+						NULL,
+						BW_NAVIGATE_HISTORY,
+						NULL,
+						NULL,
+						NULL);
 	}
 	nsurl_unref(url);
 
@@ -699,15 +708,13 @@ cmd_paste(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static int
-cmd_quit(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_quit(struct nsvi_state *state, int argc, char *argv[])
 {
 	state->quit = true;
 	return 0;
 }
 
-static int
-cmd_reload(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_reload(struct nsvi_state *state, int argc, char *argv[])
 {
 	bool force = 0;
 
@@ -742,8 +749,7 @@ cmd_reload(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static int
-cmd_scroll(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_scroll(struct nsvi_state *state, int argc, char *argv[])
 {
 	enum { HORIZ, VERT } axis = VERT;
 	enum { ABS, PCT } mode = ABS;
@@ -845,8 +851,7 @@ cmd_scroll(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static int
-cmd_search(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_search(struct nsvi_state *state, int argc, char *argv[])
 {
 	// TODO: Incremental search
 	struct nsvi_window *win = global_state->keyboard_focus;
@@ -889,13 +894,12 @@ cmd_search(struct nsvi_state *state, int argc, char *argv[])
 		gw->search = strdup(argv[ns_optind]);
 	}
 
-	browser_window_search(win->tabs[win->tab]->bw, NULL,
-		gw->search_flags, gw->search);
+	browser_window_search(
+		win->tabs[win->tab]->bw, NULL, gw->search_flags, gw->search);
 	return 0;
 }
 
-static int
-cmd_set(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_set(struct nsvi_state *state, int argc, char *argv[])
 {
 	if (argc != 3) {
 		NSLOG(neosurf, ERROR, "set: expected two arguments");
@@ -915,8 +919,7 @@ cmd_set(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static int
-cmd_source(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_source(struct nsvi_state *state, int argc, char *argv[])
 {
 	if (argc < 2) {
 		NSLOG(neosurf, ERROR, "source: not enough arguments");
@@ -926,8 +929,7 @@ cmd_source(struct nsvi_state *state, int argc, char *argv[])
 	return nsvi_command_source(state, argv[1]);
 }
 
-static int
-cmd_stop(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_stop(struct nsvi_state *state, int argc, char *argv[])
 {
 	if (argc != 1) {
 		NSLOG(neosurf, ERROR, "stop: unexpected argument");
@@ -945,8 +947,7 @@ cmd_stop(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static int
-cmd_tab(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_tab(struct nsvi_state *state, int argc, char *argv[])
 {
 	if (argc != 2) {
 		NSLOG(neosurf, ERROR, "tab: expected argument");
@@ -968,8 +969,11 @@ cmd_tab(struct nsvi_state *state, int argc, char *argv[])
 		char *endptr;
 		i = strtoul(argv[1], &endptr, 10);
 		if (*endptr) {
-			NSLOG(neosurf, ERROR, "tab: expected <next|prev|[index]>");
-			handle_error(strdup("tab: expected <next|prev|[index]>"));
+			NSLOG(neosurf,
+			      ERROR,
+			      "tab: expected <next|prev|[index]>");
+			handle_error(
+				strdup("tab: expected <next|prev|[index]>"));
 			return 1;
 		}
 	}
@@ -982,8 +986,8 @@ cmd_tab(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static int
-cmd_tabmove(struct nsvi_state *state, int argc, char *argv[]) {
+static int cmd_tabmove(struct nsvi_state *state, int argc, char *argv[])
+{
 	if (argc != 2) {
 		NSLOG(neosurf, ERROR, "tabmove: expected argument");
 		handle_error(strdup("tabmove: expected argument"));
@@ -1022,8 +1026,7 @@ cmd_tabmove(struct nsvi_state *state, int argc, char *argv[]) {
 	return 0;
 }
 
-static int
-cmd_unbind(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_unbind(struct nsvi_state *state, int argc, char *argv[])
 {
 	if (argc != 2) {
 		NSLOG(neosurf, ERROR, "unbind: unexpected argument");
@@ -1038,8 +1041,7 @@ cmd_unbind(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static int
-cmd_undo(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_undo(struct nsvi_state *state, int argc, char *argv[])
 {
 	if (argc != 1) {
 		NSLOG(neosurf, ERROR, "undo: unexpected argument");
@@ -1064,9 +1066,13 @@ cmd_undo(struct nsvi_state *state, int argc, char *argv[])
 	switch (undo->kind) {
 	case UNDO_TAB:
 		assert(undo->nurl == 1);
-		error = browser_window_create(
-			BW_CREATE_TAB | BW_CREATE_FOREGROUND | BW_CREATE_HISTORY,
-			undo->urls[0], NULL, gw->bw, NULL);
+		error = browser_window_create(BW_CREATE_TAB |
+						      BW_CREATE_FOREGROUND |
+						      BW_CREATE_HISTORY,
+					      undo->urls[0],
+					      NULL,
+					      gw->bw,
+					      NULL);
 		if (error != NSERROR_OK) {
 			NSLOG(neosurf, ERROR, "undo: failed to create tab");
 			handle_error(strdup("undo: failed to create tab"));
@@ -1081,8 +1087,7 @@ cmd_undo(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static int
-cmd_yank(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_yank(struct nsvi_state *state, int argc, char *argv[])
 {
 	enum {
 		URL,
@@ -1161,8 +1166,7 @@ cmd_yank(struct nsvi_state *state, int argc, char *argv[])
 	return 0;
 }
 
-static int
-cmd_zoom(struct nsvi_state *state, int argc, char *argv[])
+static int cmd_zoom(struct nsvi_state *state, int argc, char *argv[])
 {
 	// TODO: Remember zoom preference for each domain
 	bool relative = false;
@@ -1205,7 +1209,9 @@ cmd_zoom(struct nsvi_state *state, int argc, char *argv[])
 	struct gui_window *gw = win->tabs[win->tab];
 	nserror error = browser_window_set_scale(gw->bw, amt, !relative);
 	if (error != NSERROR_OK) {
-		NSLOG(neosurf, WARNING, "zoom: browser_window_set_scale failed");
+		NSLOG(neosurf,
+		      WARNING,
+		      "zoom: browser_window_set_scale failed");
 		return 1;
 	}
 	return 0;
@@ -1218,35 +1224,22 @@ struct command {
 
 // Alpha sorted
 static const struct command commands[] = {
-	{ "back", &cmd_back },
-	{ "bind", &cmd_bind },
-	{ "close", &cmd_close },
-	{ "exec", &cmd_exec },
-	{ "exline", &cmd_exline },
-	{ "follow", &cmd_follow },
-	{ "forward", &cmd_forward },
-	{ "fullscreen", &cmd_fullscreen },
-	{ "insert", &cmd_insert },
-	{ "open", &cmd_open },
-	{ "page", &cmd_page },
-	{ "paste", &cmd_paste },
-	{ "quit", &cmd_quit },
-	{ "reload", &cmd_reload },
-	{ "scroll", &cmd_scroll },
-	{ "search", &cmd_search },
-	{ "set", &cmd_set },
-	{ "source", &cmd_source },
-	{ "stop", &cmd_stop },
-	{ "tab", &cmd_tab },
-	{ "tabmove", &cmd_tabmove },
-	{ "unbind", &cmd_unbind },
-	{ "undo", &cmd_undo },
-	{ "yank", &cmd_yank },
-	{ "zoom", &cmd_zoom },
+	{"back", &cmd_back},	   {"bind", &cmd_bind},
+	{"close", &cmd_close},	   {"exec", &cmd_exec},
+	{"exline", &cmd_exline},   {"follow", &cmd_follow},
+	{"forward", &cmd_forward}, {"fullscreen", &cmd_fullscreen},
+	{"insert", &cmd_insert},   {"open", &cmd_open},
+	{"page", &cmd_page},	   {"paste", &cmd_paste},
+	{"quit", &cmd_quit},	   {"reload", &cmd_reload},
+	{"scroll", &cmd_scroll},   {"search", &cmd_search},
+	{"set", &cmd_set},	   {"source", &cmd_source},
+	{"stop", &cmd_stop},	   {"tab", &cmd_tab},
+	{"tabmove", &cmd_tabmove}, {"unbind", &cmd_unbind},
+	{"undo", &cmd_undo},	   {"yank", &cmd_yank},
+	{"zoom", &cmd_zoom},
 };
 
-static int
-cmd_compar(const void *a, const void *b)
+static int cmd_compar(const void *a, const void *b)
 {
 	const char *key = a;
 	const struct command *cmd = b;
@@ -1256,8 +1249,7 @@ cmd_compar(const void *a, const void *b)
 	return strcmp(key, cmd->name);
 }
 
-static void
-populate_env(struct nsvi_state *state)
+static void populate_env(struct nsvi_state *state)
 {
 	unsetenv("url");
 	unsetenv("scheme");
@@ -1284,20 +1276,19 @@ populate_env(struct nsvi_state *state)
 			const char *name;
 			nsurl_component part;
 		} urlparts[] = {
-			{ "scheme", NSURL_SCHEME },
-			{ "username", NSURL_USERNAME },
-			{ "host", NSURL_HOST },
-			{ "port", NSURL_PORT },
-			{ "path", NSURL_PATH },
-			{ "query", NSURL_QUERY },
-			{ "fragment", NSURL_FRAGMENT },
+			{"scheme", NSURL_SCHEME},
+			{"username", NSURL_USERNAME},
+			{"host", NSURL_HOST},
+			{"port", NSURL_PORT},
+			{"path", NSURL_PATH},
+			{"query", NSURL_QUERY},
+			{"fragment", NSURL_FRAGMENT},
 		};
 
 		char *part;
 		size_t sz;
-		for (size_t i = 0;
-				i < sizeof(urlparts) / sizeof(urlparts[0]);
-				++i) {
+		for (size_t i = 0; i < sizeof(urlparts) / sizeof(urlparts[0]);
+		     ++i) {
 			if (nsurl_has_component(url, urlparts[i].part)) {
 				nsurl_get(url, urlparts[i].part, &part, &sz);
 				setenv(urlparts[i].name, part, 1);
@@ -1309,8 +1300,7 @@ populate_env(struct nsvi_state *state)
 	setenv("title", browser_window_get_title(gw->bw), 1);
 }
 
-void
-nsvi_command(void *user, const char *cmd)
+void nsvi_command(void *user, const char *cmd)
 {
 	// TODO: Error handling
 	struct nsvi_state *state = user;
@@ -1328,10 +1318,12 @@ nsvi_command(void *user, const char *cmd)
 	char **argv = p.we_wordv;
 	int argc = p.we_wordc;
 
-	struct command *command = bsearch(argv[0], &commands,
-			sizeof(commands) / sizeof(commands[0]),
-			sizeof(commands[0]),
-			cmd_compar);
+	struct command *command = bsearch(argv[0],
+					  &commands,
+					  sizeof(commands) /
+						  sizeof(commands[0]),
+					  sizeof(commands[0]),
+					  cmd_compar);
 	if (!command) {
 		char *error_message;
 		if (argv[0] == NULL) {
@@ -1352,12 +1344,14 @@ exit:
 	wordfree(&p);
 }
 
-int
-nsvi_command_source(void *user, const char *filepath) {
+int nsvi_command_source(void *user, const char *filepath)
+{
 	FILE *f = fopen(filepath, "r");
 	if (f == NULL) {
-		NSLOG(neosurf, ERROR, "source: unable to open file at '%s'",
-			filepath);
+		NSLOG(neosurf,
+		      ERROR,
+		      "source: unable to open file at '%s'",
+		      filepath);
 		return 1;
 	}
 	char *line = NULL;
@@ -1367,7 +1361,7 @@ nsvi_command_source(void *user, const char *filepath) {
 		if (line[0] == '\n' || line[0] == '#') {
 			continue;
 		}
-		line[len-1] = '\0';
+		line[len - 1] = '\0';
 		nsvi_command(user, line);
 	}
 	free(line);

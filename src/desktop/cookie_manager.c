@@ -98,8 +98,10 @@ struct treeview_walk_ctx {
 	struct cookie_manager_entry *entry;
 };
 /** Callback for treeview_walk */
-static nserror cookie_manager_walk_cb(void *ctx, void *node_data,
-		enum treeview_node_type type, bool *abort)
+static nserror cookie_manager_walk_cb(void *ctx,
+				      void *node_data,
+				      enum treeview_node_type type,
+				      bool *abort)
 {
 	struct treeview_walk_ctx *tw = ctx;
 
@@ -107,8 +109,7 @@ static nserror cookie_manager_walk_cb(void *ctx, void *node_data,
 		struct cookie_manager_entry *entry = node_data;
 
 		if (entry->data[COOKIE_M_NAME].value_len == tw->title_len &&
-				strcmp(tw->title,
-				entry->data[COOKIE_M_NAME].value) == 0) {
+		    strcmp(tw->title, entry->data[COOKIE_M_NAME].value) == 0) {
 			/* Found what we're looking for */
 			tw->entry = entry;
 			*abort = true;
@@ -118,7 +119,7 @@ static nserror cookie_manager_walk_cb(void *ctx, void *node_data,
 		struct cookie_manager_folder *folder = node_data;
 
 		if (folder->data.value_len == tw->title_len &&
-				strcmp(tw->title, folder->data.value) == 0) {
+		    strcmp(tw->title, folder->data.value) == 0) {
 			/* Found what we're looking for */
 			tw->folder = folder;
 			*abort = true;
@@ -137,19 +138,22 @@ static nserror cookie_manager_walk_cb(void *ctx, void *node_data,
  * \return NSERROR_OK on success, appropriate error otherwise
  */
 static nserror cookie_manager_find_entry(treeview_node *root,
-		const char *title, size_t title_len,
-		struct cookie_manager_entry **found)
+					 const char *title,
+					 size_t title_len,
+					 struct cookie_manager_entry **found)
 {
 	nserror err;
-	struct treeview_walk_ctx tw = {
-		.title = title,
-		.title_len = title_len,
-		.folder = NULL,
-		.entry = NULL
-	};
+	struct treeview_walk_ctx tw = {.title = title,
+				       .title_len = title_len,
+				       .folder = NULL,
+				       .entry = NULL};
 
-	err = treeview_walk(cm_ctx.tree, root, cookie_manager_walk_cb, NULL,
-			&tw, TREE_NODE_ENTRY);
+	err = treeview_walk(cm_ctx.tree,
+			    root,
+			    cookie_manager_walk_cb,
+			    NULL,
+			    &tw,
+			    TREE_NODE_ENTRY);
 	if (err != NSERROR_OK)
 		return err;
 
@@ -167,19 +171,22 @@ static nserror cookie_manager_find_entry(treeview_node *root,
  * \return NSERROR_OK on success, appropriate error otherwise
  */
 static nserror cookie_manager_find_folder(treeview_node *root,
-		const char *title, size_t title_len,
-		struct cookie_manager_folder **found)
+					  const char *title,
+					  size_t title_len,
+					  struct cookie_manager_folder **found)
 {
 	nserror err;
-	struct treeview_walk_ctx tw = {
-		.title = title,
-		.title_len = title_len,
-		.folder = NULL,
-		.entry = NULL
-	};
+	struct treeview_walk_ctx tw = {.title = title,
+				       .title_len = title_len,
+				       .folder = NULL,
+				       .entry = NULL};
 
-	err = treeview_walk(cm_ctx.tree, root, cookie_manager_walk_cb, NULL,
-			&tw, TREE_NODE_FOLDER);
+	err = treeview_walk(cm_ctx.tree,
+			    root,
+			    cookie_manager_walk_cb,
+			    NULL,
+			    &tw,
+			    TREE_NODE_FOLDER);
 	if (err != NSERROR_OK)
 		return err;
 
@@ -194,8 +201,8 @@ static nserror cookie_manager_find_folder(treeview_node *root,
  *
  * \param e		Cookie manager entry to free data from
  */
-static void cookie_manager_free_treeview_field_data(
-		struct cookie_manager_entry *e)
+static void
+cookie_manager_free_treeview_field_data(struct cookie_manager_entry *e)
 {
 	/* Eww */
 	free((void *)e->data[COOKIE_M_NAME].value);
@@ -253,8 +260,8 @@ cookie_manager_field_builder_time(enum cookie_manager_field field,
 		char *value = malloc(vsize);
 		if (value != NULL) {
 			fdata->value = value;
-			fdata->value_len = strftime(value, vsize,
-					"%a %b %e %H:%M:%S %Y", ftime);
+			fdata->value_len = strftime(
+				value, vsize, "%a %b %e %H:%M:%S %Y", ftime);
 		}
 	}
 
@@ -278,27 +285,34 @@ cookie_manager_set_treeview_field_data(struct cookie_manager_entry *e,
 
 	/* Set the fields up */
 	cookie_manager_field_builder(COOKIE_M_NAME,
-			&e->data[COOKIE_M_NAME], strdup(data->name));
+				     &e->data[COOKIE_M_NAME],
+				     strdup(data->name));
 	cookie_manager_field_builder(COOKIE_M_CONTENT,
-			&e->data[COOKIE_M_CONTENT], strdup(data->value));
+				     &e->data[COOKIE_M_CONTENT],
+				     strdup(data->value));
 	cookie_manager_field_builder(COOKIE_M_DOMAIN,
-			&e->data[COOKIE_M_DOMAIN], strdup(data->domain));
+				     &e->data[COOKIE_M_DOMAIN],
+				     strdup(data->domain));
 	cookie_manager_field_builder(COOKIE_M_PATH,
-			&e->data[COOKIE_M_PATH], strdup(data->path));
+				     &e->data[COOKIE_M_PATH],
+				     strdup(data->path));
 
 	/* Set the Expires date field */
 	if (data->expires == -1) {
-		cookie_manager_field_builder(COOKIE_M_EXPIRES,
+		cookie_manager_field_builder(
+			COOKIE_M_EXPIRES,
 			&e->data[COOKIE_M_EXPIRES],
 			strdup(messages_get("CookieManagerSession")));
 	} else {
 		cookie_manager_field_builder_time(COOKIE_M_EXPIRES,
-			&e->data[COOKIE_M_EXPIRES], &data->expires);
+						  &e->data[COOKIE_M_EXPIRES],
+						  &data->expires);
 	}
 
 	/* Set the Last used date field */
 	cookie_manager_field_builder_time(COOKIE_M_LAST_USED,
-			&e->data[COOKIE_M_LAST_USED], &data->last_used);
+					  &e->data[COOKIE_M_LAST_USED],
+					  &data->last_used);
 
 	/* Set the Restrictions text */
 	if (data->secure && data->http_only) {
@@ -340,9 +354,9 @@ cookie_manager_set_treeview_field_data(struct cookie_manager_entry *e,
  * \param data	      the cookie data to use
  * \return NSERROR_OK on success, appropriate error otherwise
  */
-static nserror cookie_manager_create_cookie_node(
-		struct cookie_manager_folder *parent,
-		const struct cookie_data *data)
+static nserror
+cookie_manager_create_cookie_node(struct cookie_manager_folder *parent,
+				  const struct cookie_data *data)
 {
 	nserror err;
 	struct cookie_manager_entry *cookie;
@@ -361,15 +375,16 @@ static nserror cookie_manager_create_cookie_node(
 		return err;
 	}
 
-	err = treeview_create_node_entry(cm_ctx.tree,
-					 &(cookie->entry),
-					 parent->folder,
-					 TREE_REL_FIRST_CHILD,
-					 cookie->data,
-					 cookie,
-					 cm_ctx.built ? TREE_OPTION_NONE :
-					TREE_OPTION_SUPPRESS_RESIZE |
-					TREE_OPTION_SUPPRESS_REDRAW);
+	err = treeview_create_node_entry(
+		cm_ctx.tree,
+		&(cookie->entry),
+		parent->folder,
+		TREE_REL_FIRST_CHILD,
+		cookie->data,
+		cookie,
+		cm_ctx.built ? TREE_OPTION_NONE
+			     : TREE_OPTION_SUPPRESS_RESIZE |
+				       TREE_OPTION_SUPPRESS_REDRAW);
 	if (err != NSERROR_OK) {
 		cookie_manager_free_treeview_field_data(cookie);
 		free(cookie);
@@ -390,9 +405,8 @@ static nserror cookie_manager_create_cookie_node(
  * \param data	      the cookie data to use
  * \return NSERROR_OK on success, appropriate error otherwise
  */
-static nserror cookie_manager_update_cookie_node(
-		struct cookie_manager_entry *e,
-		const struct cookie_data *data)
+static nserror cookie_manager_update_cookie_node(struct cookie_manager_entry *e,
+						 const struct cookie_data *data)
 {
 	nserror err;
 
@@ -428,9 +442,9 @@ static nserror cookie_manager_update_cookie_node(
  * \param data	      the cookie data to use
  * \return NSERROR_OK on success, appropriate error otherwise
  */
-static nserror cookie_manager_create_domain_folder(
-		struct cookie_manager_folder **folder,
-		const struct cookie_data *data)
+static nserror
+cookie_manager_create_domain_folder(struct cookie_manager_folder **folder,
+				    const struct cookie_data *data)
 {
 	nserror err;
 	struct cookie_manager_folder *f;
@@ -443,14 +457,18 @@ static nserror cookie_manager_create_domain_folder(
 
 	f->data.field = cm_ctx.fields[COOKIE_M_N_FIELDS - 1].field;
 	f->data.value = strdup(data->domain);
-	f->data.value_len = (f->data.value != NULL) ?
-			strlen(data->domain) : 0;
+	f->data.value_len = (f->data.value != NULL) ? strlen(data->domain) : 0;
 
-	err = treeview_create_node_folder(cm_ctx.tree, &(f->folder),
-			NULL, TREE_REL_FIRST_CHILD, &f->data, f,
-			cm_ctx.built ? TREE_OPTION_NONE :
-					TREE_OPTION_SUPPRESS_RESIZE |
-					TREE_OPTION_SUPPRESS_REDRAW);
+	err = treeview_create_node_folder(
+		cm_ctx.tree,
+		&(f->folder),
+		NULL,
+		TREE_REL_FIRST_CHILD,
+		&f->data,
+		f,
+		cm_ctx.built ? TREE_OPTION_NONE
+			     : TREE_OPTION_SUPPRESS_RESIZE |
+				       TREE_OPTION_SUPPRESS_REDRAW);
 	if (err != NSERROR_OK) {
 		free((void *)f->data.value);
 		free(f);
@@ -476,8 +494,8 @@ bool cookie_manager_add(const struct cookie_data *data)
 	if (cm_ctx.tree == NULL)
 		return true;
 
-	err = cookie_manager_find_folder(NULL, data->domain,
-			strlen(data->domain), &parent);
+	err = cookie_manager_find_folder(
+		NULL, data->domain, strlen(data->domain), &parent);
 	if (err != NSERROR_OK) {
 		return false;
 	}
@@ -490,8 +508,8 @@ bool cookie_manager_add(const struct cookie_data *data)
 	}
 
 	/* Create cookie node */
-	err = cookie_manager_find_entry(parent->folder, data->name,
-			strlen(data->name), &cookie);
+	err = cookie_manager_find_entry(
+		parent->folder, data->name, strlen(data->name), &cookie);
 	if (err != NSERROR_OK)
 		return false;
 
@@ -520,15 +538,15 @@ void cookie_manager_remove(const struct cookie_data *data)
 	if (cm_ctx.tree == NULL)
 		return;
 
-	err = cookie_manager_find_folder(NULL, data->domain,
-			strlen(data->domain), &parent);
+	err = cookie_manager_find_folder(
+		NULL, data->domain, strlen(data->domain), &parent);
 	if (err != NSERROR_OK || parent == NULL) {
 		/* Nothing to delete */
 		return;
 	}
 
-	err = cookie_manager_find_entry(parent->folder, data->name,
-			strlen(data->name), &cookie);
+	err = cookie_manager_find_entry(
+		parent->folder, data->name, strlen(data->name), &cookie);
 	if (err != NSERROR_OK || cookie == NULL) {
 		/* Nothing to delete */
 		return;
@@ -540,8 +558,7 @@ void cookie_manager_remove(const struct cookie_data *data)
 
 
 /* exported interface documented in cookie_manager.h */
-nserror cookie_manager_set_search_string(
-		const char *string)
+nserror cookie_manager_set_search_string(const char *string)
 {
 	/* If we don't have a cookie manager at the moment, just return */
 	if (cm_ctx.tree == NULL) {
@@ -568,83 +585,91 @@ static nserror cookie_manager_init_entry_fields(void)
 	cm_ctx.fields[COOKIE_M_NAME].flags = TREE_FLAG_DEFAULT;
 	label = "TreeviewLabelName";
 	label = messages_get(label);
-	if (lwc_intern_string(label, strlen(label),
-			&cm_ctx.fields[COOKIE_M_NAME].field) !=
-			lwc_error_ok) {
+	if (lwc_intern_string(label,
+			      strlen(label),
+			      &cm_ctx.fields[COOKIE_M_NAME].field) !=
+	    lwc_error_ok) {
 		goto error;
 	}
 
 	cm_ctx.fields[COOKIE_M_CONTENT].flags = TREE_FLAG_SHOW_NAME;
 	label = "TreeviewLabelContent";
 	label = messages_get(label);
-	if (lwc_intern_string(label, strlen(label),
-			&cm_ctx.fields[COOKIE_M_CONTENT].field) !=
-			lwc_error_ok) {
+	if (lwc_intern_string(label,
+			      strlen(label),
+			      &cm_ctx.fields[COOKIE_M_CONTENT].field) !=
+	    lwc_error_ok) {
 		goto error;
 	}
 
-	cm_ctx.fields[COOKIE_M_DOMAIN].flags =
-			TREE_FLAG_SHOW_NAME |
-			TREE_FLAG_SEARCHABLE;
+	cm_ctx.fields[COOKIE_M_DOMAIN].flags = TREE_FLAG_SHOW_NAME |
+					       TREE_FLAG_SEARCHABLE;
 	label = "TreeviewLabelDomain";
 	label = messages_get(label);
-	if (lwc_intern_string(label, strlen(label),
-			&cm_ctx.fields[COOKIE_M_DOMAIN].field) !=
-			lwc_error_ok) {
+	if (lwc_intern_string(label,
+			      strlen(label),
+			      &cm_ctx.fields[COOKIE_M_DOMAIN].field) !=
+	    lwc_error_ok) {
 		goto error;
 	}
 
 	cm_ctx.fields[COOKIE_M_PATH].flags = TREE_FLAG_SHOW_NAME;
 	label = "TreeviewLabelPath";
 	label = messages_get(label);
-	if (lwc_intern_string(label, strlen(label),
-			&cm_ctx.fields[COOKIE_M_PATH].field) !=
-			lwc_error_ok) {
+	if (lwc_intern_string(label,
+			      strlen(label),
+			      &cm_ctx.fields[COOKIE_M_PATH].field) !=
+	    lwc_error_ok) {
 		goto error;
 	}
 
 	cm_ctx.fields[COOKIE_M_EXPIRES].flags = TREE_FLAG_SHOW_NAME;
 	label = "TreeviewLabelExpires";
 	label = messages_get(label);
-	if (lwc_intern_string(label, strlen(label),
-			&cm_ctx.fields[COOKIE_M_EXPIRES].field) !=
-			lwc_error_ok) {
+	if (lwc_intern_string(label,
+			      strlen(label),
+			      &cm_ctx.fields[COOKIE_M_EXPIRES].field) !=
+	    lwc_error_ok) {
 		goto error;
 	}
 
 	cm_ctx.fields[COOKIE_M_LAST_USED].flags = TREE_FLAG_SHOW_NAME;
 	label = "TreeviewLabelLastUsed";
 	label = messages_get(label);
-	if (lwc_intern_string(label, strlen(label),
-			&cm_ctx.fields[COOKIE_M_LAST_USED].field) !=
-			lwc_error_ok) {
+	if (lwc_intern_string(label,
+			      strlen(label),
+			      &cm_ctx.fields[COOKIE_M_LAST_USED].field) !=
+	    lwc_error_ok) {
 		goto error;
 	}
 
 	cm_ctx.fields[COOKIE_M_RESTRICTIONS].flags = TREE_FLAG_SHOW_NAME;
 	label = "TreeviewLabelRestrictions";
 	label = messages_get(label);
-	if (lwc_intern_string(label, strlen(label),
-			&cm_ctx.fields[COOKIE_M_RESTRICTIONS].field) !=
-			lwc_error_ok) {
+	if (lwc_intern_string(label,
+			      strlen(label),
+			      &cm_ctx.fields[COOKIE_M_RESTRICTIONS].field) !=
+	    lwc_error_ok) {
 		goto error;
 	}
 
 	cm_ctx.fields[COOKIE_M_VERSION].flags = TREE_FLAG_SHOW_NAME;
 	label = "TreeviewLabelVersion";
 	label = messages_get(label);
-	if (lwc_intern_string(label, strlen(label),
-			&cm_ctx.fields[COOKIE_M_VERSION].field) !=
-			lwc_error_ok) {
+	if (lwc_intern_string(label,
+			      strlen(label),
+			      &cm_ctx.fields[COOKIE_M_VERSION].field) !=
+	    lwc_error_ok) {
 		goto error;
 	}
 
 	cm_ctx.fields[COOKIE_M_DOMAIN_FOLDER].flags = TREE_FLAG_DEFAULT;
 	label = "TreeviewLabelDomainFolder";
 	label = messages_get(label);
-	if (lwc_intern_string(label, strlen(label),
-			&cm_ctx.fields[COOKIE_M_DOMAIN_FOLDER].field) !=
-			lwc_error_ok) {
+	if (lwc_intern_string(label,
+			      strlen(label),
+			      &cm_ctx.fields[COOKIE_M_DOMAIN_FOLDER].field) !=
+	    lwc_error_ok) {
 		return false;
 	}
 
@@ -659,7 +684,6 @@ error:
 }
 
 
-
 /**
  * Initialise the common entry values
  *
@@ -672,35 +696,42 @@ static nserror cookie_manager_init_common_values(void)
 	/* Set the Restrictions text */
 	temp = messages_get("CookieManagerHTTPS");
 	cookie_manager_field_builder(COOKIE_M_RESTRICTIONS,
-			&cm_ctx.values[COOKIE_M_HTTPS], strdup(temp));
+				     &cm_ctx.values[COOKIE_M_HTTPS],
+				     strdup(temp));
 
 	temp = messages_get("CookieManagerSecure");
 	cookie_manager_field_builder(COOKIE_M_RESTRICTIONS,
-			&cm_ctx.values[COOKIE_M_SECURE], strdup(temp));
+				     &cm_ctx.values[COOKIE_M_SECURE],
+				     strdup(temp));
 
 	temp = messages_get("CookieManagerHTTP");
 	cookie_manager_field_builder(COOKIE_M_RESTRICTIONS,
-			&cm_ctx.values[COOKIE_M_HTTP], strdup(temp));
+				     &cm_ctx.values[COOKIE_M_HTTP],
+				     strdup(temp));
 
 	temp = messages_get("None");
 	cookie_manager_field_builder(COOKIE_M_RESTRICTIONS,
-			&cm_ctx.values[COOKIE_M_NONE], strdup(temp));
+				     &cm_ctx.values[COOKIE_M_NONE],
+				     strdup(temp));
 
 	/* Set the Cookie version text */
 	assert(COOKIE_NETSCAPE == 0);
 	temp = messages_get("TreeVersion0");
 	cookie_manager_field_builder(COOKIE_M_VERSION,
-			&cm_ctx.values[COOKIE_M_NETSCAPE], strdup(temp));
+				     &cm_ctx.values[COOKIE_M_NETSCAPE],
+				     strdup(temp));
 
 	assert(COOKIE_RFC2109 == 1);
 	temp = messages_get("TreeVersion1");
 	cookie_manager_field_builder(COOKIE_M_VERSION,
-			&cm_ctx.values[COOKIE_M_RFC2109], strdup(temp));
+				     &cm_ctx.values[COOKIE_M_RFC2109],
+				     strdup(temp));
 
 	assert(COOKIE_RFC2965 == 2);
 	temp = messages_get("TreeVersion2");
 	cookie_manager_field_builder(COOKIE_M_VERSION,
-			&cm_ctx.values[COOKIE_M_RFC2965], strdup(temp));
+				     &cm_ctx.values[COOKIE_M_RFC2965],
+				     strdup(temp));
 
 	return NSERROR_OK;
 }
@@ -724,11 +755,13 @@ static void cookie_manager_delete_entry(struct cookie_manager_entry *e)
 		name = e->data[COOKIE_M_NAME].value;
 
 		if ((domain != NULL) && (path != NULL) && (name != NULL)) {
-			
+
 			urldb_delete_cookie(domain, path, name);
 		} else {
-			NSLOG(neosurf, INFO,
-			      "Delete cookie fail: ""need domain, path, and name.");
+			NSLOG(neosurf,
+			      INFO,
+			      "Delete cookie fail: "
+			      "need domain, path, and name.");
 		}
 	}
 
@@ -738,8 +771,8 @@ static void cookie_manager_delete_entry(struct cookie_manager_entry *e)
 }
 
 
-static nserror cookie_manager_tree_node_folder_cb(
-		struct treeview_node_msg msg, void *data)
+static nserror
+cookie_manager_tree_node_folder_cb(struct treeview_node_msg msg, void *data)
 {
 	struct cookie_manager_folder *f = data;
 
@@ -759,8 +792,8 @@ static nserror cookie_manager_tree_node_folder_cb(
 }
 
 
-static nserror cookie_manager_tree_node_entry_cb(
-		struct treeview_node_msg msg, void *data)
+static nserror
+cookie_manager_tree_node_entry_cb(struct treeview_node_msg msg, void *data)
 {
 	struct cookie_manager_entry *e = data;
 
@@ -783,8 +816,7 @@ static nserror cookie_manager_tree_node_entry_cb(
 
 struct treeview_callback_table cm_tree_cb_t = {
 	.folder = cookie_manager_tree_node_folder_cb,
-	.entry = cookie_manager_tree_node_entry_cb
-};
+	.entry = cookie_manager_tree_node_entry_cb};
 
 
 /* Exported interface, documented in cookie_manager.h */
@@ -814,12 +846,13 @@ nserror cookie_manager_init(void *core_window_handle)
 	}
 
 	/* Create the cookie manager treeview */
-	err = treeview_create(&cm_ctx.tree, &cm_tree_cb_t,
-			COOKIE_M_N_FIELDS, cm_ctx.fields,
-			core_window_handle,
-			TREEVIEW_NO_MOVES |
-			TREEVIEW_DEL_EMPTY_DIRS |
-			TREEVIEW_SEARCHABLE);
+	err = treeview_create(&cm_ctx.tree,
+			      &cm_tree_cb_t,
+			      COOKIE_M_N_FIELDS,
+			      cm_ctx.fields,
+			      core_window_handle,
+			      TREEVIEW_NO_MOVES | TREEVIEW_DEL_EMPTY_DIRS |
+				      TREEVIEW_SEARCHABLE);
 	if (err != NSERROR_OK) {
 		cm_ctx.tree = NULL;
 		return err;
@@ -864,7 +897,7 @@ nserror cookie_manager_fini(void)
 	/* Free cookie manager treeview common entry values */
 	for (i = 0; i < COOKIE_M_N_VALUES; i++)
 		if (cm_ctx.values[i].value != NULL)
-			free((void *) cm_ctx.values[i].value);
+			free((void *)cm_ctx.values[i].value);
 
 	err = treeview_fini();
 	if (err != NSERROR_OK) {
@@ -878,8 +911,10 @@ nserror cookie_manager_fini(void)
 
 
 /* Exported interface, documented in cookie_manager.h */
-void cookie_manager_redraw(int x, int y, struct rect *clip,
-		const struct redraw_context *ctx)
+void cookie_manager_redraw(int x,
+			   int y,
+			   struct rect *clip,
+			   const struct redraw_context *ctx)
 {
 	treeview_redraw(cm_ctx.tree, x, y, clip, ctx);
 }
@@ -918,4 +953,3 @@ nserror cookie_manager_contract(bool all)
 {
 	return treeview_contract(cm_ctx.tree, all);
 }
-

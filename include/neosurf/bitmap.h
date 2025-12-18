@@ -34,9 +34,9 @@
 
 /** Bitmap creation flags. */
 enum gui_bitmap_flags {
-	BITMAP_NONE   = 0,
+	BITMAP_NONE = 0,
 	BITMAP_OPAQUE = (1 << 0), /**< image is opaque */
-	BITMAP_CLEAR  = (1 << 1), /**< memory should be wiped to 0 */
+	BITMAP_CLEAR = (1 << 1), /**< memory should be wiped to 0 */
 };
 
 /**
@@ -94,7 +94,7 @@ enum bitmap_layout {
 /** Bitmap format specifier. */
 typedef struct bitmap_fmt {
 	enum bitmap_layout layout; /**< Colour component layout. */
-	bool pma;                  /**< Premultiplied alpha. */
+	bool pma; /**< Premultiplied alpha. */
 } bitmap_fmt_t;
 
 struct content;
@@ -205,7 +205,8 @@ struct gui_bitmap_table {
 	 * \param bitmap The bitmap to render into.
 	 * \param content The content to render.
 	 */
-	nserror (*render)(struct bitmap *bitmap, struct hlcache_handle *content);
+	nserror (*render)(struct bitmap *bitmap,
+			  struct hlcache_handle *content);
 };
 
 #endif

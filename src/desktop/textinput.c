@@ -50,8 +50,11 @@
 
 
 /* exported interface documented in desktop/textinput.h */
-void browser_window_place_caret(struct browser_window *bw, int x, int y,
-		int height, const struct rect *clip)
+void browser_window_place_caret(struct browser_window *bw,
+				int x,
+				int y,
+				int height,
+				const struct rect *clip)
 {
 	struct browser_window *root_bw;
 	int pos_x = 0;
@@ -77,7 +80,8 @@ void browser_window_place_caret(struct browser_window *bw, int x, int y,
 
 	/** \todo intersect with bw viewport */
 
-	guit->window->place_caret(root_bw->window, x, y, height * bw->scale, crp);
+	guit->window->place_caret(
+		root_bw->window, x, y, height * bw->scale, crp);
 
 	/* Set focus browser window */
 	root_bw->focus = bw;
@@ -118,4 +122,3 @@ bool browser_window_key_press(struct browser_window *bw, uint32_t key)
 
 	return content_keypress(focus->current_content, key);
 }
-

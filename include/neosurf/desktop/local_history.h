@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 #ifndef NETSURF_DESKTOP_LOCAL_HISTORY_H
 #define NETSURF_DESKTOP_LOCAL_HISTORY_H
 
@@ -44,7 +44,8 @@ struct browser_window;
  * \param[in] core_window_handle The core_window in which the treeview is shown.
  * \param[in] bw browser window to show history of.
  * \param[out] session The created local history session context.
- * \return NSERROR_OK on success and session set, appropriate error code otherwise
+ * \return NSERROR_OK on success and session set, appropriate error code
+ * otherwise
  */
 nserror local_history_init(void *core_window_handle,
 			   struct browser_window *bw,
@@ -75,7 +76,11 @@ nserror local_history_fini(struct local_history_session *session);
  * \param[in] clip  Current clip rectangle (wrt tree origin)
  * \param[in] ctx   Current redraw context
  */
-nserror local_history_redraw(struct local_history_session *session, int x, int y, struct rect *clip, const struct redraw_context *ctx);
+nserror local_history_redraw(struct local_history_session *session,
+			     int x,
+			     int y,
+			     struct rect *clip,
+			     const struct redraw_context *ctx);
 
 
 /**
@@ -90,7 +95,10 @@ nserror local_history_redraw(struct local_history_session *session, int x, int y
  *         NSERROR_NOT_IMPLEMENTED if the action was not processed.
  *         NSERROR_PERMISSION if the clicked item was the current page
  */
-nserror local_history_mouse_action(struct local_history_session *session, enum browser_mouse_state mouse, int x, int y);
+nserror local_history_mouse_action(struct local_history_session *session,
+				   enum browser_mouse_state mouse,
+				   int x,
+				   int y);
 
 
 /**
@@ -100,7 +108,8 @@ nserror local_history_mouse_action(struct local_history_session *session, enum b
  * \param[in] key The ucs4 character codepoint
  * \return true if the keypress is dealt with, false otherwise.
  */
-bool local_history_keypress(struct local_history_session *session, uint32_t key);
+bool local_history_keypress(struct local_history_session *session,
+			    uint32_t key);
 
 
 /**
@@ -110,7 +119,8 @@ bool local_history_keypress(struct local_history_session *session, uint32_t key)
  * \param bw browser window to show history of.
  * \return NSERROR_OK or appropriate error code.
  */
-nserror local_history_set(struct local_history_session *session, struct browser_window *bw);
+nserror local_history_set(struct local_history_session *session,
+			  struct browser_window *bw);
 
 
 /**
@@ -121,7 +131,9 @@ nserror local_history_set(struct local_history_session *session, struct browser_
  * \param[out] height on sucessful return the height of the localhistory content
  * \return NSERROR_OK or appropriate error code.
  */
-nserror local_history_get_size(struct local_history_session *session, int *width, int *height);
+nserror local_history_get_size(struct local_history_session *session,
+			       int *width,
+			       int *height);
 
 
 /**
@@ -136,7 +148,10 @@ nserror local_history_get_size(struct local_history_session *session, int *width
  * \return NSERROR_OK and url_out updated or NSERROR_NOT_FOUND if no url at
  *          location.
  */
-nserror local_history_get_url(struct local_history_session *session, int x, int y, struct nsurl **url_out);
+nserror local_history_get_url(struct local_history_session *session,
+			      int x,
+			      int y,
+			      struct nsurl **url_out);
 
 /**
  * Scroll the local history window to ensure the current cursor is shown.

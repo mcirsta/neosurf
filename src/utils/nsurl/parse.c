@@ -87,7 +87,8 @@ enum url_sections {
  * \param digit the value to get the hex digit for.
  * \return character in range 0-9A-F
  */
-inline static char digit2uppercase_hex(unsigned char digit) {
+inline static char digit2uppercase_hex(unsigned char digit)
+{
 	assert(digit < 16);
 	return "0123456789ABCDEF"[digit];
 }
@@ -111,17 +112,17 @@ static bool nsurl__is_unreserved(unsigned char c)
 		false, false, false, false, false, false, false, false, /* 10 */
 		false, false, false, false, false, false, false, false, /* 18 */
 		false, false, false, false, false, false, false, false, /* 20 */
-		false, false, false, false, false, true,  true,  false, /* 28 */
-		true,  true,  true,  true,  true,  true,  true,  true,  /* 30 */
+		false, false, false, false, false, true,  true,	 false, /* 28 */
+		true,  true,  true,  true,  true,  true,  true,	 true, /* 30 */
 		true,  true,  false, false, false, false, false, false, /* 38 */
-		false, true,  true,  true,  true,  true,  true,  true,  /* 40 */
-		true,  true,  true,  true,  true,  true,  true,  true,  /* 48 */
-		true,  true,  true,  true,  true,  true,  true,  true,  /* 50 */
-		true,  true,  true,  false, false, false, false, true,  /* 58 */
-		false, true,  true,  true,  true,  true,  true,  true,  /* 60 */
-		true,  true,  true,  true,  true,  true,  true,  true,  /* 68 */
-		true,  true,  true,  true,  true,  true,  true,  true,  /* 70 */
-		true,  true,  true,  false, false, false, true,  false, /* 78 */
+		false, true,  true,  true,  true,  true,  true,	 true, /* 40 */
+		true,  true,  true,  true,  true,  true,  true,	 true, /* 48 */
+		true,  true,  true,  true,  true,  true,  true,	 true, /* 50 */
+		true,  true,  true,  false, false, false, false, true, /* 58 */
+		false, true,  true,  true,  true,  true,  true,	 true, /* 60 */
+		true,  true,  true,  true,  true,  true,  true,	 true, /* 68 */
+		true,  true,  true,  true,  true,  true,  true,	 true, /* 70 */
+		true,  true,  true,  false, false, false, true,	 false, /* 78 */
 		false, false, false, false, false, false, false, false, /* 80 */
 		false, false, false, false, false, false, false, false, /* 88 */
 		false, false, false, false, false, false, false, false, /* 90 */
@@ -137,7 +138,7 @@ static bool nsurl__is_unreserved(unsigned char c)
 		false, false, false, false, false, false, false, false, /* E0 */
 		false, false, false, false, false, false, false, false, /* E8 */
 		false, false, false, false, false, false, false, false, /* F0 */
-		false, false, false, false, false, false, false, false  /* F8 */
+		false, false, false, false, false, false, false, false /* F8 */
 	};
 	return unreserved[c];
 }
@@ -157,18 +158,18 @@ static bool nsurl__is_no_escape(unsigned char c)
 		false, false, false, false, false, false, false, false, /* 08 */
 		false, false, false, false, false, false, false, false, /* 10 */
 		false, false, false, false, false, false, false, false, /* 18 */
-		false, true,  false, true,  true,  false, true,  true,  /* 20 */
-		true,  true,  true,  true,  true,  true,  true,  true,  /* 28 */
-		true,  true,  true,  true,  true,  true,  true,  true,  /* 30 */
-		true,  true,  true,  true,  false, true,  false, true,  /* 38 */
-		true,  true,  true,  true,  true,  true,  true,  true,  /* 40 */
-		true,  true,  true,  true,  true,  true,  true,  true,  /* 48 */
-		true,  true,  true,  true,  true,  true,  true,  true,  /* 50 */
-		true,  true,  true,  true,  false, true,  false, true,  /* 58 */
-		false, true,  true,  true,  true,  true,  true,  true,  /* 60 */
-		true,  true,  true,  true,  true,  true,  true,  true,  /* 68 */
-		true,  true,  true,  true,  true,  true,  true,  true,  /* 70 */
-		true,  true,  true,  false, true,  false, true,  false, /* 78 */
+		false, true,  false, true,  true,  false, true,	 true, /* 20 */
+		true,  true,  true,  true,  true,  true,  true,	 true, /* 28 */
+		true,  true,  true,  true,  true,  true,  true,	 true, /* 30 */
+		true,  true,  true,  true,  false, true,  false, true, /* 38 */
+		true,  true,  true,  true,  true,  true,  true,	 true, /* 40 */
+		true,  true,  true,  true,  true,  true,  true,	 true, /* 48 */
+		true,  true,  true,  true,  true,  true,  true,	 true, /* 50 */
+		true,  true,  true,  true,  false, true,  false, true, /* 58 */
+		false, true,  true,  true,  true,  true,  true,	 true, /* 60 */
+		true,  true,  true,  true,  true,  true,  true,	 true, /* 68 */
+		true,  true,  true,  true,  true,  true,  true,	 true, /* 70 */
+		true,  true,  true,  false, true,  false, true,	 false, /* 78 */
 		false, false, false, false, false, false, false, false, /* 80 */
 		false, false, false, false, false, false, false, false, /* 88 */
 		false, false, false, false, false, false, false, false, /* 90 */
@@ -197,16 +198,17 @@ static bool nsurl__is_no_escape(unsigned char c)
  * \param markers	Updated to mark sections in the URL string
  * \param joining	True iff URL string is a relative URL for joining
  */
-static void nsurl__get_string_markers(const char * const url_s,
-		struct url_markers *markers, bool joining)
+static void nsurl__get_string_markers(const char *const url_s,
+				      struct url_markers *markers,
+				      bool joining)
 {
 	const char *pos = url_s; /** current position in url_s */
 	bool is_http = false;
 	bool trailing_whitespace = false;
 
 	/* Initialise marker set */
-	struct url_markers marker = { 0, 0, 0,   0, 0, 0,
-				      0, 0, 0,   0, NSURL_SCHEME_OTHER };
+	struct url_markers marker = {
+		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, NSURL_SCHEME_OTHER};
 
 	/* Skip any leading whitespace in url_s */
 	while (ascii_is_space(*pos))
@@ -216,7 +218,7 @@ static void nsurl__get_string_markers(const char * const url_s,
 	marker.start = pos - url_s;
 
 	marker.scheme_end = marker.authority = marker.colon_first = marker.at =
-			marker.colon_last = marker.path = marker.start;
+		marker.colon_last = marker.path = marker.start;
 
 	if (*pos == '\0') {
 		/* Nothing but whitespace, early exit */
@@ -231,7 +233,7 @@ static void nsurl__get_string_markers(const char * const url_s,
 
 		while (*pos != ':' && *pos != '\0') {
 			if (!ascii_is_alphanumerical(*pos) && (*pos != '+') &&
-					(*pos != '-') && (*pos != '.')) {
+			    (*pos != '-') && (*pos != '.')) {
 				/* This character is not valid in the
 				 * scheme */
 				break;
@@ -250,70 +252,70 @@ static void nsurl__get_string_markers(const char * const url_s,
 			/* Detect http(s) and mailto for scheme specifc
 			 * normalisation */
 			if (off == SLEN("http") &&
-					(((*(pos - off + 0) == 'h') ||
-					  (*(pos - off + 0) == 'H')) &&
-					 ((*(pos - off + 1) == 't') ||
-					  (*(pos - off + 1) == 'T')) &&
-					 ((*(pos - off + 2) == 't') ||
-					  (*(pos - off + 2) == 'T')) &&
-					 ((*(pos - off + 3) == 'p') ||
-					  (*(pos - off + 3) == 'P')))) {
+			    (((*(pos - off + 0) == 'h') ||
+			      (*(pos - off + 0) == 'H')) &&
+			     ((*(pos - off + 1) == 't') ||
+			      (*(pos - off + 1) == 'T')) &&
+			     ((*(pos - off + 2) == 't') ||
+			      (*(pos - off + 2) == 'T')) &&
+			     ((*(pos - off + 3) == 'p') ||
+			      (*(pos - off + 3) == 'P')))) {
 				marker.scheme_type = NSURL_SCHEME_HTTP;
 				is_http = true;
 			} else if (off == SLEN("https") &&
-					(((*(pos - off + 0) == 'h') ||
-					  (*(pos - off + 0) == 'H')) &&
-					 ((*(pos - off + 1) == 't') ||
-					  (*(pos - off + 1) == 'T')) &&
-					 ((*(pos - off + 2) == 't') ||
-					  (*(pos - off + 2) == 'T')) &&
-					 ((*(pos - off + 3) == 'p') ||
-					  (*(pos - off + 3) == 'P')) &&
-					 ((*(pos - off + 4) == 's') ||
-					  (*(pos - off + 4) == 'S')))) {
+				   (((*(pos - off + 0) == 'h') ||
+				     (*(pos - off + 0) == 'H')) &&
+				    ((*(pos - off + 1) == 't') ||
+				     (*(pos - off + 1) == 'T')) &&
+				    ((*(pos - off + 2) == 't') ||
+				     (*(pos - off + 2) == 'T')) &&
+				    ((*(pos - off + 3) == 'p') ||
+				     (*(pos - off + 3) == 'P')) &&
+				    ((*(pos - off + 4) == 's') ||
+				     (*(pos - off + 4) == 'S')))) {
 				marker.scheme_type = NSURL_SCHEME_HTTPS;
 				is_http = true;
 			} else if (off == SLEN("file") &&
-					(((*(pos - off + 0) == 'f') ||
-					  (*(pos - off + 0) == 'F')) &&
-					 ((*(pos - off + 1) == 'i') ||
-					  (*(pos - off + 1) == 'I')) &&
-					 ((*(pos - off + 2) == 'l') ||
-					  (*(pos - off + 2) == 'L')) &&
-					 ((*(pos - off + 3) == 'e') ||
-					  (*(pos - off + 3) == 'E')))) {
+				   (((*(pos - off + 0) == 'f') ||
+				     (*(pos - off + 0) == 'F')) &&
+				    ((*(pos - off + 1) == 'i') ||
+				     (*(pos - off + 1) == 'I')) &&
+				    ((*(pos - off + 2) == 'l') ||
+				     (*(pos - off + 2) == 'L')) &&
+				    ((*(pos - off + 3) == 'e') ||
+				     (*(pos - off + 3) == 'E')))) {
 				marker.scheme_type = NSURL_SCHEME_FILE;
 			} else if (off == SLEN("ftp") &&
-					(((*(pos - off + 0) == 'f') ||
-					  (*(pos - off + 0) == 'F')) &&
-					 ((*(pos - off + 1) == 't') ||
-					  (*(pos - off + 1) == 'T')) &&
-					 ((*(pos - off + 2) == 'p') ||
-					  (*(pos - off + 2) == 'P')))) {
+				   (((*(pos - off + 0) == 'f') ||
+				     (*(pos - off + 0) == 'F')) &&
+				    ((*(pos - off + 1) == 't') ||
+				     (*(pos - off + 1) == 'T')) &&
+				    ((*(pos - off + 2) == 'p') ||
+				     (*(pos - off + 2) == 'P')))) {
 				marker.scheme_type = NSURL_SCHEME_FTP;
 			} else if (off == SLEN("mailto") &&
-					(((*(pos - off + 0) == 'm') ||
-					  (*(pos - off + 0) == 'M')) &&
-					 ((*(pos - off + 1) == 'a') ||
-					  (*(pos - off + 1) == 'A')) &&
-					 ((*(pos - off + 2) == 'i') ||
-					  (*(pos - off + 2) == 'I')) &&
-					 ((*(pos - off + 3) == 'l') ||
-					  (*(pos - off + 3) == 'L')) &&
-					 ((*(pos - off + 4) == 't') ||
-					  (*(pos - off + 4) == 'T')) &&
-					 ((*(pos - off + 5) == 'o') ||
-					  (*(pos - off + 5) == 'O')))) {
+				   (((*(pos - off + 0) == 'm') ||
+				     (*(pos - off + 0) == 'M')) &&
+				    ((*(pos - off + 1) == 'a') ||
+				     (*(pos - off + 1) == 'A')) &&
+				    ((*(pos - off + 2) == 'i') ||
+				     (*(pos - off + 2) == 'I')) &&
+				    ((*(pos - off + 3) == 'l') ||
+				     (*(pos - off + 3) == 'L')) &&
+				    ((*(pos - off + 4) == 't') ||
+				     (*(pos - off + 4) == 'T')) &&
+				    ((*(pos - off + 5) == 'o') ||
+				     (*(pos - off + 5) == 'O')))) {
 				marker.scheme_type = NSURL_SCHEME_MAILTO;
 			} else if (off == SLEN("data") &&
-					(((*(pos - off + 0) == 'd') ||
-					  (*(pos - off + 0) == 'D')) &&
-					 ((*(pos - off + 1) == 'a') ||
-					  (*(pos - off + 1) == 'A')) &&
-					 ((*(pos - off + 2) == 't') ||
-					  (*(pos - off + 2) == 'T')) &&
-					 ((*(pos - off + 3) == 'a') ||
-					  (*(pos - off + 3) == 'A')))) {
+				   (((*(pos - off + 0) == 'd') ||
+				     (*(pos - off + 0) == 'D')) &&
+				    ((*(pos - off + 1) == 'a') ||
+				     (*(pos - off + 1) == 'A')) &&
+				    ((*(pos - off + 2) == 't') ||
+				     (*(pos - off + 2) == 'T')) &&
+				    ((*(pos - off + 3) == 'a') ||
+				     (*(pos - off + 3) == 'A')))) {
 				marker.scheme_type = NSURL_SCHEME_DATA;
 			}
 
@@ -322,8 +324,7 @@ static void nsurl__get_string_markers(const char * const url_s,
 
 			/* Mark place as start of authority */
 			marker.authority = marker.colon_first = marker.at =
-					marker.colon_last = marker.path =
-					pos - url_s;
+				marker.colon_last = marker.path = pos - url_s;
 
 		} else {
 			/* Not found a scheme  */
@@ -345,24 +346,25 @@ static void nsurl__get_string_markers(const char * const url_s,
 	 * and in the case of mailto: when we assume there is an authority.
 	 */
 	if ((*pos == '/' && *(pos + 1) == '/') ||
-			(is_http && ((joining && *pos == '/') ||
-					(joining == false &&
-					marker.scheme_end != marker.start))) ||
-			marker.scheme_type == NSURL_SCHEME_MAILTO) {
+	    (is_http &&
+	     ((joining && *pos == '/') ||
+	      (joining == false && marker.scheme_end != marker.start))) ||
+	    marker.scheme_type == NSURL_SCHEME_MAILTO) {
 
 		/* Skip over leading slashes */
 		if (*pos == '/') {
 			if (is_http == false) {
-				if (*pos == '/') pos++;
-				if (*pos == '/') pos++;
+				if (*pos == '/')
+					pos++;
+				if (*pos == '/')
+					pos++;
 			} else {
 				while (*pos == '/')
 					pos++;
 			}
 
 			marker.authority = marker.colon_first = marker.at =
-					marker.colon_last = marker.path =
-					pos - url_s;
+				marker.colon_last = marker.path = pos - url_s;
 		}
 
 		/* Need to get (or complete) the authority */
@@ -372,20 +374,20 @@ static void nsurl__get_string_markers(const char * const url_s,
 				break;
 
 			} else if (marker.scheme_type != NSURL_SCHEME_MAILTO &&
-					*pos == ':' && marker.colon_first ==
-					marker.authority) {
+				   *pos == ':' &&
+				   marker.colon_first == marker.authority) {
 				/* could be username:password or host:port
 				 * separator */
 				marker.colon_first = pos - url_s;
 
 			} else if (marker.scheme_type != NSURL_SCHEME_MAILTO &&
-					*pos == ':' && marker.colon_first !=
-					marker.authority) {
+				   *pos == ':' &&
+				   marker.colon_first != marker.authority) {
 				/* could be host:port separator */
 				marker.colon_last = pos - url_s;
 
-			} else if (*pos == '@' && marker.at ==
-					marker.authority) {
+			} else if (*pos == '@' &&
+				   marker.at == marker.authority) {
 				/* Credentials @ host separator */
 				marker.at = pos - url_s;
 			}
@@ -395,8 +397,8 @@ static void nsurl__get_string_markers(const char * const url_s,
 
 		marker.path = pos - url_s;
 
-	} else if ((*pos == '\0' || *pos == '/') &&
-			joining == false && is_http == true) {
+	} else if ((*pos == '\0' || *pos == '/') && joining == false &&
+		   is_http == true) {
 		marker.path = pos - url_s;
 	}
 
@@ -405,7 +407,7 @@ static void nsurl__get_string_markers(const char * const url_s,
 	 * Needs to start with '/' if there's no authority
 	 */
 	if (*pos == '/' || ((marker.path == marker.authority) &&
-			(*pos != '?') && (*pos != '#') && (*pos != '\0'))) {
+			    (*pos != '?') && (*pos != '#') && (*pos != '\0'))) {
 		while (*(++pos) != '\0') {
 			if (*pos == '?' || *pos == '#') {
 				/* End of the path */
@@ -463,29 +465,34 @@ static void nsurl__get_string_markers(const char * const url_s,
 			marker.fragment = marker.end;
 	}
 
-	NSLOG(neosurf, DEEPDEBUG,
-	      "marker.start: %"PRIsizet, marker.start);
-	NSLOG(neosurf, DEEPDEBUG,
-	      "marker.scheme_end: %"PRIsizet, marker.scheme_end);
-	NSLOG(neosurf, DEEPDEBUG,
-	      "marker.authority: %"PRIsizet, marker.authority);
+	NSLOG(neosurf, DEEPDEBUG, "marker.start: %" PRIsizet, marker.start);
+	NSLOG(neosurf,
+	      DEEPDEBUG,
+	      "marker.scheme_end: %" PRIsizet,
+	      marker.scheme_end);
+	NSLOG(neosurf,
+	      DEEPDEBUG,
+	      "marker.authority: %" PRIsizet,
+	      marker.authority);
 
-	NSLOG(neosurf, DEEPDEBUG,
-	      "marker.colon_first: %"PRIsizet, marker.colon_first);
-	NSLOG(neosurf, DEEPDEBUG,
-	      "marker.at: %"PRIsizet, marker.at);
-	NSLOG(neosurf, DEEPDEBUG,
-	      "marker.colon_last: %"PRIsizet, marker.colon_last);
+	NSLOG(neosurf,
+	      DEEPDEBUG,
+	      "marker.colon_first: %" PRIsizet,
+	      marker.colon_first);
+	NSLOG(neosurf, DEEPDEBUG, "marker.at: %" PRIsizet, marker.at);
+	NSLOG(neosurf,
+	      DEEPDEBUG,
+	      "marker.colon_last: %" PRIsizet,
+	      marker.colon_last);
 
-	NSLOG(neosurf, DEEPDEBUG,
-	      "marker.path: %"PRIsizet, marker.path);
-	NSLOG(neosurf, DEEPDEBUG,
-	      "marker.query: %"PRIsizet, marker.query);
-	NSLOG(neosurf, DEEPDEBUG,
-	      "marker.fragment: %"PRIsizet, marker.fragment);
+	NSLOG(neosurf, DEEPDEBUG, "marker.path: %" PRIsizet, marker.path);
+	NSLOG(neosurf, DEEPDEBUG, "marker.query: %" PRIsizet, marker.query);
+	NSLOG(neosurf,
+	      DEEPDEBUG,
+	      "marker.fragment: %" PRIsizet,
+	      marker.fragment);
 
-	NSLOG(neosurf, DEEPDEBUG,
-	      "marker.end: %"PRIsizet, marker.end);
+	NSLOG(neosurf, DEEPDEBUG, "marker.end: %" PRIsizet, marker.end);
 
 	/* Got all the URL components pegged out now */
 	*markers = marker;
@@ -506,12 +513,14 @@ static size_t nsurl__remove_dot_segments(char *path, char *output)
 
 	while (*path_pos != '\0') {
 		NSLOG(neosurf, DEEPDEBUG, " in:%s", path_pos);
-		NSLOG(neosurf, DEEPDEBUG, "out:%.*s",
-				(int)(output_pos - output), output);
+		NSLOG(neosurf,
+		      DEEPDEBUG,
+		      "out:%.*s",
+		      (int)(output_pos - output),
+		      output);
 
 		if (*path_pos == '.') {
-			if (*(path_pos + 1) == '.' &&
-					*(path_pos + 2) == '/') {
+			if (*(path_pos + 1) == '.' && *(path_pos + 2) == '/') {
 				/* Found prefix of "../" */
 				path_pos += SLEN("../");
 				continue;
@@ -542,7 +551,7 @@ static size_t nsurl__remove_dot_segments(char *path, char *output)
 					if (output_pos > output)
 						output_pos--;
 					while (output_pos > output &&
-							*output_pos != '/')
+					       *output_pos != '/')
 						output_pos--;
 
 					continue;
@@ -551,7 +560,7 @@ static size_t nsurl__remove_dot_segments(char *path, char *output)
 					/* Found "/.." at end of path */
 
 					while (output_pos > output &&
-							*(output_pos -1 ) !='/')
+					       *(output_pos - 1) != '/')
 						output_pos--;
 
 					/* End of input path */
@@ -566,7 +575,7 @@ static size_t nsurl__remove_dot_segments(char *path, char *output)
 				break;
 
 			} else if (*(path_pos + 1) == '.' &&
-					*(path_pos + 2) == '\0') {
+				   *(path_pos + 2) == '\0') {
 				/* Found ".." at end of path */
 
 				/* End of input path */
@@ -577,7 +586,7 @@ static size_t nsurl__remove_dot_segments(char *path, char *output)
 		*output_pos++ = *path_pos++;
 
 		/* Copy up to but not including next '/' */
-		  while ((*path_pos != '/') && (*path_pos != '\0'))
+		while ((*path_pos != '/') && (*path_pos != '\0'))
 			*output_pos++ = *path_pos++;
 	}
 
@@ -593,21 +602,21 @@ static size_t nsurl__remove_dot_segments(char *path, char *output)
  */
 static size_t nsurl__get_longest_section(struct url_markers *m)
 {
-	size_t length = m->scheme_end - m->start;	/* scheme */
+	size_t length = m->scheme_end - m->start; /* scheme */
 
-	if (length < m->at - m->authority)		/* credentials */
+	if (length < m->at - m->authority) /* credentials */
 		length = m->at - m->authority;
 
-	if (length < m->path - m->at)			/* host */
+	if (length < m->path - m->at) /* host */
 		length = m->path - m->at;
 
-	if (length < m->query - m->path)		/* path */
+	if (length < m->query - m->path) /* path */
 		length = m->query - m->path;
 
-	if (length < m->fragment - m->query)		/* query */
+	if (length < m->fragment - m->query) /* query */
 		length = m->fragment - m->query;
 
-	if (length < m->end - m->fragment)		/* fragment */
+	if (length < m->end - m->fragment) /* fragment */
 		length = m->end - m->fragment;
 
 	return length;
@@ -626,11 +635,11 @@ static size_t nsurl__get_longest_section(struct url_markers *m)
  *
  * The section of url_s is normalised appropriately.
  */
-static nserror nsurl__create_from_section(const char * const url_s,
-		const enum url_sections section,
-		const struct url_markers *pegs,
-		char *pos_norm,
-		struct nsurl_components *url)
+static nserror nsurl__create_from_section(const char *const url_s,
+					  const enum url_sections section,
+					  const struct url_markers *pegs,
+					  char *pos_norm,
+					  struct nsurl_components *url)
 {
 	nserror ret;
 	int ascii_offset;
@@ -643,9 +652,7 @@ static nserror nsurl__create_from_section(const char * const url_s,
 	size_t copy_len;
 	size_t length;
 	size_t host_len;
-	enum {
-		NSURL_F_NO_PORT		= (1 << 0)
-	} flags = 0;
+	enum { NSURL_F_NO_PORT = (1 << 0) } flags = 0;
 
 	switch (section) {
 	case URL_SCHEME:
@@ -660,9 +667,9 @@ static nserror nsurl__create_from_section(const char * const url_s,
 
 	case URL_HOST:
 		start = (pegs->at == pegs->authority &&
-				*(url_s + pegs->at) != '@') ?
-				pegs->at :
-				pegs->at + 1;
+			 *(url_s + pegs->at) != '@')
+				? pegs->at
+				: pegs->at + 1;
 		end = pegs->path;
 		break;
 
@@ -672,16 +679,14 @@ static nserror nsurl__create_from_section(const char * const url_s,
 		break;
 
 	case URL_QUERY:
-		start = (*(url_s + pegs->query) != '?') ?
-				pegs->query :
-				pegs->query + 1;
+		start = (*(url_s + pegs->query) != '?') ? pegs->query
+							: pegs->query + 1;
 		end = pegs->fragment;
 		break;
 
 	case URL_FRAGMENT:
-		start = (*(url_s + pegs->fragment) != '#') ?
-				pegs->fragment :
-				pegs->fragment + 1;
+		start = (*(url_s + pegs->fragment) != '#') ? pegs->fragment
+							   : pegs->fragment + 1;
 		end = pegs->end;
 		break;
 	}
@@ -701,7 +706,7 @@ static nserror nsurl__create_from_section(const char * const url_s,
 
 			/* Find which character which was escaped */
 			ascii_offset = ascii_hex_to_value_2_chars(*(pos + 1),
-					*(pos + 2));
+								  *(pos + 2));
 
 			if (ascii_offset < 0) {
 				/* % with invalid hex digits. */
@@ -710,7 +715,7 @@ static nserror nsurl__create_from_section(const char * const url_s,
 			}
 
 			if ((section != URL_SCHEME && section != URL_HOST) &&
-				(nsurl__is_unreserved(ascii_offset) == false)) {
+			    (nsurl__is_unreserved(ascii_offset) == false)) {
 				/* This character should be escaped after all,
 				 * just let it get copied */
 				copy_len += 3;
@@ -733,7 +738,7 @@ static nserror nsurl__create_from_section(const char * const url_s,
 			length -= 2;
 
 		} else if ((section != URL_SCHEME && section != URL_HOST) &&
-				(nsurl__is_no_escape(*pos) == false)) {
+			   (nsurl__is_no_escape(*pos) == false)) {
 
 			/* This needs to be escaped */
 			if (copy_len > 0) {
@@ -746,15 +751,15 @@ static nserror nsurl__create_from_section(const char * const url_s,
 			/* escape */
 			*(pos_norm++) = '%';
 			*(pos_norm++) = digit2uppercase_hex(
-					((unsigned char)*pos) >> 4);
+				((unsigned char)*pos) >> 4);
 			*(pos_norm++) = digit2uppercase_hex(
-					((unsigned char)*pos) & 0xf);
+				((unsigned char)*pos) & 0xf);
 			pos_url_s = pos + 1;
 
 			length += 2;
 
 		} else if ((section == URL_SCHEME || section == URL_HOST) &&
-				ascii_is_alpha_upper(*pos)) {
+			   ascii_is_alpha_upper(*pos)) {
 			/* Lower case this letter */
 
 			if (copy_len > 0) {
@@ -790,8 +795,9 @@ static nserror nsurl__create_from_section(const char * const url_s,
 			url->scheme = lwc_string_ref(corestring_lwc_http);
 		} else {
 			/* Add scheme to URL */
-			if (lwc_intern_string(norm_start, length,
-					&url->scheme) != lwc_error_ok) {
+			if (lwc_intern_string(norm_start,
+					      length,
+					      &url->scheme) != lwc_error_ok) {
 				return NSERROR_NOMEM;
 			}
 		}
@@ -810,14 +816,14 @@ static nserror nsurl__create_from_section(const char * const url_s,
 		if (length != 0 && *norm_start != ':') {
 			char *sec_start = norm_start;
 			if (pegs->colon_first != pegs->authority &&
-					pegs->at > pegs->colon_first + 1) {
+			    pegs->at > pegs->colon_first + 1) {
 				/* there's a password */
 				sec_start += pegs->colon_first -
-						pegs->authority + 1;
-				if (lwc_intern_string(sec_start,
-						pegs->at - pegs->colon_first -1,
-						&url->password) !=
-						lwc_error_ok) {
+					     pegs->authority + 1;
+				if (lwc_intern_string(
+					    sec_start,
+					    pegs->at - pegs->colon_first - 1,
+					    &url->password) != lwc_error_ok) {
 					return NSERROR_NOMEM;
 				}
 
@@ -825,14 +831,15 @@ static nserror nsurl__create_from_section(const char * const url_s,
 				sec_start = norm_start;
 				length -= pegs->at - pegs->colon_first;
 			} else if (pegs->colon_first != pegs->authority &&
-					pegs->at == pegs->colon_first + 1) {
+				   pegs->at == pegs->colon_first + 1) {
 				/* strip username colon */
 				length--;
 			}
 
 			/* Username */
-			if (lwc_intern_string(sec_start, length,
-					&url->username) != lwc_error_ok) {
+			if (lwc_intern_string(sec_start,
+					      length,
+					      &url->username) != lwc_error_ok) {
 				return NSERROR_NOMEM;
 			}
 		}
@@ -852,7 +859,7 @@ static nserror nsurl__create_from_section(const char * const url_s,
 			size_t colon = 0;
 			char *sec_start = norm_start;
 			if (pegs->at < pegs->colon_first &&
-					pegs->colon_last == pegs->authority) {
+			    pegs->colon_last == pegs->authority) {
 				/* There's one colon and it's after @ marker */
 				colon = pegs->colon_first;
 			} else if (pegs->colon_last != pegs->authority) {
@@ -881,17 +888,15 @@ static nserror nsurl__create_from_section(const char * const url_s,
 
 			if (!(flags & NSURL_F_NO_PORT)) {
 				/* There's a port */
-				size_t skip = (pegs->at == pegs->authority) ?
-						1 : 0;
+				size_t skip = (pegs->at == pegs->authority) ? 1
+									    : 0;
 				sec_start = norm_start + colon - pegs->at +
-						skip;
+					    skip;
 				if (url->scheme != NULL &&
-						url->scheme_type ==
-						NSURL_SCHEME_HTTP &&
-						length -
-						(colon - pegs->at + skip) == 2 &&
-						*sec_start == '8' &&
-						*(sec_start + 1) == '0') {
+				    url->scheme_type == NSURL_SCHEME_HTTP &&
+				    length - (colon - pegs->at + skip) == 2 &&
+				    *sec_start == '8' &&
+				    *(sec_start + 1) == '0') {
 					/* Scheme is http, and port is default
 					 * (80) */
 					flags |= NSURL_F_NO_PORT;
@@ -905,12 +910,12 @@ static nserror nsurl__create_from_section(const char * const url_s,
 
 				/* Add non-redundant ports to NetSurf URL */
 				sec_start = norm_start + colon - pegs->at +
-						skip;
+					    skip;
 				if (!(flags & NSURL_F_NO_PORT) &&
-						lwc_intern_string(sec_start,
-						length -
-						(colon - pegs->at + skip),
-						&url->port) != lwc_error_ok) {
+				    lwc_intern_string(
+					    sec_start,
+					    length - (colon - pegs->at + skip),
+					    &url->port) != lwc_error_ok) {
 					return NSERROR_NOMEM;
 				}
 
@@ -924,16 +929,18 @@ static nserror nsurl__create_from_section(const char * const url_s,
 			ret = idna_encode(norm_start, length, &host, &host_len);
 			if (ret == NSERROR_OK) {
 				/* valid idna encoding */
-				if (lwc_intern_string(host, host_len,
-						&url->host) != lwc_error_ok) {
+				if (lwc_intern_string(
+					    host, host_len, &url->host) !=
+				    lwc_error_ok) {
 					free(host);
 					return NSERROR_NOMEM;
 				}
 				free(host);
 			} else {
 				/* fall back to straight interning */
-				if (lwc_intern_string(norm_start, length,
-						      &url->host) != lwc_error_ok) {
+				if (lwc_intern_string(
+					    norm_start, length, &url->host) !=
+				    lwc_error_ok) {
 					return NSERROR_NOMEM;
 				}
 			}
@@ -943,19 +950,19 @@ static nserror nsurl__create_from_section(const char * const url_s,
 
 	case URL_PATH:
 		if (length != 0) {
-			if (lwc_intern_string(norm_start, length,
-					&url->path) != lwc_error_ok) {
+			if (lwc_intern_string(norm_start, length, &url->path) !=
+			    lwc_error_ok) {
 				return NSERROR_NOMEM;
 			}
 		} else if ((url->host != NULL &&
-				url->scheme_type != NSURL_SCHEME_MAILTO) ||
-				url->scheme_type == NSURL_SCHEME_FILE) {
+			    url->scheme_type != NSURL_SCHEME_MAILTO) ||
+			   url->scheme_type == NSURL_SCHEME_FILE) {
 			/* Set empty path to "/" if:
 			 *   - there's a host and its not a mailto: URL
 			 *   - its a file: URL
 			 */
-			if (lwc_intern_string("/", SLEN("/"),
-					&url->path) != lwc_error_ok) {
+			if (lwc_intern_string("/", SLEN("/"), &url->path) !=
+			    lwc_error_ok) {
 				return NSERROR_NOMEM;
 			}
 		} else {
@@ -966,8 +973,9 @@ static nserror nsurl__create_from_section(const char * const url_s,
 
 	case URL_QUERY:
 		if (length != 0) {
-			if (lwc_intern_string(norm_start, length,
-					&url->query) != lwc_error_ok) {
+			if (lwc_intern_string(norm_start,
+					      length,
+					      &url->query) != lwc_error_ok) {
 				return NSERROR_NOMEM;
 			}
 		} else {
@@ -978,8 +986,9 @@ static nserror nsurl__create_from_section(const char * const url_s,
 
 	case URL_FRAGMENT:
 		if (length != 0) {
-			if (lwc_intern_string(norm_start, length,
-					&url->fragment) != lwc_error_ok) {
+			if (lwc_intern_string(norm_start,
+					      length,
+					      &url->fragment) != lwc_error_ok) {
 				return NSERROR_NOMEM;
 			}
 		} else {
@@ -1003,9 +1012,10 @@ static nserror nsurl__create_from_section(const char * const url_s,
  * \param pflags	Updated to contain relevant string flags
  */
 static void nsurl__get_string_data(const struct nsurl_components *url,
-		nsurl_component parts, size_t *url_l,
-		struct nsurl_component_lengths *lengths,
-		enum nsurl_string_flags *pflags)
+				   nsurl_component parts,
+				   size_t *url_l,
+				   struct nsurl_component_lengths *lengths,
+				   enum nsurl_string_flags *pflags)
 {
 	enum nsurl_string_flags flags = *pflags;
 	*url_l = 0;
@@ -1075,15 +1085,15 @@ static void nsurl__get_string_data(const struct nsurl_components *url,
 		*url_l += SLEN(":");
 	}
 
-	if ((flags & NSURL_F_SCHEME) && (flags > NSURL_F_SCHEME) &&
-			url->path && lwc_string_data(url->path)[0] == '/') {
+	if ((flags & NSURL_F_SCHEME) && (flags > NSURL_F_SCHEME) && url->path &&
+	    lwc_string_data(url->path)[0] == '/') {
 		flags |= NSURL_F_AUTHORITY_PUNCTUATION;
 
 		*url_l += SLEN("//");
 	}
 
 	if ((flags & (NSURL_F_USERNAME | NSURL_F_PASSWORD)) &&
-				flags & NSURL_F_HOST) {
+	    flags & NSURL_F_HOST) {
 		flags |= NSURL_F_CREDENTIALS_PUNCTUATION;
 
 		*url_l += SLEN("@");
@@ -1116,9 +1126,10 @@ static void nsurl__get_string_data(const struct nsurl_components *url,
  * \param l		Individual component lengths
  * \param flags		String flags
  */
-static void nsurl__get_string(const struct nsurl_components *url, char *url_s,
-		struct nsurl_component_lengths *l,
-		enum nsurl_string_flags flags)
+static void nsurl__get_string(const struct nsurl_components *url,
+			      char *url_s,
+			      struct nsurl_component_lengths *l,
+			      enum nsurl_string_flags flags)
 {
 	char *pos;
 
@@ -1189,12 +1200,13 @@ static void nsurl__get_string(const struct nsurl_components *url, char *url_s,
 
 
 /* exported interface, documented in nsurl.h */
-nserror nsurl__components_to_string(
-		const struct nsurl_components *components,
-		nsurl_component parts, size_t pre_padding,
-		char **url_s_out, size_t *url_l_out)
+nserror nsurl__components_to_string(const struct nsurl_components *components,
+				    nsurl_component parts,
+				    size_t pre_padding,
+				    char **url_s_out,
+				    size_t *url_l_out)
 {
-	struct nsurl_component_lengths str_len = { 0, 0, 0, 0,  0, 0, 0, 0 };
+	struct nsurl_component_lengths str_len = {0, 0, 0, 0, 0, 0, 0, 0};
 	enum nsurl_string_flags str_flags = 0;
 	size_t url_l;
 	char *url_s;
@@ -1202,8 +1214,7 @@ nserror nsurl__components_to_string(
 	assert(components != NULL);
 
 	/* Get the string length and find which parts of url need copied */
-	nsurl__get_string_data(components, parts, &url_l,
-			&str_len, &str_flags);
+	nsurl__get_string_data(components, parts, &url_l, &str_len, &str_flags);
 
 	if (url_l == 0) {
 		return NSERROR_BAD_URL;
@@ -1275,7 +1286,7 @@ static nserror nsurl__check_host_valid(lwc_string *host)
 	const char *chptr = lwc_string_data(host);
 	size_t nchrs = lwc_string_length(host);
 
-	if (*chptr == '[' && chptr[nchrs-1] == ']') {
+	if (*chptr == '[' && chptr[nchrs - 1] == ']') {
 		/* Treat this as an IPv6 Literal */
 		chptr++;
 		nchrs -= 2;
@@ -1291,7 +1302,8 @@ static nserror nsurl__check_host_valid(lwc_string *host)
 
 	while (nchrs--) {
 		const char ch = *chptr++;
-		if (!ascii_is_alphanumerical(ch) && !(ch == '.' || ch == '-' || ch == '_')) {
+		if (!ascii_is_alphanumerical(ch) &&
+		    !(ch == '.' || ch == '-' || ch == '_')) {
 			/* Not alphanumeric dot or dash */
 			return NSERROR_INVALID;
 		}
@@ -1304,20 +1316,20 @@ static nserror nsurl__check_host_valid(lwc_string *host)
  ******************************************************************************/
 
 /* exported interface, documented in nsurl.h */
-nserror nsurl_create(const char * const url_s, nsurl **url)
+nserror nsurl_create(const char *const url_s, nsurl **url)
 {
-    struct url_markers m;
-    struct nsurl_components c;
-    size_t length;
-    char *buff;
-    nserror e = NSERROR_OK;
-    bool match;
+	struct url_markers m;
+	struct nsurl_components c;
+	size_t length;
+	char *buff;
+	nserror e = NSERROR_OK;
+	bool match;
 
-    if (url == NULL || url_s == NULL)
-        return NSERROR_BAD_PARAMETER;
+	if (url == NULL || url_s == NULL)
+		return NSERROR_BAD_PARAMETER;
 
-    /* Peg out the URL sections */
-    nsurl__get_string_markers(url_s, &m, false);
+	/* Peg out the URL sections */
+	nsurl__get_string_markers(url_s, &m, false);
 
 	/* Get the length of the longest section */
 	length = nsurl__get_longest_section(&m);
@@ -1347,24 +1359,30 @@ nserror nsurl_create(const char * const url_s, nsurl **url)
 	}
 
 	/* Validate URL */
-	if ((lwc_string_isequal(c.scheme, corestring_lwc_http,
-			&match) == lwc_error_ok && match == true) ||
-			(lwc_string_isequal(c.scheme, corestring_lwc_https,
-			&match) == lwc_error_ok && match == true)) {
+	if ((lwc_string_isequal(c.scheme, corestring_lwc_http, &match) ==
+		     lwc_error_ok &&
+	     match == true) ||
+	    (lwc_string_isequal(c.scheme, corestring_lwc_https, &match) ==
+		     lwc_error_ok &&
+	     match == true)) {
 		/* http, https must have host */
 		if (c.host == NULL) {
 			nsurl__components_destroy(&c);
 			return NSERROR_BAD_URL;
 		}
-		/* host names must be a-z, 0-9, hyphen, underscore, and dot only */
+		/* host names must be a-z, 0-9, hyphen, underscore, and dot only
+		 */
 		if (nsurl__check_host_valid(c.host) != NSERROR_OK) {
 			nsurl__components_destroy(&c);
 			return NSERROR_BAD_URL;
 		}
 	}
 
-	e = nsurl__components_to_string(&c, NSURL_WITH_FRAGMENT,
-			offsetof(nsurl, string), (char **)url, &length);
+	e = nsurl__components_to_string(&c,
+					NSURL_WITH_FRAGMENT,
+					offsetof(nsurl, string),
+					(char **)url,
+					&length);
 	if (e != NSERROR_OK) {
 		return e;
 	}
@@ -1385,27 +1403,30 @@ nserror nsurl_create(const char * const url_s, nsurl **url)
 /* exported interface, documented in nsurl.h */
 nserror nsurl_join(const nsurl *base, const char *rel, nsurl **joined)
 {
-    struct url_markers m;
-    struct nsurl_components c;
-    size_t length;
-    char *buff;
-    char *buff_pos;
-    char *buff_start;
-    nserror error = 0;
-    enum {
-        NSURL_F_REL		=  0,
-        NSURL_F_BASE_SCHEME	= (1 << 0),
-        NSURL_F_BASE_AUTHORITY	= (1 << 1),
-        NSURL_F_BASE_PATH	= (1 << 2),
-        NSURL_F_MERGED_PATH	= (1 << 3),
-        NSURL_F_BASE_QUERY	= (1 << 4)
-    } joined_parts;
+	struct url_markers m;
+	struct nsurl_components c;
+	size_t length;
+	char *buff;
+	char *buff_pos;
+	char *buff_start;
+	nserror error = 0;
+	enum {
+		NSURL_F_REL = 0,
+		NSURL_F_BASE_SCHEME = (1 << 0),
+		NSURL_F_BASE_AUTHORITY = (1 << 1),
+		NSURL_F_BASE_PATH = (1 << 2),
+		NSURL_F_MERGED_PATH = (1 << 3),
+		NSURL_F_BASE_QUERY = (1 << 4)
+	} joined_parts;
 
-    if (joined == NULL || base == NULL || rel == NULL)
-        return NSERROR_BAD_PARAMETER;
+	if (joined == NULL || base == NULL || rel == NULL)
+		return NSERROR_BAD_PARAMETER;
 
-	NSLOG(neosurf, DEEPDEBUG, "base: \"%s\", rel: \"%s\"",
-			nsurl_access(base), rel);
+	NSLOG(neosurf,
+	      DEEPDEBUG,
+	      "base: \"%s\", rel: \"%s\"",
+	      nsurl_access(base),
+	      rel);
 
 	/* Peg out the URL sections */
 	nsurl__get_string_markers(rel, &m, true);
@@ -1454,13 +1475,16 @@ nserror nsurl_join(const nsurl *base, const char *rel, nsurl **joined)
 	 */
 	if (joined_parts & NSURL_F_MERGED_PATH) {
 		/* Need to merge paths */
-		length += (base->components.path != NULL) ?
-				lwc_string_length(base->components.path) : 0;
+		length += (base->components.path != NULL)
+				  ? lwc_string_length(base->components.path)
+				  : 0;
 	}
 	length *= 4;
 	/* Plus space for removing dots from path */
-	length += (m.query - m.path) + ((base->components.path != NULL) ?
-			lwc_string_length(base->components.path) : 0);
+	length += (m.query - m.path) +
+		  ((base->components.path != NULL)
+			   ? lwc_string_length(base->components.path)
+			   : 0);
 
 	buff = malloc(length + 5);
 	if (buff == NULL) {
@@ -1478,7 +1502,8 @@ nserror nsurl_join(const nsurl *base, const char *rel, nsurl **joined)
 	} else {
 		c.scheme_type = m.scheme_type;
 
-		error = nsurl__create_from_section(rel, URL_SCHEME, &m,	buff, &c);
+		error = nsurl__create_from_section(
+			rel, URL_SCHEME, &m, buff, &c);
 		if (error != NSERROR_OK) {
 			free(buff);
 			return error;
@@ -1491,11 +1516,11 @@ nserror nsurl_join(const nsurl *base, const char *rel, nsurl **joined)
 		c.host = nsurl__component_copy(base->components.host);
 		c.port = nsurl__component_copy(base->components.port);
 	} else {
-		error = nsurl__create_from_section(rel, URL_CREDENTIALS, &m,
-						   buff, &c);
+		error = nsurl__create_from_section(
+			rel, URL_CREDENTIALS, &m, buff, &c);
 		if (error == NSERROR_OK) {
-			error = nsurl__create_from_section(rel, URL_HOST, &m,
-							   buff, &c);
+			error = nsurl__create_from_section(
+				rel, URL_HOST, &m, buff, &c);
 		}
 		if (error != NSERROR_OK) {
 			free(buff);
@@ -1522,12 +1547,11 @@ nserror nsurl_join(const nsurl *base, const char *rel, nsurl **joined)
 			/* Append relative path to all but last segment of
 			 * base path. */
 			size_t path_end = lwc_string_length(
-					base->components.path);
+				base->components.path);
 			const char *path = lwc_string_data(
-					base->components.path);
+				base->components.path);
 
-			while (*(path + path_end) != '/' &&
-					path_end != 0) {
+			while (*(path + path_end) != '/' && path_end != 0) {
 				path_end--;
 			}
 			if (*(path + path_end) == '/')
@@ -1551,8 +1575,8 @@ nserror nsurl_join(const nsurl *base, const char *rel, nsurl **joined)
 		m_path.query = new_length;
 
 		buff_start = buff_pos + new_length;
-		error = nsurl__create_from_section(buff_pos, URL_PATH, &m_path,
-				buff_start, &c);
+		error = nsurl__create_from_section(
+			buff_pos, URL_PATH, &m_path, buff_start, &c);
 		if (error != NSERROR_OK) {
 			free(buff);
 			return error;
@@ -1573,8 +1597,8 @@ nserror nsurl_join(const nsurl *base, const char *rel, nsurl **joined)
 
 		buff_start = buff_pos + new_length;
 
-		error = nsurl__create_from_section(buff_pos, URL_PATH, &m_path,
-				buff_start, &c);
+		error = nsurl__create_from_section(
+			buff_pos, URL_PATH, &m_path, buff_start, &c);
 		if (error != NSERROR_OK) {
 			free(buff);
 			return error;
@@ -1584,8 +1608,8 @@ nserror nsurl_join(const nsurl *base, const char *rel, nsurl **joined)
 	if (joined_parts & NSURL_F_BASE_QUERY) {
 		c.query = nsurl__component_copy(base->components.query);
 	} else {
-		error = nsurl__create_from_section(rel, URL_QUERY, &m,
-				buff, &c);
+		error = nsurl__create_from_section(
+			rel, URL_QUERY, &m, buff, &c);
 		if (error != NSERROR_OK) {
 			free(buff);
 			return error;
@@ -1601,8 +1625,11 @@ nserror nsurl_join(const nsurl *base, const char *rel, nsurl **joined)
 		return error;
 	}
 
-	error = nsurl__components_to_string(&c, NSURL_WITH_FRAGMENT,
-			offsetof(nsurl, string), (char **)joined, &length);
+	error = nsurl__components_to_string(&c,
+					    NSURL_WITH_FRAGMENT,
+					    offsetof(nsurl, string),
+					    (char **)joined,
+					    &length);
 	if (error != NSERROR_OK) {
 		return error;
 	}

@@ -50,8 +50,8 @@ dom_node *libdom_find_first_element(dom_node *parent, lwc_string *element_name)
 		if ((exc == DOM_NO_ERR) && (node_type == DOM_ELEMENT_NODE)) {
 			exc = dom_node_get_node_name(element, &node_name);
 			if ((exc == DOM_NO_ERR) && (node_name != NULL)) {
-				if (dom_string_caseless_lwc_isequal(node_name,
-						     element_name)) {
+				if (dom_string_caseless_lwc_isequal(
+					    node_name, element_name)) {
 					dom_string_unref(node_name);
 					break;
 				}
@@ -73,8 +73,8 @@ dom_node *libdom_find_first_element(dom_node *parent, lwc_string *element_name)
 
 /* exported interface documented in libdom.h */
 /* TODO: return appropriate errors */
-nserror libdom_iterate_child_elements(dom_node *parent,
-		libdom_iterate_cb cb, void *ctx)
+nserror
+libdom_iterate_child_elements(dom_node *parent, libdom_iterate_cb cb, void *ctx)
 {
 	dom_nodelist *children;
 	uint32_t index, num_children;
@@ -123,9 +123,9 @@ nserror libdom_hubbub_error_to_nserror(dom_hubbub_error error)
 {
 	switch (error) {
 
-	/* HUBBUB_REPROCESS is not handled here because it can
-	 * never occur outside the hubbub treebuilder
-	 */
+		/* HUBBUB_REPROCESS is not handled here because it can
+		 * never occur outside the hubbub treebuilder
+		 */
 
 	case DOM_HUBBUB_OK:
 		/* parsed ok */
@@ -187,7 +187,6 @@ static void ignore_dom_msg(uint32_t severity, void *ctx, const char *msg, ...)
 }
 
 
-
 /**
  * Dump attribute/value for an element node
  *
@@ -196,7 +195,8 @@ static void ignore_dom_msg(uint32_t severity, void *ctx, const char *msg, ...)
  * \param attribute The attribute to dump
  * \return true on success, or false on error
  */
-static bool dump_dom_element_attribute(dom_node *node, FILE *f, const char *attribute)
+static bool
+dump_dom_element_attribute(dom_node *node, FILE *f, const char *attribute)
 {
 	dom_exception exc;
 	dom_string *attr = NULL;
@@ -215,7 +215,8 @@ static bool dump_dom_element_attribute(dom_node *node, FILE *f, const char *attr
 
 	/* Create a dom_string containing required attribute name. */
 	exc = dom_string_create_interned((uint8_t *)attribute,
-					 strlen(attribute), &attr);
+					 strlen(attribute),
+					 &attr);
 	if (exc != DOM_NO_ERR) {
 		fprintf(f, " Exception raised for dom_string_create\n");
 		return false;
@@ -305,7 +306,9 @@ static bool dump_dom_element(dom_node *node, FILE *f, int depth)
 		dom_string *str;
 		exc = dom_node_get_text_content(node, &str);
 		if (exc == DOM_NO_ERR && str != NULL) {
-			fprintf(f, " $%.*s$", (int)dom_string_byte_length(str),
+			fprintf(f,
+				" $%.*s$",
+				(int)dom_string_byte_length(str),
 				dom_string_data(str));
 			dom_string_unref(str);
 		}
@@ -354,7 +357,7 @@ nserror libdom_dump_structure(dom_node *node, FILE *f, int depth)
 		do {
 			/* Visit node's descendents */
 			ret = libdom_dump_structure(child, f, depth);
-			if (ret !=NSERROR_OK) {
+			if (ret != NSERROR_OK) {
 				/* There was an error; return */
 				dom_node_unref(child);
 				return NSERROR_DOM;
@@ -363,7 +366,8 @@ nserror libdom_dump_structure(dom_node *node, FILE *f, int depth)
 			/* Go to next sibling */
 			exc = dom_node_get_next_sibling(child, &next_child);
 			if (exc != DOM_NO_ERR) {
-				fprintf(f, "Exception raised for node_get_next_sibling\n");
+				fprintf(f,
+					"Exception raised for node_get_next_sibling\n");
 				dom_node_unref(child);
 				return NSERROR_DOM;
 			}
@@ -378,7 +382,9 @@ nserror libdom_dump_structure(dom_node *node, FILE *f, int depth)
 
 
 /* exported interface documented in libdom.h */
-nserror libdom_parse_file(const char *filename, const char *encoding, dom_document **doc)
+nserror libdom_parse_file(const char *filename,
+			  const char *encoding,
+			  dom_document **doc)
 {
 	dom_hubbub_parser_params parse_params;
 	dom_hubbub_error error;

@@ -38,8 +38,11 @@ struct browser_window;
  * \param height Height of caret
  * \param clip Clip rectangle for caret, or NULL if none
  */
-void browser_window_place_caret(struct browser_window *bw, int x, int y,
-		int height, const struct rect *clip);
+void browser_window_place_caret(struct browser_window *bw,
+				int x,
+				int y,
+				int height,
+				const struct rect *clip);
 
 /**
  * Removes the caret and callback for key process.

@@ -14,14 +14,15 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_list_style_image(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error css__cascade_list_style_image(uint32_t opv,
+					css_style *style,
+					css_select_state *state)
 {
 	return css__cascade_uri_none(opv, style, state, set_list_style_image);
 }
 
 css_error css__set_list_style_image_from_hint(const css_hint *hint,
-		css_computed_style *style)
+					      css_computed_style *style)
 {
 	css_error error;
 
@@ -35,12 +36,12 @@ css_error css__set_list_style_image_from_hint(const css_hint *hint,
 css_error css__initial_list_style_image(css_select_state *state)
 {
 	return set_list_style_image(state->computed,
-			CSS_LIST_STYLE_IMAGE_NONE, NULL);
+				    CSS_LIST_STYLE_IMAGE_NONE,
+				    NULL);
 }
 
-css_error css__copy_list_style_image(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error css__copy_list_style_image(const css_computed_style *from,
+				     css_computed_style *to)
 {
 	lwc_string *url;
 	uint8_t type = get_list_style_image(from, &url);
@@ -53,14 +54,12 @@ css_error css__copy_list_style_image(
 }
 
 css_error css__compose_list_style_image(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+					const css_computed_style *child,
+					css_computed_style *result)
 {
 	lwc_string *url;
 	uint8_t type = get_list_style_image(child, &url);
 
 	return css__copy_list_style_image(
-			type == CSS_LIST_STYLE_IMAGE_INHERIT ? parent : child,
-			result);
+		type == CSS_LIST_STYLE_IMAGE_INHERIT ? parent : child, result);
 }
-

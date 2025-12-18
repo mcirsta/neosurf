@@ -33,13 +33,13 @@ class NS_Scaffold : public QTabWidget
 {
 	Q_OBJECT
 
-public:
+      public:
 	NS_Scaffold(QWidget *parent);
 
 	/* static acessors */
-	static NS_Scaffold* get_scaffold(QWidget *page, bool use_current);
+	static NS_Scaffold *get_scaffold(QWidget *page, bool use_current);
 
-public slots:
+      public slots:
 	/**
 	 * scaffolding slot to change tab title
 	 *
@@ -56,13 +56,14 @@ public slots:
 	 */
 	void changeTabIcon(const QIcon &icon);
 
-protected:
+      protected:
 	void closeEvent(QCloseEvent *event);
 
-private slots:
+      private slots:
 	void destroyTab(int index);
 	void changeTab(int index);
 	void newtab_slot(bool checked);
-private:
+
+      private:
 	QAction *m_newtab;
 };

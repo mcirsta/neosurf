@@ -13,13 +13,12 @@
 /**
  * Stack object
  */
-struct parserutils_stack
-{
-	size_t item_size;		/**< Size of an item in the stack */
-	size_t chunk_size;		/**< Size of a stack chunk */
-	size_t items_allocated;		/**< Number of slots allocated */
-	int32_t current_item;		/**< Index of current item */
-	void *items;			/**< Items in stack */
+struct parserutils_stack {
+	size_t item_size; /**< Size of an item in the stack */
+	size_t chunk_size; /**< Size of a stack chunk */
+	size_t items_allocated; /**< Number of slots allocated */
+	int32_t current_item; /**< Index of current item */
+	void *items; /**< Items in stack */
 };
 
 /**
@@ -32,8 +31,9 @@ struct parserutils_stack
  *         PARSERUTILS_BADPARM on bad parameters
  *         PARSERUTILS_NOMEM on memory exhaustion
  */
-parserutils_error parserutils_stack_create(size_t item_size, size_t chunk_size,
-		parserutils_stack **stack)
+parserutils_error parserutils_stack_create(size_t item_size,
+					   size_t chunk_size,
+					   parserutils_stack **stack)
 {
 	parserutils_stack *s;
 
@@ -84,8 +84,8 @@ parserutils_error parserutils_stack_destroy(parserutils_stack *stack)
  * \param item   The item to push
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error parserutils_stack_push(parserutils_stack *stack, 
-		const void *item)
+parserutils_error
+parserutils_stack_push(parserutils_stack *stack, const void *item)
 {
 	int32_t slot;
 
@@ -98,10 +98,11 @@ parserutils_error parserutils_stack_push(parserutils_stack *stack,
 
 	slot = stack->current_item + 1;
 
-	if ((size_t) slot >= stack->items_allocated) {
+	if ((size_t)slot >= stack->items_allocated) {
 		void *temp = realloc(stack->items,
-				(stack->items_allocated + stack->chunk_size) *
-				stack->item_size);
+				     (stack->items_allocated +
+				      stack->chunk_size) *
+					     stack->item_size);
 		if (temp == NULL)
 			return PARSERUTILS_NOMEM;
 
@@ -109,8 +110,9 @@ parserutils_error parserutils_stack_push(parserutils_stack *stack,
 		stack->items_allocated += stack->chunk_size;
 	}
 
-	memcpy((uint8_t *) stack->items + (slot * stack->item_size), 
-			item, stack->item_size);
+	memcpy((uint8_t *)stack->items + (slot * stack->item_size),
+	       item,
+	       stack->item_size);
 	stack->current_item = slot;
 
 	return PARSERUTILS_OK;
@@ -132,9 +134,10 @@ parserutils_error parserutils_stack_pop(parserutils_stack *stack, void *item)
 		return PARSERUTILS_INVALID;
 
 	if (item != NULL) {
-		memcpy(item, (uint8_t *) stack->items + 
-				(stack->current_item * stack->item_size), 
-				stack->item_size);
+		memcpy(item,
+		       (uint8_t *)stack->items +
+			       (stack->current_item * stack->item_size),
+		       stack->item_size);
 	}
 
 	stack->current_item -= 1;
@@ -153,18 +156,20 @@ void *parserutils_stack_get_current(parserutils_stack *stack)
 	if (stack == NULL || stack->current_item < 0)
 		return NULL;
 
-	return (uint8_t *) stack->items + 
-			(stack->current_item * stack->item_size);
+	return (uint8_t *)stack->items +
+	       (stack->current_item * stack->item_size);
 }
 
 #ifndef NDEBUG
 #include <stdio.h>
 
-extern void parserutils_stack_dump(parserutils_stack *stack, const char *prefix,
-		void (*printer)(void *item));
+extern void parserutils_stack_dump(parserutils_stack *stack,
+				   const char *prefix,
+				   void (*printer)(void *item));
 
-void parserutils_stack_dump(parserutils_stack *stack, const char *prefix,
-		void (*printer)(void *item))
+void parserutils_stack_dump(parserutils_stack *stack,
+			    const char *prefix,
+			    void (*printer)(void *item))
 {
 	int32_t i;
 
@@ -173,10 +178,9 @@ void parserutils_stack_dump(parserutils_stack *stack, const char *prefix,
 
 	for (i = 0; i <= stack->current_item; i++) {
 		printf("%s %d: ", prefix != NULL ? prefix : "", i);
-		printer((uint8_t *) stack->items + (i * stack->item_size));
+		printer((uint8_t *)stack->items + (i * stack->item_size));
 		printf("\n");
 	}
 }
 
 #endif
-

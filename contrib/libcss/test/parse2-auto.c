@@ -31,11 +31,11 @@ typedef struct line_ctx {
 
 static bool handle_line(const char *data, size_t datalen, void *pw);
 static void css__parse_expected(line_ctx *ctx, const char *data, size_t len);
-static void run_test(const uint8_t *data, size_t len,
-		const char *exp, size_t explen);
+static void
+run_test(const uint8_t *data, size_t len, const char *exp, size_t explen);
 
-static css_error resolve_url(void *pw,
-		const char *base, lwc_string *rel, lwc_string **abs)
+static css_error
+resolve_url(void *pw, const char *base, lwc_string *rel, lwc_string **abs)
 {
 	UNUSED(pw);
 	UNUSED(base);
@@ -48,12 +48,13 @@ static css_error resolve_url(void *pw,
 
 static bool fail_because_lwc_leaked = false;
 
-static void
-printing_lwc_iterator(lwc_string *str, void *pw)
+static void printing_lwc_iterator(lwc_string *str, void *pw)
 {
 	UNUSED(pw);
 
-	printf(" DICT: %*s\n", (int)(lwc_string_length(str)), lwc_string_data(str));
+	printf(" DICT: %*s\n",
+	       (int)(lwc_string_length(str)),
+	       lwc_string_data(str));
 	fail_because_lwc_leaked = true;
 }
 
@@ -73,7 +74,7 @@ int main(int argc, char **argv)
 	ctx.buf = malloc(ctx.buflen);
 	if (ctx.buf == NULL) {
 		printf("Failed allocating %u bytes\n",
-				(unsigned int) ctx.buflen);
+		       (unsigned int)ctx.buflen);
 		return 1;
 	}
 
@@ -106,14 +107,14 @@ int main(int argc, char **argv)
 
 bool handle_line(const char *data, size_t datalen, void *pw)
 {
-	line_ctx *ctx = (line_ctx *) pw;
+	line_ctx *ctx = (line_ctx *)pw;
 
 	if (data[0] == '#') {
 		if (ctx->inexp) {
 			/* This marks end of testcase, so run it */
 
-			run_test(ctx->buf, ctx->bufused,
-					ctx->exp, ctx->expused);
+			run_test(
+				ctx->buf, ctx->bufused, ctx->exp, ctx->expused);
 
 			ctx->buf[0] = '\0';
 			ctx->bufused = 0;
@@ -121,17 +122,18 @@ bool handle_line(const char *data, size_t datalen, void *pw)
 			ctx->expused = 0;
 		}
 
-		if (ctx->indata && strncasecmp(data+1, "errors", 6) == 0) {
+		if (ctx->indata && strncasecmp(data + 1, "errors", 6) == 0) {
 			ctx->indata = false;
 			ctx->inerrors = true;
 			ctx->inexp = false;
 		} else if (ctx->inerrors &&
-				strncasecmp(data+1, "expected", 8) == 0) {
+			   strncasecmp(data + 1, "expected", 8) == 0) {
 			ctx->indata = false;
 			ctx->inerrors = false;
 			ctx->inexp = true;
 			ctx->inrule = false;
-		} else if (ctx->inexp && strncasecmp(data+1, "data", 4) == 0) {
+		} else if (ctx->inexp &&
+			   strncasecmp(data + 1, "data", 4) == 0) {
 			ctx->indata = true;
 			ctx->inerrors = false;
 			ctx->inexp = false;
@@ -139,9 +141,11 @@ bool handle_line(const char *data, size_t datalen, void *pw)
 			memcpy(ctx->buf + ctx->bufused, data, datalen);
 			ctx->bufused += datalen;
 		} else {
-			ctx->indata = (strncasecmp(data+1, "data", 4) == 0);
-			ctx->inerrors = (strncasecmp(data+1, "errors", 6) == 0);
-			ctx->inexp = (strncasecmp(data+1, "expected", 8) == 0);
+			ctx->indata = (strncasecmp(data + 1, "data", 4) == 0);
+			ctx->inerrors = (strncasecmp(data + 1, "errors", 6) ==
+					 0);
+			ctx->inexp = (strncasecmp(data + 1, "expected", 8) ==
+				      0);
 		}
 	} else {
 		if (ctx->indata) {
@@ -220,11 +224,12 @@ void run_test(const uint8_t *data, size_t len, const char *exp, size_t explen)
 	dump_sheet(sheet, buf, &buflen);
 
 	if (2 * explen - buflen != explen ||
-			(explen > 0 && memcmp(buf, exp, explen) != 0)) {
-		printf("Expected (%u):\n%.*s\n",
-				(int) explen, (int) explen, exp);
-		printf("Result (%u):\n%.*s\n", (int) (2 * explen - buflen),
-			(int) (2 * explen - buflen), buf);
+	    (explen > 0 && memcmp(buf, exp, explen) != 0)) {
+		printf("Expected (%u):\n%.*s\n", (int)explen, (int)explen, exp);
+		printf("Result (%u):\n%.*s\n",
+		       (int)(2 * explen - buflen),
+		       (int)(2 * explen - buflen),
+		       buf);
 		assert(0 && "Result doesn't match expected");
 	}
 
@@ -234,4 +239,3 @@ void run_test(const uint8_t *data, size_t len, const char *exp, size_t explen)
 
 	printf("Test %d: PASS\n", testnum);
 }
-

@@ -38,13 +38,13 @@ struct content_redraw_data;
 struct selection;
 
 typedef enum {
-	HTML_DRAG_NONE,			/** No drag */
-	HTML_DRAG_SELECTION,		/** Own; Text selection */
-	HTML_DRAG_SCROLLBAR,		/** Not own; drag in scrollbar widget */
-	HTML_DRAG_TEXTAREA_SELECTION,	/** Not own; drag in textarea widget */
-	HTML_DRAG_TEXTAREA_SCROLLBAR,	/** Not own; drag in textarea widget */
-	HTML_DRAG_CONTENT_SELECTION,	/** Not own; drag in child content */
-	HTML_DRAG_CONTENT_SCROLL	/** Not own; drag in child content */
+	HTML_DRAG_NONE, /** No drag */
+	HTML_DRAG_SELECTION, /** Own; Text selection */
+	HTML_DRAG_SCROLLBAR, /** Not own; drag in scrollbar widget */
+	HTML_DRAG_TEXTAREA_SELECTION, /** Not own; drag in textarea widget */
+	HTML_DRAG_TEXTAREA_SCROLLBAR, /** Not own; drag in textarea widget */
+	HTML_DRAG_CONTENT_SELECTION, /** Not own; drag in child content */
+	HTML_DRAG_CONTENT_SCROLL /** Not own; drag in child content */
 } html_drag_type;
 
 /**
@@ -58,10 +58,10 @@ union html_drag_owner {
 };
 
 typedef enum {
-	HTML_SELECTION_NONE,		/** No selection */
-	HTML_SELECTION_TEXTAREA,	/** Selection in one of our textareas */
-	HTML_SELECTION_SELF,		/** Selection in this html content */
-	HTML_SELECTION_CONTENT		/** Selection in child content */
+	HTML_SELECTION_NONE, /** No selection */
+	HTML_SELECTION_TEXTAREA, /** Selection in one of our textareas */
+	HTML_SELECTION_SELF, /** Selection in this html content */
+	HTML_SELECTION_CONTENT /** Selection in child content */
 } html_selection_type;
 
 /**
@@ -74,9 +74,9 @@ union html_selection_owner {
 };
 
 typedef enum {
-	HTML_FOCUS_SELF,		/**< Focus is our own */
-	HTML_FOCUS_CONTENT,		/**< Focus belongs to child content */
-	HTML_FOCUS_TEXTAREA		/**< Focus belongs to textarea */
+	HTML_FOCUS_SELF, /**< Focus is our own */
+	HTML_FOCUS_CONTENT, /**< Focus belongs to child content */
+	HTML_FOCUS_TEXTAREA /**< Focus belongs to textarea */
 } html_focus_type;
 
 /**
@@ -299,19 +299,30 @@ nserror html_proceed_to_done(html_content *html);
 
 
 /* in html/redraw.c */
-bool html_redraw(struct content *c, struct content_redraw_data *data,
-		const struct rect *clip, const struct redraw_context *ctx);
+bool html_redraw(struct content *c,
+		 struct content_redraw_data *data,
+		 const struct rect *clip,
+		 const struct redraw_context *ctx);
 
 
 /* in html/redraw_border.c */
-bool html_redraw_borders(struct box *box, int x_parent, int y_parent,
-		int p_width, int p_height, const struct rect *clip, float scale,
-		const struct redraw_context *ctx);
+bool html_redraw_borders(struct box *box,
+			 int x_parent,
+			 int y_parent,
+			 int p_width,
+			 int p_height,
+			 const struct rect *clip,
+			 float scale,
+			 const struct redraw_context *ctx);
 
 
-bool html_redraw_inline_borders(struct box *box, struct rect b,
-		const struct rect *clip, float scale, bool first, bool last,
-		const struct redraw_context *ctx);
+bool html_redraw_inline_borders(struct box *box,
+				struct rect b,
+				const struct rect *clip,
+				float scale,
+				bool first,
+				bool last,
+				const struct redraw_context *ctx);
 
 
 /* in html/script.c */
@@ -320,8 +331,8 @@ dom_hubbub_error html_process_script(void *ctx, dom_node *node);
 
 /* in html/forms.c */
 struct form *html_forms_get_forms(const char *docenc, dom_html_document *doc);
-struct form_control *html_forms_get_control_for_node(struct form *forms,
-		dom_node *node);
+struct form_control *
+html_forms_get_control_for_node(struct form *forms, dom_node *node);
 
 
 /* in html/css_fetcher.c */
@@ -331,8 +342,9 @@ struct form_control *html_forms_get_control_for_node(struct form *forms,
  * \return NSERROR_OK on successful registration or error code on failure.
  */
 nserror html_css_fetcher_register(void);
-nserror html_css_fetcher_add_item(dom_string *data, struct nsurl *base_url,
-		uint32_t *key);
+nserror html_css_fetcher_add_item(dom_string *data,
+				  struct nsurl *base_url,
+				  uint32_t *key);
 
 
 /* Events */
@@ -340,14 +352,19 @@ nserror html_css_fetcher_add_item(dom_string *data, struct nsurl *base_url,
  * Construct an event and fire it at the DOM
  *
  */
-bool fire_generic_dom_event(dom_string *type, dom_node *target,
-		    bool bubbles, bool cancelable);
+bool fire_generic_dom_event(dom_string *type,
+			    dom_node *target,
+			    bool bubbles,
+			    bool cancelable);
 
 /**
  * Construct a keyboard event and fire it at the DOM
  */
-bool fire_dom_keyboard_event(dom_string *type, dom_node *target,
-		bool bubbles, bool cancelable, uint32_t key);
+bool fire_dom_keyboard_event(dom_string *type,
+			     dom_node *target,
+			     bool bubbles,
+			     bool cancelable,
+			     uint32_t key);
 
 /* Useful dom_string pointers */
 struct dom_string;

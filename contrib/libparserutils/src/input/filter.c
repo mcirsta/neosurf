@@ -20,17 +20,17 @@
 
 /** Input filter */
 struct parserutils_filter {
-	iconv_t cd;			/**< Iconv conversion descriptor */
-	uint16_t int_enc;		/**< The internal encoding */
+	iconv_t cd; /**< Iconv conversion descriptor */
+	uint16_t int_enc; /**< The internal encoding */
 
 	struct {
-		uint16_t encoding;	/**< Input encoding */
-	} settings;			/**< Filter settings */
+		uint16_t encoding; /**< Input encoding */
+	} settings; /**< Filter settings */
 };
 
 static parserutils_error filter_set_defaults(parserutils_filter *input);
-static parserutils_error filter_set_encoding(parserutils_filter *input,
-		const char *enc);
+static parserutils_error
+filter_set_encoding(parserutils_filter *input, const char *enc);
 
 /**
  * Create an input filter
@@ -42,8 +42,8 @@ static parserutils_error filter_set_encoding(parserutils_filter *input,
  *         PARSERUTILS_NOMEM on memory exhausion,
  *         PARSERUTILS_BADENCODING if the encoding is unsupported
  */
-parserutils_error parserutils__filter_create(const char *int_enc,
-		parserutils_filter **filter)
+parserutils_error
+parserutils__filter_create(const char *int_enc, parserutils_filter **filter)
 {
 	parserutils_filter *f;
 	parserutils_error error;
@@ -55,9 +55,9 @@ parserutils_error parserutils__filter_create(const char *int_enc,
 	if (f == NULL)
 		return PARSERUTILS_NOMEM;
 
-	f->cd = (iconv_t) -1;
-	f->int_enc = parserutils_charset_mibenum_from_name(
-			int_enc, strlen(int_enc));
+	f->cd = (iconv_t)-1;
+	f->int_enc = parserutils_charset_mibenum_from_name(int_enc,
+							   strlen(int_enc));
 	if (f->int_enc == 0) {
 		free(f);
 		return PARSERUTILS_BADENCODING;
@@ -85,9 +85,9 @@ parserutils_error parserutils__filter_destroy(parserutils_filter *input)
 	if (input == NULL)
 		return PARSERUTILS_BADPARM;
 
-	if (input->cd != (iconv_t) -1) {
+	if (input->cd != (iconv_t)-1) {
 		iconv_close(input->cd);
-		input->cd = (iconv_t) -1;
+		input->cd = (iconv_t)-1;
 	}
 
 	free(input);
@@ -103,9 +103,10 @@ parserutils_error parserutils__filter_destroy(parserutils_filter *input)
  * \param params  Option-specific parameters
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error parserutils__filter_setopt(parserutils_filter *input,
-		parserutils_filter_opttype type,
-		parserutils_filter_optparams *params)
+parserutils_error
+parserutils__filter_setopt(parserutils_filter *input,
+			   parserutils_filter_opttype type,
+			   parserutils_filter_optparams *params)
 {
 	parserutils_error error = PARSERUTILS_OK;
 
@@ -134,15 +135,17 @@ parserutils_error parserutils__filter_setopt(parserutils_filter *input,
  * Call this with an input buffer length of 0 to flush any buffers.
  */
 parserutils_error parserutils__filter_process_chunk(parserutils_filter *input,
-		const uint8_t **data, size_t *len,
-		uint8_t **output, size_t *outlen)
+						    const uint8_t **data,
+						    size_t *len,
+						    uint8_t **output,
+						    size_t *outlen)
 {
 	if (input == NULL || data == NULL || *data == NULL || len == NULL ||
-			output == NULL || *output == NULL || outlen == NULL)
+	    output == NULL || *output == NULL || outlen == NULL)
 		return PARSERUTILS_BADPARM;
 
-	if (iconv(input->cd, (void *) data, len, 
-			(char **) output, outlen) == (size_t) -1) {
+	if (iconv(input->cd, (void *)data, len, (char **)output, outlen) ==
+	    (size_t)-1) {
 		switch (errno) {
 		case E2BIG:
 			return PARSERUTILS_NOMEM;
@@ -162,10 +165,13 @@ parserutils_error parserutils__filter_process_chunk(parserutils_filter *input,
 
 			while (*len > 0) {
 				size_t ret;
-				
-				ret = iconv(input->cd, (void *) data, len, 
-						(char **) output, outlen);
-				if (ret != (size_t) -1 || errno != EILSEQ)
+
+				ret = iconv(input->cd,
+					    (void *)data,
+					    len,
+					    (char **)output,
+					    outlen);
+				if (ret != (size_t)-1 || errno != EILSEQ)
 					break;
 
 				if (*outlen < 3)
@@ -182,7 +188,7 @@ parserutils_error parserutils__filter_process_chunk(parserutils_filter *input,
 				(*len)--;
 			}
 
-			return errno == E2BIG ? PARSERUTILS_NOMEM 
+			return errno == E2BIG ? PARSERUTILS_NOMEM
 					      : PARSERUTILS_OK;
 		}
 	}
@@ -236,8 +242,8 @@ parserutils_error filter_set_defaults(parserutils_filter *input)
  * \param enc    Encoding name
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error filter_set_encoding(parserutils_filter *input,
-		const char *enc)
+parserutils_error
+filter_set_encoding(parserutils_filter *input, const char *enc)
 {
 	parserutils_error error = PARSERUTILS_OK;
 	uint16_t mibenum;
@@ -253,15 +259,15 @@ parserutils_error filter_set_encoding(parserutils_filter *input,
 	if (input->settings.encoding == mibenum)
 		return PARSERUTILS_OK;
 
-	if (input->cd != (iconv_t) -1) {
+	if (input->cd != (iconv_t)-1) {
 		iconv_close(input->cd);
-		input->cd = (iconv_t) -1;
+		input->cd = (iconv_t)-1;
 	}
 
-	input->cd = iconv_open(
-		parserutils_charset_mibenum_to_name(input->int_enc),
-		parserutils_charset_mibenum_to_name(mibenum));
-	if (input->cd == (iconv_t) -1) {
+	input->cd = iconv_open(parserutils_charset_mibenum_to_name(
+				       input->int_enc),
+			       parserutils_charset_mibenum_to_name(mibenum));
+	if (input->cd == (iconv_t)-1) {
 		return (errno == EINVAL) ? PARSERUTILS_BADENCODING
 					 : PARSERUTILS_NOMEM;
 	}
@@ -269,5 +275,4 @@ parserutils_error filter_set_encoding(parserutils_filter *input,
 	input->settings.encoding = mibenum;
 
 	return error;
-
 }

@@ -38,19 +38,19 @@
  * A context for a download
  */
 struct download_context {
-	llcache_handle *llcache;		/**< Low-level cache handle */
-	struct gui_window *parent;		/**< Parent window */
+	llcache_handle *llcache; /**< Low-level cache handle */
+	struct gui_window *parent; /**< Parent window */
 
-	lwc_string *mime_type;			/**< MIME type of download */
-	unsigned long long int total_length;	/**< Length of data, in bytes */
-	char *filename;				/**< Suggested filename */
+	lwc_string *mime_type; /**< MIME type of download */
+	unsigned long long int total_length; /**< Length of data, in bytes */
+	char *filename; /**< Suggested filename */
 
-	struct gui_download_window *window;	/**< GUI download window */
+	struct gui_download_window *window; /**< GUI download window */
 };
 
 /**
  * Parse a filename parameter value
- * 
+ *
  * \param filename  Value to parse
  * \return Sanitised filename, or NULL on memory exhaustion
  */
@@ -115,24 +115,25 @@ static nserror download_context_process_headers(download_context *ctx)
 	}
 
 	/* Retrieve and parse Content-Disposition */
-	http_header = llcache_handle_get_header(ctx->llcache, 
-			"Content-Disposition");
+	http_header = llcache_handle_get_header(ctx->llcache,
+						"Content-Disposition");
 	if (http_header != NULL) {
 		lwc_string *filename_value;
 		http_content_disposition *disposition;
 
-		error = http_parse_content_disposition(http_header, 
-				&disposition);
+		error = http_parse_content_disposition(http_header,
+						       &disposition);
 		if (error != NSERROR_OK) {
 			http_content_type_destroy(content_type);
 			return error;
 		}
 
-		error = http_parameter_list_find_item(disposition->parameters, 
-				corestring_lwc_filename, &filename_value);
+		error = http_parameter_list_find_item(disposition->parameters,
+						      corestring_lwc_filename,
+						      &filename_value);
 		if (error == NSERROR_OK) {
 			ctx->filename = download_parse_filename(
-					lwc_string_data(filename_value));
+				lwc_string_data(filename_value));
 			lwc_string_unref(filename_value);
 		}
 
@@ -143,7 +144,7 @@ static nserror download_context_process_headers(download_context *ctx)
 	ctx->total_length = length;
 	if (ctx->filename == NULL) {
 		ctx->filename = download_default_filename(
-				llcache_handle_get_url(ctx->llcache));
+			llcache_handle_get_url(ctx->llcache));
 	}
 
 	http_content_type_destroy(content_type);
@@ -175,8 +176,8 @@ static nserror download_context_process_headers(download_context *ctx)
  * \param pw      Our context
  * \return NSERROR_OK on success, appropriate error otherwise
  */
-static nserror download_callback(llcache_handle *handle,
-		const llcache_event *event, void *pw)
+static nserror
+download_callback(llcache_handle *handle, const llcache_event *event, void *pw)
 {
 	download_context *ctx = pw;
 	nserror error = NSERROR_OK;
@@ -208,9 +209,10 @@ static nserror download_callback(llcache_handle *handle,
 
 		if (error == NSERROR_OK) {
 			/** \todo Lose ugly cast */
-			error = guit->download->data(ctx->window,
-					(char *) event->data.data.buf,
-					event->data.data.len);
+			error = guit->download->data(
+				ctx->window,
+				(char *)event->data.data.buf,
+				event->data.data.len);
 			if (error != NSERROR_OK)
 				llcache_handle_abort(handle);
 		}
@@ -218,7 +220,8 @@ static nserror download_callback(llcache_handle *handle,
 		break;
 
 	case LLCACHE_EVENT_DONE:
-		/* There may be no associated window if there was no data or headers */
+		/* There may be no associated window if there was no data or
+		 * headers */
 		if (ctx->window != NULL)
 			guit->download->done(ctx->window);
 		else
@@ -228,7 +231,8 @@ static nserror download_callback(llcache_handle *handle,
 
 	case LLCACHE_EVENT_ERROR:
 		if (ctx->window != NULL)
-			guit->download->error(ctx->window, event->data.error.msg);
+			guit->download->error(ctx->window,
+					      event->data.error.msg);
 		else
 			download_context_destroy(ctx);
 
@@ -245,8 +249,8 @@ static nserror download_callback(llcache_handle *handle,
 }
 
 /* See download.h for documentation */
-nserror download_context_create(llcache_handle *llcache, 
-		struct gui_window *parent)
+nserror
+download_context_create(llcache_handle *llcache, struct gui_window *parent)
 {
 	download_context *ctx;
 
@@ -311,4 +315,3 @@ const char *download_context_get_filename(const download_context *ctx)
 {
 	return ctx->filename;
 }
-

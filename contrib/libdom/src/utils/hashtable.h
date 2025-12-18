@@ -23,12 +23,11 @@ typedef struct dom_hash_vtable {
 	bool (*key_isequal)(void *key1, void *key2, void *pw);
 } dom_hash_vtable;
 
-dom_hash_table *_dom_hash_create(unsigned int chains, 
-		const dom_hash_vtable *vtable, void *pw);
+dom_hash_table *
+_dom_hash_create(unsigned int chains, const dom_hash_vtable *vtable, void *pw);
 dom_hash_table *_dom_hash_clone(dom_hash_table *ht);
 void _dom_hash_destroy(dom_hash_table *ht);
-bool _dom_hash_add(dom_hash_table *ht, void *key, void *value, 
-		bool replace);
+bool _dom_hash_add(dom_hash_table *ht, void *key, void *value, bool replace);
 void *_dom_hash_get(dom_hash_table *ht, void *key);
 void *_dom_hash_del(dom_hash_table *ht, void *key);
 void *_dom_hash_iterate(dom_hash_table *ht, uintptr_t *c1, uintptr_t **c2);

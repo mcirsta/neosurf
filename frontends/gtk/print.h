@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- /** \file
+/** \file
  * GTK printing (interface).
  */
 
@@ -35,16 +35,16 @@ extern struct hlcache_handle *content_to_print;
 
 /*handlers for signals from the GTK print operation*/
 void gtk_print_signal_begin_print(GtkPrintOperation *operation,
-		GtkPrintContext *context,
-  		gpointer user_data);
-  		
+				  GtkPrintContext *context,
+				  gpointer user_data);
+
 void gtk_print_signal_draw_page(GtkPrintOperation *operation,
-		GtkPrintContext *context,
-  		gint page_nr,
-  		gpointer user_data);
-  			
+				GtkPrintContext *context,
+				gint page_nr,
+				gpointer user_data);
+
 void gtk_print_signal_end_print(GtkPrintOperation *operation,
-		GtkPrintContext *context,
-  		gpointer user_data);
+				GtkPrintContext *context,
+				gpointer user_data);
 
 #endif

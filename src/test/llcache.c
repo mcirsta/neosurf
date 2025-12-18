@@ -82,7 +82,7 @@ char *path_to_url(const char *path)
 
 	if (*path == '/') {
 		path++; /* file: paths are already absolute */
-	} 
+	}
 
 	snprintf(url, urllen, "%s%s", FILE_SCHEME_PREFIX, path);
 
@@ -110,7 +110,7 @@ char *url_to_path(const char *url)
 
 #include "desktop/cookie_manager.h"
 
-/* desktop/cookie_manager.h -- used by urldb 
+/* desktop/cookie_manager.h -- used by urldb
  *
  * URLdb should have a cookies update event + handler registration
  */
@@ -119,7 +119,7 @@ bool cookie_manager_add(const struct cookie_data *data)
 	return true;
 }
 
-/* desktop/cookie_manager.h -- used by urldb 
+/* desktop/cookie_manager.h -- used by urldb
  *
  * URLdb should have a cookies removal handler registration
  */
@@ -127,21 +127,23 @@ void cookie_manager_remove(const struct cookie_data *data)
 {
 }
 
-/* image/bitmap.h -- used by urldb 
+/* image/bitmap.h -- used by urldb
  *
- * URLdb shouldn't care about bitmaps. 
+ * URLdb shouldn't care about bitmaps.
  * This is because the legacy RO thumbnail stuff was hacked in and must die.
  */
 void bitmap_destroy(void *bitmap)
 {
 }
-/* image/image.h -- used by urldb 
+/* image/image.h -- used by urldb
  *
- * URLdb shouldn't care about bitmaps. 
+ * URLdb shouldn't care about bitmaps.
  * This is because the legacy RO thumbnail stuff was hacked in and must die.
  */
-bool image_bitmap_plot(struct bitmap *bitmap, struct content_redraw_data *data, 
-		const struct rect *clip, const struct redraw_context *ctx)
+bool image_bitmap_plot(struct bitmap *bitmap,
+		       struct content_redraw_data *data,
+		       const struct rect *clip,
+		       const struct redraw_context *ctx)
 {
 	return true;
 }
@@ -188,10 +190,13 @@ void test_finalise(lwc_string *scheme)
 	/* Nothing to do */
 }
 
-void *test_setup_fetch(struct fetch *parent, nsurl *url, bool only_2xx,
-		bool downgrade_tls, const char *post_urlenc,
-		const struct fetch_multipart_data *post_multipart,
-		const char **headers)
+void *test_setup_fetch(struct fetch *parent,
+		       nsurl *url,
+		       bool only_2xx,
+		       bool downgrade_tls,
+		       const char *post_urlenc,
+		       const struct fetch_multipart_data *post_multipart,
+		       const char **headers)
 {
 	test_context *ctx = calloc(1, sizeof(test_context));
 
@@ -259,21 +264,22 @@ void test_poll(lwc_string *scheme)
  * The actual test code                                                       *
  ******************************************************************************/
 
-nserror query_handler(const llcache_query *query, void *pw,
-		llcache_query_response cb, void *cbpw)
+nserror query_handler(const llcache_query *query,
+		      void *pw,
+		      llcache_query_response cb,
+		      void *cbpw)
 {
-	/* I'm too lazy to actually implement this. It should queue the query, 
+	/* I'm too lazy to actually implement this. It should queue the query,
 	 * then deliver the response from main(). */
 
 	return NSERROR_OK;
 }
 
-nserror event_handler(llcache_handle *handle, 
-		const llcache_event *event, void *pw)
+nserror
+event_handler(llcache_handle *handle, const llcache_event *event, void *pw)
 {
 	static char *event_names[] = {
-		"HAD_HEADERS", "HAD_DATA", "DONE", "ERROR", "PROGRESS"
-	};
+		"HAD_HEADERS", "HAD_DATA", "DONE", "ERROR", "PROGRESS"};
 	bool *done = pw;
 
 	if (event->type != LLCACHE_EVENT_PROGRESS)
@@ -303,9 +309,15 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	fetch_add_fetcher(scheme, test_initialise, test_can_fetch,
-			test_setup_fetch, test_start_fetch, test_abort_fetch,
-			test_free_fetch, test_poll, test_finalise);
+	fetch_add_fetcher(scheme,
+			  test_initialise,
+			  test_can_fetch,
+			  test_setup_fetch,
+			  test_start_fetch,
+			  test_abort_fetch,
+			  test_free_fetch,
+			  test_poll,
+			  test_finalise);
 
 	/* Initialise low-level cache */
 	error = llcache_initialise(query_handler, NULL, 1024 * 1024);
@@ -314,15 +326,20 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	if (nsurl_create("http://www.netsurf-browser.org", &url) != NSERROR_OK) {
+	if (nsurl_create("http://www.netsurf-browser.org", &url) !=
+	    NSERROR_OK) {
 		fprintf(stderr, "Failed creating url\n");
 		return 1;
 	}
 
 	/* Retrieve an URL from the low-level cache (may trigger fetch) */
-	error = llcache_handle_retrieve(url, 
-			LLCACHE_RETRIEVE_VERIFIABLE, NULL, NULL,
-			event_handler, &done, &handle);
+	error = llcache_handle_retrieve(url,
+					LLCACHE_RETRIEVE_VERIFIABLE,
+					NULL,
+					NULL,
+					event_handler,
+					&done,
+					&handle);
 	if (error != NSERROR_OK) {
 		fprintf(stderr, "llcache_handle_retrieve: %d\n", error);
 		return 1;
@@ -335,8 +352,12 @@ int main(int argc, char **argv)
 
 	done = false;
 	error = llcache_handle_retrieve(url,
-			LLCACHE_RETRIEVE_VERIFIABLE, NULL, NULL,
-			event_handler, &done, &handle2);
+					LLCACHE_RETRIEVE_VERIFIABLE,
+					NULL,
+					NULL,
+					event_handler,
+					&done,
+					&handle2);
 	if (error != NSERROR_OK) {
 		fprintf(stderr, "llcache_handle_retrieve: %d\n", error);
 		return 1;
@@ -346,8 +367,11 @@ int main(int argc, char **argv)
 		llcache_poll();
 	}
 
-	fprintf(stdout, "%p, %p -> %d\n", handle, handle2,
-			llcache_handle_references_same_object(handle, handle2));
+	fprintf(stdout,
+		"%p, %p -> %d\n",
+		handle,
+		handle2,
+		llcache_handle_references_same_object(handle, handle2));
 
 	/* Cleanup */
 	llcache_handle_release(handle2);
@@ -357,4 +381,3 @@ int main(int argc, char **argv)
 
 	return 0;
 }
-

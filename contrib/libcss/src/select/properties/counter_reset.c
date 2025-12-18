@@ -14,15 +14,16 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_counter_reset(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error css__cascade_counter_reset(uint32_t opv,
+				     css_style *style,
+				     css_select_state *state)
 {
-	return css__cascade_counter_increment_reset(opv, style, state,
-			set_counter_reset);
+	return css__cascade_counter_increment_reset(
+		opv, style, state, set_counter_reset);
 }
 
 css_error css__set_counter_reset_from_hint(const css_hint *hint,
-		css_computed_style *style)
+					   css_computed_style *style)
 {
 	css_computed_counter *item;
 	css_error error;
@@ -30,7 +31,7 @@ css_error css__set_counter_reset_from_hint(const css_hint *hint,
 	error = set_counter_reset(style, hint->status, hint->data.counter);
 
 	if (hint->status == CSS_COUNTER_RESET_NAMED &&
-			hint->data.counter != NULL) {
+	    hint->data.counter != NULL) {
 		for (item = hint->data.counter; item->name != NULL; item++) {
 			lwc_string_unref(item->name);
 		}
@@ -47,9 +48,8 @@ css_error css__initial_counter_reset(css_select_state *state)
 	return set_counter_reset(state->computed, CSS_COUNTER_RESET_NONE, NULL);
 }
 
-css_error css__copy_counter_reset(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error
+css__copy_counter_reset(const css_computed_style *from, css_computed_style *to)
 {
 	css_error error;
 	css_computed_counter *copy = NULL;
@@ -74,13 +74,12 @@ css_error css__copy_counter_reset(
 }
 
 css_error css__compose_counter_reset(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+				     const css_computed_style *child,
+				     css_computed_style *result)
 {
 	const css_computed_counter *counter_reset = NULL;
 	uint8_t type = get_counter_reset(child, &counter_reset);
 
 	return css__copy_counter_reset(
-			type == CSS_COUNTER_RESET_INHERIT ? parent : child,
-			result);
+		type == CSS_COUNTER_RESET_INHERIT ? parent : child, result);
 }

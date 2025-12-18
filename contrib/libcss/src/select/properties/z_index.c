@@ -14,8 +14,8 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_z_index(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error
+css__cascade_z_index(uint32_t opv, css_style *style, css_select_state *state)
 {
 	uint16_t value = CSS_Z_INDEX_INHERIT;
 	css_fixed index = 0;
@@ -25,7 +25,7 @@ css_error css__cascade_z_index(uint32_t opv, css_style *style,
 		case Z_INDEX_SET:
 			value = CSS_Z_INDEX_SET;
 
-			index = *((css_fixed *) style->bytecode);
+			index = *((css_fixed *)style->bytecode);
 			advance_bytecode(style, sizeof(index));
 			break;
 		case Z_INDEX_AUTO:
@@ -41,16 +41,18 @@ css_error css__cascade_z_index(uint32_t opv, css_style *style,
 		}
 	}
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			getFlagValue(opv))) {
+	if (css__outranks_existing(getOpcode(opv),
+				   isImportant(opv),
+				   state,
+				   getFlagValue(opv))) {
 		return set_z_index(state->computed, value, index);
 	}
 
 	return CSS_OK;
 }
 
-css_error css__set_z_index_from_hint(const css_hint *hint,
-		css_computed_style *style)
+css_error
+css__set_z_index_from_hint(const css_hint *hint, css_computed_style *style)
 {
 	return set_z_index(style, hint->status, hint->data.integer);
 }
@@ -60,9 +62,8 @@ css_error css__initial_z_index(css_select_state *state)
 	return set_z_index(state->computed, CSS_Z_INDEX_AUTO, 0);
 }
 
-css_error css__copy_z_index(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error
+css__copy_z_index(const css_computed_style *from, css_computed_style *to)
 {
 	int32_t index = 0;
 	uint8_t type = get_z_index(from, &index);
@@ -75,14 +76,12 @@ css_error css__copy_z_index(
 }
 
 css_error css__compose_z_index(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+			       const css_computed_style *child,
+			       css_computed_style *result)
 {
 	int32_t index = 0;
 	uint8_t type = get_z_index(child, &index);
 
-	return css__copy_z_index(
-			type == CSS_Z_INDEX_INHERIT ? parent : child,
-			result);
+	return css__copy_z_index(type == CSS_Z_INDEX_INHERIT ? parent : child,
+				 result);
 }
-

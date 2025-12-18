@@ -11,13 +11,13 @@ class NS_Local_history : public NS_Corewindow
 {
 	Q_OBJECT
 
-public:
+      public:
 	NS_Local_history(QWidget *parent, struct browser_window *bw);
 	~NS_Local_history();
 
 	nserror setbw(struct browser_window *bw);
 
-private:
+      private:
 	void setMaximumSize(struct browser_window *bw);
 	void draw(struct rect *clip, struct redraw_context *ctx);
 	bool key_press(uint32_t nskey);

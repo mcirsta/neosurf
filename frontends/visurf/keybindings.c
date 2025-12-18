@@ -13,26 +13,24 @@ struct mod_map {
 };
 
 static const struct mod_map mod_map[] = {
-	{ XKB_MOD_NAME_CTRL, MOD_CTRL },
-	{ XKB_MOD_NAME_ALT, MOD_ALT },
-	{ XKB_MOD_NAME_LOGO, MOD_LOGO },
+	{XKB_MOD_NAME_CTRL, MOD_CTRL},
+	{XKB_MOD_NAME_ALT, MOD_ALT},
+	{XKB_MOD_NAME_LOGO, MOD_LOGO},
 };
 
-uint32_t
-xkb_state_mask(struct xkb_state *state)
+uint32_t xkb_state_mask(struct xkb_state *state)
 {
 	uint32_t mask = 0;
 	for (size_t i = 0; i < sizeof(mod_map) / sizeof(mod_map[0]); ++i) {
-		if (xkb_state_mod_name_is_active(state,
-				mod_map[i].xkb, XKB_STATE_MODS_EFFECTIVE)) {
+		if (xkb_state_mod_name_is_active(
+			    state, mod_map[i].xkb, XKB_STATE_MODS_EFFECTIVE)) {
 			mask |= mod_map[i].mask;
 		}
 	}
 	return mask;
 }
 
-static void
-binding_free(struct nsvi_binding binding)
+static void binding_free(struct nsvi_binding binding)
 {
 	if (binding.next) {
 		binding_free(*binding.next);
@@ -41,8 +39,7 @@ binding_free(struct nsvi_binding binding)
 	free(binding.command);
 }
 
-static struct nsvi_binding *
-binding_parse(const char *desc)
+static struct nsvi_binding *binding_parse(const char *desc)
 {
 	struct nsvi_binding *binding = calloc(1, sizeof(struct nsvi_binding));
 	struct nsvi_binding *cur = binding;
@@ -101,9 +98,9 @@ error:
 	return NULL;
 }
 
-nserror
-nsvi_bindings_new(struct nsvi_bindings *state,
-		const char *desc, const char *cmd)
+nserror nsvi_bindings_new(struct nsvi_bindings *state,
+			  const char *desc,
+			  const char *cmd)
 {
 	struct nsvi_binding *binding = binding_parse(desc);
 	if (binding == NULL) {
@@ -112,11 +109,13 @@ nsvi_bindings_new(struct nsvi_bindings *state,
 
 	if (state->nbindings + 1 >= state->zbindings) {
 		if (state->zbindings == 0) {
-			state->bindings = calloc(16, sizeof(struct nsvi_binding));
+			state->bindings = calloc(16,
+						 sizeof(struct nsvi_binding));
 			state->zbindings = 16;
 		} else {
 			state->zbindings *= 2;
-			struct nsvi_binding *new = realloc(state->bindings,
+			struct nsvi_binding *new = realloc(
+				state->bindings,
 				state->zbindings * sizeof(struct nsvi_binding));
 			assert(new);
 			state->bindings = new;
@@ -131,8 +130,9 @@ nsvi_bindings_new(struct nsvi_bindings *state,
 			break;
 		}
 	}
-	memmove(&state->bindings[i+1], &state->bindings[i],
-		(state->nbindings-i) * sizeof(struct nsvi_binding));
+	memmove(&state->bindings[i + 1],
+		&state->bindings[i],
+		(state->nbindings - i) * sizeof(struct nsvi_binding));
 	binding->command = strdup(cmd);
 	state->bindings[i] = *binding;
 	++state->nbindings;
@@ -140,8 +140,7 @@ nsvi_bindings_new(struct nsvi_bindings *state,
 	return NSERROR_OK;
 }
 
-nserror
-nsvi_bindings_remove(struct nsvi_bindings *state, const char *desc)
+nserror nsvi_bindings_remove(struct nsvi_bindings *state, const char *desc)
 {
 	struct nsvi_binding *binding = binding_parse(desc);
 	if (binding == NULL) {
@@ -158,8 +157,10 @@ nsvi_bindings_remove(struct nsvi_bindings *state, const char *desc)
 		}
 		if (!a && !b) {
 			binding_free(state->bindings[i]);
-			memmove(&state->bindings[i], &state->bindings[i + 1],
-				(state->nbindings - i - 1) * sizeof(struct nsvi_binding));
+			memmove(&state->bindings[i],
+				&state->bindings[i + 1],
+				(state->nbindings - i - 1) *
+					sizeof(struct nsvi_binding));
 			i--;
 			state->nbindings--;
 		}
@@ -194,9 +195,9 @@ get_binding_state(struct nsvi_bindings *state, struct nsvi_binding *binding)
 	return STATE_COMPLETE;
 }
 
-void
-nsvi_bindings_handle(struct nsvi_bindings *state,
-		xkb_keycode_t keycode, bool pressed)
+void nsvi_bindings_handle(struct nsvi_bindings *state,
+			  xkb_keycode_t keycode,
+			  bool pressed)
 {
 	xkb_keysym_t sym = xkb_state_key_get_one_sym(state->xkb_state, keycode);
 	if (state->nbuf >= NSVI_KEYBUF_SIZE) {
@@ -239,15 +240,16 @@ nsvi_bindings_handle(struct nsvi_bindings *state,
 	}
 
 	if (pending == 0) {
-		NSLOG(neosurf, INFO, "No bindings for this key sequence, discarding");
+		NSLOG(neosurf,
+		      INFO,
+		      "No bindings for this key sequence, discarding");
 		state->nbuf = 0;
 	} else {
 		NSLOG(neosurf, INFO, "No candidate bindings (yet)");
 	}
 }
 
-void
-nsvi_bindings_finish(struct nsvi_bindings *state)
+void nsvi_bindings_finish(struct nsvi_bindings *state)
 {
 	for (size_t i = 0; i < state->nbindings; i++) {
 		binding_free(state->bindings[i]);

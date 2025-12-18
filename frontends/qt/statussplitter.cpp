@@ -28,19 +28,22 @@ extern "C" {
 #include "qt/statussplitter.cls.h"
 
 
-NS_StatusSplitter::NS_StatusSplitter(QLabel *status, QScrollBar *scrollbar, QWidget *parent)
-	: QSplitter(parent),
-	  m_resize_move(false)
+NS_StatusSplitter::NS_StatusSplitter(QLabel *status,
+				     QScrollBar *scrollbar,
+				     QWidget *parent)
+	: QSplitter(parent), m_resize_move(false)
 {
 	setChildrenCollapsible(false);
 	addWidget(status);
 	addWidget(scrollbar);
-	connect(this,&QSplitter::splitterMoved,
-		this, &NS_StatusSplitter::moved_slot);
+	connect(this,
+		&QSplitter::splitterMoved,
+		this,
+		&NS_StatusSplitter::moved_slot);
 }
 
 
-void NS_StatusSplitter::moved_slot(int pos,int index)
+void NS_StatusSplitter::moved_slot(int pos, int index)
 {
 	if (m_resize_move) {
 		m_resize_move = false;
@@ -55,5 +58,8 @@ void NS_StatusSplitter::resizeEvent(QResizeEvent *event)
 {
 	QSplitter::resizeEvent(event);
 	m_resize_move = true;
-	moveSplitter((event->size().width() * nsoption_int(toolbar_status_size))/10000, 1);
+	moveSplitter((event->size().width() *
+		      nsoption_int(toolbar_status_size)) /
+			     10000,
+		     1);
 }

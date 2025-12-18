@@ -28,8 +28,9 @@
  *		   If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_padding(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+			     const parserutils_vector *vector,
+			     int32_t *ctx,
+			     css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	int prev_ctx;
@@ -48,23 +49,26 @@ css_error css__parse_padding(css_language *c,
 	flag_value = get_css_flag_value(c, token);
 
 	if (flag_value != FLAG_VALUE__NONE) {
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_PADDING_TOP);
+		error = css_stylesheet_style_flag_value(result,
+							flag_value,
+							CSS_PROP_PADDING_TOP);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_PADDING_RIGHT);
+		error = css_stylesheet_style_flag_value(result,
+							flag_value,
+							CSS_PROP_PADDING_RIGHT);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_PADDING_BOTTOM);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_PADDING_BOTTOM);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_PADDING_LEFT);
+		error = css_stylesheet_style_flag_value(result,
+							flag_value,
+							CSS_PROP_PADDING_LEFT);
 		if (error == CSS_OK)
 			parserutils_vector_iterate(vector, ctx);
 
@@ -80,7 +84,12 @@ css_error css__parse_padding(css_language *c,
 			return CSS_INVALID;
 		}
 
-		error = css__parse_unit_specifier(c, vector, ctx, UNIT_PX, &side_length[side_count], &side_unit[side_count]);
+		error = css__parse_unit_specifier(c,
+						  vector,
+						  ctx,
+						  UNIT_PX,
+						  &side_length[side_count],
+						  &side_unit[side_count]);
 		if (error == CSS_OK) {
 			if (side_unit[side_count] & UNIT_ANGLE ||
 			    side_unit[side_count] & UNIT_TIME ||
@@ -105,15 +114,15 @@ css_error css__parse_padding(css_language *c,
 		}
 	} while ((*ctx != prev_ctx) && (token != NULL) && (side_count < 4));
 
-#define SIDE_APPEND(OP,NUM)							\
-	error = css__stylesheet_style_appendOPV(result, (OP), 0, PADDING_SET);	\
-	if (error != CSS_OK)							\
-		break;								\
-	error = css__stylesheet_style_append(result, side_length[(NUM)]);	\
-	if (error != CSS_OK)							\
-		break;								\
-	error = css__stylesheet_style_append(result, side_unit[(NUM)]);		\
-	if (error != CSS_OK)							\
+#define SIDE_APPEND(OP, NUM)                                                   \
+	error = css__stylesheet_style_appendOPV(result, (OP), 0, PADDING_SET); \
+	if (error != CSS_OK)                                                   \
+		break;                                                         \
+	error = css__stylesheet_style_append(result, side_length[(NUM)]);      \
+	if (error != CSS_OK)                                                   \
+		break;                                                         \
+	error = css__stylesheet_style_append(result, side_unit[(NUM)]);        \
+	if (error != CSS_OK)                                                   \
 		break;
 
 	switch (side_count) {
@@ -151,4 +160,3 @@ css_error css__parse_padding(css_language *c,
 
 	return error;
 }
-

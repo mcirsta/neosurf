@@ -9,11 +9,15 @@
 #define hubbub_string_h_
 
 /** Match two strings case-sensitively */
-bool hubbub_string_match(const uint8_t *a, size_t a_len,
-		const uint8_t *b, size_t b_len);
+bool hubbub_string_match(const uint8_t *a,
+			 size_t a_len,
+			 const uint8_t *b,
+			 size_t b_len);
 
 /** Match two strings case-insensitively */
-bool hubbub_string_match_ci(const uint8_t *a, size_t a_len,
-		const uint8_t *b, size_t b_len);
+bool hubbub_string_match_ci(const uint8_t *a,
+			    size_t a_len,
+			    const uint8_t *b,
+			    size_t b_len);
 
 #endif

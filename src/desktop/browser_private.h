@@ -38,10 +38,10 @@ struct nsurl;
  * history entry page information
  */
 struct history_page {
-	struct nsurl *url;    /**< Page URL, never NULL. */
+	struct nsurl *url; /**< Page URL, never NULL. */
 	lwc_string *frag_id; /** Fragment identifier, or NULL. */
-	char *title;  /**< Page title, never NULL. */
-	struct bitmap *bitmap;  /**< Thumbnail bitmap, or NULL. */
+	char *title; /**< Page title, never NULL. */
+	struct bitmap *bitmap; /**< Thumbnail bitmap, or NULL. */
 	float scroll_x; /**< Scroll X offset when visited */
 	float scroll_y; /**< Scroll Y offset when visited */
 };
@@ -51,15 +51,15 @@ struct history_page {
  */
 struct history_entry {
 	struct history_page page;
-	struct history_entry *back;  /**< Parent. */
-	struct history_entry *next;  /**< Next sibling. */
-	struct history_entry *forward;  /**< First child. */
-	struct history_entry *forward_pref;  /**< Child in direction of
-						  current entry. */
-	struct history_entry *forward_last;  /**< Last child. */
-	unsigned int children;  /**< Number of children. */
-	int x;  /**< Position of node. */
-	int y;  /**< Position of node. */
+	struct history_entry *back; /**< Parent. */
+	struct history_entry *next; /**< Next sibling. */
+	struct history_entry *forward; /**< First child. */
+	struct history_entry *forward_pref; /**< Child in direction of
+						 current entry. */
+	struct history_entry *forward_last; /**< Last child. */
+	unsigned int children; /**< Number of children. */
+	int x; /**< Position of node. */
+	int y; /**< Position of node. */
 };
 
 /**
@@ -80,13 +80,13 @@ struct history {
  * The parameters for a fetch.
  */
 struct browser_fetch_parameters {
-	struct nsurl *url;                           /**< The URL to fetch */
-	struct nsurl *referrer;			     /**< Optional refererer */
-	enum browser_window_nav_flags flags;	     /**< Navigation flags */
-	char *post_urlenc;			     /**< URL encoded post data */
+	struct nsurl *url; /**< The URL to fetch */
+	struct nsurl *referrer; /**< Optional refererer */
+	enum browser_window_nav_flags flags; /**< Navigation flags */
+	char *post_urlenc; /**< URL encoded post data */
 	struct fetch_multipart_data *post_multipart; /**< Multipart post data */
-	char *parent_charset;			     /**< Optional parent character set */
-	bool parent_quirks;			     /**< Optional parent quirks */
+	char *parent_charset; /**< Optional parent character set */
+	bool parent_quirks; /**< Optional parent quirks */
 };
 
 
@@ -205,8 +205,8 @@ struct browser_window {
 	int width;
 	int height;
 
-	struct scrollbar *scroll_x;  /**< Horizontal scroll. */
-	struct scrollbar *scroll_y;  /**< Vertical scroll. */
+	struct scrollbar *scroll_x; /**< Horizontal scroll. */
+	struct scrollbar *scroll_y; /**< Vertical scroll. */
 
 	/** scale of window contents */
 	float scale;
@@ -269,7 +269,8 @@ struct browser_window {
 	struct {
 		char *text; /**< Current status bar text. */
 		int text_len; /**< Length of the status::text buffer. */
-		int match; /**< Number of times an idempotent status-set operation was performed. */
+		int match; /**< Number of times an idempotent status-set
+			      operation was performed. */
 		int miss; /**< Number of times status was really updated. */
 	} status;
 };
@@ -283,8 +284,8 @@ struct browser_window {
  * \param existing  The existing window if cloning, else NULL
  */
 nserror browser_window_initialise_common(enum browser_window_create_flags flags,
-		struct browser_window *bw,
-		const struct browser_window *existing);
+					 struct browser_window *bw,
+					 const struct browser_window *existing);
 
 
 /**
@@ -303,7 +304,8 @@ nserror browser_window_destroy_internal(struct browser_window *bw);
  * \return NSERROR_OK and width and height updated otherwise error code
  */
 nserror browser_window_get_dimensions(struct browser_window *bw,
-		int *width, int *height);
+				      int *width,
+				      int *height);
 
 
 /**
@@ -321,7 +323,8 @@ void browser_window_update_extent(struct browser_window *bw);
  * \param bw The browser window to update.
  * \param rect The area to redraw
  */
-nserror browser_window_invalidate_rect(struct browser_window *bw, struct rect *rect);
+nserror
+browser_window_invalidate_rect(struct browser_window *bw, struct rect *rect);
 
 
 /**
@@ -339,8 +342,7 @@ void browser_window_set_status(struct browser_window *bw, const char *text);
  * \param  bw     browser window to set the type of the current drag for
  * \return  root browser window
  */
-struct browser_window * browser_window_get_root(
-		struct browser_window *bw);
+struct browser_window *browser_window_get_root(struct browser_window *bw);
 
 
 /**
@@ -361,7 +363,7 @@ nserror browser_window_history_create(struct browser_window *bw);
  * \return  NSERROR_OK or appropriate error otherwise
  */
 nserror browser_window_history_clone(const struct browser_window *existing,
-		struct browser_window *clone);
+				     struct browser_window *clone);
 
 
 /**
@@ -375,7 +377,8 @@ nserror browser_window_history_clone(const struct browser_window *existing,
  * The page is added after the current entry and becomes current.
  */
 nserror browser_window_history_add(struct browser_window *bw,
-		struct hlcache_handle *content, lwc_string *frag_id);
+				   struct hlcache_handle *content,
+				   lwc_string *frag_id);
 
 /**
  * Update the thumbnail and scroll offsets for the current entry.
@@ -385,7 +388,7 @@ nserror browser_window_history_add(struct browser_window *bw,
  * \return NSERROR_OK or error code on faliure.
  */
 nserror browser_window_history_update(struct browser_window *bw,
-		struct hlcache_handle *content);
+				      struct hlcache_handle *content);
 
 /**
  * Retrieve the stored scroll offsets for the current history entry
@@ -396,7 +399,8 @@ nserror browser_window_history_update(struct browser_window *bw,
  * \return NSERROR_OK or error code on failure.
  */
 nserror browser_window_history_get_scroll(struct browser_window *bw,
-					  float *sx, float *sy);
+					  float *sx,
+					  float *sy);
 
 /**
  * Free a history structure.

@@ -34,7 +34,6 @@ extern "C" {
 #include "neosurf/content.h"
 #include "neosurf/bitmap.h"
 #include "neosurf/plotters.h"
-
 }
 
 #include "qt/plotters.h"
@@ -49,7 +48,8 @@ extern "C" {
  * \param state The state to create the bitmap in.
  * \return A bitmap structure or NULL on error.
  */
-static void *nsqt_bitmap_create(int width, int height, enum gui_bitmap_flags flags)
+static void *
+nsqt_bitmap_create(int width, int height, enum gui_bitmap_flags flags)
 {
 	enum QImage::Format qfmt;
 	if (flags & BITMAP_OPAQUE) {
@@ -166,9 +166,9 @@ static void nsqt_bitmap_modified(void *bitmap)
  * scale that render into the output bitmap.
  * this is done because attempting to render into small target bitmaps directly
  * has almost universally bad results.
- * The intermediate image is limited to 1024 pixels in width resulting in buffers
- * which are not excessively large thus limiting memory use keeping performance
- * reasonable.
+ * The intermediate image is limited to 1024 pixels in width resulting in
+ * buffers which are not excessively large thus limiting memory use keeping
+ * performance reasonable.
  *
  * \param bitmap The bitmap to render into.
  * \param content The content to render.
@@ -210,13 +210,14 @@ nsqt_bitmap_render(struct bitmap *bitmap, struct hlcache_handle *content)
 	 * qpainter scaled draw image (even with
 	 * QPainter::SmoothPixmapTransformset) yields poor quality results.
 	 */
-	QImage siimg = iimg.scaled(dwidth, dheight,
+	QImage siimg = iimg.scaled(dwidth,
+				   dheight,
 				   Qt::IgnoreAspectRatio,
 				   Qt::SmoothTransformation);
 
 	/* plot the scaled intermediate image into the destination image */
 	painter = new QPainter(dimg);
-	painter->drawImage(QPoint(0,0), siimg);
+	painter->drawImage(QPoint(0, 0), siimg);
 	delete painter;
 
 	return NSERROR_OK;

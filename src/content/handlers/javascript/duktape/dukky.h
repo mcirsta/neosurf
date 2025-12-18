@@ -42,8 +42,8 @@ bool dukky_event_target_push_listeners(duk_context *ctx, bool dont_create);
 typedef enum {
 	ELF_CAPTURE = 1 << 0,
 	ELF_PASSIVE = 1 << 1,
-	ELF_ONCE    = 1 << 2,
-	ELF_NONE    = 0
+	ELF_ONCE = 1 << 2,
+	ELF_NONE = 0
 } event_listener_flags;
 
 void dukky_shuffle_array(duk_context *ctx, duk_uarridx_t idx);
@@ -55,6 +55,6 @@ duk_int_t dukky_pcall(duk_context *ctx, duk_size_t argc, bool reset_timeout);
 void dukky_push_generics(duk_context *ctx, const char *generic);
 
 /* Log the current stack frame if possible */
-void dukky_log_stack_frame(duk_context *ctx, const char * reason);
+void dukky_log_stack_frame(duk_context *ctx, const char *reason);
 
 #endif

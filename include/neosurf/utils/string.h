@@ -38,7 +38,7 @@
  * \param  s  source string
  * \return  heap allocated result, or NULL on memory exhaustion
  */
-char *squash_whitespace(const char * s);
+char *squash_whitespace(const char *s);
 
 
 /**

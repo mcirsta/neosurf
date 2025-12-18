@@ -33,10 +33,13 @@ static size_t _rule_size(const css_rule *rule);
  *	   CSS_BADPARM on bad parameters,
  *	   CSS_NOMEM on memory exhaustion
  *
- * \post Ownership of \a string reference is passed to the stylesheet (even on failure)
+ * \post Ownership of \a string reference is passed to the stylesheet (even on
+ * failure)
  * \note The returned string number is guaranteed to be non-zero
  */
-css_error css__stylesheet_string_add(css_stylesheet *sheet, lwc_string *string, uint32_t *string_number)
+css_error css__stylesheet_string_add(css_stylesheet *sheet,
+				     lwc_string *string,
+				     uint32_t *string_number)
 {
 	uint32_t new_string_number; /* The string number count */
 
@@ -44,14 +47,14 @@ css_error css__stylesheet_string_add(css_stylesheet *sheet, lwc_string *string, 
 		return CSS_BADPARM;
 
 	/* search for the string in the existing vector */
-	for (new_string_number = 0;
-	     new_string_number < sheet->string_vector_c;
+	for (new_string_number = 0; new_string_number < sheet->string_vector_c;
 	     new_string_number++) {
 		lwc_error res;
 		bool isequal;
-		res = lwc_string_isequal(string,
-					 sheet->string_vector[new_string_number],
-					 &isequal);
+		res = lwc_string_isequal(
+			string,
+			sheet->string_vector[new_string_number],
+			&isequal);
 
 		if (res != lwc_error_ok) {
 			lwc_string_unref(string);
@@ -63,7 +66,6 @@ css_error css__stylesheet_string_add(css_stylesheet *sheet, lwc_string *string, 
 			*string_number = (new_string_number + 1);
 			return CSS_OK;
 		}
-
 	}
 
 	/* string does not exist in current vector, add a new one */
@@ -77,7 +79,7 @@ css_error css__stylesheet_string_add(css_stylesheet *sheet, lwc_string *string, 
 
 		new_vector_len = sheet->string_vector_l + 256;
 		new_vector = realloc(sheet->string_vector,
-				new_vector_len * sizeof(lwc_string *));
+				     new_vector_len * sizeof(lwc_string *));
 
 		if (new_vector == NULL) {
 			lwc_string_unref(string);
@@ -104,7 +106,8 @@ css_error css__stylesheet_string_add(css_stylesheet *sheet, lwc_string *string, 
  *	   CSS_BADPARM on bad parameters,
  */
 css_error css__stylesheet_string_get(css_stylesheet *sheet,
-		uint32_t string_number, lwc_string **string)
+				     uint32_t string_number,
+				     lwc_string **string)
 {
 	/* External string numbers = index into vector + 1 */
 	string_number--;
@@ -127,18 +130,17 @@ css_error css__stylesheet_string_get(css_stylesheet *sheet,
  *	   CSS_NOMEM on memory exhaustion
  */
 css_error css_stylesheet_create(const css_stylesheet_params *params,
-		css_stylesheet **stylesheet)
+				css_stylesheet **stylesheet)
 {
 	css_parser_optparams optparams;
 	css_error error;
 	css_stylesheet *sheet;
 
-	if (params == NULL || (params->params_version !=
-				CSS_STYLESHEET_PARAMS_VERSION_1 &&
-			params->params_version !=
-				CSS_STYLESHEET_PARAMS_VERSION_2) ||
-			params->url == NULL || params->resolve == NULL ||
-			stylesheet == NULL)
+	if (params == NULL ||
+	    (params->params_version != CSS_STYLESHEET_PARAMS_VERSION_1 &&
+	     params->params_version != CSS_STYLESHEET_PARAMS_VERSION_2) ||
+	    params->url == NULL || params->resolve == NULL ||
+	    stylesheet == NULL)
 		return CSS_BADPARM;
 
 	sheet = calloc(1, sizeof(css_stylesheet));
@@ -154,15 +156,17 @@ css_error css_stylesheet_create(const css_stylesheet_params *params,
 	sheet->inline_style = params->inline_style;
 
 	if (params->inline_style) {
-		error = css__parser_create_for_inline_style(params->charset,
-				(params->charset != NULL) ?
-				CSS_CHARSET_DICTATED : CSS_CHARSET_DEFAULT,
-				&sheet->parser);
+		error = css__parser_create_for_inline_style(
+			params->charset,
+			(params->charset != NULL) ? CSS_CHARSET_DICTATED
+						  : CSS_CHARSET_DEFAULT,
+			&sheet->parser);
 	} else {
 		error = css__parser_create(params->charset,
-				(params->charset != NULL) ?
-				CSS_CHARSET_DICTATED : CSS_CHARSET_DEFAULT,
-				&sheet->parser);
+					   (params->charset != NULL)
+						   ? CSS_CHARSET_DICTATED
+						   : CSS_CHARSET_DEFAULT,
+					   &sheet->parser);
 	}
 
 	if (error != CSS_OK) {
@@ -176,8 +180,9 @@ css_error css_stylesheet_create(const css_stylesheet_params *params,
 	if (params->allow_quirks) {
 		optparams.quirks = true;
 
-		error = css__parser_setopt(sheet->parser, CSS_PARSER_QUIRKS,
-				&optparams);
+		error = css__parser_setopt(sheet->parser,
+					   CSS_PARSER_QUIRKS,
+					   &optparams);
 		if (error != CSS_OK) {
 			css__parser_destroy(sheet->parser);
 			css__propstrings_unref();
@@ -187,8 +192,9 @@ css_error css_stylesheet_create(const css_stylesheet_params *params,
 	}
 
 	sheet->level = params->level;
-	error = css__language_create(sheet, sheet->parser,
-			&sheet->parser_frontend);
+	error = css__language_create(sheet,
+				     sheet->parser,
+				     &sheet->parser_frontend);
 	if (error != CSS_OK) {
 		css__parser_destroy(sheet->parser);
 		css__propstrings_unref();
@@ -323,7 +329,8 @@ css_error css_stylesheet_destroy(css_stylesheet *sheet)
  * \return CSS_OK on success, appropriate error otherwise
  */
 css_error css_stylesheet_append_data(css_stylesheet *sheet,
-		const uint8_t *data, size_t len)
+				     const uint8_t *data,
+				     size_t len)
 {
 	if (sheet == NULL || data == NULL)
 		return CSS_BADPARM;
@@ -372,11 +379,10 @@ css_error css_stylesheet_data_done(css_stylesheet *sheet)
 
 	/* Determine if there are any pending imports */
 	for (r = sheet->rule_list; r != NULL; r = r->next) {
-		const css_rule_import *i = (const css_rule_import *) r;
+		const css_rule_import *i = (const css_rule_import *)r;
 
 		if (r->type != CSS_RULE_UNKNOWN &&
-				r->type != CSS_RULE_CHARSET &&
-				r->type != CSS_RULE_IMPORT)
+		    r->type != CSS_RULE_CHARSET && r->type != CSS_RULE_IMPORT)
 			break;
 
 		if (r->type == CSS_RULE_IMPORT && i->sheet == NULL)
@@ -408,8 +414,8 @@ css_error css_stylesheet_data_done(css_stylesheet *sheet)
  * If the client is unable to fetch an imported stylesheet, it must
  * register an empty stylesheet with the parent in its place.
  */
-css_error css_stylesheet_next_pending_import(css_stylesheet *parent,
-		lwc_string **url)
+css_error
+css_stylesheet_next_pending_import(css_stylesheet *parent, lwc_string **url)
 {
 	const css_rule *r;
 
@@ -417,11 +423,10 @@ css_error css_stylesheet_next_pending_import(css_stylesheet *parent,
 		return CSS_BADPARM;
 
 	for (r = parent->rule_list; r != NULL; r = r->next) {
-		const css_rule_import *i = (const css_rule_import *) r;
+		const css_rule_import *i = (const css_rule_import *)r;
 
 		if (r->type != CSS_RULE_UNKNOWN &&
-				r->type != CSS_RULE_CHARSET &&
-				r->type != CSS_RULE_IMPORT)
+		    r->type != CSS_RULE_CHARSET && r->type != CSS_RULE_IMPORT)
 			break;
 
 		if (r->type == CSS_RULE_IMPORT && i->sheet == NULL) {
@@ -445,8 +450,8 @@ css_error css_stylesheet_next_pending_import(css_stylesheet *parent,
  *
  * Ownership of the imported stylesheet is retained by the client.
  */
-css_error css_stylesheet_register_import(css_stylesheet *parent,
-		css_stylesheet *import)
+css_error
+css_stylesheet_register_import(css_stylesheet *parent, css_stylesheet *import)
 {
 	css_rule *r;
 
@@ -454,11 +459,10 @@ css_error css_stylesheet_register_import(css_stylesheet *parent,
 		return CSS_BADPARM;
 
 	for (r = parent->rule_list; r != NULL; r = r->next) {
-		css_rule_import *i = (css_rule_import *) r;
+		css_rule_import *i = (css_rule_import *)r;
 
 		if (r->type != CSS_RULE_UNKNOWN &&
-				r->type != CSS_RULE_CHARSET &&
-				r->type != CSS_RULE_IMPORT)
+		    r->type != CSS_RULE_CHARSET && r->type != CSS_RULE_IMPORT)
 			break;
 
 		if (r->type == CSS_RULE_IMPORT && i->sheet == NULL) {
@@ -479,7 +483,7 @@ css_error css_stylesheet_register_import(css_stylesheet *parent,
  * \return CSS_OK on success, appropriate error otherwise
  */
 css_error css_stylesheet_get_language_level(css_stylesheet *sheet,
-		css_language_level *level)
+					    css_language_level *level)
 {
 	if (sheet == NULL || level == NULL)
 		return CSS_BADPARM;
@@ -634,8 +638,8 @@ css_error css_stylesheet_size(css_stylesheet *sheet, size_t *size)
  * Library-private API below here					      *
  ******************************************************************************/
 /* Note, CSS_STYLE_DEFAULT_SIZE must be a power of 2 */
-/* With a test set of NetSurf's homepage, BBC news, wikipedia, CNN, Ars, Google and El-Reg,
- * 16 seems to be a good medium between wastage and reallocs.
+/* With a test set of NetSurf's homepage, BBC news, wikipedia, CNN, Ars, Google
+ * and El-Reg, 16 seems to be a good medium between wastage and reallocs.
  */
 #define CSS_STYLE_DEFAULT_SIZE 16
 
@@ -690,13 +694,13 @@ css_error css__stylesheet_merge_style(css_style *target, css_style *style)
 	if (target == NULL || style == NULL)
 		return CSS_BADPARM;
 
-	newcode_len = target->used + style->used ;
+	newcode_len = target->used + style->used;
 
 	if (newcode_len > target->allocated) {
 		newcode_len += CSS_STYLE_DEFAULT_SIZE - 1;
 		newcode_len &= ~(CSS_STYLE_DEFAULT_SIZE - 1);
 		newcode = realloc(target->bytecode,
-				newcode_len * sizeof(css_code_t));
+				  newcode_len * sizeof(css_code_t));
 
 		if (newcode == NULL)
 			return CSS_NOMEM;
@@ -705,17 +709,18 @@ css_error css__stylesheet_merge_style(css_style *target, css_style *style)
 		target->allocated = newcode_len;
 	}
 
-	memcpy(target->bytecode + target->used, style->bytecode,
-			style->used * sizeof(css_code_t));
+	memcpy(target->bytecode + target->used,
+	       style->bytecode,
+	       style->used * sizeof(css_code_t));
 
 	target->used += style->used;
 
 	return CSS_OK;
-
 }
 
 /** append one or more css code entries to a style */
-css_error css__stylesheet_style_vappend(css_style *style, uint32_t style_count, ...)
+css_error
+css__stylesheet_style_vappend(css_style *style, uint32_t style_count, ...)
 {
 	va_list ap;
 	css_error error = CSS_OK;
@@ -744,7 +749,7 @@ css_error css__stylesheet_style_append(css_style *style, css_code_t css_code)
 		css_code_t *newcode;
 		uint32_t newcode_len = style->allocated * 2;
 		newcode = realloc(style->bytecode,
-				sizeof(css_code_t) * newcode_len);
+				  sizeof(css_code_t) * newcode_len);
 		if (newcode == NULL)
 			return CSS_NOMEM;
 		style->bytecode = newcode;
@@ -800,21 +805,25 @@ css_error css__stylesheet_style_destroy(css_style *style)
  *	   CSS_NOMEM on memory exhaustion
  */
 css_error css__stylesheet_selector_create(css_stylesheet *sheet,
-		css_qname *qname, css_selector **selector)
+					  css_qname *qname,
+					  css_selector **selector)
 {
 	css_selector *sel;
 
 	if (sheet == NULL || qname == NULL || qname->name == NULL ||
-			selector == NULL)
+	    selector == NULL)
 		return CSS_BADPARM;
 
 	if (sheet->error) {
 		char buf[256];
-		snprintf(buf, sizeof(buf), "Creating selector: %.*s", 
-			(int)lwc_string_length(qname->name), lwc_string_data(qname->name));
+		snprintf(buf,
+			 sizeof(buf),
+			 "Creating selector: %.*s",
+			 (int)lwc_string_length(qname->name),
+			 lwc_string_data(qname->name));
 		sheet->error(sheet->error_pw, sheet, CSS_OK, buf);
 	}
-	
+
 	sel = malloc(sizeof(css_selector));
 	if (sel == NULL)
 		return CSS_NOMEM;
@@ -835,7 +844,7 @@ css_error css__stylesheet_selector_create(css_stylesheet *sheet,
 	} else {
 		/* Initial specificity -- 1 for an element, 0 for universal */
 		if (lwc_string_length(qname->name) != 1 ||
-				lwc_string_data(qname->name)[0] != '*')
+		    lwc_string_data(qname->name)[0] != '*')
 			sel->specificity = CSS_SPECIFICITY_D;
 		else
 			sel->specificity = 0;
@@ -855,8 +864,8 @@ css_error css__stylesheet_selector_create(css_stylesheet *sheet,
  * \param selector  The selector to destroy
  * \return CSS_OK on success, appropriate error otherwise
  */
-css_error css__stylesheet_selector_destroy(css_stylesheet *sheet,
-		css_selector *selector)
+css_error
+css__stylesheet_selector_destroy(css_stylesheet *sheet, css_selector *selector)
 {
 	css_selector *c, *d;
 	css_selector_detail *detail;
@@ -877,17 +886,19 @@ css_error css__stylesheet_selector_destroy(css_stylesheet *sheet,
 
 			if (detail->qname.name == NULL) {
 				if (sheet->error != NULL) {
-					sheet->error(sheet->error_pw, sheet,
-							CSS_INVALID,
-							"FATAL: Partially initialized selector (name == NULL) encountered during error recovery.");
+					sheet->error(
+						sheet->error_pw,
+						sheet,
+						CSS_INVALID,
+						"FATAL: Partially initialized selector (name == NULL) encountered during error recovery.");
 				}
 			} else {
 				lwc_string_unref(detail->qname.name);
 			}
 
 			if (detail->value_type ==
-					CSS_SELECTOR_DETAIL_VALUE_STRING &&
-					detail->value.string != NULL) {
+				    CSS_SELECTOR_DETAIL_VALUE_STRING &&
+			    detail->value.string != NULL) {
 				lwc_string_unref(detail->value.string);
 			}
 
@@ -906,16 +917,18 @@ css_error css__stylesheet_selector_destroy(css_stylesheet *sheet,
 
 		if (detail->qname.name == NULL) {
 			if (sheet->error != NULL) {
-				sheet->error(sheet->error_pw, sheet,
-						CSS_INVALID,
-						"FATAL: Partially initialized selector (name == NULL) encountered during error recovery.");
+				sheet->error(
+					sheet->error_pw,
+					sheet,
+					CSS_INVALID,
+					"FATAL: Partially initialized selector (name == NULL) encountered during error recovery.");
 			}
 		} else {
 			lwc_string_unref(detail->qname.name);
 		}
 
 		if (detail->value_type == CSS_SELECTOR_DETAIL_VALUE_STRING &&
-				detail->value.string != NULL) {
+		    detail->value.string != NULL) {
 			lwc_string_unref(detail->value.string);
 		}
 
@@ -948,14 +961,17 @@ css_error css__stylesheet_selector_destroy(css_stylesheet *sheet,
  * \note No strings are referenced at this point: they will be
  *       referenced when appending the detail to a selector.
  */
-css_error css__stylesheet_selector_detail_init(css_stylesheet *sheet,
-		css_selector_type type, css_qname *qname,
-		css_selector_detail_value value,
-		css_selector_detail_value_type value_type,
-		bool negate, css_selector_detail *detail)
+css_error
+css__stylesheet_selector_detail_init(css_stylesheet *sheet,
+				     css_selector_type type,
+				     css_qname *qname,
+				     css_selector_detail_value value,
+				     css_selector_detail_value_type value_type,
+				     bool negate,
+				     css_selector_detail *detail)
 {
 	if (sheet == NULL || qname == NULL || qname->name == NULL ||
-			detail == NULL)
+	    detail == NULL)
 		return CSS_BADPARM;
 
 	memset(detail, 0, sizeof(css_selector_detail));
@@ -977,15 +993,17 @@ css_error css__stylesheet_selector_detail_init(css_stylesheet *sheet,
  * \param specific  The selector to append (copied)
  * \return CSS_OK on success, appropriate error otherwise.
  */
-css_error css__stylesheet_selector_append_specific(css_stylesheet *sheet,
-		css_selector **parent, const css_selector_detail *detail)
+css_error
+css__stylesheet_selector_append_specific(css_stylesheet *sheet,
+					 css_selector **parent,
+					 const css_selector_detail *detail)
 {
 	css_selector *temp;
 	css_selector_detail *d;
 	size_t num_details = 0;
 
-	if (sheet == NULL || parent == NULL ||
-			*parent == NULL || detail == NULL)
+	if (sheet == NULL || parent == NULL || *parent == NULL ||
+	    detail == NULL)
 		return CSS_BADPARM;
 
 	/** \todo this may want optimising -- counting blocks is O(n)
@@ -997,8 +1015,9 @@ css_error css__stylesheet_selector_append_specific(css_stylesheet *sheet,
 		num_details++;
 
 	/* Grow selector by one detail block */
-	temp = realloc((*parent), sizeof(css_selector) +
-			(num_details + 1) * sizeof(css_selector_detail));
+	temp = realloc((*parent),
+		       sizeof(css_selector) +
+			       (num_details + 1) * sizeof(css_selector_detail));
 	if (temp == NULL)
 		return CSS_NOMEM;
 
@@ -1012,7 +1031,7 @@ css_error css__stylesheet_selector_append_specific(css_stylesheet *sheet,
 		d->qname.ns = lwc_string_ref(detail->qname.ns);
 	d->qname.name = lwc_string_ref(detail->qname.name);
 	if (detail->value_type == CSS_SELECTOR_DETAIL_VALUE_STRING &&
-			detail->value.string != NULL)
+	    detail->value.string != NULL)
 		d->value.string = lwc_string_ref(detail->value.string);
 
 	(*parent) = temp;
@@ -1056,7 +1075,9 @@ css_error css__stylesheet_selector_append_specific(css_stylesheet *sheet,
  * find its combinator. It is not possible to find B given A.
  */
 css_error css__stylesheet_selector_combine(css_stylesheet *sheet,
-		css_combinator type, css_selector *a, css_selector *b)
+					   css_combinator type,
+					   css_selector *a,
+					   css_selector *b)
 {
 	const css_selector_detail *det;
 
@@ -1067,7 +1088,7 @@ css_error css__stylesheet_selector_combine(css_stylesheet *sheet,
 	assert(b->combinator == NULL);
 
 	/* A must not contain a pseudo element */
-	for (det = &a->data; det != NULL; ) {
+	for (det = &a->data; det != NULL;) {
 		if (det->type == CSS_SELECTOR_PSEUDO_ELEMENT)
 			return CSS_INVALID;
 
@@ -1093,8 +1114,9 @@ css_error css__stylesheet_selector_combine(css_stylesheet *sheet,
  *	   CSS_BADPARM on bad parameters,
  *	   CSS_NOMEM on memory exhaustion
  */
-css_error css__stylesheet_rule_create(css_stylesheet *sheet, css_rule_type type,
-		css_rule **rule)
+css_error css__stylesheet_rule_create(css_stylesheet *sheet,
+				      css_rule_type type,
+				      css_rule **rule)
 {
 	css_rule *r;
 	size_t required = 0;
@@ -1153,15 +1175,14 @@ css_error css__stylesheet_rule_destroy(css_stylesheet *sheet, css_rule *rule)
 
 	/* Must be detached from parent/siblings */
 	assert(rule->parent == NULL && rule->next == NULL &&
-			rule->prev == NULL);
+	       rule->prev == NULL);
 
 	/* Destroy type-specific contents */
 	switch (rule->type) {
 	case CSS_RULE_UNKNOWN:
 		break;
-	case CSS_RULE_SELECTOR:
-	{
-		css_rule_selector *s = (css_rule_selector *) rule;
+	case CSS_RULE_SELECTOR: {
+		css_rule_selector *s = (css_rule_selector *)rule;
 		uint32_t i;
 
 		for (i = 0; i < rule->items; i++) {
@@ -1178,17 +1199,13 @@ css_error css__stylesheet_rule_destroy(css_stylesheet *sheet, css_rule *rule)
 
 		if (s->style != NULL)
 			css__stylesheet_style_destroy(s->style);
-	}
-		break;
-	case CSS_RULE_CHARSET:
-	{
-		css_rule_charset *charset = (css_rule_charset *) rule;
+	} break;
+	case CSS_RULE_CHARSET: {
+		css_rule_charset *charset = (css_rule_charset *)rule;
 		lwc_string_unref(charset->encoding);
-	}
-		break;
-	case CSS_RULE_IMPORT:
-	{
-		css_rule_import *import = (css_rule_import *) rule;
+	} break;
+	case CSS_RULE_IMPORT: {
+		css_rule_import *import = (css_rule_import *)rule;
 
 		lwc_string_unref(import->url);
 
@@ -1197,11 +1214,9 @@ css_error css__stylesheet_rule_destroy(css_stylesheet *sheet, css_rule *rule)
 		}
 
 		/* Do not destroy imported sheet: it is owned by the client */
-	}
-		break;
-	case CSS_RULE_MEDIA:
-	{
-		css_rule_media *media = (css_rule_media *) rule;
+	} break;
+	case CSS_RULE_MEDIA: {
+		css_rule_media *media = (css_rule_media *)rule;
 		css_rule *c, *d;
 
 		if (media->media != NULL) {
@@ -1218,19 +1233,15 @@ css_error css__stylesheet_rule_destroy(css_stylesheet *sheet, css_rule *rule)
 
 			css__stylesheet_rule_destroy(sheet, c);
 		}
-	}
-		break;
-	case CSS_RULE_FONT_FACE:
-	{
-		css_rule_font_face *font_face_r = (css_rule_font_face *) rule;
+	} break;
+	case CSS_RULE_FONT_FACE: {
+		css_rule_font_face *font_face_r = (css_rule_font_face *)rule;
 
 		if (font_face_r->font_face != NULL)
 			css__font_face_destroy(font_face_r->font_face);
-	}
-		break;
-	case CSS_RULE_PAGE:
-	{
-		css_rule_page *page = (css_rule_page *) rule;
+	} break;
+	case CSS_RULE_PAGE: {
+		css_rule_page *page = (css_rule_page *)rule;
 
 		if (page->selector != NULL) {
 			page->selector->rule = NULL;
@@ -1239,8 +1250,7 @@ css_error css__stylesheet_rule_destroy(css_stylesheet *sheet, css_rule *rule)
 
 		if (page->style != NULL)
 			css__stylesheet_style_destroy(page->style);
-	}
-		break;
+	} break;
 	}
 
 	/* Destroy rule */
@@ -1258,9 +1268,10 @@ css_error css__stylesheet_rule_destroy(css_stylesheet *sheet, css_rule *rule)
  * \return CSS_OK on success, appropriate error otherwise
  */
 css_error css__stylesheet_rule_add_selector(css_stylesheet *sheet,
-		css_rule *rule, css_selector *selector)
+					    css_rule *rule,
+					    css_selector *selector)
 {
-	css_rule_selector *r = (css_rule_selector *) rule;
+	css_rule_selector *r = (css_rule_selector *)rule;
 	css_selector **sels;
 
 	if (sheet == NULL || rule == NULL || selector == NULL)
@@ -1270,7 +1281,7 @@ css_error css__stylesheet_rule_add_selector(css_stylesheet *sheet,
 	assert(rule->type == CSS_RULE_SELECTOR);
 
 	sels = realloc(r->selectors,
-			(r->base.items + 1) * sizeof(css_selector *));
+		       (r->base.items + 1) * sizeof(css_selector *));
 	if (sels == NULL)
 		return CSS_NOMEM;
 
@@ -1295,7 +1306,8 @@ css_error css__stylesheet_rule_add_selector(css_stylesheet *sheet,
  * \return CSS_OK on success, appropriate error otherwise
  */
 css_error css__stylesheet_rule_append_style(css_stylesheet *sheet,
-		css_rule *rule, css_style *style)
+					    css_rule *rule,
+					    css_style *style)
 {
 	css_style *current_style;
 	css_error error;
@@ -1306,9 +1318,9 @@ css_error css__stylesheet_rule_append_style(css_stylesheet *sheet,
 	assert(rule->type == CSS_RULE_SELECTOR || rule->type == CSS_RULE_PAGE);
 
 	if (rule->type == CSS_RULE_SELECTOR)
-		current_style = ((css_rule_selector *) rule)->style;
+		current_style = ((css_rule_selector *)rule)->style;
 	else
-		current_style = ((css_rule_page *) rule)->style;
+		current_style = ((css_rule_page *)rule)->style;
 
 	if (current_style != NULL) {
 		error = css__stylesheet_merge_style(current_style, style);
@@ -1327,9 +1339,9 @@ css_error css__stylesheet_rule_append_style(css_stylesheet *sheet,
 	}
 
 	if (rule->type == CSS_RULE_SELECTOR)
-		((css_rule_selector *) rule)->style = current_style;
+		((css_rule_selector *)rule)->style = current_style;
 	else
-		((css_rule_page *) rule)->style = current_style;
+		((css_rule_page *)rule)->style = current_style;
 
 	return CSS_OK;
 }
@@ -1343,9 +1355,10 @@ css_error css__stylesheet_rule_append_style(css_stylesheet *sheet,
  * \return CSS_OK on success, appropriate error otherwise
  */
 css_error css__stylesheet_rule_set_charset(css_stylesheet *sheet,
-		css_rule *rule, lwc_string *charset)
+					   css_rule *rule,
+					   lwc_string *charset)
 {
-	css_rule_charset *r = (css_rule_charset *) rule;
+	css_rule_charset *r = (css_rule_charset *)rule;
 
 	if (sheet == NULL || rule == NULL || charset == NULL)
 		return CSS_BADPARM;
@@ -1370,10 +1383,11 @@ css_error css__stylesheet_rule_set_charset(css_stylesheet *sheet,
  * \return CSS_OK on success, appropriate error otherwise
  */
 css_error css__stylesheet_rule_set_nascent_import(css_stylesheet *sheet,
-		css_rule *rule, lwc_string *url,
-		css_mq_query *media)
+						  css_rule *rule,
+						  lwc_string *url,
+						  css_mq_query *media)
 {
-	css_rule_import *r = (css_rule_import *) rule;
+	css_rule_import *r = (css_rule_import *)rule;
 
 	if (sheet == NULL || rule == NULL || url == NULL)
 		return CSS_BADPARM;
@@ -1397,9 +1411,10 @@ css_error css__stylesheet_rule_set_nascent_import(css_stylesheet *sheet,
  * \return CSS_OK on success, appropriate error otherwise
  */
 css_error css__stylesheet_rule_set_media(css_stylesheet *sheet,
-		css_rule *rule, css_mq_query *media)
+					 css_rule *rule,
+					 css_mq_query *media)
 {
-	css_rule_media *r = (css_rule_media *) rule;
+	css_rule_media *r = (css_rule_media *)rule;
 
 	if (sheet == NULL || rule == NULL)
 		return CSS_BADPARM;
@@ -1422,9 +1437,10 @@ css_error css__stylesheet_rule_set_media(css_stylesheet *sheet,
  * \return CSS_OK on success, appropriate error otherwise
  */
 css_error css__stylesheet_rule_set_page_selector(css_stylesheet *sheet,
-		css_rule *rule, css_selector *selector)
+						 css_rule *rule,
+						 css_selector *selector)
 {
-	css_rule_page *r = (css_rule_page *) rule;
+	css_rule_page *r = (css_rule_page *)rule;
 
 	if (sheet == NULL || rule == NULL || selector == NULL)
 		return CSS_BADPARM;
@@ -1451,8 +1467,9 @@ css_error css__stylesheet_rule_set_page_selector(css_stylesheet *sheet,
  * \param parent  The parent rule, or NULL for a top-level rule
  * \return CSS_OK on success, appropriate error otherwise
  */
-css_error css__stylesheet_add_rule(css_stylesheet *sheet, css_rule *rule,
-		css_rule *parent)
+css_error css__stylesheet_add_rule(css_stylesheet *sheet,
+				   css_rule *rule,
+				   css_rule *parent)
 {
 	css_error error;
 
@@ -1473,7 +1490,7 @@ css_error css__stylesheet_add_rule(css_stylesheet *sheet, css_rule *rule,
 	sheet->size += _rule_size(rule);
 
 	if (parent != NULL) {
-		css_rule_media *media = (css_rule_media *) parent;
+		css_rule_media *media = (css_rule_media *)parent;
 
 		/* Parent must be an @media rule, or NULL */
 		assert(parent->type == CSS_RULE_MEDIA);
@@ -1582,16 +1599,15 @@ css_error _add_selectors(css_stylesheet *sheet, css_rule *rule)
 	assert(rule->parent == NULL);
 
 	switch (rule->type) {
-	case CSS_RULE_SELECTOR:
-	{
-		css_rule_selector *s = (css_rule_selector *) rule;
+	case CSS_RULE_SELECTOR: {
+		css_rule_selector *s = (css_rule_selector *)rule;
 		int32_t i;
 
 		for (i = 0; i < rule->items; i++) {
 			css_selector *sel = s->selectors[i];
 
-			error = css__selector_hash_insert(
-					sheet->selectors, sel);
+			error = css__selector_hash_insert(sheet->selectors,
+							  sel);
 			if (error != CSS_OK) {
 				/* Failed, revert our changes */
 				for (i--; i >= 0; i--) {
@@ -1599,17 +1615,15 @@ css_error _add_selectors(css_stylesheet *sheet, css_rule *rule)
 
 					/* Ignore errors */
 					css__selector_hash_remove(
-							sheet->selectors, sel);
+						sheet->selectors, sel);
 				}
 
 				return error;
 			}
 		}
-	}
-		break;
-	case CSS_RULE_MEDIA:
-	{
-		css_rule_media *m = (css_rule_media *) rule;
+	} break;
+	case CSS_RULE_MEDIA: {
+		css_rule_media *m = (css_rule_media *)rule;
 		css_rule *r;
 
 		for (r = m->first_child; r != NULL; r = r->next) {
@@ -1623,8 +1637,7 @@ css_error _add_selectors(css_stylesheet *sheet, css_rule *rule)
 				return error;
 			}
 		}
-	}
-		break;
+	} break;
 	}
 
 	return CSS_OK;
@@ -1645,23 +1658,21 @@ css_error _remove_selectors(css_stylesheet *sheet, css_rule *rule)
 		return CSS_BADPARM;
 
 	switch (rule->type) {
-	case CSS_RULE_SELECTOR:
-	{
-		css_rule_selector *s = (css_rule_selector *) rule;
+	case CSS_RULE_SELECTOR: {
+		css_rule_selector *s = (css_rule_selector *)rule;
 		int32_t i;
 
 		for (i = 0; i < rule->items; i++) {
 			css_selector *sel = s->selectors[i];
 
-			error = css__selector_hash_remove(sheet->selectors, sel);
+			error = css__selector_hash_remove(sheet->selectors,
+							  sel);
 			if (error != CSS_OK)
 				return error;
 		}
-	}
-		break;
-	case CSS_RULE_MEDIA:
-	{
-		css_rule_media *m = (css_rule_media *) rule;
+	} break;
+	case CSS_RULE_MEDIA: {
+		css_rule_media *m = (css_rule_media *)rule;
 		css_rule *r;
 
 		for (r = m->first_child; r != NULL; r = r->next) {
@@ -1669,8 +1680,7 @@ css_error _remove_selectors(css_stylesheet *sheet, css_rule *rule)
 			if (error != CSS_OK)
 				return error;
 		}
-	}
-		break;
+	} break;
 	}
 
 	return CSS_OK;
@@ -1689,7 +1699,7 @@ size_t _rule_size(const css_rule *r)
 	size_t bytes = 0;
 
 	if (r->type == CSS_RULE_SELECTOR) {
-		const css_rule_selector *rs = (const css_rule_selector *) r;
+		const css_rule_selector *rs = (const css_rule_selector *)r;
 		uint32_t i;
 
 		bytes += sizeof(css_rule_selector);
@@ -1720,7 +1730,7 @@ size_t _rule_size(const css_rule *r)
 	} else if (r->type == CSS_RULE_IMPORT) {
 		bytes += sizeof(css_rule_import);
 	} else if (r->type == CSS_RULE_MEDIA) {
-		const css_rule_media *rm = (const css_rule_media *) r;
+		const css_rule_media *rm = (const css_rule_media *)r;
 		const css_rule *c;
 
 		bytes += sizeof(css_rule_media);
@@ -1729,14 +1739,14 @@ size_t _rule_size(const css_rule *r)
 		for (c = rm->first_child; c != NULL; c = c->next)
 			bytes += _rule_size(c);
 	} else if (r->type == CSS_RULE_FONT_FACE) {
-		const css_rule_font_face *rf = (const css_rule_font_face *) r;
+		const css_rule_font_face *rf = (const css_rule_font_face *)r;
 
 		bytes += sizeof(css_rule_font_face);
 
 		if (rf->font_face != NULL)
 			bytes += sizeof(css_font_face);
 	} else if (r->type == CSS_RULE_PAGE) {
-		const css_rule_page *rp = (const css_rule_page *) r;
+		const css_rule_page *rp = (const css_rule_page *)r;
 		const css_selector *s = rp->selector;
 
 		/* Process selector chain */

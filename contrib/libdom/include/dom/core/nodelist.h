@@ -17,12 +17,13 @@ typedef struct dom_nodelist dom_nodelist;
 void dom_nodelist_ref(struct dom_nodelist *list);
 void dom_nodelist_unref(struct dom_nodelist *list);
 
-dom_exception dom_nodelist_get_length(struct dom_nodelist *list,
-		uint32_t *length);
+dom_exception
+dom_nodelist_get_length(struct dom_nodelist *list, uint32_t *length);
 dom_exception _dom_nodelist_item(struct dom_nodelist *list,
-		uint32_t index, struct dom_node **node);
+				 uint32_t index,
+				 struct dom_node **node);
 
-#define dom_nodelist_item(l, i, n) _dom_nodelist_item((dom_nodelist *) (l), \
-		(uint32_t) (i), (dom_node **) (n))
+#define dom_nodelist_item(l, i, n)                                             \
+	_dom_nodelist_item((dom_nodelist *)(l), (uint32_t)(i), (dom_node **)(n))
 
 #endif

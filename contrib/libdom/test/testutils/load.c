@@ -28,7 +28,7 @@
 /**
  * Load the file as it is a XML file
  *
- * \param file		The file path 
+ * \param file		The file path
  * \param willBeModified	Whether this file will be modified, not used
  */
 dom_document *load_xml(const char *file, bool willBeModified)
@@ -65,7 +65,7 @@ dom_document *load_xml(const char *file, bool willBeModified)
 		return NULL;
 	}
 
-	while(readed == 1024) {
+	while (readed == 1024) {
 		readed = read(handle, buffer, 1024);
 		error = dom_xml_parser_parse_chunk(parser, buffer, readed);
 		if (error != DOM_XML_OK) {
@@ -92,7 +92,7 @@ dom_document *load_xml(const char *file, bool willBeModified)
 /**
  * Load the file as it is a HTML file
  *
- * \param file		The file path 
+ * \param file		The file path
  * \param willBeModified	Whether this file will be modified, not used
  */
 dom_document *load_html(const char *file, bool willBeModified)
@@ -142,7 +142,7 @@ dom_document *load_html(const char *file, bool willBeModified)
 		return NULL;
 	}
 
-	while(readed == 1024) {
+	while (readed == 1024) {
 		readed = read(handle, buffer, 1024);
 		error = dom_hubbub_parser_parse_chunk(parser, buffer, readed);
 		if (error != DOM_HUBBUB_OK) {

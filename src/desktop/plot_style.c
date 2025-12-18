@@ -49,24 +49,24 @@ static const plot_style_t plot_style_content_edge_static = {
 	.stroke_colour = 0x00ff0000,
 	.stroke_width = plot_style_int_to_fixed(1),
 };
-plot_style_t const * const plot_style_content_edge =
-		&plot_style_content_edge_static;
+plot_style_t const *const plot_style_content_edge =
+	&plot_style_content_edge_static;
 
 static const plot_style_t plot_style_padding_edge_static = {
 	.stroke_type = PLOT_OP_TYPE_SOLID,
 	.stroke_colour = 0x000000ff,
 	.stroke_width = plot_style_int_to_fixed(1),
 };
-plot_style_t const * const plot_style_padding_edge =
-		&plot_style_padding_edge_static;
+plot_style_t const *const plot_style_padding_edge =
+	&plot_style_padding_edge_static;
 
 static const plot_style_t plot_style_margin_edge_static = {
 	.stroke_type = PLOT_OP_TYPE_SOLID,
 	.stroke_colour = 0x0000ffff,
 	.stroke_width = plot_style_int_to_fixed(1),
 };
-plot_style_t const * const plot_style_margin_edge =
-		&plot_style_margin_edge_static;
+plot_style_t const *const plot_style_margin_edge =
+	&plot_style_margin_edge_static;
 
 /* Broken object replacement styles */
 static const plot_style_t plot_style_broken_object_static = {
@@ -76,8 +76,8 @@ static const plot_style_t plot_style_broken_object_static = {
 	.stroke_colour = 0x000000ff,
 	.stroke_width = plot_style_int_to_fixed(1),
 };
-plot_style_t const * const plot_style_broken_object =
-		&plot_style_broken_object_static;
+plot_style_t const *const plot_style_broken_object =
+	&plot_style_broken_object_static;
 
 static const plot_font_style_t plot_fstyle_broken_object_static = {
 	.family = PLOT_FONT_FAMILY_SANS_SERIF,
@@ -87,16 +87,15 @@ static const plot_font_style_t plot_fstyle_broken_object_static = {
 	.background = 0x8888ff,
 	.foreground = 0x000044,
 };
-plot_font_style_t const * const plot_fstyle_broken_object =
-		&plot_fstyle_broken_object_static;
+plot_font_style_t const *const plot_fstyle_broken_object =
+	&plot_fstyle_broken_object_static;
 
 /* caret style used in html_redraw_caret */
 static plot_style_t plot_style_caret_static = {
 	.stroke_type = PLOT_OP_TYPE_SOLID,
-	.stroke_colour = 0x0000ff,  /* todo - choose a proper colour */
+	.stroke_colour = 0x0000ff, /* todo - choose a proper colour */
 };
 plot_style_t *plot_style_caret = &plot_style_caret_static;
-
 
 
 /* html redraw widget styles */
@@ -143,14 +142,16 @@ static plot_style_t plot_style_stroke_darkwbasec_static = {
 	.stroke_type = PLOT_OP_TYPE_SOLID,
 	.stroke_colour = double_darken_colour(WIDGET_BASEC),
 };
-plot_style_t *plot_style_stroke_darkwbasec = &plot_style_stroke_darkwbasec_static;
+plot_style_t *plot_style_stroke_darkwbasec =
+	&plot_style_stroke_darkwbasec_static;
 
 /** stroke style for widget double light colour. */
 static plot_style_t plot_style_stroke_lightwbasec_static = {
 	.stroke_type = PLOT_OP_TYPE_SOLID,
 	.stroke_colour = double_lighten_colour(WIDGET_BASEC),
 };
-plot_style_t *plot_style_stroke_lightwbasec = &plot_style_stroke_lightwbasec_static;
+plot_style_t *plot_style_stroke_lightwbasec =
+	&plot_style_stroke_lightwbasec_static;
 
 
 /* Generic font style */
@@ -162,5 +163,4 @@ static const plot_font_style_t plot_style_font_static = {
 	.background = 0xffffff,
 	.foreground = 0x000000,
 };
-plot_font_style_t const * const plot_style_font = &plot_style_font_static;
-
+plot_font_style_t const *const plot_style_font = &plot_style_font_static;

@@ -21,8 +21,8 @@
  * \param style  The style to take a new reference to.
  * \return The new computed style reference
  */
-static inline css_computed_style * css__computed_style_ref(
-		css_computed_style *style)
+static inline css_computed_style *
+css__computed_style_ref(css_computed_style *style)
 {
 	if (style == NULL)
 		return NULL;
@@ -31,17 +31,18 @@ static inline css_computed_style * css__computed_style_ref(
 	return style;
 }
 
-css_error css__computed_style_create(css_computed_style **result, css_calculator *calc);
+css_error
+css__computed_style_create(css_computed_style **result, css_calculator *calc);
 
 css_error css__computed_style_initialise(css_computed_style *style,
-		struct css_select_handler *handler, void *pw);
+					 struct css_select_handler *handler,
+					 void *pw);
 
-css_error css__computed_style_clone(
-		const css_computed_style *orig,
-		css_computed_style **clone_out);
+css_error css__computed_style_clone(const css_computed_style *orig,
+				    css_computed_style **clone_out);
 
 css_error css__compute_absolute_values(const css_computed_style *parent,
-		css_computed_style *style,
-		const css_unit_ctx *unit_ctx);
+				       css_computed_style *style,
+				       const css_unit_ctx *unit_ctx);
 
 #endif

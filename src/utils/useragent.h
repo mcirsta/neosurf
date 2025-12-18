@@ -25,7 +25,7 @@
  * The string returned can be relied upon to exist for the duration of
  * the execution of the program. There is no need to copy it.
  */
-const char * user_agent_string(void);
+const char *user_agent_string(void);
 
 /** Free any memory allocated for the user_agent_string
  *

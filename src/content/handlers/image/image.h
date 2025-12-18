@@ -38,7 +38,7 @@ nserror image_init(void);
  * provided for image content handlers redraw callback.
  */
 bool image_bitmap_plot(struct bitmap *bitmap,
-		       struct content_redraw_data *data, 
+		       struct content_redraw_data *data,
 		       const struct rect *clip,
 		       const struct redraw_context *ctx);
 

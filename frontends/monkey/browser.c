@@ -47,33 +47,32 @@ nserror monkey_warn_user(const char *warning, const char *detail)
 	return NSERROR_OK;
 }
 
-struct gui_window *
-monkey_find_window_by_num(uint32_t win_num)
+struct gui_window *monkey_find_window_by_num(uint32_t win_num)
 {
 	struct gui_window *ret = NULL;
 
-	RING_ITERATE_START(struct gui_window, gw_ring, c_ring) {
+	RING_ITERATE_START(struct gui_window, gw_ring, c_ring)
+	{
 		if (c_ring->win_num == win_num) {
 			ret = c_ring;
 			RING_ITERATE_STOP(gw_ring, c_ring);
 		}
-	} RING_ITERATE_END(gw_ring, c_ring);
+	}
+	RING_ITERATE_END(gw_ring, c_ring);
 
 	return ret;
 }
 
-void
-monkey_kill_browser_windows(void)
+void monkey_kill_browser_windows(void)
 {
 	while (gw_ring != NULL) {
 		browser_window_destroy(gw_ring->bw);
 	}
 }
 
-static struct gui_window *
-gui_window_create(struct browser_window *bw,
-		  struct gui_window *existing,
-		  gui_window_create_flags flags)
+static struct gui_window *gui_window_create(struct browser_window *bw,
+					    struct gui_window *existing,
+					    gui_window_create_flags flags)
 {
 	struct gui_window *ret = calloc(1, sizeof(*ret));
 	if (ret == NULL)
@@ -87,28 +86,30 @@ gui_window_create(struct browser_window *bw,
 
 	moutf(MOUT_WINDOW,
 	      "NEW WIN %u FOR %p EXISTING %p NEWTAB %s CLONE %s",
-	      ret->win_num, bw, existing,
+	      ret->win_num,
+	      bw,
+	      existing,
 	      flags & GW_CREATE_TAB ? "TRUE" : "FALSE",
 	      flags & GW_CREATE_CLONE ? "TRUE" : "FALSE");
 	moutf(MOUT_WINDOW,
 	      "SIZE WIN %u WIDTH %d HEIGHT %d",
-	      ret->win_num, ret->width, ret->height);
+	      ret->win_num,
+	      ret->width,
+	      ret->height);
 
 	RING_INSERT(gw_ring, ret);
 
 	return ret;
 }
 
-static void
-gui_window_destroy(struct gui_window *g)
+static void gui_window_destroy(struct gui_window *g)
 {
 	moutf(MOUT_WINDOW, "DESTROY WIN %u", g->win_num);
 	RING_REMOVE(gw_ring, g);
 	free(g);
 }
 
-static void
-gui_window_set_title(struct gui_window *g, const char *title)
+static void gui_window_set_title(struct gui_window *g, const char *title)
 {
 	moutf(MOUT_WINDOW, "TITLE WIN %u STR %s", g->win_num, title);
 }
@@ -129,13 +130,14 @@ gui_window_get_dimensions(struct gui_window *g, int *width, int *height)
 
 	moutf(MOUT_WINDOW,
 	      "GET_DIMENSIONS WIN %u WIDTH %d HEIGHT %d",
-	      g->win_num, *width, *height);
+	      g->win_num,
+	      *width,
+	      *height);
 
 	return NSERROR_OK;
 }
 
-static void
-gui_window_new_content(struct gui_window *g)
+static void gui_window_new_content(struct gui_window *g)
 {
 	moutf(MOUT_WINDOW, "NEW_CONTENT WIN %u", g->win_num);
 }
@@ -146,14 +148,12 @@ gui_window_set_icon(struct gui_window *g, struct hlcache_handle *icon)
 	moutf(MOUT_WINDOW, "NEW_ICON WIN %u", g->win_num);
 }
 
-static void
-gui_window_start_throbber(struct gui_window *g)
+static void gui_window_start_throbber(struct gui_window *g)
 {
 	moutf(MOUT_WINDOW, "START_THROBBER WIN %u", g->win_num);
 }
 
-static void
-gui_window_stop_throbber(struct gui_window *g)
+static void gui_window_stop_throbber(struct gui_window *g)
 {
 	moutf(MOUT_WINDOW, "STOP_THROBBER WIN %u", g->win_num);
 }
@@ -175,8 +175,11 @@ gui_window_set_scroll(struct gui_window *gw, const struct rect *rect)
 	gw->scrollx = rect->x0;
 	gw->scrolly = rect->y0;
 
-	moutf(MOUT_WINDOW, "SET_SCROLL WIN %u X %d Y %d",
-		gw->win_num, rect->x0, rect->y0);
+	moutf(MOUT_WINDOW,
+	      "SET_SCROLL WIN %u X %d Y %d",
+	      gw->win_num,
+	      rect->x0,
+	      rect->y0);
 	return NSERROR_OK;
 }
 
@@ -195,8 +198,10 @@ monkey_window_invalidate_area(struct gui_window *gw, const struct rect *rect)
 		moutf(MOUT_WINDOW,
 		      "INVALIDATE_AREA WIN %u X %d Y %d WIDTH %d HEIGHT %d",
 		      gw->win_num,
-		      rect->x0, rect->y0,
-		      (rect->x1 - rect->x0), (rect->y1 - rect->y0));
+		      rect->x0,
+		      rect->y0,
+		      (rect->x1 - rect->x0),
+		      (rect->y1 - rect->y0));
 	} else {
 		moutf(MOUT_WINDOW, "INVALIDATE_AREA WIN %u ALL", gw->win_num);
 	}
@@ -204,20 +209,22 @@ monkey_window_invalidate_area(struct gui_window *gw, const struct rect *rect)
 	return NSERROR_OK;
 }
 
-static void
-gui_window_update_extent(struct gui_window *g)
+static void gui_window_update_extent(struct gui_window *g)
 {
 	int width, height;
 
-	if (browser_window_get_extents(g->bw, false, &width, &height) != NSERROR_OK)
+	if (browser_window_get_extents(g->bw, false, &width, &height) !=
+	    NSERROR_OK)
 		return;
 
-	moutf(MOUT_WINDOW, "UPDATE_EXTENT WIN %u WIDTH %d HEIGHT %d",
-	      g->win_num, width, height);
+	moutf(MOUT_WINDOW,
+	      "UPDATE_EXTENT WIN %u WIDTH %d HEIGHT %d",
+	      g->win_num,
+	      width,
+	      height);
 }
 
-static void
-gui_window_set_status(struct gui_window *g, const char *text)
+static void gui_window_set_status(struct gui_window *g, const char *text)
 {
 	moutf(MOUT_WINDOW, "SET_STATUS WIN %u STR %s", g->win_num, text);
 }
@@ -289,30 +296,34 @@ gui_window_set_pointer(struct gui_window *g, gui_pointer_shape shape)
 		break;
 	}
 
-	moutf(MOUT_WINDOW, "SET_POINTER WIN %u POINTER %s",
-	      g->win_num, ptr_name);
+	moutf(MOUT_WINDOW,
+	      "SET_POINTER WIN %u POINTER %s",
+	      g->win_num,
+	      ptr_name);
 }
 
-static nserror
-gui_window_set_url(struct gui_window *g, nsurl *url)
+static nserror gui_window_set_url(struct gui_window *g, nsurl *url)
 {
-	moutf(MOUT_WINDOW, "SET_URL WIN %u URL %s",
-	      g->win_num, nsurl_access(url));
+	moutf(MOUT_WINDOW,
+	      "SET_URL WIN %u URL %s",
+	      g->win_num,
+	      nsurl_access(url));
 	return NSERROR_OK;
 }
 
-static bool
-gui_window_get_scroll(struct gui_window *g, int *sx, int *sy)
+static bool gui_window_get_scroll(struct gui_window *g, int *sx, int *sy)
 {
-	moutf(MOUT_WINDOW, "GET_SCROLL WIN %u X %d Y %d",
-	      g->win_num, g->scrollx, g->scrolly);
+	moutf(MOUT_WINDOW,
+	      "GET_SCROLL WIN %u X %d Y %d",
+	      g->win_num,
+	      g->scrollx,
+	      g->scrolly);
 	*sx = g->scrollx;
 	*sy = g->scrolly;
 	return true;
 }
 
-static bool
-gui_window_scroll_start(struct gui_window *g)
+static bool gui_window_scroll_start(struct gui_window *g)
 {
 	moutf(MOUT_WINDOW, "SCROLL_START WIN %u", g->win_num);
 	g->scrollx = g->scrolly = 0;
@@ -320,23 +331,28 @@ gui_window_scroll_start(struct gui_window *g)
 }
 
 
-static void
-gui_window_place_caret(struct gui_window *g, int x, int y, int height,
-		       const struct rect *clip)
+static void gui_window_place_caret(struct gui_window *g,
+				   int x,
+				   int y,
+				   int height,
+				   const struct rect *clip)
 {
-	moutf(MOUT_WINDOW, "PLACE_CARET WIN %u X %d Y %d HEIGHT %d",
-	      g->win_num, x, y, height);
+	moutf(MOUT_WINDOW,
+	      "PLACE_CARET WIN %u X %d Y %d HEIGHT %d",
+	      g->win_num,
+	      x,
+	      y,
+	      height);
 }
 
-static void
-gui_window_remove_caret(struct gui_window *g)
+static void gui_window_remove_caret(struct gui_window *g)
 {
 	moutf(MOUT_WINDOW, "REMOVE_CARET WIN %u", g->win_num);
 }
 
-static bool
-gui_window_drag_start(struct gui_window *g, gui_drag_type type,
-		      const struct rect *rect)
+static bool gui_window_drag_start(struct gui_window *g,
+				  gui_drag_type type,
+				  const struct rect *rect)
 {
 	moutf(MOUT_WINDOW, "SCROLL_START WIN %u TYPE %i", g->win_num, type);
 	return false;
@@ -345,17 +361,19 @@ gui_window_drag_start(struct gui_window *g, gui_drag_type type,
 static nserror
 gui_window_save_link(struct gui_window *g, nsurl *url, const char *title)
 {
-	moutf(MOUT_WINDOW, "SAVE_LINK WIN %u URL %s TITLE %s",
-		g->win_num, nsurl_access(url), title);
+	moutf(MOUT_WINDOW,
+	      "SAVE_LINK WIN %u URL %s TITLE %s",
+	      g->win_num,
+	      nsurl_access(url),
+	      title);
 	return NSERROR_OK;
 }
 
-static void
-gui_window_console_log(struct gui_window *g,
-		       browser_window_console_source src,
-		       const char *msg,
-		       size_t msglen,
-		       browser_window_console_flags flags)
+static void gui_window_console_log(struct gui_window *g,
+				   browser_window_console_source src,
+				   const char *msg,
+				   size_t msglen,
+				   browser_window_console_flags flags)
 {
 	bool foldable = !!(flags & BW_CS_FLAG_FOLDABLE);
 	const char *src_text;
@@ -399,13 +417,17 @@ gui_window_console_log(struct gui_window *g,
 		break;
 	}
 
-	moutf(MOUT_WINDOW, "CONSOLE_LOG WIN %u SOURCE %s %sFOLDABLE %s %.*s",
-	      g->win_num, src_text, foldable ? "" : "NOT-", level_text,
-	      (int)msglen, msg);
+	moutf(MOUT_WINDOW,
+	      "CONSOLE_LOG WIN %u SOURCE %s %sFOLDABLE %s %.*s",
+	      g->win_num,
+	      src_text,
+	      foldable ? "" : "NOT-",
+	      level_text,
+	      (int)msglen,
+	      msg);
 }
 
-static void
-gui_window_report_page_info(struct gui_window *g)
+static void gui_window_report_page_info(struct gui_window *g)
 {
 	const char *state = "***WAH***";
 
@@ -442,14 +464,12 @@ gui_window_report_page_info(struct gui_window *g)
 		assert(0 && "Monkey needs some lovin' here");
 		break;
 	}
-	moutf(MOUT_WINDOW, "PAGE_STATUS WIN %u STATUS %s",
-	      g->win_num, state);
+	moutf(MOUT_WINDOW, "PAGE_STATUS WIN %u STATUS %s", g->win_num, state);
 }
 
 /**** Handlers ****/
 
-static void
-monkey_window_handle_new(int argc, char **argv)
+static void monkey_window_handle_new(int argc, char **argv)
 {
 	nsurl *url = NULL;
 	nserror error = NSERROR_OK;
@@ -461,11 +481,8 @@ monkey_window_handle_new(int argc, char **argv)
 		error = nsurl_create(argv[2], &url);
 	}
 	if (error == NSERROR_OK) {
-		error = browser_window_create(BW_CREATE_HISTORY,
-					      url,
-					      NULL,
-					      NULL,
-					      NULL);
+		error = browser_window_create(
+			BW_CREATE_HISTORY, url, NULL, NULL, NULL);
 		if (url != NULL) {
 			nsurl_unref(url);
 		}
@@ -475,8 +492,7 @@ monkey_window_handle_new(int argc, char **argv)
 	}
 }
 
-static void
-monkey_window_handle_destroy(int argc, char **argv)
+static void monkey_window_handle_destroy(int argc, char **argv)
 {
 	struct gui_window *gw;
 	uint32_t nr = atoi((argc > 2) ? argv[2] : "-1");
@@ -490,8 +506,7 @@ monkey_window_handle_destroy(int argc, char **argv)
 	}
 }
 
-static void
-monkey_window_handle_go(int argc, char **argv)
+static void monkey_window_handle_go(int argc, char **argv)
 {
 	struct gui_window *gw;
 	nsurl *url;
@@ -539,8 +554,7 @@ monkey_window_handle_go(int argc, char **argv)
 /**
  * handle WINDOW STOP command
  */
-static void
-monkey_window_handle_stop(int argc, char **argv)
+static void monkey_window_handle_stop(int argc, char **argv)
 {
 	struct gui_window *gw;
 	if (argc != 3) {
@@ -558,16 +572,13 @@ monkey_window_handle_stop(int argc, char **argv)
 }
 
 
-static void
-monkey_window_handle_redraw(int argc, char **argv)
+static void monkey_window_handle_redraw(int argc, char **argv)
 {
 	struct gui_window *gw;
 	struct rect clip;
-	struct redraw_context ctx = {
-		.interactive = true,
-		.background_images = true,
-		.plot = monkey_plotters
-	};
+	struct redraw_context ctx = {.interactive = true,
+				     .background_images = true,
+				     .plot = monkey_plotters};
 
 	if (argc != 3 && argc != 7) {
 		moutf(MOUT_ERROR, "WINDOW REDRAW ARGS BAD");
@@ -599,8 +610,7 @@ monkey_window_handle_redraw(int argc, char **argv)
 	moutf(MOUT_WINDOW, "REDRAW WIN %d STOP", atoi(argv[2]));
 }
 
-static void
-monkey_window_handle_reload(int argc, char **argv)
+static void monkey_window_handle_reload(int argc, char **argv)
 {
 	struct gui_window *gw;
 	if (argc != 3 && argc != 4) {
@@ -617,8 +627,7 @@ monkey_window_handle_reload(int argc, char **argv)
 	}
 }
 
-static void
-monkey_window_handle_exec(int argc, char **argv)
+static void monkey_window_handle_exec(int argc, char **argv)
 {
 	struct gui_window *gw;
 	if (argc < 5) {
@@ -637,7 +646,9 @@ monkey_window_handle_exec(int argc, char **argv)
 		}
 		char *cmd = calloc(total, 1);
 		if (cmd == NULL) {
-			moutf(MOUT_ERROR, "JS WIN %d RET ENOMEM", atoi(argv[2]));
+			moutf(MOUT_ERROR,
+			      "JS WIN %d RET ENOMEM",
+			      atoi(argv[2]));
 			return;
 		}
 		strcpy(cmd, argv[4]);
@@ -647,19 +658,23 @@ monkey_window_handle_exec(int argc, char **argv)
 		}
 		/* Now execute the JS */
 
-		moutf(MOUT_WINDOW, "JS WIN %d RET %s", atoi(argv[2]),
-		      browser_window_exec(gw->bw, cmd, total - 1) ? "TRUE" : "FALSE");
+		moutf(MOUT_WINDOW,
+		      "JS WIN %d RET %s",
+		      atoi(argv[2]),
+		      browser_window_exec(gw->bw, cmd, total - 1) ? "TRUE"
+								  : "FALSE");
 
 		free(cmd);
 	}
 }
 
 
-static void
-monkey_window_handle_click(int argc, char **argv)
+static void monkey_window_handle_click(int argc, char **argv)
 {
-	/* `WINDOW CLICK WIN` _%id%_ `X` _%num%_ `Y` _%num%_ `BUTTON` _%str%_ `KIND` _%str%_ */
-	/*  0      1     2    3       4  5        6  7        8       9        10    11      */
+	/* `WINDOW CLICK WIN` _%id%_ `X` _%num%_ `Y` _%num%_ `BUTTON` _%str%_
+	 * `KIND` _%str%_ */
+	/*  0      1     2    3       4  5        6  7        8       9 10    11
+	 */
 	struct gui_window *gw;
 	if (argc != 12) {
 		moutf(MOUT_ERROR, "WINDOW CLICK ARGS BAD\n");
@@ -697,8 +712,7 @@ monkey_window_handle_click(int argc, char **argv)
 	}
 }
 
-void
-monkey_window_handle_command(int argc, char **argv)
+void monkey_window_handle_command(int argc, char **argv)
 {
 	if (argc == 1)
 		return;
@@ -722,7 +736,6 @@ monkey_window_handle_command(int argc, char **argv)
 	} else {
 		moutf(MOUT_ERROR, "WINDOW COMMAND UNKNOWN %s\n", argv[1]);
 	}
-
 }
 
 /**

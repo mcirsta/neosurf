@@ -37,22 +37,25 @@
 
 static void test_lwc_iterator(lwc_string *str, void *pw)
 {
-    unsigned *count = (unsigned *)pw;
-    if (count != NULL) {
-        (*count)++;
-    }
-    fprintf(stderr, "[lwc] [%3u] %.*s\n", str->refcnt,
-            (int)lwc_string_length(str), lwc_string_data(str));
+	unsigned *count = (unsigned *)pw;
+	if (count != NULL) {
+		(*count)++;
+	}
+	fprintf(stderr,
+		"[lwc] [%3u] %.*s\n",
+		str->refcnt,
+		(int)lwc_string_length(str),
+		lwc_string_data(str));
 }
 
 /* Limit for hash table tests which use /usr/share/dict/words */
 #define DICT_TEST_WORD_COUNT 100000
 
-#define NELEMS(x)  (sizeof(x) / sizeof((x)[0]))
+#define NELEMS(x) (sizeof(x) / sizeof((x)[0]))
 
 struct test_pairs {
-	const char* test;
-	const char* res;
+	const char *test;
+	const char *res;
 };
 
 static struct hash_table *match_hash_a;
@@ -61,11 +64,11 @@ static struct hash_table *match_hash_b;
 static struct hash_table *dict_hash;
 
 static const struct test_pairs match_tests[] = {
-	{ "cow", "moo" },
-	{ "pig", "oink" },
-	{ "chicken", "cluck" },
-	{ "dog", "woof" },
-	{ "sheep", "baaa" },
+	{"cow", "moo"},
+	{"pig", "oink"},
+	{"chicken", "cluck"},
+	{"dog", "woof"},
+	{"sheep", "baaa"},
 };
 
 /* Fixtures */
@@ -119,7 +122,8 @@ static void dict_hashtable_create(int dict_hash_size)
 		fscanf(dictf, "%s", keybuf);
 		fscanf(dictf, "%s", valbuf);
 		hash_add(dict_hash, keybuf, valbuf);
-		if (counter++ > DICT_TEST_WORD_COUNT) break;
+		if (counter++ > DICT_TEST_WORD_COUNT)
+			break;
 	}
 
 	fclose(dictf);
@@ -257,7 +261,8 @@ START_TEST(hashtable_dict_test)
 		res = hash_get(dict_hash, keybuf);
 		ck_assert(res != NULL);
 		ck_assert_str_eq(res, valbuf);
-		if (counter++ > DICT_TEST_WORD_COUNT) break;
+		if (counter++ > DICT_TEST_WORD_COUNT)
+			break;
 	}
 
 	fclose(dictf);
@@ -268,11 +273,11 @@ END_TEST
 
 static Suite *hashtable_suite(void)
 {
-    Suite *s;
-    TCase *tc_create;
-    TCase *tc_match;
-    TCase *tc_dict_s;
-    TCase *tc_dict_l;
+	Suite *s;
+	TCase *tc_create;
+	TCase *tc_match;
+	TCase *tc_dict_s;
+	TCase *tc_dict_l;
 
 	s = suite_create("hash table filter");
 
@@ -292,36 +297,34 @@ static Suite *hashtable_suite(void)
 				  match_hashtable_create,
 				  match_hashtable_teardown);
 
-	tcase_add_loop_test(tc_match,
-			    hashtable_matcha_test,
-			    0, NELEMS(match_tests));
-	tcase_add_loop_test(tc_match,
-			    hashtable_matchb_test,
-			    0, NELEMS(match_tests));
+	tcase_add_loop_test(
+		tc_match, hashtable_matcha_test, 0, NELEMS(match_tests));
+	tcase_add_loop_test(
+		tc_match, hashtable_matchb_test, 0, NELEMS(match_tests));
 
 	suite_add_tcase(s, tc_match);
 
 #ifndef _WIN32
-    /* small table dictionary test */
-    tc_dict_s = tcase_create("small table dictionary");
-    tcase_add_checked_fixture(tc_dict_s,
-                              dicts_hashtable_create,
-                              dict_hashtable_teardown);
+	/* small table dictionary test */
+	tc_dict_s = tcase_create("small table dictionary");
+	tcase_add_checked_fixture(tc_dict_s,
+				  dicts_hashtable_create,
+				  dict_hashtable_teardown);
 
-    tcase_add_test(tc_dict_s, hashtable_dict_test);
+	tcase_add_test(tc_dict_s, hashtable_dict_test);
 
-    suite_add_tcase(s, tc_dict_s);
+	suite_add_tcase(s, tc_dict_s);
 
 
-    /* large table dictionary test */
-    tc_dict_l = tcase_create("large table dictionary");
-    tcase_add_checked_fixture(tc_dict_l,
-                              dictl_hashtable_create,
-                              dict_hashtable_teardown);
+	/* large table dictionary test */
+	tc_dict_l = tcase_create("large table dictionary");
+	tcase_add_checked_fixture(tc_dict_l,
+				  dictl_hashtable_create,
+				  dict_hashtable_teardown);
 
-    tcase_add_test(tc_dict_l, hashtable_dict_test);
+	tcase_add_test(tc_dict_l, hashtable_dict_test);
 
-    suite_add_tcase(s, tc_dict_l);
+	suite_add_tcase(s, tc_dict_l);
 #endif
 
 	return s;
@@ -329,22 +332,22 @@ static Suite *hashtable_suite(void)
 
 int main(int argc, char **argv)
 {
-    int number_failed;
-    Suite *s;
-    SRunner *sr;
+	int number_failed;
+	Suite *s;
+	SRunner *sr;
 
 	s = hashtable_suite();
 
 	sr = srunner_create(s);
 	srunner_run_all(sr, CK_ENV);
 
-    number_failed = srunner_ntests_failed(sr);
-    srunner_free(sr);
+	number_failed = srunner_ntests_failed(sr);
+	srunner_free(sr);
 
-    fprintf(stderr, "[lwc] Remaining lwc strings:\n");
-    unsigned lwc_count = 0;
-    lwc_iterate_strings(test_lwc_iterator, &lwc_count);
-    fprintf(stderr, "[lwc] Remaining lwc strings count: %u\n", lwc_count);
+	fprintf(stderr, "[lwc] Remaining lwc strings:\n");
+	unsigned lwc_count = 0;
+	lwc_iterate_strings(test_lwc_iterator, &lwc_count);
+	fprintf(stderr, "[lwc] Remaining lwc strings count: %u\n", lwc_count);
 
-    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+	return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

@@ -16,21 +16,21 @@ struct dom_node_internal;
 struct dom_document;
 
 dom_exception _dom_cdata_section_create(struct dom_document *doc,
-		dom_string *name, dom_string *value,
-		dom_cdata_section **result);
+					dom_string *name,
+					dom_string *value,
+					dom_cdata_section **result);
 
 void _dom_cdata_section_destroy(dom_cdata_section *cdata);
 
-#define _dom_cdata_section_initialise 	_dom_text_initialise
-#define _dom_cdata_section_finalise	_dom_text_finalise
+#define _dom_cdata_section_initialise _dom_text_initialise
+#define _dom_cdata_section_finalise _dom_text_finalise
 
 /* Following comes the protected vtable  */
 void __dom_cdata_section_destroy(struct dom_node_internal *node);
-dom_exception _dom_cdata_section_copy(struct dom_node_internal *old, 
-		struct dom_node_internal **copy);
+dom_exception _dom_cdata_section_copy(struct dom_node_internal *old,
+				      struct dom_node_internal **copy);
 
-#define DOM_CDATA_SECTION_PROTECT_VTABLE \
-	__dom_cdata_section_destroy, \
-	_dom_cdata_section_copy
+#define DOM_CDATA_SECTION_PROTECT_VTABLE                                       \
+	__dom_cdata_section_destroy, _dom_cdata_section_copy
 
 #endif

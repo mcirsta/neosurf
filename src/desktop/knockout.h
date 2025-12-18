@@ -34,7 +34,7 @@
  * \return true on success, false otherwise
  */
 bool knockout_plot_start(const struct redraw_context *ctx,
-		struct redraw_context *knk_ctx);
+			 struct redraw_context *knk_ctx);
 /**
  * End a knockout plotting session
  *
