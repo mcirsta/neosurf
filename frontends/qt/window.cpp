@@ -487,7 +487,25 @@ NS_Window::static_invalidate(struct gui_window *gw, const struct rect *rect)
 nserror
 NS_Window::static_get_dimensions(struct gui_window *gw, int *width, int *height)
 {
-	return gw->window->m_nswidget->get_dimensions(width, height);
+	nserror ret = gw->window->m_nswidget->get_dimensions(width, height);
+	if (ret != NSERROR_OK) {
+		NSLOG(netsurf,
+		      ERROR,
+		      "m_nswidget->get_dimensions failed with %d",
+		      ret);
+		return ret;
+	}
+
+	if (gw->window->m_vscrollbar->isVisible()) {
+		int sb_w = gw->window->m_vscrollbar->sizeHint().width();
+		int max_w = gw->window->width() - sb_w;
+
+		if (*width > max_w) {
+			*width = max_w;
+		}
+	}
+
+	return NSERROR_OK;
 }
 
 
