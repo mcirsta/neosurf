@@ -1,0 +1,5 @@
+# Commits that should be ignored by git blame
+# See https://git-scm.com/docs/git-blame#Documentation/git-blame.txt---ignore-revs-fileltfilegt
+
+# Style: format all source files with clang-format
+ad0e3349fa3c7728884bce4baeeb1d1c6b6c2c86
