@@ -33,6 +33,8 @@
 #include "quickjs.h"
 
 #include "content/handlers/javascript/js.h"
+#include "content/handlers/javascript/quickjs/console.h"
+#include "content/handlers/javascript/quickjs/window.h"
 
 /**
  * JavaScript heap structure.
@@ -149,6 +151,20 @@ js_newthread(jsheap *heap, void *win_priv, void *doc_priv, jsthread **thread)
 
 	/* Store thread pointer in context for later retrieval */
 	JS_SetContextOpaque(t->ctx, t);
+
+	/* Initialize Console binding */
+	if (qjs_init_console(t->ctx) < 0) {
+		NSLOG(neosurf,
+		      ERROR,
+		      "Failed to initialize QuickJS console binding");
+	}
+
+	/* Initialize Window binding */
+	if (qjs_init_window(t->ctx) < 0) {
+		NSLOG(neosurf,
+		      ERROR,
+		      "Failed to initialize QuickJS window binding");
+	}
 
 	NSLOG(neosurf, DEBUG, "Created QuickJS thread %p in heap %p", t, heap);
 
