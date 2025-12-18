@@ -32,7 +32,9 @@
 /* debug flag which enables printing of libdom parse messages to stderr */
 #undef PRINT_XML_PARSE_MSG
 
-#if (defined(_GNU_SOURCE) && !defined(__APPLE__) || defined(__amigaos4__) || defined(__HAIKU__) || (defined(_POSIX_C_SOURCE) && ((_POSIX_C_SOURCE - 0) >= 200809L)))
+#if (defined(_GNU_SOURCE) && !defined(__APPLE__) || defined(__amigaos4__) ||   \
+     defined(__HAIKU__) ||                                                     \
+     (defined(_POSIX_C_SOURCE) && ((_POSIX_C_SOURCE - 0) >= 200809L)))
 #define HAVE_STRNDUP
 #else
 #undef HAVE_STRNDUP
@@ -40,7 +42,8 @@ char *svgtiny_strndup(const char *s, size_t n);
 #define strndup svgtiny_strndup
 #endif
 
-static svgtiny_code parse_element(dom_element *element, struct svgtiny_parse_state *state);
+static svgtiny_code
+parse_element(dom_element *element, struct svgtiny_parse_state *state);
 
 #ifndef HAVE_STRNDUP
 char *svgtiny_strndup(const char *s, size_t n)
@@ -66,40 +69,35 @@ char *svgtiny_strndup(const char *s, size_t n)
 /**
  * Parse x, y, width, and height attributes, if present.
  */
-static void
-svgtiny_parse_position_attributes(dom_element *node,
-				  struct svgtiny_parse_state state,
-				  float *x, float *y,
-				  float *width, float *height)
+static void svgtiny_parse_position_attributes(dom_element *node,
+					      struct svgtiny_parse_state state,
+					      float *x,
+					      float *y,
+					      float *width,
+					      float *height)
 {
 	struct svgtiny_parse_internal_operation styles[] = {
-		{
-			/* x */
-			state.interned_x,
-			SVGTIOP_LENGTH,
-			&state.viewport_width,
-			x
-		},{
-			/* y */
-			state.interned_y,
-			SVGTIOP_LENGTH,
-			&state.viewport_height,
-			y
-		},{
-			/* width */
-			state.interned_width,
-			SVGTIOP_LENGTH,
-			&state.viewport_width,
-			width
-		},{
-			/* height */
-			state.interned_height,
-			SVGTIOP_LENGTH,
-			&state.viewport_height,
-			height
-		},{
-			NULL, SVGTIOP_NONE, NULL, NULL
-		},
+		{/* x */
+		 state.interned_x,
+		 SVGTIOP_LENGTH,
+		 &state.viewport_width,
+		 x},
+		{/* y */
+		 state.interned_y,
+		 SVGTIOP_LENGTH,
+		 &state.viewport_height,
+		 y},
+		{/* width */
+		 state.interned_width,
+		 SVGTIOP_LENGTH,
+		 &state.viewport_width,
+		 width},
+		{/* height */
+		 state.interned_height,
+		 SVGTIOP_LENGTH,
+		 &state.viewport_height,
+		 height},
+		{NULL, SVGTIOP_NONE, NULL, NULL},
 	};
 
 	*x = 0;
@@ -134,8 +132,8 @@ static void svgtiny_grad_string_ref(struct svgtiny_parse_state_gradient *grad)
 /**
  * Call this to clean up the strings in a gradient state.
  */
-static void svgtiny_grad_string_cleanup(
-	struct svgtiny_parse_state_gradient *grad)
+static void
+svgtiny_grad_string_cleanup(struct svgtiny_parse_state_gradient *grad)
 {
 	if (grad->gradient_x1 != NULL) {
 		dom_string_unref(grad->gradient_x1);
@@ -175,14 +173,14 @@ static void svgtiny_setup_state_local(struct svgtiny_parse_state *state)
  */
 static void svgtiny_cleanup_state_local(struct svgtiny_parse_state *state)
 {
-    svgtiny_grad_string_cleanup(&(state->fill_grad));
-    svgtiny_grad_string_cleanup(&(state->stroke_grad));
-    if (state->stroke_dasharray != NULL) {
-        free(state->stroke_dasharray);
-        state->stroke_dasharray = NULL;
-        state->stroke_dasharray_count = 0;
-        state->stroke_dasharray_set = false;
-    }
+	svgtiny_grad_string_cleanup(&(state->fill_grad));
+	svgtiny_grad_string_cleanup(&(state->stroke_grad));
+	if (state->stroke_dasharray != NULL) {
+		free(state->stroke_dasharray);
+		state->stroke_dasharray = NULL;
+		state->stroke_dasharray_count = 0;
+		state->stroke_dasharray_set = false;
+	}
 }
 
 
@@ -190,15 +188,15 @@ static void ignore_msg(uint32_t severity, void *ctx, const char *msg, ...)
 {
 #ifdef PRINT_XML_PARSE_MSG
 #include <stdarg.h>
-        va_list l;
+	va_list l;
 
-        UNUSED(ctx);
+	UNUSED(ctx);
 
-        va_start(l, msg);
+	va_start(l, msg);
 
-        fprintf(stderr, "%"PRIu32": ", severity);
-        vfprintf(stderr, msg, l);
-        fprintf(stderr, "\n");
+	fprintf(stderr, "%" PRIu32 ": ", severity);
+	vfprintf(stderr, msg, l);
+	fprintf(stderr, "\n");
 
 	va_end(l);
 #else
@@ -212,122 +210,102 @@ static void ignore_msg(uint32_t severity, void *ctx, const char *msg, ...)
 /**
  * Parse paint attributes, if present.
  */
-static void
-svgtiny_parse_paint_attributes(dom_element *node,
-                               struct svgtiny_parse_state *state)
+static void svgtiny_parse_paint_attributes(dom_element *node,
+					   struct svgtiny_parse_state *state)
 {
-    const struct svgtiny_keyword_map fill_rule_map[] = {
-        { "nonzero", svgtiny_FILL_NONZERO },
-        { "evenodd", svgtiny_FILL_EVENODD },
-        { NULL, 0 }
-    };
-    const struct svgtiny_keyword_map linecap_map[] = {
-        { "butt", svgtiny_CAP_BUTT },
-        { "round", svgtiny_CAP_ROUND },
-        { "square", svgtiny_CAP_SQUARE },
-        { NULL, 0 }
-    };
-    const struct svgtiny_keyword_map linejoin_map[] = {
-        { "miter", svgtiny_JOIN_MITER },
-        { "round", svgtiny_JOIN_ROUND },
-        { "bevel", svgtiny_JOIN_BEVEL },
-        { NULL, 0 }
-    };
-    struct svgtiny_dasharray_dest dashdest = {
-        &state->stroke_dasharray,
-        &state->stroke_dasharray_count
-    };
-    struct svgtiny_parse_internal_operation ops[] = {
-        {
-            /* fill color */
-            state->interned_fill,
-            SVGTIOP_PAINT,
-            &state->fill_grad,
-            &state->fill
-        }, {
-            /* stroke color */
-            state->interned_stroke,
-            SVGTIOP_PAINT,
-            &state->stroke_grad,
-            &state->stroke
-        }, {
-            /* stroke width */
-            state->interned_stroke_width,
-            SVGTIOP_INTLENGTH,
-            &state->viewport_width,
-            &state->stroke_width
-        }, {
-            /* fill-opacity */
-            state->interned_fill_opacity,
-            SVGTIOP_OFFSET,
-            NULL,
-            &state->fill_opacity,
-            &state->fill_opacity_set
-        }, {
-            /* stroke-opacity */
-            state->interned_stroke_opacity,
-            SVGTIOP_OFFSET,
-            NULL,
-            &state->stroke_opacity,
-            &state->stroke_opacity_set
-        }, {
-            /* fill-rule */
-            state->interned_fill_rule,
-            SVGTIOP_KEYWORD,
-            (void*)fill_rule_map,
-            &state->fill_rule,
-            &state->fill_rule_set
-        }, {
-            /* stroke-linecap */
-            state->interned_stroke_linecap,
-            SVGTIOP_KEYWORD,
-            (void*)linecap_map,
-            &state->stroke_linecap,
-            &state->stroke_linecap_set
-        }, {
-            /* stroke-linejoin */
-            state->interned_stroke_linejoin,
-            SVGTIOP_KEYWORD,
-            (void*)linejoin_map,
-            &state->stroke_linejoin,
-            &state->stroke_linejoin_set
-        }, {
-            /* stroke-miterlimit */
-            state->interned_stroke_miterlimit,
-            SVGTIOP_NUMBER,
-            NULL,
-            &state->stroke_miterlimit,
-            &state->stroke_miterlimit_set
-        }, {
-            /* stroke-dasharray */
-            state->interned_stroke_dasharray,
-            SVGTIOP_DASHARRAY,
-            NULL,
-            &dashdest,
-            &state->stroke_dasharray_set
-        }, {
-            /* stroke-dashoffset */
-            state->interned_stroke_dashoffset,
-            SVGTIOP_NUMBER,
-            NULL,
-            &state->stroke_dashoffset,
-            &state->stroke_dashoffset_set
-        },{
-            NULL, SVGTIOP_NONE, NULL, NULL
-        },
-    };
+	const struct svgtiny_keyword_map fill_rule_map[] = {
+		{"nonzero", svgtiny_FILL_NONZERO},
+		{"evenodd", svgtiny_FILL_EVENODD},
+		{NULL, 0}};
+	const struct svgtiny_keyword_map linecap_map[] = {
+		{"butt", svgtiny_CAP_BUTT},
+		{"round", svgtiny_CAP_ROUND},
+		{"square", svgtiny_CAP_SQUARE},
+		{NULL, 0}};
+	const struct svgtiny_keyword_map linejoin_map[] = {
+		{"miter", svgtiny_JOIN_MITER},
+		{"round", svgtiny_JOIN_ROUND},
+		{"bevel", svgtiny_JOIN_BEVEL},
+		{NULL, 0}};
+	struct svgtiny_dasharray_dest dashdest = {
+		&state->stroke_dasharray, &state->stroke_dasharray_count};
+	struct svgtiny_parse_internal_operation ops[] = {
+		{/* fill color */
+		 state->interned_fill,
+		 SVGTIOP_PAINT,
+		 &state->fill_grad,
+		 &state->fill},
+		{/* stroke color */
+		 state->interned_stroke,
+		 SVGTIOP_PAINT,
+		 &state->stroke_grad,
+		 &state->stroke},
+		{/* stroke width */
+		 state->interned_stroke_width,
+		 SVGTIOP_INTLENGTH,
+		 &state->viewport_width,
+		 &state->stroke_width},
+		{/* fill-opacity */
+		 state->interned_fill_opacity,
+		 SVGTIOP_OFFSET,
+		 NULL,
+		 &state->fill_opacity,
+		 &state->fill_opacity_set},
+		{/* stroke-opacity */
+		 state->interned_stroke_opacity,
+		 SVGTIOP_OFFSET,
+		 NULL,
+		 &state->stroke_opacity,
+		 &state->stroke_opacity_set},
+		{/* fill-rule */
+		 state->interned_fill_rule,
+		 SVGTIOP_KEYWORD,
+		 (void *)fill_rule_map,
+		 &state->fill_rule,
+		 &state->fill_rule_set},
+		{/* stroke-linecap */
+		 state->interned_stroke_linecap,
+		 SVGTIOP_KEYWORD,
+		 (void *)linecap_map,
+		 &state->stroke_linecap,
+		 &state->stroke_linecap_set},
+		{/* stroke-linejoin */
+		 state->interned_stroke_linejoin,
+		 SVGTIOP_KEYWORD,
+		 (void *)linejoin_map,
+		 &state->stroke_linejoin,
+		 &state->stroke_linejoin_set},
+		{/* stroke-miterlimit */
+		 state->interned_stroke_miterlimit,
+		 SVGTIOP_NUMBER,
+		 NULL,
+		 &state->stroke_miterlimit,
+		 &state->stroke_miterlimit_set},
+		{/* stroke-dasharray */
+		 state->interned_stroke_dasharray,
+		 SVGTIOP_DASHARRAY,
+		 NULL,
+		 &dashdest,
+		 &state->stroke_dasharray_set},
+		{/* stroke-dashoffset */
+		 state->interned_stroke_dashoffset,
+		 SVGTIOP_NUMBER,
+		 NULL,
+		 &state->stroke_dashoffset,
+		 &state->stroke_dashoffset_set},
+		{NULL, SVGTIOP_NONE, NULL, NULL},
+	};
 
-    svgtiny_parse_attributes(node, state, ops);
-    svgtiny_parse_inline_style(node, state, ops);
+	svgtiny_parse_attributes(node, state, ops);
+	svgtiny_parse_inline_style(node, state, ops);
 }
 
 
 /**
  * Parse font attributes, if present.
  */
-static void
-svgtiny_parse_font_attributes(dom_element *node,
-			      struct svgtiny_parse_state *state)
+static void svgtiny_parse_font_attributes(dom_element *node,
+					  struct svgtiny_parse_state *state)
 {
 	/* TODO: Implement this, it never used to be */
 	UNUSED(node);
@@ -338,7 +316,7 @@ svgtiny_parse_font_attributes(dom_element *node,
 	UNUSED(state);
 
 	for (attr = node->properties; attr; attr = attr->next) {
-		if (strcmp((const char *) attr->name, "font-size") == 0) {
+		if (strcmp((const char *)attr->name, "font-size") == 0) {
 			/*if (css_parse_length(
 			  (const char *) attr->children->content,
 			  &state->style.font_size.value.length,
@@ -347,7 +325,7 @@ svgtiny_parse_font_attributes(dom_element *node,
 			  CSS_FONT_SIZE_LENGTH;
 			  }*/
 		}
-        }
+	}
 #endif
 }
 
@@ -426,7 +404,8 @@ svgtiny_add_path(float *p, unsigned int n, struct svgtiny_parse_state *state)
 
 
 /**
- * return svgtiny_OK if source is an ancestor of target else svgtiny_LIBDOM_ERROR
+ * return svgtiny_OK if source is an ancestor of target else
+ * svgtiny_LIBDOM_ERROR
  */
 static svgtiny_code is_ancestor_node(dom_node *source, dom_node *target)
 {
@@ -475,7 +454,8 @@ svgtiny_parse_path(dom_element *path, struct svgtiny_parse_state state)
 	exc = dom_element_get_attribute(path, state.interned_d, &path_d_str);
 	if (exc != DOM_NO_ERR) {
 		state.diagram->error_line = -1; /* path->line; */
-		state.diagram->error_message = "path: error retrieving d attribute";
+		state.diagram->error_message =
+			"path: error retrieving d attribute";
 		svgtiny_cleanup_state_local(&state);
 		return svgtiny_SVG_ERROR;
 	}
@@ -490,7 +470,7 @@ svgtiny_parse_path(dom_element *path, struct svgtiny_parse_state state)
 	res = svgtiny_parse_path_data(dom_string_data(path_d_str),
 				      dom_string_byte_length(path_d_str),
 				      &p,
-		                      &i);
+				      &i);
 	if (res != svgtiny_OK) {
 		svgtiny_cleanup_state_local(&state);
 		return res;
@@ -526,8 +506,7 @@ svgtiny_parse_rect(dom_element *rect, struct svgtiny_parse_state state)
 
 	svgtiny_setup_state_local(&state);
 
-	svgtiny_parse_position_attributes(rect, state,
-					  &x, &y, &width, &height);
+	svgtiny_parse_position_attributes(rect, state, &x, &y, &width, &height);
 	svgtiny_parse_paint_attributes(rect, &state);
 	svgtiny_parse_transform_attributes(rect, &state);
 
@@ -569,24 +548,10 @@ svgtiny_parse_circle(dom_element *circle, struct svgtiny_parse_state state)
 	float x = 0, y = 0, r = -1;
 	float *p;
 	struct svgtiny_parse_internal_operation ops[] = {
-		{
-			state.interned_cx,
-			SVGTIOP_LENGTH,
-			&state.viewport_width,
-			&x
-		}, {
-			state.interned_cy,
-			SVGTIOP_LENGTH,
-			&state.viewport_height,
-			&y
-		}, {
-			state.interned_r,
-			SVGTIOP_LENGTH,
-			&state.viewport_width,
-			&r
-		}, {
-			NULL, SVGTIOP_NONE, NULL, NULL
-		},
+		{state.interned_cx, SVGTIOP_LENGTH, &state.viewport_width, &x},
+		{state.interned_cy, SVGTIOP_LENGTH, &state.viewport_height, &y},
+		{state.interned_r, SVGTIOP_LENGTH, &state.viewport_width, &r},
+		{NULL, SVGTIOP_NONE, NULL, NULL},
 	};
 
 	svgtiny_setup_state_local(&state);
@@ -668,29 +633,14 @@ svgtiny_parse_ellipse(dom_element *ellipse, struct svgtiny_parse_state state)
 	float x = 0, y = 0, rx = -1, ry = -1;
 	float *p;
 	struct svgtiny_parse_internal_operation ops[] = {
-		{
-			state.interned_cx,
-			SVGTIOP_LENGTH,
-			&state.viewport_width,
-			&x
-		}, {
-			state.interned_cy,
-			SVGTIOP_LENGTH,
-			&state.viewport_height,
-			&y
-		}, {
-			state.interned_rx,
-			SVGTIOP_LENGTH,
-			&state.viewport_width,
-			&rx
-		}, {
-			state.interned_ry,
-			SVGTIOP_LENGTH,
-			&state.viewport_height,
-			&ry
-		}, {
-			NULL, SVGTIOP_NONE, NULL, NULL
-		},
+		{state.interned_cx, SVGTIOP_LENGTH, &state.viewport_width, &x},
+		{state.interned_cy, SVGTIOP_LENGTH, &state.viewport_height, &y},
+		{state.interned_rx, SVGTIOP_LENGTH, &state.viewport_width, &rx},
+		{state.interned_ry,
+		 SVGTIOP_LENGTH,
+		 &state.viewport_height,
+		 &ry},
+		{NULL, SVGTIOP_NONE, NULL, NULL},
 	};
 
 	svgtiny_setup_state_local(&state);
@@ -707,7 +657,7 @@ svgtiny_parse_ellipse(dom_element *ellipse, struct svgtiny_parse_state state)
 	if (rx < 0 || ry < 0) {
 		state.diagram->error_line = -1; /* ellipse->line; */
 		state.diagram->error_message = "ellipse: rx or ry missing "
-			"or negative";
+					       "or negative";
 		svgtiny_cleanup_state_local(&state);
 		return svgtiny_SVG_ERROR;
 	}
@@ -773,29 +723,17 @@ svgtiny_parse_line(dom_element *line, struct svgtiny_parse_state state)
 	float x1 = 0, y1 = 0, x2 = 0, y2 = 0;
 	float *p;
 	struct svgtiny_parse_internal_operation ops[] = {
-		{
-			state.interned_x1,
-			SVGTIOP_LENGTH,
-			&state.viewport_width,
-			&x1
-		}, {
-			state.interned_y1,
-			SVGTIOP_LENGTH,
-			&state.viewport_height,
-			&y1
-		}, {
-			state.interned_x2,
-			SVGTIOP_LENGTH,
-			&state.viewport_width,
-			&x2
-		}, {
-			state.interned_y2,
-			SVGTIOP_LENGTH,
-			&state.viewport_height,
-			&y2
-		}, {
-			NULL, SVGTIOP_NONE, NULL, NULL
-		},
+		{state.interned_x1, SVGTIOP_LENGTH, &state.viewport_width, &x1},
+		{state.interned_y1,
+		 SVGTIOP_LENGTH,
+		 &state.viewport_height,
+		 &y1},
+		{state.interned_x2, SVGTIOP_LENGTH, &state.viewport_width, &x2},
+		{state.interned_y2,
+		 SVGTIOP_LENGTH,
+		 &state.viewport_height,
+		 &y2},
+		{NULL, SVGTIOP_NONE, NULL, NULL},
 	};
 
 	svgtiny_setup_state_local(&state);
@@ -837,10 +775,9 @@ svgtiny_parse_line(dom_element *line, struct svgtiny_parse_state state)
  * http://www.w3.org/TR/SVG11/shapes#PolylineElement
  * http://www.w3.org/TR/SVG11/shapes#PolygonElement
  */
-static svgtiny_code
-svgtiny_parse_poly(dom_element *poly,
-		   struct svgtiny_parse_state state,
-		   bool polygon)
+static svgtiny_code svgtiny_parse_poly(dom_element *poly,
+				       struct svgtiny_parse_state state,
+				       bool polygon)
 {
 	svgtiny_code err;
 	dom_string *points_str;
@@ -853,7 +790,8 @@ svgtiny_parse_poly(dom_element *poly,
 	svgtiny_parse_paint_attributes(poly, &state);
 	svgtiny_parse_transform_attributes(poly, &state);
 
-	exc = dom_element_get_attribute(poly, state.interned_points,
+	exc = dom_element_get_attribute(poly,
+					state.interned_points,
 					&points_str);
 	if (exc != DOM_NO_ERR) {
 		svgtiny_cleanup_state_local(&state);
@@ -917,20 +855,19 @@ svgtiny_parse_text(dom_element *text, struct svgtiny_parse_state state)
 
 	svgtiny_setup_state_local(&state);
 
-	svgtiny_parse_position_attributes(text, state,
-					  &x, &y, &width, &height);
+	svgtiny_parse_position_attributes(text, state, &x, &y, &width, &height);
 	svgtiny_parse_font_attributes(text, &state);
 	svgtiny_parse_transform_attributes(text, &state);
 
 	px = state.ctm.a * x + state.ctm.c * y + state.ctm.e;
 	py = state.ctm.b * x + state.ctm.d * y + state.ctm.f;
-/*	state.ctm.e = px - state.origin_x; */
-/*	state.ctm.f = py - state.origin_y; */
+	/*	state.ctm.e = px - state.origin_x; */
+	/*	state.ctm.f = py - state.origin_y; */
 
 	/*struct css_style style = state.style;
 	  style.font_size.value.length.value *= state.ctm.a;*/
 
-        exc = dom_node_get_first_child(text, &child);
+	exc = dom_node_get_first_child(text, &child);
 	if (exc != DOM_NO_ERR) {
 		return svgtiny_LIBDOM_ERROR;
 		svgtiny_cleanup_state_local(&state);
@@ -975,7 +912,8 @@ svgtiny_parse_text(dom_element *text, struct svgtiny_parse_state state)
 			}
 			if (content != NULL) {
 				shape->text = strndup(dom_string_data(content),
-						      dom_string_byte_length(content));
+						      dom_string_byte_length(
+							      content));
 				dom_string_unref(content);
 			} else {
 				shape->text = strdup("");
@@ -1062,8 +1000,7 @@ svgtiny_parse_svg(dom_element *svg, struct svgtiny_parse_state state)
 	svgtiny_parse_paint_attributes(svg, &state);
 	svgtiny_parse_font_attributes(svg, &state);
 
-	exc = dom_element_get_attribute(svg, state.interned_viewBox,
-					&view_box);
+	exc = dom_element_get_attribute(svg, state.interned_viewBox, &view_box);
 	if (exc != DOM_NO_ERR) {
 		svgtiny_cleanup_state_local(&state);
 		return svgtiny_LIBDOM_ERROR;
@@ -1080,7 +1017,7 @@ svgtiny_parse_svg(dom_element *svg, struct svgtiny_parse_state state)
 
 	svgtiny_parse_transform_attributes(svg, &state);
 
-	exc = dom_node_get_first_child(svg, (dom_node **) (void *) &child);
+	exc = dom_node_get_first_child(svg, (dom_node **)(void *)&child);
 	if (exc != DOM_NO_ERR) {
 		svgtiny_cleanup_state_local(&state);
 		return svgtiny_LIBDOM_ERROR;
@@ -1104,7 +1041,7 @@ svgtiny_parse_svg(dom_element *svg, struct svgtiny_parse_state state)
 			return code;
 		}
 		exc = dom_node_get_next_sibling(child,
-						(dom_node **) (void *) &next);
+						(dom_node **)(void *)&next);
 		dom_node_unref(child);
 		if (exc != DOM_NO_ERR) {
 			svgtiny_cleanup_state_local(&state);
@@ -1123,7 +1060,8 @@ parse_element(dom_element *element, struct svgtiny_parse_state *state)
 {
 	dom_exception exc;
 	dom_string *nodename;
-	svgtiny_code code = svgtiny_OK;;
+	svgtiny_code code = svgtiny_OK;
+	;
 
 	exc = dom_node_get_node_name(element, &nodename);
 	if (exc != DOM_NO_ERR) {
@@ -1136,21 +1074,29 @@ parse_element(dom_element *element, struct svgtiny_parse_state *state)
 		code = svgtiny_parse_svg(element, *state);
 	} else if (dom_string_caseless_isequal(state->interned_a, nodename)) {
 		code = svgtiny_parse_svg(element, *state);
-	} else if (dom_string_caseless_isequal(state->interned_path, nodename)) {
+	} else if (dom_string_caseless_isequal(state->interned_path,
+					       nodename)) {
 		code = svgtiny_parse_path(element, *state);
-	} else if (dom_string_caseless_isequal(state->interned_rect, nodename)) {
+	} else if (dom_string_caseless_isequal(state->interned_rect,
+					       nodename)) {
 		code = svgtiny_parse_rect(element, *state);
-	} else if (dom_string_caseless_isequal(state->interned_circle, nodename)) {
+	} else if (dom_string_caseless_isequal(state->interned_circle,
+					       nodename)) {
 		code = svgtiny_parse_circle(element, *state);
-	} else if (dom_string_caseless_isequal(state->interned_ellipse, nodename)) {
+	} else if (dom_string_caseless_isequal(state->interned_ellipse,
+					       nodename)) {
 		code = svgtiny_parse_ellipse(element, *state);
-	} else if (dom_string_caseless_isequal(state->interned_line, nodename)) {
+	} else if (dom_string_caseless_isequal(state->interned_line,
+					       nodename)) {
 		code = svgtiny_parse_line(element, *state);
-	} else if (dom_string_caseless_isequal(state->interned_polyline, nodename)) {
+	} else if (dom_string_caseless_isequal(state->interned_polyline,
+					       nodename)) {
 		code = svgtiny_parse_poly(element, *state, false);
-	} else if (dom_string_caseless_isequal(state->interned_polygon, nodename)) {
+	} else if (dom_string_caseless_isequal(state->interned_polygon,
+					       nodename)) {
 		code = svgtiny_parse_poly(element, *state, true);
-	} else if (dom_string_caseless_isequal(state->interned_text, nodename)) {
+	} else if (dom_string_caseless_isequal(state->interned_text,
+					       nodename)) {
 		code = svgtiny_parse_text(element, *state);
 	} else if (dom_string_caseless_isequal(state->interned_use, nodename)) {
 		code = svgtiny_parse_use(element, *state);
@@ -1160,13 +1106,12 @@ parse_element(dom_element *element, struct svgtiny_parse_state *state)
 }
 
 
-static svgtiny_code
-initialise_parse_state(struct svgtiny_parse_state *state,
-                       struct svgtiny_diagram *diagram,
-                       dom_document *document,
-                       dom_element *svg,
-                       int viewport_width,
-                       int viewport_height)
+static svgtiny_code initialise_parse_state(struct svgtiny_parse_state *state,
+					   struct svgtiny_diagram *diagram,
+					   dom_document *document,
+					   dom_element *svg,
+					   int viewport_width,
+					   int viewport_height)
 {
 	float x, y, width, height;
 
@@ -1175,12 +1120,11 @@ initialise_parse_state(struct svgtiny_parse_state *state,
 	state->diagram = diagram;
 	state->document = document;
 
-#define SVGTINY_STRING_ACTION2(s,n)					\
-	if (dom_string_create_interned((const uint8_t *) #n,		\
-				       strlen(#n),			\
-				       &state->interned_##s)		\
-	    != DOM_NO_ERR) {						\
-		return svgtiny_LIBDOM_ERROR;				\
+#define SVGTINY_STRING_ACTION2(s, n)                                           \
+	if (dom_string_create_interned((const uint8_t *)#n,                    \
+				       strlen(#n),                             \
+				       &state->interned_##s) != DOM_NO_ERR) {  \
+		return svgtiny_LIBDOM_ERROR;                                   \
 	}
 #include "svgtiny_strings.h"
 #undef SVGTINY_STRING_ACTION2
@@ -1203,27 +1147,27 @@ initialise_parse_state(struct svgtiny_parse_state *state,
 	state->ctm.f = 0; /*y;*/
 	/*state->style = css_base_style;
 	  state->style.font_size.value.length.value = option_font_size * 0.1;*/
-    state->fill = 0x000000;
-    state->stroke = svgtiny_TRANSPARENT;
-    state->stroke_width = 1;
-    state->fill_opacity = 1.0f;
-    state->fill_opacity_set = false;
-    state->stroke_opacity = 1.0f;
-    state->stroke_opacity_set = false;
-    state->fill_rule = svgtiny_FILL_NONZERO;
-    state->fill_rule_set = false;
-    state->stroke_linecap = svgtiny_CAP_BUTT;
-    state->stroke_linecap_set = false;
-    state->stroke_linejoin = svgtiny_JOIN_MITER;
-    state->stroke_linejoin_set = false;
-    state->stroke_miterlimit = 4.0f;
-    state->stroke_miterlimit_set = false;
-    state->stroke_dasharray = NULL;
-    state->stroke_dasharray_count = 0;
-    state->stroke_dasharray_set = false;
-    state->stroke_dashoffset = 0.0f;
-    state->stroke_dashoffset_set = false;
-    return svgtiny_OK;
+	state->fill = 0x000000;
+	state->stroke = svgtiny_TRANSPARENT;
+	state->stroke_width = 1;
+	state->fill_opacity = 1.0f;
+	state->fill_opacity_set = false;
+	state->stroke_opacity = 1.0f;
+	state->stroke_opacity_set = false;
+	state->fill_rule = svgtiny_FILL_NONZERO;
+	state->fill_rule_set = false;
+	state->stroke_linecap = svgtiny_CAP_BUTT;
+	state->stroke_linecap_set = false;
+	state->stroke_linejoin = svgtiny_JOIN_MITER;
+	state->stroke_linejoin_set = false;
+	state->stroke_miterlimit = 4.0f;
+	state->stroke_miterlimit_set = false;
+	state->stroke_dasharray = NULL;
+	state->stroke_dasharray_count = 0;
+	state->stroke_dasharray_set = false;
+	state->stroke_dashoffset = 0.0f;
+	state->stroke_dashoffset_set = false;
+	return svgtiny_OK;
 }
 
 
@@ -1231,8 +1175,8 @@ static svgtiny_code finalise_parse_state(struct svgtiny_parse_state *state)
 {
 	svgtiny_cleanup_state_local(state);
 
-#define SVGTINY_STRING_ACTION2(s,n)				\
-	if (state->interned_##s != NULL)			\
+#define SVGTINY_STRING_ACTION2(s, n)                                           \
+	if (state->interned_##s != NULL)                                       \
 		dom_string_unref(state->interned_##s);
 #include "svgtiny_strings.h"
 #undef SVGTINY_STRING_ACTION2
@@ -1251,10 +1195,10 @@ static svgtiny_code get_svg_element(dom_document *document, dom_element **svg)
 	if (exc != DOM_NO_ERR) {
 		return svgtiny_LIBDOM_ERROR;
 	}
-        if (svg == NULL) {
-                /* no root element */
+	if (*svg == NULL) {
+		/* no root element */
 		return svgtiny_SVG_ERROR;
-        }
+	}
 
 	/* ensure root element is <svg> */
 	exc = dom_node_get_node_name(*svg, &svg_name);
@@ -1262,8 +1206,8 @@ static svgtiny_code get_svg_element(dom_document *document, dom_element **svg)
 		dom_node_unref(*svg);
 		return svgtiny_LIBDOM_ERROR;
 	}
-	if (lwc_intern_string("svg", 3 /* SLEN("svg") */,
-			      &svg_name_lwc) != lwc_error_ok) {
+	if (lwc_intern_string("svg", 3 /* SLEN("svg") */, &svg_name_lwc) !=
+	    lwc_error_ok) {
 		dom_string_unref(svg_name);
 		dom_node_unref(*svg);
 		return svgtiny_LIBDOM_ERROR;
@@ -1323,58 +1267,63 @@ svg_document_from_buffer(uint8_t *buffer, size_t size, dom_document **document)
  */
 struct svgtiny_shape *svgtiny_add_shape(struct svgtiny_parse_state *state)
 {
-    struct svgtiny_shape *shape;
+	struct svgtiny_shape *shape;
 
 	shape = realloc(state->diagram->shape,
 			(state->diagram->shape_count + 1) *
-			sizeof (state->diagram->shape[0]));
+				sizeof(state->diagram->shape[0]));
 	if (shape != NULL) {
 		state->diagram->shape = shape;
 
-        shape += state->diagram->shape_count;
-        shape->path = 0;
-        shape->path_length = 0;
-        shape->text = 0;
-        shape->fill = state->fill;
-        shape->stroke = state->stroke;
-        shape->stroke_width = lroundf((float) state->stroke_width *
-                                      (state->ctm.a + state->ctm.d) / 2.0);
-        if (0 < state->stroke_width && shape->stroke_width == 0)
-            shape->stroke_width = 1;
-        shape->fill_opacity = state->fill_opacity;
-        shape->fill_opacity_set = state->fill_opacity_set;
-        shape->stroke_opacity = state->stroke_opacity;
-        shape->stroke_opacity_set = state->stroke_opacity_set;
-        shape->fill_rule = state->fill_rule;
-        shape->fill_rule_set = state->fill_rule_set;
-        shape->stroke_linecap = state->stroke_linecap;
-        shape->stroke_linecap_set = state->stroke_linecap_set;
-        shape->stroke_linejoin = state->stroke_linejoin;
-        shape->stroke_linejoin_set = state->stroke_linejoin_set;
-        shape->stroke_miterlimit = state->stroke_miterlimit;
-        shape->stroke_miterlimit_set = state->stroke_miterlimit_set;
-        shape->stroke_dashoffset = state->stroke_dashoffset;
-        shape->stroke_dashoffset_set = state->stroke_dashoffset_set;
-        shape->stroke_dasharray = NULL;
-        shape->stroke_dasharray_count = 0;
-        shape->stroke_dasharray_set = state->stroke_dasharray_set;
-        if (state->stroke_dasharray_set && state->stroke_dasharray_count > 0 && state->stroke_dasharray != NULL) {
-            unsigned int c = state->stroke_dasharray_count;
-            float *arr = malloc(c * sizeof(float));
-            if (arr != NULL) {
-                memcpy(arr, state->stroke_dasharray, c * sizeof(float));
-                shape->stroke_dasharray = arr;
-                shape->stroke_dasharray_count = c;
-            } else {
-                shape->stroke_dasharray_set = false;
-                shape->stroke_dasharray_count = 0;
-            }
-            free(state->stroke_dasharray);
-            state->stroke_dasharray = NULL;
-            state->stroke_dasharray_count = 0;
-        }
-    }
-    return shape;
+		shape += state->diagram->shape_count;
+		shape->path = 0;
+		shape->path_length = 0;
+		shape->text = 0;
+		shape->fill = state->fill;
+		shape->stroke = state->stroke;
+		shape->stroke_width = lroundf((float)state->stroke_width *
+					      (state->ctm.a + state->ctm.d) /
+					      2.0);
+		if (0 < state->stroke_width && shape->stroke_width == 0)
+			shape->stroke_width = 1;
+		shape->fill_opacity = state->fill_opacity;
+		shape->fill_opacity_set = state->fill_opacity_set;
+		shape->stroke_opacity = state->stroke_opacity;
+		shape->stroke_opacity_set = state->stroke_opacity_set;
+		shape->fill_rule = state->fill_rule;
+		shape->fill_rule_set = state->fill_rule_set;
+		shape->stroke_linecap = state->stroke_linecap;
+		shape->stroke_linecap_set = state->stroke_linecap_set;
+		shape->stroke_linejoin = state->stroke_linejoin;
+		shape->stroke_linejoin_set = state->stroke_linejoin_set;
+		shape->stroke_miterlimit = state->stroke_miterlimit;
+		shape->stroke_miterlimit_set = state->stroke_miterlimit_set;
+		shape->stroke_dashoffset = state->stroke_dashoffset;
+		shape->stroke_dashoffset_set = state->stroke_dashoffset_set;
+		shape->stroke_dasharray = NULL;
+		shape->stroke_dasharray_count = 0;
+		shape->stroke_dasharray_set = state->stroke_dasharray_set;
+		if (state->stroke_dasharray_set &&
+		    state->stroke_dasharray_count > 0 &&
+		    state->stroke_dasharray != NULL) {
+			unsigned int c = state->stroke_dasharray_count;
+			float *arr = malloc(c * sizeof(float));
+			if (arr != NULL) {
+				memcpy(arr,
+				       state->stroke_dasharray,
+				       c * sizeof(float));
+				shape->stroke_dasharray = arr;
+				shape->stroke_dasharray_count = c;
+			} else {
+				shape->stroke_dasharray_set = false;
+				shape->stroke_dasharray_count = 0;
+			}
+			free(state->stroke_dasharray);
+			state->stroke_dasharray = NULL;
+			state->stroke_dasharray_count = 0;
+		}
+	}
+	return shape;
 }
 
 
@@ -1383,17 +1332,16 @@ struct svgtiny_shape *svgtiny_add_shape(struct svgtiny_parse_state *state)
  *
  * library internal interface
  */
-void
-svgtiny_transform_path(float *p,
-		       unsigned int n,
-		       struct svgtiny_parse_state *state)
+void svgtiny_transform_path(float *p,
+			    unsigned int n,
+			    struct svgtiny_parse_state *state)
 {
 	unsigned int j;
 
-	for (j = 0; j != n; ) {
+	for (j = 0; j != n;) {
 		unsigned int points = 0;
 		unsigned int k;
-		switch ((int) p[j]) {
+		switch ((int)p[j]) {
 		case svgtiny_PATH_MOVE:
 		case svgtiny_PATH_LINE:
 			points = 1;
@@ -1411,9 +1359,9 @@ svgtiny_transform_path(float *p,
 		for (k = 0; k != points; k++) {
 			float x0 = p[j], y0 = p[j + 1];
 			float x = state->ctm.a * x0 + state->ctm.c * y0 +
-				state->ctm.e;
+				  state->ctm.e;
 			float y = state->ctm.b * x0 + state->ctm.d * y0 +
-				state->ctm.f;
+				  state->ctm.f;
 			p[j] = x;
 			p[j + 1] = y;
 			j += 2;
@@ -1439,8 +1387,11 @@ struct svgtiny_diagram *svgtiny_create(void)
  * Parse a block of memory into a svgtiny_diagram.
  */
 svgtiny_code svgtiny_parse(struct svgtiny_diagram *diagram,
-			   const char *buffer, size_t size, const char *url,
-			   int viewport_width, int viewport_height)
+			   const char *buffer,
+			   size_t size,
+			   const char *url,
+			   int viewport_width,
+			   int viewport_height)
 {
 	dom_document *document;
 	dom_element *svg;
@@ -1483,18 +1434,18 @@ svgtiny_code svgtiny_parse(struct svgtiny_diagram *diagram,
  */
 void svgtiny_free(struct svgtiny_diagram *svg)
 {
-    unsigned int i;
-    assert(svg);
+	unsigned int i;
+	assert(svg);
 
-    for (i = 0; i != svg->shape_count; i++) {
-        free(svg->shape[i].path);
-        free(svg->shape[i].text);
-        if (svg->shape[i].stroke_dasharray != NULL) {
-            free(svg->shape[i].stroke_dasharray);
-        }
-    }
+	for (i = 0; i != svg->shape_count; i++) {
+		free(svg->shape[i].path);
+		free(svg->shape[i].text);
+		if (svg->shape[i].stroke_dasharray != NULL) {
+			free(svg->shape[i].stroke_dasharray);
+		}
+	}
 
-    free(svg->shape);
+	free(svg->shape);
 
-    free(svg);
+	free(svg);
 }
