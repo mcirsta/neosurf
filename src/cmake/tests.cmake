@@ -174,7 +174,9 @@ include(CTest)
   # QuickJS-ng JavaScript engine test
   add_neosurf_test(test_quickjs
     ${CMAKE_SOURCE_DIR}/src/content/handlers/javascript/quickjs/qjs.c
-    ${CMAKE_BINARY_DIR}/quickjs/console.c
+        ${CMAKE_BINARY_DIR}/quickjs/console.c
+        ${CMAKE_BINARY_DIR}/quickjs/window.c
+
     ${CMAKE_SOURCE_DIR}/src/test/log.c
     ${CMAKE_SOURCE_DIR}/src/test/test_quickjs.c
   )

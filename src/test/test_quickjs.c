@@ -175,6 +175,39 @@ START_TEST(test_quickjs_exec_objects)
 END_TEST
 
 /**
+ * Test console.log via js.h API (integration test).
+ * This verifies the console binding is automatically initialized.
+ */
+START_TEST(test_quickjs_exec_console_log)
+{
+	jsheap *heap = NULL;
+	jsthread *thread = NULL;
+	nserror err;
+	bool result;
+
+	js_initialise();
+
+	err = js_newheap(5, &heap);
+	ck_assert_int_eq(err, NSERROR_OK);
+
+	err = js_newthread(heap, NULL, NULL, &thread);
+	ck_assert_int_eq(err, NSERROR_OK);
+
+	/* Test console.log - should work now that it's auto-initialized */
+	const char *code =
+		"console.log('Integration test: console works via js.h!');";
+	result = js_exec(
+		thread, (const uint8_t *)code, strlen(code), "test_console");
+	ck_assert(result == true);
+
+	js_closethread(thread);
+	js_destroythread(thread);
+	js_destroyheap(heap);
+	js_finalise();
+}
+END_TEST
+
+/**
  * Test that execution on closed thread fails gracefully.
  */
 START_TEST(test_quickjs_exec_closed_thread)
@@ -411,16 +444,88 @@ START_TEST(test_quickjs_console_group)
 }
 END_TEST
 
+/**
+ * Test Window global object basics.
+ */
+START_TEST(test_quickjs_window_global)
+{
+	jsheap *heap = NULL;
+	jsthread *thread = NULL;
+	nserror err;
+	bool result;
+
+	js_initialise();
+
+	err = js_newheap(5, &heap);
+	ck_assert_int_eq(err, NSERROR_OK);
+
+	err = js_newthread(heap, NULL, NULL, &thread);
+	ck_assert_int_eq(err, NSERROR_OK);
+
+	/* Test 1: window global exists */
+	const char *code1 = "typeof window !== 'undefined'";
+	result = js_exec(
+		thread, (const uint8_t *)code1, strlen(code1), "test_window1");
+	ck_assert(result == true);
+
+	/* Test 2: window.self === window (self-reference) */
+	const char *code2 = "window.self === window";
+	result = js_exec(
+		thread, (const uint8_t *)code2, strlen(code2), "test_window2");
+	ck_assert(result == true);
+
+	/* Test 3: window.window === window (self-reference) */
+	const char *code3 = "window.window === window";
+	result = js_exec(
+		thread, (const uint8_t *)code3, strlen(code3), "test_window3");
+	ck_assert(result == true);
+
+	js_closethread(thread);
+	js_destroythread(thread);
+	js_destroyheap(heap);
+	js_finalise();
+}
+END_TEST
 
 /**
- * Create the test suite.
+ * Test Window methods exist (stubs).
  */
-static Suite *quickjs_suite(void)
+START_TEST(test_quickjs_window_methods)
 {
+	jsheap *heap = NULL;
+	jsthread *thread = NULL;
+	nserror err;
+	bool result;
+
+	js_initialise();
+
+	err = js_newheap(5, &heap);
+	ck_assert_int_eq(err, NSERROR_OK);
+
+	err = js_newthread(heap, NULL, NULL, &thread);
+	ck_assert_int_eq(err, NSERROR_OK);
+
+	/* Test that alert is a function (from Window interface) */
+	const char *code1 = "typeof window.alert === 'function'";
+	result = js_exec(
+		thread, (const uint8_t *)code1, strlen(code1), "test_alert");
+	ck_assert(result == true);
+
+	js_closethread(thread);
+	js_destroythread(thread);
+	js_destroyheap(heap);
+	js_finalise();
+}
+END_TEST
+
+Suite *quickjs_suite(void)
+{
+
 	Suite *s;
 	TCase *tc_core;
 	TCase *tc_exec;
 	TCase *tc_console;
+	TCase *tc_window;
 
 	s = suite_create("QuickJS");
 
@@ -437,6 +542,7 @@ static Suite *quickjs_suite(void)
 	tcase_add_test(tc_exec, test_quickjs_exec_simple);
 	tcase_add_test(tc_exec, test_quickjs_exec_syntax_error);
 	tcase_add_test(tc_exec, test_quickjs_exec_objects);
+	tcase_add_test(tc_exec, test_quickjs_exec_console_log);
 	tcase_add_test(tc_exec, test_quickjs_exec_closed_thread);
 	suite_add_tcase(s, tc_exec);
 
@@ -450,8 +556,15 @@ static Suite *quickjs_suite(void)
 	tcase_add_test(tc_console, test_quickjs_console_group);
 	suite_add_tcase(s, tc_console);
 
+	/* Window binding test case */
+	tc_window = tcase_create("Window");
+	tcase_add_test(tc_window, test_quickjs_window_global);
+	tcase_add_test(tc_window, test_quickjs_window_methods);
+	suite_add_tcase(s, tc_window);
+
 	return s;
 }
+
 
 int main(void)
 {
