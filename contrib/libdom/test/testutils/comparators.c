@@ -13,7 +13,8 @@
 #include <dom/dom.h>
 
 /* Compare to integer, return zero if equal */
-int int_comparator(const void* a, const void* b) {
+int int_comparator(const void *a, const void *b)
+{
 	return *((const int *)a) - *((const int *)b);
 }
 
@@ -21,19 +22,18 @@ int int_comparator(const void* a, const void* b) {
  * one is a dom_string, return zero if equal */
 int str_cmp(const void *a, const void *b)
 {
-	const uint8_t *expected = (const uint8_t *) a;
-	dom_string *actual = (dom_string *) b;
+	const uint8_t *expected = (const uint8_t *)a;
+	dom_string *actual = (dom_string *)b;
 	dom_string *exp;
 	dom_exception err;
 	bool ret;
 
-	err = dom_string_create(expected, strlen((const char *)expected),
-			&exp);
+	err = dom_string_create(expected, strlen((const char *)expected), &exp);
 	if (err != DOM_NO_ERR)
 		return false;
 
 	ret = dom_string_isequal(exp, actual);
-	
+
 	dom_string_unref(exp);
 
 	if (ret == true)
@@ -42,7 +42,7 @@ int str_cmp(const void *a, const void *b)
 		return 1;
 }
 
-/* Similar with str_cmp but the first param is a dom_string the second 
+/* Similar with str_cmp but the first param is a dom_string the second
  * param is a char *  */
 int str_cmp_r(const void *a, const void *b)
 {
@@ -52,19 +52,18 @@ int str_cmp_r(const void *a, const void *b)
 /* Similar with str_cmp but ignore the case of letters */
 int str_icmp(const void *a, const void *b)
 {
-	const uint8_t *expected = (const uint8_t *) a;
-	dom_string *actual = (dom_string *) b;
+	const uint8_t *expected = (const uint8_t *)a;
+	dom_string *actual = (dom_string *)b;
 	dom_string *exp;
 	dom_exception err;
 	bool ret;
 
-	err = dom_string_create(expected, strlen((const char *)expected),
-			&exp);
+	err = dom_string_create(expected, strlen((const char *)expected), &exp);
 	if (err != DOM_NO_ERR)
 		return false;
 
 	ret = dom_string_caseless_isequal(exp, actual);
-	
+
 	dom_string_unref(exp);
 
 	if (ret == true)

@@ -37,8 +37,7 @@
 #include "private.h"
 #include "websearch.h"
 
-static nserror
-process_query_section(const char *str, size_t len, char **term)
+static nserror process_query_section(const char *str, size_t len, char **term)
 {
 	if (len < 3) {
 		return NSERROR_BAD_PARAMETER;
@@ -49,13 +48,12 @@ process_query_section(const char *str, size_t len, char **term)
 	return url_unescape(str + 2, len - 2, NULL, term);
 }
 
-static nserror
-searchterm_from_query(struct nsurl *url, char **term)
+static nserror searchterm_from_query(struct nsurl *url, char **term)
 {
 	nserror res;
 	char *querystr;
 	size_t querylen;
-	size_t kvstart;/* key value start */
+	size_t kvstart; /* key value start */
 	size_t kvlen; /* key value end */
 
 	res = nsurl_get(url, NSURL_QUERY, &querystr, &querylen);

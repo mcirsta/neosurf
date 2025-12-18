@@ -105,10 +105,9 @@ static browser_mouse_state nsgtk_cw_gdkbutton_to_nsstate(GdkEventButton *event)
  * \param event The event that occurred.
  * \param g The context pointer passed when the event was registered.
  */
-static gboolean
-nsgtk_cw_button_press_event(GtkWidget *widget,
-			    GdkEventButton *event,
-			    gpointer g)
+static gboolean nsgtk_cw_button_press_event(GtkWidget *widget,
+					    GdkEventButton *event,
+					    gpointer g)
 {
 	struct nsgtk_corewindow *nsgtk_cw = (struct nsgtk_corewindow *)g;
 	struct nsgtk_corewindow_mouse *mouse = &nsgtk_cw->mouse_state;
@@ -139,10 +138,9 @@ nsgtk_cw_button_press_event(GtkWidget *widget,
  * \param event The event that occurred.
  * \param g The context pointer passed when the event was registered.
  */
-static gboolean
-nsgtk_cw_button_release_event(GtkWidget *widget,
-			      GdkEventButton *event,
-			      gpointer g)
+static gboolean nsgtk_cw_button_release_event(GtkWidget *widget,
+					      GdkEventButton *event,
+					      gpointer g)
 {
 	struct nsgtk_corewindow *nsgtk_cw = (struct nsgtk_corewindow *)g;
 	struct nsgtk_corewindow_mouse *mouse = &nsgtk_cw->mouse_state;
@@ -158,15 +156,13 @@ nsgtk_cw_button_release_event(GtkWidget *widget,
 					BROWSER_MOUSE_CLICK_1;
 		} else if (mouse->state & BROWSER_MOUSE_PRESS_2) {
 			mouse->state ^= (BROWSER_MOUSE_PRESS_2 |
-					BROWSER_MOUSE_CLICK_2 |
-					BROWSER_MOUSE_DOUBLE_CLICK);
+					 BROWSER_MOUSE_CLICK_2 |
+					 BROWSER_MOUSE_DOUBLE_CLICK);
 		}
 	} else if (mouse->state & BROWSER_MOUSE_PRESS_1) {
-		mouse->state ^= (BROWSER_MOUSE_PRESS_1 |
-				 BROWSER_MOUSE_CLICK_1);
+		mouse->state ^= (BROWSER_MOUSE_PRESS_1 | BROWSER_MOUSE_CLICK_1);
 	} else if (mouse->state & BROWSER_MOUSE_PRESS_2) {
-		mouse->state ^= (BROWSER_MOUSE_PRESS_2 |
-				 BROWSER_MOUSE_CLICK_2);
+		mouse->state ^= (BROWSER_MOUSE_PRESS_2 | BROWSER_MOUSE_CLICK_2);
 	} else if (mouse->state & BROWSER_MOUSE_HOLDING_1) {
 		mouse->state ^= (BROWSER_MOUSE_HOLDING_1 |
 				 BROWSER_MOUSE_DRAG_ON);
@@ -192,10 +188,9 @@ nsgtk_cw_button_release_event(GtkWidget *widget,
 	}
 
 	/* end drag with modifiers */
-	if (was_drag && (mouse->state & (
-			BROWSER_MOUSE_MOD_1 |
-			BROWSER_MOUSE_MOD_2 |
-			BROWSER_MOUSE_MOD_3))) {
+	if (was_drag &&
+	    (mouse->state & (BROWSER_MOUSE_MOD_1 | BROWSER_MOUSE_MOD_2 |
+			     BROWSER_MOUSE_MOD_3))) {
 		mouse->state = BROWSER_MOUSE_HOVER;
 	}
 
@@ -216,19 +211,16 @@ nsgtk_cw_button_release_event(GtkWidget *widget,
  * \param event The motion event that occurred.
  * \param g The context pointer passed when the event was registered.
  */
-static gboolean
-nsgtk_cw_motion_notify_event(GtkWidget *widget,
-			     GdkEventMotion *event,
-			     gpointer g)
+static gboolean nsgtk_cw_motion_notify_event(GtkWidget *widget,
+					     GdkEventMotion *event,
+					     gpointer g)
 {
 	struct nsgtk_corewindow *nsgtk_cw = (struct nsgtk_corewindow *)g;
 	struct nsgtk_corewindow_mouse *mouse = &nsgtk_cw->mouse_state;
 
 	if (mouse->pressed == false) {
-		nsgtk_cw->mouse(nsgtk_cw,
-				BROWSER_MOUSE_HOVER,
-				event->x,
-				event->y);
+		nsgtk_cw->mouse(
+			nsgtk_cw, BROWSER_MOUSE_HOVER, event->x, event->y);
 		return TRUE;
 	}
 
@@ -290,9 +282,8 @@ nsgtk_cw_motion_notify_event(GtkWidget *widget,
 
 		if (mouse->state &
 		    (BROWSER_MOUSE_HOLDING_1 | BROWSER_MOUSE_HOLDING_2)) {
-			nsgtk_cw->mouse(nsgtk_cw,
-					mouse->state,
-					event->x, event->y);
+			nsgtk_cw->mouse(
+				nsgtk_cw, mouse->state, event->x, event->y);
 		}
 	}
 
@@ -320,7 +311,7 @@ static nserror nsgtk_cw_key(struct nsgtk_corewindow *nsgtk_cw, uint32_t nskey)
 	g_object_get(vscroll, "page-size", &vpage, NULL);
 	g_object_get(hscroll, "page-size", &hpage, NULL);
 
-	switch(nskey) {
+	switch (nskey) {
 	case NS_KEY_TEXT_START:
 		scroll = vscroll;
 		value = nsgtk_adjustment_get_lower(scroll);
@@ -382,7 +373,6 @@ static nserror nsgtk_cw_key(struct nsgtk_corewindow *nsgtk_cw, uint32_t nskey)
 		if (value > nsgtk_adjustment_get_upper(scroll) - vpage)
 			value = nsgtk_adjustment_get_upper(scroll) - vpage;
 		break;
-
 	}
 
 	if (scroll != NULL) {
@@ -484,7 +474,7 @@ nsgtk_cw_input_method_commit(GtkIMContext *ctx, const gchar *str, gpointer g)
 }
 
 
-#if GTK_CHECK_VERSION(3,0,0)
+#if GTK_CHECK_VERSION(3, 0, 0)
 
 
 /**
@@ -531,9 +521,7 @@ nsgtk_cw_draw_event(GtkWidget *widget, cairo_t *cr, gpointer data)
  * \return FALSE indicating no error.
  */
 static gboolean
-nsgtk_cw_draw_event(GtkWidget *widget,
-		    GdkEventExpose *event,
-		    gpointer g)
+nsgtk_cw_draw_event(GtkWidget *widget, GdkEventExpose *event, gpointer g)
 {
 	struct nsgtk_corewindow *nsgtk_cw = (struct nsgtk_corewindow *)g;
 	struct rect clip;
@@ -599,7 +587,8 @@ nsgtk_cw_update_size(struct core_window *cw, int width, int height)
 	struct nsgtk_corewindow *nsgtk_cw = (struct nsgtk_corewindow *)cw;
 
 	gtk_widget_set_size_request(GTK_WIDGET(nsgtk_cw->drawing_area),
-				    width, height);
+				    width,
+				    height);
 
 	return NSERROR_OK;
 }
@@ -611,8 +600,7 @@ nsgtk_cw_update_size(struct core_window *cw, int width, int height)
  * \param cw core window handle.
  * \param r rectangle that needs scrolling.
  */
-static nserror
-nsgtk_cw_set_scroll(struct core_window *cw, int x, int y)
+static nserror nsgtk_cw_set_scroll(struct core_window *cw, int x, int y)
 {
 	struct nsgtk_corewindow *nsgtk_cw = (struct nsgtk_corewindow *)cw;
 
@@ -639,8 +627,7 @@ nsgtk_cw_set_scroll(struct core_window *cw, int x, int y)
  * \param cw core window handle.
  * \param r rectangle that needs scrolling.
  */
-static nserror
-nsgtk_cw_get_scroll(const struct core_window *cw, int *x, int *y)
+static nserror nsgtk_cw_get_scroll(const struct core_window *cw, int *x, int *y)
 {
 	struct nsgtk_corewindow *nsgtk_cw = (struct nsgtk_corewindow *)cw;
 
@@ -671,9 +658,9 @@ nsgtk_cw_get_scroll(const struct core_window *cw, int *x, int *y)
  * \param[out] width to be set to viewport width in px
  * \param[out] height to be set to viewport height in px
  */
-static nserror
-nsgtk_cw_get_window_dimensions(const struct core_window *cw,
-		int *width, int *height)
+static nserror nsgtk_cw_get_window_dimensions(const struct core_window *cw,
+					      int *width,
+					      int *height)
 {
 	struct nsgtk_corewindow *nsgtk_cw = (struct nsgtk_corewindow *)cw;
 	if (nsgtk_cw->scrolled != NULL) {
@@ -724,8 +711,7 @@ static struct core_window_table nsgtk_cw_cb_table = {
 	.set_scroll = nsgtk_cw_set_scroll,
 	.get_scroll = nsgtk_cw_get_scroll,
 	.get_dimensions = nsgtk_cw_get_window_dimensions,
-	.drag_status = nsgtk_cw_drag_status
-};
+	.drag_status = nsgtk_cw_drag_status};
 
 struct core_window_table *nsgtk_core_window_table = &nsgtk_cw_cb_table;
 
@@ -736,8 +722,10 @@ nserror nsgtk_corewindow_init(struct nsgtk_corewindow *nsgtk_cw)
 
 	/* input method setup */
 	nsgtk_cw->input_method = gtk_im_multicontext_new();
-	gtk_im_context_set_client_window(nsgtk_cw->input_method,
-		gtk_widget_get_parent_window(GTK_WIDGET(nsgtk_cw->drawing_area)));
+	gtk_im_context_set_client_window(
+		nsgtk_cw->input_method,
+		gtk_widget_get_parent_window(
+			GTK_WIDGET(nsgtk_cw->drawing_area)));
 	gtk_im_context_set_use_preedit(nsgtk_cw->input_method, FALSE);
 
 	g_signal_connect(G_OBJECT(nsgtk_cw->input_method),
@@ -774,10 +762,13 @@ nserror nsgtk_corewindow_init(struct nsgtk_corewindow *nsgtk_cw)
 			 G_CALLBACK(nsgtk_cw_keyrelease_event),
 			 nsgtk_cw);
 
-	nsgtk_widget_override_background_color(
-		GTK_WIDGET(nsgtk_cw->drawing_area),
-		GTK_STATE_FLAG_NORMAL,
-		0, 0xffff, 0xffff, 0xffff);
+	nsgtk_widget_override_background_color(GTK_WIDGET(
+						       nsgtk_cw->drawing_area),
+					       GTK_STATE_FLAG_NORMAL,
+					       0,
+					       0xffff,
+					       0xffff,
+					       0xffff);
 
 	return NSERROR_OK;
 }

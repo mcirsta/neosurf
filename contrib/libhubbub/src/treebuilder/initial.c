@@ -16,7 +16,7 @@
 #include "utils/string.h"
 
 
-#define S(s)	{ s, sizeof s - 1 }
+#define S(s) {s, sizeof s - 1}
 
 struct {
 	const char *name;
@@ -88,8 +88,8 @@ struct {
  * \param b	String to compare
  * \param b_len	Length of second string
  */
-static bool starts_with(const uint8_t *a, size_t a_len, const uint8_t *b,
-		size_t b_len)
+static bool
+starts_with(const uint8_t *a, size_t a_len, const uint8_t *b, size_t b_len)
 {
 	if (a_len < b_len)
 		return false;
@@ -106,8 +106,8 @@ static bool starts_with(const uint8_t *a, size_t a_len, const uint8_t *b,
  * \param cdoc         The doctype to examine
  * \return True to trigger quirks, false otherwise
  */
-static bool lookup_full_quirks(hubbub_treebuilder *treebuilder,
-		const hubbub_doctype *cdoc)
+static bool
+lookup_full_quirks(hubbub_treebuilder *treebuilder, const hubbub_doctype *cdoc)
 {
 	size_t i;
 
@@ -122,7 +122,7 @@ static bool lookup_full_quirks(hubbub_treebuilder *treebuilder,
 
 	UNUSED(treebuilder);
 
-#define S(s)	(uint8_t *) s, sizeof s - 1
+#define S(s) (uint8_t *)s, sizeof s - 1
 
 	/* Check the name is "HTML" (case-insensitively) */
 	if (!hubbub_string_match_ci(name, name_len, S("HTML")))
@@ -132,31 +132,37 @@ static bool lookup_full_quirks(hubbub_treebuilder *treebuilder,
 	if (cdoc->public_missing)
 		return false;
 
-	for (i = 0; i < sizeof public_doctypes / sizeof public_doctypes[0]; i++)
-	{
-		if (starts_with(public_id, public_id_len,
-				(uint8_t *) public_doctypes[i].name,
+	for (i = 0; i < sizeof public_doctypes / sizeof public_doctypes[0];
+	     i++) {
+		if (starts_with(public_id,
+				public_id_len,
+				(uint8_t *)public_doctypes[i].name,
 				public_doctypes[i].len)) {
 			return true;
 		}
 	}
 
-	if (hubbub_string_match_ci(public_id, public_id_len,
-				S("-//W3O//DTD W3 HTML Strict 3.0//EN//")) ||
-			hubbub_string_match_ci(public_id, public_id_len,
-				S("-/W3C/DTD HTML 4.0 Transitional/EN")) ||
-			hubbub_string_match_ci(public_id, public_id_len,
-				S("HTML")) ||
-			hubbub_string_match_ci(system_id, system_id_len,
-				S("http://www.ibm.com/data/dtd/v11/ibmxhtml1-transitional.dtd"))) {
+	if (hubbub_string_match_ci(public_id,
+				   public_id_len,
+				   S("-//W3O//DTD W3 HTML Strict 3.0//EN//")) ||
+	    hubbub_string_match_ci(public_id,
+				   public_id_len,
+				   S("-/W3C/DTD HTML 4.0 Transitional/EN")) ||
+	    hubbub_string_match_ci(public_id, public_id_len, S("HTML")) ||
+	    hubbub_string_match_ci(
+		    system_id,
+		    system_id_len,
+		    S("http://www.ibm.com/data/dtd/v11/ibmxhtml1-transitional.dtd"))) {
 		return true;
 	}
 
 	if (cdoc->system_missing == true &&
-			(starts_with(public_id, public_id_len,
-				S("-//W3C//DTD HTML 4.01 Frameset//")) ||
-			starts_with(public_id, public_id_len,
-				S("-//W3C//DTD HTML 4.01 Transitional//")))) {
+	    (starts_with(public_id,
+			 public_id_len,
+			 S("-//W3C//DTD HTML 4.01 Frameset//")) ||
+	     starts_with(public_id,
+			 public_id_len,
+			 S("-//W3C//DTD HTML 4.01 Transitional//")))) {
 		return true;
 	}
 
@@ -174,27 +180,31 @@ static bool lookup_full_quirks(hubbub_treebuilder *treebuilder,
  * \return True to trigger quirks, false otherwise
  */
 static bool lookup_limited_quirks(hubbub_treebuilder *treebuilder,
-		const hubbub_doctype *cdoc)
+				  const hubbub_doctype *cdoc)
 {
 	const uint8_t *public_id = cdoc->public_id.ptr;
 	size_t public_id_len = cdoc->public_id.len;
 
 	UNUSED(treebuilder);
 
-#define S(s)	(uint8_t *) s, sizeof s - 1
+#define S(s) (uint8_t *)s, sizeof s - 1
 
-	if (starts_with(public_id, public_id_len,
-				S("-//W3C//DTD XHTML 1.0 Frameset//")) ||
-			starts_with(public_id, public_id_len,
-				S("-//W3C//DTD XHTML 1.0 Transitional//"))) {
+	if (starts_with(public_id,
+			public_id_len,
+			S("-//W3C//DTD XHTML 1.0 Frameset//")) ||
+	    starts_with(public_id,
+			public_id_len,
+			S("-//W3C//DTD XHTML 1.0 Transitional//"))) {
 		return true;
 	}
 
 	if (cdoc->system_missing == false &&
-			(starts_with(public_id, public_id_len,
-				S("-//W3C//DTD HTML 4.01 Frameset//")) ||
-			starts_with(public_id, public_id_len,
-				S("-//W3C//DTD HTML 4.01 Transitional//")))) {
+	    (starts_with(public_id,
+			 public_id_len,
+			 S("-//W3C//DTD HTML 4.01 Frameset//")) ||
+	     starts_with(public_id,
+			 public_id_len,
+			 S("-//W3C//DTD HTML 4.01 Transitional//")))) {
 		return true;
 	}
 
@@ -211,82 +221,82 @@ static bool lookup_limited_quirks(hubbub_treebuilder *treebuilder,
  * \param token        The token to handle
  * \return True to reprocess token, false otherwise
  */
-hubbub_error handle_initial(hubbub_treebuilder *treebuilder, 
-		const hubbub_token *token)
+hubbub_error
+handle_initial(hubbub_treebuilder *treebuilder, const hubbub_token *token)
 {
 	hubbub_error err = HUBBUB_OK;
 
 	switch (token->type) {
 	case HUBBUB_TOKEN_CHARACTER:
-		err = process_characters_expect_whitespace(treebuilder, token,
-				false);
+		err = process_characters_expect_whitespace(treebuilder,
+							   token,
+							   false);
 		if (err == HUBBUB_REPROCESS) {
 			/** \todo parse error */
 
 			treebuilder->tree_handler->set_quirks_mode(
-					treebuilder->tree_handler->ctx,
-					HUBBUB_QUIRKS_MODE_FULL);
+				treebuilder->tree_handler->ctx,
+				HUBBUB_QUIRKS_MODE_FULL);
 			treebuilder->context.mode = BEFORE_HTML;
 		}
 		break;
 	case HUBBUB_TOKEN_COMMENT:
-		err = process_comment_append(treebuilder, token,
-				treebuilder->context.document);
+		err = process_comment_append(treebuilder,
+					     token,
+					     treebuilder->context.document);
 		break;
-	case HUBBUB_TOKEN_DOCTYPE:
-	{
+	case HUBBUB_TOKEN_DOCTYPE: {
 		void *doctype, *appended;
 		const hubbub_doctype *cdoc;
 
 		/** \todo parse error */
 
 		err = treebuilder->tree_handler->create_doctype(
-				treebuilder->tree_handler->ctx,
-				&token->data.doctype,
-				&doctype);
+			treebuilder->tree_handler->ctx,
+			&token->data.doctype,
+			&doctype);
 		if (err != HUBBUB_OK)
 			return err;
 
 		/* Append to Document node */
 		err = treebuilder->tree_handler->append_child(
-				treebuilder->tree_handler->ctx,
-				treebuilder->context.document,
-				doctype, &appended);
+			treebuilder->tree_handler->ctx,
+			treebuilder->context.document,
+			doctype,
+			&appended);
 
 		treebuilder->tree_handler->unref_node(
-				treebuilder->tree_handler->ctx,
-				doctype);
+			treebuilder->tree_handler->ctx, doctype);
 
 		if (err != HUBBUB_OK)
 			return err;
 
 		treebuilder->tree_handler->unref_node(
-				treebuilder->tree_handler->ctx, appended);
+			treebuilder->tree_handler->ctx, appended);
 
 		cdoc = &token->data.doctype;
 
 		/* Work out whether we need quirks mode or not */
 		if (cdoc->force_quirks == true ||
-				lookup_full_quirks(treebuilder, cdoc)) {
+		    lookup_full_quirks(treebuilder, cdoc)) {
 			treebuilder->tree_handler->set_quirks_mode(
-					treebuilder->tree_handler->ctx,
-					HUBBUB_QUIRKS_MODE_FULL);
+				treebuilder->tree_handler->ctx,
+				HUBBUB_QUIRKS_MODE_FULL);
 		} else if (lookup_limited_quirks(treebuilder, cdoc)) {
 			treebuilder->tree_handler->set_quirks_mode(
-					treebuilder->tree_handler->ctx,
-					HUBBUB_QUIRKS_MODE_LIMITED);
+				treebuilder->tree_handler->ctx,
+				HUBBUB_QUIRKS_MODE_LIMITED);
 		}
 
 		treebuilder->context.mode = BEFORE_HTML;
-	}
-		break;
+	} break;
 	case HUBBUB_TOKEN_START_TAG:
 	case HUBBUB_TOKEN_END_TAG:
 	case HUBBUB_TOKEN_EOF:
 		/** \todo parse error */
 		treebuilder->tree_handler->set_quirks_mode(
-				treebuilder->tree_handler->ctx,
-				HUBBUB_QUIRKS_MODE_FULL);
+			treebuilder->tree_handler->ctx,
+			HUBBUB_QUIRKS_MODE_FULL);
 		err = HUBBUB_REPROCESS;
 		break;
 	}
@@ -297,4 +307,3 @@ hubbub_error handle_initial(hubbub_treebuilder *treebuilder,
 
 	return err;
 }
-

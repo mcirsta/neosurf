@@ -22,11 +22,8 @@
 #include "utils/utils.h"
 
 static const struct dom_element_protected_vtable _protect_vtable = {
-	{
-		DOM_NODE_PROTECT_VTABLE_HTML_TABLE_SECTION_ELEMENT
-	},
-	DOM_HTML_TABLE_SECTION_ELEMENT_PROTECT_VTABLE
-};
+	{DOM_NODE_PROTECT_VTABLE_HTML_TABLE_SECTION_ELEMENT},
+	DOM_HTML_TABLE_SECTION_ELEMENT_PROTECT_VTABLE};
 
 /**
  * Create a dom_html_table_section_element object
@@ -36,8 +33,8 @@ static const struct dom_element_protected_vtable _protect_vtable = {
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception _dom_html_table_section_element_create(
-		struct dom_html_element_create_params *params,
-		struct dom_html_table_section_element **ele)
+	struct dom_html_element_create_params *params,
+	struct dom_html_table_section_element **ele)
 {
 	struct dom_node_internal *node;
 
@@ -46,7 +43,7 @@ dom_exception _dom_html_table_section_element_create(
 		return DOM_NO_MEM_ERR;
 
 	/* Set up vtables */
-	node = (struct dom_node_internal *) *ele;
+	node = (struct dom_node_internal *)*ele;
 	node->base.vtable = &_dom_html_element_vtable;
 	node->vtable = &_protect_vtable;
 
@@ -61,8 +58,8 @@ dom_exception _dom_html_table_section_element_create(
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception _dom_html_table_section_element_initialise(
-		struct dom_html_element_create_params *params,
-		struct dom_html_table_section_element *ele)
+	struct dom_html_element_create_params *params,
+	struct dom_html_table_section_element *ele)
 {
 	return _dom_html_element_initialise(params, &ele->base);
 }
@@ -72,7 +69,8 @@ dom_exception _dom_html_table_section_element_initialise(
  *
  * \table_section ele  The dom_html_table_section_element object
  */
-void _dom_html_table_section_element_finalise(struct dom_html_table_section_element *ele)
+void _dom_html_table_section_element_finalise(
+	struct dom_html_table_section_element *ele)
 {
 	_dom_html_element_finalise(&ele->base);
 }
@@ -82,7 +80,8 @@ void _dom_html_table_section_element_finalise(struct dom_html_table_section_elem
  *
  * \table_section ele  The dom_html_table_section_element object
  */
-void _dom_html_table_section_element_destroy(struct dom_html_table_section_element *ele)
+void _dom_html_table_section_element_destroy(
+	struct dom_html_table_section_element *ele)
 {
 	_dom_html_table_section_element_finalise(ele);
 	free(ele);
@@ -93,9 +92,11 @@ void _dom_html_table_section_element_destroy(struct dom_html_table_section_eleme
 
 /* The virtual function used to parse attribute value, see src/core/element.c
  * for detail */
-dom_exception _dom_html_table_section_element_parse_attribute(dom_element *ele,
-		dom_string *name, dom_string *value,
-		dom_string **parsed)
+dom_exception
+_dom_html_table_section_element_parse_attribute(dom_element *ele,
+						dom_string *name,
+						dom_string *value,
+						dom_string **parsed)
 {
 	UNUSED(ele);
 	UNUSED(name);
@@ -109,12 +110,13 @@ dom_exception _dom_html_table_section_element_parse_attribute(dom_element *ele,
 /* The virtual destroy function, see src/core/node.c for detail */
 void _dom_virtual_html_table_section_element_destroy(dom_node_internal *node)
 {
-	_dom_html_table_section_element_destroy((struct dom_html_table_section_element *) node);
+	_dom_html_table_section_element_destroy(
+		(struct dom_html_table_section_element *)node);
 }
 
 /* The virtual copy function, see src/core/node.c for detail */
-dom_exception _dom_html_table_section_element_copy(
-		dom_node_internal *old, dom_node_internal **copy)
+dom_exception _dom_html_table_section_element_copy(dom_node_internal *old,
+						   dom_node_internal **copy)
 {
 	dom_html_table_section_element *new_node;
 	dom_exception err;
@@ -129,14 +131,14 @@ dom_exception _dom_html_table_section_element_copy(
 		return err;
 	}
 
-	*copy = (dom_node_internal *) new_node;
+	*copy = (dom_node_internal *)new_node;
 
 	return DOM_NO_ERR;
 }
 
 dom_exception _dom_html_table_section_element_copy_internal(
-		dom_html_table_section_element *old,
-		dom_html_table_section_element *new)
+	dom_html_table_section_element *old,
+	dom_html_table_section_element *new)
 {
 	dom_exception err;
 
@@ -151,40 +153,40 @@ dom_exception _dom_html_table_section_element_copy_internal(
 /*-----------------------------------------------------------------------*/
 /* API functions */
 
-#define SIMPLE_GET(attr)						\
-	dom_exception dom_html_table_section_element_get_##attr(		\
-			dom_html_table_section_element *element,			\
-			dom_string **attr)					\
-{								\
-	dom_exception ret;					\
-	dom_string *_memo_##attr;				\
-	\
-	_memo_##attr =						\
-	((struct dom_html_document *)			\
-	 ((struct dom_node_internal *)element)->owner)-> \
-	memoised[hds_##attr];				\
-	\
-	ret = dom_element_get_attribute(element, _memo_##attr, attr); \
-	\
-	return ret;						\
-}
-#define SIMPLE_SET(attr)						\
-	dom_exception dom_html_table_section_element_set_##attr(			\
-			dom_html_table_section_element *element,			\
-			dom_string *attr)					\
-{								\
-	dom_exception ret;					\
-	dom_string *_memo_##attr;				\
-	\
-	_memo_##attr =						\
-	((struct dom_html_document *)			\
-	 ((struct dom_node_internal *)element)->owner)-> \
-	memoised[hds_##attr];				\
-	\
-	ret = dom_element_set_attribute(element, _memo_##attr, attr); \
-	\
-	return ret;						\
-}
+#define SIMPLE_GET(attr)                                                       \
+	dom_exception dom_html_table_section_element_get_##attr(               \
+		dom_html_table_section_element *element, dom_string **attr)    \
+	{                                                                      \
+		dom_exception ret;                                             \
+		dom_string *_memo_##attr;                                      \
+                                                                               \
+		_memo_##attr =                                                 \
+			((struct dom_html_document                             \
+				  *)((struct dom_node_internal *)element)      \
+				 ->owner)                                      \
+				->memoised[hds_##attr];                        \
+                                                                               \
+		ret = dom_element_get_attribute(element, _memo_##attr, attr);  \
+                                                                               \
+		return ret;                                                    \
+	}
+#define SIMPLE_SET(attr)                                                       \
+	dom_exception dom_html_table_section_element_set_##attr(               \
+		dom_html_table_section_element *element, dom_string *attr)     \
+	{                                                                      \
+		dom_exception ret;                                             \
+		dom_string *_memo_##attr;                                      \
+                                                                               \
+		_memo_##attr =                                                 \
+			((struct dom_html_document                             \
+				  *)((struct dom_node_internal *)element)      \
+				 ->owner)                                      \
+				->memoised[hds_##attr];                        \
+                                                                               \
+		ret = dom_element_set_attribute(element, _memo_##attr, attr);  \
+                                                                               \
+		return ret;                                                    \
+	}
 
 #define SIMPLE_GET_SET(attr) SIMPLE_GET(attr) SIMPLE_SET(attr)
 SIMPLE_GET_SET(align);
@@ -196,9 +198,9 @@ SIMPLE_GET_SET(v_align);
 static bool table_section_callback(struct dom_node_internal *node, void *ctx)
 {
 	dom_html_document *doc = ctx;
-	if(node->type == DOM_ELEMENT_NODE &&
-			dom_string_caseless_isequal(node->name,
-				doc->elements[DOM_HTML_ELEMENT_TYPE_TR])) {
+	if (node->type == DOM_ELEMENT_NODE &&
+	    dom_string_caseless_isequal(
+		    node->name, doc->elements[DOM_HTML_ELEMENT_TYPE_TR])) {
 		return true;
 	}
 	return false;
@@ -211,13 +213,17 @@ static bool table_section_callback(struct dom_node_internal *node, void *ctx)
  * \param rows		The Status
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception dom_html_table_section_element_get_rows(
-		dom_html_table_section_element *element,
-		dom_html_collection **rows)
+dom_exception
+dom_html_table_section_element_get_rows(dom_html_table_section_element *element,
+					dom_html_collection **rows)
 {
-	dom_html_document *doc = (dom_html_document *) ((dom_node_internal *) element)->owner;
-	return _dom_html_collection_create(doc, (dom_node_internal *)element, 
-			table_section_callback, (void *)doc, rows);
+	dom_html_document *doc =
+		(dom_html_document *)((dom_node_internal *)element)->owner;
+	return _dom_html_collection_create(doc,
+					   (dom_node_internal *)element,
+					   table_section_callback,
+					   (void *)doc,
+					   rows);
 }
 
 /**
@@ -228,13 +234,16 @@ dom_exception dom_html_table_section_element_get_rows(
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception dom_html_table_section_element_insert_row(
-		dom_html_table_section_element *element,
-		int32_t index, dom_html_element **new_row)
+	dom_html_table_section_element *element,
+	int32_t index,
+	dom_html_element **new_row)
 {
-	dom_html_document *doc = (dom_html_document *) ((dom_node_internal *) element)->owner;
-	dom_html_collection *rows; 	/*< The collection of rows in input table_section_element*/
-	uint32_t len; 			/*< The size of the row collection */
-	dom_exception exp;		/*< Variable for getting the exceptions*/
+	dom_html_document *doc =
+		(dom_html_document *)((dom_node_internal *)element)->owner;
+	dom_html_collection *rows; /*< The collection of rows in input
+				      table_section_element*/
+	uint32_t len; /*< The size of the row collection */
+	dom_exception exp; /*< Variable for getting the exceptions*/
 	dom_node *new_node;
 
 	struct dom_html_element_create_params params = {
@@ -242,16 +251,15 @@ dom_exception dom_html_table_section_element_insert_row(
 		.doc = doc,
 		.name = doc->elements[DOM_HTML_ELEMENT_TYPE_TR],
 		.namespace = ((dom_node_internal *)element)->namespace,
-		.prefix = ((dom_node_internal *)element)->prefix
-	};
+		.prefix = ((dom_node_internal *)element)->prefix};
 
-	exp = _dom_html_table_row_element_create(&params,
-			(dom_html_table_row_element **)(void *) &new_node);
-	if(exp != DOM_NO_ERR)
+	exp = _dom_html_table_row_element_create(
+		&params, (dom_html_table_row_element **)(void *)&new_node);
+	if (exp != DOM_NO_ERR)
 		return exp;
-	
+
 	exp = dom_html_table_section_element_get_rows(element, &rows);
-	if(exp != DOM_NO_ERR) {
+	if (exp != DOM_NO_ERR) {
 		dom_node_unref(new_node);
 		return exp;
 	}
@@ -262,7 +270,7 @@ dom_exception dom_html_table_section_element_insert_row(
 		dom_html_collection_unref(rows);
 		return exp;
 	}
-	
+
 	if (index < -1 || index > (int32_t)len) {
 		/* Check for index validity */
 		dom_html_collection_unref(rows);
@@ -277,8 +285,7 @@ dom_exception dom_html_table_section_element_insert_row(
 		dom_html_collection_item(rows, index, &node);
 		dom_html_collection_unref(rows);
 
-		exp = dom_node_insert_before(element,
-				new_node, node, new_row);
+		exp = dom_node_insert_before(element, new_node, node, new_row);
 		dom_node_unref(node);
 	}
 
@@ -295,12 +302,15 @@ dom_exception dom_html_table_section_element_insert_row(
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception dom_html_table_section_element_delete_row(
-		dom_html_table_section_element *element,
-		int32_t index) {
-	dom_node *node, *old_node;	/*< The node at the (index)th position*/
-	dom_html_collection *rows; 	/*< The collection of rows in input table_section_element*/
-	uint32_t len; 			/*< The size of the row collection */
-	dom_exception exp;		/*< Temporary variable to store & check the exceptions*/
+	dom_html_table_section_element *element,
+	int32_t index)
+{
+	dom_node *node, *old_node; /*< The node at the (index)th position*/
+	dom_html_collection *rows; /*< The collection of rows in input
+				      table_section_element*/
+	uint32_t len; /*< The size of the row collection */
+	dom_exception
+		exp; /*< Temporary variable to store & check the exceptions*/
 
 	exp = dom_html_table_section_element_get_rows(element, &rows);
 	if (exp != DOM_NO_ERR) {
@@ -313,11 +323,11 @@ dom_exception dom_html_table_section_element_delete_row(
 		return exp;
 	}
 
-	if (index < -1 || index >= (int32_t) len || (index == -1 && len == 0)) {
+	if (index < -1 || index >= (int32_t)len || (index == -1 && len == 0)) {
 		/* Check for index validity */
 		dom_html_collection_unref(rows);
 		return DOM_INDEX_SIZE_ERR;
-	} 
+	}
 
 	if (index == -1)
 		index = len - 1;
@@ -337,4 +347,3 @@ dom_exception dom_html_table_section_element_delete_row(
 
 	return exp;
 }
-

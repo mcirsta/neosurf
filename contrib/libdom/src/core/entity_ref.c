@@ -17,19 +17,14 @@
  * A DOM entity reference
  */
 struct dom_entity_reference {
-	dom_node_internal base;		/**< Base node */
+	dom_node_internal base; /**< Base node */
 };
 
-static const struct dom_node_vtable er_vtable = {
-	{
-		DOM_NODE_EVENT_TARGET_VTABLE
-	},
-	DOM_NODE_VTABLE
-};
+static const struct dom_node_vtable er_vtable = {{DOM_NODE_EVENT_TARGET_VTABLE},
+						 DOM_NODE_VTABLE};
 
 static const struct dom_node_protect_vtable er_protect_vtable = {
-	DOM_ER_PROTECT_VTABLE
-};
+	DOM_ER_PROTECT_VTABLE};
 
 /**
  * Create an entity reference
@@ -46,8 +41,9 @@ static const struct dom_node_protect_vtable er_protect_vtable = {
  * The returned node will already be referenced.
  */
 dom_exception _dom_entity_reference_create(dom_document *doc,
-		dom_string *name, dom_string *value,
-		dom_entity_reference **result)
+					   dom_string *name,
+					   dom_string *value,
+					   dom_entity_reference **result)
 {
 	dom_entity_reference *e;
 	dom_exception err;
@@ -61,8 +57,13 @@ dom_exception _dom_entity_reference_create(dom_document *doc,
 	e->base.vtable = &er_protect_vtable;
 
 	/* And initialise the node */
-	err = _dom_entity_reference_initialise(&e->base, doc, 
-			DOM_ENTITY_REFERENCE_NODE, name, value, NULL, NULL);
+	err = _dom_entity_reference_initialise(&e->base,
+					       doc,
+					       DOM_ENTITY_REFERENCE_NODE,
+					       name,
+					       value,
+					       NULL,
+					       NULL);
 	if (err != DOM_NO_ERR) {
 		free(e);
 		return err;
@@ -100,8 +101,9 @@ void _dom_entity_reference_destroy(dom_entity_reference *entity)
  * the responsibility of the caller to unrer the string once it has
  * finished with it.
  */
-dom_exception _dom_entity_reference_get_textual_representation(
-		dom_entity_reference *entity, dom_string **result)
+dom_exception
+_dom_entity_reference_get_textual_representation(dom_entity_reference *entity,
+						 dom_string **result)
 {
 	UNUSED(entity);
 	UNUSED(result);
@@ -116,7 +118,7 @@ dom_exception _dom_entity_reference_get_textual_representation(
 /* The virtual destroy function of this class */
 void _dom_er_destroy(dom_node_internal *node)
 {
-	_dom_entity_reference_destroy((dom_entity_reference *) node);
+	_dom_entity_reference_destroy((dom_entity_reference *)node);
 }
 
 /* The copy constructor of this class */
@@ -135,8 +137,7 @@ dom_exception _dom_er_copy(dom_node_internal *old, dom_node_internal **copy)
 		return err;
 	}
 
-	*copy = (dom_node_internal *) new_er;
+	*copy = (dom_node_internal *)new_er;
 
 	return DOM_NO_ERR;
 }
-

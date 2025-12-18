@@ -51,15 +51,13 @@
 char **respaths;
 struct nsvi_state *global_state;
 
-static void
-fatal(const char *why)
+static void fatal(const char *why)
 {
 	fprintf(stderr, "Fatal: %s\n", why);
 	exit(1);
 }
 
-static nserror
-nsvi_schedule_remove(void (*callback)(void *p), void *p)
+static nserror nsvi_schedule_remove(void (*callback)(void *p), void *p)
 {
 	struct nsvi_callback **prev = &global_state->callbacks;
 	struct nsvi_callback *cb = global_state->callbacks;
@@ -79,8 +77,7 @@ nsvi_schedule_remove(void (*callback)(void *p), void *p)
 	return r;
 }
 
-static nserror
-nsvi_misc_schedule(int ms, void (*callback)(void *p), void *p)
+static nserror nsvi_misc_schedule(int ms, void (*callback)(void *p), void *p)
 {
 	nserror r = nsvi_schedule_remove(callback, p);
 	if (ms < 0) {
@@ -104,19 +101,17 @@ static struct gui_misc_table vi_misc_table = {
 	.schedule = nsvi_misc_schedule,
 };
 
-static void
-wl_data_source_target(void *data,
-	struct wl_data_source *wl_data_source,
-	const char *mime_type)
+static void wl_data_source_target(void *data,
+				  struct wl_data_source *wl_data_source,
+				  const char *mime_type)
 {
 	// Not used
 }
 
-static void
-wl_data_source_send(void *data,
-	struct wl_data_source *wl_data_source,
-	const char *mime_type,
-	int32_t fd)
+static void wl_data_source_send(void *data,
+				struct wl_data_source *wl_data_source,
+				const char *mime_type,
+				int32_t fd)
 {
 	// TODO: Send asyncronously
 	struct nsvi_state *state = data;
@@ -134,7 +129,7 @@ wl_data_source_cancelled(void *data, struct wl_data_source *wl_data_source)
 
 static void
 wl_data_source_dnd_drop_performed(void *data,
-	struct wl_data_source *wl_data_source)
+				  struct wl_data_source *wl_data_source)
 {
 	// Not used
 }
@@ -145,10 +140,9 @@ wl_data_source_dnd_finished(void *data, struct wl_data_source *wl_data_source)
 	// Not used
 }
 
-static void
-wl_data_source_action(void *data,
-	struct wl_data_source *wl_data_source,
-	uint32_t dnd_action)
+static void wl_data_source_action(void *data,
+				  struct wl_data_source *wl_data_source,
+				  uint32_t dnd_action)
 {
 	// Not used
 }
@@ -162,19 +156,23 @@ static const struct wl_data_source_listener wl_data_source_listener = {
 	.action = wl_data_source_action,
 };
 
-void
-nsvi_set_clipboard(struct nsvi_state *state, const char *type,
-		const char *data, size_t len)
+void nsvi_set_clipboard(struct nsvi_state *state,
+			const char *type,
+			const char *data,
+			size_t len)
 {
 	struct nsvi_window *win = state->keyboard_focus;
 	if (!win) {
-		NSLOG(neosurf, WARNING, "Cannot set clipboard without window focus");
+		NSLOG(neosurf,
+		      WARNING,
+		      "Cannot set clipboard without window focus");
 		return;
 	}
 	if (state->wl_data_source) {
 		wl_data_source_destroy(state->wl_data_source);
 	}
-	struct wl_data_source *source = wl_data_device_manager_create_data_source(
+	struct wl_data_source *source =
+		wl_data_device_manager_create_data_source(
 			state->wl_data_device_manager);
 	wl_data_source_add_listener(source, &wl_data_source_listener, state);
 	wl_data_source_offer(source, type);
@@ -188,11 +186,11 @@ nsvi_set_clipboard(struct nsvi_state *state, const char *type,
 	state->cliplen = len;
 	state->wl_data_source = source;
 	wl_data_device_set_selection(state->wl_data_device,
-			source, win->keyboard_enter_serial);
+				     source,
+				     win->keyboard_enter_serial);
 }
 
-static void
-nsvi_clipboard_get(char **buffer, size_t *length)
+static void nsvi_clipboard_get(char **buffer, size_t *length)
 {
 	struct wl_data_offer *offer = global_state->selected_offer;
 	if (!offer) {
@@ -228,9 +226,10 @@ nsvi_clipboard_get(char **buffer, size_t *length)
 	*length = dataln;
 }
 
-static void
-nsvi_clipboard_set(const char *buffer, size_t length,
-	nsclipboard_styles styles[], int n_styles)
+static void nsvi_clipboard_set(const char *buffer,
+			       size_t length,
+			       nsclipboard_styles styles[],
+			       int n_styles)
 {
 	// TODO: Support rich text copy?
 	nsvi_set_clipboard(global_state, "text/plain", buffer, length);
@@ -251,22 +250,25 @@ static const struct xdg_wm_base_listener xdg_wm_base_listener = {
 	.ping = xdg_wm_base_ping,
 };
 
-static void
-wl_pointer_enter(void *data, struct wl_pointer *wl_pointer,
-		uint32_t serial, struct wl_surface *surface,
-		wl_fixed_t surface_x, wl_fixed_t surface_y)
+static void wl_pointer_enter(void *data,
+			     struct wl_pointer *wl_pointer,
+			     uint32_t serial,
+			     struct wl_surface *surface,
+			     wl_fixed_t surface_x,
+			     wl_fixed_t surface_y)
 {
 	struct nsvi_state *state = data;
 	state->pointer_event.event_mask |= POINTER_EVENT_ENTER;
 	state->pointer_event.serial = serial;
 	state->pointer_event.surface = surface;
 	state->pointer_event.surface_x = surface_x,
-		state->pointer_event.surface_y = surface_y;
+	state->pointer_event.surface_y = surface_y;
 }
 
-static void
-wl_pointer_leave(void *data, struct wl_pointer *wl_pointer,
-		uint32_t serial, struct wl_surface *surface)
+static void wl_pointer_leave(void *data,
+			     struct wl_pointer *wl_pointer,
+			     uint32_t serial,
+			     struct wl_surface *surface)
 {
 	struct nsvi_state *state = data;
 	state->pointer_event.serial = serial;
@@ -274,32 +276,39 @@ wl_pointer_leave(void *data, struct wl_pointer *wl_pointer,
 	state->pointer_event.event_mask |= POINTER_EVENT_LEAVE;
 }
 
-static void
-wl_pointer_motion(void *data, struct wl_pointer *wl_pointer, uint32_t time,
-		wl_fixed_t surface_x, wl_fixed_t surface_y)
+static void wl_pointer_motion(void *data,
+			      struct wl_pointer *wl_pointer,
+			      uint32_t time,
+			      wl_fixed_t surface_x,
+			      wl_fixed_t surface_y)
 {
 	struct nsvi_state *state = data;
 	state->pointer_event.event_mask |= POINTER_EVENT_MOTION;
 	state->pointer_event.time = time;
 	state->pointer_event.surface_x = surface_x,
-		state->pointer_event.surface_y = surface_y;
+	state->pointer_event.surface_y = surface_y;
 }
 
-static void
-wl_pointer_button(void *data, struct wl_pointer *wl_pointer, uint32_t serial,
-		uint32_t time, uint32_t button, uint32_t state)
+static void wl_pointer_button(void *data,
+			      struct wl_pointer *wl_pointer,
+			      uint32_t serial,
+			      uint32_t time,
+			      uint32_t button,
+			      uint32_t state)
 {
 	struct nsvi_state *vistate = data;
 	vistate->pointer_event.event_mask |= POINTER_EVENT_BUTTON;
 	vistate->pointer_event.time = time;
 	vistate->pointer_event.serial = serial;
 	vistate->pointer_event.button = button,
-		vistate->pointer_event.state = state;
+	vistate->pointer_event.state = state;
 }
 
-static void
-wl_pointer_axis(void *data, struct wl_pointer *wl_pointer, uint32_t time,
-		uint32_t axis, wl_fixed_t value)
+static void wl_pointer_axis(void *data,
+			    struct wl_pointer *wl_pointer,
+			    uint32_t time,
+			    uint32_t axis,
+			    wl_fixed_t value)
 {
 	struct nsvi_state *state = data;
 	state->pointer_event.event_mask |= POINTER_EVENT_AXIS;
@@ -308,8 +317,7 @@ wl_pointer_axis(void *data, struct wl_pointer *wl_pointer, uint32_t time,
 	state->pointer_event.axes[axis].value = value;
 }
 
-static void
-wl_pointer_frame(void *data, struct wl_pointer *wl_pointer)
+static void wl_pointer_frame(void *data, struct wl_pointer *wl_pointer)
 {
 	struct nsvi_state *state = data;
 	struct pointer_event *event = &state->pointer_event;
@@ -333,18 +341,19 @@ wl_pointer_frame(void *data, struct wl_pointer *wl_pointer)
 	memset(event, 0, sizeof(*event));
 }
 
-static void
-wl_pointer_axis_source(void *data, struct wl_pointer *wl_pointer,
-		uint32_t axis_source)
+static void wl_pointer_axis_source(void *data,
+				   struct wl_pointer *wl_pointer,
+				   uint32_t axis_source)
 {
 	struct nsvi_state *state = data;
 	state->pointer_event.event_mask |= POINTER_EVENT_AXIS_SOURCE;
 	state->pointer_event.axis_source = axis_source;
 }
 
-static void
-wl_pointer_axis_stop(void *data, struct wl_pointer *wl_pointer,
-		uint32_t time, uint32_t axis)
+static void wl_pointer_axis_stop(void *data,
+				 struct wl_pointer *wl_pointer,
+				 uint32_t time,
+				 uint32_t axis)
 {
 	struct nsvi_state *state = data;
 	state->pointer_event.time = time;
@@ -352,9 +361,10 @@ wl_pointer_axis_stop(void *data, struct wl_pointer *wl_pointer,
 	state->pointer_event.axes[axis].valid = true;
 }
 
-static void
-wl_pointer_axis_discrete(void *data, struct wl_pointer *wl_pointer,
-		uint32_t axis, int32_t discrete)
+static void wl_pointer_axis_discrete(void *data,
+				     struct wl_pointer *wl_pointer,
+				     uint32_t axis,
+				     int32_t discrete)
 {
 	struct nsvi_state *state = data;
 	state->pointer_event.event_mask |= POINTER_EVENT_AXIS_STOP;
@@ -374,22 +384,26 @@ static const struct wl_pointer_listener wl_pointer_listener = {
 	.axis_discrete = wl_pointer_axis_discrete,
 };
 
-static void
-wl_keyboard_keymap(void *data, struct wl_keyboard *wl_keyboard,
-		uint32_t format, int32_t fd, uint32_t size)
+static void wl_keyboard_keymap(void *data,
+			       struct wl_keyboard *wl_keyboard,
+			       uint32_t format,
+			       int32_t fd,
+			       uint32_t size)
 {
 	struct nsvi_state *state = data;
 	assert(format == WL_KEYBOARD_KEYMAP_FORMAT_XKB_V1);
 
 	char *map_shm = mmap(NULL, size, PROT_READ, MAP_PRIVATE, fd, 0);
-        if ((void *) -1 == map_shm) {
-            printf("Could not map memory: %d %s\n", errno,strerror(errno));
-            exit(1);
-        }
+	if ((void *)-1 == map_shm) {
+		printf("Could not map memory: %d %s\n", errno, strerror(errno));
+		exit(1);
+	}
 
 	struct xkb_keymap *xkb_keymap = xkb_keymap_new_from_string(
-			state->xkb_context, map_shm,
-			XKB_KEYMAP_FORMAT_TEXT_V1, XKB_KEYMAP_COMPILE_NO_FLAGS);
+		state->xkb_context,
+		map_shm,
+		XKB_KEYMAP_FORMAT_TEXT_V1,
+		XKB_KEYMAP_COMPILE_NO_FLAGS);
 	munmap(map_shm, size);
 	close(fd);
 
@@ -401,10 +415,11 @@ wl_keyboard_keymap(void *data, struct wl_keyboard *wl_keyboard,
 	state->bindings.xkb_state = xkb_state;
 }
 
-static void
-wl_keyboard_enter(void *data, struct wl_keyboard *wl_keyboard,
-		uint32_t serial, struct wl_surface *surface,
-		struct wl_array *keys)
+static void wl_keyboard_enter(void *data,
+			      struct wl_keyboard *wl_keyboard,
+			      uint32_t serial,
+			      struct wl_surface *surface,
+			      struct wl_array *keys)
 {
 	struct nsvi_state *state = data;
 	for (struct nsvi_window *win = state->windows; win; win = win->next) {
@@ -415,16 +430,16 @@ wl_keyboard_enter(void *data, struct wl_keyboard *wl_keyboard,
 	}
 }
 
-static void
-wl_keyboard_leave(void *data, struct wl_keyboard *wl_keyboard,
-		uint32_t serial, struct wl_surface *surface)
+static void wl_keyboard_leave(void *data,
+			      struct wl_keyboard *wl_keyboard,
+			      uint32_t serial,
+			      struct wl_surface *surface)
 {
 	struct nsvi_state *state = data;
 	state->keyboard_focus = NULL;
 }
 
-static void
-repeat_key(void *data)
+static void repeat_key(void *data)
 {
 	struct nsvi_state *state = data;
 	struct nsvi_window *win = state->keyboard_focus;
@@ -435,9 +450,12 @@ repeat_key(void *data)
 	nsvi_misc_schedule(1000 / state->repeat_rate, &repeat_key, state);
 }
 
-static void
-wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
-		uint32_t serial, uint32_t time, uint32_t key, uint32_t state)
+static void wl_keyboard_key(void *data,
+			    struct wl_keyboard *wl_keyboard,
+			    uint32_t serial,
+			    uint32_t time,
+			    uint32_t key,
+			    uint32_t state)
 {
 	struct nsvi_state *vistate = data;
 	struct nsvi_window *win = vistate->keyboard_focus;
@@ -447,8 +465,8 @@ wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
 	uint32_t keycode = key + 8;
 	nsvi_window_key_event(win, keycode, pressed);
 
-	if (pressed && vistate->repeat_rate != 0
-			&& xkb_keymap_key_repeats(vistate->xkb_keymap, keycode)) {
+	if (pressed && vistate->repeat_rate != 0 &&
+	    xkb_keymap_key_repeats(vistate->xkb_keymap, keycode)) {
 		vistate->repeat_key = keycode;
 		nsvi_misc_schedule(vistate->repeat_delay, &repeat_key, vistate);
 	} else {
@@ -456,20 +474,28 @@ wl_keyboard_key(void *data, struct wl_keyboard *wl_keyboard,
 	}
 }
 
-static void
-wl_keyboard_modifiers(void *data, struct wl_keyboard *wl_keyboard,
-		uint32_t serial, uint32_t mods_depressed,
-		uint32_t mods_latched, uint32_t mods_locked,
-		uint32_t group)
+static void wl_keyboard_modifiers(void *data,
+				  struct wl_keyboard *wl_keyboard,
+				  uint32_t serial,
+				  uint32_t mods_depressed,
+				  uint32_t mods_latched,
+				  uint32_t mods_locked,
+				  uint32_t group)
 {
 	struct nsvi_state *state = data;
 	xkb_state_update_mask(state->xkb_state,
-		mods_depressed, mods_latched, mods_locked, 0, 0, group);
+			      mods_depressed,
+			      mods_latched,
+			      mods_locked,
+			      0,
+			      0,
+			      group);
 }
 
-static void
-wl_keyboard_repeat_info(void *data, struct wl_keyboard *wl_keyboard,
-		int32_t rate, int32_t delay)
+static void wl_keyboard_repeat_info(void *data,
+				    struct wl_keyboard *wl_keyboard,
+				    int32_t rate,
+				    int32_t delay)
 {
 	struct nsvi_state *state = data;
 	state->repeat_rate = rate;
@@ -485,8 +511,7 @@ static const struct wl_keyboard_listener wl_keyboard_listener = {
 	.repeat_info = wl_keyboard_repeat_info,
 };
 
-struct touch_point *
-get_touch_point(struct nsvi_state *state, int32_t id)
+struct touch_point *get_touch_point(struct nsvi_state *state, int32_t id)
 {
 	struct touch_event *touch = &state->touch_event;
 	const size_t nmemb = sizeof(touch->points) / sizeof(struct touch_point);
@@ -508,10 +533,14 @@ get_touch_point(struct nsvi_state *state, int32_t id)
 	return &touch->points[invalid];
 }
 
-static void
-wl_touch_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
-		uint32_t time, struct wl_surface *surface, int32_t id,
-		wl_fixed_t x, wl_fixed_t y)
+static void wl_touch_down(void *data,
+			  struct wl_touch *wl_touch,
+			  uint32_t serial,
+			  uint32_t time,
+			  struct wl_surface *surface,
+			  int32_t id,
+			  wl_fixed_t x,
+			  wl_fixed_t y)
 {
 	struct nsvi_state *state = data;
 	struct touch_point *point = get_touch_point(state, id);
@@ -525,9 +554,11 @@ wl_touch_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
 	state->touch_event.serial = serial;
 }
 
-static void
-wl_touch_up(void *data, struct wl_touch *wl_touch, uint32_t serial,
-		uint32_t time, int32_t id)
+static void wl_touch_up(void *data,
+			struct wl_touch *wl_touch,
+			uint32_t serial,
+			uint32_t time,
+			int32_t id)
 {
 	struct nsvi_state *state = data;
 	struct touch_point *point = get_touch_point(state, id);
@@ -537,9 +568,12 @@ wl_touch_up(void *data, struct wl_touch *wl_touch, uint32_t serial,
 	point->event_mask |= TOUCH_EVENT_UP;
 }
 
-static void
-wl_touch_motion(void *data, struct wl_touch *wl_touch, uint32_t time,
-		int32_t id, wl_fixed_t x, wl_fixed_t y)
+static void wl_touch_motion(void *data,
+			    struct wl_touch *wl_touch,
+			    uint32_t time,
+			    int32_t id,
+			    wl_fixed_t x,
+			    wl_fixed_t y)
 {
 	struct nsvi_state *state = data;
 	struct touch_point *point = get_touch_point(state, id);
@@ -551,8 +585,7 @@ wl_touch_motion(void *data, struct wl_touch *wl_touch, uint32_t time,
 	state->touch_event.time = time;
 }
 
-static void
-wl_touch_frame(void *data, struct wl_touch *wl_touch)
+static void wl_touch_frame(void *data, struct wl_touch *wl_touch)
 {
 	struct nsvi_state *state = data;
 	struct touch_event *event = &state->touch_event;
@@ -564,7 +597,7 @@ wl_touch_frame(void *data, struct wl_touch *wl_touch)
 		return;
 	}
 	for (size_t i = 0; i < sizeof(event->points) / sizeof(event->points[0]);
-			++i) {
+	     ++i) {
 		struct touch_point *point = &event->points[i];
 		if (point->event_mask & TOUCH_EVENT_UP) {
 			*point = (struct touch_point){0};
@@ -572,16 +605,17 @@ wl_touch_frame(void *data, struct wl_touch *wl_touch)
 	}
 }
 
-static void
-wl_touch_cancel(void *data, struct wl_touch *wl_touch)
+static void wl_touch_cancel(void *data, struct wl_touch *wl_touch)
 {
 	struct nsvi_state *state = data;
 	state->touch_event.event_mask |= TOUCH_EVENT_CANCEL;
 }
 
-static void
-wl_touch_shape(void *data, struct wl_touch *wl_touch,
-		int32_t id, wl_fixed_t major, wl_fixed_t minor)
+static void wl_touch_shape(void *data,
+			   struct wl_touch *wl_touch,
+			   int32_t id,
+			   wl_fixed_t major,
+			   wl_fixed_t minor)
 {
 	struct nsvi_state *state = data;
 	struct touch_point *point = get_touch_point(state, id);
@@ -592,9 +626,10 @@ wl_touch_shape(void *data, struct wl_touch *wl_touch,
 	point->major = major, point->minor = minor;
 }
 
-static void
-wl_touch_orientation(void *data, struct wl_touch *wl_touch,
-		int32_t id, wl_fixed_t orientation)
+static void wl_touch_orientation(void *data,
+				 struct wl_touch *wl_touch,
+				 int32_t id,
+				 wl_fixed_t orientation)
 {
 	struct nsvi_state *state = data;
 	struct touch_point *point = get_touch_point(state, id);
@@ -620,13 +655,14 @@ wl_seat_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities)
 {
 	struct nsvi_state *state = data;
 	bool have_pointer = capabilities & WL_SEAT_CAPABILITY_POINTER,
-		have_keyboard = capabilities & WL_SEAT_CAPABILITY_KEYBOARD,
-		have_touch = capabilities & WL_SEAT_CAPABILITY_TOUCH;
+	     have_keyboard = capabilities & WL_SEAT_CAPABILITY_KEYBOARD,
+	     have_touch = capabilities & WL_SEAT_CAPABILITY_TOUCH;
 
 	if (have_pointer && state->wl_pointer == NULL) {
 		state->wl_pointer = wl_seat_get_pointer(state->wl_seat);
 		wl_pointer_add_listener(state->wl_pointer,
-				&wl_pointer_listener, state);
+					&wl_pointer_listener,
+					state);
 	} else if (!have_pointer && state->wl_pointer != NULL) {
 		wl_pointer_release(state->wl_pointer);
 		state->wl_pointer = NULL;
@@ -635,7 +671,8 @@ wl_seat_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities)
 	if (have_keyboard && state->wl_keyboard == NULL) {
 		state->wl_keyboard = wl_seat_get_keyboard(state->wl_seat);
 		wl_keyboard_add_listener(state->wl_keyboard,
-				&wl_keyboard_listener, state);
+					 &wl_keyboard_listener,
+					 state);
 	} else if (!have_keyboard && state->wl_keyboard != NULL) {
 		wl_keyboard_release(state->wl_keyboard);
 		state->wl_keyboard = NULL;
@@ -644,15 +681,15 @@ wl_seat_capabilities(void *data, struct wl_seat *wl_seat, uint32_t capabilities)
 	if (have_touch && state->wl_touch == NULL) {
 		state->wl_touch = wl_seat_get_touch(state->wl_seat);
 		wl_touch_add_listener(state->wl_touch,
-				&wl_touch_listener, state);
+				      &wl_touch_listener,
+				      state);
 	} else if (!have_touch && state->wl_touch != NULL) {
 		wl_touch_release(state->wl_touch);
 		state->wl_touch = NULL;
 	}
 }
 
-static void
-wl_seat_name(void *data, struct wl_seat *wl_seat, const char *name)
+static void wl_seat_name(void *data, struct wl_seat *wl_seat, const char *name)
 {
 	// This space deliberately left blank
 }
@@ -662,25 +699,32 @@ static const struct wl_seat_listener wl_seat_listener = {
 	.name = wl_seat_name,
 };
 
-static void
-wl_output_geometry(void *data, struct wl_output *wl_output,
-	int32_t x, int32_t y, int32_t physical_width, int32_t physical_height,
-	int32_t subpixel, const char *make, const char *model,
-	int32_t transform)
+static void wl_output_geometry(void *data,
+			       struct wl_output *wl_output,
+			       int32_t x,
+			       int32_t y,
+			       int32_t physical_width,
+			       int32_t physical_height,
+			       int32_t subpixel,
+			       const char *make,
+			       const char *model,
+			       int32_t transform)
 {
 	// TODO: We could pass the subpixel info on to pango
 	// TODO: Compute DPI and give it to core
 }
 
-static void
-wl_output_mode(void *data, struct wl_output *wl_output,
-     uint32_t flags, int32_t width, int32_t height, int32_t refresh)
+static void wl_output_mode(void *data,
+			   struct wl_output *wl_output,
+			   uint32_t flags,
+			   int32_t width,
+			   int32_t height,
+			   int32_t refresh)
 {
 	// This space deliberately left blank
 }
 
-static void
-wl_output_done(void *data, struct wl_output *wl_output)
+static void wl_output_done(void *data, struct wl_output *wl_output)
 {
 	// This space deliberately left blank
 }
@@ -700,8 +744,8 @@ static const struct wl_output_listener wl_output_listener = {
 };
 
 static void wl_data_offer_offer(void *data,
-	struct wl_data_offer *offer,
-	const char *mime_type)
+				struct wl_data_offer *offer,
+				const char *mime_type)
 {
 	struct nsvi_state *state = data;
 	if (strcmp(mime_type, "text/plain") == 0) {
@@ -712,39 +756,44 @@ static void wl_data_offer_offer(void *data,
 /* Notification of actions available to D&D sources */
 
 static void wl_data_offer_source_actions(void *data,
-                                       struct wl_data_offer *offer, uint32_t source_actions)
+					 struct wl_data_offer *offer,
+					 uint32_t source_actions)
 {
-  printf("wl_data_offer # source_actions | offer:%p, source_actions:", offer);
-  printf("\n");
+	printf("wl_data_offer # source_actions | offer:%p, source_actions:",
+	       offer);
+	printf("\n");
 }
 
 /* Server-selected action will be notified (for drop destination) */
 
-static void wl_data_offer_action(void *data, struct wl_data_offer *offer, uint32_t dnd_action)
+static void wl_data_offer_action(void *data,
+				 struct wl_data_offer *offer,
+				 uint32_t dnd_action)
 {
-  printf("wl_data_offer # action | offer:%p, dnd_action:", offer);
-  printf("\n");
+	printf("wl_data_offer # action | offer:%p, dnd_action:", offer);
+	printf("\n");
 }
 
 static const struct wl_data_offer_listener wl_data_offer_listener = {
 	.offer = wl_data_offer_offer,
-  .action = wl_data_offer_action,
-  .source_actions = wl_data_offer_source_actions,
+	.action = wl_data_offer_action,
+	.source_actions = wl_data_offer_source_actions,
 };
 
-static void
-wl_data_device_data_offer(void *data,
-		struct wl_data_device *data_device,
-		struct wl_data_offer *offer)
+static void wl_data_device_data_offer(void *data,
+				      struct wl_data_device *data_device,
+				      struct wl_data_offer *offer)
 {
 	wl_data_offer_add_listener(offer, &wl_data_offer_listener, data);
 }
 
-static void
-wl_data_device_enter(void *data, struct wl_data_device *wl_data_device,
-	uint32_t serial, struct wl_surface *surface,
-	wl_fixed_t x, wl_fixed_t y,
-	struct wl_data_offer *id)
+static void wl_data_device_enter(void *data,
+				 struct wl_data_device *wl_data_device,
+				 uint32_t serial,
+				 struct wl_surface *surface,
+				 wl_fixed_t x,
+				 wl_fixed_t y,
+				 struct wl_data_offer *id)
 {
 	// TODO
 }
@@ -755,9 +804,11 @@ wl_data_device_leave(void *data, struct wl_data_device *wl_data_device)
 	// TODO
 }
 
-static void
-wl_data_device_motion(void *data, struct wl_data_device *wl_data_device,
-       uint32_t time, wl_fixed_t x, wl_fixed_t y)
+static void wl_data_device_motion(void *data,
+				  struct wl_data_device *wl_data_device,
+				  uint32_t time,
+				  wl_fixed_t x,
+				  wl_fixed_t y)
 {
 	// TODO
 }
@@ -768,10 +819,9 @@ wl_data_device_drop(void *data, struct wl_data_device *wl_data_device)
 	// TODO
 }
 
-static void
-wl_data_device_selection(void *data,
-	struct wl_data_device *wl_data_device,
-	struct wl_data_offer *id)
+static void wl_data_device_selection(void *data,
+				     struct wl_data_device *wl_data_device,
+				     struct wl_data_offer *id)
 {
 	struct nsvi_state *state = data;
 	if (id == state->wl_data_offer) {
@@ -792,48 +842,59 @@ static const struct wl_data_device_listener wl_data_device_listener = {
 	.selection = wl_data_device_selection,
 };
 
-static void
-registry_global(void *data, struct wl_registry *wl_registry,
-	uint32_t name, const char *interface, uint32_t version)
+static void registry_global(void *data,
+			    struct wl_registry *wl_registry,
+			    uint32_t name,
+			    const char *interface,
+			    uint32_t version)
 {
 	struct nsvi_state *state = data;
 	if (strcmp(interface, wl_shm_interface.name) == 0) {
-		state->wl_shm = wl_registry_bind(wl_registry,
-				name, &wl_shm_interface, 1);
+		state->wl_shm = wl_registry_bind(
+			wl_registry, name, &wl_shm_interface, 1);
 	} else if (strcmp(interface, wl_compositor_interface.name) == 0) {
-		state->wl_compositor = wl_registry_bind(wl_registry,
-				name, &wl_compositor_interface, 4);
+		state->wl_compositor = wl_registry_bind(
+			wl_registry, name, &wl_compositor_interface, 4);
 	} else if (strcmp(interface, xdg_wm_base_interface.name) == 0) {
-		state->xdg_wm_base = wl_registry_bind(wl_registry,
-				name, &xdg_wm_base_interface, 1);
+		state->xdg_wm_base = wl_registry_bind(
+			wl_registry, name, &xdg_wm_base_interface, 1);
 		xdg_wm_base_add_listener(state->xdg_wm_base,
-				&xdg_wm_base_listener, state);
-	} else if (strcmp(interface, zxdg_decoration_manager_v1_interface.name) == 0) {
-		state->xdg_decoration_manager = wl_registry_bind(wl_registry,
-				name, &zxdg_decoration_manager_v1_interface, 1);
+					 &xdg_wm_base_listener,
+					 state);
+	} else if (strcmp(interface,
+			  zxdg_decoration_manager_v1_interface.name) == 0) {
+		state->xdg_decoration_manager = wl_registry_bind(
+			wl_registry,
+			name,
+			&zxdg_decoration_manager_v1_interface,
+			1);
 	} else if (strcmp(interface, wl_seat_interface.name) == 0) {
-		state->wl_seat = wl_registry_bind(wl_registry,
-				name, &wl_seat_interface, 7);
-		wl_seat_add_listener(state->wl_seat,
-				&wl_seat_listener, state);
+		state->wl_seat = wl_registry_bind(
+			wl_registry, name, &wl_seat_interface, 7);
+		wl_seat_add_listener(state->wl_seat, &wl_seat_listener, state);
 	} else if (strcmp(interface, wl_output_interface.name) == 0) {
-		struct nsvi_output *output =
-			calloc(1, sizeof(struct nsvi_output));
-		output->wl_output = wl_registry_bind(wl_registry,
-				name, &wl_output_interface, 3);
+		struct nsvi_output *output = calloc(1,
+						    sizeof(struct nsvi_output));
+		output->wl_output = wl_registry_bind(
+			wl_registry, name, &wl_output_interface, 3);
 		wl_output_add_listener(output->wl_output,
-				&wl_output_listener, output);
+				       &wl_output_listener,
+				       output);
 		output->next = state->outputs;
 		state->outputs = output;
-	} else if (strcmp(interface, wl_data_device_manager_interface.name) == 0) {
-		state->wl_data_device_manager = wl_registry_bind(wl_registry,
-				name, &wl_data_device_manager_interface, 3);
+	} else if (strcmp(interface, wl_data_device_manager_interface.name) ==
+		   0) {
+		state->wl_data_device_manager = wl_registry_bind(
+			wl_registry,
+			name,
+			&wl_data_device_manager_interface,
+			3);
 	}
 }
 
-static void
-registry_global_remove(void *data,
-	struct wl_registry *wl_registry, uint32_t name)
+static void registry_global_remove(void *data,
+				   struct wl_registry *wl_registry,
+				   uint32_t name)
 {
 	/* This space deliberately left blank */
 }
@@ -877,8 +938,7 @@ check_dirname(const char *path, const char *leaf, char **dirname_out)
 	return ret;
 }
 
-static nserror
-get_config_home(char **config_home_out)
+static nserror get_config_home(char **config_home_out)
 {
 	nserror ret;
 	char *home_dir;
@@ -910,8 +970,7 @@ get_config_home(char **config_home_out)
 	return NSERROR_OK;
 }
 
-static nserror
-create_config_home(char **config_home_out)
+static nserror create_config_home(char **config_home_out)
 {
 	nserror ret;
 	char *home_dir;
@@ -928,9 +987,11 @@ create_config_home(char **config_home_out)
 			return NSERROR_NOT_DIRECTORY;
 		}
 
-		ret = neosurf_mkpath(&config_home, NULL, 3, home_dir, ".config", "neosurf");
+		ret = neosurf_mkpath(
+			&config_home, NULL, 3, home_dir, ".config", "neosurf");
 	} else {
-		ret = neosurf_mkpath(&config_home, NULL, 2, xdg_config_dir, "neosurf");
+		ret = neosurf_mkpath(
+			&config_home, NULL, 2, xdg_config_dir, "neosurf");
 	}
 
 	if (ret != NSERROR_OK) {
@@ -955,8 +1016,7 @@ create_config_home(char **config_home_out)
 	return NSERROR_OK;
 }
 
-static nserror
-set_defaults(struct nsoption_s *defaults)
+static nserror set_defaults(struct nsoption_s *defaults)
 {
 	char *fname;
 	nserror ret;
@@ -1019,8 +1079,7 @@ set_defaults(struct nsoption_s *defaults)
 /** maximum length of all strings in language vector */
 #define LANGS_SIZE 4096
 
-static const char *
-get_language(void)
+static const char *get_language(void)
 {
 	const char *lang;
 	lang = getenv("LANGUAGE");
@@ -1045,8 +1104,7 @@ get_language(void)
 	return NULL;
 }
 
-static const char * const *
-get_languagev(void)
+static const char *const *get_languagev(void)
 {
 	static const char *langv[LANGV_SIZE];
 	int langidx = 0;
@@ -1068,8 +1126,7 @@ get_languagev(void)
 		lang_len = strlen(lange) + 1;
 		if (lang_len < (LANGS_SIZE - 2)) {
 			memcpy(curp, lange, lang_len);
-			while ((curp[0] != 0) &&
-			       (langidx < (LANGV_SIZE - 2))) {
+			while ((curp[0] != 0) && (langidx < (LANGV_SIZE - 2))) {
 				cln = strchr(curp, ':');
 				if (cln == NULL) {
 					langv[langidx++] = curp;
@@ -1094,17 +1151,15 @@ get_languagev(void)
 	return &langv[0];
 }
 
-static bool
-nslog_stream_configure(FILE *fptr)
+static bool nslog_stream_configure(FILE *fptr)
 {
 	setbuf(fptr, NULL);
 	return true;
 }
 
-static char **
-nsvi_init_resource(const char *resource_path)
+static char **nsvi_init_resource(const char *resource_path)
 {
-	const char * const *langv = get_languagev();
+	const char *const *langv = get_languagev();
 	char **pathv = filepath_path_to_strvec(resource_path);
 	char **respath = filepath_generate(pathv, langv);
 	filepath_free_strvec(pathv);
@@ -1171,11 +1226,12 @@ nsvi_init_bindings(struct nsvi_state *state, struct nsvi_bindings *bindings)
 	nsvi_bindings_new(bindings, "n", "search -n");
 	nsvi_bindings_new(bindings, "N", "search -p");
 	nsvi_bindings_new(bindings, "<bracketleft><bracketleft>", "page prev");
-	nsvi_bindings_new(bindings, "<bracketright><bracketright>", "page next");
+	nsvi_bindings_new(bindings,
+			  "<bracketright><bracketright>",
+			  "page next");
 }
 
-static void
-nsvi_load_config(struct nsvi_state *state)
+static void nsvi_load_config(struct nsvi_state *state)
 {
 	assert(config_home != NULL);
 	char *config = NULL;
@@ -1186,8 +1242,7 @@ nsvi_load_config(struct nsvi_state *state)
 	}
 }
 
-nserror
-nsvi_filter_url(struct nsvi_filter *filter, const char *in, nsurl **out)
+nserror nsvi_filter_url(struct nsvi_filter *filter, const char *in, nsurl **out)
 {
 	nsurl *new;
 	nserror err;
@@ -1197,9 +1252,10 @@ nsvi_filter_url(struct nsvi_filter *filter, const char *in, nsurl **out)
 	size_t r = fprintf(filter->in, "%s\n", in);
 	if (r == 0) {
 		if (ferror(filter->in) != 0) {
-			NSLOG(neosurf, ERROR,
-				"Error writing to URL filter: %s",
-				strerror(ferror(filter->in)));
+			NSLOG(neosurf,
+			      ERROR,
+			      "Error writing to URL filter: %s",
+			      strerror(ferror(filter->in)));
 		}
 		if (feof(filter->in)) {
 			NSLOG(neosurf, ERROR, "Unexpected EOF from URL filter");
@@ -1208,16 +1264,18 @@ nsvi_filter_url(struct nsvi_filter *filter, const char *in, nsurl **out)
 	}
 	ssize_t n = getline(&filter->buf, &filter->bufsz, filter->out);
 	if (n == -1) {
-		NSLOG(neosurf, ERROR,
-			"Error reading from URL filter: %s",
-			strerror(errno));
+		NSLOG(neosurf,
+		      ERROR,
+		      "Error reading from URL filter: %s",
+		      strerror(errno));
 		goto error;
 	}
 	err = nsurl_create(filter->buf, &new);
 	if (err != NSERROR_OK) {
-		NSLOG(neosurf, ERROR,
-			"Error parsing '%s' from URL filter",
-			filter->buf);
+		NSLOG(neosurf,
+		      ERROR,
+		      "Error parsing '%s' from URL filter",
+		      filter->buf);
 		goto error;
 	}
 	*out = new;
@@ -1234,8 +1292,8 @@ orig:
 	return err;
 }
 
-int
-main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
 	struct nsvi_state state = {0};
 	global_state = &state;
 
@@ -1249,14 +1307,17 @@ main(int argc, char *argv[]) {
 		fatal("Error connecting to Wayland display");
 	}
 	state.wl_registry = wl_display_get_registry(state.wl_display);
-	wl_registry_add_listener(state.wl_registry, &wl_registry_listener, &state);
+	wl_registry_add_listener(state.wl_registry,
+				 &wl_registry_listener,
+				 &state);
 	wl_display_roundtrip(state.wl_display);
 
 	if (state.wl_data_device_manager && state.wl_seat) {
 		state.wl_data_device = wl_data_device_manager_get_data_device(
-				state.wl_data_device_manager, state.wl_seat);
+			state.wl_data_device_manager, state.wl_seat);
 		wl_data_device_add_listener(state.wl_data_device,
-				&wl_data_device_listener, &state);
+					    &wl_data_device_listener,
+					    &state);
 	}
 
 	int xcursor_size = 24;
@@ -1265,12 +1326,16 @@ main(int argc, char *argv[]) {
 		xcursor_size = strtol(getenv("XCURSOR_SIZE"), &endptr, 10);
 
 		if (*endptr || xcursor_size <= 0) {
-			NSLOG(neosurf, WARNING, "XCURSOR_SIZE environment variable is set incorrectly");
+			NSLOG(neosurf,
+			      WARNING,
+			      "XCURSOR_SIZE environment variable is set incorrectly");
 			xcursor_size = 24;
 		}
 	}
 
-	state.cursors = wl_cursor_theme_load(getenv("XCURSOR_THEME"), xcursor_size, state.wl_shm);
+	state.cursors = wl_cursor_theme_load(getenv("XCURSOR_THEME"),
+					     xcursor_size,
+					     state.wl_shm);
 
 	state.fds = calloc(1, sizeof(struct pollfd));
 	state.nfd = 1;
@@ -1292,7 +1357,8 @@ main(int argc, char *argv[]) {
 		fatal("NeoSurf operation table failed registration");
 	}
 
-	respaths = nsvi_init_resource("${HOME}/.neosurf/:${NEOSURFRES}:"VISURF_RESPATH);
+	respaths = nsvi_init_resource(
+		"${HOME}/.neosurf/:${NEOSURFRES}:" VISURF_RESPATH);
 	nslog_init(nslog_stream_configure, &argc, argv);
 	ret = nsoption_init(set_defaults, &nsoptions, &nsoptions_default);
 	if (ret != NSERROR_OK) {
@@ -1343,7 +1409,7 @@ main(int argc, char *argv[]) {
 			addrlen = SLEN("file://") + strlen(rp) + 1;
 			addr = malloc(addrlen);
 			assert(addr != NULL);
-			(void) snprintf(addr, addrlen, "file://%s", rp);
+			(void)snprintf(addr, addrlen, "file://%s", rp);
 			free(rp);
 		} else {
 			addr = strdup(argv[1]);
@@ -1360,7 +1426,8 @@ main(int argc, char *argv[]) {
 	}
 
 	while (!state.quit) {
-		if (wl_display_flush(state.wl_display) == -1 && errno != EAGAIN) {
+		if (wl_display_flush(state.wl_display) == -1 &&
+		    errno != EAGAIN) {
 			break;
 		}
 
@@ -1397,7 +1464,8 @@ main(int argc, char *argv[]) {
 			if (timeout <= 0) {
 				timeout = 0;
 			} else if (timeout == 0 && diff.tv_nsec > 0) {
-				/* If less than 1ms remains, wait at least 1ms to avoid busy looping */
+				/* If less than 1ms remains, wait at least 1ms
+				 * to avoid busy looping */
 				timeout = 1;
 			}
 		}
@@ -1407,7 +1475,8 @@ main(int argc, char *argv[]) {
 
 		int max_fd;
 		fd_set read_fd, write_fd, except_fd;
-		nserror err = fetch_fdset(&read_fd, &write_fd, &except_fd, &max_fd);
+		nserror err = fetch_fdset(
+			&read_fd, &write_fd, &except_fd, &max_fd);
 		if (err != NSERROR_OK) {
 			fatal("fetch_fdset error");
 			break;
@@ -1415,9 +1484,9 @@ main(int argc, char *argv[]) {
 
 		size_t nfetch = 0;
 		for (int fd = 0; fd <= max_fd; ++fd) {
-			bool present = FD_ISSET(fd, &read_fd)
-				|| FD_ISSET(fd, &write_fd)
-				|| FD_ISSET(fd, &except_fd);
+			bool present = FD_ISSET(fd, &read_fd) ||
+				       FD_ISSET(fd, &write_fd) ||
+				       FD_ISSET(fd, &except_fd);
 			if (present) {
 				++nfetch;
 			}
@@ -1425,19 +1494,20 @@ main(int argc, char *argv[]) {
 		if (state.nfd < nfetch + 1) {
 			state.nfd = nfetch + 1;
 			state.fds = realloc(state.fds,
-				sizeof(struct pollfd) * state.nfd);
+					    sizeof(struct pollfd) * state.nfd);
 		}
 		int i = 1;
 		for (int fd = 0; nfetch && fd <= max_fd; ++fd) {
-			bool present = FD_ISSET(fd, &read_fd)
-				|| FD_ISSET(fd, &write_fd)
-				|| FD_ISSET(fd, &except_fd);
+			bool present = FD_ISSET(fd, &read_fd) ||
+				       FD_ISSET(fd, &write_fd) ||
+				       FD_ISSET(fd, &except_fd);
 			if (present) {
 				state.fds[i].events = 0;
 				state.fds[i].fd = fd;
 			}
 			if (FD_ISSET(fd, &read_fd)) {
-				state.fds[i].events |= POLLIN | POLLHUP | POLLERR;
+				state.fds[i].events |= POLLIN | POLLHUP |
+						       POLLERR;
 			}
 			if (FD_ISSET(fd, &write_fd)) {
 				state.fds[i].events |= POLLOUT | POLLERR;

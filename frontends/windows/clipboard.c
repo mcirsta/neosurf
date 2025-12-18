@@ -51,25 +51,25 @@ static void gui_get_clipboard(char **buffer, size_t *length)
 
 				/* compute length */
 				required_len = WideCharToMultiByte(
-							CP_UTF8,
-							WC_NO_BEST_FIT_CHARS,
-							content,
-							content_len,
-							NULL,
-							0,
-							NULL,
-							NULL);
+					CP_UTF8,
+					WC_NO_BEST_FIT_CHARS,
+					content,
+					content_len,
+					NULL,
+					0,
+					NULL,
+					NULL);
 				/* allocate buffer and do conversion */
 				*buffer = malloc(required_len);
 				*length = WideCharToMultiByte(
-							CP_UTF8,
-							WC_NO_BEST_FIT_CHARS,
-							content,
-							content_len,
-							*buffer,
-							required_len,
-							NULL,
-							NULL);
+					CP_UTF8,
+					WC_NO_BEST_FIT_CHARS,
+					content,
+					content_len,
+					*buffer,
+					required_len,
+					NULL,
+					NULL);
 
 				GlobalUnlock(clipboard_handle);
 			}
@@ -87,11 +87,10 @@ static void gui_get_clipboard(char **buffer, size_t *length)
  * \param styles Array of styles given to text runs, owned by core, or NULL
  * \param n_styles Number of text run styles in array
  */
-static void
-gui_set_clipboard(const char *buffer,
-		  size_t length,
-		  nsclipboard_styles styles[],
-		  int n_styles)
+static void gui_set_clipboard(const char *buffer,
+			      size_t length,
+			      nsclipboard_styles styles[],
+			      int n_styles)
 {
 	HGLOBAL hglbCopy;
 	wchar_t *content; /* clipboard content */
@@ -99,10 +98,8 @@ gui_set_clipboard(const char *buffer,
 
 	if (OpenClipboard(NULL)) {
 		EmptyClipboard();
-		content_len = MultiByteToWideChar(CP_UTF8,
-						  MB_PRECOMPOSED,
-						  buffer, length,
-						  NULL, 0);
+		content_len = MultiByteToWideChar(
+			CP_UTF8, MB_PRECOMPOSED, buffer, length, NULL, 0);
 
 		hglbCopy = GlobalAlloc(GMEM_MOVEABLE,
 				       ((content_len + 1) * sizeof(wchar_t)));
@@ -110,8 +107,10 @@ gui_set_clipboard(const char *buffer,
 			content = GlobalLock(hglbCopy);
 			MultiByteToWideChar(CP_UTF8,
 					    MB_PRECOMPOSED,
-					    buffer, length,
-					    content, content_len);
+					    buffer,
+					    length,
+					    content,
+					    content_len);
 			content[content_len] = 0; /* null terminate */
 
 			GlobalUnlock(hglbCopy);
@@ -120,7 +119,6 @@ gui_set_clipboard(const char *buffer,
 		CloseClipboard();
 	}
 }
-
 
 
 static struct gui_clipboard_table clipboard_table = {

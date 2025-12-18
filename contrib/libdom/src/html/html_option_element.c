@@ -20,11 +20,8 @@
 #include "utils/utils.h"
 
 static struct dom_element_protected_vtable _protect_vtable = {
-	{
-		DOM_NODE_PROTECT_VTABLE_HTML_OPTION_ELEMENT
-	},
-	DOM_HTML_OPTION_ELEMENT_PROTECT_VTABLE
-};
+	{DOM_NODE_PROTECT_VTABLE_HTML_OPTION_ELEMENT},
+	DOM_HTML_OPTION_ELEMENT_PROTECT_VTABLE};
 
 /**
  * Create a dom_html_option_element object
@@ -33,9 +30,9 @@ static struct dom_element_protected_vtable _protect_vtable = {
  * \param ele     The returned element object
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_html_option_element_create(
-		struct dom_html_element_create_params *params,
-		struct dom_html_option_element **ele)
+dom_exception
+_dom_html_option_element_create(struct dom_html_element_create_params *params,
+				struct dom_html_option_element **ele)
 {
 	struct dom_node_internal *node;
 
@@ -44,7 +41,7 @@ dom_exception _dom_html_option_element_create(
 		return DOM_NO_MEM_ERR;
 
 	/* Set up vtables */
-	node = (struct dom_node_internal *) *ele;
+	node = (struct dom_node_internal *)*ele;
 	node->base.vtable = &_dom_html_element_vtable;
 	node->vtable = &_protect_vtable;
 
@@ -59,8 +56,8 @@ dom_exception _dom_html_option_element_create(
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception _dom_html_option_element_initialise(
-		struct dom_html_element_create_params *params,
-		struct dom_html_option_element *ele)
+	struct dom_html_element_create_params *params,
+	struct dom_html_option_element *ele)
 {
 	ele->default_selected = false;
 	ele->default_selected_set = false;
@@ -92,27 +89,28 @@ void _dom_html_option_element_destroy(struct dom_html_option_element *ele)
 /*-----------------------------------------------------------------------*/
 /* Public APIs */
 
-dom_exception dom_html_option_element_get_form(
-	dom_html_option_element *option, dom_html_form_element **form)
+dom_exception dom_html_option_element_get_form(dom_html_option_element *option,
+					       dom_html_form_element **form)
 {
 	dom_html_document *doc;
-	dom_node_internal *select = ((dom_node_internal *) option)->parent;
+	dom_node_internal *select = ((dom_node_internal *)option)->parent;
 
-	doc = (dom_html_document *) ((dom_node_internal *) option)->owner;
+	doc = (dom_html_document *)((dom_node_internal *)option)->owner;
 
 	/* Search ancestor chain for SELECT element */
 	while (select != NULL) {
 		if (select->type == DOM_ELEMENT_NODE &&
-				dom_string_caseless_isequal(select->name,
-						doc->elements[DOM_HTML_ELEMENT_TYPE_SELECT]))
+		    dom_string_caseless_isequal(
+			    select->name,
+			    doc->elements[DOM_HTML_ELEMENT_TYPE_SELECT]))
 			break;
 
 		select = select->parent;
 	}
 
 	if (select != NULL) {
-		return dom_html_select_element_get_form((dom_html_select_element *) select,
-				form);
+		return dom_html_select_element_get_form(
+			(dom_html_select_element *)select, form);
 	}
 
 	*form = NULL;
@@ -127,8 +125,9 @@ dom_exception dom_html_option_element_get_form(
  * \param default_selected  Pointer to location to receive value
  * \return DOM_NO_ERR on success, appropriate error otherwise.
  */
-dom_exception dom_html_option_element_get_default_selected(
-	dom_html_option_element *option, bool *default_selected)
+dom_exception
+dom_html_option_element_get_default_selected(dom_html_option_element *option,
+					     bool *default_selected)
 {
 	*default_selected = option->default_selected;
 
@@ -142,8 +141,9 @@ dom_exception dom_html_option_element_get_default_selected(
  * \param default_selected  New value for property
  * \return DOM_NO_ERR on success, appropriate error otherwise.
  */
-dom_exception dom_html_option_element_set_default_selected(
-	dom_html_option_element *option, bool default_selected)
+dom_exception
+dom_html_option_element_set_default_selected(dom_html_option_element *option,
+					     bool default_selected)
 {
 	option->default_selected = default_selected;
 	option->default_selected_set = true;
@@ -154,8 +154,8 @@ dom_exception dom_html_option_element_set_default_selected(
 /**
  * Helper for dom_html_option_element_get_text
  */
-static dom_exception dom_html_option_element_get_text_node(
-	dom_node_internal *n, dom_string **text)
+static dom_exception
+dom_html_option_element_get_text_node(dom_node_internal *n, dom_string **text)
 {
 	dom_string *node_name = NULL;
 	dom_string *node_ns = NULL;
@@ -181,18 +181,20 @@ static dom_exception dom_html_option_element_get_text_node(
 			if (exc != DOM_NO_ERR)
 				return exc;
 			if (dom_string_caseless_isequal(node_name,
-					owner->script_string)) {
+							owner->script_string)) {
 				exc = dom_node_get_namespace(n, &node_ns);
 				if (exc != DOM_NO_ERR) {
 					dom_string_unref(node_name);
 					return exc;
 				}
-				if (dom_string_caseless_isequal(node_ns,
-						dom_namespaces[
-							DOM_NAMESPACE_HTML]) ||
-				    dom_string_caseless_isequal(node_ns,
-						dom_namespaces[
-							DOM_NAMESPACE_SVG])) {
+				if (dom_string_caseless_isequal(
+					    node_ns,
+					    dom_namespaces
+						    [DOM_NAMESPACE_HTML]) ||
+				    dom_string_caseless_isequal(
+					    node_ns,
+					    dom_namespaces
+						    [DOM_NAMESPACE_SVG])) {
 					dom_string_unref(node_name);
 					dom_string_unref(node_ns);
 					continue;
@@ -202,13 +204,13 @@ static dom_exception dom_html_option_element_get_text_node(
 			dom_string_unref(node_name);
 
 			/* Get text inside child node 'n' */
-			dom_html_option_element_get_text_node(n,
-					(str == NULL) ? &str : &ret);
+			dom_html_option_element_get_text_node(
+				n, (str == NULL) ? &str : &ret);
 		} else {
 			/* Handle other nodes with their get_text_content
 			 * specialisation */
 			dom_node_get_text_content(n,
-					(str == NULL) ? &str : &ret);
+						  (str == NULL) ? &str : &ret);
 		}
 
 		/* If we already have text, concatenate it */
@@ -224,7 +226,8 @@ static dom_exception dom_html_option_element_get_text_node(
 	/* Strip and collapse whitespace */
 	if (str != NULL) {
 		dom_string_whitespace_op(str,
-				DOM_WHITESPACE_STRIP_COLLAPSE, text);
+					 DOM_WHITESPACE_STRIP_COLLAPSE,
+					 text);
 		dom_string_unref(str);
 	}
 
@@ -238,32 +241,36 @@ static dom_exception dom_html_option_element_get_text_node(
  * \param text    Pointer to location to receive text
  * \return DOM_NO_ERR on success, appropriate error otherwise
  */
-dom_exception dom_html_option_element_get_text(
-	dom_html_option_element *option, dom_string **text)
+dom_exception dom_html_option_element_get_text(dom_html_option_element *option,
+					       dom_string **text)
 {
 	return dom_html_option_element_get_text_node(
-			(dom_node_internal *) option, text);
+		(dom_node_internal *)option, text);
 }
 
 /**
  * Obtain the index of this option in its parent
- * 
+ *
  * \param option  The dom_html_option_element object
  * \param index   Pointer to receive zero-based index
  * \return DOM_NO_ERR on success, appropriate error otherwise.
  */
-dom_exception dom_html_option_element_get_index(
-	dom_html_option_element *option, int32_t *index)
+dom_exception dom_html_option_element_get_index(dom_html_option_element *option,
+						int32_t *index)
 {
-	dom_html_document *doc = (dom_html_document *) dom_node_get_owner(option);
+	dom_html_document *doc = (dom_html_document *)dom_node_get_owner(
+		option);
 	int32_t idx = 0;
 	dom_node_internal *n = ((dom_node_internal *)option)->parent;
 
-	for(n = n->first_child;n != NULL; n = n->next) {
-		if((dom_node_internal *)option == n) {
+	for (n = n->first_child; n != NULL; n = n->next) {
+		if ((dom_node_internal *)option == n) {
 			*index = idx;
 			break;
-		} else if(dom_string_caseless_isequal(n->name,doc->elements[DOM_HTML_ELEMENT_TYPE_OPTION])) {
+		} else if (dom_string_caseless_isequal(
+				   n->name,
+				   doc->elements
+					   [DOM_HTML_ELEMENT_TYPE_OPTION])) {
 			idx += 1;
 		}
 	}
@@ -279,10 +286,10 @@ dom_exception dom_html_option_element_get_index(
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception dom_html_option_element_get_disabled(dom_html_option_element *ele,
-		bool *disabled)
+						   bool *disabled)
 {
-	return dom_html_element_get_bool_property(&ele->base, "disabled",
-			SLEN("disabled"), disabled);
+	return dom_html_element_get_bool_property(
+		&ele->base, "disabled", SLEN("disabled"), disabled);
 }
 
 /**
@@ -293,10 +300,10 @@ dom_exception dom_html_option_element_get_disabled(dom_html_option_element *ele,
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception dom_html_option_element_set_disabled(dom_html_option_element *ele,
-		bool disabled)
+						   bool disabled)
 {
-	return dom_html_element_set_bool_property(&ele->base, "disabled",
-			SLEN("disabled"), disabled);
+	return dom_html_element_set_bool_property(
+		&ele->base, "disabled", SLEN("disabled"), disabled);
 }
 
 /**
@@ -306,15 +313,16 @@ dom_exception dom_html_option_element_set_disabled(dom_html_option_element *ele,
  * \param label   Pointer to location to receive label
  * \return DOM_NO_ERR on success, appropriate error otherwise.
  */
-dom_exception dom_html_option_element_get_label(
-	dom_html_option_element *option, dom_string **label)
+dom_exception dom_html_option_element_get_label(dom_html_option_element *option,
+						dom_string **label)
 {
 	dom_html_document *doc;
 
-	doc = (dom_html_document *) ((dom_node_internal *) option)->owner;
+	doc = (dom_html_document *)((dom_node_internal *)option)->owner;
 
 	return dom_element_get_attribute(option,
-			doc->memoised[hds_label], label);
+					 doc->memoised[hds_label],
+					 label);
 }
 
 /**
@@ -324,15 +332,16 @@ dom_exception dom_html_option_element_get_label(
  * \param label   Label value
  * \return DOM_NO_ERR on success, appropriate error otherwise.
  */
-dom_exception dom_html_option_element_set_label(
-	dom_html_option_element *option, dom_string *label)
+dom_exception dom_html_option_element_set_label(dom_html_option_element *option,
+						dom_string *label)
 {
 	dom_html_document *doc;
 
-	doc = (dom_html_document *) ((dom_node_internal *) option)->owner;
+	doc = (dom_html_document *)((dom_node_internal *)option)->owner;
 
 	return dom_element_set_attribute(option,
-			doc->memoised[hds_label], label);
+					 doc->memoised[hds_label],
+					 label);
 }
 
 /**
@@ -343,10 +352,10 @@ dom_exception dom_html_option_element_set_label(
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception dom_html_option_element_get_selected(dom_html_option_element *ele,
-		bool *selected)
+						   bool *selected)
 {
-	return dom_html_element_get_bool_property(&ele->base, "selected",
-			SLEN("selected"), selected);
+	return dom_html_element_get_bool_property(
+		&ele->base, "selected", SLEN("selected"), selected);
 }
 
 /**
@@ -357,10 +366,10 @@ dom_exception dom_html_option_element_get_selected(dom_html_option_element *ele,
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception dom_html_option_element_set_selected(dom_html_option_element *ele,
-		bool selected)
+						   bool selected)
 {
-	return dom_html_element_set_bool_property(&ele->base, "selected",
-			SLEN("selected"), selected);
+	return dom_html_element_set_bool_property(
+		&ele->base, "selected", SLEN("selected"), selected);
 }
 
 /**
@@ -370,23 +379,25 @@ dom_exception dom_html_option_element_set_selected(dom_html_option_element *ele,
  * \param value   Pointer to location to receive property value
  * \return DOM_NO_ERR on success, appropriate error otherwise.
  */
-dom_exception dom_html_option_element_get_value(
-	dom_html_option_element *option, dom_string **value)
+dom_exception dom_html_option_element_get_value(dom_html_option_element *option,
+						dom_string **value)
 {
 	dom_html_document *doc;
 	bool has_value = false;
 	dom_exception err;
 
-	doc = (dom_html_document *) ((dom_node_internal *) option)->owner;
+	doc = (dom_html_document *)((dom_node_internal *)option)->owner;
 
-	err = dom_element_has_attribute(option, 
-			doc->memoised[hds_value], &has_value);
+	err = dom_element_has_attribute(option,
+					doc->memoised[hds_value],
+					&has_value);
 	if (err != DOM_NO_ERR)
 		return err;
 
 	if (has_value) {
 		return dom_element_get_attribute(option,
-				doc->memoised[hds_value], value);
+						 doc->memoised[hds_value],
+						 value);
 	}
 
 	return dom_html_option_element_get_text(option, value);
@@ -399,15 +410,16 @@ dom_exception dom_html_option_element_get_value(
  * \param value   Property value
  * \return DOM_NO_ERR on success, appropriate error otherwise.
  */
-dom_exception dom_html_option_element_set_value(
-	dom_html_option_element *option, dom_string *value)
+dom_exception dom_html_option_element_set_value(dom_html_option_element *option,
+						dom_string *value)
 {
 	dom_html_document *doc;
 
-	doc = (dom_html_document *) ((dom_node_internal *) option)->owner;
+	doc = (dom_html_document *)((dom_node_internal *)option)->owner;
 
 	return dom_element_set_attribute(option,
-			doc->memoised[hds_value], value);
+					 doc->memoised[hds_value],
+					 value);
 }
 
 /*------------------------------------------------------------------------*/
@@ -416,8 +428,9 @@ dom_exception dom_html_option_element_set_value(
 /* The virtual function used to parse attribute value, see src/core/element.c
  * for detail */
 dom_exception _dom_html_option_element_parse_attribute(dom_element *ele,
-		dom_string *name, dom_string *value,
-		dom_string **parsed)
+						       dom_string *name,
+						       dom_string *value,
+						       dom_string **parsed)
 {
 	dom_html_option_element *option = (dom_html_option_element *)ele;
 	dom_html_document *html = (dom_html_document *)(ele->base.owner);
@@ -441,12 +454,13 @@ dom_exception _dom_html_option_element_parse_attribute(dom_element *ele,
 /* The virtual destroy function, see src/core/node.c for detail */
 void _dom_virtual_html_option_element_destroy(dom_node_internal *node)
 {
-	_dom_html_option_element_destroy((struct dom_html_option_element *) node);
+	_dom_html_option_element_destroy(
+		(struct dom_html_option_element *)node);
 }
 
 /* The virtual copy function, see src/core/node.c for detail */
-dom_exception _dom_html_option_element_copy(
-		dom_node_internal *old, dom_node_internal **copy)
+dom_exception
+_dom_html_option_element_copy(dom_node_internal *old, dom_node_internal **copy)
 {
 	dom_html_option_element *new_node;
 	dom_exception err;
@@ -461,14 +475,14 @@ dom_exception _dom_html_option_element_copy(
 		return err;
 	}
 
-	*copy = (dom_node_internal *) new_node;
+	*copy = (dom_node_internal *)new_node;
 
 	return DOM_NO_ERR;
 }
 
-dom_exception _dom_html_option_element_copy_internal(
-		dom_html_option_element *old,
-		dom_html_option_element *new)
+dom_exception
+_dom_html_option_element_copy_internal(dom_html_option_element *old,
+				       dom_html_option_element *new)
 {
 	dom_exception err;
 
@@ -482,4 +496,3 @@ dom_exception _dom_html_option_element_copy_internal(
 
 	return DOM_NO_ERR;
 }
-

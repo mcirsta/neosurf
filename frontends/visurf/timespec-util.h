@@ -39,9 +39,9 @@
  * \param a[in] operand
  * \param b[in] operand
  */
-static inline void
-timespec_sub(struct timespec *r,
-	     const struct timespec *a, const struct timespec *b)
+static inline void timespec_sub(struct timespec *r,
+				const struct timespec *a,
+				const struct timespec *b)
 {
 	r->tv_sec = a->tv_sec - b->tv_sec;
 	r->tv_nsec = a->tv_nsec - b->tv_nsec;
@@ -89,8 +89,7 @@ timespec_add_msec(struct timespec *r, const struct timespec *a, int64_t b)
  * \param a timespec
  * \return nanoseconds
  */
-static inline int64_t
-timespec_to_nsec(const struct timespec *a)
+static inline int64_t timespec_to_nsec(const struct timespec *a)
 {
 	return (int64_t)a->tv_sec * NSEC_PER_SEC + a->tv_nsec;
 }
@@ -116,8 +115,7 @@ timespec_sub_to_nsec(const struct timespec *a, const struct timespec *b)
  *
  * Rounding to integer milliseconds happens always down (floor()).
  */
-static inline int64_t
-timespec_to_msec(const struct timespec *a)
+static inline int64_t timespec_to_msec(const struct timespec *a)
 {
 	return (int64_t)a->tv_sec * 1000 + a->tv_nsec / 1000000;
 }
@@ -141,8 +139,7 @@ timespec_sub_to_msec(const struct timespec *a, const struct timespec *b)
  *
  * Rounding to integer microseconds happens always down (floor()).
  */
-static inline int64_t
-timespec_to_usec(const struct timespec *a)
+static inline int64_t timespec_to_usec(const struct timespec *a)
 {
 	return (int64_t)a->tv_sec * 1000000 + a->tv_nsec / 1000;
 }
@@ -157,9 +154,10 @@ timespec_to_usec(const struct timespec *a)
  * The input timespec must be normalized (the nanoseconds part should
  * be less than 1 second) and non-negative.
  */
-static inline void
-timespec_to_proto(const struct timespec *a, uint32_t *tv_sec_hi,
-                  uint32_t *tv_sec_lo, uint32_t *tv_nsec)
+static inline void timespec_to_proto(const struct timespec *a,
+				     uint32_t *tv_sec_hi,
+				     uint32_t *tv_sec_lo,
+				     uint32_t *tv_nsec)
 {
 	assert(a->tv_sec >= 0);
 	assert(a->tv_nsec >= 0 && a->tv_nsec < NSEC_PER_SEC);
@@ -176,8 +174,7 @@ timespec_to_proto(const struct timespec *a, uint32_t *tv_sec_hi,
  * \param a timespec
  * \param b nanoseconds
  */
-static inline void
-timespec_from_nsec(struct timespec *a, int64_t b)
+static inline void timespec_from_nsec(struct timespec *a, int64_t b)
 {
 	a->tv_sec = b / NSEC_PER_SEC;
 	a->tv_nsec = b % NSEC_PER_SEC;
@@ -188,8 +185,7 @@ timespec_from_nsec(struct timespec *a, int64_t b)
  * \param a timespec
  * \param b microseconds
  */
-static inline void
-timespec_from_usec(struct timespec *a, int64_t b)
+static inline void timespec_from_usec(struct timespec *a, int64_t b)
 {
 	timespec_from_nsec(a, b * 1000);
 }
@@ -199,8 +195,7 @@ timespec_from_usec(struct timespec *a, int64_t b)
  * \param a timespec
  * \param b milliseconds
  */
-static inline void
-timespec_from_msec(struct timespec *a, int64_t b)
+static inline void timespec_from_msec(struct timespec *a, int64_t b)
 {
 	timespec_from_nsec(a, b * 1000000);
 }
@@ -212,9 +207,10 @@ timespec_from_msec(struct timespec *a, int64_t b)
  * \param tv_sec_lo the low bytes of seconds part
  * \param tv_nsec the nanoseconds part
  */
-static inline void
-timespec_from_proto(struct timespec *a, uint32_t tv_sec_hi,
-                    uint32_t tv_sec_lo, uint32_t tv_nsec)
+static inline void timespec_from_proto(struct timespec *a,
+				       uint32_t tv_sec_hi,
+				       uint32_t tv_sec_lo,
+				       uint32_t tv_nsec)
 {
 	a->tv_sec = ((uint64_t)tv_sec_hi << 32) + tv_sec_lo;
 	a->tv_nsec = tv_nsec;
@@ -225,8 +221,7 @@ timespec_from_proto(struct timespec *a, uint32_t tv_sec_hi,
  * \param a timespec
  * \return whether the timespec is zero
  */
-static inline bool
-timespec_is_zero(const struct timespec *a)
+static inline bool timespec_is_zero(const struct timespec *a)
 {
 	return a->tv_sec == 0 && a->tv_nsec == 0;
 }
@@ -236,8 +231,7 @@ timespec_is_zero(const struct timespec *a)
  * \param mhz frequency in mHz, not zero
  * \return period in nanoseconds
  */
-static inline int64_t
-millihz_to_nsec(uint32_t mhz)
+static inline int64_t millihz_to_nsec(uint32_t mhz)
 {
 	assert(mhz > 0);
 	return 1000000000000LL / mhz;

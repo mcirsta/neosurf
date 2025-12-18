@@ -45,11 +45,14 @@ struct llcache_handle;
  * \param effective_type  Location to receive computed type
  * \return NSERROR_OK on success,
  *         NSERROR_NEED_DATA iff \a data is NULL and data is needed
- *         NSERROR_NOT_FOUND if sniffing is prohibited and no 
+ *         NSERROR_NOT_FOUND if sniffing is prohibited and no
  *                           Content-Type header was found
  */
 nserror mimesniff_compute_effective_type(const char *content_type_header,
-		const uint8_t *data, size_t len, bool sniff_allowed,
-		bool image_only, lwc_string **effective_type);
+					 const uint8_t *data,
+					 size_t len,
+					 bool sniff_allowed,
+					 bool image_only,
+					 lwc_string **effective_type);
 
 #endif

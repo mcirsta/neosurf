@@ -26,7 +26,7 @@
 
 /* See www-authenticate.h for documentation */
 nserror http_parse_www_authenticate(const char *header_value,
-		http_www_authenticate **result)
+				    http_www_authenticate **result)
 {
 	const char *pos = header_value;
 	http_challenge *first = NULL;
@@ -45,8 +45,8 @@ nserror http_parse_www_authenticate(const char *header_value,
 	http__skip_LWS(&pos);
 
 	if (*pos == ',') {
-		error = http__item_list_parse(&pos,
-				http__parse_challenge, first, &list);
+		error = http__item_list_parse(
+			&pos, http__parse_challenge, first, &list);
 		if (error != NSERROR_OK && error != NSERROR_NOT_FOUND)
 			return error;
 	} else {
@@ -72,4 +72,3 @@ void http_www_authenticate_destroy(http_www_authenticate *victim)
 	http_challenge_list_destroy(victim->challenges);
 	free(victim);
 }
-

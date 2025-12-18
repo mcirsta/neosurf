@@ -27,7 +27,7 @@
  * 	If there are any other, printer specific routines to be performed in the
  * meantime - there can be set up any other printing funcion, which can use
  * print_set_up, print_draw_next_page and print_cleanup directly.
-*/
+ */
 
 #ifndef NETSURF_DESKTOP_PRINT_H
 #define NETSURF_DESKTOP_PRINT_H
@@ -39,19 +39,19 @@ struct hlcache_handle;
 struct printer;
 struct gui_layout_table;
 
-enum { MARGINLEFT = 0, MARGINRIGHT = 1, MARGINTOP = 2, MARGINBOTTOM = 3};
+enum { MARGINLEFT = 0, MARGINRIGHT = 1, MARGINTOP = 2, MARGINBOTTOM = 3 };
 
 /** Predefined printing configuration names*/
 typedef enum { PRINT_DEFAULT, PRINT_OPTIONS } print_configuration;
 
 /** Settings for a print - filled in by print_make_settings or
  * 'manually' by the caller
-*/
-struct print_settings{
+ */
+struct print_settings {
 	/*Standard parameters*/
 	float page_width, page_height;
 	css_fixed margins[4];
-	
+
 	float scale;
 
 	unsigned int copies;
@@ -67,19 +67,26 @@ struct print_settings{
 };
 
 
-bool print_basic_run(struct hlcache_handle *, const struct printer *, 
-		struct print_settings *);
-bool print_set_up(struct hlcache_handle *content, const struct printer *printer,
-		struct print_settings *settings, double *height);
+bool print_basic_run(struct hlcache_handle *,
+		     const struct printer *,
+		     struct print_settings *);
+bool print_set_up(struct hlcache_handle *content,
+		  const struct printer *printer,
+		  struct print_settings *settings,
+		  double *height);
 bool print_draw_next_page(const struct printer *printer,
-		struct print_settings *settings);
-bool print_cleanup(struct hlcache_handle *, const struct printer *,
-		struct print_settings *settings);
+			  struct print_settings *settings);
+bool print_cleanup(struct hlcache_handle *,
+		   const struct printer *,
+		   struct print_settings *settings);
 
 /**
  * Setup print settings for print render operation.
  */
-struct print_settings *print_make_settings(print_configuration configuration, const char *url, const struct gui_layout_table *font_func);
+struct print_settings *
+print_make_settings(print_configuration configuration,
+		    const char *url,
+		    const struct gui_layout_table *font_func);
 
 /*is the content currently redrawn for printing?*/
 extern bool html_redraw_printing;
@@ -89,4 +96,3 @@ extern int html_redraw_printing_border;
 extern int html_redraw_printing_top_cropped;
 
 #endif
-

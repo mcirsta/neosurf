@@ -20,178 +20,146 @@ css_error css_select_strings_intern(css_select_strings *str)
 		return css_error_from_lwc_error(error);
 
 	/* Pseudo classes */
-	error = lwc_intern_string(
-			"first-child", SLEN("first-child"),
-			&str->first_child);
+	error = lwc_intern_string("first-child",
+				  SLEN("first-child"),
+				  &str->first_child);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"link", SLEN("link"),
-			&str->link);
+	error = lwc_intern_string("link", SLEN("link"), &str->link);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"visited", SLEN("visited"),
-			&str->visited);
+	error = lwc_intern_string("visited", SLEN("visited"), &str->visited);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"hover", SLEN("hover"),
-			&str->hover);
+	error = lwc_intern_string("hover", SLEN("hover"), &str->hover);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"active", SLEN("active"),
-			&str->active);
+	error = lwc_intern_string("active", SLEN("active"), &str->active);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"focus", SLEN("focus"),
-			&str->focus);
+	error = lwc_intern_string("focus", SLEN("focus"), &str->focus);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"nth-child", SLEN("nth-child"),
-			&str->nth_child);
+	error = lwc_intern_string("nth-child",
+				  SLEN("nth-child"),
+				  &str->nth_child);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"nth-last-child", SLEN("nth-last-child"),
-			&str->nth_last_child);
+	error = lwc_intern_string("nth-last-child",
+				  SLEN("nth-last-child"),
+				  &str->nth_last_child);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"nth-of-type", SLEN("nth-of-type"),
-			&str->nth_of_type);
+	error = lwc_intern_string("nth-of-type",
+				  SLEN("nth-of-type"),
+				  &str->nth_of_type);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"nth-last-of-type", SLEN("nth-last-of-type"),
-			&str->nth_last_of_type);
+	error = lwc_intern_string("nth-last-of-type",
+				  SLEN("nth-last-of-type"),
+				  &str->nth_last_of_type);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"last-child", SLEN("last-child"),
-			&str->last_child);
+	error = lwc_intern_string("last-child",
+				  SLEN("last-child"),
+				  &str->last_child);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"first-of-type", SLEN("first-of-type"),
-			&str->first_of_type);
+	error = lwc_intern_string("first-of-type",
+				  SLEN("first-of-type"),
+				  &str->first_of_type);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"last-of-type", SLEN("last-of-type"),
-			&str->last_of_type);
+	error = lwc_intern_string("last-of-type",
+				  SLEN("last-of-type"),
+				  &str->last_of_type);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"only-child", SLEN("only-child"),
-			&str->only_child);
+	error = lwc_intern_string("only-child",
+				  SLEN("only-child"),
+				  &str->only_child);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"only-of-type", SLEN("only-of-type"),
-			&str->only_of_type);
+	error = lwc_intern_string("only-of-type",
+				  SLEN("only-of-type"),
+				  &str->only_of_type);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"root", SLEN("root"),
-			&str->root);
+	error = lwc_intern_string("root", SLEN("root"), &str->root);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"empty", SLEN("empty"),
-			&str->empty);
+	error = lwc_intern_string("empty", SLEN("empty"), &str->empty);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"target", SLEN("target"),
-			&str->target);
+	error = lwc_intern_string("target", SLEN("target"), &str->target);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"lang", SLEN("lang"),
-			&str->lang);
+	error = lwc_intern_string("lang", SLEN("lang"), &str->lang);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"enabled", SLEN("enabled"),
-			&str->enabled);
+	error = lwc_intern_string("enabled", SLEN("enabled"), &str->enabled);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"disabled", SLEN("disabled"),
-			&str->disabled);
+	error = lwc_intern_string("disabled", SLEN("disabled"), &str->disabled);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"checked", SLEN("checked"),
-			&str->checked);
+	error = lwc_intern_string("checked", SLEN("checked"), &str->checked);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
 	/* Pseudo elements */
-	error = lwc_intern_string(
-			"first-line", SLEN("first-line"),
-			&str->first_line);
+	error = lwc_intern_string("first-line",
+				  SLEN("first-line"),
+				  &str->first_line);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"first_letter", SLEN("first-letter"),
-			&str->first_letter);
+	error = lwc_intern_string("first_letter",
+				  SLEN("first-letter"),
+				  &str->first_letter);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"before", SLEN("before"),
-			&str->before);
+	error = lwc_intern_string("before", SLEN("before"), &str->before);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"after", SLEN("after"),
-			&str->after);
+	error = lwc_intern_string("after", SLEN("after"), &str->after);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"width", SLEN("width"),
-			&str->width);
+	error = lwc_intern_string("width", SLEN("width"), &str->width);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"height", SLEN("height"),
-			&str->height);
+	error = lwc_intern_string("height", SLEN("height"), &str->height);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 
-	error = lwc_intern_string(
-			"prefers-color-scheme", SLEN("prefers-color-scheme"),
-			&str->prefers_color_scheme);
+	error = lwc_intern_string("prefers-color-scheme",
+				  SLEN("prefers-color-scheme"),
+				  &str->prefers_color_scheme);
 	if (error != lwc_error_ok)
 		return css_error_from_lwc_error(error);
 

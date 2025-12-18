@@ -1,17 +1,17 @@
 // MIT License
-// 
+//
 // Copyright (c) 2018 emersion
-// 
+//
 // Permission is hereby granted, free of charge, to any person obtaining a copy
 // of this software and associated documentation files (the "Software"), to deal
 // in the Software without restriction, including without limitation the rights
 // to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 // copies of the Software, and to permit persons to whom the Software is
 // furnished to do so, subject to the following conditions:
-// 
+//
 // The above copyright notice and this permission notice shall be included in
 // all copies or substantial portions of the Software.
-// 
+//
 // THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 // IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 // FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -30,7 +30,8 @@ int ns_optopt = 0;
 int ns_optpos = 1;
 
 // POSIX getopt cannot be reset, so we need to provide our own implementation.
-int ns_getopt(int argc, char *const argv[], const char *optstring) {
+int ns_getopt(int argc, char *const argv[], const char *optstring)
+{
 	assert(argv[argc] == NULL);
 	ns_optarg = NULL;
 
@@ -84,8 +85,10 @@ int ns_getopt(int argc, char *const argv[], const char *optstring) {
 			if (ns_optind + 2 > argc) {
 				ns_optopt = opt;
 				if (ns_opterr != 0 && optstring[0] != ':') {
-					fprintf(stderr, "%s: Option '%c' requires an argument.\n",
-						argv[0], ns_optopt);
+					fprintf(stderr,
+						"%s: Option '%c' requires an argument.\n",
+						argv[0],
+						ns_optopt);
 				}
 
 				return optstring[0] == ':' ? ':' : '?';

@@ -57,7 +57,8 @@ struct gtk_search {
  * \param active activate/inactivate
  * \param search the gtk search context
  */
-static void nsgtk_search_set_forward_state(bool active, struct gtk_search *search)
+static void
+nsgtk_search_set_forward_state(bool active, struct gtk_search *search)
 {
 	gtk_widget_set_sensitive(GTK_WIDGET(search->forward), active);
 }
@@ -96,8 +97,8 @@ nsgtk_search_forward_button_clicked(GtkWidget *widget, gpointer data)
 		flags |= SEARCH_FLAG_SHOWALL;
 	}
 
-	browser_window_search(search->bw, search, flags,
-			      gtk_entry_get_text(search->entry));
+	browser_window_search(
+		search->bw, search, flags, gtk_entry_get_text(search->entry));
 
 	return TRUE;
 }
@@ -123,8 +124,8 @@ nsgtk_search_back_button_clicked(GtkWidget *widget, gpointer data)
 		flags |= SEARCH_FLAG_SHOWALL;
 	}
 
-	browser_window_search(search->bw, search, flags,
-			      gtk_entry_get_text(search->entry));
+	browser_window_search(
+		search->bw, search, flags, gtk_entry_get_text(search->entry));
 
 	return TRUE;
 }
@@ -165,8 +166,8 @@ static gboolean nsgtk_search_entry_changed(GtkWidget *widget, gpointer data)
 		flags |= SEARCH_FLAG_SHOWALL;
 	}
 
-	browser_window_search(search->bw, search, flags,
-			      gtk_entry_get_text(search->entry));
+	browser_window_search(
+		search->bw, search, flags, gtk_entry_get_text(search->entry));
 
 	return TRUE;
 }
@@ -191,8 +192,8 @@ static gboolean nsgtk_search_entry_activate(GtkWidget *widget, gpointer data)
 		flags |= SEARCH_FLAG_SHOWALL;
 	}
 
-	browser_window_search(search->bw, search, flags,
-			      gtk_entry_get_text(search->entry));
+	browser_window_search(
+		search->bw, search, flags, gtk_entry_get_text(search->entry));
 
 	return FALSE;
 }
@@ -280,10 +281,9 @@ nserror nsgtk_search_restyle(struct gtk_search *search)
 
 
 /* exported interface documented in gtk/search.h */
-nserror
-nsgtk_search_create(GtkBuilder *builder,
-		    struct browser_window *bw,
-		    struct gtk_search **search_out)
+nserror nsgtk_search_create(GtkBuilder *builder,
+			    struct browser_window *bw,
+			    struct gtk_search **search_out)
 {
 	struct gtk_search *search;
 
@@ -296,16 +296,16 @@ nsgtk_search_create(GtkBuilder *builder,
 
 	search->bar = GTK_TOOLBAR(gtk_builder_get_object(builder, "findbar"));
 	search->entry = GTK_ENTRY(gtk_builder_get_object(builder, "Find"));
-	search->back = GTK_TOOL_BUTTON(gtk_builder_get_object(builder,
-							"FindBack"));
-	search->forward = GTK_TOOL_BUTTON(gtk_builder_get_object(builder,
-							"FindForward"));
-	search->close = GTK_TOOL_BUTTON(gtk_builder_get_object(builder,
-							"FindClose"));
-	search->checkAll = GTK_CHECK_BUTTON(gtk_builder_get_object(builder,
-							"FindHighlightAll"));
-	search->caseSens = GTK_CHECK_BUTTON(gtk_builder_get_object(builder,
-							"FindMatchCase"));
+	search->back = GTK_TOOL_BUTTON(
+		gtk_builder_get_object(builder, "FindBack"));
+	search->forward = GTK_TOOL_BUTTON(
+		gtk_builder_get_object(builder, "FindForward"));
+	search->close = GTK_TOOL_BUTTON(
+		gtk_builder_get_object(builder, "FindClose"));
+	search->checkAll = GTK_CHECK_BUTTON(
+		gtk_builder_get_object(builder, "FindHighlightAll"));
+	search->caseSens = GTK_CHECK_BUTTON(
+		gtk_builder_get_object(builder, "FindMatchCase"));
 
 	g_signal_connect(search->forward,
 			 "clicked",

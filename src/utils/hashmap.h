@@ -34,7 +34,7 @@ typedef struct hashmap_s hashmap_t;
 /**
  * Key cloning function type
  */
-typedef void* (*hashmap_key_clone_t)(void *);
+typedef void *(*hashmap_key_clone_t)(void *);
 
 /**
  * Key destructor function type
@@ -49,12 +49,12 @@ typedef uint32_t (*hashmap_key_hash_t)(void *);
 /**
  * Key comparison function type
  */
-typedef bool (*hashmap_key_eq_t)(void *, void*);
+typedef bool (*hashmap_key_eq_t)(void *, void *);
 
 /**
  * Value allocation function type
  */
-typedef void* (*hashmap_value_alloc_t)(void *);
+typedef void *(*hashmap_value_alloc_t)(void *);
 
 /**
  * Value destructor function type
@@ -85,7 +85,7 @@ typedef struct {
 	 * A function which when given a key will return its hash.
 	 */
 	hashmap_key_hash_t key_hash;
-	
+
 	/**
 	 * A function to compare two keys and return if they are equal.
 	 * Note: identity is not necessary, nor strict equality, so long
@@ -93,7 +93,7 @@ typedef struct {
 	 * (i.e. key1 == key2 => key2 == key1)
 	 */
 	hashmap_key_eq_t key_eq;
-	 
+
 	/**
 	 * A function which when called will destroy a key object
 	 */
@@ -119,7 +119,7 @@ typedef struct {
  *
  * \param params The hashmap parameters for this map
  */
-hashmap_t* hashmap_create(hashmap_parameters_t *params);
+hashmap_t *hashmap_create(hashmap_parameters_t *params);
 
 /**
  * Destroy a hashmap
@@ -141,7 +141,7 @@ void hashmap_destroy(hashmap_t *hashmap);
  * \param key The key to look up in the hashmap
  * \return A pointer to the value if found, NULL otherwise
  */
-void* hashmap_lookup(hashmap_t *hashmap, void *key);
+void *hashmap_lookup(hashmap_t *hashmap, void *key);
 
 /**
  * Create an entry in a hashmap

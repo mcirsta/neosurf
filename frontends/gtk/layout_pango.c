@@ -46,7 +46,7 @@ static inline void nsfont_pango_check(void)
 		NSLOG(neosurf, INFO, "Creating nsfont_pango_context.");
 		nsfont_pango_context = gdk_pango_context_get();
 	}
-	
+
 	if (nsfont_pango_layout == NULL) {
 		NSLOG(neosurf, INFO, "Creating nsfont_pango_layout.");
 		nsfont_pango_layout = pango_layout_new(nsfont_pango_context);
@@ -62,11 +62,10 @@ static inline void nsfont_pango_check(void)
  * \param[out] width updated to width of string[0..length)
  * \return NSERROR_OK and width updated or appropriate error code on faliure
  */
-static nserror
-nsfont_width(const plot_font_style_t *fstyle,
-	     const char *string,
-	     size_t length,
-	     int *width)
+static nserror nsfont_width(const plot_font_style_t *fstyle,
+			    const char *string,
+			    size_t length,
+			    int *width)
 {
 	PangoFontDescription *desc;
 	PangoRectangle pos;
@@ -87,9 +86,14 @@ nsfont_width(const plot_font_style_t *fstyle,
 	pango_layout_index_to_pos(nsfont_pango_layout, length, &pos);
 	*width = PANGO_PIXELS(pos.x);
 
-	NSLOG(neosurf, DEEPDEBUG,
+	NSLOG(neosurf,
+	      DEEPDEBUG,
 	      "fstyle: %p string:\"%.*s\", length: %" PRIsizet ", width: %dpx",
-	      fstyle, (int)length, string, length, *width);
+	      fstyle,
+	      (int)length,
+	      string,
+	      length,
+	      *width);
 
 
 	return NSERROR_OK;
@@ -103,16 +107,17 @@ nsfont_width(const plot_font_style_t *fstyle,
  * \param[in] length length of string, in bytes
  * \param[in] x coordinate to search for
  * \param[out] string_idx updated to offset in string of actual_x, [0..length]
- * \param[out] actual_x updated to x coordinate of character closest to x or full length if string_idx is 0
- * \return NSERROR_OK and string_idx and actual_x updated or appropriate error code on faliure
+ * \param[out] actual_x updated to x coordinate of character closest to x or
+ * full length if string_idx is 0
+ * \return NSERROR_OK and string_idx and actual_x updated or appropriate error
+ * code on faliure
  */
-static nserror
-layout_position(PangoLayout *layout,
-		const char *string,
-		size_t length,
-		int x,
-		size_t *string_idx,
-		int *actual_x)
+static nserror layout_position(PangoLayout *layout,
+			       const char *string,
+			       size_t length,
+			       int x,
+			       size_t *string_idx,
+			       int *actual_x)
 {
 	int index;
 	PangoRectangle pos;
@@ -133,9 +138,8 @@ layout_position(PangoLayout *layout,
 		index = 0;
 	} else {
 		/* compute index into string */
-		if (pango_layout_xy_to_index(layout,
-					     x * PANGO_SCALE,
-					     0, &index, 0) == FALSE) {
+		if (pango_layout_xy_to_index(
+			    layout, x * PANGO_SCALE, 0, &index, 0) == FALSE) {
 			/* whole string fits */
 			index = length;
 		}
@@ -164,13 +168,12 @@ layout_position(PangoLayout *layout,
  * \return NSERROR_OK and char_offset and actual_x updated or appropriate
  *          error code on faliure
  */
-static nserror
-nsfont_position_in_string(const plot_font_style_t *fstyle,
-			  const char *string,
-			  size_t length,
-			  int x,
-			  size_t *char_offset,
-			  int *actual_x)
+static nserror nsfont_position_in_string(const plot_font_style_t *fstyle,
+					 const char *string,
+					 size_t length,
+					 int x,
+					 size_t *char_offset,
+					 int *actual_x)
 {
 	PangoFontDescription *desc;
 	nserror res;
@@ -181,17 +184,20 @@ nsfont_position_in_string(const plot_font_style_t *fstyle,
 	pango_layout_set_font_description(nsfont_pango_layout, desc);
 	pango_font_description_free(desc);
 
-	res = layout_position(nsfont_pango_layout,
-			      string,
-			      length,
-			      x,
-			      char_offset,
-			      actual_x);
+	res = layout_position(
+		nsfont_pango_layout, string, length, x, char_offset, actual_x);
 
-	NSLOG(neosurf, DEEPDEBUG,
+	NSLOG(neosurf,
+	      DEEPDEBUG,
 	      "fstyle: %p string:\"%.*s\", length: %" PRIsizet ", "
 	      "search_x: %dpx, offset: %" PRIsizet ", actual_x: %dpx",
-	      fstyle, (int)length, string, length, x, *char_offset, *actual_x);
+	      fstyle,
+	      (int)length,
+	      string,
+	      length,
+	      x,
+	      *char_offset,
+	      *actual_x);
 	return res;
 }
 
@@ -218,13 +224,12 @@ nsfont_position_in_string(const plot_font_style_t *fstyle,
  *
  * Returning char_offset == length means no split possible
  */
-static nserror
-nsfont_split(const plot_font_style_t *fstyle,
-	     const char *string,
-	     size_t length,
-	     int x,
-	     size_t *string_idx,
-	     int *actual_x)
+static nserror nsfont_split(const plot_font_style_t *fstyle,
+			    const char *string,
+			    size_t length,
+			    int x,
+			    size_t *string_idx,
+			    int *actual_x)
 {
 	nserror res;
 	PangoContext *context;
@@ -242,12 +247,7 @@ nsfont_split(const plot_font_style_t *fstyle,
 	pango_layout_set_font_description(layout, desc);
 	pango_font_description_free(desc);
 
-	res = layout_position(layout,
-			      string,
-			      length,
-			      x,
-			      &split_len,
-			      &split_x);
+	res = layout_position(layout, string, length, x, &split_len, &split_x);
 	if (res != NSERROR_OK) {
 		goto split_done;
 	}
@@ -270,16 +270,14 @@ nsfont_split(const plot_font_style_t *fstyle,
 	str_len = split_len;
 
 	/* walk backwards through string looking for space to break on */
-	while ((string[str_len] != ' ') &&
-	       (str_len > 0)) {
+	while ((string[str_len] != ' ') && (str_len > 0)) {
 		str_len--;
 	}
 
 	/* walk forwards through string looking for space if back failed */
 	if (str_len == 0) {
 		str_len = split_len;
-		while ((str_len < length) &&
-		       (string[str_len] != ' ')) {
+		while ((str_len < length) && (string[str_len] != ' ')) {
 			str_len++;
 		}
 	}
@@ -297,11 +295,19 @@ split_done:
 	g_object_unref(layout);
 	g_object_unref(context);
 
-	NSLOG(neosurf, DEEPDEBUG,
+	NSLOG(neosurf,
+	      DEEPDEBUG,
 	      "fstyle: %p string:\"%.*s\" / \"%.*s\", length: %" PRIsizet ", "
 	      "split_x: %dpx, offset: %" PRIsizet ", actual_x: %dpx",
-	      fstyle, (int)(*string_idx), string, (int)(length - *string_idx),
-	      string+*string_idx, length, x, *string_idx, *actual_x);
+	      fstyle,
+	      (int)(*string_idx),
+	      string,
+	      (int)(length - *string_idx),
+	      string + *string_idx,
+	      length,
+	      x,
+	      *string_idx,
+	      *actual_x);
 	return res;
 }
 
@@ -316,8 +322,11 @@ split_done:
  * \param  fstyle  plot style for this text
  * \return  true on success, false on error and error reported
  */
-nserror nsfont_paint(int x, int y, const char *string, size_t length,
-		const plot_font_style_t *fstyle)
+nserror nsfont_paint(int x,
+		     int y,
+		     const char *string,
+		     size_t length,
+		     const plot_font_style_t *fstyle)
 {
 	PangoFontDescription *desc;
 	PangoLayoutLine *line;
@@ -352,20 +361,25 @@ nsfont_style_to_description(const plot_font_style_t *fstyle)
 
 	switch (fstyle->family) {
 	case PLOT_FONT_FAMILY_SERIF:
-		desc = pango_font_description_from_string(nsoption_charp(font_serif));
+		desc = pango_font_description_from_string(
+			nsoption_charp(font_serif));
 		break;
 	case PLOT_FONT_FAMILY_MONOSPACE:
-		desc = pango_font_description_from_string(nsoption_charp(font_mono));
+		desc = pango_font_description_from_string(
+			nsoption_charp(font_mono));
 		break;
 	case PLOT_FONT_FAMILY_CURSIVE:
-		desc = pango_font_description_from_string(nsoption_charp(font_cursive));
+		desc = pango_font_description_from_string(
+			nsoption_charp(font_cursive));
 		break;
 	case PLOT_FONT_FAMILY_FANTASY:
-		desc = pango_font_description_from_string(nsoption_charp(font_fantasy));
+		desc = pango_font_description_from_string(
+			nsoption_charp(font_fantasy));
 		break;
 	case PLOT_FONT_FAMILY_SANS_SERIF:
 	default:
-		desc = pango_font_description_from_string(nsoption_charp(font_sans));
+		desc = pango_font_description_from_string(
+			nsoption_charp(font_sans));
 		break;
 	}
 
@@ -378,13 +392,13 @@ nsfont_style_to_description(const plot_font_style_t *fstyle)
 
 	pango_font_description_set_style(desc, style);
 
-	pango_font_description_set_weight(desc, (PangoWeight) fstyle->weight);
+	pango_font_description_set_weight(desc, (PangoWeight)fstyle->weight);
 
 	pango_font_description_set_size(desc, size);
 
 	if (fstyle->flags & FONTF_SMALLCAPS) {
 		pango_font_description_set_variant(desc,
-				PANGO_VARIANT_SMALL_CAPS);
+						   PANGO_VARIANT_SMALL_CAPS);
 	} else {
 		pango_font_description_set_variant(desc, PANGO_VARIANT_NORMAL);
 	}

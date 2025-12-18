@@ -24,7 +24,7 @@ typedef struct hash_entry {
 } hash_entry;
 
 typedef struct hash_t {
-#define DEFAULT_SLOTS (1<<6)
+#define DEFAULT_SLOTS (1 << 6)
 	size_t n_slots;
 
 	hash_entry *slots;
@@ -46,40 +46,38 @@ static hash_entry empty_slot;
 
 static inline lwc_string *_class_name(const css_selector *selector);
 static inline lwc_string *_id_name(const css_selector *selector);
-static css_error _insert_into_chain(css_selector_hash *ctx, hash_entry *head,
-		const css_selector *selector);
-static css_error _remove_from_chain(css_selector_hash *ctx, hash_entry *head,
-		const css_selector *selector);
+static css_error _insert_into_chain(css_selector_hash *ctx,
+				    hash_entry *head,
+				    const css_selector *selector);
+static css_error _remove_from_chain(css_selector_hash *ctx,
+				    hash_entry *head,
+				    const css_selector *selector);
 
-static css_error _iterate_elements(
-		const struct css_hash_selection_requirments *req,
-		const css_selector **current,
-		const css_selector ***next);
-static css_error _iterate_classes(
-		const struct css_hash_selection_requirments *req,
-		const css_selector **current,
-		const css_selector ***next);
-static css_error _iterate_ids(
-		const struct css_hash_selection_requirments *req,
-		const css_selector **current,
-		const css_selector ***next);
-static css_error _iterate_universal(
-		const struct css_hash_selection_requirments *req,
-		const css_selector **current,
-		const css_selector ***next);
-
-
+static css_error
+_iterate_elements(const struct css_hash_selection_requirments *req,
+		  const css_selector **current,
+		  const css_selector ***next);
+static css_error
+_iterate_classes(const struct css_hash_selection_requirments *req,
+		 const css_selector **current,
+		 const css_selector ***next);
+static css_error _iterate_ids(const struct css_hash_selection_requirments *req,
+			      const css_selector **current,
+			      const css_selector ***next);
+static css_error
+_iterate_universal(const struct css_hash_selection_requirments *req,
+		   const css_selector **current,
+		   const css_selector ***next);
 
 
 /* Get case insensitive hash value for a name.
  * All element/class/id names are known to have their insensitive ptr set. */
-#define _hash_name(name) \
-	lwc_string_hash_value(name->insensitive)
+#define _hash_name(name) lwc_string_hash_value(name->insensitive)
 
 
 /* No bytecode if rule body is empty or wholly invalid --
  * Only interested in rules with bytecode */
-#define RULE_HAS_BYTECODE(r) \
+#define RULE_HAS_BYTECODE(r)                                                   \
 	(((css_rule_selector *)(r->sel->rule))->style != NULL)
 
 
@@ -95,13 +93,15 @@ static css_error _iterate_universal(
  * \return true iff chain head doesn't fail to match element name
  */
 static inline bool _chain_good_for_element_name(const css_selector *selector,
-		const css_qname *qname, const lwc_string *uni)
+						const css_qname *qname,
+						const lwc_string *uni)
 {
 	if (selector->data.qname.name != uni) {
 		bool match;
-		if (lwc_string_caseless_isequal(
-				selector->data.qname.name, qname->name,
-				&match) == lwc_error_ok && match == false) {
+		if (lwc_string_caseless_isequal(selector->data.qname.name,
+						qname->name,
+						&match) == lwc_error_ok &&
+		    match == false) {
 			return false;
 		}
 	}
@@ -157,9 +157,9 @@ css_error css__selector_hash_create(css_selector_hash **hash)
 	/* Universal chain head already initiliased by calloc of `h`. */
 
 	h->hash_size = sizeof(css_selector_hash) +
-			DEFAULT_SLOTS * sizeof(hash_entry) +
-			DEFAULT_SLOTS * sizeof(hash_entry) +
-			DEFAULT_SLOTS * sizeof(hash_entry);
+		       DEFAULT_SLOTS * sizeof(hash_entry) +
+		       DEFAULT_SLOTS * sizeof(hash_entry) +
+		       DEFAULT_SLOTS * sizeof(hash_entry);
 
 	*hash = h;
 
@@ -229,8 +229,8 @@ css_error css__selector_hash_destroy(css_selector_hash *hash)
  * \param selector  Pointer to selector
  * \return CSS_OK on success, appropriate error otherwise
  */
-css_error css__selector_hash_insert(css_selector_hash *hash,
-		const css_selector *selector)
+css_error
+css__selector_hash_insert(css_selector_hash *hash, const css_selector *selector)
 {
 	uint32_t index, mask;
 	lwc_string *name;
@@ -245,23 +245,26 @@ css_error css__selector_hash_insert(css_selector_hash *hash,
 		mask = hash->ids.n_slots - 1;
 		index = _hash_name(name) & mask;
 
-		error = _insert_into_chain(hash, &hash->ids.slots[index],
-				selector);
+		error = _insert_into_chain(hash,
+					   &hash->ids.slots[index],
+					   selector);
 	} else if ((name = _class_name(selector)) != NULL) {
 		/* Named class */
 		mask = hash->classes.n_slots - 1;
 		index = _hash_name(name) & mask;
 
-		error = _insert_into_chain(hash, &hash->classes.slots[index],
-				selector);
+		error = _insert_into_chain(hash,
+					   &hash->classes.slots[index],
+					   selector);
 	} else if (lwc_string_length(selector->data.qname.name) != 1 ||
-			lwc_string_data(selector->data.qname.name)[0] != '*') {
+		   lwc_string_data(selector->data.qname.name)[0] != '*') {
 		/* Named element */
 		mask = hash->elements.n_slots - 1;
 		index = _hash_name(selector->data.qname.name) & mask;
 
-		error = _insert_into_chain(hash, &hash->elements.slots[index],
-				selector);
+		error = _insert_into_chain(hash,
+					   &hash->elements.slots[index],
+					   selector);
 	} else {
 		/* Universal chain */
 		error = _insert_into_chain(hash, &hash->universal, selector);
@@ -277,8 +280,8 @@ css_error css__selector_hash_insert(css_selector_hash *hash,
  * \param selector  Pointer to selector
  * \return CSS_OK on success, appropriate error otherwise
  */
-css_error css__selector_hash_remove(css_selector_hash *hash,
-		const css_selector *selector)
+css_error
+css__selector_hash_remove(css_selector_hash *hash, const css_selector *selector)
 {
 	uint32_t index, mask;
 	lwc_string *name;
@@ -293,23 +296,26 @@ css_error css__selector_hash_remove(css_selector_hash *hash,
 		mask = hash->ids.n_slots - 1;
 		index = _hash_name(name) & mask;
 
-		error = _remove_from_chain(hash, &hash->ids.slots[index],
-				selector);
+		error = _remove_from_chain(hash,
+					   &hash->ids.slots[index],
+					   selector);
 	} else if ((name = _class_name(selector)) != NULL) {
 		/* Named class */
 		mask = hash->classes.n_slots - 1;
 		index = _hash_name(name) & mask;
 
-		error = _remove_from_chain(hash, &hash->classes.slots[index],
-				selector);
+		error = _remove_from_chain(hash,
+					   &hash->classes.slots[index],
+					   selector);
 	} else if (lwc_string_length(selector->data.qname.name) != 1 ||
-			lwc_string_data(selector->data.qname.name)[0] != '*') {
+		   lwc_string_data(selector->data.qname.name)[0] != '*') {
 		/* Named element */
 		mask = hash->elements.n_slots - 1;
 		index = _hash_name(selector->data.qname.name) & mask;
 
-		error = _remove_from_chain(hash, &hash->elements.slots[index],
-				selector);
+		error = _remove_from_chain(hash,
+					   &hash->elements.slots[index],
+					   selector);
 	} else {
 		/* Universal chain */
 		error = _remove_from_chain(hash, &hash->universal, selector);
@@ -329,10 +335,11 @@ css_error css__selector_hash_remove(css_selector_hash *hash,
  *
  * If nothing matches, CSS_OK will be returned and **matched == NULL
  */
-css_error css__selector_hash_find(css_selector_hash *hash,
-		const struct css_hash_selection_requirments *req,
-		css_selector_hash_iterator *iterator,
-		const css_selector ***matched)
+css_error
+css__selector_hash_find(css_selector_hash *hash,
+			const struct css_hash_selection_requirments *req,
+			css_selector_hash_iterator *iterator,
+			const css_selector ***matched)
 {
 	uint32_t index, mask;
 	lwc_hash name_hash;
@@ -344,8 +351,8 @@ css_error css__selector_hash_find(css_selector_hash *hash,
 	/* Find index */
 	mask = hash->elements.n_slots - 1;
 
-	if (lwc_string_caseless_hash_value(req->qname.name,
-			&name_hash) != lwc_error_ok) {
+	if (lwc_string_caseless_hash_value(req->qname.name, &name_hash) !=
+	    lwc_error_ok) {
 		return CSS_NOMEM;
 	}
 	index = name_hash & mask;
@@ -359,19 +366,19 @@ css_error css__selector_hash_find(css_selector_hash *hash,
 			bool match = false;
 
 			lerror = lwc_string_isequal(
-					req->qname.name->insensitive,
-					head->sel->data.qname.name->insensitive,
-					&match);
+				req->qname.name->insensitive,
+				head->sel->data.qname.name->insensitive,
+				&match);
 			if (lerror != lwc_error_ok)
 				return css_error_from_lwc_error(lerror);
 
 			if (match && RULE_HAS_BYTECODE(head)) {
-				if (css_bloom_in_bloom(
-						head->sel_chain_bloom,
-						req->node_bloom) &&
+				if (css_bloom_in_bloom(head->sel_chain_bloom,
+						       req->node_bloom) &&
 				    mq_rule_good_for_media(head->sel->rule,
-						req->unit_ctx, req->media,
-						req->str)) {
+							   req->unit_ctx,
+							   req->media,
+							   req->str)) {
 					/* Found a match */
 					break;
 				}
@@ -385,7 +392,7 @@ css_error css__selector_hash_find(css_selector_hash *hash,
 	}
 
 	(*iterator) = _iterate_elements;
-	(*matched) = (const css_selector **) head;
+	(*matched) = (const css_selector **)head;
 
 	return CSS_OK;
 }
@@ -401,24 +408,25 @@ css_error css__selector_hash_find(css_selector_hash *hash,
  *
  * If nothing matches, CSS_OK will be returned and **matched == NULL
  */
-css_error css__selector_hash_find_by_class(css_selector_hash *hash,
-		const struct css_hash_selection_requirments *req,
-		css_selector_hash_iterator *iterator,
-		const css_selector ***matched)
+css_error css__selector_hash_find_by_class(
+	css_selector_hash *hash,
+	const struct css_hash_selection_requirments *req,
+	css_selector_hash_iterator *iterator,
+	const css_selector ***matched)
 {
 	uint32_t index, mask;
 	lwc_hash class_hash;
 	hash_entry *head;
 
 	if (hash == NULL || req == NULL || req->class == NULL ||
-			iterator == NULL || matched == NULL)
+	    iterator == NULL || matched == NULL)
 		return CSS_BADPARM;
 
 	/* Find index */
 	mask = hash->classes.n_slots - 1;
 
-	if (lwc_string_caseless_hash_value(req->class,
-			&class_hash) != lwc_error_ok) {
+	if (lwc_string_caseless_hash_value(req->class, &class_hash) !=
+	    lwc_error_ok) {
 		return CSS_NOMEM;
 	}
 	index = class_hash & mask;
@@ -435,24 +443,25 @@ css_error css__selector_hash_find_by_class(css_selector_hash *hash,
 			n = _class_name(head->sel);
 			if (n != NULL) {
 				lerror = lwc_string_isequal(
-						req->class->insensitive,
-						n->insensitive, &match);
+					req->class->insensitive,
+					n->insensitive,
+					&match);
 				if (lerror != lwc_error_ok)
 					return css_error_from_lwc_error(lerror);
 
 				if (match && RULE_HAS_BYTECODE(head)) {
 					if (css_bloom_in_bloom(
-							head->sel_chain_bloom,
-							req->node_bloom) &&
+						    head->sel_chain_bloom,
+						    req->node_bloom) &&
 					    _chain_good_for_element_name(
-							head->sel,
-							&(req->qname),
-							req->str->universal) &&
+						    head->sel,
+						    &(req->qname),
+						    req->str->universal) &&
 					    mq_rule_good_for_media(
-							head->sel->rule,
-							req->unit_ctx,
-							req->media,
-							req->str)) {
+						    head->sel->rule,
+						    req->unit_ctx,
+						    req->media,
+						    req->str)) {
 						/* Found a match */
 						break;
 					}
@@ -467,7 +476,7 @@ css_error css__selector_hash_find_by_class(css_selector_hash *hash,
 	}
 
 	(*iterator) = _iterate_classes;
-	(*matched) = (const css_selector **) head;
+	(*matched) = (const css_selector **)head;
 
 	return CSS_OK;
 }
@@ -483,24 +492,24 @@ css_error css__selector_hash_find_by_class(css_selector_hash *hash,
  *
  * If nothing matches, CSS_OK will be returned and **matched == NULL
  */
-css_error css__selector_hash_find_by_id(css_selector_hash *hash,
-		const struct css_hash_selection_requirments *req,
-		css_selector_hash_iterator *iterator,
-		const css_selector ***matched)
+css_error
+css__selector_hash_find_by_id(css_selector_hash *hash,
+			      const struct css_hash_selection_requirments *req,
+			      css_selector_hash_iterator *iterator,
+			      const css_selector ***matched)
 {
 	uint32_t index, mask;
 	lwc_hash id_hash;
 	hash_entry *head;
 
 	if (hash == NULL || req == NULL || req->id == NULL ||
-			iterator == NULL || matched == NULL)
+	    iterator == NULL || matched == NULL)
 		return CSS_BADPARM;
 
 	/* Find index */
 	mask = hash->ids.n_slots - 1;
 
-	if (lwc_string_caseless_hash_value(req->id,
-			&id_hash) != lwc_error_ok) {
+	if (lwc_string_caseless_hash_value(req->id, &id_hash) != lwc_error_ok) {
 		return CSS_NOMEM;
 	}
 	index = id_hash & mask;
@@ -517,24 +526,25 @@ css_error css__selector_hash_find_by_id(css_selector_hash *hash,
 			n = _id_name(head->sel);
 			if (n != NULL) {
 				lerror = lwc_string_isequal(
-						req->id->insensitive,
-						n->insensitive, &match);
+					req->id->insensitive,
+					n->insensitive,
+					&match);
 				if (lerror != lwc_error_ok)
 					return css_error_from_lwc_error(lerror);
 
 				if (match && RULE_HAS_BYTECODE(head)) {
 					if (css_bloom_in_bloom(
-							head->sel_chain_bloom,
-							req->node_bloom) &&
+						    head->sel_chain_bloom,
+						    req->node_bloom) &&
 					    _chain_good_for_element_name(
-							head->sel,
-							&req->qname,
-							req->str->universal) &&
+						    head->sel,
+						    &req->qname,
+						    req->str->universal) &&
 					    mq_rule_good_for_media(
-							head->sel->rule,
-							req->unit_ctx,
-							req->media,
-							req->str)) {
+						    head->sel->rule,
+						    req->unit_ctx,
+						    req->media,
+						    req->str)) {
 						/* Found a match */
 						break;
 					}
@@ -549,7 +559,7 @@ css_error css__selector_hash_find_by_id(css_selector_hash *hash,
 	}
 
 	(*iterator) = _iterate_ids;
-	(*matched) = (const css_selector **) head;
+	(*matched) = (const css_selector **)head;
 
 	return CSS_OK;
 }
@@ -564,10 +574,11 @@ css_error css__selector_hash_find_by_id(css_selector_hash *hash,
  *
  * If nothing matches, CSS_OK will be returned and **matched == NULL
  */
-css_error css__selector_hash_find_universal(css_selector_hash *hash,
-		const struct css_hash_selection_requirments *req,
-		css_selector_hash_iterator *iterator,
-		const css_selector ***matched)
+css_error css__selector_hash_find_universal(
+	css_selector_hash *hash,
+	const struct css_hash_selection_requirments *req,
+	css_selector_hash_iterator *iterator,
+	const css_selector ***matched)
 {
 	hash_entry *head;
 
@@ -580,12 +591,12 @@ css_error css__selector_hash_find_universal(css_selector_hash *hash,
 		/* Search through chain for first match */
 		while (head != NULL) {
 			if (RULE_HAS_BYTECODE(head) &&
-			    css_bloom_in_bloom(
-					head->sel_chain_bloom,
-					req->node_bloom) &&
+			    css_bloom_in_bloom(head->sel_chain_bloom,
+					       req->node_bloom) &&
 			    mq_rule_good_for_media(head->sel->rule,
-					req->unit_ctx, req->media,
-					req->str)) {
+						   req->unit_ctx,
+						   req->media,
+						   req->str)) {
 				/* Found a match */
 				break;
 			}
@@ -598,7 +609,7 @@ css_error css__selector_hash_find_universal(css_selector_hash *hash,
 	}
 
 	(*iterator) = _iterate_universal;
-	(*matched) = (const css_selector **) head;
+	(*matched) = (const css_selector **)head;
 
 	return CSS_OK;
 }
@@ -688,9 +699,8 @@ lwc_string *_id_name(const css_selector *selector)
  * \param d		Selector detail to consider and add if relevant
  * \param bloom		Bloom filter to add to.
  */
-static inline void _chain_bloom_add_detail(
-		const css_selector_detail *d,
-		css_bloom bloom[CSS_BLOOM_SIZE])
+static inline void _chain_bloom_add_detail(const css_selector_detail *d,
+					   css_bloom bloom[CSS_BLOOM_SIZE])
 {
 	lwc_string *add; /* String to add to bloom */
 
@@ -698,7 +708,7 @@ static inline void _chain_bloom_add_detail(
 	case CSS_SELECTOR_ELEMENT:
 		/* Don't add universal element selector to bloom */
 		if (lwc_string_length(d->qname.name) == 1 &&
-				lwc_string_data(d->qname.name)[0] == '*') {
+		    lwc_string_data(d->qname.name)[0] == '*') {
 			return;
 		}
 		/* Fall through */
@@ -727,8 +737,8 @@ static inline void _chain_bloom_add_detail(
  * \param s		Selector at head of selector chain
  * \param bloom		Bloom filter to generate.
  */
-static void _chain_bloom_generate(const css_selector *s,
-		css_bloom bloom[CSS_BLOOM_SIZE])
+static void
+_chain_bloom_generate(const css_selector *s, css_bloom bloom[CSS_BLOOM_SIZE])
 {
 	css_bloom_init(bloom);
 
@@ -736,7 +746,7 @@ static void _chain_bloom_generate(const css_selector *s,
 	do {
 		/* ...looking for Ancestor/Parent combinators */
 		if (s->data.comb == CSS_COMBINATOR_ANCESTOR ||
-				 s->data.comb == CSS_COMBINATOR_PARENT) {
+		    s->data.comb == CSS_COMBINATOR_PARENT) {
 			const css_selector_detail *d = &s->combinator->data;
 			do {
 				if (d->negate == 0) {
@@ -751,7 +761,8 @@ static void _chain_bloom_generate(const css_selector *s,
 
 #ifdef PRINT_CHAIN_BLOOM_DETAILS
 /* Count bits set in uint32_t */
-static int bits_set(uint32_t n) {
+static int bits_set(uint32_t n)
+{
 	n = n - ((n >> 1) & 0x55555555);
 	n = (n & 0x33333333) + ((n >> 2) & 0x33333333);
 	n = (n + (n >> 4)) & 0x0f0f0f0f;
@@ -774,9 +785,10 @@ static void print_chain_bloom_details(css_bloom bloom[CSS_BLOOM_SIZE])
 	for (i = 0; i < CSS_BLOOM_SIZE; i++) {
 		printf(" %2i", set[i]);
 	}
-	printf(" (total:%4i of %i)   saturation: %3i%%\n", total,
-			(32 * CSS_BLOOM_SIZE),
-			(100 * total) / (32 * CSS_BLOOM_SIZE));
+	printf(" (total:%4i of %i)   saturation: %3i%%\n",
+	       total,
+	       (32 * CSS_BLOOM_SIZE),
+	       (100 * total) / (32 * CSS_BLOOM_SIZE));
 }
 #endif
 
@@ -789,8 +801,9 @@ static void print_chain_bloom_details(css_bloom bloom[CSS_BLOOM_SIZE])
  * \return CSS_OK    on success,
  *         CSS_NOMEM on memory exhaustion.
  */
-css_error _insert_into_chain(css_selector_hash *ctx, hash_entry *head,
-		const css_selector *selector)
+css_error _insert_into_chain(css_selector_hash *ctx,
+			     hash_entry *head,
+			     const css_selector *selector)
 {
 	if (head->sel == NULL) {
 		head->sel = selector;
@@ -815,8 +828,7 @@ css_error _insert_into_chain(css_selector_hash *ctx, hash_entry *head,
 
 			/* Sort by ascending rule index */
 			if (search->sel->specificity == selector->specificity &&
-					search->sel->rule->index >
-					selector->rule->index)
+			    search->sel->rule->index > selector->rule->index)
 				break;
 
 			prev = search;
@@ -855,8 +867,9 @@ css_error _insert_into_chain(css_selector_hash *ctx, hash_entry *head,
  * \return CSS_OK       on success,
  *         CSS_INVALID  if selector not found in chain.
  */
-css_error _remove_from_chain(css_selector_hash *ctx, hash_entry *head,
-		const css_selector *selector)
+css_error _remove_from_chain(css_selector_hash *ctx,
+			     hash_entry *head,
+			     const css_selector *selector)
 {
 	hash_entry *search = head, *prev = NULL;
 
@@ -902,12 +915,11 @@ css_error _remove_from_chain(css_selector_hash *ctx, hash_entry *head,
  *
  * If nothing further matches, CSS_OK will be returned and **next == NULL
  */
-css_error _iterate_elements(
-		const struct css_hash_selection_requirments *req,
-		const css_selector **current,
-		const css_selector ***next)
+css_error _iterate_elements(const struct css_hash_selection_requirments *req,
+			    const css_selector **current,
+			    const css_selector ***next)
 {
-	const hash_entry *head = (const hash_entry *) current;
+	const hash_entry *head = (const hash_entry *)current;
 	bool match = false;
 	lwc_error lerror = lwc_error_ok;
 	lwc_string *name;
@@ -918,18 +930,18 @@ css_error _iterate_elements(
 	if (head != NULL && head->sel != NULL) {
 		/* Search through chain for first match */
 		while (head != NULL) {
-			lerror = lwc_string_caseless_isequal(name,
-					head->sel->data.qname.name, &match);
+			lerror = lwc_string_caseless_isequal(
+				name, head->sel->data.qname.name, &match);
 			if (lerror != lwc_error_ok)
 				return css_error_from_lwc_error(lerror);
 
 			if (match && RULE_HAS_BYTECODE(head)) {
-				if (css_bloom_in_bloom(
-						head->sel_chain_bloom,
-						req->node_bloom) &&
+				if (css_bloom_in_bloom(head->sel_chain_bloom,
+						       req->node_bloom) &&
 				    mq_rule_good_for_media(head->sel->rule,
-						req->unit_ctx, req->media,
-						req->str)) {
+							   req->unit_ctx,
+							   req->media,
+							   req->str)) {
 					/* Found a match */
 					break;
 				}
@@ -941,7 +953,7 @@ css_error _iterate_elements(
 	if (head == NULL)
 		head = &empty_slot;
 
-	(*next) = (const css_selector **) head;
+	(*next) = (const css_selector **)head;
 
 	return CSS_OK;
 }
@@ -955,12 +967,11 @@ css_error _iterate_elements(
  *
  * If nothing further matches, CSS_OK will be returned and **next == NULL
  */
-css_error _iterate_classes(
-		const struct css_hash_selection_requirments *req,
-		const css_selector **current,
-		const css_selector ***next)
+css_error _iterate_classes(const struct css_hash_selection_requirments *req,
+			   const css_selector **current,
+			   const css_selector ***next)
 {
-	const hash_entry *head = (const hash_entry *) current;
+	const hash_entry *head = (const hash_entry *)current;
 	bool match = false;
 	lwc_error lerror = lwc_error_ok;
 	lwc_string *name, *ref;
@@ -974,24 +985,25 @@ css_error _iterate_classes(
 			name = _class_name(head->sel);
 
 			if (name != NULL) {
-				lerror = lwc_string_caseless_isequal(
-						ref, name, &match);
+				lerror = lwc_string_caseless_isequal(ref,
+								     name,
+								     &match);
 				if (lerror != lwc_error_ok)
 					return css_error_from_lwc_error(lerror);
 
 				if (match && RULE_HAS_BYTECODE(head)) {
 					if (css_bloom_in_bloom(
-							head->sel_chain_bloom,
-							req->node_bloom) &&
+						    head->sel_chain_bloom,
+						    req->node_bloom) &&
 					    _chain_good_for_element_name(
-							head->sel,
-							&(req->qname),
-							req->str->universal) &&
+						    head->sel,
+						    &(req->qname),
+						    req->str->universal) &&
 					    mq_rule_good_for_media(
-							head->sel->rule,
-							req->unit_ctx,
-							req->media,
-							req->str)) {
+						    head->sel->rule,
+						    req->unit_ctx,
+						    req->media,
+						    req->str)) {
 						/* Found a match */
 						break;
 					}
@@ -1004,7 +1016,7 @@ css_error _iterate_classes(
 	if (head == NULL)
 		head = &empty_slot;
 
-	(*next) = (const css_selector **) head;
+	(*next) = (const css_selector **)head;
 
 	return CSS_OK;
 }
@@ -1018,12 +1030,11 @@ css_error _iterate_classes(
  *
  * If nothing further matches, CSS_OK will be returned and **next == NULL
  */
-css_error _iterate_ids(
-		const struct css_hash_selection_requirments *req,
-		const css_selector **current,
-		const css_selector ***next)
+css_error _iterate_ids(const struct css_hash_selection_requirments *req,
+		       const css_selector **current,
+		       const css_selector ***next)
 {
-	const hash_entry *head = (const hash_entry *) current;
+	const hash_entry *head = (const hash_entry *)current;
 	bool match = false;
 	lwc_error lerror = lwc_error_ok;
 	lwc_string *name, *ref;
@@ -1037,24 +1048,25 @@ css_error _iterate_ids(
 			name = _id_name(head->sel);
 
 			if (name != NULL) {
-				lerror = lwc_string_caseless_isequal(
-						ref, name, &match);
+				lerror = lwc_string_caseless_isequal(ref,
+								     name,
+								     &match);
 				if (lerror != lwc_error_ok)
 					return css_error_from_lwc_error(lerror);
 
 				if (match && RULE_HAS_BYTECODE(head)) {
 					if (css_bloom_in_bloom(
-							head->sel_chain_bloom,
-							req->node_bloom) &&
+						    head->sel_chain_bloom,
+						    req->node_bloom) &&
 					    _chain_good_for_element_name(
-							head->sel,
-							&req->qname,
-							req->str->universal) &&
+						    head->sel,
+						    &req->qname,
+						    req->str->universal) &&
 					    mq_rule_good_for_media(
-							head->sel->rule,
-							req->unit_ctx,
-							req->media,
-							req->str)) {
+						    head->sel->rule,
+						    req->unit_ctx,
+						    req->media,
+						    req->str)) {
 						/* Found a match */
 						break;
 					}
@@ -1067,7 +1079,7 @@ css_error _iterate_ids(
 	if (head == NULL)
 		head = &empty_slot;
 
-	(*next) = (const css_selector **) head;
+	(*next) = (const css_selector **)head;
 
 	return CSS_OK;
 }
@@ -1081,24 +1093,23 @@ css_error _iterate_ids(
  *
  * If nothing further matches, CSS_OK will be returned and **next == NULL
  */
-css_error _iterate_universal(
-		const struct css_hash_selection_requirments *req,
-		const css_selector **current,
-		const css_selector ***next)
+css_error _iterate_universal(const struct css_hash_selection_requirments *req,
+			     const css_selector **current,
+			     const css_selector ***next)
 {
-	const hash_entry *head = (const hash_entry *) current;
+	const hash_entry *head = (const hash_entry *)current;
 	head = head->next;
 
 	if (head != NULL && head->sel != NULL) {
 		/* Search through chain for first match */
 		while (head != NULL) {
 			if (RULE_HAS_BYTECODE(head) &&
-			    css_bloom_in_bloom(
-					head->sel_chain_bloom,
-					req->node_bloom) &&
+			    css_bloom_in_bloom(head->sel_chain_bloom,
+					       req->node_bloom) &&
 			    mq_rule_good_for_media(head->sel->rule,
-					req->unit_ctx, req->media,
-					req->str)) {
+						   req->unit_ctx,
+						   req->media,
+						   req->str)) {
 				/* Found a match */
 				break;
 			}
@@ -1109,8 +1120,7 @@ css_error _iterate_universal(
 	if (head == NULL)
 		head = &empty_slot;
 
-	(*next) = (const css_selector **) head;
+	(*next) = (const css_selector **)head;
 
 	return CSS_OK;
 }
-

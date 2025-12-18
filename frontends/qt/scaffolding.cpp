@@ -38,8 +38,7 @@ extern "C" {
 
 static NS_Scaffold *current = nullptr; /**< currently selected scaffold */
 
-ScaffoldStyle::ScaffoldStyle(QObject *parent)
-	: QProxyStyle()
+ScaffoldStyle::ScaffoldStyle(QObject *parent) : QProxyStyle()
 {
 	setParent(parent);
 }
@@ -58,8 +57,10 @@ QRect ScaffoldStyle::subElementRect(SubElement subElement,
 				    const QWidget *widget) const
 {
 	if (subElement == QStyle::SE_TabWidgetRightCorner) {
-		QRect tabRect = QProxyStyle::subElementRect(QStyle::SE_TabWidgetTabBar, option, widget);
-		QRect rightCornerRect = QProxyStyle::subElementRect(QStyle::SE_TabWidgetRightCorner, option, widget);
+		QRect tabRect = QProxyStyle::subElementRect(
+			QStyle::SE_TabWidgetTabBar, option, widget);
+		QRect rightCornerRect = QProxyStyle::subElementRect(
+			QStyle::SE_TabWidgetRightCorner, option, widget);
 
 		int padding = (tabRect.height() - rightCornerRect.height()) / 2;
 		int x = qMin(tabRect.left() + tabRect.width() + padding,
@@ -68,7 +69,6 @@ QRect ScaffoldStyle::subElementRect(SubElement subElement,
 			     rightCornerRect.y() - padding,
 			     rightCornerRect.width(),
 			     rightCornerRect.height());
-
 	}
 
 	return QProxyStyle::subElementRect(subElement, option, widget);
@@ -76,25 +76,28 @@ QRect ScaffoldStyle::subElementRect(SubElement subElement,
 
 
 NS_Scaffold::NS_Scaffold(QWidget *parent)
-	: QTabWidget(parent),
-	m_newtab(new QAction("+", this))
+	: QTabWidget(parent), m_newtab(new QAction("+", this))
 {
-	setStyle (new ScaffoldStyle(this));
+	setStyle(new ScaffoldStyle(this));
 
 	m_newtab->setToolTip(messages_get("NewTab"));
 	m_newtab->setShortcut(QKeySequence::AddTab);
-	connect(m_newtab, &QAction::triggered,
-		this, &NS_Scaffold::newtab_slot);
+	connect(m_newtab, &QAction::triggered, this, &NS_Scaffold::newtab_slot);
 
 	QToolButton *addbutton = new QToolButton(this);
 	addbutton->setDefaultAction(m_newtab);
-	addbutton->setStyleSheet("QToolButton {border:0} QToolButton:hover {background-color: rgba(255, 255, 255, 0.5);}");
+	addbutton->setStyleSheet(
+		"QToolButton {border:0} QToolButton:hover {background-color: rgba(255, 255, 255, 0.5);}");
 	setCornerWidget(addbutton, Qt::TopRightCorner);
 
-	connect(tabBar(), &QTabBar::tabCloseRequested,
-		this, &NS_Scaffold::destroyTab);
-	connect(this, &QTabWidget::currentChanged,
-		this, &NS_Scaffold::changeTab);
+	connect(tabBar(),
+		&QTabBar::tabCloseRequested,
+		this,
+		&NS_Scaffold::destroyTab);
+	connect(this,
+		&QTabWidget::currentChanged,
+		this,
+		&NS_Scaffold::changeTab);
 	setTabsClosable(true);
 	setFocusPolicy(Qt::StrongFocus);
 }
@@ -106,7 +109,7 @@ void NS_Scaffold::closeEvent(QCloseEvent *event)
 {
 	/* build a list of the window objects and iterate it to call destroy */
 	QList<NS_Window *> pages;
-	for (int idx = 0; idx < count();idx++) {
+	for (int idx = 0; idx < count(); idx++) {
 		pages.append((NS_Window *)widget(idx));
 	}
 	for (int idx = 0; idx < pages.size(); idx++) {
@@ -145,8 +148,7 @@ void NS_Scaffold::changeTabTitle(const char *title)
 	QObject *tabsender = sender();
 	QWidget *tabwidget;
 
-	for (int index=0 ;
-	     (tabwidget=(NS_Window *)widget(index)) != nullptr;
+	for (int index = 0; (tabwidget = (NS_Window *)widget(index)) != nullptr;
 	     index++) {
 		if (tabwidget == tabsender) {
 			setTabText(index, title);
@@ -163,8 +165,7 @@ void NS_Scaffold::changeTabIcon(const QIcon &icon)
 	QObject *tabsender = sender();
 	QWidget *tabwidget;
 
-	for (int index=0 ;
-	     (tabwidget=(NS_Window *)widget(index)) != nullptr;
+	for (int index = 0; (tabwidget = (NS_Window *)widget(index)) != nullptr;
 	     index++) {
 		if (tabwidget == tabsender) {
 			setTabIcon(index, icon);
@@ -183,21 +184,25 @@ void NS_Scaffold::changeTabIcon(const QIcon &icon)
  * \param page An existing page widget or NULL if not present
  * \param use_current True if an current scaffold should be used
  */
-NS_Scaffold *
-NS_Scaffold::get_scaffold(QWidget *page, bool use_current)
+NS_Scaffold *NS_Scaffold::get_scaffold(QWidget *page, bool use_current)
 {
 	NS_Scaffold *scaffold = nullptr;
 	if (use_current && (page != nullptr)) {
 		/* todo check page parent is actually a scaffold */
-		scaffold = qobject_cast<NS_Scaffold *>(page->parentWidget()->parentWidget());
+		scaffold = qobject_cast<NS_Scaffold *>(
+			page->parentWidget()->parentWidget());
 	} else if ((use_current) && (current != nullptr)) {
 		scaffold = current;
 	} else {
 		scaffold = new NS_Scaffold(nullptr);
-
 	}
-	NSLOG(netsurf, DEBUG, "page:%p use_current:%d current:%p scaffold:%p",
-	      page, use_current, current, scaffold);
+	NSLOG(netsurf,
+	      DEBUG,
+	      "page:%p use_current:%d current:%p scaffold:%p",
+	      page,
+	      use_current,
+	      current,
+	      scaffold);
 	current = scaffold;
 	return scaffold;
 }

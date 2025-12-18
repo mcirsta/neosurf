@@ -9,8 +9,7 @@
 #define hubbub_h_
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #include <hubbub/errors.h>
@@ -22,4 +21,3 @@ extern "C"
 #endif
 
 #endif
-

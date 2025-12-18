@@ -39,9 +39,8 @@
  */
 static inline bool ascii_is_space(char c)
 {
-	return (c == ' '  || c == '\t' ||
-	        c == '\n' || c == '\v' ||
-	        c == '\f' || c == '\r');
+	return (c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' ||
+		c == '\r');
 }
 
 /**
@@ -162,9 +161,8 @@ static inline bool ascii_is_hex_upper(char c)
  */
 static inline bool ascii_is_hex(char c)
 {
-	return (ascii_is_digit(c) ||
-			ascii_is_af_upper(c) ||
-			ascii_is_af_lower(c));
+	return (ascii_is_digit(c) || ascii_is_af_upper(c) ||
+		ascii_is_af_lower(c));
 }
 
 /**
@@ -311,8 +309,7 @@ static inline size_t ascii_count_digit_or_colon(const char *str)
  * \param[in] s2  Second string to compare.
  * \return true iff strings are equivalent, else false.
  */
-static inline bool ascii_strings_equal_caseless(
-		const char *s1, const char *s2)
+static inline bool ascii_strings_equal_caseless(const char *s1, const char *s2)
 {
 	while (*s1 != '\0') {
 		if (ascii_to_lower(*s1) != ascii_to_lower(*s2)) {
@@ -331,8 +328,7 @@ static inline bool ascii_strings_equal_caseless(
  * \param[in] s2  Second string to compare.
  * \return true iff strings are equal, else false.
  */
-static inline bool ascii_strings_equal(
-		const char *s1, const char *s2)
+static inline bool ascii_strings_equal(const char *s1, const char *s2)
 {
 	while (*s1 != '\0') {
 		if (*s1 != *s2) {
@@ -351,8 +347,8 @@ static inline bool ascii_strings_equal(
  * \param[in] s2  Second string to compare.
  * \return number of equivalent characters.
  */
-static inline size_t ascii_strings_count_equal_caseless(
-		const char *s1, const char *s2)
+static inline size_t
+ascii_strings_count_equal_caseless(const char *s1, const char *s2)
 {
 	const char *s = s1;
 	while (*s1 != '\0') {
@@ -372,8 +368,7 @@ static inline size_t ascii_strings_count_equal_caseless(
  * \param[in] s2  Second string to compare.
  * \return number of equal characters.
  */
-static inline size_t ascii_strings_count_equal(
-		const char *s1, const char *s2)
+static inline size_t ascii_strings_count_equal(const char *s1, const char *s2)
 {
 	const char *s = s1;
 	while (*s1 != '\0') {
@@ -399,8 +394,7 @@ static inline size_t ascii_string_to_int(const char *str, int *res)
 	char *end = NULL;
 	long long temp = strtoll(str, &end, 10);
 
-	if (end == str || errno == ERANGE ||
-			temp < INT_MIN || temp > INT_MAX) {
+	if (end == str || errno == ERANGE || temp < INT_MIN || temp > INT_MAX) {
 		return 0;
 	}
 

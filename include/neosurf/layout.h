@@ -34,8 +34,7 @@
 
 struct plot_font_style;
 
-struct gui_layout_table
-{
+struct gui_layout_table {
 	/**
 	 * Measure the width of a string.
 	 *
@@ -46,7 +45,10 @@ struct gui_layout_table
 	 * \return NSERROR_OK and width updated or appropriate error
 	 *          code on faliure
 	 */
-	nserror (*width)(const struct plot_font_style *fstyle, const char *string, size_t length, int *width);
+	nserror (*width)(const struct plot_font_style *fstyle,
+			 const char *string,
+			 size_t length,
+			 int *width);
 
 
 	/**
@@ -56,11 +58,19 @@ struct gui_layout_table
 	 * \param[in] string UTF-8 string to measure
 	 * \param[in] length length of string, in bytes
 	 * \param[in] x coordinate to search for
-	 * \param[out] char_offset updated to offset in string of actual_x, [0..length]
-	 * \param[out] actual_x updated to x coordinate of character closest to x
-	 * \return NSERROR_OK and char_offset and actual_x updated or appropriate error code on faliure
+	 * \param[out] char_offset updated to offset in string of actual_x,
+	 * [0..length]
+	 * \param[out] actual_x updated to x coordinate of character closest to
+	 * x
+	 * \return NSERROR_OK and char_offset and actual_x updated or
+	 * appropriate error code on faliure
 	 */
-	nserror (*position)(const struct plot_font_style *fstyle, const char *string, size_t length, int x, size_t *char_offset, int *actual_x);
+	nserror (*position)(const struct plot_font_style *fstyle,
+			    const char *string,
+			    size_t length,
+			    int x,
+			    size_t *char_offset,
+			    int *actual_x);
 
 
 	/**
@@ -70,8 +80,10 @@ struct gui_layout_table
 	 * \param[in] string       UTF-8 string to measure
 	 * \param[in] length       length of string, in bytes
 	 * \param[in] x            width available
-	 * \param[out] char_offset updated to offset in string of actual_x, [1..length]
-	 * \param[out] actual_x updated to x coordinate of character closest to x
+	 * \param[out] char_offset updated to offset in string of actual_x,
+	 * [1..length]
+	 * \param[out] actual_x updated to x coordinate of character closest to
+	 * x
 	 * \return NSERROR_OK or appropriate error code on faliure
 	 *
 	 * On exit, char_offset indicates first character after split point.
@@ -85,7 +97,12 @@ struct gui_layout_table
 	 *
 	 * Returning char_offset == length means no split possible
 	 */
-	nserror (*split)(const struct plot_font_style *fstyle, const char *string, size_t length, int x, size_t *char_offset, int *actual_x);
+	nserror (*split)(const struct plot_font_style *fstyle,
+			 const char *string,
+			 size_t length,
+			 int x,
+			 size_t *char_offset,
+			 int *actual_x);
 };
 
 #endif

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define __STDBOOL_H__	1
+#define __STDBOOL_H__ 1
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,52 +42,60 @@ extern "C" {
 #include "beos/scaffolding.h"
 #include "beos/window.h"
 
-class LoginAlert : public BAlert {
-public:
-        LoginAlert(nserror (*callback)(const char *username,
-				const char *password,
-				void *pw),
-                   void *callbaclpw,
-                   nsurl *url,
-                   const char *host,
-                   const char *realm,
-                   const char *text);
-        virtual ~LoginAlert();
-        void MessageReceived(BMessage *message);
+class LoginAlert : public BAlert
+{
+      public:
+	LoginAlert(nserror (*callback)(const char *username,
+				       const char *password,
+				       void *pw),
+		   void *callbaclpw,
+		   nsurl *url,
+		   const char *host,
+		   const char *realm,
+		   const char *text);
+	virtual ~LoginAlert();
+	void MessageReceived(BMessage *message);
 
-private:
-        nsurl* fUrl;				/**< URL being fetched */
-        BString fHost;				/**< Host for user display */
-        BString fRealm;				/**< Authentication realm */
-        nserror (*fCallback)(const char *username,
-			const char *password,
-			void *pw);
-        void *fCallbackPw;
+      private:
+	nsurl *fUrl; /**< URL being fetched */
+	BString fHost; /**< Host for user display */
+	BString fRealm; /**< Authentication realm */
+	nserror (*fCallback)(const char *username,
+			     const char *password,
+			     void *pw);
+	void *fCallbackPw;
 
-        BTextControl *fUserControl;
-        BTextControl *fPassControl;
+	BTextControl *fUserControl;
+	BTextControl *fPassControl;
 };
 
 static void create_login_window(nsurl *host,
-                lwc_string *realm, const char *fetchurl,
-                nserror (*cb)(const char *username,
-				const char *password,
-				void *pw), void *cbpw);
+				lwc_string *realm,
+				const char *fetchurl,
+				nserror (*cb)(const char *username,
+					      const char *password,
+					      void *pw),
+				void *cbpw);
 
 
 #define TC_H 25
 #define TC_MARGIN 10
 
 LoginAlert::LoginAlert(nserror (*callback)(const char *username,
-						const char *password,
-						void *pw),
-				void *callbackpw,
-				nsurl *url, 
-				const char *host, 
-				const char *realm, 
-				const char *text)
-	: BAlert("Login", text, "Cancel", "Ok", NULL, 
-		B_WIDTH_AS_USUAL, B_WARNING_ALERT)
+					   const char *password,
+					   void *pw),
+		       void *callbackpw,
+		       nsurl *url,
+		       const char *host,
+		       const char *realm,
+		       const char *text)
+	: BAlert("Login",
+		 text,
+		 "Cancel",
+		 "Ok",
+		 NULL,
+		 B_WIDTH_AS_USUAL,
+		 B_WARNING_ALERT)
 {
 	fCallback = callback;
 	fCallbackPw = callbackpw;
@@ -107,27 +115,36 @@ LoginAlert::LoginAlert(nserror (*callback)(const char *username,
 
 	// make space for controls
 	ResizeBy(0, 2 * TC_H);
-	MoveTo(AlertPosition(Frame().Width() + 1, 
-		Frame().Height() + 1));
+	MoveTo(AlertPosition(Frame().Width() + 1, Frame().Height() + 1));
 
 
 	BTextView *tv = TextView();
-	BRect r(TC_MARGIN, tv->Bounds().bottom - 2 * TC_H, 
-		tv->Bounds().right - TC_MARGIN, tv->Bounds().bottom - TC_H);
+	BRect r(TC_MARGIN,
+		tv->Bounds().bottom - 2 * TC_H,
+		tv->Bounds().right - TC_MARGIN,
+		tv->Bounds().bottom - TC_H);
 
-	fUserControl = new BTextControl(r, "user", "Username", "", 
-		new BMessage(), B_FOLLOW_BOTTOM | B_FOLLOW_RIGHT);
+	fUserControl = new BTextControl(r,
+					"user",
+					"Username",
+					"",
+					new BMessage(),
+					B_FOLLOW_BOTTOM | B_FOLLOW_RIGHT);
 	fUserControl->SetDivider(60);
 	tv->AddChild(fUserControl);
 
 	r.OffsetBySelf(0, TC_H);
 
-	fPassControl = new BTextControl(r, "pass", "Password", "", 
-		new BMessage(), B_FOLLOW_BOTTOM | B_FOLLOW_RIGHT);
+	fPassControl = new BTextControl(r,
+					"pass",
+					"Password",
+					"",
+					new BMessage(),
+					B_FOLLOW_BOTTOM | B_FOLLOW_RIGHT);
 	fPassControl->TextView()->HideTyping(true);
 	fPassControl->SetDivider(60);
 	tv->AddChild(fPassControl);
-	
+
 	SetShortcut(0, B_ESCAPE);
 }
 
@@ -135,12 +152,10 @@ LoginAlert::~LoginAlert()
 {
 }
 
-void
-LoginAlert::MessageReceived(BMessage *message)
+void LoginAlert::MessageReceived(BMessage *message)
 {
 	switch (message->what) {
-	case 'ALTB':
-	{
+	case 'ALTB': {
 		int32 which;
 		if (message->FindInt32("which", &which) < B_OK)
 			break;
@@ -159,12 +174,11 @@ LoginAlert::MessageReceived(BMessage *message)
 		BString auth(fUserControl->Text());
 		auth << ":" << fPassControl->Text();
 		m->AddString("Auth", auth.String());
-		
+
 		// notify the main thread
 		// the event dispatcher will handle it
 		nsbeos_pipe_message(m, NULL, NULL);
-	}
-		break;
+	} break;
 	default:
 		break;
 	}
@@ -172,12 +186,14 @@ LoginAlert::MessageReceived(BMessage *message)
 }
 
 
-extern "C" nserror gui_401login_open(nsurl *url, const char *realm,
-		const char *username, const char *password,
-		nserror (*cb)(const char *username,
-				const char *password,
-				void *pw),
-		void *cbpw)
+extern "C" nserror gui_401login_open(nsurl *url,
+				     const char *realm,
+				     const char *username,
+				     const char *password,
+				     nserror (*cb)(const char *username,
+						   const char *password,
+						   void *pw),
+				     void *cbpw)
 {
 	lwc_string *host;
 
@@ -190,26 +206,30 @@ extern "C" nserror gui_401login_open(nsurl *url, const char *realm,
 	return NSERROR_OK;
 }
 
-//void create_login_window(struct browser_window *bw, const char *host,
+// void create_login_window(struct browser_window *bw, const char *host,
 //		const char *realm, const char *fetchurl)
-static void create_login_window(nsurl *url, lwc_string *host,
-                const char *realm, nserror (*cb)(
-                		const char *username,
-                		const char *password,
-                		void *pw),
-                void *cbpw)
+static void create_login_window(nsurl *url,
+				lwc_string *host,
+				const char *realm,
+				nserror (*cb)(const char *username,
+					      const char *password,
+					      void *pw),
+				void *cbpw)
 {
 	BString r("Secure Area");
 	if (realm)
 		r = realm;
-	BString text(/*messages_get(*/"Please login\n");
+	BString text(/*messages_get(*/ "Please login\n");
 	text << "Realm:	" << r << "\n";
 	text << "Host:	" << host << "\n";
-	//text << "\n";
+	// text << "\n";
 
-	LoginAlert *a = new LoginAlert(cb, cbpw, url, lwc_string_data(host),
-		r.String(), text.String());
+	LoginAlert *a = new LoginAlert(cb,
+				       cbpw,
+				       url,
+				       lwc_string_data(host),
+				       r.String(),
+				       text.String());
 	// asynchronously
 	a->Go(NULL);
-
 }

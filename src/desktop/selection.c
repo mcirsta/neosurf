@@ -46,18 +46,14 @@ struct selection_string {
 };
 
 
-typedef enum {
-	DRAG_NONE,
-	DRAG_START,
-	DRAG_END
-} seln_drag_state;
+typedef enum { DRAG_NONE, DRAG_START, DRAG_END } seln_drag_state;
 
 struct selection {
 	struct content *c;
 
-	unsigned max_idx;  /* total bytes in text representation */
+	unsigned max_idx; /* total bytes in text representation */
 
-	unsigned start_idx;  /* offset in bytes within text representation */
+	unsigned start_idx; /* offset in bytes within text representation */
 	unsigned end_idx;
 
 	bool defined;
@@ -156,16 +152,13 @@ static void selection_set_end(struct selection *s, unsigned offset)
  * \param handle  handle to pass
  * \return false iff traversal abandoned part-way through
  */
-static bool
-selection_copy(struct selection *s, struct selection_string *selstr)
+static bool selection_copy(struct selection *s, struct selection_string *selstr)
 {
 	nserror res;
 
 	if (s->c->handler->textselection_copy != NULL) {
-		res = s->c->handler->textselection_copy(s->c,
-							s->start_idx,
-							s->end_idx,
-							selstr);
+		res = s->c->handler->textselection_copy(
+			s->c, s->start_idx, s->end_idx, selstr);
 	} else {
 		res = NSERROR_NOT_IMPLEMENTED;
 	}
@@ -187,12 +180,11 @@ selection_copy(struct selection *s, struct selection_string *selstr)
  * \param sel_string string to append to, may be resized
  * \return true iff successful
  */
-bool
-selection_string_append(const char *text,
-			size_t length,
-			bool space,
-			plot_font_style_t *style,
-			struct selection_string *sel_string)
+bool selection_string_append(const char *text,
+			     size_t length,
+			     bool space,
+			     plot_font_style_t *style,
+			     struct selection_string *sel_string)
 {
 	size_t new_length = sel_string->length + length + (space ? 1 : 0) + 1;
 
@@ -206,7 +198,7 @@ selection_string_append(const char *text,
 
 		new_styles = realloc(sel_string->styles,
 				     (sel_string->n_styles + 1) *
-				     sizeof(nsclipboard_styles));
+					     sizeof(nsclipboard_styles));
 		if (new_styles == NULL) {
 			return false;
 		}
@@ -315,14 +307,13 @@ void selection_init(struct selection *s)
 
 
 /* exported interface documented in desktop/selection.h */
-bool
-selection_click(struct selection *s,
-		struct browser_window *top,
-		browser_mouse_state mouse,
-		unsigned idx)
+bool selection_click(struct selection *s,
+		     struct browser_window *top,
+		     browser_mouse_state mouse,
+		     unsigned idx)
 {
 	browser_mouse_state modkeys;
-	int pos = -1;  /* 0 = inside selection, 1 = after it */
+	int pos = -1; /* 0 = inside selection, 1 = after it */
 
 	modkeys = (mouse & (BROWSER_MOUSE_MOD_1 | BROWSER_MOUSE_MOD_2));
 
@@ -338,9 +329,8 @@ selection_click(struct selection *s,
 		}
 	}
 
-	if (!pos &&
-	    ((mouse & BROWSER_MOUSE_DRAG_1) ||
-	     (modkeys && (mouse & BROWSER_MOUSE_DRAG_2)))) {
+	if (!pos && ((mouse & BROWSER_MOUSE_DRAG_1) ||
+		     (modkeys && (mouse & BROWSER_MOUSE_DRAG_2)))) {
 		/* drag-saving selection */
 		char *sel = selection_get_copy(s);
 		guit->window->drag_save_selection(top->window, sel);
@@ -371,7 +361,7 @@ selection_click(struct selection *s,
 
 			/* adjust selection, but only if there is one */
 			if (!s->defined) {
-				return false;	/* ignore Adjust drags */
+				return false; /* ignore Adjust drags */
 			}
 
 			if (pos >= 0) {
@@ -416,8 +406,9 @@ selection_click(struct selection *s,
 
 
 /* exported interface documented in desktop/selection.h */
-void
-selection_track(struct selection *s, browser_mouse_state mouse, unsigned idx)
+void selection_track(struct selection *s,
+		     browser_mouse_state mouse,
+		     unsigned idx)
 {
 	if (!mouse) {
 		s->drag_state = DRAG_NONE;
@@ -456,14 +447,12 @@ selection_track(struct selection *s, browser_mouse_state mouse, unsigned idx)
 /* exported interface documented in desktop/selection.h */
 char *selection_get_copy(struct selection *s)
 {
-	struct selection_string sel_string = {
-		.buffer = NULL,
-		.buffer_len = 0,
-		.length = 0,
+	struct selection_string sel_string = {.buffer = NULL,
+					      .buffer_len = 0,
+					      .length = 0,
 
-		.n_styles = 0,
-		.styles = NULL
-	};
+					      .n_styles = 0,
+					      .styles = NULL};
 
 	if (s == NULL || !s->defined)
 		return NULL;
@@ -483,14 +472,12 @@ char *selection_get_copy(struct selection *s)
 /* exported interface documented in desktop/selection.h */
 bool selection_copy_to_clipboard(struct selection *s)
 {
-	struct selection_string sel_string = {
-		.buffer = NULL,
-		.buffer_len = 0,
-		.length = 0,
+	struct selection_string sel_string = {.buffer = NULL,
+					      .buffer_len = 0,
+					      .length = 0,
 
-		.n_styles = 0,
-		.styles = NULL
-	};
+					      .n_styles = 0,
+					      .styles = NULL};
 
 	if (s == NULL || !s->defined) {
 		return false;
@@ -558,12 +545,11 @@ void selection_set_position(struct selection *s, unsigned start, unsigned end)
 
 
 /* exported interface documented in desktop/selection.h */
-bool
-selection_highlighted(const struct selection *s,
-		      unsigned start,
-		      unsigned end,
-		      unsigned *start_idx,
-		      unsigned *end_idx)
+bool selection_highlighted(const struct selection *s,
+			   unsigned start,
+			   unsigned end,
+			   unsigned *start_idx,
+			   unsigned *end_idx)
 {
 	assert(s);
 
@@ -571,8 +557,7 @@ selection_highlighted(const struct selection *s,
 		return false;
 	}
 
-	if ((end <= s->start_idx) ||
-	    (start >= s->end_idx)) {
+	if ((end <= s->start_idx) || (start >= s->end_idx)) {
 		return false;
 	}
 

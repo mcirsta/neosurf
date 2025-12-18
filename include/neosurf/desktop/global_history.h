@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 #ifndef _NETSURF_DESKTOP_GLOBAL_HISTORY_H_
 #define _NETSURF_DESKTOP_GLOBAL_HISTORY_H_
 
@@ -37,7 +37,8 @@ struct rect;
  *
  * This must be called before any other global_history_* function.
  *
- * \param core_window_handle The core_window in which the global history is shown.
+ * \param core_window_handle The core_window in which the global history is
+ * shown.
  * \return NSERROR_OK on success, appropriate error otherwise
  */
 nserror global_history_init(void *core_window_handle);
@@ -80,8 +81,10 @@ nserror global_history_export(const char *path, const char *title);
  * \param clip  Current clip rectangle (wrt tree origin)
  * \param ctx   Current redraw context
  */
-void global_history_redraw(int x, int y, struct rect *clip,
-		const struct redraw_context *ctx);
+void global_history_redraw(int x,
+			   int y,
+			   struct rect *clip,
+			   const struct redraw_context *ctx);
 
 /**
  * Handles all kinds of mouse action

@@ -63,21 +63,21 @@ typedef enum {
  * Browser window page information states
  */
 typedef enum {
-	PAGE_STATE_UNKNOWN,		/**< Unable to determine */
-	PAGE_STATE_INTERNAL,		/**< Page loaded from internal handler */
-	PAGE_STATE_LOCAL,		/**< Page loaded from file:/// etc */
-	PAGE_STATE_INSECURE,		/**< Insecure page load */
-	PAGE_STATE_SECURE_OVERRIDE,	/**< Secure load, but had to override */
-	PAGE_STATE_SECURE_ISSUES,	/**< Secure load, but has insecure elements */
-	PAGE_STATE_SECURE,		/**< Secure load */
-	PAGE_STATE__COUNT,		/**< Count of number of valid page states */
+	PAGE_STATE_UNKNOWN, /**< Unable to determine */
+	PAGE_STATE_INTERNAL, /**< Page loaded from internal handler */
+	PAGE_STATE_LOCAL, /**< Page loaded from file:/// etc */
+	PAGE_STATE_INSECURE, /**< Insecure page load */
+	PAGE_STATE_SECURE_OVERRIDE, /**< Secure load, but had to override */
+	PAGE_STATE_SECURE_ISSUES, /**< Secure load, but has insecure elements */
+	PAGE_STATE_SECURE, /**< Secure load */
+	PAGE_STATE__COUNT, /**< Count of number of valid page states */
 } browser_window_page_info_state;
 
 typedef enum {
-	BW_EDITOR_NONE		=  0,		/**< No selection, no editing */
-	BW_EDITOR_CAN_COPY	= (1 << 0),	/**< Have selection */
-	BW_EDITOR_CAN_CUT  	= (1 << 1),	/**< Selection not read-only */
-	BW_EDITOR_CAN_PASTE	= (1 << 2)	/**< Can paste, input */
+	BW_EDITOR_NONE = 0, /**< No selection, no editing */
+	BW_EDITOR_CAN_COPY = (1 << 0), /**< Have selection */
+	BW_EDITOR_CAN_CUT = (1 << 1), /**< Selection not read-only */
+	BW_EDITOR_CAN_PASTE = (1 << 2) /**< Can paste, input */
 } browser_editor_flags;
 
 typedef enum {
@@ -89,16 +89,16 @@ typedef enum {
 /** flags to browser_window_create */
 enum browser_window_create_flags {
 	/** No flags set */
-	BW_CREATE_NONE			= 0,
+	BW_CREATE_NONE = 0,
 
 	/** this will form a new history node (don't set for back/reload/etc) */
-	BW_CREATE_HISTORY		= (1 << 0),
+	BW_CREATE_HISTORY = (1 << 0),
 
 	/** New gui_window to be tab in same window as "existing" gui_window */
-	BW_CREATE_TAB			= (1 << 1),
+	BW_CREATE_TAB = (1 << 1),
 
 	/** New gui_window to be clone of "existing" gui_window */
-	BW_CREATE_CLONE			= (1 << 2),
+	BW_CREATE_CLONE = (1 << 2),
 
 	/** Window not opened by user interaction (e.g. JS popup)
 	 *
@@ -109,25 +109,25 @@ enum browser_window_create_flags {
 	 *    A transaction is unverifiable if the user does not
 	 *    have that option.
 	 */
-	BW_CREATE_UNVERIFIABLE		= (1 << 3),
+	BW_CREATE_UNVERIFIABLE = (1 << 3),
 
 	/** Request foreground opening. */
-	BW_CREATE_FOREGROUND		= (1 << 4),
+	BW_CREATE_FOREGROUND = (1 << 4),
 
 	/** Request location bar focus. */
-	BW_CREATE_FOCUS_LOCATION	= (1 << 5),
+	BW_CREATE_FOCUS_LOCATION = (1 << 5),
 };
 
 /** flags to browser_window_navigate  */
 enum browser_window_nav_flags {
 	/** No flags set */
-	BW_NAVIGATE_NONE		= 0,
+	BW_NAVIGATE_NONE = 0,
 
 	/** this will form a new history node (don't set for back/reload/etc) */
-	BW_NAVIGATE_HISTORY		= (1 << 0),
+	BW_NAVIGATE_HISTORY = (1 << 0),
 
 	/** download rather than render the uri */
-	BW_NAVIGATE_DOWNLOAD		= (1 << 1),
+	BW_NAVIGATE_DOWNLOAD = (1 << 1),
 
 	/** Transation not caused by user interaction (e.g. JS-caused)
 	 *
@@ -138,13 +138,13 @@ enum browser_window_nav_flags {
 	 *    A transaction is unverifiable if the user does not
 	 *    have that option.
 	 */
-	BW_NAVIGATE_UNVERIFIABLE	= (1 << 2),
+	BW_NAVIGATE_UNVERIFIABLE = (1 << 2),
 
 	/** suppress initial history updates (used by back/fwd/etc) */
 	BW_NAVIGATE_NO_TERMINAL_HISTORY_UPDATE = (1 << 3),
 
 	/** Internal navigation (set only by core features using such) */
-	BW_NAVIGATE_INTERNAL            = (1 << 4)
+	BW_NAVIGATE_INTERNAL = (1 << 4)
 };
 
 /**
@@ -167,11 +167,7 @@ struct browser_window_features {
 	struct hlcache_handle *main;
 
 	/** type of form feature. */
-	enum {
-		CTX_FORM_NONE,
-		CTX_FORM_TEXT,
-		CTX_FORM_FILE
-	} form_features;
+	enum { CTX_FORM_NONE, CTX_FORM_TEXT, CTX_FORM_FILE } form_features;
 };
 
 /**
@@ -185,9 +181,10 @@ struct browser_window_features {
  * \return NSERROR_OK, or appropriate error otherwise.
  */
 nserror browser_window_create(enum browser_window_create_flags flags,
-		struct nsurl *url, struct nsurl *referrer,
-		struct browser_window *existing,
-		struct browser_window **bw);
+			      struct nsurl *url,
+			      struct nsurl *referrer,
+			      struct browser_window *existing,
+			      struct browser_window **bw);
 
 /**
  * Start fetching a page in a browser window.
@@ -207,12 +204,12 @@ nserror browser_window_create(enum browser_window_create_flags flags,
  *
  */
 nserror browser_window_navigate(struct browser_window *bw,
-			     struct nsurl *url,
-			     struct nsurl *referrer,
-			     enum browser_window_nav_flags flags,
-			     char *post_urlenc,
-			     struct fetch_multipart_data *post_multipart,
-			     struct hlcache_handle *parent);
+				struct nsurl *url,
+				struct nsurl *referrer,
+				enum browser_window_nav_flags flags,
+				char *post_urlenc,
+				struct fetch_multipart_data *post_multipart,
+				struct hlcache_handle *parent);
 
 /**
  * Return true if a browser window can navigate upwards.
@@ -238,7 +235,7 @@ nserror browser_window_navigate_up(struct browser_window *bw, bool new_window);
  *
  * \note guaranteed to return a valid nsurl ptr, never returns NULL.
  */
-struct nsurl* browser_window_access_url(const struct browser_window *bw);
+struct nsurl *browser_window_access_url(const struct browser_window *bw);
 
 /**
  * Access a browser window's URL.
@@ -248,17 +245,16 @@ struct nsurl* browser_window_access_url(const struct browser_window *bw);
  * \param[out] url_out   Returns a ref to the URL on success.
  * \return NSERROR_OK, or appropriate error otherwise.
  */
-nserror browser_window_get_url(
-		struct browser_window *bw,
-		bool fragment,
-		struct nsurl** url_out);
+nserror browser_window_get_url(struct browser_window *bw,
+			       bool fragment,
+			       struct nsurl **url_out);
 
 /**
  * Get the title of a browser_window.
  *
  * \param bw The browser window.
  */
-const char* browser_window_get_title(struct browser_window *bw);
+const char *browser_window_get_title(struct browser_window *bw);
 
 /**
  * Get a browser window's history object.
@@ -268,7 +264,7 @@ const char* browser_window_get_title(struct browser_window *bw);
  *
  * Clients need history object to make use of the history_* functions.
  */
-struct history * browser_window_get_history(struct browser_window *bw);
+struct history *browser_window_get_history(struct browser_window *bw);
 
 /**
  * Get a browser window's content extents.
@@ -279,8 +275,10 @@ struct history * browser_window_get_history(struct browser_window *bw);
  * \param height  updated to content height extent in px
  * \return NSERROR_OK, or appropriate error otherwise.
  */
-nserror browser_window_get_extents(struct browser_window *bw, bool scaled,
-		int *width, int *height);
+nserror browser_window_get_extents(struct browser_window *bw,
+				   bool scaled,
+				   int *width,
+				   int *height);
 
 /**
  * Find out if a browser window is currently showing a content.
@@ -304,7 +302,8 @@ struct hlcache_handle *browser_window_get_content(struct browser_window *bw);
  * \param  height  Height in pixels
  */
 void browser_window_set_dimensions(struct browser_window *bw,
-		int width, int height);
+				   int width,
+				   int height);
 
 
 /**
@@ -348,7 +347,10 @@ void browser_window_destroy(struct browser_window *bw);
  * \param width      new width
  * \param height     new height
  */
-void browser_window_reformat(struct browser_window *bw, bool background, int width, int height);
+void browser_window_reformat(struct browser_window *bw,
+			     bool background,
+			     int width,
+			     int height);
 
 
 /**
@@ -357,9 +359,11 @@ void browser_window_reformat(struct browser_window *bw, bool background, int wid
  * \param bw The browser window to scale.
  * \param scale The new scale.
  * \param absolute If the scale value is absolute or relative to current value
- * \return NSERROR_OK and scale applied else other error code caused by reflow etc.
+ * \return NSERROR_OK and scale applied else other error code caused by reflow
+ * etc.
  */
-nserror browser_window_set_scale(struct browser_window *bw, float scale, bool absolute);
+nserror
+browser_window_set_scale(struct browser_window *bw, float scale, bool absolute);
 
 
 /**
@@ -387,7 +391,9 @@ float browser_window_get_scale(struct browser_window *bw);
  * \return NSERROR_OK or appropriate error code on faliure.
  */
 nserror browser_window_get_features(struct browser_window *bw,
-		int x, int y, struct browser_window_features *data);
+				    int x,
+				    int y,
+				    struct browser_window_features *data);
 
 
 /**
@@ -403,7 +409,10 @@ nserror browser_window_get_features(struct browser_window *bw,
  * \return true iff scroll request has been consumed
  */
 bool browser_window_scroll_at_point(struct browser_window *bw,
-		int x, int y, int scrx, int scry);
+				    int x,
+				    int y,
+				    int scrx,
+				    int scry);
 
 
 /**
@@ -417,7 +426,9 @@ bool browser_window_scroll_at_point(struct browser_window *bw,
  * \return true iff file drop has been handled, or if drop possible (NULL file)
  */
 bool browser_window_drop_file_at_point(struct browser_window *bw,
-		int x, int y, char *file);
+				       int x,
+				       int y,
+				       char *file);
 
 
 /**
@@ -428,7 +439,8 @@ bool browser_window_drop_file_at_point(struct browser_window *bw,
  * \param fn filename to set.
  */
 void browser_window_set_gadget_filename(struct browser_window *bw,
-		struct form_control *gadget, const char *fn);
+					struct form_control *gadget,
+					const char *fn);
 
 
 /**
@@ -448,7 +460,9 @@ nserror browser_window_refresh_url_bar(struct browser_window *bw);
  * \param  y	  coordinate of mouse
  */
 void browser_window_mouse_click(struct browser_window *bw,
-		browser_mouse_state mouse, int x, int y);
+				browser_mouse_state mouse,
+				int x,
+				int y);
 
 
 /**
@@ -460,7 +474,9 @@ void browser_window_mouse_click(struct browser_window *bw,
  * \param  y	  coordinate of mouse
  */
 void browser_window_mouse_track(struct browser_window *bw,
-		browser_mouse_state mouse, int x, int y);
+				browser_mouse_state mouse,
+				int x,
+				int y);
 
 
 /**
@@ -471,9 +487,9 @@ void browser_window_mouse_track(struct browser_window *bw,
  * \param mouse The current mouse state
  * \return The browser window the mouse is in
  */
-struct browser_window *browser_window_find_target(
-		struct browser_window *bw, const char *target,
-		browser_mouse_state mouse);
+struct browser_window *browser_window_find_target(struct browser_window *bw,
+						  const char *target,
+						  browser_mouse_state mouse);
 
 
 /**
@@ -499,7 +515,7 @@ nserror browser_window_schedule_reformat(struct browser_window *bw);
  * \param shape The pointer shape to use
  */
 void browser_window_set_pointer(struct browser_window *bw,
-		browser_pointer_shape shape);
+				browser_pointer_shape shape);
 
 
 /**
@@ -569,8 +585,11 @@ bool browser_window_stop_available(struct browser_window *bw);
  * the bottom right corner of the clip rectangle is (x1, y1).
  * Units for x, y and clip are pixels.
  */
-bool browser_window_redraw(struct browser_window *bw, int x, int y,
-		const struct rect *clip, const struct redraw_context *ctx);
+bool browser_window_redraw(struct browser_window *bw,
+			   int x,
+			   int y,
+			   const struct rect *clip,
+			   const struct redraw_context *ctx);
 
 
 /**
@@ -590,8 +609,10 @@ bool browser_window_redraw_ready(struct browser_window *bw);
  * \param  pos_x  updated to x position of bw
  * \param  pos_y  updated to y position of bw
  */
-void browser_window_get_position(struct browser_window *bw, bool root,
-		int *pos_x, int *pos_y);
+void browser_window_get_position(struct browser_window *bw,
+				 bool root,
+				 int *pos_x,
+				 int *pos_y);
 
 /**
  * Set the position of the current browser window with respect to the parent
@@ -612,7 +633,8 @@ void browser_window_set_position(struct browser_window *bw, int x, int y);
  * \param  rect   area pointer may be confined to, during drag, or NULL
  */
 void browser_window_set_drag_type(struct browser_window *bw,
-		browser_drag_type type, const struct rect *rect);
+				  browser_drag_type type,
+				  const struct rect *rect);
 
 /**
  * Get type of any current drag for a browser window
@@ -646,7 +668,7 @@ bool browser_window_can_select(struct browser_window *bw);
  * \param  bw    The browser window
  * \return the selected text string, or NULL
  */
-char * browser_window_get_selection(struct browser_window *bw);
+char *browser_window_get_selection(struct browser_window *bw);
 
 /**
  * Find out if given browser window can be searched
@@ -678,7 +700,8 @@ bool browser_window_is_frameset(struct browser_window *bw);
  * \return NSERROR_OK, or appropriate error otherwise
  */
 nserror browser_window_get_scrollbar_type(struct browser_window *bw,
-		browser_scrolling *h, browser_scrolling *v);
+					  browser_scrolling *h,
+					  browser_scrolling *v);
 
 
 /**
@@ -689,7 +712,9 @@ nserror browser_window_get_scrollbar_type(struct browser_window *bw,
  * \param op The debug operation type to dump.
  * \return NSERROR_OK on success or error code on faliure.
  */
-nserror browser_window_debug_dump(struct browser_window *bw, FILE *f, enum content_debug op);
+nserror browser_window_debug_dump(struct browser_window *bw,
+				  FILE *f,
+				  enum content_debug op);
 
 /**
  * Set debug options on a window
@@ -737,7 +762,9 @@ nserror browser_window_set_name(struct browser_window *bw, const char *name);
  * \param srclen The length of the source code
  * \return Whether the JS function was successfully injected into the content
  */
-bool browser_window_exec(struct browser_window *bw, const char *src, size_t srclen);
+bool browser_window_exec(struct browser_window *bw,
+			 const char *src,
+			 size_t srclen);
 
 /**
  * Log a console message into the browser window console.
@@ -771,8 +798,8 @@ nserror browser_window_console_log(struct browser_window *bw,
  * \param bw The browser window
  * \return The state of the browser window
  */
-browser_window_page_info_state browser_window_get_page_info_state(
-		const struct browser_window *bw);
+browser_window_page_info_state
+browser_window_get_page_info_state(const struct browser_window *bw);
 
 /**
  * Request the current browser window SSL certificate chain.
@@ -785,7 +812,8 @@ browser_window_page_info_state browser_window_get_page_info_state(
  * \param chain Pointer to be filled out with certificate chain
  * \return Whether or not the chain is available
  */
-nserror browser_window_get_ssl_chain(struct browser_window *bw, struct cert_chain **chain);
+nserror browser_window_get_ssl_chain(struct browser_window *bw,
+				     struct cert_chain **chain);
 
 /**
  * Get the number of cookies in use for the current page.
@@ -793,8 +821,7 @@ nserror browser_window_get_ssl_chain(struct browser_window *bw, struct cert_chai
  * \param bw  A browser window.
  * \return Number of cookies in use, or 0 on error.
  */
-int browser_window_get_cookie_count(
-		const struct browser_window *bw);
+int browser_window_get_cookie_count(const struct browser_window *bw);
 
 /**
  * Open cookie viewer for the current page.
@@ -802,8 +829,7 @@ int browser_window_get_cookie_count(
  * \param bw  A browser window.
  * \return NSERROR_OK, or appropriate error otherwise.
  */
-nserror browser_window_show_cookies(
-		const struct browser_window *bw);
+nserror browser_window_show_cookies(const struct browser_window *bw);
 
 /**
  * Show the certificate page for the current page.
@@ -813,7 +839,6 @@ nserror browser_window_show_cookies(
  * \param bw  A browser window.
  * \return NSERROR_OK, or appropriate error otherwise.
  */
-nserror browser_window_show_certificates(
-		struct browser_window *bw);
+nserror browser_window_show_certificates(struct browser_window *bw);
 
 #endif

@@ -28,8 +28,9 @@
  *		   If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_border_color(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+				  const parserutils_vector *vector,
+				  int32_t *ctx,
+				  css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	int prev_ctx;
@@ -48,23 +49,23 @@ css_error css__parse_border_color(css_language *c,
 	flag_value = get_css_flag_value(c, token);
 
 	if (flag_value != FLAG_VALUE__NONE) {
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BORDER_TOP_COLOR);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BORDER_TOP_COLOR);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BORDER_RIGHT_COLOR);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BORDER_RIGHT_COLOR);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BORDER_BOTTOM_COLOR);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BORDER_BOTTOM_COLOR);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BORDER_LEFT_COLOR);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BORDER_LEFT_COLOR);
 		if (error == CSS_OK)
 			parserutils_vector_iterate(vector, ctx);
 
@@ -80,7 +81,11 @@ css_error css__parse_border_color(css_language *c,
 			return CSS_INVALID;
 		}
 
-		error = css__parse_colour_specifier(c, vector, ctx, &side_val[side_count], &side_color[side_count]);
+		error = css__parse_colour_specifier(c,
+						    vector,
+						    ctx,
+						    &side_val[side_count],
+						    &side_color[side_count]);
 		if (error == CSS_OK) {
 			side_count++;
 
@@ -94,13 +99,15 @@ css_error css__parse_border_color(css_language *c,
 	} while ((*ctx != prev_ctx) && (token != NULL) && (side_count < 4));
 
 
-#define SIDE_APPEND(OP,NUM)								\
-	error = css__stylesheet_style_appendOPV(result, (OP), 0, side_val[(NUM)]);	\
-	if (error != CSS_OK)								\
-		break;									\
-	if (side_val[(NUM)] == BORDER_COLOR_SET)					\
-		error = css__stylesheet_style_append(result, side_color[(NUM)]);		\
-	if (error != CSS_OK)								\
+#define SIDE_APPEND(OP, NUM)                                                   \
+	error = css__stylesheet_style_appendOPV(                               \
+		result, (OP), 0, side_val[(NUM)]);                             \
+	if (error != CSS_OK)                                                   \
+		break;                                                         \
+	if (side_val[(NUM)] == BORDER_COLOR_SET)                               \
+		error = css__stylesheet_style_append(result,                   \
+						     side_color[(NUM)]);       \
+	if (error != CSS_OK)                                                   \
 		break;
 
 	switch (side_count) {

@@ -14,8 +14,9 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_list_style_type(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error css__cascade_list_style_type(uint32_t opv,
+				       css_style *style,
+				       css_select_state *state)
 {
 	uint16_t value = CSS_LIST_STYLE_TYPE_INHERIT;
 
@@ -182,8 +183,10 @@ css_error css__cascade_list_style_type(uint32_t opv, css_style *style,
 		}
 	}
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			getFlagValue(opv))) {
+	if (css__outranks_existing(getOpcode(opv),
+				   isImportant(opv),
+				   state,
+				   getFlagValue(opv))) {
 		return set_list_style_type(state->computed, value);
 	}
 
@@ -191,7 +194,7 @@ css_error css__cascade_list_style_type(uint32_t opv, css_style *style,
 }
 
 css_error css__set_list_style_type_from_hint(const css_hint *hint,
-		css_computed_style *style)
+					     css_computed_style *style)
 {
 	return set_list_style_type(style, hint->status);
 }
@@ -201,9 +204,8 @@ css_error css__initial_list_style_type(css_select_state *state)
 	return set_list_style_type(state->computed, CSS_LIST_STYLE_TYPE_DISC);
 }
 
-css_error css__copy_list_style_type(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error css__copy_list_style_type(const css_computed_style *from,
+				    css_computed_style *to)
 {
 	if (from == to) {
 		return CSS_OK;
@@ -213,12 +215,11 @@ css_error css__copy_list_style_type(
 }
 
 css_error css__compose_list_style_type(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+				       const css_computed_style *child,
+				       css_computed_style *result)
 {
 	uint8_t type = get_list_style_type(child);
 
 	return css__copy_list_style_type(
-			type == CSS_LIST_STYLE_TYPE_INHERIT ? parent : child,
-			result);
+		type == CSS_LIST_STYLE_TYPE_INHERIT ? parent : child, result);
 }

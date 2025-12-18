@@ -19,7 +19,8 @@
 /** \file
  * implementation for javascript scheme fetcher
  *
- * This fetcher implements http://www.whatwg.org/specs/web-apps/current-work/multipage/browsers.html#javascript-protocol
+ * This fetcher implements
+ * http://www.whatwg.org/specs/web-apps/current-work/multipage/browsers.html#javascript-protocol
  */
 
 #include <stdbool.h>
@@ -50,8 +51,9 @@ static struct fetch_javascript_context *ring = NULL;
 
 
 /** issue fetch callbacks with locking */
-static inline bool fetch_javascript_send_callback(const fetch_msg *msg,
-		struct fetch_javascript_context *ctx)
+static inline bool
+fetch_javascript_send_callback(const fetch_msg *msg,
+			       struct fetch_javascript_context *ctx)
 {
 	ctx->locked = true;
 	fetch_send_callback(msg, ctx->fetchh);
@@ -81,7 +83,6 @@ static bool fetch_javascript_handler(struct fetch_javascript_context *ctx)
 }
 
 
-
 /** callback to initialise the resource fetcher. */
 static bool fetch_javascript_initialise(lwc_string *scheme)
 {
@@ -99,13 +100,12 @@ static bool fetch_javascript_can_fetch(const nsurl *url)
 }
 
 /** callback to set up a resource fetch context. */
-static void *
-fetch_javascript_setup(struct fetch *fetchh,
-		 nsurl *url,
-		 bool only_2xx,
-		 bool downgrade_tls,
-		 const struct fetch_postdata *postdata,
-		 const char **headers)
+static void *fetch_javascript_setup(struct fetch *fetchh,
+				    nsurl *url,
+				    bool only_2xx,
+				    bool downgrade_tls,
+				    const struct fetch_postdata *postdata,
+				    const char **headers)
 {
 	struct fetch_javascript_context *ctx;
 
@@ -157,7 +157,8 @@ static void fetch_javascript_poll(lwc_string *scheme)
 {
 	struct fetch_javascript_context *c, *next;
 
-	if (ring == NULL) return;
+	if (ring == NULL)
+		return;
 
 	/* Iterate over ring, processing each pending fetch */
 	c = ring;
@@ -190,14 +191,14 @@ static void fetch_javascript_poll(lwc_string *scheme)
 		/* Advance to next ring entry, exiting if we've reached
 		 * the start of the ring or the ring has become empty
 		 */
-	} while ( (c = next) != ring && ring != NULL);
+	} while ((c = next) != ring && ring != NULL);
 }
 
 /**
  * Register javascript scheme fetcher with fetcher factory.
  *
  * \return NSERROR_OK on success or appropriate error code on faliure.
-*/
+ */
 nserror fetch_javascript_register(void)
 {
 	lwc_string *scheme = lwc_string_ref(corestring_lwc_javascript);
@@ -209,8 +210,7 @@ nserror fetch_javascript_register(void)
 		.abort = fetch_javascript_abort,
 		.free = fetch_javascript_free,
 		.poll = fetch_javascript_poll,
-		.finalise = fetch_javascript_finalise
-	};
+		.finalise = fetch_javascript_finalise};
 
 	return fetcher_add(scheme, &fetcher_ops);
 }

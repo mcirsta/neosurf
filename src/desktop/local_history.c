@@ -130,13 +130,13 @@ static plot_font_style_t pfstyle_node_sel = {
  * \param y       window y offset
  * \param ctx     current redraw context
  */
-static nserror
-redraw_entry(struct history *history,
-	     struct history_entry *entry,
-	     struct history_entry *cursor,
-	     struct rect *clip,
-	     int x, int y,
-	     const struct redraw_context *ctx)
+static nserror redraw_entry(struct history *history,
+			    struct history_entry *entry,
+			    struct history_entry *cursor,
+			    struct rect *clip,
+			    int x,
+			    int y,
+			    const struct redraw_context *ctx)
 {
 	size_t char_offset;
 	int actual_x;
@@ -193,9 +193,12 @@ redraw_entry(struct history *history,
 		ctx->plot->rectangle(ctx, &pstyle_rect_cursor, &rect);
 	}
 
-	res = guit->layout->position(plot_style_font, entry->page.title,
-				     strlen(entry->page.title), LOCAL_HISTORY_WIDTH,
-				     &char_offset, &actual_x);
+	res = guit->layout->position(plot_style_font,
+				     entry->page.title,
+				     strlen(entry->page.title),
+				     LOCAL_HISTORY_WIDTH,
+				     &char_offset,
+				     &actual_x);
 	if (res != NSERROR_OK) {
 		return res;
 	}
@@ -267,10 +270,8 @@ find_entry_position(struct history_entry *entry, int x, int y)
 		return NULL;
 	}
 
-	if ((entry->x <= x) &&
-	    (x <= entry->x + LOCAL_HISTORY_WIDTH) &&
-	    (entry->y <= y) &&
-	    (y <= entry->y + LOCAL_HISTORY_HEIGHT)) {
+	if ((entry->x <= x) && (x <= entry->x + LOCAL_HISTORY_WIDTH) &&
+	    (entry->y <= y) && (y <= entry->y + LOCAL_HISTORY_HEIGHT)) {
 		return entry;
 	}
 
@@ -285,8 +286,7 @@ find_entry_position(struct history_entry *entry, int x, int y)
 }
 
 /* exported interface documented in desktop/local_history.h */
-nserror
-local_history_scroll_to_cursor(struct local_history_session *session)
+nserror local_history_scroll_to_cursor(struct local_history_session *session)
 {
 	rect cursor;
 
@@ -297,18 +297,17 @@ local_history_scroll_to_cursor(struct local_history_session *session)
 	cursor.x0 = session->cursor->x - LOCAL_HISTORY_RIGHT_MARGIN / 2;
 	cursor.y0 = session->cursor->y - LOCAL_HISTORY_BOTTOM_MARGIN / 2;
 	cursor.x1 = cursor.x0 + LOCAL_HISTORY_WIDTH +
-			LOCAL_HISTORY_RIGHT_MARGIN / 2;
+		    LOCAL_HISTORY_RIGHT_MARGIN / 2;
 	cursor.y1 = cursor.y0 + LOCAL_HISTORY_HEIGHT +
-			LOCAL_HISTORY_BOTTOM_MARGIN / 2;
+		    LOCAL_HISTORY_BOTTOM_MARGIN / 2;
 
 	return cw_helper_scroll_visible(session->core_window_handle, &cursor);
 }
 
 /* exported interface documented in desktop/local_history.h */
-nserror
-local_history_init(void *core_window_handle,
-		   struct browser_window *bw,
-		   struct local_history_session **session)
+nserror local_history_init(void *core_window_handle,
+			   struct browser_window *bw,
+			   struct local_history_session **session)
 {
 	struct local_history_session *nses;
 
@@ -348,12 +347,11 @@ nserror local_history_fini(struct local_history_session *session)
 
 
 /* exported interface documented in desktop/local_history.h */
-nserror
-local_history_redraw(struct local_history_session *session,
-		     int x,
-		     int y,
-		     struct rect *clip,
-		     const struct redraw_context *ctx)
+nserror local_history_redraw(struct local_history_session *session,
+			     int x,
+			     int y,
+			     struct rect *clip,
+			     const struct redraw_context *ctx)
 {
 	struct rect r = {
 		.x0 = clip->x0 + x,
@@ -373,21 +371,20 @@ local_history_redraw(struct local_history_session *session,
 	ctx->plot->clip(ctx, &r);
 	ctx->plot->rectangle(ctx, &pstyle_bg, &r);
 
-	return redraw_entry(
-		session->bw->history,
-		session->bw->history->start,
-		session->cursor,
-		clip,
-		x, y,
-		ctx);
+	return redraw_entry(session->bw->history,
+			    session->bw->history->start,
+			    session->cursor,
+			    clip,
+			    x,
+			    y,
+			    ctx);
 }
 
 /* exported interface documented in desktop/local_history.h */
-nserror
-local_history_mouse_action(struct local_history_session *session,
-			   enum browser_mouse_state mouse,
-			   int x,
-			   int y)
+nserror local_history_mouse_action(struct local_history_session *session,
+				   enum browser_mouse_state mouse,
+				   int x,
+				   int y)
 {
 	struct history_entry *entry;
 	bool new_window;
@@ -451,18 +448,19 @@ _local_history_find_branch_point(struct history_entry *ent,
 }
 
 /* exported interface documented in desktop/local_history.h */
-bool
-local_history_keypress(struct local_history_session *session, uint32_t key)
+bool local_history_keypress(struct local_history_session *session, uint32_t key)
 {
 	switch (key) {
 	case NS_KEY_NL:
 	case NS_KEY_CR:
 		/* pressed enter */
 		if (session->cursor != session->bw->history->current) {
-			browser_window_history_go(session->bw, session->cursor,
+			browser_window_history_go(session->bw,
+						  session->cursor,
 						  false);
 			local_history_scroll_to_cursor(session);
-			guit->corewindow->invalidate(session->core_window_handle, NULL);
+			guit->corewindow->invalidate(
+				session->core_window_handle, NULL);
 		}
 		/* We have handled this keypress */
 		return true;
@@ -471,7 +469,8 @@ local_history_keypress(struct local_history_session *session, uint32_t key)
 		if (session->cursor->back != NULL) {
 			session->cursor = session->cursor->back;
 			local_history_scroll_to_cursor(session);
-			guit->corewindow->invalidate(session->core_window_handle, NULL);
+			guit->corewindow->invalidate(
+				session->core_window_handle, NULL);
 		}
 		/* We have handled this keypress */
 		return true;
@@ -480,7 +479,8 @@ local_history_keypress(struct local_history_session *session, uint32_t key)
 		if (session->cursor->forward_pref != NULL) {
 			session->cursor = session->cursor->forward_pref;
 			local_history_scroll_to_cursor(session);
-			guit->corewindow->invalidate(session->core_window_handle, NULL);
+			guit->corewindow->invalidate(
+				session->core_window_handle, NULL);
 		}
 		/* We have handled this keypress */
 		return true;
@@ -490,9 +490,8 @@ local_history_keypress(struct local_history_session *session, uint32_t key)
 			session->cursor = session->cursor->next;
 		} else {
 			struct history_entry *branch_point = NULL;
-			_local_history_find_branch_point(
-				session->cursor,
-				&branch_point);
+			_local_history_find_branch_point(session->cursor,
+							 &branch_point);
 			if (branch_point != NULL) {
 				if (branch_point->next != NULL) {
 					branch_point = branch_point->next;
@@ -507,9 +506,9 @@ local_history_keypress(struct local_history_session *session, uint32_t key)
 	case NS_KEY_UP:
 		/* Go to next sibling up, if there is one */
 		if (session->cursor->back != NULL) {
-			struct history_entry *ent = session->cursor->back->forward;
-			while (ent != session->cursor &&
-			       ent->next != NULL &&
+			struct history_entry *ent =
+				session->cursor->back->forward;
+			while (ent != session->cursor && ent->next != NULL &&
 			       ent->next != session->cursor) {
 				ent = ent->next;
 			}
@@ -518,11 +517,12 @@ local_history_keypress(struct local_history_session *session, uint32_t key)
 			} else {
 				struct history_entry *branch_point = NULL;
 				_local_history_find_branch_point(
-					session->cursor,
-					&branch_point);
+					session->cursor, &branch_point);
 				if (branch_point != NULL) {
-					struct history_entry *ent = branch_point->back->forward;
-					while (ent->next != NULL && ent->next != branch_point) {
+					struct history_entry *ent =
+						branch_point->back->forward;
+					while (ent->next != NULL &&
+					       ent->next != branch_point) {
 						ent = ent->next;
 					}
 					session->cursor = ent;
@@ -538,9 +538,8 @@ local_history_keypress(struct local_history_session *session, uint32_t key)
 }
 
 /* exported interface documented in desktop/local_history.h */
-nserror
-local_history_set(struct local_history_session *session,
-		  struct browser_window *bw)
+nserror local_history_set(struct local_history_session *session,
+			  struct browser_window *bw)
 {
 	session->bw = bw;
 	session->cursor = NULL;
@@ -560,10 +559,9 @@ local_history_set(struct local_history_session *session,
 
 
 /* exported interface documented in desktop/local_history.h */
-nserror
-local_history_get_size(struct local_history_session *session,
-		       int *width,
-		       int *height)
+nserror local_history_get_size(struct local_history_session *session,
+			       int *width,
+			       int *height)
 {
 	*width = session->bw->history->width + 20;
 	*height = session->bw->history->height + 20;
@@ -573,10 +571,10 @@ local_history_get_size(struct local_history_session *session,
 
 
 /* exported interface documented in desktop/local_history.h */
-nserror
-local_history_get_url(struct local_history_session *session,
-		      int x, int y,
-		      nsurl **url_out)
+nserror local_history_get_url(struct local_history_session *session,
+			      int x,
+			      int y,
+			      nsurl **url_out)
 {
 	struct history_entry *entry;
 

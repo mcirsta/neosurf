@@ -22,36 +22,37 @@
  * CSS namespace mapping
  */
 typedef struct css_namespace {
-	lwc_string *prefix;		/**< Namespace prefix */
-	lwc_string *uri;		/**< Namespace URI */
+	lwc_string *prefix; /**< Namespace prefix */
+	lwc_string *uri; /**< Namespace URI */
 } css_namespace;
 
 /**
  * Context for a CSS language parser
  */
 typedef struct css_language {
-	css_stylesheet *sheet;		/**< The stylesheet to parse for */
+	css_stylesheet *sheet; /**< The stylesheet to parse for */
 
 #define STACK_CHUNK 32
-	parserutils_stack *context;	/**< Context stack */
+	parserutils_stack *context; /**< Context stack */
 
 	enum {
 		CHARSET_PERMITTED,
 		IMPORT_PERMITTED,
 		NAMESPACE_PERMITTED,
 		HAD_RULE
-	} state;			/**< State flag, for at-rule handling */
+	} state; /**< State flag, for at-rule handling */
 
 	/** Interned strings */
 	lwc_string **strings;
 
-	lwc_string *default_namespace;	/**< Default namespace URI */
-	css_namespace *namespaces;	/**< Array of namespace mappings */
-	uint32_t num_namespaces;	/**< Number of namespace mappings */
+	lwc_string *default_namespace; /**< Default namespace URI */
+	css_namespace *namespaces; /**< Array of namespace mappings */
+	uint32_t num_namespaces; /**< Number of namespace mappings */
 } css_language;
 
-css_error css__language_create(css_stylesheet *sheet, css_parser *parser,
-		void **language);
+css_error css__language_create(css_stylesheet *sheet,
+			       css_parser *parser,
+			       void **language);
 css_error css__language_destroy(css_language *language);
 
 /******************************************************************************
@@ -64,12 +65,13 @@ css_error css__language_destroy(css_language *language);
  * \param vector  The vector to consume from
  * \param ctx     The vector's context
  */
-static inline void consumeWhitespace(const parserutils_vector *vector, int32_t *ctx)
+static inline void
+consumeWhitespace(const parserutils_vector *vector, int32_t *ctx)
 {
 	const css_token *token = NULL;
 
 	while ((token = parserutils_vector_peek(vector, *ctx)) != NULL &&
-			token->type == CSS_TOKEN_S)
+	       token->type == CSS_TOKEN_S)
 		parserutils_vector_iterate(vector, ctx);
 }
 
@@ -85,7 +87,7 @@ static inline bool tokenIsChar(const css_token *token, uint8_t c)
 	bool result = false;
 
 	if (token != NULL && token->type == CSS_TOKEN_CHAR &&
-	                lwc_string_length(token->idata) == 1) {
+	    lwc_string_length(token->idata) == 1) {
 		char d = lwc_string_data(token->idata)[0];
 
 		/* Ensure lowercase comparison */
@@ -99,4 +101,3 @@ static inline bool tokenIsChar(const css_token *token, uint8_t c)
 }
 
 #endif
-

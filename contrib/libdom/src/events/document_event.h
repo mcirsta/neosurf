@@ -37,28 +37,27 @@ typedef enum {
  */
 struct dom_document_event_internal {
 	dom_events_default_action_fetcher actions;
-			/**< The default action fetecher */
+	/**< The default action fetecher */
 	void *actions_ctx; /**< The default action fetcher context */
 	struct lwc_string_s *event_types[DOM_EVENT_COUNT];
-			/**< Events type names */
+	/**< Events type names */
 };
 
 typedef struct dom_document_event_internal dom_document_event_internal;
 
 /**
  * Constructor and destructor: Since this object is not intended to be
- * allocated alone, it should be embedded into the Document object, there 
+ * allocated alone, it should be embedded into the Document object, there
  * is no constructor and destructor for it.
  */
 
 /* Initialise this DocumentEvent */
 dom_exception _dom_document_event_internal_initialise(
-		dom_document_event_internal *dei, 
-		dom_events_default_action_fetcher actions,
-		void *actions_ctx);
+	dom_document_event_internal *dei,
+	dom_events_default_action_fetcher actions,
+	void *actions_ctx);
 
 /* Finalise this DocumentEvent */
-void _dom_document_event_internal_finalise(
-		dom_document_event_internal *dei);
+void _dom_document_event_internal_finalise(dom_document_event_internal *dei);
 
 #endif

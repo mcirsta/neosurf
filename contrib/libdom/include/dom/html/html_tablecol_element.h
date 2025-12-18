@@ -15,41 +15,52 @@
 
 typedef struct dom_html_table_col_element dom_html_table_col_element;
 
-dom_exception dom_html_table_col_element_get_align(
-	dom_html_table_col_element *table_col, dom_string **align);
+dom_exception
+dom_html_table_col_element_get_align(dom_html_table_col_element *table_col,
+				     dom_string **align);
 
-dom_exception dom_html_table_col_element_set_align(
-	dom_html_table_col_element *table_col, dom_string *align);
+dom_exception
+dom_html_table_col_element_set_align(dom_html_table_col_element *table_col,
+				     dom_string *align);
 
-dom_exception dom_html_table_col_element_get_ch(
-	dom_html_table_col_element *table_col, dom_string **ch);
+dom_exception
+dom_html_table_col_element_get_ch(dom_html_table_col_element *table_col,
+				  dom_string **ch);
 
-dom_exception dom_html_table_col_element_set_ch(
-	dom_html_table_col_element *table_col, dom_string *ch);
+dom_exception
+dom_html_table_col_element_set_ch(dom_html_table_col_element *table_col,
+				  dom_string *ch);
 
-dom_exception dom_html_table_col_element_get_ch_off(
-	dom_html_table_col_element *table_col, dom_string **ch_off);
+dom_exception
+dom_html_table_col_element_get_ch_off(dom_html_table_col_element *table_col,
+				      dom_string **ch_off);
 
-dom_exception dom_html_table_col_element_set_ch_off(
-	dom_html_table_col_element *table_col, dom_string *ch_off);
+dom_exception
+dom_html_table_col_element_set_ch_off(dom_html_table_col_element *table_col,
+				      dom_string *ch_off);
 
-dom_exception dom_html_table_col_element_get_v_align(
-	dom_html_table_col_element *table_col, dom_string **v_align);
+dom_exception
+dom_html_table_col_element_get_v_align(dom_html_table_col_element *table_col,
+				       dom_string **v_align);
 
-dom_exception dom_html_table_col_element_set_v_align(
-	dom_html_table_col_element *table_col, dom_string *v_align);
+dom_exception
+dom_html_table_col_element_set_v_align(dom_html_table_col_element *table_col,
+				       dom_string *v_align);
 
-dom_exception dom_html_table_col_element_get_width(
-	dom_html_table_col_element *table_col, dom_string **width);
+dom_exception
+dom_html_table_col_element_get_width(dom_html_table_col_element *table_col,
+				     dom_string **width);
 
-dom_exception dom_html_table_col_element_set_width(
-	dom_html_table_col_element *table_col, dom_string *width);
+dom_exception
+dom_html_table_col_element_set_width(dom_html_table_col_element *table_col,
+				     dom_string *width);
 
-dom_exception dom_html_table_col_element_get_span(
-	dom_html_table_col_element *table_col, int32_t *span);
+dom_exception
+dom_html_table_col_element_get_span(dom_html_table_col_element *table_col,
+				    int32_t *span);
 
-dom_exception dom_html_table_col_element_set_span(
-	dom_html_table_col_element *table_col, uint32_t span);
+dom_exception
+dom_html_table_col_element_set_span(dom_html_table_col_element *table_col,
+				    uint32_t span);
 
 #endif
-

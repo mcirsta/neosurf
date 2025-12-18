@@ -21,40 +21,30 @@
 
 /* The virtual table for dom_text */
 const struct dom_text_vtable text_vtable = {
-	{
-		{
-			{
-				DOM_NODE_EVENT_TARGET_VTABLE,
-			},
-			DOM_NODE_VTABLE_CHARACTERDATA
-		},
-		DOM_CHARACTERDATA_VTABLE
-	},
-	DOM_TEXT_VTABLE
-};
+	{{{
+		  DOM_NODE_EVENT_TARGET_VTABLE,
+	  },
+	  DOM_NODE_VTABLE_CHARACTERDATA},
+	 DOM_CHARACTERDATA_VTABLE},
+	DOM_TEXT_VTABLE};
 
 static const struct dom_node_protect_vtable text_protect_vtable = {
-	DOM_TEXT_PROTECT_VTABLE
-};
+	DOM_TEXT_PROTECT_VTABLE};
 
 /* Following comes helper functions */
-typedef enum walk_operation {
-	COLLECT,
-	DELETE
-} walk_operation;
-typedef enum walk_order {
-	LEFT,
-	RIGHT
-} walk_order;
+typedef enum walk_operation { COLLECT, DELETE } walk_operation;
+typedef enum walk_order { LEFT, RIGHT } walk_order;
 
 /* Walk the logic-adjacent text in document order */
-static dom_exception walk_logic_adjacent_text_in_order(
-		dom_node_internal *node, walk_operation opt,
-		walk_order order, dom_string **ret, bool *cont);
+static dom_exception walk_logic_adjacent_text_in_order(dom_node_internal *node,
+						       walk_operation opt,
+						       walk_order order,
+						       dom_string **ret,
+						       bool *cont);
 /* Walk the logic-adjacent text */
-static dom_exception walk_logic_adjacent_text(dom_text *text, 
-		walk_operation opt, dom_string **ret);
-	
+static dom_exception
+walk_logic_adjacent_text(dom_text *text, walk_operation opt, dom_string **ret);
+
 /*----------------------------------------------------------------------*/
 /* Constructor and Destructor */
 
@@ -73,8 +63,9 @@ static dom_exception walk_logic_adjacent_text(dom_text *text,
  * The returned node will already be referenced.
  */
 dom_exception _dom_text_create(dom_document *doc,
-		dom_string *name, dom_string *value,
-		dom_text **result)
+			       dom_string *name,
+			       dom_string *value,
+			       dom_text **result)
 {
 	dom_text *t;
 	dom_exception err;
@@ -92,8 +83,8 @@ dom_exception _dom_text_create(dom_document *doc,
 	}
 
 	/* Compose the vtable */
-	((dom_node *) t)->vtable = &text_vtable;
-	((dom_node_internal *) t)->vtable = &text_protect_vtable;
+	((dom_node *)t)->vtable = &text_vtable;
+	((dom_node_internal *)t)->vtable = &text_protect_vtable;
 
 	*result = t;
 
@@ -130,14 +121,16 @@ void _dom_text_destroy(dom_text *text)
  * ::doc, ::name and ::value will have their reference counts increased.
  */
 dom_exception _dom_text_initialise(dom_text *text,
-		dom_document *doc, dom_node_type type,
-		dom_string *name, dom_string *value)
+				   dom_document *doc,
+				   dom_node_type type,
+				   dom_string *name,
+				   dom_string *value)
 {
 	dom_exception err;
 
 	/* Initialise the base class */
-	err = _dom_characterdata_initialise(&text->base, doc, type,
-			name, value);
+	err = _dom_characterdata_initialise(
+		&text->base, doc, type, name, value);
 	if (err != DOM_NO_ERR)
 		return err;
 
@@ -177,10 +170,10 @@ void _dom_text_finalise(dom_text *text)
  * The returned node will be referenced. The client should unref the node
  * once it has finished with it.
  */
-dom_exception _dom_text_split_text(dom_text *text,
-		uint32_t offset, dom_text **result)
+dom_exception
+_dom_text_split_text(dom_text *text, uint32_t offset, dom_text **result)
 {
-	dom_node_internal *t = (dom_node_internal *) text;
+	dom_node_internal *t = (dom_node_internal *)text;
 	dom_string *value;
 	dom_text *res;
 	uint32_t len;
@@ -199,10 +192,10 @@ dom_exception _dom_text_split_text(dom_text *text,
 		return DOM_INDEX_SIZE_ERR;
 	}
 
-	/* Retrieve the data after the split point -- 
+	/* Retrieve the data after the split point --
 	 * this will be the new node's value. */
-	err = dom_characterdata_substring_data(&text->base, offset, 
-			len - offset, &value);
+	err = dom_characterdata_substring_data(
+		&text->base, offset, len - offset, &value);
 	if (err != DOM_NO_ERR) {
 		return err;
 	}
@@ -236,8 +229,8 @@ dom_exception _dom_text_split_text(dom_text *text,
  * \param result  Pointer to location to receive result
  * \return DOM_NO_ERR.
  */
-dom_exception _dom_text_get_is_element_content_whitespace(
-		dom_text *text, bool *result)
+dom_exception
+_dom_text_get_is_element_content_whitespace(dom_text *text, bool *result)
 {
 	*result = text->element_content_whitespace;
 
@@ -251,8 +244,7 @@ dom_exception _dom_text_get_is_element_content_whitespace(
  * \param result  Pointer to location to receive result
  * \return DOM_NO_ERR.
  */
-dom_exception _dom_text_get_whole_text(dom_text *text,
-		dom_string **result)
+dom_exception _dom_text_get_whole_text(dom_text *text, dom_string **result)
 {
 	return walk_logic_adjacent_text(text, COLLECT, result);
 }
@@ -271,7 +263,8 @@ dom_exception _dom_text_get_whole_text(dom_text *text,
  * once it has finished with it.
  */
 dom_exception _dom_text_replace_whole_text(dom_text *text,
-		dom_string *content, dom_text **result)
+					   dom_string *content,
+					   dom_text **result)
 {
 	dom_exception err;
 	dom_string *ret;
@@ -280,11 +273,11 @@ dom_exception _dom_text_replace_whole_text(dom_text *text,
 	if (err != DOM_NO_ERR)
 		return err;
 	assert(ret == NULL);
-	
+
 	err = dom_characterdata_set_data(text, content);
 	if (err != DOM_NO_ERR)
 		return err;
-	
+
 	*result = text;
 	dom_node_ref(text);
 
@@ -297,7 +290,7 @@ dom_exception _dom_text_replace_whole_text(dom_text *text,
 /* The destroy function of this class */
 void __dom_text_destroy(dom_node_internal *node)
 {
-	_dom_text_destroy((dom_text *) node);
+	_dom_text_destroy((dom_text *)node);
 }
 
 /* The copy constructor of this class */
@@ -316,7 +309,7 @@ dom_exception _dom_text_copy(dom_node_internal *old, dom_node_internal **copy)
 		return err;
 	}
 
-	*copy = (dom_node_internal *) new_text;
+	*copy = (dom_node_internal *)new_text;
 
 	return DOM_NO_ERR;
 }
@@ -343,13 +336,15 @@ dom_exception _dom_text_copy_internal(dom_text *old, dom_text *new)
  * \param node   The start Text node
  * \param opt    The operation on each Text Node
  * \param order  The order
- * \param ret    The string of the logic adjacent text 
+ * \param ret    The string of the logic adjacent text
  * \param cont   Whether the logic adjacent text is interrupt here
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception walk_logic_adjacent_text_in_order(
-		dom_node_internal *node, walk_operation opt,
-		walk_order order, dom_string **ret, bool *cont)
+dom_exception walk_logic_adjacent_text_in_order(dom_node_internal *node,
+						walk_operation opt,
+						walk_order order,
+						dom_string **ret,
+						bool *cont)
 {
 	dom_exception err;
 	dom_string *data, *tmp;
@@ -368,10 +363,9 @@ dom_exception walk_logic_adjacent_text_in_order(
 		dom_node_internal *p;
 
 		/* If we reach the boundary of logical-adjacent text, we stop */
-		if (node->type == DOM_ELEMENT_NODE || 
-				node->type == DOM_COMMENT_NODE ||
-				node->type == 
-				DOM_PROCESSING_INSTRUCTION_NODE) {
+		if (node->type == DOM_ELEMENT_NODE ||
+		    node->type == DOM_COMMENT_NODE ||
+		    node->type == DOM_PROCESSING_INSTRUCTION_NODE) {
 			*cont = false;
 			return DOM_NO_ERR;
 		}
@@ -388,7 +382,9 @@ dom_exception walk_logic_adjacent_text_in_order(
 				tmp = *ret;
 				if (order == LEFT) {
 					if (tmp != NULL) {
-						err = dom_string_concat(data, tmp, ret);
+						err = dom_string_concat(data,
+									tmp,
+									ret);
 						if (err != DOM_NO_ERR)
 							return err;
 					} else {
@@ -397,7 +393,9 @@ dom_exception walk_logic_adjacent_text_in_order(
 					}
 				} else if (order == RIGHT) {
 					if (tmp != NULL) {
-						err = dom_string_concat(tmp, data, ret);
+						err = dom_string_concat(tmp,
+									data,
+									ret);
 						if (err != DOM_NO_ERR)
 							return err;
 					} else {
@@ -417,7 +415,8 @@ dom_exception walk_logic_adjacent_text_in_order(
 			if (opt == DELETE) {
 				dom_node_internal *tn;
 				err = dom_node_remove_child(node->parent,
-						node, (void *) &tn);
+							    node,
+							    (void *)&tn);
 				if (err != DOM_NO_ERR)
 					return err;
 
@@ -468,16 +467,16 @@ dom_exception walk_logic_adjacent_text_in_order(
  * \param ret   The returned string if the opt is COLLECT
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception walk_logic_adjacent_text(dom_text *text, 
-		walk_operation opt, dom_string **ret)
+dom_exception
+walk_logic_adjacent_text(dom_text *text, walk_operation opt, dom_string **ret)
 {
-	dom_node_internal *node = (dom_node_internal *) text;
+	dom_node_internal *node = (dom_node_internal *)text;
 	dom_node_internal *parent = node->parent;
 	dom_node_internal *left = node->previous;
 	dom_node_internal *right = node->next;
 	dom_exception err;
 	bool cont;
-	
+
 	if (parent->type == DOM_ENTITY_NODE) {
 		return DOM_NOT_SUPPORTED_ERR;
 	}
@@ -516,12 +515,11 @@ dom_exception walk_logic_adjacent_text(dom_text *text,
 			*ret = data;
 		}
 	} else {
-			dom_node_internal *tn;
-			err = dom_node_remove_child(node->parent, node,
-					(void *) &tn);
-			if (err != DOM_NO_ERR)
-				return err;
-			dom_node_unref(tn);
+		dom_node_internal *tn;
+		err = dom_node_remove_child(node->parent, node, (void *)&tn);
+		if (err != DOM_NO_ERR)
+			return err;
+		dom_node_unref(tn);
 	}
 
 	/* Now, look right */
@@ -536,4 +534,3 @@ dom_exception walk_logic_adjacent_text(dom_text *text,
 
 	return DOM_NO_ERR;
 }
-

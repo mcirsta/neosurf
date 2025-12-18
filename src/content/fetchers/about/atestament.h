@@ -32,9 +32,14 @@
  */
 bool fetch_about_testament_handler(struct fetch_about_context *ctx);
 
-//dummy data for compilation to work
+// dummy data for compilation to work
 
-#define WT_MODIFICATIONS { { NULL, NULL } }
+#define WT_MODIFICATIONS                                                       \
+	{                                                                      \
+		{                                                              \
+			NULL, NULL                                             \
+		}                                                              \
+	}
 #define WT_BRANCHPATH "unknown"
 #define GECOS "user"
 #define USERNAME "user"

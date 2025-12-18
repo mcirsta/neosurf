@@ -20,7 +20,7 @@ typedef struct parserutils_charset_aliases_canon {
 } parserutils_charset_aliases_canon;
 
 /* Canonicalise an alias name */
-parserutils_charset_aliases_canon *parserutils__charset_alias_canonicalise(
-		const char *alias, size_t len);
+parserutils_charset_aliases_canon *
+parserutils__charset_alias_canonicalise(const char *alias, size_t len);
 
 #endif

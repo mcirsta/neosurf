@@ -38,8 +38,10 @@ class NS_Widget : public QWidget
 {
 	Q_OBJECT
 
-public:
-	NS_Widget(QWidget *parent, NS_Actions *actions, struct browser_window *bw);
+      public:
+	NS_Widget(QWidget *parent,
+		  NS_Actions *actions,
+		  struct browser_window *bw);
 
 	QSize sizeHint() const override;
 	bool get_scroll(int *sx, int *sy);
@@ -48,11 +50,11 @@ public:
 	void set_pointer(enum gui_pointer_shape shape);
 	void setCaret(bool visible, int x, int y, int height);
 
-public slots:
+      public slots:
 	void setHorizontalScroll(int value);
 	void setVerticalScroll(int value);
 
-protected:
+      protected:
 	void contextMenuEvent(QContextMenuEvent *event);
 	void focusOutEvent(QFocusEvent *event);
 	void keyPressEvent(QKeyEvent *event);
@@ -62,11 +64,12 @@ protected:
 	void paintEvent(QPaintEvent *event);
 	void resizeEvent(QResizeEvent *event);
 
-private:
+      private:
 	/**
 	 * map qt event modifiers to browser mouse state keyboard modifiers
 	 */
-	static void event_to_bms_modifiers(QMouseEvent *event, unsigned int &bms);
+	static void
+	event_to_bms_modifiers(QMouseEvent *event, unsigned int &bms);
 
 	/**
 	 * draw caret

@@ -45,7 +45,10 @@
 #include <neosurf/content/handlers/html/html.h>
 #include <neosurf/content/handlers/html/private.h>
 
-typedef bool (script_handler_t)(struct jsthread *jsthread, const uint8_t *data, size_t size, const char *name);
+typedef bool(script_handler_t)(struct jsthread *jsthread,
+			       const uint8_t *data,
+			       size_t size,
+			       const char *name);
 
 
 static script_handler_t *select_script_handler(content_type ctype)
@@ -90,24 +93,28 @@ nserror html_script_exec(html_content *c, bool allow_defer)
 
 			/* ensure script content fetch status is not an error */
 			if (content_get_status(s->data.handle) ==
-					CONTENT_STATUS_ERROR)
+			    CONTENT_STATUS_ERROR)
 				continue;
 
 			/* ensure script handler for content type */
 			script_handler = select_script_handler(
-					content_get_type(s->data.handle));
+				content_get_type(s->data.handle));
 			if (script_handler == NULL)
 				continue; /* unsupported type */
 
 			if (content_get_status(s->data.handle) ==
-					CONTENT_STATUS_DONE) {
+			    CONTENT_STATUS_DONE) {
 				/* external script is now available */
 				const uint8_t *data;
 				size_t size;
-				data = content_get_source_data(
-						s->data.handle, &size );
-				script_handler(c->jsthread, data, size,
-					       nsurl_access(hlcache_handle_get_url(s->data.handle)));
+				data = content_get_source_data(s->data.handle,
+							       &size);
+				script_handler(
+					c->jsthread,
+					data,
+					size,
+					nsurl_access(hlcache_handle_get_url(
+						s->data.handle)));
 				have_run_something = true;
 				/* We have to re-acquire this here since the
 				 * c->scripts array may have been reallocated
@@ -116,7 +123,6 @@ nserror html_script_exec(html_content *c, bool allow_defer)
 				s = &(c->scripts[i]);
 
 				s->already_started = true;
-
 			}
 		}
 	}
@@ -129,10 +135,9 @@ nserror html_script_exec(html_content *c, bool allow_defer)
 }
 
 /* create new html script entry */
-static struct html_script *
-html_process_new_script(html_content *c,
-			dom_string *mimetype,
-			enum html_script_type type)
+static struct html_script *html_process_new_script(html_content *c,
+						   dom_string *mimetype,
+						   enum html_script_type type)
 {
 	struct html_script *nscript;
 	/* add space for new script entry */
@@ -165,10 +170,9 @@ html_process_new_script(html_content *c,
 /**
  * Callback for asyncronous scripts
  */
-static nserror
-convert_script_async_cb(hlcache_handle *script,
-			  const hlcache_event *event,
-			  void *pw)
+static nserror convert_script_async_cb(hlcache_handle *script,
+				       const hlcache_event *event,
+				       void *pw)
 {
 	html_content *parent = pw;
 	unsigned int i;
@@ -190,7 +194,10 @@ convert_script_async_cb(hlcache_handle *script,
 		break;
 
 	case CONTENT_MSG_DONE:
-		NSLOG(neosurf, INFO, "script %d done '%s'", i,
+		NSLOG(neosurf,
+		      INFO,
+		      "script %d done '%s'",
+		      i,
 		      nsurl_access(hlcache_handle_get_url(script)));
 		parent->base.active--;
 		NSLOG(neosurf, INFO, "%d fetches active", parent->base.active);
@@ -198,7 +205,9 @@ convert_script_async_cb(hlcache_handle *script,
 		break;
 
 	case CONTENT_MSG_ERROR:
-		NSLOG(neosurf, INFO, "script %s failed: %s",
+		NSLOG(neosurf,
+		      INFO,
+		      "script %s failed: %s",
 		      nsurl_access(hlcache_handle_get_url(script)),
 		      event->data.errordata.errormsg);
 
@@ -233,10 +242,9 @@ convert_script_async_cb(hlcache_handle *script,
 /**
  * Callback for defer scripts
  */
-static nserror
-convert_script_defer_cb(hlcache_handle *script,
-			  const hlcache_event *event,
-			  void *pw)
+static nserror convert_script_defer_cb(hlcache_handle *script,
+				       const hlcache_event *event,
+				       void *pw)
 {
 	html_content *parent = pw;
 	unsigned int i;
@@ -253,7 +261,10 @@ convert_script_defer_cb(hlcache_handle *script,
 	switch (event->type) {
 
 	case CONTENT_MSG_DONE:
-		NSLOG(neosurf, INFO, "script %d done '%s'", i,
+		NSLOG(neosurf,
+		      INFO,
+		      "script %d done '%s'",
+		      i,
 		      nsurl_access(hlcache_handle_get_url(script)));
 		parent->base.active--;
 		NSLOG(neosurf, INFO, "%d fetches active", parent->base.active);
@@ -261,7 +272,9 @@ convert_script_defer_cb(hlcache_handle *script,
 		break;
 
 	case CONTENT_MSG_ERROR:
-		NSLOG(neosurf, INFO, "script %s failed: %s",
+		NSLOG(neosurf,
+		      INFO,
+		      "script %s failed: %s",
 		      nsurl_access(hlcache_handle_get_url(script)),
 		      event->data.errordata.errormsg);
 
@@ -289,10 +302,9 @@ convert_script_defer_cb(hlcache_handle *script,
 /**
  * Callback for syncronous scripts
  */
-static nserror
-convert_script_sync_cb(hlcache_handle *script,
-			  const hlcache_event *event,
-			  void *pw)
+static nserror convert_script_sync_cb(hlcache_handle *script,
+				      const hlcache_event *event,
+				      void *pw)
 {
 	html_content *parent = pw;
 	unsigned int i;
@@ -303,8 +315,8 @@ convert_script_sync_cb(hlcache_handle *script,
 
 	/* Count sync scripts which have yet to complete (other than us) */
 	for (i = 0, s = parent->scripts; i != parent->scripts_count; i++, s++) {
-		if (s->type == HTML_SCRIPT_SYNC &&
-		    s->data.handle != script && s->already_started == false) {
+		if (s->type == HTML_SCRIPT_SYNC && s->data.handle != script &&
+		    s->already_started == false) {
 			active_sync_scripts++;
 		}
 	}
@@ -319,7 +331,10 @@ convert_script_sync_cb(hlcache_handle *script,
 
 	switch (event->type) {
 	case CONTENT_MSG_DONE:
-		NSLOG(neosurf, INFO, "script %d done '%s'", i,
+		NSLOG(neosurf,
+		      INFO,
+		      "script %d done '%s'",
+		      i,
 		      nsurl_access(hlcache_handle_get_url(script)));
 		parent->base.active--;
 		NSLOG(neosurf, INFO, "%d fetches active", parent->base.active);
@@ -327,28 +342,37 @@ convert_script_sync_cb(hlcache_handle *script,
 		s->already_started = true;
 
 		/* attempt to execute script */
-		script_handler = select_script_handler(content_get_type(s->data.handle));
+		script_handler = select_script_handler(
+			content_get_type(s->data.handle));
 		if (script_handler != NULL && parent->jsthread != NULL) {
 			/* script has a handler */
 			const uint8_t *data;
 			size_t size;
-			data = content_get_source_data(s->data.handle, &size );
-			script_handler(parent->jsthread, data, size,
-				       nsurl_access(hlcache_handle_get_url(s->data.handle)));
+			data = content_get_source_data(s->data.handle, &size);
+			script_handler(parent->jsthread,
+				       data,
+				       size,
+				       nsurl_access(hlcache_handle_get_url(
+					       s->data.handle)));
 		}
 
 		/* continue parse */
 		if (parent->parser != NULL && active_sync_scripts == 0) {
 			err = dom_hubbub_parser_pause(parent->parser, false);
 			if (err != DOM_HUBBUB_OK) {
-				NSLOG(neosurf, INFO, "unpause returned 0x%x", err);
+				NSLOG(neosurf,
+				      INFO,
+				      "unpause returned 0x%x",
+				      err);
 			}
 		}
 
 		break;
 
 	case CONTENT_MSG_ERROR:
-		NSLOG(neosurf, INFO, "script %s failed: %s",
+		NSLOG(neosurf,
+		      INFO,
+		      "script %s failed: %s",
 		      nsurl_access(hlcache_handle_get_url(script)),
 		      event->data.errordata.errormsg);
 
@@ -364,7 +388,10 @@ convert_script_sync_cb(hlcache_handle *script,
 		if (parent->parser != NULL && active_sync_scripts == 0) {
 			err = dom_hubbub_parser_pause(parent->parser, false);
 			if (err != DOM_HUBBUB_OK) {
-				NSLOG(neosurf, INFO, "unpause returned 0x%x", err);
+				NSLOG(neosurf,
+				      INFO,
+				      "unpause returned 0x%x",
+				      err);
 			}
 		}
 
@@ -387,11 +414,10 @@ convert_script_sync_cb(hlcache_handle *script,
 /**
  * process a script with a src tag
  */
-static dom_hubbub_error
-exec_src_script(html_content *c,
-		dom_node *node,
-		dom_string *mimetype,
-		dom_string *src)
+static dom_hubbub_error exec_src_script(html_content *c,
+					dom_node *node,
+					dom_string *mimetype,
+					dom_string *src)
 {
 	nserror ns_error;
 	nsurl *joined;
@@ -411,7 +437,10 @@ exec_src_script(html_content *c,
 		return DOM_HUBBUB_NOMEM;
 	}
 
-	NSLOG(neosurf, INFO, "script %i '%s'", c->scripts_count,
+	NSLOG(neosurf,
+	      INFO,
+	      "script %i '%s'",
+	      c->scripts_count,
 	      nsurl_access(joined));
 
 	/* there are three ways to process the script tag at this point:
@@ -450,7 +479,8 @@ exec_src_script(html_content *c,
 
 	} else {
 		exc = dom_element_has_attribute(node,
-						corestring_dom_defer, &defer);
+						corestring_dom_defer,
+						&defer);
 		if (exc != DOM_NO_ERR) {
 			return DOM_HUBBUB_OK; /* dom error */
 		}
@@ -504,7 +534,7 @@ exec_src_script(html_content *c,
 
 		switch (script_type) {
 		case HTML_SCRIPT_SYNC:
-			ret =  DOM_HUBBUB_HUBBUB_ERR | HUBBUB_PAUSED;
+			ret = DOM_HUBBUB_HUBBUB_ERR | HUBBUB_PAUSED;
 			break;
 
 		case HTML_SCRIPT_ASYNC:
@@ -542,7 +572,6 @@ exec_inline_script(html_content *c, dom_node *node, dom_string *mimetype)
 
 		content_broadcast_error(&c->base, NSERROR_NOMEM, NULL);
 		return DOM_HUBBUB_NOMEM;
-
 	}
 
 	nscript->data.string = script;
@@ -554,7 +583,8 @@ exec_inline_script(html_content *c, dom_node *node, dom_string *mimetype)
 		return DOM_HUBBUB_DOM;
 	}
 
-	script_handler = select_script_handler(content_factory_type_from_mime_type(lwcmimetype));
+	script_handler = select_script_handler(
+		content_factory_type_from_mime_type(lwcmimetype));
 	lwc_string_unref(lwcmimetype);
 
 	if (script_handler != NULL) {
@@ -572,8 +602,7 @@ exec_inline_script(html_content *c, dom_node *node, dom_string *mimetype)
  *
  *
  */
-dom_hubbub_error
-html_process_script(void *ctx, dom_node *node)
+dom_hubbub_error html_process_script(void *ctx, dom_node *node)
 {
 	html_content *c = (html_content *)ctx;
 	dom_exception exc; /* returned by libdom functions */
@@ -596,7 +625,11 @@ html_process_script(void *ctx, dom_node *node)
 		}
 	}
 
-	NSLOG(neosurf, INFO, "content %p parser %p node %p", c, c->parser,
+	NSLOG(neosurf,
+	      INFO,
+	      "content %p parser %p node %p",
+	      c,
+	      c->parser,
 	      node);
 	NSLOG(neosurf, DEBUG, "PROFILER: START JS execute %p", node);
 
@@ -666,7 +699,8 @@ nserror html_script_free(html_content *html)
 			/* fallthrough */
 		case HTML_SCRIPT_DEFER:
 			if (html->scripts[i].data.handle != NULL) {
-				hlcache_handle_release(html->scripts[i].data.handle);
+				hlcache_handle_release(
+					html->scripts[i].data.handle);
 			}
 			break;
 		}

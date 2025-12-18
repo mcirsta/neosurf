@@ -58,7 +58,7 @@ nsw32_local_history_key(struct nsw32_corewindow *nsw32_cw, uint32_t nskey)
 
 	lhw = (struct nsw32_local_history_window *)nsw32_cw;
 
-	if (local_history_keypress(lhw->session,nskey)) {
+	if (local_history_keypress(lhw->session, nskey)) {
 		return NSERROR_OK;
 	}
 	return NSERROR_NOT_IMPLEMENTED;
@@ -73,10 +73,10 @@ nsw32_local_history_key(struct nsw32_corewindow *nsw32_cw, uint32_t nskey)
  * \param y location of event
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror
-nsw32_local_history_mouse(struct nsw32_corewindow *nsw32_cw,
-		    browser_mouse_state mouse_state,
-		    int x, int y)
+static nserror nsw32_local_history_mouse(struct nsw32_corewindow *nsw32_cw,
+					 browser_mouse_state mouse_state,
+					 int x,
+					 int y)
 {
 	struct nsw32_local_history_window *lhw;
 
@@ -96,18 +96,15 @@ nsw32_local_history_mouse(struct nsw32_corewindow *nsw32_cw,
  * \param r The rectangle of the window that needs updating.
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror
-nsw32_local_history_draw(struct nsw32_corewindow *nsw32_cw,
-			  int scrollx,
-			  int scrolly,
-			  struct rect *r)
+static nserror nsw32_local_history_draw(struct nsw32_corewindow *nsw32_cw,
+					int scrollx,
+					int scrolly,
+					struct rect *r)
 {
 	struct nsw32_local_history_window *lhw;
-	struct redraw_context ctx = {
-		.interactive = true,
-		.background_images = true,
-		.plot = &win_plotters
-	};
+	struct redraw_context ctx = {.interactive = true,
+				     .background_images = true,
+				     .plot = &win_plotters};
 
 	lhw = (struct nsw32_local_history_window *)nsw32_cw;
 
@@ -117,8 +114,7 @@ nsw32_local_history_draw(struct nsw32_corewindow *nsw32_cw,
 }
 
 
-static nserror
-nsw32_local_history_close(struct nsw32_corewindow *nsw32_cw)
+static nserror nsw32_local_history_close(struct nsw32_corewindow *nsw32_cw)
 {
 	ShowWindow(nsw32_cw->hWnd, SW_HIDE);
 
@@ -178,8 +174,7 @@ nsw32_local_history_init(HINSTANCE hInstance,
 
 
 /* exported interface documented in windows/local_history.h */
-nserror
-nsw32_local_history_present(HWND hWndParent, struct browser_window *bw)
+nserror nsw32_local_history_present(HWND hWndParent, struct browser_window *bw)
 {
 	nserror res;
 	HINSTANCE hInstance;
@@ -209,8 +204,8 @@ nsw32_local_history_present(HWND hWndParent, struct browser_window *bw)
 		}
 		SetWindowPos(local_history_window->core.hWnd,
 			     HWND_TOP,
-			     parentr.left + (margin/2),
-			     parentr.top + (margin/2),
+			     parentr.left + (margin / 2),
+			     parentr.top + (margin / 2),
 			     width,
 			     height,
 			     SWP_SHOWWINDOW);

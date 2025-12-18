@@ -67,7 +67,7 @@ static bool http_is_token_char(uint8_t c)
  */
 nserror http__parse_token(const char **input, lwc_string **value)
 {
-	const uint8_t *start = (const uint8_t *) *input;
+	const uint8_t *start = (const uint8_t *)*input;
 	const uint8_t *end;
 	lwc_string *token;
 
@@ -78,12 +78,12 @@ nserror http__parse_token(const char **input, lwc_string **value)
 	if (end == start)
 		return NSERROR_NOT_FOUND;
 
-	if (lwc_intern_string((const char *) start, 
-			end - start, &token) != lwc_error_ok)
+	if (lwc_intern_string((const char *)start, end - start, &token) !=
+	    lwc_error_ok)
 		return NSERROR_NOMEM;
 
 	*value = token;
-	*input = (const char *) end;
+	*input = (const char *)end;
 
 	return NSERROR_OK;
 }
@@ -101,7 +101,7 @@ nserror http__parse_token(const char **input, lwc_string **value)
  */
 nserror http__parse_quoted_string(const char **input, lwc_string **value)
 {
-	const uint8_t *start = (const uint8_t *) *input;
+	const uint8_t *start = (const uint8_t *)*input;
 	const uint8_t *end;
 	uint8_t c;
 	lwc_string *string_value;
@@ -122,9 +122,8 @@ nserror http__parse_quoted_string(const char **input, lwc_string **value)
 	end = start = start + 1;
 
 	c = *end;
-	while (c == '\t' || c == '\r' || c == '\n' || 
-			c == ' ' || c == '!' ||
-			('#' <= c && c <= 126) || c > 127) {
+	while (c == '\t' || c == '\r' || c == '\n' || c == ' ' || c == '!' ||
+	       ('#' <= c && c <= 126) || c > 127) {
 		end++;
 		c = *end;
 	}
@@ -132,15 +131,14 @@ nserror http__parse_quoted_string(const char **input, lwc_string **value)
 	if (*end != '"')
 		return NSERROR_NOT_FOUND;
 
-	if (lwc_intern_string((const char *) start, end - start, 
-			&string_value) != lwc_error_ok)
+	if (lwc_intern_string((const char *)start,
+			      end - start,
+			      &string_value) != lwc_error_ok)
 		return NSERROR_NOMEM;
 
 	*value = string_value;
 
-	*input = (const char *) end + 1;
+	*input = (const char *)end + 1;
 
 	return NSERROR_OK;
 }
-
-

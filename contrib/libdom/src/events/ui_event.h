@@ -16,23 +16,23 @@
  * The modifier key state
  */
 typedef enum {
-	DOM_MOD_CTRL = (1<<0),
-	DOM_MOD_META = (1<<1),
-	DOM_MOD_SHIFT = (1<<2),
-	DOM_MOD_ALT = (1<<3),
-	DOM_MOD_ALT_GRAPH = (1<<4),
-	DOM_MOD_CAPS_LOCK = (1<<5),
-	DOM_MOD_NUM_LOCK = (1<<6),
-	DOM_MOD_SCROLL = (1<<7)
+	DOM_MOD_CTRL = (1 << 0),
+	DOM_MOD_META = (1 << 1),
+	DOM_MOD_SHIFT = (1 << 2),
+	DOM_MOD_ALT = (1 << 3),
+	DOM_MOD_ALT_GRAPH = (1 << 4),
+	DOM_MOD_CAPS_LOCK = (1 << 5),
+	DOM_MOD_NUM_LOCK = (1 << 6),
+	DOM_MOD_SCROLL = (1 << 7)
 } dom_modifier_key;
 
 /**
  * The UIEvent
  */
 struct dom_ui_event {
-	struct dom_event base;	/**< The base class */
-	struct dom_abstract_view *view;	/**< The AbstractView */
-	int32_t detail;	/**< Some private data for this event */
+	struct dom_event base; /**< The base class */
+	struct dom_abstract_view *view; /**< The AbstractView */
+	int32_t detail; /**< Some private data for this event */
 };
 
 /* Constructor */

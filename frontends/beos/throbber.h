@@ -21,10 +21,9 @@
 
 #include <Bitmap.h>
 
-struct nsbeos_throbber
-{
-	int		nframes;	/**< Number of frames in the throbber */
-	BBitmap	**framedata;
+struct nsbeos_throbber {
+	int nframes; /**< Number of frames in the throbber */
+	BBitmap **framedata;
 };
 
 extern struct nsbeos_throbber *nsbeos_throbber;

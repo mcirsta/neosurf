@@ -9,8 +9,7 @@
 #define hubbub_parser_h_
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #include <stdbool.h>
@@ -43,41 +42,42 @@ typedef union hubbub_parser_optparams {
 	struct {
 		hubbub_token_handler handler;
 		void *pw;
-	} token_handler;		/**< Token handling callback */
+	} token_handler; /**< Token handling callback */
 
 	struct {
 		hubbub_error_handler handler;
 		void *pw;
-	} error_handler;		/**< Error handling callback */
+	} error_handler; /**< Error handling callback */
 
 	struct {
 		hubbub_content_model model;
-	} content_model;		/**< Current content model */
+	} content_model; /**< Current content model */
 
-	hubbub_tree_handler *tree_handler;	/**< Tree handling callbacks */
+	hubbub_tree_handler *tree_handler; /**< Tree handling callbacks */
 
-	void *document_node;		/**< Document node */
+	void *document_node; /**< Document node */
 
-	bool enable_scripting;		/**< Whether to enable scripting */
+	bool enable_scripting; /**< Whether to enable scripting */
 
-	bool pause_parse;		/**< Pause parsing */
+	bool pause_parse; /**< Pause parsing */
 } hubbub_parser_optparams;
 
 /* Create a hubbub parser */
-hubbub_error hubbub_parser_create(const char *enc, bool fix_enc,
-		hubbub_parser **parser);
+hubbub_error
+hubbub_parser_create(const char *enc, bool fix_enc, hubbub_parser **parser);
 /* Destroy a hubbub parser */
 hubbub_error hubbub_parser_destroy(hubbub_parser *parser);
 
 /* Configure a hubbub parser */
 hubbub_error hubbub_parser_setopt(hubbub_parser *parser,
-		hubbub_parser_opttype type,
-		hubbub_parser_optparams *params);
+				  hubbub_parser_opttype type,
+				  hubbub_parser_optparams *params);
 
 /* Pass a chunk of data to a hubbub parser for parsing */
 /* This data is encoded in the input charset */
 hubbub_error hubbub_parser_parse_chunk(hubbub_parser *parser,
-		const uint8_t *data, size_t len);
+				       const uint8_t *data,
+				       size_t len);
 
 /**
  * Insert a chunk of data into a hubbub parser input stream
@@ -87,24 +87,24 @@ hubbub_error hubbub_parser_parse_chunk(hubbub_parser *parser,
  * Inserts the given data into the input stream ready for parsing but
  * does not cause any additional processing of the input. This is
  * useful to allow hubbub callbacks to add computed data to the input.
- * 
+ *
  * \param parser  Parser instance to use
  * \param data    Data to parse (encoded in the input charset)
  * \param len     Length, in bytes, of data
  * \return HUBBUB_OK on success, appropriate error otherwise
  */
 hubbub_error hubbub_parser_insert_chunk(hubbub_parser *parser,
-					const uint8_t *data, size_t len);
+					const uint8_t *data,
+					size_t len);
 /* Inform the parser that the last chunk of data has been parsed */
 hubbub_error hubbub_parser_completed(hubbub_parser *parser);
 
 /* Read the document charset */
 const char *hubbub_parser_read_charset(hubbub_parser *parser,
-		hubbub_charset_source *source);
+				       hubbub_charset_source *source);
 
 #ifdef __cplusplus
 }
 #endif
 
 #endif
-

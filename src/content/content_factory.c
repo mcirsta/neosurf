@@ -78,7 +78,7 @@ void content_factory_fini(void)
  * \note Latest registration for a MIME type wins
  */
 nserror content_factory_register_handler(const char *mime_type,
-		const content_handler *handler)
+					 const content_handler *handler)
 {
 	lwc_string *imime_type;
 	lwc_error lerror;
@@ -90,8 +90,10 @@ nserror content_factory_register_handler(const char *mime_type,
 		return NSERROR_NOMEM;
 
 	for (entry = content_handlers; entry != NULL; entry = entry->next) {
-		if (lwc_string_caseless_isequal(imime_type, entry->mime_type,
-				&match) == lwc_error_ok && match)
+		if (lwc_string_caseless_isequal(imime_type,
+						entry->mime_type,
+						&match) == lwc_error_ok &&
+		    match)
 			break;
 	}
 
@@ -125,8 +127,10 @@ static const content_handler *content_lookup(lwc_string *mime_type)
 	bool match;
 
 	for (entry = content_handlers; entry != NULL; entry = entry->next) {
-		if (lwc_string_caseless_isequal(mime_type, entry->mime_type,
-					&match) == lwc_error_ok && match) {
+		if (lwc_string_caseless_isequal(mime_type,
+						entry->mime_type,
+						&match) == lwc_error_ok &&
+		    match) {
 			break;
 		}
 	}
@@ -167,8 +171,9 @@ content_type content_factory_type_from_mime_type(lwc_string *mime_type)
  * \return Pointer to content object, or NULL on failure
  */
 struct content *content_factory_create_content(llcache_handle *llcache,
-		const char *fallback_charset, bool quirks,
-		lwc_string *effective_type)
+					       const char *fallback_charset,
+					       bool quirks,
+					       lwc_string *effective_type)
 {
 	struct content *c;
 	const char *content_type_header;
@@ -183,17 +188,20 @@ struct content *content_factory_create_content(llcache_handle *llcache,
 	assert(handler->create != NULL);
 
 	/* Use the parameters from the declared Content-Type header */
-	content_type_header = 
-			llcache_handle_get_header(llcache, "Content-Type");
+	content_type_header = llcache_handle_get_header(llcache,
+							"Content-Type");
 	if (content_type_header != NULL) {
 		/* We don't care if this fails */
 		http_parse_content_type(content_type_header, &ct);
 	}
 
-	error = handler->create(handler, effective_type, 
-			ct != NULL ? ct->parameters : NULL, 
-			llcache, fallback_charset, quirks, 
-			&c);
+	error = handler->create(handler,
+				effective_type,
+				ct != NULL ? ct->parameters : NULL,
+				llcache,
+				fallback_charset,
+				quirks,
+				&c);
 
 	if (ct != NULL)
 		http_content_type_destroy(ct);
@@ -203,4 +211,3 @@ struct content *content_factory_create_content(llcache_handle *llcache,
 
 	return c;
 }
-

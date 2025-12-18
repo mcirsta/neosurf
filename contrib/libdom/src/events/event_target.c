@@ -30,8 +30,8 @@ static void event_target_destroy_listeners(struct listener_entry *list)
 {
 	struct listener_entry *next;
 
-	while (list != (struct listener_entry *) list->list.next) {
-		next = (struct listener_entry *) list->list.next;
+	while (list != (struct listener_entry *)list->list.next) {
+		next = (struct listener_entry *)list->list.next;
 		event_target_destroy_listener(list);
 		list = next;
 	}
@@ -40,8 +40,8 @@ static void event_target_destroy_listeners(struct listener_entry *list)
 }
 
 /* Initialise this EventTarget */
-dom_exception _dom_event_target_internal_initialise(
-		dom_event_target_internal *eti)
+dom_exception
+_dom_event_target_internal_initialise(dom_event_target_internal *eti)
 {
 	eti->listeners = NULL;
 
@@ -69,17 +69,18 @@ void _dom_event_target_internal_finalise(dom_event_target_internal *eti)
  * \param capture   Whether add this listener in the capturing phase
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_event_target_add_event_listener(
-		dom_event_target_internal *eti,
-		dom_string *type, struct dom_event_listener *listener, 
-		bool capture)
+dom_exception
+_dom_event_target_add_event_listener(dom_event_target_internal *eti,
+				     dom_string *type,
+				     struct dom_event_listener *listener,
+				     bool capture)
 {
 	struct listener_entry *le = NULL;
 
 	le = malloc(sizeof(struct listener_entry));
 	if (le == NULL)
 		return DOM_NO_MEM_ERR;
-	
+
 	/* Initialise the listener_entry */
 	list_init(&le->list);
 	le->type = dom_string_ref(type);
@@ -103,15 +104,16 @@ dom_exception _dom_event_target_add_event_listener(
  * regardless of type and cature)
  *
  * \param et        The EventTarget object
- * \param type      The event type this listener is registered for 
+ * \param type      The event type this listener is registered for
  * \param listener  The listener object
  * \param capture   Whether the listener is registered at the capturing phase
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_event_target_remove_event_listener(
-		dom_event_target_internal *eti,
-		dom_string *type, struct dom_event_listener *listener, 
-		bool capture)
+dom_exception
+_dom_event_target_remove_event_listener(dom_event_target_internal *eti,
+					dom_string *type,
+					struct dom_event_listener *listener,
+					bool capture)
 {
 	if (eti->listeners != NULL) {
 		struct listener_entry *le = eti->listeners;
@@ -122,8 +124,8 @@ dom_exception _dom_event_target_remove_event_listener(
 				matches = (le->listener == listener);
 			} else {
 				matches = dom_string_isequal(le->type, type) &&
-					(le->listener == listener) &&
-					(le->capture == capture);
+					  (le->listener == listener) &&
+					  (le->capture == capture);
 			}
 			if (matches) {
 				if (le->list.next == &le->list) {
@@ -131,7 +133,7 @@ dom_exception _dom_event_target_remove_event_listener(
 				} else {
 					eti->listeners =
 						(struct listener_entry *)
-						le->list.next;
+							le->list.next;
 				}
 				list_del(&le->list);
 				dom_event_listener_unref(le->listener);
@@ -140,7 +142,7 @@ dom_exception _dom_event_target_remove_event_listener(
 				break;
 			}
 
-			le = (struct listener_entry *) le->list.next;
+			le = (struct listener_entry *)le->list.next;
 		} while (eti->listeners != NULL && le != eti->listeners);
 	}
 
@@ -159,10 +161,12 @@ dom_exception _dom_event_target_remove_event_listener(
  *
  * We don't support this API now, so it always return DOM_NOT_SUPPORTED_ERR.
  */
-dom_exception _dom_event_target_add_event_listener_ns(
-		dom_event_target_internal *eti,
-		dom_string *namespace, dom_string *type, 
-		struct dom_event_listener *listener, bool capture)
+dom_exception
+_dom_event_target_add_event_listener_ns(dom_event_target_internal *eti,
+					dom_string *namespace,
+					dom_string *type,
+					struct dom_event_listener *listener,
+					bool capture)
 {
 	UNUSED(eti);
 	UNUSED(namespace);
@@ -185,10 +189,12 @@ dom_exception _dom_event_target_add_event_listener_ns(
  *
  * We don't support this API now, so it always return DOM_NOT_SUPPORTED_ERR.
  */
-dom_exception _dom_event_target_remove_event_listener_ns(
-		dom_event_target_internal *eti,
-		dom_string *namespace, dom_string *type, 
-		struct dom_event_listener *listener, bool capture)
+dom_exception
+_dom_event_target_remove_event_listener_ns(dom_event_target_internal *eti,
+					   dom_string *namespace,
+					   dom_string *type,
+					   struct dom_event_listener *listener,
+					   bool capture)
 {
 	UNUSED(eti);
 	UNUSED(namespace);
@@ -207,16 +213,17 @@ dom_exception _dom_event_target_remove_event_listener_ns(
  * \param et       The EventTarget object
  * \param eti      Internal EventTarget object
  * \param evt      The event object
- * \param success  Indicates whether any of the listeners which handled the 
- *                 event called Event.preventDefault(). If 
- *                 Event.preventDefault() was called the returned value is 
+ * \param success  Indicates whether any of the listeners which handled the
+ *                 event called Event.preventDefault(). If
+ *                 Event.preventDefault() was called the returned value is
  *                 false, else it is true.
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception _dom_event_target_dispatch(dom_event_target *et,
-		dom_event_target_internal *eti, 
-		struct dom_event *evt, dom_event_flow_phase phase,
-		bool *success)
+					 dom_event_target_internal *eti,
+					 struct dom_event *evt,
+					 dom_event_flow_phase phase,
+					 bool *success)
 {
 	if (eti->listeners != NULL) {
 		struct listener_entry *le = eti->listeners;
@@ -227,14 +234,14 @@ dom_exception _dom_event_target_dispatch(dom_event_target *et,
 			if (dom_string_isequal(le->type, evt->type)) {
 				assert(le->listener->handler != NULL);
 
-				if ((le->capture && 
-						phase == DOM_CAPTURING_PHASE) ||
-				    (le->capture == false && 
-						phase == DOM_BUBBLING_PHASE) ||
-				    (evt->target == evt->current && 
-						phase == DOM_AT_TARGET)) {
-					le->listener->handler(evt, 
-							le->listener->pw);
+				if ((le->capture &&
+				     phase == DOM_CAPTURING_PHASE) ||
+				    (le->capture == false &&
+				     phase == DOM_BUBBLING_PHASE) ||
+				    (evt->target == evt->current &&
+				     phase == DOM_AT_TARGET)) {
+					le->listener->handler(evt,
+							      le->listener->pw);
 					/* If the handler called
 					 * stopImmediatePropagation, we should
 					 * break */
@@ -243,7 +250,7 @@ dom_exception _dom_event_target_dispatch(dom_event_target *et,
 				}
 			}
 
-			le = (struct listener_entry *) le->list.next;
+			le = (struct listener_entry *)le->list.next;
 		} while (le != eti->listeners);
 	}
 
@@ -252,4 +259,3 @@ dom_exception _dom_event_target_dispatch(dom_event_target *et,
 
 	return DOM_NO_ERR;
 }
-

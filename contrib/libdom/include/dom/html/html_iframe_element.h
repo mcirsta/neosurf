@@ -15,68 +15,84 @@
 #include <dom/html/html_document.h>
 typedef struct dom_html_iframe_element dom_html_iframe_element;
 
-dom_exception dom_html_iframe_element_get_frame_border(
-	dom_html_iframe_element *element, dom_string **frame_border);
+dom_exception
+dom_html_iframe_element_get_frame_border(dom_html_iframe_element *element,
+					 dom_string **frame_border);
 
-dom_exception dom_html_iframe_element_set_frame_border(
-	dom_html_iframe_element *element, dom_string *frame_border);
+dom_exception
+dom_html_iframe_element_set_frame_border(dom_html_iframe_element *element,
+					 dom_string *frame_border);
 
-dom_exception dom_html_iframe_element_get_align(
-	dom_html_iframe_element *element, dom_string **align);
+dom_exception
+dom_html_iframe_element_get_align(dom_html_iframe_element *element,
+				  dom_string **align);
 
-dom_exception dom_html_iframe_element_set_align(
-	dom_html_iframe_element *element, dom_string *align);
+dom_exception
+dom_html_iframe_element_set_align(dom_html_iframe_element *element,
+				  dom_string *align);
 
-dom_exception dom_html_iframe_element_set_long_desc(
-	dom_html_iframe_element *ele, dom_string *long_desc);
+dom_exception
+dom_html_iframe_element_set_long_desc(dom_html_iframe_element *ele,
+				      dom_string *long_desc);
 
-dom_exception dom_html_iframe_element_get_long_desc(
-	dom_html_iframe_element *ele, dom_string **long_desc);
+dom_exception
+dom_html_iframe_element_get_long_desc(dom_html_iframe_element *ele,
+				      dom_string **long_desc);
 
-dom_exception dom_html_iframe_element_get_margin_height(
-	dom_html_iframe_element *element, dom_string **margin_height);
+dom_exception
+dom_html_iframe_element_get_margin_height(dom_html_iframe_element *element,
+					  dom_string **margin_height);
 
-dom_exception dom_html_iframe_element_set_margin_height(
-	dom_html_iframe_element *element, dom_string *margin_height);
+dom_exception
+dom_html_iframe_element_set_margin_height(dom_html_iframe_element *element,
+					  dom_string *margin_height);
 
-dom_exception dom_html_iframe_element_get_margin_width(
-	dom_html_iframe_element *element, dom_string **margin_width);
+dom_exception
+dom_html_iframe_element_get_margin_width(dom_html_iframe_element *element,
+					 dom_string **margin_width);
 
-dom_exception dom_html_iframe_element_set_margin_width(
-	dom_html_iframe_element *element, dom_string *margin_width);
+dom_exception
+dom_html_iframe_element_set_margin_width(dom_html_iframe_element *element,
+					 dom_string *margin_width);
 
-dom_exception dom_html_iframe_element_get_name(
-	dom_html_iframe_element *element, dom_string **name);
+dom_exception dom_html_iframe_element_get_name(dom_html_iframe_element *element,
+					       dom_string **name);
 
-dom_exception dom_html_iframe_element_set_name(
-	dom_html_iframe_element *element, dom_string *name);
+dom_exception dom_html_iframe_element_set_name(dom_html_iframe_element *element,
+					       dom_string *name);
 
-dom_exception dom_html_iframe_element_get_scrolling(
-	dom_html_iframe_element *element, dom_string **scrolling);
+dom_exception
+dom_html_iframe_element_get_scrolling(dom_html_iframe_element *element,
+				      dom_string **scrolling);
 
-dom_exception dom_html_iframe_element_set_scrolling(
-	dom_html_iframe_element *element, dom_string *scrolling);
+dom_exception
+dom_html_iframe_element_set_scrolling(dom_html_iframe_element *element,
+				      dom_string *scrolling);
 
-dom_exception dom_html_iframe_element_get_src(
-	dom_html_iframe_element *element, dom_string **src);
+dom_exception dom_html_iframe_element_get_src(dom_html_iframe_element *element,
+					      dom_string **src);
 
-dom_exception dom_html_iframe_element_set_src(
-	dom_html_iframe_element *element, dom_string *src);
+dom_exception dom_html_iframe_element_set_src(dom_html_iframe_element *element,
+					      dom_string *src);
 
-dom_exception dom_html_iframe_element_get_height(
-	dom_html_iframe_element *element, dom_string **height);
+dom_exception
+dom_html_iframe_element_get_height(dom_html_iframe_element *element,
+				   dom_string **height);
 
-dom_exception dom_html_iframe_element_set_height(
-	dom_html_iframe_element *element, dom_string *height);
+dom_exception
+dom_html_iframe_element_set_height(dom_html_iframe_element *element,
+				   dom_string *height);
 
-dom_exception dom_html_iframe_element_get_width(
-	dom_html_iframe_element *element, dom_string **width);
+dom_exception
+dom_html_iframe_element_get_width(dom_html_iframe_element *element,
+				  dom_string **width);
 
-dom_exception dom_html_iframe_element_set_width(
-	dom_html_iframe_element *element, dom_string *width);
+dom_exception
+dom_html_iframe_element_set_width(dom_html_iframe_element *element,
+				  dom_string *width);
 
-dom_exception dom_html_iframe_element_get_content_document(
-		dom_html_iframe_element *ele,
-		dom_document **content_document);
+dom_exception
+dom_html_iframe_element_get_content_document(dom_html_iframe_element *ele,
+					     dom_document **content_document);
 
 #endif

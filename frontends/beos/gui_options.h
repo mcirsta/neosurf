@@ -24,8 +24,8 @@
 
 extern BWindow *wndPreferences;
 
-void nsbeos_options_init(void);		/** Init options and load window */
-void nsbeos_options_load(void);		/** Load current options into window */
-void nsbeos_options_save(void);		/** Save options from window */
+void nsbeos_options_init(void); /** Init options and load window */
+void nsbeos_options_load(void); /** Load current options into window */
+void nsbeos_options_save(void); /** Save options from window */
 
 #endif

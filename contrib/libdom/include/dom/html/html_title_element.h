@@ -13,11 +13,10 @@
 
 typedef struct dom_html_title_element dom_html_title_element;
 
-dom_exception dom_html_title_element_get_text(dom_html_title_element *ele,
-		dom_string **text);
+dom_exception
+dom_html_title_element_get_text(dom_html_title_element *ele, dom_string **text);
 
-dom_exception dom_html_title_element_set_text(dom_html_title_element *ele,
-		dom_string *text);
+dom_exception
+dom_html_title_element_set_text(dom_html_title_element *ele, dom_string *text);
 
 #endif
-

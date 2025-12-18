@@ -20,16 +20,15 @@
 static void _virtual_dom_event_destroy(dom_event *evt);
 
 static const struct dom_event_private_vtable _event_vtable = {
-	_virtual_dom_event_destroy
-};
+	_virtual_dom_event_destroy};
 
 /* Constructor */
 dom_exception _dom_event_create(dom_event **evt)
 {
-	*evt = (dom_event *) malloc(sizeof(dom_event));
-	if (*evt == NULL) 
+	*evt = (dom_event *)malloc(sizeof(dom_event));
+	if (*evt == NULL)
 		return DOM_NO_MEM_ERR;
-	
+
 	(*evt)->vtable = &_event_vtable;
 
 	return _dom_event_initialise(*evt);
@@ -67,7 +66,7 @@ void _dom_event_finalise(dom_event *evt)
 		dom_string_unref(evt->type);
 	if (evt->namespace != NULL)
 		dom_string_unref(evt->namespace);
-	
+
 	evt->stop = false;
 	evt->stop_now = false;
 	evt->prevent_default = false;
@@ -124,7 +123,7 @@ void _dom_event_unref(dom_event *evt)
 dom_exception _dom_event_get_type(dom_event *evt, dom_string **type)
 {
 	*type = dom_string_ref(evt->type);
-	
+
 	return DOM_NO_ERR;
 }
 
@@ -150,8 +149,8 @@ dom_exception _dom_event_get_target(dom_event *evt, dom_event_target **target)
  * \param current  The current event target node
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_event_get_current_target(dom_event *evt,
-		dom_event_target **current)
+dom_exception
+_dom_event_get_current_target(dom_event *evt, dom_event_target **current)
 {
 	*current = evt->current;
 	dom_node_ref(*current);
@@ -166,8 +165,8 @@ dom_exception _dom_event_get_current_target(dom_event *evt,
  * \param phase  The returned value
  * \return DOM_NO_ERR.
  */
-dom_exception _dom_event_get_event_phase(dom_event *evt,
-		dom_event_flow_phase *phase)
+dom_exception
+_dom_event_get_event_phase(dom_event *evt, dom_event_flow_phase *phase)
 {
 	*phase = evt->phase;
 	return DOM_NO_ERR;
@@ -200,7 +199,7 @@ dom_exception _dom_event_get_cancelable(dom_event *evt, bool *cancelable)
 }
 
 /**
- * Get the event's generation timestamp 
+ * Get the event's generation timestamp
  *
  * \param evt        The Event object
  * \param timestamp  The returned value
@@ -238,7 +237,7 @@ dom_exception _dom_event_prevent_default(dom_event *evt)
 }
 
 /**
- * Initialise the event object 
+ * Initialise the event object
  *
  * \param evt         The event object
  * \param type        The type of this event
@@ -246,8 +245,8 @@ dom_exception _dom_event_prevent_default(dom_event *evt)
  * \param cancelable  Whether this event is cancelable
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_event_init(dom_event *evt, dom_string *type, 
-		bool bubble, bool cancelable)
+dom_exception
+_dom_event_init(dom_event *evt, dom_string *type, bool bubble, bool cancelable)
 {
 	evt->type = dom_string_ref(type);
 	evt->bubble = bubble;
@@ -266,11 +265,10 @@ dom_exception _dom_event_init(dom_event *evt, dom_string *type,
  * \param namespace  The returned namespace of this event
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_event_get_namespace(dom_event *evt,
-		dom_string **namespace)
+dom_exception _dom_event_get_namespace(dom_event *evt, dom_string **namespace)
 {
 	*namespace = dom_string_ref(evt->namespace);
-	
+
 	return DOM_NO_ERR;
 }
 
@@ -287,7 +285,7 @@ dom_exception _dom_event_is_custom(dom_event *evt, bool *custom)
 
 	return DOM_NO_ERR;
 }
-	
+
 /**
  * Stop the event propagation immediately
  *
@@ -325,8 +323,11 @@ dom_exception _dom_event_is_default_prevented(dom_event *evt, bool *prevented)
  * \param cancelable  Whether this event is cancelable
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_event_init_ns(dom_event *evt, dom_string *namespace,
-		dom_string *type, bool bubble, bool cancelable)
+dom_exception _dom_event_init_ns(dom_event *evt,
+				 dom_string *namespace,
+				 dom_string *type,
+				 bool bubble,
+				 bool cancelable)
 {
 	evt->type = dom_string_ref(type);
 

@@ -13,15 +13,21 @@
 #define _LIBNSBMP_LOG_H_
 
 #ifdef NDEBUG
-#  define LOG(x) ((void) 0)
+#define LOG(x) ((void)0)
 #else
-#  ifdef __GNUC__
-#    define LOG(x) do { printf x, fputc('\n', stdout)); } while (0)
-#  elif defined(__CC_NORCROFT)
-#    define LOG(x) do { printf x, fputc('\n', stdout)); } while (0)
-#  else
-#    define LOG(x) do { printf x, fputc('\n', stdout)); } while (0)
-#  endif
+#ifdef __GNUC__
+#define LOG(x)                                                                 \
+	do { printf x, fputc('\n', stdout));                        \
+	} while (0)
+#elif defined(__CC_NORCROFT)
+#define LOG(x)                                                                 \
+	do { printf x, fputc('\n', stdout));                        \
+	} while (0)
+#else
+#define LOG(x)                                                                 \
+	do { printf x, fputc('\n', stdout));                        \
+	} while (0)
+#endif
 #endif
 
 #endif

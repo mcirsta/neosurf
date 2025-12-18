@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define __STDBOOL_H__	1
+#define __STDBOOL_H__ 1
 #include <stdbool.h>
 #include <sys/types.h>
 #include <stdlib.h>
@@ -36,54 +36,56 @@ extern "C" {
 #include <StatusBar.h>
 #include <Window.h>
 
-class NSDownloadWindow: public BWindow
+class NSDownloadWindow : public BWindow
 {
-	public:
-		NSDownloadWindow(download_context* ctx);
-		~NSDownloadWindow();
+      public:
+	NSDownloadWindow(download_context *ctx);
+	~NSDownloadWindow();
 
-		void MessageReceived(BMessage* message);
+	void MessageReceived(BMessage *message);
 
-		void Progress(int size);
-		void Failure(const char* error);
-		void Success();
-	private:
-		download_context* ctx;
-		BStatusBar* bar;
-		unsigned long progress;
-		bool success;
+	void Progress(int size);
+	void Failure(const char *error);
+	void Success();
+
+      private:
+	download_context *ctx;
+	BStatusBar *bar;
+	unsigned long progress;
+	bool success;
 };
 
 
 struct gui_download_window {
-	download_context* ctx;
-	NSDownloadWindow* window;
+	download_context *ctx;
+	NSDownloadWindow *window;
 
-	BLocker* storageLock;
-	BDataIO* storage;
+	BLocker *storageLock;
+	BDataIO *storage;
 };
 
 
-NSDownloadWindow::NSDownloadWindow(download_context* ctx)
-	: BWindow(BRect(30, 30, 400, 200), "Downloads", B_TITLED_WINDOW,
-		B_NOT_RESIZABLE)
-	, ctx(ctx)
-	, progress(0)
-	, success(false)
+NSDownloadWindow::NSDownloadWindow(download_context *ctx)
+	: BWindow(BRect(30, 30, 400, 200),
+		  "Downloads",
+		  B_TITLED_WINDOW,
+		  B_NOT_RESIZABLE),
+	  ctx(ctx), progress(0), success(false)
 {
 	unsigned long dlsize = download_context_get_total_length(ctx);
-	char* buffer = human_friendly_bytesize(dlsize);
+	char *buffer = human_friendly_bytesize(dlsize);
 
 	// Create the status bar
 	BRect rect = Bounds();
 	rect.InsetBy(3, 3);
-	bar = new BStatusBar(rect, "progress",
-		download_context_get_filename(ctx), buffer);
+	bar = new BStatusBar(
+		rect, "progress", download_context_get_filename(ctx), buffer);
 	bar->SetMaxValue(dlsize);
 
-	// Create the backgroundview (just so that the area around the progress bar
-	// is B_PANEL_BACKGROUND_COLOR instead of white)
-	BView* back = new BView(Bounds(), "back", B_FOLLOW_ALL_SIDES, B_WILL_DRAW);
+	// Create the backgroundview (just so that the area around the progress
+	// bar is B_PANEL_BACKGROUND_COLOR instead of white)
+	BView *back = new BView(
+		Bounds(), "back", B_FOLLOW_ALL_SIDES, B_WILL_DRAW);
 	back->SetViewColor(ui_color(B_PANEL_BACKGROUND_COLOR));
 
 	// Add the views to the window
@@ -104,55 +106,54 @@ NSDownloadWindow::~NSDownloadWindow()
 }
 
 
-void
-NSDownloadWindow::MessageReceived(BMessage* message)
+void NSDownloadWindow::MessageReceived(BMessage *message)
 {
-	switch(message->what)
-	{
-		case B_SAVE_REQUESTED:
-		{
-			entry_ref directory;
-			const char* name;
-			struct gui_download_window* dw;
-			BFilePanel* source;
+	switch (message->what) {
+	case B_SAVE_REQUESTED: {
+		entry_ref directory;
+		const char *name;
+		struct gui_download_window *dw;
+		BFilePanel *source;
 
-			message->FindRef("directory", &directory);
-			message->FindString("name", &name);
-			message->FindPointer("dw", (void**)&dw);
+		message->FindRef("directory", &directory);
+		message->FindString("name", &name);
+		message->FindPointer("dw", (void **)&dw);
 
-			BDirectory dir(&directory);
-			BFile* storage = new BFile(&dir, name,
-				B_WRITE_ONLY | B_CREATE_FILE | B_ERASE_FILE);
-			dw->storageLock->Lock();
+		BDirectory dir(&directory);
+		BFile *storage = new BFile(&dir,
+					   name,
+					   B_WRITE_ONLY | B_CREATE_FILE |
+						   B_ERASE_FILE);
+		dw->storageLock->Lock();
 
-			BMallocIO* tempstore = dynamic_cast<BMallocIO*>(dw->storage);
+		BMallocIO *tempstore = dynamic_cast<BMallocIO *>(dw->storage);
 
-			storage->Write(tempstore->Buffer(), tempstore->BufferLength());
-			delete dw->storage;
+		storage->Write(tempstore->Buffer(), tempstore->BufferLength());
+		delete dw->storage;
 
-			if (success)
-				delete storage; // File is already finished downloading !
-			else
-				dw->storage = storage;
-			dw->storageLock->Unlock();
+		if (success)
+			delete storage; // File is already finished downloading
+					// !
+		else
+			dw->storage = storage;
+		dw->storageLock->Unlock();
 
-			message->FindPointer("source", (void**)&source);
-			delete source;			
+		message->FindPointer("source", (void **)&source);
+		delete source;
 
-			break;
-		}
-		default:
-			BWindow::MessageReceived(message);
+		break;
+	}
+	default:
+		BWindow::MessageReceived(message);
 	}
 }
 
 
-void
-NSDownloadWindow::Progress(int size)
+void NSDownloadWindow::Progress(int size)
 {
 	progress += size;
 
-	char* buffer = human_friendly_bytesize(progress);
+	char *buffer = human_friendly_bytesize(progress);
 	strcat(buffer, "/");
 
 	bar->LockLooper();
@@ -162,8 +163,7 @@ NSDownloadWindow::Progress(int size)
 }
 
 
-void
-NSDownloadWindow::Success()
+void NSDownloadWindow::Success()
 {
 	bar->LockLooper();
 	bar->SetBarColor(ui_color(B_SUCCESS_COLOR));
@@ -173,8 +173,7 @@ NSDownloadWindow::Success()
 }
 
 
-void
-NSDownloadWindow::Failure(const char* error)
+void NSDownloadWindow::Failure(const char *error)
 {
 	bar->LockLooper();
 	bar->Update(0, NULL, error);
@@ -183,10 +182,11 @@ NSDownloadWindow::Failure(const char* error)
 }
 
 
-static struct gui_download_window *gui_download_window_create(download_context *ctx,
-		struct gui_window *parent)
+static struct gui_download_window *
+gui_download_window_create(download_context *ctx, struct gui_window *parent)
 {
-	struct gui_download_window *download = (struct gui_download_window*)malloc(sizeof *download);
+	struct gui_download_window *download = (struct gui_download_window *)
+		malloc(sizeof *download);
 	if (download == NULL)
 		return NULL;
 
@@ -197,25 +197,26 @@ static struct gui_download_window *gui_download_window_create(download_context *
 	download->window = new NSDownloadWindow(ctx);
 
 	// Also ask the user where to save the file
-	BMessage* msg = new BMessage(B_SAVE_REQUESTED);
+	BMessage *msg = new BMessage(B_SAVE_REQUESTED);
 
-	BFilePanel* panel = new BFilePanel(B_SAVE_PANEL,
-		new BMessenger(download->window), NULL, 0, false);
+	BFilePanel *panel = new BFilePanel(
+		B_SAVE_PANEL, new BMessenger(download->window), NULL, 0, false);
 
 	panel->SetSaveText(download_context_get_filename(ctx));
 
 	msg->AddPointer("source", panel);
 	msg->AddPointer("dw", download);
 	panel->SetMessage(msg);
-	
+
 	panel->Show();
 
 	return download;
 }
 
 
-static nserror gui_download_window_data(struct gui_download_window *dw, 
-		const char *data, unsigned int size)
+static nserror gui_download_window_data(struct gui_download_window *dw,
+					const char *data,
+					unsigned int size)
 {
 	dw->window->Progress(size);
 
@@ -227,8 +228,8 @@ static nserror gui_download_window_data(struct gui_download_window *dw,
 }
 
 
-static void gui_download_window_error(struct gui_download_window *dw,
-		const char *error_msg)
+static void
+gui_download_window_error(struct gui_download_window *dw, const char *error_msg)
 {
 	dw->window->Failure(error_msg);
 
@@ -243,9 +244,9 @@ static void gui_download_window_done(struct gui_download_window *dw)
 
 	dw->storageLock->Lock();
 
-	// Only delete if the storage is already a file. Else, we must wait for the
-	// user to select something in the BFilePanel!
-	BFile* file = dynamic_cast<BFile*>(dw->storage);
+	// Only delete if the storage is already a file. Else, we must wait for
+	// the user to select something in the BFilePanel!
+	BFile *file = dynamic_cast<BFile *>(dw->storage);
 	delete file;
 	if (file)
 		delete dw->storageLock;
@@ -261,4 +262,3 @@ static struct gui_download_table download_table = {
 };
 
 struct gui_download_table *beos_download_table = &download_table;
-

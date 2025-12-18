@@ -43,9 +43,9 @@
 typedef struct nsbmp_content {
 	struct content base;
 
-	bmp_image *bmp;	/** BMP image data */
+	bmp_image *bmp; /** BMP image data */
 
-	struct bitmap *bitmap;	/**< Created NetSurf bitmap */
+	struct bitmap *bitmap; /**< Created NetSurf bitmap */
 } nsbmp_content;
 
 /**
@@ -62,8 +62,7 @@ static void *nsbmp_bitmap_create(int width, int height, unsigned int bmp_state)
 
 	/* set bitmap state based on bmp state */
 	bitmap_state |= (bmp_state & BMP_OPAQUE) ? BITMAP_OPAQUE : 0;
-	bitmap_state |= (bmp_state & BMP_CLEAR_MEMORY) ?
-			BITMAP_CLEAR : 0;
+	bitmap_state |= (bmp_state & BMP_CLEAR_MEMORY) ? BITMAP_CLEAR : 0;
 
 	/* return the created bitmap */
 	return guit->bitmap->create(width, height, bitmap_state);
@@ -88,14 +87,13 @@ static nserror nsbmp_create_bmp_data(nsbmp_content *bmp)
 	return NSERROR_OK;
 }
 
-static nserror
-nsbmp_create(const struct content_handler *handler,
-	     lwc_string *imime_type,
-	     const struct http_parameter *params,
-	     llcache_handle *llcache,
-	     const char *fallback_charset,
-	     bool quirks,
-	     struct content **c)
+static nserror nsbmp_create(const struct content_handler *handler,
+			    lwc_string *imime_type,
+			    const struct http_parameter *params,
+			    llcache_handle *llcache,
+			    const char *fallback_charset,
+			    bool quirks,
+			    struct content **c)
 {
 	nsbmp_content *bmp;
 	nserror error;
@@ -104,8 +102,13 @@ nsbmp_create(const struct content_handler *handler,
 	if (bmp == NULL)
 		return NSERROR_NOMEM;
 
-	error = content__init(&bmp->base, handler, imime_type, params,
-			llcache, fallback_charset, quirks);
+	error = content__init(&bmp->base,
+			      handler,
+			      imime_type,
+			      params,
+			      llcache,
+			      fallback_charset,
+			      quirks);
 	if (error != NSERROR_OK) {
 		free(bmp);
 		return error;
@@ -117,14 +120,14 @@ nsbmp_create(const struct content_handler *handler,
 		return error;
 	}
 
-	*c = (struct content *) bmp;
+	*c = (struct content *)bmp;
 
 	return NSERROR_OK;
 }
 
 static bool nsbmp_convert(struct content *c)
 {
-	nsbmp_content *bmp = (nsbmp_content *) c;
+	nsbmp_content *bmp = (nsbmp_content *)c;
 	bmp_result res;
 	uint32_t swidth;
 	const uint8_t *data;
@@ -135,17 +138,17 @@ static bool nsbmp_convert(struct content *c)
 	data = content__get_source_data(c, &size);
 
 	/* analyse the BMP */
-	res = bmp_analyse(bmp->bmp, size, (unsigned char *) data);
+	res = bmp_analyse(bmp->bmp, size, (unsigned char *)data);
 	switch (res) {
-		case BMP_OK:
-			break;
-		case BMP_INSUFFICIENT_MEMORY:
-			content_broadcast_error(c, NSERROR_NOMEM, NULL);
-			return false;
-		case BMP_INSUFFICIENT_DATA:
-		case BMP_DATA_ERROR:
-			content_broadcast_error(c, NSERROR_BMP_ERROR, NULL);
-			return false;
+	case BMP_OK:
+		break;
+	case BMP_INSUFFICIENT_MEMORY:
+		content_broadcast_error(c, NSERROR_NOMEM, NULL);
+		return false;
+	case BMP_INSUFFICIENT_DATA:
+	case BMP_DATA_ERROR:
+		content_broadcast_error(c, NSERROR_BMP_ERROR, NULL);
+		return false;
 	}
 
 	/* Store our content width and description */
@@ -156,8 +159,10 @@ static bool nsbmp_convert(struct content *c)
 
 	/* set title text */
 	title = messages_get_buff("BMPTitle",
-			nsurl_access_leaf(llcache_handle_get_url(c->llcache)),
-			c->width, c->height);
+				  nsurl_access_leaf(
+					  llcache_handle_get_url(c->llcache)),
+				  c->width,
+				  c->height);
 	if (title != NULL) {
 		content__set_title(c, title);
 		free(title);
@@ -174,27 +179,30 @@ static bool nsbmp_convert(struct content *c)
 	return true;
 }
 
-static bool nsbmp_redraw(struct content *c, struct content_redraw_data *data,
-		const struct rect *clip, const struct redraw_context *ctx)
+static bool nsbmp_redraw(struct content *c,
+			 struct content_redraw_data *data,
+			 const struct rect *clip,
+			 const struct redraw_context *ctx)
 {
-	nsbmp_content *bmp = (nsbmp_content *) c;
+	nsbmp_content *bmp = (nsbmp_content *)c;
 	bitmap_flags_t flags = BITMAPF_NONE;
 
 	if (bmp->bmp->decoded == false) {
 		bmp_result res;
 		res = bmp_decode(bmp->bmp);
 		/* allow short or incomplete image data giving a partial image*/
-		if ((res != BMP_OK) &&
-		    (res != BMP_INSUFFICIENT_DATA) &&
+		if ((res != BMP_OK) && (res != BMP_INSUFFICIENT_DATA) &&
 		    (res != BMP_DATA_ERROR)) {
 			return false;
 		}
 
-        bitmap_format_to_client(bmp->bitmap, &(bitmap_fmt_t) {
-            .layout = BITMAP_LAYOUT_R8G8B8A8,
-            .pma = bitmap_fmt.pma,
-        });
-        guit->bitmap->modified(bmp->bitmap);
+		bitmap_format_to_client(
+			bmp->bitmap,
+			&(bitmap_fmt_t){
+				.layout = BITMAP_LAYOUT_R8G8B8A8,
+				.pma = bitmap_fmt.pma,
+			});
+		guit->bitmap->modified(bmp->bitmap);
 	}
 
 	if (data->repeat_x)
@@ -204,8 +212,10 @@ static bool nsbmp_redraw(struct content *c, struct content_redraw_data *data,
 
 	return (ctx->plot->bitmap(ctx,
 				  bmp->bitmap,
-				  data->x, data->y,
-				  data->width, data->height,
+				  data->x,
+				  data->y,
+				  data->width,
+				  data->height,
 				  data->background_colour,
 				  flags) == NSERROR_OK);
 }
@@ -213,7 +223,7 @@ static bool nsbmp_redraw(struct content *c, struct content_redraw_data *data,
 
 static void nsbmp_destroy(struct content *c)
 {
-	nsbmp_content *bmp = (nsbmp_content *) c;
+	nsbmp_content *bmp = (nsbmp_content *)c;
 
 	bmp_finalise(bmp->bmp);
 	free(bmp->bmp);
@@ -242,15 +252,15 @@ static nserror nsbmp_clone(const struct content *old, struct content **newc)
 		return error;
 	}
 
-	if (old->status == CONTENT_STATUS_READY || 
-			old->status == CONTENT_STATUS_DONE) {
+	if (old->status == CONTENT_STATUS_READY ||
+	    old->status == CONTENT_STATUS_DONE) {
 		if (nsbmp_convert(&new_bmp->base) == false) {
 			content_destroy(&new_bmp->base);
 			return NSERROR_CLONE_FAILED;
 		}
 	}
 
-	*newc = (struct content *) new_bmp;
+	*newc = (struct content *)new_bmp;
 
 	return NSERROR_OK;
 }
@@ -290,19 +300,17 @@ static const content_handler nsbmp_content_handler = {
 	.no_share = false,
 };
 
-static const char *nsbmp_types[] = {
-	"application/bmp",
-	"application/preview",
-	"application/x-bmp",
-	"application/x-win-bitmap",
-	"image/bmp",
-	"image/ms-bmp",
-	"image/x-bitmap",
-	"image/x-bmp",
-	"image/x-ms-bmp",
-	"image/x-win-bitmap",
-	"image/x-windows-bmp",
-	"image/x-xbitmap"
-};
+static const char *nsbmp_types[] = {"application/bmp",
+				    "application/preview",
+				    "application/x-bmp",
+				    "application/x-win-bitmap",
+				    "image/bmp",
+				    "image/ms-bmp",
+				    "image/x-bitmap",
+				    "image/x-bmp",
+				    "image/x-ms-bmp",
+				    "image/x-win-bitmap",
+				    "image/x-windows-bmp",
+				    "image/x-xbitmap"};
 
 CONTENT_FACTORY_REGISTER_TYPES(nsbmp, nsbmp_types, nsbmp_content_handler);

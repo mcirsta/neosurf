@@ -113,7 +113,8 @@ struct core_window_table {
 	 * \return NSERROR_OK on success or appropriate error code
 	 */
 	nserror (*get_dimensions)(const struct core_window *cw,
-			int *width, int *height);
+				  int *width,
+				  int *height);
 
 	/**
 	 * Inform corewindow owner of drag status
@@ -123,7 +124,7 @@ struct core_window_table {
 	 * \return NSERROR_OK on success or appropriate error code
 	 */
 	nserror (*drag_status)(struct core_window *cw,
-			core_window_drag_status ds);
+			       core_window_drag_status ds);
 };
 
 

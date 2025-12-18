@@ -30,6 +30,9 @@
  *         CSS_NOMEM    on memory exhaustion,
  *         CSS_INVALID  if resolution failed.
  */
-css_error nscss_resolve_url(void *pw, const char *base, lwc_string *rel, lwc_string **abs);
+css_error nscss_resolve_url(void *pw,
+			    const char *base,
+			    lwc_string *rel,
+			    lwc_string **abs);
 
 #endif

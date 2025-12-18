@@ -9,13 +9,13 @@
 #define xml_xmlerror_h_
 
 typedef enum {
-	DOM_XML_OK              = 0,
+	DOM_XML_OK = 0,
 
-	DOM_XML_NOMEM           = 1,
+	DOM_XML_NOMEM = 1,
 
-	DOM_XML_EXTERNAL_ERR    = (1<<16),
+	DOM_XML_EXTERNAL_ERR = (1 << 16),
 
-	DOM_XML_DOM_ERR         = (1<<24),
+	DOM_XML_DOM_ERR = (1 << 24),
 } dom_xml_error;
 
 #endif

@@ -25,14 +25,11 @@
 
 #include "qt/listselection.cls.h"
 
-NS_ListSelection::NS_ListSelection(QWidget *parent) :
-	QWidget(parent),
-	m_source(new FirstListWidget),
-	m_selected(new FirstListWidget),
-	m_add(new QToolButton),
-	m_rem(new QToolButton),
-	m_sel_up(new QToolButton),
-	m_sel_down(new QToolButton)
+NS_ListSelection::NS_ListSelection(QWidget *parent)
+	: QWidget(parent), m_source(new FirstListWidget),
+	  m_selected(new FirstListWidget), m_add(new QToolButton),
+	  m_rem(new QToolButton), m_sel_up(new QToolButton),
+	  m_sel_down(new QToolButton)
 {
 	m_count = 0;
 
@@ -42,23 +39,31 @@ NS_ListSelection::NS_ListSelection(QWidget *parent) :
 
 	m_add->setIcon(style()->standardIcon(QStyle::SP_ArrowRight));
 	m_add->setAccessibleName("Add");
-	connect(m_add, &QAbstractButton::clicked,
-		this, &NS_ListSelection::addtoselection);
+	connect(m_add,
+		&QAbstractButton::clicked,
+		this,
+		&NS_ListSelection::addtoselection);
 
 	m_rem->setIcon(style()->standardIcon(QStyle::SP_ArrowLeft));
 	m_rem->setAccessibleName("Remove");
-	connect(m_rem, &QAbstractButton::clicked,
-		this, &NS_ListSelection::remfromselection);
+	connect(m_rem,
+		&QAbstractButton::clicked,
+		this,
+		&NS_ListSelection::remfromselection);
 
 	m_sel_up->setIcon(style()->standardIcon(QStyle::SP_ArrowUp));
 	m_sel_up->setAccessibleName("Move up");
-	connect(m_sel_up, &QAbstractButton::clicked,
-		this, &NS_ListSelection::selectionup);
+	connect(m_sel_up,
+		&QAbstractButton::clicked,
+		this,
+		&NS_ListSelection::selectionup);
 
 	m_sel_down->setIcon(style()->standardIcon(QStyle::SP_ArrowDown));
 	m_sel_down->setAccessibleName("Move down");
-	connect(m_sel_down, &QAbstractButton::clicked,
-		this, &NS_ListSelection::selectiondown);
+	connect(m_sel_down,
+		&QAbstractButton::clicked,
+		this,
+		&NS_ListSelection::selectiondown);
 
 	QVBoxLayout *midlayout = new QVBoxLayout;
 	midlayout->addWidget(m_add);
@@ -97,7 +102,7 @@ void NS_ListSelection::selectItem(const char *data)
 {
 	int source_count = m_source->count();
 	int idx;
-	for (idx=0; idx < source_count; idx++) {
+	for (idx = 0; idx < source_count; idx++) {
 		QListWidgetItem *item = m_source->item(idx);
 		if (item != NULL) {
 			if (item->data(Qt::UserRole) == data) {
@@ -119,11 +124,14 @@ void NS_ListSelection::deselectAll()
 
 QList<QByteArray> NS_ListSelection::selection()
 {
-	QList<QByteArray>ret;
+	QList<QByteArray> ret;
 	int scount = m_selected->count();
 	int idx;
-	for (idx=0; idx < scount; idx++) {
-		ret.append(m_selected->item(idx)->data(Qt::UserRole).toString().toUtf8());
+	for (idx = 0; idx < scount; idx++) {
+		ret.append(m_selected->item(idx)
+				   ->data(Qt::UserRole)
+				   .toString()
+				   .toUtf8());
 	}
 	return ret;
 }
@@ -143,7 +151,7 @@ void NS_ListSelection::remfromselection(bool checked)
 
 void NS_ListSelection::selectionup(bool checked)
 {
-	int c_row=m_selected->currentRow();
+	int c_row = m_selected->currentRow();
 	if (c_row > 0) {
 		QListWidgetItem *titem = m_selected->takeItem(c_row);
 		m_selected->insertItem(c_row - 1, titem);
@@ -155,7 +163,7 @@ void NS_ListSelection::selectionup(bool checked)
 void NS_ListSelection::selectiondown(bool checked)
 {
 	int c_row = m_selected->currentRow();
-	if (c_row < (m_selected->count()-1)) {
+	if (c_row < (m_selected->count() - 1)) {
 		QListWidgetItem *titem = m_selected->takeItem(c_row);
 		m_selected->insertItem(c_row + 1, titem);
 		m_selected->setCurrentRow(c_row + 1);
@@ -172,7 +180,6 @@ void NS_ListSelection::selectRow(int selected_row)
 	m_selected->addItem(titem);
 	m_selected->setCurrentItem(titem);
 	m_selected->updateGeometry();
-
 }
 
 
@@ -187,8 +194,10 @@ void NS_ListSelection::deselectRow(int selected_row)
 	// compute how many earlier source rows are selected
 	int sposoff = 0;
 	int scount = m_selected->count();
-	for(int idx = 0; idx < scount; idx++) {
-		if (m_selected->item(idx)->data(NS_ListSelection::SourcePosRole).toInt() < sposition) {
+	for (int idx = 0; idx < scount; idx++) {
+		if (m_selected->item(idx)
+			    ->data(NS_ListSelection::SourcePosRole)
+			    .toInt() < sposition) {
 			sposoff++;
 		}
 	}

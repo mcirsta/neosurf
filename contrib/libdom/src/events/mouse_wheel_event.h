@@ -16,9 +16,9 @@
  * The MouseWheelEvent
  */
 struct dom_mouse_wheel_event {
-	struct dom_mouse_event base;	/**< The base class */
+	struct dom_mouse_event base; /**< The base class */
 
-	int32_t delta;	/**< The wheelDelta */
+	int32_t delta; /**< The wheelDelta */
 };
 
 /* Constructor */
@@ -28,11 +28,10 @@ dom_exception _dom_mouse_wheel_event_create(struct dom_mouse_wheel_event **evt);
 void _dom_mouse_wheel_event_destroy(struct dom_mouse_wheel_event *evt);
 
 /* Initialise function */
-dom_exception _dom_mouse_wheel_event_initialise(
-		struct dom_mouse_wheel_event *evt);
+dom_exception
+_dom_mouse_wheel_event_initialise(struct dom_mouse_wheel_event *evt);
 
 /* Finalise function */
 #define _dom_mouse_wheel_event_finalise _dom_mouse_event_finalise
 
 #endif
-

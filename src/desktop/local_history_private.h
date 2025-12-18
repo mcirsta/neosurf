@@ -26,13 +26,13 @@
 
 #include <neosurf/content/handlers/css/utils.h>
 
-#define LOCAL_HISTORY_WIDTH \
-		(FIXTOINT(css_unit_css2device_px(INTTOFIX(116), nscss_screen_dpi)))
-#define LOCAL_HISTORY_HEIGHT \
-		(FIXTOINT(css_unit_css2device_px(INTTOFIX(100), nscss_screen_dpi)))
-#define LOCAL_HISTORY_RIGHT_MARGIN \
-		(FIXTOINT(css_unit_css2device_px(INTTOFIX( 50), nscss_screen_dpi)))
-#define LOCAL_HISTORY_BOTTOM_MARGIN \
-		(FIXTOINT(css_unit_css2device_px(INTTOFIX( 30), nscss_screen_dpi)))
+#define LOCAL_HISTORY_WIDTH                                                    \
+	(FIXTOINT(css_unit_css2device_px(INTTOFIX(116), nscss_screen_dpi)))
+#define LOCAL_HISTORY_HEIGHT                                                   \
+	(FIXTOINT(css_unit_css2device_px(INTTOFIX(100), nscss_screen_dpi)))
+#define LOCAL_HISTORY_RIGHT_MARGIN                                             \
+	(FIXTOINT(css_unit_css2device_px(INTTOFIX(50), nscss_screen_dpi)))
+#define LOCAL_HISTORY_BOTTOM_MARGIN                                            \
+	(FIXTOINT(css_unit_css2device_px(INTTOFIX(30), nscss_screen_dpi)))
 
 #endif

@@ -45,15 +45,11 @@ char *squash_whitespace(const char *s)
 	c = malloc(strlen(s) + 1);
 	if (c != NULL) {
 		do {
-			if (s[i] == ' ' ||
-			    s[i] == '\n' ||
-			    s[i] == '\r' ||
+			if (s[i] == ' ' || s[i] == '\n' || s[i] == '\r' ||
 			    s[i] == '\t') {
 				c[j++] = ' ';
-				while (s[i] == ' ' ||
-				       s[i] == '\n' ||
-				       s[i] == '\r' ||
-				       s[i] == '\t')
+				while (s[i] == ' ' || s[i] == '\n' ||
+				       s[i] == '\r' || s[i] == '\t')
 					i++;
 			}
 			c[j++] = s[i++];
@@ -73,11 +69,11 @@ char *cnv_space2nbsp(const char *s)
 	for (numNBS = 0, srcP = (const char *)s; *srcP != '\0'; ++srcP) {
 		if (*srcP == ' ' || *srcP == '\t') {
 			++numNBS;
-                }
-        }
+		}
+	}
 	if ((d = (char *)malloc((srcP - s) + numNBS + 1)) == NULL) {
 		return NULL;
-        }
+	}
 	for (d0 = d, srcP = (const char *)s; *srcP != '\0'; ++srcP) {
 		if (*srcP == ' ' || *srcP == '\t') {
 			*d0++ = 0xC2;
@@ -97,7 +93,7 @@ bool is_dir(const char *path)
 
 	if (stat(path, &s)) {
 		return false;
-        }
+	}
 
 	return S_ISDIR(s.st_mode) ? true : false;
 }
@@ -206,27 +202,28 @@ nserror snstrjoin(char **str, size_t *size, char sep, size_t nelm, ...)
 #define BYTESIZE_BUFFER_SIZE 32
 
 /* exported interface documented in utils/string.h */
-char *human_friendly_bytesize(unsigned long long int bsize) {
+char *human_friendly_bytesize(unsigned long long int bsize)
+{
 	static char buffer1[BYTESIZE_BUFFER_SIZE];
 	static char buffer2[BYTESIZE_BUFFER_SIZE];
 	static char buffer3[BYTESIZE_BUFFER_SIZE];
 	static char *curbuffer = buffer3;
 	enum {
-	      bytes,
-	      kilobytes,
-	      megabytes,
-	      gibibytes,
-	      tebibytes,
-	      pebibytes,
-	      exbibytes	} unit = bytes;
-	static const char *const units[] = {
-		"Bytes",
-		"KiBytes",
-		"MiBytes",
-		"GiBytes",
-		"TiBytes",
-		"PiBytes",
-		"EiBytes" };
+		bytes,
+		kilobytes,
+		megabytes,
+		gibibytes,
+		tebibytes,
+		pebibytes,
+		exbibytes
+	} unit = bytes;
+	static const char *const units[] = {"Bytes",
+					    "KiBytes",
+					    "MiBytes",
+					    "GiBytes",
+					    "TiBytes",
+					    "PiBytes",
+					    "EiBytes"};
 	double bytesize = (double)bsize;
 	const char *fmt;
 
@@ -311,7 +308,7 @@ char *strcasestr(const char *haystack, const char *needle)
 {
 	size_t needle_len = strlen(needle);
 	size_t haystack_len = strlen(haystack);
-	const char * last_start;
+	const char *last_start;
 
 	if (needle_len > haystack_len)
 		return NULL;
@@ -364,9 +361,10 @@ int alphasort(const struct dirent **d1, const struct dirent **d2)
 }
 
 /* exported function documented in utils/dirent.h */
-int scandir(const char *dir, struct dirent ***namelist,
-		int (*sel)(const struct dirent *),
-		int (*compar)(const struct dirent **, const struct dirent **))
+int scandir(const char *dir,
+	    struct dirent ***namelist,
+	    int (*sel)(const struct dirent *),
+	    int (*compar)(const struct dirent **, const struct dirent **))
 {
 	struct dirent **entlist = NULL;
 	struct dirent **entlist_temp = NULL;
@@ -392,7 +390,7 @@ int scandir(const char *dir, struct dirent ***namelist,
 				alloc_n = 32;
 			}
 			entlist_temp = realloc(entlist,
-					sizeof(*entlist) * alloc_n);
+					       sizeof(*entlist) * alloc_n);
 			if (entlist_temp == NULL) {
 				goto error;
 			}
@@ -416,8 +414,10 @@ int scandir(const char *dir, struct dirent ***namelist,
 
 	/* Sort */
 	if (compar != NULL && n > 1)
-		qsort(entlist, n, sizeof(*entlist),
-				(int (*)(const void *, const void *))compar);
+		qsort(entlist,
+		      n,
+		      sizeof(*entlist),
+		      (int (*)(const void *, const void *))compar);
 	*namelist = entlist;
 	return n;
 
@@ -446,14 +446,14 @@ error:
 /**
  *  Find the first occurrence of C in S or the final NUL byte.
  */
-char *strchrnul (const char *s, int c_in)
+char *strchrnul(const char *s, int c_in)
 {
-	const unsigned char *us = (const unsigned char *) s;
+	const unsigned char *us = (const unsigned char *)s;
 
 	while (*us != c_in && *us != '\0')
 		us++;
 
-	return (void *) us;
+	return (void *)us;
 }
 
 #endif
@@ -462,12 +462,13 @@ char *strchrnul (const char *s, int c_in)
 
 #include "utils/utsname.h"
 
-int uname(struct utsname *buf) {
-	strcpy(buf->sysname,"windows");
-	strcpy(buf->nodename,"nodename");
-	strcpy(buf->release,"release");
-	strcpy(buf->version,"version");
-	strcpy(buf->machine,"pc");
+int uname(struct utsname *buf)
+{
+	strcpy(buf->sysname, "windows");
+	strcpy(buf->nodename, "nodename");
+	strcpy(buf->release, "release");
+	strcpy(buf->version, "version");
+	strcpy(buf->machine, "pc");
 
 	return 0;
 }
@@ -480,7 +481,7 @@ char *realpath(const char *path, char *resolved_path)
 {
 	char *ret;
 	if (resolved_path == NULL) {
-		ret=strdup(path);
+		ret = strdup(path);
 	} else {
 		ret = resolved_path;
 		strcpy(resolved_path, path);
@@ -544,17 +545,15 @@ int inet_pton(int af, const char *src, void *dst)
 
 #include "utils/regex.h"
 
-int
-regcomp(regex_t *restrict preg, const char *restrictregex, int cflags)
+int regcomp(regex_t *restrict preg, const char *restrictregex, int cflags)
 {
 	return 0;
 }
 
-size_t
-regerror(int errorcode,
-	 const regex_t *restrict preg,
-	 char *restrict errbuf,
-	 size_t errbuf_size)
+size_t regerror(int errorcode,
+		const regex_t *restrict preg,
+		char *restrict errbuf,
+		size_t errbuf_size)
 {
 	if ((errbuf != NULL) && (errbuf_size != 0)) {
 		*errbuf = 0;
@@ -562,12 +561,11 @@ regerror(int errorcode,
 	return 0;
 }
 
-int
-regexec(const regex_t *restrict preg,
-	const char *restrict string,
-	size_t nmatch,
-	regmatch_t pmatch[restrict],
-	int eflags)
+int regexec(const regex_t *restrict preg,
+	    const char *restrict string,
+	    size_t nmatch,
+	    regmatch_t pmatch[restrict],
+	    int eflags)
 {
 	return REG_NOMATCH;
 }

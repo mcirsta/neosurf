@@ -14,15 +14,19 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_play_during(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error css__cascade_play_during(uint32_t opv,
+				   css_style *style,
+				   css_select_state *state)
 {
 	lwc_string *uri = NULL;
 
 	if (hasFlagValue(opv) == false) {
 		switch (getValue(opv)) {
 		case PLAY_DURING_URI:
-			css__stylesheet_string_get(style->sheet, *((css_code_t *) style->bytecode), &uri);
+			css__stylesheet_string_get(
+				style->sheet,
+				*((css_code_t *)style->bytecode),
+				&uri);
 			advance_bytecode(style, sizeof(css_code_t));
 			break;
 		case PLAY_DURING_AUTO:
@@ -34,16 +38,18 @@ css_error css__cascade_play_during(uint32_t opv, css_style *style,
 		/** \todo mix & repeat */
 	}
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			getFlagValue(opv))) {
+	if (css__outranks_existing(getOpcode(opv),
+				   isImportant(opv),
+				   state,
+				   getFlagValue(opv))) {
 		/** \todo play-during */
 	}
 
 	return CSS_OK;
 }
 
-css_error css__set_play_during_from_hint(const css_hint *hint,
-		css_computed_style *style)
+css_error
+css__set_play_during_from_hint(const css_hint *hint, css_computed_style *style)
 {
 	UNUSED(hint);
 	UNUSED(style);
@@ -58,9 +64,8 @@ css_error css__initial_play_during(css_select_state *state)
 	return CSS_OK;
 }
 
-css_error css__copy_play_during(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error
+css__copy_play_during(const css_computed_style *from, css_computed_style *to)
 {
 	UNUSED(from);
 	UNUSED(to);
@@ -69,8 +74,8 @@ css_error css__copy_play_during(
 }
 
 css_error css__compose_play_during(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+				   const css_computed_style *child,
+				   css_computed_style *result)
 {
 	UNUSED(parent);
 	UNUSED(child);
@@ -78,4 +83,3 @@ css_error css__compose_play_during(const css_computed_style *parent,
 
 	return CSS_OK;
 }
-

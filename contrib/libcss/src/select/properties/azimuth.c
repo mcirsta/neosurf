@@ -12,8 +12,8 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_azimuth(uint32_t opv, css_style *style,
-		 css_select_state *state)
+css_error
+css__cascade_azimuth(uint32_t opv, css_style *style, css_select_state *state)
 {
 	css_fixed val = 0;
 	uint32_t unit = UNIT_DEG;
@@ -21,9 +21,9 @@ css_error css__cascade_azimuth(uint32_t opv, css_style *style,
 	if (hasFlagValue(opv) == false) {
 		switch (getValue(opv) & ~AZIMUTH_BEHIND) {
 		case AZIMUTH_ANGLE:
-			val = *((css_fixed *) style->bytecode);
+			val = *((css_fixed *)style->bytecode);
 			advance_bytecode(style, sizeof(val));
-			unit = *((uint32_t *) style->bytecode);
+			unit = *((uint32_t *)style->bytecode);
 			advance_bytecode(style, sizeof(unit));
 			break;
 		case AZIMUTH_LEFTWARDS:
@@ -46,16 +46,18 @@ css_error css__cascade_azimuth(uint32_t opv, css_style *style,
 
 	unit = css__to_css_unit(unit);
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			getFlagValue(opv))) {
+	if (css__outranks_existing(getOpcode(opv),
+				   isImportant(opv),
+				   state,
+				   getFlagValue(opv))) {
 		/** \todo set computed azimuth */
 	}
 
 	return CSS_OK;
 }
 
-css_error css__set_azimuth_from_hint(const css_hint *hint,
-		css_computed_style *style)
+css_error
+css__set_azimuth_from_hint(const css_hint *hint, css_computed_style *style)
 {
 	UNUSED(hint);
 	UNUSED(style);
@@ -70,9 +72,8 @@ css_error css__initial_azimuth(css_select_state *state)
 	return CSS_OK;
 }
 
-css_error css__copy_azimuth(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error
+css__copy_azimuth(const css_computed_style *from, css_computed_style *to)
 {
 	UNUSED(from);
 	UNUSED(to);
@@ -81,8 +82,8 @@ css_error css__copy_azimuth(
 }
 
 css_error css__compose_azimuth(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+			       const css_computed_style *child,
+			       css_computed_style *result)
 {
 	UNUSED(parent);
 	UNUSED(child);
@@ -90,4 +91,3 @@ css_error css__compose_azimuth(const css_computed_style *parent,
 
 	return CSS_OK;
 }
-

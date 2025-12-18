@@ -39,26 +39,27 @@
  * Container for stylesheet selection info
  */
 typedef struct css_select_sheet {
-	const css_stylesheet *sheet;	/**< Stylesheet */
-	css_origin origin;		/**< Stylesheet origin */
-	css_mq_query *media;		/**< Applicable media */
+	const css_stylesheet *sheet; /**< Stylesheet */
+	css_origin origin; /**< Stylesheet origin */
+	css_mq_query *media; /**< Applicable media */
 } css_select_sheet;
 
 /**
  * CSS selection context
  */
 struct css_select_ctx {
-	uint32_t n_sheets;		/**< Number of sheets */
+	uint32_t n_sheets; /**< Number of sheets */
 
-	css_select_sheet *sheets;	/**< Array of sheets */
+	css_select_sheet *sheets; /**< Array of sheets */
 
-	void *pw;	/**< Client's private selection context */
+	void *pw; /**< Client's private selection context */
 
-	bool uses_revert;  /**< A sheet used revert property value */
+	bool uses_revert; /**< A sheet used revert property value */
 
 	css_select_strings str;
 
-	css_calculator *calc; /**< A calculator to hand off to computed styles */
+	css_calculator
+		*calc; /**< A calculator to hand off to computed styles */
 
 	/* Interned default style */
 	css_computed_style *default_style;
@@ -101,36 +102,53 @@ typedef struct css_select_rule_source {
 
 static css_error set_hint(css_select_state *state, css_hint *hint);
 static css_error set_initial(css_select_state *state,
-		uint32_t prop, css_pseudo_element pseudo,
-		void *parent);
+			     uint32_t prop,
+			     css_pseudo_element pseudo,
+			     void *parent);
 
 static css_error select_from_sheet(css_select_ctx *ctx,
-		const css_stylesheet *sheet, css_origin origin,
-		css_select_state *state);
+				   const css_stylesheet *sheet,
+				   css_origin origin,
+				   css_select_state *state);
 static css_error match_selectors_in_sheet(css_select_ctx *ctx,
-		const css_stylesheet *sheet, css_select_state *state);
+					  const css_stylesheet *sheet,
+					  css_select_state *state);
 static css_error match_selector_chain(css_select_ctx *ctx,
-		const css_selector *selector, css_select_state *state);
+				      const css_selector *selector,
+				      css_select_state *state);
 static css_error match_named_combinator(css_select_ctx *ctx,
-		css_combinator type, const css_selector *selector,
-		css_select_state *state, void *node, void **next_node);
+					css_combinator type,
+					const css_selector *selector,
+					css_select_state *state,
+					void *node,
+					void **next_node);
 static css_error match_universal_combinator(css_select_ctx *ctx,
-		css_combinator type, const css_selector *selector,
-		css_select_state *state, void *node, bool may_optimise,
-		bool *rejected_by_cache, void **next_node);
-static css_error match_details(css_select_ctx *ctx, void *node,
-		const css_selector_detail *detail, css_select_state *state,
-		bool *match, css_pseudo_element *pseudo_element);
-static css_error match_detail(css_select_ctx *ctx, void *node,
-		const css_selector_detail *detail, css_select_state *state,
-		bool *match, css_pseudo_element *pseudo_element);
+					    css_combinator type,
+					    const css_selector *selector,
+					    css_select_state *state,
+					    void *node,
+					    bool may_optimise,
+					    bool *rejected_by_cache,
+					    void **next_node);
+static css_error match_details(css_select_ctx *ctx,
+			       void *node,
+			       const css_selector_detail *detail,
+			       css_select_state *state,
+			       bool *match,
+			       css_pseudo_element *pseudo_element);
+static css_error match_detail(css_select_ctx *ctx,
+			      void *node,
+			      const css_selector_detail *detail,
+			      css_select_state *state,
+			      bool *match,
+			      css_pseudo_element *pseudo_element);
 static css_error cascade_style(const css_style *style, css_select_state *state);
 
-static css_error select_font_faces_from_sheet(
-		const css_stylesheet *sheet,
-		css_origin origin,
-		css_select_font_faces_state *state,
-		const css_select_strings *str);
+static css_error
+select_font_faces_from_sheet(const css_stylesheet *sheet,
+			     css_origin origin,
+			     css_select_font_faces_state *state,
+			     const css_select_strings *str);
 
 #ifdef DEBUG_CHAIN_MATCHING
 static void dump_chain(const css_selector *selector);
@@ -165,14 +183,14 @@ static void css__destroy_node_data(struct css_node_data *node_data)
 	assert(node_data != NULL);
 
 	if (node_data->bloom != NULL &&
-			node_data->bloom != css__get_empty_bloom()) {
+	    node_data->bloom != css__get_empty_bloom()) {
 		free(node_data->bloom);
 	}
 
 	for (i = 0; i < CSS_PSEUDO_ELEMENT_COUNT; i++) {
 		if (node_data->partial.styles[i] != NULL) {
 			css_computed_style_destroy(
-					node_data->partial.styles[i]);
+				node_data->partial.styles[i]);
 		}
 	}
 
@@ -182,8 +200,11 @@ static void css__destroy_node_data(struct css_node_data *node_data)
 
 /* Exported function documented in public select.h header. */
 css_error css_libcss_node_data_handler(css_select_handler *handler,
-		css_node_data_action action, void *pw, void *node,
-		void *clone_node, void *libcss_node_data)
+				       css_node_data_action action,
+				       void *pw,
+				       void *node,
+				       void *clone_node,
+				       void *libcss_node_data)
 {
 	struct css_node_data *node_data = libcss_node_data;
 	css_error error;
@@ -307,14 +328,15 @@ css_error css_select_ctx_destroy(css_select_ctx *ctx)
  * \return CSS_OK on success, appropriate error otherwise
  */
 css_error css_select_ctx_append_sheet(css_select_ctx *ctx,
-		const css_stylesheet *sheet, css_origin origin,
-		const char *media)
+				      const css_stylesheet *sheet,
+				      css_origin origin,
+				      const char *media)
 {
 	if (ctx == NULL || sheet == NULL)
 		return CSS_BADPARM;
 
-	return css_select_ctx_insert_sheet(ctx, sheet, ctx->n_sheets,
-			origin, media);
+	return css_select_ctx_insert_sheet(
+		ctx, sheet, ctx->n_sheets, origin, media);
 }
 
 /**
@@ -328,8 +350,10 @@ css_error css_select_ctx_append_sheet(css_select_ctx *ctx,
  * \return CSS_OK on success, appropriate error otherwise
  */
 css_error css_select_ctx_insert_sheet(css_select_ctx *ctx,
-		const css_stylesheet *sheet, uint32_t index,
-		css_origin origin, const char *media)
+				      const css_stylesheet *sheet,
+				      uint32_t index,
+				      css_origin origin,
+				      const char *media)
 {
 	css_select_sheet *temp;
 	css_mq_query *mq;
@@ -348,20 +372,22 @@ css_error css_select_ctx_insert_sheet(css_select_ctx *ctx,
 		return CSS_INVALID;
 
 	temp = realloc(ctx->sheets,
-			(ctx->n_sheets + 1) * sizeof(css_select_sheet));
+		       (ctx->n_sheets + 1) * sizeof(css_select_sheet));
 	if (temp == NULL)
 		return CSS_NOMEM;
 
 	ctx->sheets = temp;
 
 	if (index < ctx->n_sheets) {
-		memmove(&ctx->sheets[index + 1], &ctx->sheets[index],
+		memmove(&ctx->sheets[index + 1],
+			&ctx->sheets[index],
 			(ctx->n_sheets - index) * sizeof(css_select_sheet));
 	}
 
 	error = css_parse_media_query(sheet->propstrings,
-			(const uint8_t *)media,
-			(media == NULL) ? 0 : strlen(media), &mq);
+				      (const uint8_t *)media,
+				      (media == NULL) ? 0 : strlen(media),
+				      &mq);
 	if (error == CSS_NOMEM) {
 		return error;
 	} else if (error != CSS_OK) {
@@ -391,8 +417,8 @@ css_error css_select_ctx_insert_sheet(css_select_ctx *ctx,
  * \param sheet  Sheet to remove
  * \return CSS_OK on success, appropriate error otherwise
  */
-css_error css_select_ctx_remove_sheet(css_select_ctx *ctx,
-		const css_stylesheet *sheet)
+css_error
+css_select_ctx_remove_sheet(css_select_ctx *ctx, const css_stylesheet *sheet)
 {
 	uint32_t index;
 
@@ -411,11 +437,11 @@ css_error css_select_ctx_remove_sheet(css_select_ctx *ctx,
 
 	ctx->n_sheets--;
 
-	memmove(&ctx->sheets[index], &ctx->sheets[index + 1],
-			(ctx->n_sheets - index) * sizeof(css_select_sheet));
+	memmove(&ctx->sheets[index],
+		&ctx->sheets[index + 1],
+		(ctx->n_sheets - index) * sizeof(css_select_sheet));
 
 	return CSS_OK;
-
 }
 
 /**
@@ -443,8 +469,9 @@ css_error css_select_ctx_count_sheets(css_select_ctx *ctx, uint32_t *count)
  * \param sheet  Pointer to location to receive sheet
  * \return CSS_OK on success, appropriate error otherwise
  */
-css_error css_select_ctx_get_sheet(css_select_ctx *ctx, uint32_t index,
-		const css_stylesheet **sheet)
+css_error css_select_ctx_get_sheet(css_select_ctx *ctx,
+				   uint32_t index,
+				   const css_stylesheet **sheet)
 {
 	if (ctx == NULL || sheet == NULL)
 		return CSS_BADPARM;
@@ -466,8 +493,10 @@ css_error css_select_ctx_get_sheet(css_select_ctx *ctx, uint32_t index,
  * \param pw		Client-specific private data for handler functions
  * \return CSS_OK on success, appropriate error otherwise
  */
-static css_error css__select_ctx_create_default_style(css_select_ctx *ctx,
-		css_select_handler *handler, void *pw)
+static css_error
+css__select_ctx_create_default_style(css_select_ctx *ctx,
+				     css_select_handler *handler,
+				     void *pw)
 {
 	css_computed_style *style;
 	css_error error;
@@ -505,14 +534,14 @@ static css_error css__select_ctx_create_default_style(css_select_ctx *ctx,
  * \return CSS_OK on success, appropriate error otherwise.
  */
 css_error css_select_default_style(css_select_ctx *ctx,
-		css_select_handler *handler, void *pw,
-		css_computed_style **style)
+				   css_select_handler *handler,
+				   void *pw,
+				   css_computed_style **style)
 {
 	css_error error;
 
 	if (ctx == NULL || style == NULL || handler == NULL ||
-			handler->handler_version !=
-					CSS_SELECT_HANDLER_VERSION_1)
+	    handler->handler_version != CSS_SELECT_HANDLER_VERSION_1)
 		return CSS_BADPARM;
 
 	/* Ensure the ctx has a default style */
@@ -542,8 +571,9 @@ css_error css_select_default_style(css_select_ctx *ctx,
  * \return CSS_OK on success, appropriate error otherwise.
  */
 static css_error css__get_parent_bloom(void *parent,
-		css_select_handler *handler, void *pw,
-		css_bloom **parent_bloom)
+				       css_select_handler *handler,
+				       void *pw,
+				       css_bloom **parent_bloom)
 {
 	struct css_node_data *node_data = NULL;
 	css_bloom *bloom = NULL;
@@ -556,8 +586,8 @@ static css_error css__get_parent_bloom(void *parent,
 
 		/* Hideous casting to avoid warnings on all platforms
 		 * we build for. */
-		error = handler->get_libcss_node_data(pw, parent,
-				(void **) (void *) &node_data);
+		error = handler->get_libcss_node_data(
+			pw, parent, (void **)(void *)&node_data);
 		if (error != CSS_OK) {
 			return error;
 		}
@@ -596,8 +626,8 @@ static css_error css__get_parent_bloom(void *parent,
 				node_data->bloom = bloom;
 
 				/* Set parent node bloom filter */
-				error = handler->set_libcss_node_data(pw,
-						parent, node_data);
+				error = handler->set_libcss_node_data(
+					pw, parent, node_data);
 				if (error != CSS_OK) {
 					css__destroy_node_data(node_data);
 					return error;
@@ -622,8 +652,8 @@ static css_error css__get_parent_bloom(void *parent,
 	return CSS_OK;
 }
 
-static css_error css__create_node_bloom(
-		css_bloom **node_bloom, css_select_state *state)
+static css_error
+css__create_node_bloom(css_bloom **node_bloom, css_select_state *state)
 {
 	css_error error;
 	css_bloom *bloom;
@@ -638,8 +668,8 @@ static css_error css__create_node_bloom(
 	}
 
 	/* Add node name to bloom */
-	if (lwc_string_caseless_hash_value(state->element.name,
-			&hash) != lwc_error_ok) {
+	if (lwc_string_caseless_hash_value(state->element.name, &hash) !=
+	    lwc_error_ok) {
 		error = CSS_NOMEM;
 		goto cleanup;
 	}
@@ -647,8 +677,8 @@ static css_error css__create_node_bloom(
 
 	/* Add id name to bloom */
 	if (state->id != NULL) {
-		if (lwc_string_caseless_hash_value(state->id,
-				&hash) != lwc_error_ok) {
+		if (lwc_string_caseless_hash_value(state->id, &hash) !=
+		    lwc_error_ok) {
 			error = CSS_NOMEM;
 			goto cleanup;
 		}
@@ -659,8 +689,8 @@ static css_error css__create_node_bloom(
 	if (state->classes != NULL) {
 		for (uint32_t i = 0; i < state->n_classes; i++) {
 			lwc_string *s = state->classes[i];
-			if (lwc_string_caseless_hash_value(s,
-					&hash) != lwc_error_ok) {
+			if (lwc_string_caseless_hash_value(s, &hash) !=
+			    lwc_error_ok) {
 				error = CSS_NOMEM;
 				goto cleanup;
 			}
@@ -689,8 +719,10 @@ cleanup:
  * \param pw       Client-specific private data for handler functions
  * \return CSS_OK on success, appropriate error otherwise.
  */
-static css_error css__set_node_data(void *node, css_select_state *state,
-		css_select_handler *handler, void *pw)
+static css_error css__set_node_data(void *node,
+				    css_select_state *state,
+				    css_select_handler *handler,
+				    void *pw)
 {
 	int i;
 	css_error error;
@@ -709,8 +741,8 @@ static css_error css__set_node_data(void *node, css_select_state *state,
 	/* Set selection results */
 	results = state->results;
 	for (i = 0; i < CSS_PSEUDO_ELEMENT_COUNT; i++) {
-		node_data->partial.styles[i] =
-				css__computed_style_ref(results->styles[i]);
+		node_data->partial.styles[i] = css__computed_style_ref(
+			results->styles[i]);
 	}
 
 	error = handler->set_libcss_node_data(pw, node, node_data);
@@ -743,10 +775,10 @@ enum share_candidate_type {
  * \return CSS_OK on success, appropriate error otherwise.
  */
 static css_error css_select_style__get_sharable_node_data_for_candidate(
-		css_select_state *state,
-		void *share_candidate_node,
-		enum share_candidate_type type,
-		struct css_node_data **sharable_node_data)
+	css_select_state *state,
+	void *share_candidate_node,
+	enum share_candidate_type type,
+	struct css_node_data **sharable_node_data)
 {
 	css_error error;
 	lwc_string *share_candidate_id;
@@ -761,22 +793,22 @@ static css_error css_select_style__get_sharable_node_data_for_candidate(
 	/* We get the candidate node data first, as if it has none, we can't
 	 * share its data anyway.
 	 * Hideous casting to avoid warnings on all platforms we build for. */
-	error = state->handler->get_libcss_node_data(state->pw,
-			share_candidate_node, (void **) (void *) &node_data);
+	error = state->handler->get_libcss_node_data(
+		state->pw, share_candidate_node, (void **)(void *)&node_data);
 	if (error != CSS_OK || node_data == NULL) {
 #ifdef DEBUG_STYLE_SHARING
 		printf("      \t%s\tno share: no candidate node data\n",
-				lwc_string_data(state->element.name));
+		       lwc_string_data(state->element.name));
 #endif
 		return error;
 	}
 
 	/* If one node has hints and other doesn't then can't share */
 	if ((node_data->flags & CSS_NODE_FLAGS_HAS_HINTS) !=
-			(state->node_data->flags & CSS_NODE_FLAGS_HAS_HINTS)) {
+	    (state->node_data->flags & CSS_NODE_FLAGS_HAS_HINTS)) {
 #ifdef DEBUG_STYLE_SHARING
 		printf("      \t%s\tno share: have hints mismatch\n",
-				lwc_string_data(state->element.name));
+		       lwc_string_data(state->element.name));
 #endif
 		return CSS_OK;
 	}
@@ -784,46 +816,43 @@ static css_error css_select_style__get_sharable_node_data_for_candidate(
 	/* If the node and candidate node had different pseudo classes, we
 	 * can't share. */
 	if ((node_data->flags & CSS_NODE_FLAGS__PSEUDO_CLASSES_MASK) !=
-			(state->node_data->flags &
-					CSS_NODE_FLAGS__PSEUDO_CLASSES_MASK)) {
+	    (state->node_data->flags & CSS_NODE_FLAGS__PSEUDO_CLASSES_MASK)) {
 #ifdef DEBUG_STYLE_SHARING
 		printf("      \t%s\tno share: different pseudo classes\n",
-				lwc_string_data(state->element.name));
+		       lwc_string_data(state->element.name));
 #endif
 		return CSS_OK;
-
 	}
 
 	/* If the node was affected by attribute or pseudo class rules,
 	 * or had an inline style, it's not a candidate for sharing */
-	if (node_data->flags & (
-			CSS_NODE_FLAGS_TAINT_PSEUDO_CLASS |
-			CSS_NODE_FLAGS_TAINT_ATTRIBUTE |
-			CSS_NODE_FLAGS_TAINT_SIBLING |
-			CSS_NODE_FLAGS_HAS_INLINE_STYLE)) {
+	if (node_data->flags &
+	    (CSS_NODE_FLAGS_TAINT_PSEUDO_CLASS |
+	     CSS_NODE_FLAGS_TAINT_ATTRIBUTE | CSS_NODE_FLAGS_TAINT_SIBLING |
+	     CSS_NODE_FLAGS_HAS_INLINE_STYLE)) {
 #ifdef DEBUG_STYLE_SHARING
 		printf("      \t%s\tno share: candidate flags: %s%s%s%s\n",
-				lwc_string_data(state->element.name),
-				(node_data->flags &
-					CSS_NODE_FLAGS_TAINT_PSEUDO_CLASS) ?
-						"PSEUDOCLASS" : "",
-				(node_data->flags &
-					CSS_NODE_FLAGS_TAINT_ATTRIBUTE) ?
-						" ATTRIBUTE" : "",
-				(node_data->flags &
-					CSS_NODE_FLAGS_TAINT_SIBLING) ?
-						" SIBLING" : "",
-				(node_data->flags &
-					CSS_NODE_FLAGS_HAS_INLINE_STYLE) ?
-						" INLINE_STYLE" : "");
+		       lwc_string_data(state->element.name),
+		       (node_data->flags & CSS_NODE_FLAGS_TAINT_PSEUDO_CLASS)
+			       ? "PSEUDOCLASS"
+			       : "",
+		       (node_data->flags & CSS_NODE_FLAGS_TAINT_ATTRIBUTE)
+			       ? " ATTRIBUTE"
+			       : "",
+		       (node_data->flags & CSS_NODE_FLAGS_TAINT_SIBLING)
+			       ? " SIBLING"
+			       : "",
+		       (node_data->flags & CSS_NODE_FLAGS_HAS_INLINE_STYLE)
+			       ? " INLINE_STYLE"
+			       : "");
 #endif
 		return CSS_OK;
 	}
 
 	/* Check candidate ID doesn't prevent sharing */
 	error = state->handler->node_id(state->pw,
-			share_candidate_node,
-			&share_candidate_id);
+					share_candidate_node,
+					&share_candidate_id);
 	if (error != CSS_OK) {
 		return error;
 
@@ -831,16 +860,16 @@ static css_error css_select_style__get_sharable_node_data_for_candidate(
 		lwc_string_unref(share_candidate_id);
 #ifdef DEBUG_STYLE_SHARING
 		printf("      \t%s\tno share: candidate id\n",
-				lwc_string_data(state->element.name));
+		       lwc_string_data(state->element.name));
 #endif
 		return CSS_OK;
 	}
 
 	/* Check candidate classes don't prevent sharing */
 	error = state->handler->node_classes(state->pw,
-			share_candidate_node,
-			&share_candidate_classes,
-			&share_candidate_n_classes);
+					     share_candidate_node,
+					     &share_candidate_classes,
+					     &share_candidate_n_classes);
 	if (error != CSS_OK) {
 		return error;
 	}
@@ -848,7 +877,7 @@ static css_error css_select_style__get_sharable_node_data_for_candidate(
 	if (state->n_classes != share_candidate_n_classes) {
 #ifdef DEBUG_STYLE_SHARING
 		printf("      \t%s\tno share: class count mismatch\n",
-				lwc_string_data(state->element.name));
+		       lwc_string_data(state->element.name));
 #endif
 		goto cleanup;
 	}
@@ -858,14 +887,13 @@ static css_error css_select_style__get_sharable_node_data_for_candidate(
 	 *       consistent than  not. */
 	for (uint32_t i = 0; i < share_candidate_n_classes; i++) {
 		bool match;
-		if (lwc_string_caseless_isequal(
-				state->classes[i],
-				share_candidate_classes[i],
-				&match) == lwc_error_ok &&
-				match == false) {
+		if (lwc_string_caseless_isequal(state->classes[i],
+						share_candidate_classes[i],
+						&match) == lwc_error_ok &&
+		    match == false) {
 #ifdef DEBUG_STYLE_SHARING
 			printf("      \t%s\tno share: class mismatch\n",
-					lwc_string_data(state->element.name));
+			       lwc_string_data(state->element.name));
 #endif
 			goto cleanup;
 		}
@@ -875,7 +903,7 @@ static css_error css_select_style__get_sharable_node_data_for_candidate(
 		/* TODO: check hints match.  For now, just prevent sharing */
 #ifdef DEBUG_STYLE_SHARING
 		printf("      \t%s\tno share: hints\n",
-				lwc_string_data(state->element.name));
+		       lwc_string_data(state->element.name));
 #endif
 		goto cleanup;
 	}
@@ -901,9 +929,9 @@ cleanup:
  * \param[out] cousin_out  Returns a cousin node or NULL.
  * \return CSS_OK on success or appropriate error otherwise.
  */
-static css_error css_select_style__get_named_cousin(
-		css_select_state *state, void *node,
-		void **cousin_out)
+static css_error css_select_style__get_named_cousin(css_select_state *state,
+						    void *node,
+						    void **cousin_out)
 {
 	/* TODO:
 	 *
@@ -931,8 +959,9 @@ static css_error css_select_style__get_named_cousin(
  * \return CSS_OK on success or appropriate error otherwise.
  */
 static css_error css_select_style__get_sharable_node_data(
-		void *node, css_select_state *state,
-		struct css_node_data **sharable_node_data)
+	void *node,
+	css_select_state *state,
+	struct css_node_data **sharable_node_data)
 {
 	css_error error;
 	enum share_candidate_type type = CANDIDATE_SIBLING;
@@ -950,13 +979,15 @@ static css_error css_select_style__get_sharable_node_data(
 		 *
 		 *       Check overhead is worth cost. */
 #ifdef DEBUG_STYLE_SHARING
-printf("      \t%s\tno share: node id (%s)\n", lwc_string_data(state->element.name), lwc_string_data(state->id));
+		printf("      \t%s\tno share: node id (%s)\n",
+		       lwc_string_data(state->element.name),
+		       lwc_string_data(state->id));
 #endif
 		return CSS_OK;
 	}
 	if (state->node_data->flags & CSS_NODE_FLAGS_HAS_INLINE_STYLE) {
 #ifdef DEBUG_STYLE_SHARING
-printf("      \t%s\tno share: inline style\n");
+		printf("      \t%s\tno share: inline style\n");
 #endif
 		return CSS_OK;
 	}
@@ -965,15 +996,17 @@ printf("      \t%s\tno share: inline style\n");
 		void *share_candidate_node;
 
 		/* Get previous sibling with same element name */
-		error = state->handler->named_generic_sibling_node(state->pw,
-				node, &state->element, &share_candidate_node);
+		error = state->handler->named_generic_sibling_node(
+			state->pw,
+			node,
+			&state->element,
+			&share_candidate_node);
 		if (error != CSS_OK) {
 			return error;
 		} else {
 			if (share_candidate_node == NULL) {
 				error = css_select_style__get_named_cousin(
-						state, node,
-						&share_candidate_node);
+					state, node, &share_candidate_node);
 				if (error != CSS_OK) {
 					return error;
 				} else {
@@ -990,8 +1023,7 @@ printf("      \t%s\tno share: inline style\n");
 		 * check that candidate node's ID and class won't
 		 * prevent sharing. */
 		error = css_select_style__get_sharable_node_data_for_candidate(
-				state, share_candidate_node,
-				type, sharable_node_data);
+			state, share_candidate_node, type, sharable_node_data);
 		if (error != CSS_OK) {
 			return error;
 		}
@@ -1014,8 +1046,7 @@ printf("      \t%s\tno share: inline style\n");
  *
  * \param[in] state  The selection state to finalise.
  */
-static void css_select__finalise_selection_state(
-		css_select_state *state)
+static void css_select__finalise_selection_state(css_select_state *state)
 {
 	if (state->results != NULL) {
 		css_select_results_destroy(state->results);
@@ -1031,7 +1062,7 @@ static void css_select__finalise_selection_state(
 		}
 	}
 
-	//TODO can these be null ?
+	// TODO can these be null ?
 	if (state->id != NULL)
 		lwc_string_unref(state->id);
 	if (state->element.ns != NULL)
@@ -1046,7 +1077,7 @@ static void css_select__finalise_selection_state(
 					continue;
 				}
 				css_computed_style_destroy(
-						state->revert[i].style[j]);
+					state->revert[i].style[j]);
 			}
 		}
 		free(state->revert);
@@ -1066,14 +1097,14 @@ static void css_select__finalise_selection_state(
  * \param[in]  pw            The client private data, passed out to callbacks.
  * \return CSS_OK or appropriate error otherwise.
  */
-static css_error css_select__initialise_selection_state(
-		css_select_state *state,
-		void *node,
-		void *parent,
-		const css_media *media,
-		const css_unit_ctx *unit_ctx,
-		css_select_handler *handler,
-		void *pw)
+static css_error
+css_select__initialise_selection_state(css_select_state *state,
+				       void *node,
+				       void *parent,
+				       const css_media *media,
+				       const css_unit_ctx *unit_ctx,
+				       css_select_handler *handler,
+				       void *pw)
 {
 	css_error error;
 	bool match;
@@ -1086,7 +1117,7 @@ static css_error css_select__initialise_selection_state(
 	state->handler = handler;
 	state->pw = pw;
 	state->next_reject = state->reject_cache +
-			(N_ELEMENTS(state->reject_cache) - 1);
+			     (N_ELEMENTS(state->reject_cache) - 1);
 
 	/* Allocate the result set */
 	state->results = calloc(1, sizeof(css_select_results));
@@ -1099,62 +1130,62 @@ static css_error css_select__initialise_selection_state(
 		goto failed;
 	}
 
-	error = css__get_parent_bloom(parent, handler, pw,
-			&state->node_data->bloom);
+	error = css__get_parent_bloom(
+		parent, handler, pw, &state->node_data->bloom);
 	if (error != CSS_OK) {
 		goto failed;
 	}
 
 	/* Get node's name */
 	error = handler->node_name(pw, node, &state->element);
-	if (error != CSS_OK){
+	if (error != CSS_OK) {
 		goto failed;
 	}
 
 	/* Get node's ID, if any */
 	error = handler->node_id(pw, node, &state->id);
-	if (error != CSS_OK){
+	if (error != CSS_OK) {
 		goto failed;
 	}
 
 	/* Get node's classes, if any */
-	error = handler->node_classes(pw, node,
-			&state->classes, &state->n_classes);
-	if (error != CSS_OK){
+	error = handler->node_classes(
+		pw, node, &state->classes, &state->n_classes);
+	if (error != CSS_OK) {
 		goto failed;
 	}
 
 	/* Node pseudo classes */
 	error = handler->node_is_link(pw, node, &match);
-	if (error != CSS_OK){
+	if (error != CSS_OK) {
 		goto failed;
 	} else if (match) {
 		state->node_data->flags |= CSS_NODE_FLAGS_PSEUDO_CLASS_LINK;
 	}
 
 	error = handler->node_is_visited(pw, node, &match);
-	if (error != CSS_OK){
+	if (error != CSS_OK) {
 		goto failed;
 	} else if (match) {
 		state->node_data->flags |= CSS_NODE_FLAGS_PSEUDO_CLASS_VISITED;
 	}
 
 	error = handler->node_is_hover(pw, node, &match);
-	if (error != CSS_OK){
+	if (error != CSS_OK) {
 		goto failed;
 	} else if (match) {
 		state->node_data->flags |= CSS_NODE_FLAGS_PSEUDO_CLASS_HOVER;
 	}
 
 	error = handler->node_is_active(pw, node, &match);
-	if (error != CSS_OK){
+	if (error != CSS_OK) {
 		goto failed;
 	} else if (match) {
 		state->node_data->flags |= CSS_NODE_FLAGS_PSEUDO_CLASS_ACTIVE;
 	}
 
 	error = handler->node_is_focus(pw, node, &match);
-	if (error != CSS_OK){
+	if (error != CSS_OK) {
 		goto failed;
 	} else if (match) {
 		state->node_data->flags |= CSS_NODE_FLAGS_PSEUDO_CLASS_FOCUS;
@@ -1167,12 +1198,12 @@ failed:
 	return error;
 }
 
-static css_error css__select_revert_property_to_origin(
-		css_select_state *select_state,
-		prop_state *prop_state,
-		css_origin origin,
-		enum css_pseudo_element pseudo,
-		enum css_properties_e property)
+static css_error
+css__select_revert_property_to_origin(css_select_state *select_state,
+				      prop_state *prop_state,
+				      css_origin origin,
+				      enum css_pseudo_element pseudo,
+				      enum css_properties_e property)
 {
 	css_error error;
 
@@ -1185,8 +1216,8 @@ static css_error css__select_revert_property_to_origin(
 	}
 
 	error = prop_dispatch[property].copy(
-			select_state->revert[origin].style[pseudo],
-			select_state->results->styles[pseudo]);
+		select_state->revert[origin].style[pseudo],
+		select_state->results->styles[pseudo]);
 	if (error != CSS_OK) {
 		return error;
 	}
@@ -1195,19 +1226,20 @@ static css_error css__select_revert_property_to_origin(
 	return CSS_OK;
 }
 
-static css_error css__select_revert_property(
-		css_select_state *select_state,
-		prop_state *prop_state,
-		enum css_pseudo_element pseudo,
-		enum css_properties_e property)
+static css_error css__select_revert_property(css_select_state *select_state,
+					     prop_state *prop_state,
+					     enum css_pseudo_element pseudo,
+					     enum css_properties_e property)
 {
 	css_error error;
 
 	switch (prop_state->origin) {
 	case CSS_ORIGIN_AUTHOR:
-		error = css__select_revert_property_to_origin(
-				select_state, prop_state, CSS_ORIGIN_USER,
-				pseudo, property);
+		error = css__select_revert_property_to_origin(select_state,
+							      prop_state,
+							      CSS_ORIGIN_USER,
+							      pseudo,
+							      property);
 		if (error != CSS_OK) {
 			return error;
 		}
@@ -1216,9 +1248,11 @@ static css_error css__select_revert_property(
 		}
 		/* Fall-through */
 	case CSS_ORIGIN_USER:
-		error = css__select_revert_property_to_origin(
-				select_state, prop_state, CSS_ORIGIN_UA,
-				pseudo, property);
+		error = css__select_revert_property_to_origin(select_state,
+							      prop_state,
+							      CSS_ORIGIN_UA,
+							      pseudo,
+							      property);
 		if (error != CSS_OK) {
 			return error;
 		}
@@ -1256,11 +1290,14 @@ static css_error css__select_revert_property(
  * the client to store the partially computed style and efficiently
  * update the fully computed style for a node when layout changes.
  */
-css_error css_select_style(css_select_ctx *ctx, void *node,
-		const css_unit_ctx *unit_ctx,
-		const css_media *media, const css_stylesheet *inline_style,
-		css_select_handler *handler, void *pw,
-		css_select_results **result)
+css_error css_select_style(css_select_ctx *ctx,
+			   void *node,
+			   const css_unit_ctx *unit_ctx,
+			   const css_media *media,
+			   const css_stylesheet *inline_style,
+			   css_select_handler *handler,
+			   void *pw,
+			   css_select_results **result)
 {
 	css_origin origin = CSS_ORIGIN_UA;
 	uint32_t i, j, nhints;
@@ -1279,7 +1316,7 @@ css_error css_select_style(css_select_ctx *ctx, void *node,
 		return error;
 
 	error = css_select__initialise_selection_state(
-			&state, node, parent, media, unit_ctx, handler, pw);
+		&state, node, parent, media, unit_ctx, handler, pw);
 	if (error != CSS_OK)
 		return error;
 
@@ -1302,12 +1339,12 @@ css_error css_select_style(css_select_ctx *ctx, void *node,
 	} else if (share != NULL) {
 		css_computed_style **styles = share->partial.styles;
 		for (i = 0; i < CSS_PSEUDO_ELEMENT_COUNT; i++) {
-			state.results->styles[i] =
-					css__computed_style_ref(styles[i]);
+			state.results->styles[i] = css__computed_style_ref(
+				styles[i]);
 		}
 #ifdef DEBUG_STYLE_SHARING
 		printf("style:\t%s\tSHARED!\n",
-				lwc_string_data(state.element.name));
+		       lwc_string_data(state.element.name));
 #endif
 		goto complete;
 	}
@@ -1317,7 +1354,7 @@ css_error css_select_style(css_select_ctx *ctx, void *node,
 
 	/* Not sharing; need to select. */
 	if (ctx->uses_revert ||
-			(inline_style != NULL && inline_style->uses_revert)) {
+	    (inline_style != NULL && inline_style->uses_revert)) {
 		/* Need to track UA and USER origin styles for revert. */
 		state.revert = calloc(CSS_ORIGIN_AUTHOR, sizeof(*state.revert));
 		if (state.revert == NULL) {
@@ -1329,7 +1366,7 @@ css_error css_select_style(css_select_ctx *ctx, void *node,
 	/* Base element style is guaranteed to exist
 	 */
 	error = css__computed_style_create(
-			&state.results->styles[CSS_PSEUDO_ELEMENT_NONE], ctx->calc);
+		&state.results->styles[CSS_PSEUDO_ELEMENT_NONE], ctx->calc);
 	if (error != CSS_OK) {
 		goto cleanup;
 	}
@@ -1338,7 +1375,7 @@ css_error css_select_style(css_select_ctx *ctx, void *node,
 	if (nhints > 0) {
 		/* Ensure that the appropriate computed style exists */
 		struct css_computed_style *computed_style =
-				state.results->styles[CSS_PSEUDO_ELEMENT_NONE];
+			state.results->styles[CSS_PSEUDO_ELEMENT_NONE];
 		state.computed = computed_style;
 
 		for (i = 0; i < nhints; i++) {
@@ -1363,21 +1400,22 @@ css_error css_select_style(css_select_ctx *ctx, void *node,
 					continue;
 				}
 				error = css__computed_style_clone(
-						state.results->styles[j],
-						&state.revert[origin].style[j]);
+					state.results->styles[j],
+					&state.revert[origin].style[j]);
 				if (error != CSS_OK) {
 					goto cleanup;
 				}
 				memcpy(state.revert[origin].props,
-				       state.props, sizeof(state.props));
+				       state.props,
+				       sizeof(state.props));
 			}
 			origin = s.origin;
 		}
 
 		if (mq__list_match(s.media, unit_ctx, media, &ctx->str) &&
-				s.sheet->disabled == false) {
-			error = select_from_sheet(ctx, s.sheet,
-					s.origin, &state);
+		    s.sheet->disabled == false) {
+			error = select_from_sheet(
+				ctx, s.sheet, s.origin, &state);
 			if (error != CSS_OK)
 				goto cleanup;
 		}
@@ -1385,13 +1423,13 @@ css_error css_select_style(css_select_ctx *ctx, void *node,
 
 	/* Consider any inline style for the node */
 	if (inline_style != NULL) {
-		css_rule_selector *sel =
-				(css_rule_selector *) inline_style->rule_list;
+		css_rule_selector *sel = (css_rule_selector *)
+						 inline_style->rule_list;
 
 		/* Sanity check style */
 		if (inline_style->rule_count != 1 ||
-			inline_style->rule_list->type != CSS_RULE_SELECTOR ||
-				inline_style->rule_list->items != 0) {
+		    inline_style->rule_list->type != CSS_RULE_SELECTOR ||
+		    inline_style->rule_list->items != 0) {
 			error = CSS_INVALID;
 			goto cleanup;
 		}
@@ -1400,8 +1438,8 @@ css_error css_select_style(css_select_ctx *ctx, void *node,
 		if (sel->style != NULL) {
 			/* Inline style applies to base element only */
 			state.current_pseudo = CSS_PSEUDO_ELEMENT_NONE;
-			state.computed = state.results->styles[
-					CSS_PSEUDO_ELEMENT_NONE];
+			state.computed =
+				state.results->styles[CSS_PSEUDO_ELEMENT_NONE];
 
 			error = cascade_style(sel->style, &state);
 			if (error != CSS_OK)
@@ -1418,8 +1456,8 @@ css_error css_select_style(css_select_ctx *ctx, void *node,
 		prop_state *prop = &state.props[i][CSS_PSEUDO_ELEMENT_NONE];
 
 		if (prop->explicit_default == FLAG_VALUE_REVERT) {
-			error = css__select_revert_property(&state, prop,
-					CSS_PSEUDO_ELEMENT_NONE, i);
+			error = css__select_revert_property(
+				&state, prop, CSS_PSEUDO_ELEMENT_NONE, i);
 			if (error != CSS_OK) {
 				goto cleanup;
 			}
@@ -1437,18 +1475,19 @@ css_error css_select_style(css_select_ctx *ctx, void *node,
 		 * and we're the root element, then set it to its initial
 		 * value. */
 		if (prop->explicit_default == FLAG_VALUE_INITIAL ||
-				prop->set == false ||
-				(parent == NULL &&
-				prop->explicit_default == FLAG_VALUE_INHERIT)) {
-			error = set_initial(&state, i,
-					CSS_PSEUDO_ELEMENT_NONE, parent);
+		    prop->set == false ||
+		    (parent == NULL &&
+		     prop->explicit_default == FLAG_VALUE_INHERIT)) {
+			error = set_initial(
+				&state, i, CSS_PSEUDO_ELEMENT_NONE, parent);
 			if (error != CSS_OK)
 				goto cleanup;
 		}
 	}
 
 	/* Pseudo elements, if any */
-	for (j = CSS_PSEUDO_ELEMENT_NONE + 1; j < CSS_PSEUDO_ELEMENT_COUNT; j++) {
+	for (j = CSS_PSEUDO_ELEMENT_NONE + 1; j < CSS_PSEUDO_ELEMENT_COUNT;
+	     j++) {
 		state.current_pseudo = j;
 		state.computed = state.results->styles[j];
 
@@ -1460,8 +1499,8 @@ css_error css_select_style(css_select_ctx *ctx, void *node,
 			prop_state *prop = &state.props[i][j];
 
 			if (prop->explicit_default == FLAG_VALUE_REVERT) {
-				error = css__select_revert_property(&state,
-						prop, j, i);
+				error = css__select_revert_property(
+					&state, prop, j, i);
 				if (error != CSS_OK) {
 					goto cleanup;
 				}
@@ -1469,16 +1508,18 @@ css_error css_select_style(css_select_ctx *ctx, void *node,
 
 			if (prop->explicit_default == FLAG_VALUE_UNSET) {
 				if (prop_dispatch[i].inherited == true) {
-					prop->explicit_default = FLAG_VALUE_INHERIT;
+					prop->explicit_default =
+						FLAG_VALUE_INHERIT;
 				} else {
-					prop->explicit_default = FLAG_VALUE_INITIAL;
+					prop->explicit_default =
+						FLAG_VALUE_INITIAL;
 				}
 			}
 
 			/* If the property is still unset then set it
 			 * to its initial value. */
 			if (prop->explicit_default == FLAG_VALUE_INITIAL ||
-					prop->set == false) {
+			    prop->set == false) {
 				error = set_initial(&state, i, j, parent);
 				if (error != CSS_OK)
 					goto cleanup;
@@ -1492,9 +1533,10 @@ css_error css_select_style(css_select_ctx *ctx, void *node,
 	 * is set to the computed value of color. */
 	if (parent == NULL) {
 		/* Only compute absolute values for the base element */
-		error = css__compute_absolute_values(NULL,
-				state.results->styles[CSS_PSEUDO_ELEMENT_NONE],
-				unit_ctx);
+		error = css__compute_absolute_values(
+			NULL,
+			state.results->styles[CSS_PSEUDO_ELEMENT_NONE],
+			unit_ctx);
 		if (error != CSS_OK)
 			goto cleanup;
 	}
@@ -1564,10 +1606,10 @@ css_error css_select_results_destroy(css_select_results *results)
  * \return CSS_OK on success, appropriate error otherwise.
  */
 css_error css_select_font_faces(css_select_ctx *ctx,
-		const css_media *media,
-		const css_unit_ctx *unit_ctx,
-		lwc_string *font_family,
-		css_select_font_faces_results **result)
+				const css_media *media,
+				const css_unit_ctx *unit_ctx,
+				lwc_string *font_family,
+				css_select_font_faces_results **result)
 {
 	uint32_t i;
 	css_error error;
@@ -1589,17 +1631,16 @@ css_error css_select_font_faces(css_select_ctx *ctx,
 		const css_select_sheet s = ctx->sheets[i];
 
 		if (mq__list_match(s.media, unit_ctx, media, &ctx->str) &&
-				s.sheet->disabled == false) {
-			error = select_font_faces_from_sheet(s.sheet,
-					s.origin, &state, &ctx->str);
+		    s.sheet->disabled == false) {
+			error = select_font_faces_from_sheet(
+				s.sheet, s.origin, &state, &ctx->str);
 			if (error != CSS_OK)
 				goto cleanup;
 		}
 	}
 
-	n_font_faces = state.ua_font_faces.count +
-			state.user_font_faces.count +
-			state.author_font_faces.count;
+	n_font_faces = state.ua_font_faces.count + state.user_font_faces.count +
+		       state.author_font_faces.count;
 
 
 	if (n_font_faces > 0) {
@@ -1613,8 +1654,8 @@ css_error css_select_font_faces(css_select_ctx *ctx,
 			goto cleanup;
 		}
 
-		results->font_faces = malloc(
-				n_font_faces * sizeof(css_font_face *));
+		results->font_faces = malloc(n_font_faces *
+					     sizeof(css_font_face *));
 		if (results->font_faces == NULL) {
 			free(results);
 			error = CSS_NOMEM;
@@ -1626,26 +1667,26 @@ css_error css_select_font_faces(css_select_ctx *ctx,
 		i = 0;
 		if (state.ua_font_faces.count != 0) {
 			memcpy(results->font_faces,
-					state.ua_font_faces.font_faces,
-					sizeof(css_font_face *) *
-						state.ua_font_faces.count);
+			       state.ua_font_faces.font_faces,
+			       sizeof(css_font_face *) *
+				       state.ua_font_faces.count);
 
 			i += state.ua_font_faces.count;
 		}
 
 		if (state.user_font_faces.count != 0) {
 			memcpy(results->font_faces + i,
-					state.user_font_faces.font_faces,
-					sizeof(css_font_face *) *
-						state.user_font_faces.count);
+			       state.user_font_faces.font_faces,
+			       sizeof(css_font_face *) *
+				       state.user_font_faces.count);
 			i += state.user_font_faces.count;
 		}
 
 		if (state.author_font_faces.count != 0) {
 			memcpy(results->font_faces + i,
-					state.author_font_faces.font_faces,
-					sizeof(css_font_face *) *
-						state.author_font_faces.count);
+			       state.author_font_faces.font_faces,
+			       sizeof(css_font_face *) *
+				       state.author_font_faces.count);
 		}
 
 		*result = results;
@@ -1672,8 +1713,8 @@ cleanup:
  * \param results  Result set to destroy
  * \return CSS_OK on success, appropriate error otherwise
  */
-css_error css_select_font_faces_results_destroy(
-		css_select_font_faces_results *results)
+css_error
+css_select_font_faces_results_destroy(css_select_font_faces_results *results)
 {
 	if (results == NULL)
 		return CSS_BADPARM;
@@ -1710,15 +1751,16 @@ css_error set_hint(css_select_state *state, css_hint *hint)
 	existing->specificity = 0;
 	existing->origin = CSS_ORIGIN_AUTHOR;
 	existing->important = 0;
-	existing->explicit_default = (hint->status == 0) ?
-			FLAG_VALUE_INHERIT : FLAG_VALUE__NONE;
+	existing->explicit_default = (hint->status == 0) ? FLAG_VALUE_INHERIT
+							 : FLAG_VALUE__NONE;
 
 	return CSS_OK;
 }
 
 css_error set_initial(css_select_state *state,
-		uint32_t prop, css_pseudo_element pseudo,
-		void *parent)
+		      uint32_t prop,
+		      css_pseudo_element pseudo,
+		      void *parent)
 {
 	css_error error;
 
@@ -1729,8 +1771,8 @@ css_error set_initial(css_select_state *state,
 	 * everything should be defaulted.
 	 */
 	if (state->props[prop][pseudo].explicit_default == FLAG_VALUE_INITIAL ||
-			prop_dispatch[prop].inherited == false ||
-			(pseudo == CSS_PSEUDO_ELEMENT_NONE && parent == NULL)) {
+	    prop_dispatch[prop].inherited == false ||
+	    (pseudo == CSS_PSEUDO_ELEMENT_NONE && parent == NULL)) {
 		error = prop_dispatch[prop].initial(state);
 		if (error != CSS_OK)
 			return error;
@@ -1741,8 +1783,10 @@ css_error set_initial(css_select_state *state,
 
 #define IMPORT_STACK_SIZE 256
 
-css_error select_from_sheet(css_select_ctx *ctx, const css_stylesheet *sheet,
-		css_origin origin, css_select_state *state)
+css_error select_from_sheet(css_select_ctx *ctx,
+			    const css_stylesheet *sheet,
+			    css_origin origin,
+			    css_select_state *state)
 {
 	const css_stylesheet *s = sheet;
 	const css_rule *rule = s->rule_list;
@@ -1759,13 +1803,13 @@ css_error select_from_sheet(css_select_ctx *ctx, const css_stylesheet *sheet,
 		if (rule != NULL && rule->type == CSS_RULE_IMPORT) {
 			/* Current rule is an import */
 			const css_rule_import *import =
-					(const css_rule_import *) rule;
+				(const css_rule_import *)rule;
 
 			if (import->sheet != NULL &&
-					mq__list_match(import->media,
-							state->unit_ctx,
-							state->media,
-							&ctx->str)) {
+			    mq__list_match(import->media,
+					   state->unit_ctx,
+					   state->media,
+					   &ctx->str)) {
 				/* It's applicable, so process it */
 				if (sp >= IMPORT_STACK_SIZE)
 					return CSS_NOMEM;
@@ -1804,35 +1848,36 @@ css_error select_from_sheet(css_select_ctx *ctx, const css_stylesheet *sheet,
 	return CSS_OK;
 }
 
-static css_error _select_font_face_from_rule(
-		const css_rule_font_face *rule, css_origin origin,
-		css_select_font_faces_state *state,
-		const css_select_strings *str)
+static css_error _select_font_face_from_rule(const css_rule_font_face *rule,
+					     css_origin origin,
+					     css_select_font_faces_state *state,
+					     const css_select_strings *str)
 {
-	if (mq_rule_good_for_media((const css_rule *) rule,
-			state->unit_ctx, state->media, str)) {
+	if (mq_rule_good_for_media((const css_rule *)rule,
+				   state->unit_ctx,
+				   state->media,
+				   str)) {
 		bool correct_family = false;
 
-		if (lwc_string_isequal(
-				rule->font_face->font_family,
-				state->font_family,
-				&correct_family) == lwc_error_ok &&
-				correct_family) {
+		if (lwc_string_isequal(rule->font_face->font_family,
+				       state->font_family,
+				       &correct_family) == lwc_error_ok &&
+		    correct_family) {
 			css_select_font_faces_list *faces = NULL;
 			const css_font_face **new_faces;
 			uint32_t index;
 			size_t new_size;
 
 			switch (origin) {
-				case CSS_ORIGIN_UA:
-					faces = &state->ua_font_faces;
-					break;
-				case CSS_ORIGIN_USER:
-					faces = &state->user_font_faces;
-					break;
-				case CSS_ORIGIN_AUTHOR:
-					faces = &state->author_font_faces;
-					break;
+			case CSS_ORIGIN_UA:
+				faces = &state->ua_font_faces;
+				break;
+			case CSS_ORIGIN_USER:
+				faces = &state->user_font_faces;
+				break;
+			case CSS_ORIGIN_AUTHOR:
+				faces = &state->author_font_faces;
+				break;
 			}
 
 			index = faces->count++;
@@ -1851,11 +1896,11 @@ static css_error _select_font_face_from_rule(
 	return CSS_OK;
 }
 
-static css_error select_font_faces_from_sheet(
-		const css_stylesheet *sheet,
-		css_origin origin,
-		css_select_font_faces_state *state,
-		const css_select_strings *str)
+static css_error
+select_font_faces_from_sheet(const css_stylesheet *sheet,
+			     css_origin origin,
+			     css_select_font_faces_state *state,
+			     const css_select_strings *str)
 {
 	const css_stylesheet *s = sheet;
 	const css_rule *rule = s->rule_list;
@@ -1872,13 +1917,13 @@ static css_error select_font_faces_from_sheet(
 		if (rule != NULL && rule->type == CSS_RULE_IMPORT) {
 			/* Current rule is an import */
 			const css_rule_import *import =
-					(const css_rule_import *) rule;
+				(const css_rule_import *)rule;
 
 			if (import->sheet != NULL &&
-					mq__list_match(import->media,
-							state->unit_ctx,
-							state->media,
-							str)) {
+			    mq__list_match(import->media,
+					   state->unit_ctx,
+					   state->media,
+					   str)) {
 				/* It's applicable, so process it */
 				if (sp >= IMPORT_STACK_SIZE)
 					return CSS_NOMEM;
@@ -1895,8 +1940,10 @@ static css_error select_font_faces_from_sheet(
 			css_error error;
 
 			error = _select_font_face_from_rule(
-					(const css_rule_font_face *) rule,
-					origin, state, str);
+				(const css_rule_font_face *)rule,
+				origin,
+				state,
+				str);
 
 			if (error != CSS_OK)
 				return error;
@@ -1922,8 +1969,10 @@ static css_error select_font_faces_from_sheet(
 #undef IMPORT_STACK_SIZE
 
 static inline bool _selectors_pending(const css_selector **node,
-		const css_selector **id, const css_selector ***classes,
-		uint32_t n_classes, const css_selector **univ)
+				      const css_selector **id,
+				      const css_selector ***classes,
+				      uint32_t n_classes,
+				      const css_selector **univ)
 {
 	bool pending = false;
 	uint32_t i;
@@ -1940,8 +1989,8 @@ static inline bool _selectors_pending(const css_selector **node,
 	return pending;
 }
 
-static inline bool _selector_less_specific(const css_selector *ref,
-		const css_selector *cand)
+static inline bool
+_selector_less_specific(const css_selector *ref, const css_selector *cand)
 {
 	bool result = true;
 
@@ -1968,9 +2017,11 @@ static inline bool _selector_less_specific(const css_selector *ref,
 }
 
 static const css_selector *_selector_next(const css_selector **node,
-		const css_selector **id, const css_selector ***classes,
-		uint32_t n_classes, const css_selector **univ,
-		css_select_rule_source *src)
+					  const css_selector **id,
+					  const css_selector ***classes,
+					  uint32_t n_classes,
+					  const css_selector **univ,
+					  css_select_rule_source *src)
 {
 	const css_selector *ret = NULL;
 
@@ -2005,7 +2056,8 @@ static const css_selector *_selector_next(const css_selector **node,
 }
 
 css_error match_selectors_in_sheet(css_select_ctx *ctx,
-		const css_stylesheet *sheet, css_select_state *state)
+				   const css_stylesheet *sheet,
+				   css_select_state *state)
 {
 	static const css_selector *empty_selector = NULL;
 	const uint32_t n_classes = state->n_classes;
@@ -2018,7 +2070,7 @@ css_error match_selectors_in_sheet(css_select_ctx *ctx,
 	css_selector_hash_iterator class_iterator;
 	const css_selector **univ_selectors = &empty_selector;
 	css_selector_hash_iterator univ_iterator;
-	css_select_rule_source src = { CSS_SELECT_RULE_SRC_ELEMENT, 0 };
+	css_select_rule_source src = {CSS_SELECT_RULE_SRC_ELEMENT, 0};
 	struct css_hash_selection_requirments req;
 	css_error error;
 
@@ -2030,9 +2082,8 @@ css_error match_selectors_in_sheet(css_select_ctx *ctx,
 
 	/* Find hash chain that applies to current node */
 	req.qname = state->element;
-	error = css__selector_hash_find(sheet->selectors,
-			&req, &node_iterator,
-			&node_selectors);
+	error = css__selector_hash_find(
+		sheet->selectors, &req, &node_iterator, &node_selectors);
 	if (error != CSS_OK)
 		goto cleanup;
 
@@ -2047,8 +2098,10 @@ css_error match_selectors_in_sheet(css_select_ctx *ctx,
 		for (i = 0; i < n_classes; i++) {
 			req.class = state->classes[i];
 			error = css__selector_hash_find_by_class(
-					sheet->selectors, &req,
-					&class_iterator, &class_selectors[i]);
+				sheet->selectors,
+				&req,
+				&class_iterator,
+				&class_selectors[i]);
 			if (error != CSS_OK)
 				goto cleanup;
 		}
@@ -2057,21 +2110,24 @@ css_error match_selectors_in_sheet(css_select_ctx *ctx,
 	if (state->id != NULL) {
 		/* Find hash chain for node ID */
 		req.id = state->id;
-		error = css__selector_hash_find_by_id(sheet->selectors,
-				&req, &id_iterator, &id_selectors);
+		error = css__selector_hash_find_by_id(
+			sheet->selectors, &req, &id_iterator, &id_selectors);
 		if (error != CSS_OK)
 			goto cleanup;
 	}
 
 	/* Find hash chain for universal selector */
-	error = css__selector_hash_find_universal(sheet->selectors, &req,
-			&univ_iterator, &univ_selectors);
+	error = css__selector_hash_find_universal(
+		sheet->selectors, &req, &univ_iterator, &univ_selectors);
 	if (error != CSS_OK)
 		goto cleanup;
 
 	/* Process matching selectors, if any */
-	while (_selectors_pending(node_selectors, id_selectors,
-			class_selectors, n_classes, univ_selectors)) {
+	while (_selectors_pending(node_selectors,
+				  id_selectors,
+				  class_selectors,
+				  n_classes,
+				  univ_selectors)) {
 		const css_selector *selector;
 
 		/* Selectors must be matched in ascending order of specificity
@@ -2079,9 +2135,12 @@ css_error match_selectors_in_sheet(css_select_ctx *ctx,
 		 *
 		 * Pick the least specific/earliest occurring selector.
 		 */
-		selector = _selector_next(node_selectors, id_selectors,
-				class_selectors, n_classes, univ_selectors,
-				&src);
+		selector = _selector_next(node_selectors,
+					  id_selectors,
+					  class_selectors,
+					  n_classes,
+					  univ_selectors,
+					  &src);
 
 		/* We know there are selectors pending, so should have a
 		 * selector here */
@@ -2096,24 +2155,26 @@ css_error match_selectors_in_sheet(css_select_ctx *ctx,
 		 * the processed selector from. */
 		switch (src.source) {
 		case CSS_SELECT_RULE_SRC_ELEMENT:
-			error = node_iterator(&req, node_selectors,
-					&node_selectors);
+			error = node_iterator(&req,
+					      node_selectors,
+					      &node_selectors);
 			break;
 
 		case CSS_SELECT_RULE_SRC_ID:
-			error = id_iterator(&req, id_selectors,
-					&id_selectors);
+			error = id_iterator(&req, id_selectors, &id_selectors);
 			break;
 
 		case CSS_SELECT_RULE_SRC_UNIVERSAL:
-			error = univ_iterator(&req, univ_selectors,
-					&univ_selectors);
+			error = univ_iterator(&req,
+					      univ_selectors,
+					      &univ_selectors);
 			break;
 
 		case CSS_SELECT_RULE_SRC_CLASS:
 			req.class = state->classes[src.class];
-			error = class_iterator(&req, class_selectors[src.class],
-					&class_selectors[src.class]);
+			error = class_iterator(&req,
+					       class_selectors[src.class],
+					       &class_selectors[src.class]);
 			break;
 		}
 
@@ -2130,7 +2191,8 @@ cleanup:
 }
 
 static void update_reject_cache(css_select_state *state,
-		css_combinator comb, const css_selector *s)
+				css_combinator comb,
+				const css_selector *s)
 {
 	const css_selector_detail *detail = &s->data;
 	const css_selector_detail *next_detail = NULL;
@@ -2139,11 +2201,10 @@ static void update_reject_cache(css_select_state *state,
 		next_detail = detail + 1;
 
 	if (state->next_reject < state->reject_cache ||
-			comb != CSS_COMBINATOR_ANCESTOR ||
-			next_detail == NULL ||
-			next_detail->next != 0 ||
-			(next_detail->type != CSS_SELECTOR_CLASS &&
-			 next_detail->type != CSS_SELECTOR_ID))
+	    comb != CSS_COMBINATOR_ANCESTOR || next_detail == NULL ||
+	    next_detail->next != 0 ||
+	    (next_detail->type != CSS_SELECTOR_CLASS &&
+	     next_detail->type != CSS_SELECTOR_ID))
 		return;
 
 	/* Insert */
@@ -2153,7 +2214,8 @@ static void update_reject_cache(css_select_state *state,
 }
 
 css_error match_selector_chain(css_select_ctx *ctx,
-		const css_selector *selector, css_select_state *state)
+			       const css_selector *selector,
+			       css_select_state *state)
 {
 	const css_selector *s = selector;
 	void *node = state->node;
@@ -2190,15 +2252,18 @@ css_error match_selector_chain(css_select_ctx *ctx,
 
 		/* Consider any combinator on this selector */
 		if (s->data.comb != CSS_COMBINATOR_NONE &&
-				s->combinator->data.qname.name !=
-					ctx->str.universal) {
+		    s->combinator->data.qname.name != ctx->str.universal) {
 			/* Named combinator */
-			may_optimise &=
-				(s->data.comb == CSS_COMBINATOR_ANCESTOR ||
-				 s->data.comb == CSS_COMBINATOR_PARENT);
+			may_optimise &= (s->data.comb ==
+						 CSS_COMBINATOR_ANCESTOR ||
+					 s->data.comb == CSS_COMBINATOR_PARENT);
 
-			error = match_named_combinator(ctx, s->data.comb,
-					s->combinator, state, node, &next_node);
+			error = match_named_combinator(ctx,
+						       s->data.comb,
+						       s->combinator,
+						       state,
+						       node,
+						       &next_node);
 			if (error != CSS_OK)
 				return error;
 
@@ -2207,23 +2272,28 @@ css_error match_selector_chain(css_select_ctx *ctx,
 				return CSS_OK;
 		} else if (s->data.comb != CSS_COMBINATOR_NONE) {
 			/* Universal combinator */
-			may_optimise &=
-				(s->data.comb == CSS_COMBINATOR_ANCESTOR ||
-				 s->data.comb == CSS_COMBINATOR_PARENT);
+			may_optimise &= (s->data.comb ==
+						 CSS_COMBINATOR_ANCESTOR ||
+					 s->data.comb == CSS_COMBINATOR_PARENT);
 
-			error = match_universal_combinator(ctx, s->data.comb,
-					s->combinator, state, node,
-					may_optimise, &rejected_by_cache,
-					&next_node);
+			error = match_universal_combinator(ctx,
+							   s->data.comb,
+							   s->combinator,
+							   state,
+							   node,
+							   may_optimise,
+							   &rejected_by_cache,
+							   &next_node);
 			if (error != CSS_OK)
 				return error;
 
 			/* No match for combinator, so reject selector chain */
 			if (next_node == NULL) {
 				if (may_optimise && s == selector &&
-						rejected_by_cache == false) {
-					update_reject_cache(state, s->data.comb,
-							s->combinator);
+				    rejected_by_cache == false) {
+					update_reject_cache(state,
+							    s->data.comb,
+							    s->combinator);
 				}
 
 				return CSS_OK;
@@ -2241,7 +2311,7 @@ css_error match_selector_chain(css_select_ctx *ctx,
 	/* Ensure that the appropriate computed style exists */
 	if (state->results->styles[pseudo] == NULL) {
 		error = css__computed_style_create(
-				&state->results->styles[pseudo], ctx->calc);
+			&state->results->styles[pseudo], ctx->calc);
 		if (error != CSS_OK)
 			return error;
 	}
@@ -2249,13 +2319,16 @@ css_error match_selector_chain(css_select_ctx *ctx,
 	state->current_pseudo = pseudo;
 	state->computed = state->results->styles[pseudo];
 
-	return cascade_style(((css_rule_selector *) selector->rule)->style,
-			state);
+	return cascade_style(((css_rule_selector *)selector->rule)->style,
+			     state);
 }
 
-css_error match_named_combinator(css_select_ctx *ctx, css_combinator type,
-		const css_selector *selector, css_select_state *state,
-		void *node, void **next_node)
+css_error match_named_combinator(css_select_ctx *ctx,
+				 css_combinator type,
+				 const css_selector *selector,
+				 css_select_state *state,
+				 void *node,
+				 void **next_node)
 {
 	const css_selector_detail *detail = &selector->data;
 	void *n = node;
@@ -2267,36 +2340,35 @@ css_error match_named_combinator(css_select_ctx *ctx, css_combinator type,
 		/* Find candidate node */
 		switch (type) {
 		case CSS_COMBINATOR_ANCESTOR:
-			error = state->handler->named_ancestor_node(state->pw,
-					n, &selector->data.qname, &n);
+			error = state->handler->named_ancestor_node(
+				state->pw, n, &selector->data.qname, &n);
 			if (error != CSS_OK)
 				return error;
 			break;
 		case CSS_COMBINATOR_PARENT:
-			error = state->handler->named_parent_node(state->pw,
-					n, &selector->data.qname, &n);
+			error = state->handler->named_parent_node(
+				state->pw, n, &selector->data.qname, &n);
 			if (error != CSS_OK)
 				return error;
 			break;
 		case CSS_COMBINATOR_SIBLING:
-			error = state->handler->named_sibling_node(state->pw,
-					n, &selector->data.qname, &n);
+			error = state->handler->named_sibling_node(
+				state->pw, n, &selector->data.qname, &n);
 			if (error != CSS_OK)
 				return error;
 			if (node == state->node) {
 				state->node_data->flags |=
-						CSS_NODE_FLAGS_TAINT_SIBLING;
+					CSS_NODE_FLAGS_TAINT_SIBLING;
 			}
 			break;
 		case CSS_COMBINATOR_GENERIC_SIBLING:
 			error = state->handler->named_generic_sibling_node(
-					state->pw, n, &selector->data.qname,
-					&n);
+				state->pw, n, &selector->data.qname, &n);
 			if (error != CSS_OK)
 				return error;
 			if (node == state->node) {
 				state->node_data->flags |=
-						CSS_NODE_FLAGS_TAINT_SIBLING;
+					CSS_NODE_FLAGS_TAINT_SIBLING;
 			}
 		case CSS_COMBINATOR_NONE:
 			break;
@@ -2304,8 +2376,8 @@ css_error match_named_combinator(css_select_ctx *ctx, css_combinator type,
 
 		if (n != NULL) {
 			/* Match its details */
-			error = match_details(ctx, n, detail, state,
-					&match, NULL);
+			error = match_details(
+				ctx, n, detail, state, &match, NULL);
 			if (error != CSS_OK)
 				return error;
 
@@ -2317,7 +2389,7 @@ css_error match_named_combinator(css_select_ctx *ctx, css_combinator type,
 			 * nodes are valid. Thus, if we failed to match,
 			 * give up. */
 			if (type == CSS_COMBINATOR_PARENT ||
-					type == CSS_COMBINATOR_SIBLING)
+			    type == CSS_COMBINATOR_SIBLING)
 				n = NULL;
 		}
 	} while (n != NULL);
@@ -2328,7 +2400,8 @@ css_error match_named_combinator(css_select_ctx *ctx, css_combinator type,
 }
 
 static inline void add_node_flags(const void *node,
-		const css_select_state *state, css_node_flags flags)
+				  const css_select_state *state,
+				  css_node_flags flags)
 {
 	/* If the node in question is the node we're selecting for then its
 	 * style has been tainted by particular rules that affect whether the
@@ -2339,10 +2412,14 @@ static inline void add_node_flags(const void *node,
 	}
 }
 
-css_error match_universal_combinator(css_select_ctx *ctx, css_combinator type,
-		const css_selector *selector, css_select_state *state,
-		void *node, bool may_optimise, bool *rejected_by_cache,
-		void **next_node)
+css_error match_universal_combinator(css_select_ctx *ctx,
+				     css_combinator type,
+				     const css_selector *selector,
+				     css_select_state *state,
+				     void *node,
+				     bool may_optimise,
+				     bool *rejected_by_cache,
+				     void **next_node)
 {
 	const css_selector_detail *detail = &selector->data;
 	const css_selector_detail *next_detail = NULL;
@@ -2355,23 +2432,24 @@ css_error match_universal_combinator(css_select_ctx *ctx, css_combinator type,
 	*rejected_by_cache = false;
 
 	/* Consult reject cache first */
-	if (may_optimise && (type == CSS_COMBINATOR_ANCESTOR ||
-			     type == CSS_COMBINATOR_PARENT) &&
-			next_detail != NULL &&
-			(next_detail->type == CSS_SELECTOR_CLASS ||
-			 next_detail->type == CSS_SELECTOR_ID)) {
+	if (may_optimise &&
+	    (type == CSS_COMBINATOR_ANCESTOR ||
+	     type == CSS_COMBINATOR_PARENT) &&
+	    next_detail != NULL &&
+	    (next_detail->type == CSS_SELECTOR_CLASS ||
+	     next_detail->type == CSS_SELECTOR_ID)) {
 		reject_item *reject = state->next_reject + 1;
 		reject_item *last = state->reject_cache +
-				N_ELEMENTS(state->reject_cache) - 1;
+				    N_ELEMENTS(state->reject_cache) - 1;
 		bool match = false;
 
 		while (reject <= last) {
 			/* Perform pessimistic matching (may hurt quirks) */
 			if (reject->type == next_detail->type &&
-					lwc_string_isequal(reject->value,
-						next_detail->qname.name,
-						&match) == lwc_error_ok &&
-				 	match) {
+			    lwc_string_isequal(reject->value,
+					       next_detail->qname.name,
+					       &match) == lwc_error_ok &&
+			    match) {
 				/* Found it: can't match */
 				*next_node = NULL;
 				*rejected_by_cache = true;
@@ -2398,8 +2476,9 @@ css_error match_universal_combinator(css_select_ctx *ctx, css_combinator type,
 			error = state->handler->sibling_node(state->pw, n, &n);
 			if (error != CSS_OK)
 				return error;
-			add_node_flags(node, state,
-					CSS_NODE_FLAGS_TAINT_SIBLING);
+			add_node_flags(node,
+				       state,
+				       CSS_NODE_FLAGS_TAINT_SIBLING);
 			break;
 		case CSS_COMBINATOR_NONE:
 			break;
@@ -2407,8 +2486,8 @@ css_error match_universal_combinator(css_select_ctx *ctx, css_combinator type,
 
 		if (n != NULL) {
 			/* Match its details */
-			error = match_details(ctx, n, detail, state,
-					&match, NULL);
+			error = match_details(
+				ctx, n, detail, state, &match, NULL);
 			if (error != CSS_OK)
 				return error;
 
@@ -2420,7 +2499,7 @@ css_error match_universal_combinator(css_select_ctx *ctx, css_combinator type,
 			 * nodes are valid. Thus, if we failed to match,
 			 * give up. */
 			if (type == CSS_COMBINATOR_PARENT ||
-					type == CSS_COMBINATOR_SIBLING)
+			    type == CSS_COMBINATOR_SIBLING)
 				n = NULL;
 		}
 	} while (n != NULL);
@@ -2430,9 +2509,12 @@ css_error match_universal_combinator(css_select_ctx *ctx, css_combinator type,
 	return CSS_OK;
 }
 
-css_error match_details(css_select_ctx *ctx, void *node,
-		const css_selector_detail *detail, css_select_state *state,
-		bool *match, css_pseudo_element *pseudo_element)
+css_error match_details(css_select_ctx *ctx,
+			void *node,
+			const css_selector_detail *detail,
+			css_select_state *state,
+			bool *match,
+			css_pseudo_element *pseudo_element)
 {
 	css_error error;
 	css_pseudo_element pseudo = CSS_PSEUDO_ELEMENT_NONE;
@@ -2494,9 +2576,12 @@ static inline bool match_nth(int32_t a, int32_t b, int32_t count)
 	}
 }
 
-css_error match_detail(css_select_ctx *ctx, void *node,
-		const css_selector_detail *detail, css_select_state *state,
-		bool *match, css_pseudo_element *pseudo_element)
+css_error match_detail(css_select_ctx *ctx,
+		       void *node,
+		       const css_selector_detail *detail,
+		       css_select_state *state,
+		       bool *match,
+		       css_pseudo_element *pseudo_element)
 {
 	bool is_root = false;
 	css_error error = CSS_OK;
@@ -2508,17 +2593,17 @@ css_error match_detail(css_select_ctx *ctx, void *node,
 			/* Only need to test this inside not(), since
 			 * it will have been considered as a named node
 			 * otherwise. */
-			error = state->handler->node_has_name(state->pw, node,
-					&detail->qname, match);
+			error = state->handler->node_has_name(
+				state->pw, node, &detail->qname, match);
 		}
 		break;
 	case CSS_SELECTOR_CLASS:
-		error = state->handler->node_has_class(state->pw, node,
-				detail->qname.name, match);
+		error = state->handler->node_has_class(
+			state->pw, node, detail->qname.name, match);
 		break;
 	case CSS_SELECTOR_ID:
-		error = state->handler->node_has_id(state->pw, node,
-				detail->qname.name, match);
+		error = state->handler->node_has_id(
+			state->pw, node, detail->qname.name, match);
 		break;
 	case CSS_SELECTOR_PSEUDO_CLASS:
 		error = state->handler->node_is_root(state->pw, node, &is_root);
@@ -2526,19 +2611,19 @@ css_error match_detail(css_select_ctx *ctx, void *node,
 			return error;
 
 		if (is_root == false &&
-				detail->qname.name == ctx->str.first_child) {
+		    detail->qname.name == ctx->str.first_child) {
 			int32_t num_before = 0;
 
-			error = state->handler->node_count_siblings(state->pw,
-					node, false, false, &num_before);
+			error = state->handler->node_count_siblings(
+				state->pw, node, false, false, &num_before);
 			if (error == CSS_OK)
 				*match = (num_before == 0);
 		} else if (is_root == false &&
-				detail->qname.name == ctx->str.nth_child) {
+			   detail->qname.name == ctx->str.nth_child) {
 			int32_t num_before = 0;
 
-			error = state->handler->node_count_siblings(state->pw,
-					node, false, false, &num_before);
+			error = state->handler->node_count_siblings(
+				state->pw, node, false, false, &num_before);
 			if (error == CSS_OK) {
 				int32_t a = detail->value.nth.a;
 				int32_t b = detail->value.nth.b;
@@ -2546,11 +2631,11 @@ css_error match_detail(css_select_ctx *ctx, void *node,
 				*match = match_nth(a, b, num_before + 1);
 			}
 		} else if (is_root == false &&
-				detail->qname.name == ctx->str.nth_last_child) {
+			   detail->qname.name == ctx->str.nth_last_child) {
 			int32_t num_after = 0;
 
-			error = state->handler->node_count_siblings(state->pw,
-					node, false, true, &num_after);
+			error = state->handler->node_count_siblings(
+				state->pw, node, false, true, &num_after);
 			if (error == CSS_OK) {
 				int32_t a = detail->value.nth.a;
 				int32_t b = detail->value.nth.b;
@@ -2558,11 +2643,11 @@ css_error match_detail(css_select_ctx *ctx, void *node,
 				*match = match_nth(a, b, num_after + 1);
 			}
 		} else if (is_root == false &&
-				detail->qname.name == ctx->str.nth_of_type) {
+			   detail->qname.name == ctx->str.nth_of_type) {
 			int32_t num_before = 0;
 
-			error = state->handler->node_count_siblings(state->pw,
-					node, true, false, &num_before);
+			error = state->handler->node_count_siblings(
+				state->pw, node, true, false, &num_before);
 			if (error == CSS_OK) {
 				int32_t a = detail->value.nth.a;
 				int32_t b = detail->value.nth.b;
@@ -2570,11 +2655,11 @@ css_error match_detail(css_select_ctx *ctx, void *node,
 				*match = match_nth(a, b, num_before + 1);
 			}
 		} else if (is_root == false &&
-				detail->qname.name == ctx->str.nth_last_of_type) {
+			   detail->qname.name == ctx->str.nth_last_of_type) {
 			int32_t num_after = 0;
 
-			error = state->handler->node_count_siblings(state->pw,
-					node, true, true, &num_after);
+			error = state->handler->node_count_siblings(
+				state->pw, node, true, true, &num_after);
 			if (error == CSS_OK) {
 				int32_t a = detail->value.nth.a;
 				int32_t b = detail->value.nth.b;
@@ -2582,97 +2667,113 @@ css_error match_detail(css_select_ctx *ctx, void *node,
 				*match = match_nth(a, b, num_after + 1);
 			}
 		} else if (is_root == false &&
-				detail->qname.name == ctx->str.last_child) {
+			   detail->qname.name == ctx->str.last_child) {
 			int32_t num_after = 0;
 
-			error = state->handler->node_count_siblings(state->pw,
-					node, false, true, &num_after);
+			error = state->handler->node_count_siblings(
+				state->pw, node, false, true, &num_after);
 			if (error == CSS_OK)
 				*match = (num_after == 0);
 		} else if (is_root == false &&
-				detail->qname.name == ctx->str.first_of_type) {
+			   detail->qname.name == ctx->str.first_of_type) {
 			int32_t num_before = 0;
 
-			error = state->handler->node_count_siblings(state->pw,
-					node, true, false, &num_before);
+			error = state->handler->node_count_siblings(
+				state->pw, node, true, false, &num_before);
 			if (error == CSS_OK)
 				*match = (num_before == 0);
 		} else if (is_root == false &&
-				detail->qname.name == ctx->str.last_of_type) {
+			   detail->qname.name == ctx->str.last_of_type) {
 			int32_t num_after = 0;
 
-			error = state->handler->node_count_siblings(state->pw,
-					node, true, true, &num_after);
+			error = state->handler->node_count_siblings(
+				state->pw, node, true, true, &num_after);
 			if (error == CSS_OK)
 				*match = (num_after == 0);
 		} else if (is_root == false &&
-				detail->qname.name == ctx->str.only_child) {
+			   detail->qname.name == ctx->str.only_child) {
 			int32_t num_before = 0, num_after = 0;
 
-			error = state->handler->node_count_siblings(state->pw,
-					node, false, false, &num_before);
+			error = state->handler->node_count_siblings(
+				state->pw, node, false, false, &num_before);
 			if (error == CSS_OK) {
 				error = state->handler->node_count_siblings(
-						state->pw, node, false, true,
-						&num_after);
+					state->pw,
+					node,
+					false,
+					true,
+					&num_after);
 				if (error == CSS_OK)
 					*match = (num_before == 0) &&
-							(num_after == 0);
+						 (num_after == 0);
 			}
 		} else if (is_root == false &&
-				detail->qname.name == ctx->str.only_of_type) {
+			   detail->qname.name == ctx->str.only_of_type) {
 			int32_t num_before = 0, num_after = 0;
 
-			error = state->handler->node_count_siblings(state->pw,
-					node, true, false, &num_before);
+			error = state->handler->node_count_siblings(
+				state->pw, node, true, false, &num_before);
 			if (error == CSS_OK) {
 				error = state->handler->node_count_siblings(
-						state->pw, node, true, true,
-						&num_after);
+					state->pw,
+					node,
+					true,
+					true,
+					&num_after);
 				if (error == CSS_OK)
 					*match = (num_before == 0) &&
-							(num_after == 0);
+						 (num_after == 0);
 			}
 		} else if (detail->qname.name == ctx->str.root) {
 			*match = is_root;
 		} else if (detail->qname.name == ctx->str.empty) {
 			error = state->handler->node_is_empty(state->pw,
-					node, match);
+							      node,
+							      match);
 		} else if (detail->qname.name == ctx->str.link) {
 			error = state->handler->node_is_link(state->pw,
-					node, match);
+							     node,
+							     match);
 			flags = CSS_NODE_FLAGS_NONE;
 		} else if (detail->qname.name == ctx->str.visited) {
 			error = state->handler->node_is_visited(state->pw,
-					node, match);
+								node,
+								match);
 			flags = CSS_NODE_FLAGS_NONE;
 		} else if (detail->qname.name == ctx->str.hover) {
 			error = state->handler->node_is_hover(state->pw,
-					node, match);
+							      node,
+							      match);
 			flags = CSS_NODE_FLAGS_NONE;
 		} else if (detail->qname.name == ctx->str.active) {
 			error = state->handler->node_is_active(state->pw,
-					node, match);
+							       node,
+							       match);
 			flags = CSS_NODE_FLAGS_NONE;
 		} else if (detail->qname.name == ctx->str.focus) {
 			error = state->handler->node_is_focus(state->pw,
-					node, match);
+							      node,
+							      match);
 			flags = CSS_NODE_FLAGS_NONE;
 		} else if (detail->qname.name == ctx->str.target) {
 			error = state->handler->node_is_target(state->pw,
-					node, match);
+							       node,
+							       match);
 		} else if (detail->qname.name == ctx->str.lang) {
-			error = state->handler->node_is_lang(state->pw,
-					node, detail->value.string, match);
+			error = state->handler->node_is_lang(
+				state->pw, node, detail->value.string, match);
 		} else if (detail->qname.name == ctx->str.enabled) {
 			error = state->handler->node_is_enabled(state->pw,
-					node, match);
+								node,
+								match);
 		} else if (detail->qname.name == ctx->str.disabled) {
 			error = state->handler->node_is_disabled(state->pw,
-					node, match);
+								 node,
+								 match);
 		} else if (detail->qname.name == ctx->str.checked) {
 			error = state->handler->node_is_checked(state->pw,
-					node, match);
+								node,
+								match);
 		} else {
 			*match = false;
 		}
@@ -2693,44 +2794,62 @@ css_error match_detail(css_select_ctx *ctx, void *node,
 			*match = false;
 		break;
 	case CSS_SELECTOR_ATTRIBUTE:
-		error = state->handler->node_has_attribute(state->pw, node,
-				&detail->qname, match);
+		error = state->handler->node_has_attribute(
+			state->pw, node, &detail->qname, match);
 		add_node_flags(node, state, CSS_NODE_FLAGS_TAINT_ATTRIBUTE);
 		break;
 	case CSS_SELECTOR_ATTRIBUTE_EQUAL:
-		error = state->handler->node_has_attribute_equal(state->pw,
-				node, &detail->qname, detail->value.string,
-				match);
+		error = state->handler->node_has_attribute_equal(
+			state->pw,
+			node,
+			&detail->qname,
+			detail->value.string,
+			match);
 		add_node_flags(node, state, CSS_NODE_FLAGS_TAINT_ATTRIBUTE);
 		break;
 	case CSS_SELECTOR_ATTRIBUTE_DASHMATCH:
-		error = state->handler->node_has_attribute_dashmatch(state->pw,
-				node, &detail->qname, detail->value.string,
-				match);
+		error = state->handler->node_has_attribute_dashmatch(
+			state->pw,
+			node,
+			&detail->qname,
+			detail->value.string,
+			match);
 		add_node_flags(node, state, CSS_NODE_FLAGS_TAINT_ATTRIBUTE);
 		break;
 	case CSS_SELECTOR_ATTRIBUTE_INCLUDES:
-		error = state->handler->node_has_attribute_includes(state->pw,
-				node, &detail->qname, detail->value.string,
-				match);
+		error = state->handler->node_has_attribute_includes(
+			state->pw,
+			node,
+			&detail->qname,
+			detail->value.string,
+			match);
 		add_node_flags(node, state, CSS_NODE_FLAGS_TAINT_ATTRIBUTE);
 		break;
 	case CSS_SELECTOR_ATTRIBUTE_PREFIX:
-		error = state->handler->node_has_attribute_prefix(state->pw,
-				node, &detail->qname, detail->value.string,
-				match);
+		error = state->handler->node_has_attribute_prefix(
+			state->pw,
+			node,
+			&detail->qname,
+			detail->value.string,
+			match);
 		add_node_flags(node, state, CSS_NODE_FLAGS_TAINT_ATTRIBUTE);
 		break;
 	case CSS_SELECTOR_ATTRIBUTE_SUFFIX:
-		error = state->handler->node_has_attribute_suffix(state->pw,
-				node, &detail->qname, detail->value.string,
-				match);
+		error = state->handler->node_has_attribute_suffix(
+			state->pw,
+			node,
+			&detail->qname,
+			detail->value.string,
+			match);
 		add_node_flags(node, state, CSS_NODE_FLAGS_TAINT_ATTRIBUTE);
 		break;
 	case CSS_SELECTOR_ATTRIBUTE_SUBSTRING:
-		error = state->handler->node_has_attribute_substring(state->pw,
-				node, &detail->qname, detail->value.string,
-				match);
+		error = state->handler->node_has_attribute_substring(
+			state->pw,
+			node,
+			&detail->qname,
+			detail->value.string,
+			match);
 		add_node_flags(node, state, CSS_NODE_FLAGS_TAINT_ATTRIBUTE);
 		break;
 	}
@@ -2763,8 +2882,10 @@ css_error cascade_style(const css_style *style, css_select_state *state)
 	return CSS_OK;
 }
 
-bool css__outranks_existing(uint16_t op, bool important, css_select_state *state,
-		enum flag_value explicit_default)
+bool css__outranks_existing(uint16_t op,
+			    bool important,
+			    css_select_state *state,
+			    enum flag_value explicit_default)
 {
 	prop_state *existing = &state->props[op][state->current_pseudo];
 	bool outranks = false;
@@ -2817,7 +2938,7 @@ bool css__outranks_existing(uint16_t op, bool important, css_select_state *state
 			 * Thus, new property wins, except when the existing
 			 * one is USER, i. */
 			if (existing->important == 0 ||
-					existing->origin != CSS_ORIGIN_USER) {
+			    existing->origin != CSS_ORIGIN_USER) {
 				outranks = true;
 			}
 		} else if (existing->origin == state->current_origin) {
@@ -2826,7 +2947,7 @@ bool css__outranks_existing(uint16_t op, bool important, css_select_state *state
 			 * considered (as importance is meaningless) */
 			if (existing->origin == CSS_ORIGIN_UA) {
 				if (state->current_specificity >=
-						existing->specificity) {
+				    existing->specificity) {
 					outranks = true;
 				}
 			} else if (existing->important == 0 && important) {
@@ -2837,7 +2958,7 @@ bool css__outranks_existing(uint16_t op, bool important, css_select_state *state
 			} else {
 				/* Same importance, consider specificity */
 				if (state->current_specificity >=
-						existing->specificity) {
+				    existing->specificity) {
 					outranks = true;
 				}
 			}
@@ -2846,7 +2967,7 @@ bool css__outranks_existing(uint16_t op, bool important, css_select_state *state
 			 * Thus, existing property wins, except when the new
 			 * one is USER, i. */
 			if (state->current_origin == CSS_ORIGIN_USER &&
-					important) {
+			    important) {
 				outranks = true;
 			}
 		}
@@ -2887,82 +3008,94 @@ void dump_chain(const css_selector *selector)
 		switch (detail->type) {
 		case CSS_SELECTOR_ELEMENT:
 			if (lwc_string_length(detail->name) == 1 &&
-				lwc_string_data(detail->name)[0] == '*' &&
-					detail->next == 1) {
+			    lwc_string_data(detail->name)[0] == '*' &&
+			    detail->next == 1) {
 				break;
 			}
-			fprintf(stderr, "%.*s",
-					(int) lwc_string_length(detail->name),
-					lwc_string_data(detail->name));
+			fprintf(stderr,
+				"%.*s",
+				(int)lwc_string_length(detail->name),
+				lwc_string_data(detail->name));
 			break;
 		case CSS_SELECTOR_CLASS:
-			fprintf(stderr, ".%.*s",
-					(int) lwc_string_length(detail->name),
-					lwc_string_data(detail->name));
+			fprintf(stderr,
+				".%.*s",
+				(int)lwc_string_length(detail->name),
+				lwc_string_data(detail->name));
 			break;
 		case CSS_SELECTOR_ID:
-			fprintf(stderr, "#%.*s",
-					(int) lwc_string_length(detail->name),
-					lwc_string_data(detail->name));
+			fprintf(stderr,
+				"#%.*s",
+				(int)lwc_string_length(detail->name),
+				lwc_string_data(detail->name));
 			break;
 		case CSS_SELECTOR_PSEUDO_CLASS:
 		case CSS_SELECTOR_PSEUDO_ELEMENT:
-			fprintf(stderr, ":%.*s",
-					(int) lwc_string_length(detail->name),
-					lwc_string_data(detail->name));
+			fprintf(stderr,
+				":%.*s",
+				(int)lwc_string_length(detail->name),
+				lwc_string_data(detail->name));
 
 			if (detail->value != NULL) {
-				fprintf(stderr, "(%.*s)",
-					(int) lwc_string_length(detail->value),
+				fprintf(stderr,
+					"(%.*s)",
+					(int)lwc_string_length(detail->value),
 					lwc_string_data(detail->value));
 			}
 			break;
 		case CSS_SELECTOR_ATTRIBUTE:
-			fprintf(stderr, "[%.*s]",
-					(int) lwc_string_length(detail->name),
-					lwc_string_data(detail->name));
+			fprintf(stderr,
+				"[%.*s]",
+				(int)lwc_string_length(detail->name),
+				lwc_string_data(detail->name));
 			break;
 		case CSS_SELECTOR_ATTRIBUTE_EQUAL:
-			fprintf(stderr, "[%.*s=\"%.*s\"]",
-					(int) lwc_string_length(detail->name),
-					lwc_string_data(detail->name),
-					(int) lwc_string_length(detail->value),
-					lwc_string_data(detail->value));
+			fprintf(stderr,
+				"[%.*s=\"%.*s\"]",
+				(int)lwc_string_length(detail->name),
+				lwc_string_data(detail->name),
+				(int)lwc_string_length(detail->value),
+				lwc_string_data(detail->value));
 			break;
 		case CSS_SELECTOR_ATTRIBUTE_DASHMATCH:
-			fprintf(stderr, "[%.*s|=\"%.*s\"]",
-					(int) lwc_string_length(detail->name),
-					lwc_string_data(detail->name),
-					(int) lwc_string_length(detail->value),
-					lwc_string_data(detail->value));
+			fprintf(stderr,
+				"[%.*s|=\"%.*s\"]",
+				(int)lwc_string_length(detail->name),
+				lwc_string_data(detail->name),
+				(int)lwc_string_length(detail->value),
+				lwc_string_data(detail->value));
 			break;
 		case CSS_SELECTOR_ATTRIBUTE_INCLUDES:
-			fprintf(stderr, "[%.*s~=\"%.*s\"]",
-					(int) lwc_string_length(detail->name),
-					lwc_string_data(detail->name),
-					(int) lwc_string_length(detail->value),
-					lwc_string_data(detail->value));
+			fprintf(stderr,
+				"[%.*s~=\"%.*s\"]",
+				(int)lwc_string_length(detail->name),
+				lwc_string_data(detail->name),
+				(int)lwc_string_length(detail->value),
+				lwc_string_data(detail->value));
 			break;
 		case CSS_SELECTOR_ATTRIBUTE_PREFIX:
-			fprintf(stderr, "[%.*s^=\"%.*s\"]",
-					(int) lwc_string_length(detail->name),
-					lwc_string_data(detail->name),
-					(int) lwc_string_length(detail->value),
-					lwc_string_data(detail->value));
+			fprintf(stderr,
+				"[%.*s^=\"%.*s\"]",
+				(int)lwc_string_length(detail->name),
+				lwc_string_data(detail->name),
+				(int)lwc_string_length(detail->value),
+				lwc_string_data(detail->value));
 			break;
 		case CSS_SELECTOR_ATTRIBUTE_SUFFIX:
-			fprintf(stderr, "[%.*s$=\"%.*s\"]",
-					(int) lwc_string_length(detail->name),
-					lwc_string_data(detail->name),
-					(int) lwc_string_length(detail->value),
-					lwc_string_data(detail->value));
+			fprintf(stderr,
+				"[%.*s$=\"%.*s\"]",
+				(int)lwc_string_length(detail->name),
+				lwc_string_data(detail->name),
+				(int)lwc_string_length(detail->value),
+				lwc_string_data(detail->value));
 			break;
 		case CSS_SELECTOR_ATTRIBUTE_SUBSTRING:
-			fprintf(stderr, "[%.*s*=\"%.*s\"]",
-					(int) lwc_string_length(detail->name),
-					lwc_string_data(detail->name),
-					(int) lwc_string_length(detail->value),
-					lwc_string_data(detail->value));
+			fprintf(stderr,
+				"[%.*s*=\"%.*s\"]",
+				(int)lwc_string_length(detail->name),
+				lwc_string_data(detail->name),
+				(int)lwc_string_length(detail->value),
+				lwc_string_data(detail->value));
 			break;
 		}
 
@@ -2973,4 +3106,3 @@ void dump_chain(const css_selector *selector)
 	} while (detail);
 }
 #endif
-

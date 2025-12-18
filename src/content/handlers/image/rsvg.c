@@ -58,10 +58,10 @@
 typedef struct rsvg_content {
 	struct content base;
 
-	RsvgHandle *rsvgh;	/**< Context handle for RSVG renderer */
-	cairo_surface_t *cs;	/**< The surface built inside a nsbitmap */
-	cairo_t *ct;		/**< Cairo drawing context */
-	struct bitmap *bitmap;	/**< Created NetSurf bitmap */
+	RsvgHandle *rsvgh; /**< Context handle for RSVG renderer */
+	cairo_surface_t *cs; /**< The surface built inside a nsbitmap */
+	cairo_t *ct; /**< Cairo drawing context */
+	struct bitmap *bitmap; /**< Created NetSurf bitmap */
 } rsvg_content;
 
 static nserror rsvg_create_svg_data(rsvg_content *c)
@@ -82,9 +82,12 @@ static nserror rsvg_create_svg_data(rsvg_content *c)
 
 
 static nserror rsvg_create(const content_handler *handler,
-		lwc_string *imime_type, const struct http_parameter *params,
-		llcache_handle *llcache, const char *fallback_charset,
-		bool quirks, struct content **c)
+			   lwc_string *imime_type,
+			   const struct http_parameter *params,
+			   llcache_handle *llcache,
+			   const char *fallback_charset,
+			   bool quirks,
+			   struct content **c)
 {
 	rsvg_content *svg;
 	nserror error;
@@ -93,8 +96,13 @@ static nserror rsvg_create(const content_handler *handler,
 	if (svg == NULL)
 		return NSERROR_NOMEM;
 
-	error = content__init(&svg->base, handler, imime_type, params,
-			llcache, fallback_charset, quirks);
+	error = content__init(&svg->base,
+			      handler,
+			      imime_type,
+			      params,
+			      llcache,
+			      fallback_charset,
+			      quirks);
 	if (error != NSERROR_OK) {
 		free(svg);
 		return error;
@@ -106,22 +114,25 @@ static nserror rsvg_create(const content_handler *handler,
 		return error;
 	}
 
-	*c = (struct content *) svg;
+	*c = (struct content *)svg;
 
 	return NSERROR_OK;
 }
 
 
-static bool rsvg_process_data(struct content *c, const char *data,
-			unsigned int size)
+static bool
+rsvg_process_data(struct content *c, const char *data, unsigned int size)
 {
-	rsvg_content *d = (rsvg_content *) c;
+	rsvg_content *d = (rsvg_content *)c;
 	GError *err = NULL;
 
-	if (rsvg_handle_write(d->rsvgh, (const guchar *)data, (gsize)size,
-				&err) == FALSE) {
-		NSLOG(netsurf, INFO,
-		      "rsvg_handle_write returned an error: %s", err->message);
+	if (rsvg_handle_write(
+		    d->rsvgh, (const guchar *)data, (gsize)size, &err) ==
+	    FALSE) {
+		NSLOG(netsurf,
+		      INFO,
+		      "rsvg_handle_write returned an error: %s",
+		      err->message);
 		content_broadcast_error(c, NSERROR_SVG_ERROR, NULL);
 		return false;
 	}
@@ -131,13 +142,15 @@ static bool rsvg_process_data(struct content *c, const char *data,
 
 static bool rsvg_convert(struct content *c)
 {
-	rsvg_content *d = (rsvg_content *) c;
+	rsvg_content *d = (rsvg_content *)c;
 	RsvgDimensionData rsvgsize;
 	GError *err = NULL;
 
 	if (rsvg_handle_close(d->rsvgh, &err) == FALSE) {
-		NSLOG(netsurf, INFO,
-		      "rsvg_handle_close returned an error: %s", err->message);
+		NSLOG(netsurf,
+		      INFO,
+		      "rsvg_handle_close returned an error: %s",
+		      err->message);
 		content_broadcast_error(c, NSERROR_SVG_ERROR, NULL);
 		return false;
 	}
@@ -152,27 +165,31 @@ static bool rsvg_convert(struct content *c)
 	c->width = rsvgsize.width;
 	c->height = rsvgsize.height;
 
-	if ((d->bitmap = guit->bitmap->create(c->width, c->height,
-			BITMAP_NONE)) == NULL) {
-		NSLOG(netsurf, INFO,
+	if ((d->bitmap = guit->bitmap->create(
+		     c->width, c->height, BITMAP_NONE)) == NULL) {
+		NSLOG(netsurf,
+		      INFO,
 		      "Failed to create bitmap for rsvg render.");
 		content_broadcast_error(c, NSERROR_NOMEM, NULL);
 		return false;
 	}
 
 	if ((d->cs = cairo_image_surface_create_for_data(
-			(unsigned char *)guit->bitmap->get_buffer(d->bitmap),
-			CAIRO_FORMAT_ARGB32,
-			c->width, c->height,
-			guit->bitmap->get_rowstride(d->bitmap))) == NULL) {
-		NSLOG(netsurf, INFO,
+		     (unsigned char *)guit->bitmap->get_buffer(d->bitmap),
+		     CAIRO_FORMAT_ARGB32,
+		     c->width,
+		     c->height,
+		     guit->bitmap->get_rowstride(d->bitmap))) == NULL) {
+		NSLOG(netsurf,
+		      INFO,
 		      "Failed to create Cairo image surface for rsvg render.");
 		content_broadcast_error(c, NSERROR_NOMEM, NULL);
 		return false;
 	}
 
 	if ((d->ct = cairo_create(d->cs)) == NULL) {
-		NSLOG(netsurf, INFO,
+		NSLOG(netsurf,
+		      INFO,
 		      "Failed to create Cairo drawing context for rsvg render.");
 		content_broadcast_error(c, NSERROR_NOMEM, NULL);
 		return false;
@@ -180,11 +197,12 @@ static bool rsvg_convert(struct content *c)
 
 	rsvg_handle_render_cairo(d->rsvgh, d->ct);
 
-    bitmap_format_to_client(d->bitmap, &(bitmap_fmt_t) {
-        .layout = BITMAP_LAYOUT_ARGB8888,
-        .pma = true,
-    });
-    guit->bitmap->modified(d->bitmap);
+	bitmap_format_to_client(d->bitmap,
+				&(bitmap_fmt_t){
+					.layout = BITMAP_LAYOUT_ARGB8888,
+					.pma = true,
+				});
+	guit->bitmap->modified(d->bitmap);
 	content_set_ready(c);
 	content_set_done(c);
 	/* Done: update status bar */
@@ -193,10 +211,12 @@ static bool rsvg_convert(struct content *c)
 	return true;
 }
 
-static bool rsvg_redraw(struct content *c, struct content_redraw_data *data,
-		const struct rect *clip, const struct redraw_context *ctx)
+static bool rsvg_redraw(struct content *c,
+			struct content_redraw_data *data,
+			const struct rect *clip,
+			const struct redraw_context *ctx)
 {
-	rsvg_content *rsvgcontent = (rsvg_content *) c;
+	rsvg_content *rsvgcontent = (rsvg_content *)c;
 	bitmap_flags_t flags = BITMAPF_NONE;
 
 	assert(rsvgcontent->bitmap != NULL);
@@ -208,20 +228,26 @@ static bool rsvg_redraw(struct content *c, struct content_redraw_data *data,
 
 	return (ctx->plot->bitmap(ctx,
 				  rsvgcontent->bitmap,
-				  data->x, data->y,
-				  data->width, data->height,
+				  data->x,
+				  data->y,
+				  data->width,
+				  data->height,
 				  data->background_colour,
 				  flags) == NSERROR_OK);
 }
 
 static void rsvg_destroy(struct content *c)
 {
-	rsvg_content *d = (rsvg_content *) c;
+	rsvg_content *d = (rsvg_content *)c;
 
-	if (d->bitmap != NULL) guit->bitmap->destroy(d->bitmap);
-	if (d->rsvgh != NULL) g_object_unref(d->rsvgh);
-	if (d->ct != NULL) cairo_destroy(d->ct);
-	if (d->cs != NULL) cairo_surface_destroy(d->cs);
+	if (d->bitmap != NULL)
+		guit->bitmap->destroy(d->bitmap);
+	if (d->rsvgh != NULL)
+		g_object_unref(d->rsvgh);
+	if (d->ct != NULL)
+		cairo_destroy(d->ct);
+	if (d->cs != NULL)
+		cairo_surface_destroy(d->cs);
 
 	return;
 }
@@ -252,28 +278,29 @@ static nserror rsvg_clone(const struct content *old, struct content **newc)
 
 	data = content__get_source_data(&svg->base, &size);
 	if (size > 0) {
-		if (rsvg_process_data(&svg->base, (const char *)data, size) == false) {
+		if (rsvg_process_data(&svg->base, (const char *)data, size) ==
+		    false) {
 			content_destroy(&svg->base);
 			return NSERROR_NOMEM;
 		}
 	}
 
 	if (old->status == CONTENT_STATUS_READY ||
-			old->status == CONTENT_STATUS_DONE) {
+	    old->status == CONTENT_STATUS_DONE) {
 		if (rsvg_convert(&svg->base) == false) {
 			content_destroy(&svg->base);
 			return NSERROR_CLONE_FAILED;
 		}
 	}
 
-	*newc = (struct content *) svg;
+	*newc = (struct content *)svg;
 
 	return NSERROR_OK;
 }
 
 static void *rsvg_get_internal(const struct content *c, void *context)
 {
-	rsvg_content *d = (rsvg_content *) c;
+	rsvg_content *d = (rsvg_content *)c;
 
 	return d->bitmap;
 }
@@ -286,7 +313,7 @@ static content_type rsvg_content_type(void)
 
 static bool rsvg_content_is_opaque(struct content *c)
 {
-	rsvg_content *d = (rsvg_content *) c;
+	rsvg_content *d = (rsvg_content *)c;
 
 	if (d->bitmap != NULL) {
 		return guit->bitmap->get_opaque(d->bitmap);
@@ -309,10 +336,6 @@ static const content_handler rsvg_content_handler = {
 	.no_share = false,
 };
 
-static const char *rsvg_types[] = {
-	"image/svg",
-	"image/svg+xml"
-};
+static const char *rsvg_types[] = {"image/svg", "image/svg+xml"};
 
 CONTENT_FACTORY_REGISTER_TYPES(nsrsvg, rsvg_types, rsvg_content_handler);
-

@@ -35,38 +35,37 @@
  * libdom Hubbub parser context
  */
 struct dom_hubbub_parser {
-	hubbub_parser *parser;		/**< Hubbub parser instance */
+	hubbub_parser *parser; /**< Hubbub parser instance */
 	hubbub_tree_handler tree_handler;
-					/**< Hubbub parser tree handler */
+	/**< Hubbub parser tree handler */
 
-	struct dom_document *doc;	/**< DOM Document we're building within */
+	struct dom_document *doc; /**< DOM Document we're building within */
 
 	dom_hubbub_encoding_source encoding_source;
-					/**< The document's encoding source */
-	const char *encoding; 		/**< The document's encoding */
+	/**< The document's encoding source */
+	const char *encoding; /**< The document's encoding */
 
-	bool complete;			/**< Indicate stream completion */
+	bool complete; /**< Indicate stream completion */
 
-	dom_msg msg;		/**< Informational messaging function */
+	dom_msg msg; /**< Informational messaging function */
 
-	dom_script script;      /**< Script callback function */
+	dom_script script; /**< Script callback function */
 
-	void *mctx;		/**< Pointer to client data */
+	void *mctx; /**< Pointer to client data */
 };
 
 /* Forward declaration to break reference loop */
-static hubbub_error add_attributes(void *parser, void *node,
-		const hubbub_attribute *attributes, uint32_t n_attributes);
-
-
-
+static hubbub_error add_attributes(void *parser,
+				   void *node,
+				   const hubbub_attribute *attributes,
+				   uint32_t n_attributes);
 
 
 /*--------------------- The callbacks definitions --------------------*/
-static hubbub_error create_comment(void *parser, const hubbub_string *data,
-		void **result)
+static hubbub_error
+create_comment(void *parser, const hubbub_string *data, void **result)
 {
-	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *) parser;
+	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *)parser;
 	dom_exception err;
 	dom_string *str;
 	struct dom_comment *comment;
@@ -75,7 +74,8 @@ static hubbub_error create_comment(void *parser, const hubbub_string *data,
 
 	err = dom_string_create(data->ptr, data->len, &str);
 	if (err != DOM_NO_ERR) {
-		dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+		dom_parser->msg(DOM_MSG_CRITICAL,
+				dom_parser->mctx,
 				"Can't create comment node text");
 		return HUBBUB_UNKNOWN;
 	}
@@ -83,9 +83,11 @@ static hubbub_error create_comment(void *parser, const hubbub_string *data,
 	err = dom_document_create_comment(dom_parser->doc, str, &comment);
 	if (err != DOM_NO_ERR) {
 		dom_string_unref(str);
-		dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+		dom_parser->msg(DOM_MSG_CRITICAL,
+				dom_parser->mctx,
 				"Can't create comment node with text '%.*s'",
-				data->len, data->ptr);
+				data->len,
+				data->ptr);
 		return HUBBUB_UNKNOWN;
 	}
 
@@ -113,54 +115,56 @@ static char *parser_strndup(const char *s, size_t n)
 	return s2;
 }
 
-static hubbub_error create_doctype(void *parser, const hubbub_doctype *doctype,
-		void **result)
+static hubbub_error
+create_doctype(void *parser, const hubbub_doctype *doctype, void **result)
 {
-	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *) parser;
+	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *)parser;
 	dom_exception err;
 	char *qname, *public_id = NULL, *system_id = NULL;
 	struct dom_document_type *dtype;
 
 	*result = NULL;
 
-	qname = parser_strndup((const char *) doctype->name.ptr,
-			(size_t) doctype->name.len);
+	qname = parser_strndup((const char *)doctype->name.ptr,
+			       (size_t)doctype->name.len);
 	if (qname == NULL) {
-		dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+		dom_parser->msg(DOM_MSG_CRITICAL,
+				dom_parser->mctx,
 				"Can't create doctype name");
 		goto fail;
 	}
 
 	if (doctype->public_missing == false) {
-		public_id = parser_strndup(
-				(const char *) doctype->public_id.ptr,
-				(size_t) doctype->public_id.len);
+		public_id = parser_strndup((const char *)doctype->public_id.ptr,
+					   (size_t)doctype->public_id.len);
 	} else {
 		public_id = strdup("");
 	}
 	if (public_id == NULL) {
-		dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+		dom_parser->msg(DOM_MSG_CRITICAL,
+				dom_parser->mctx,
 				"Can't create doctype public id");
 		goto clean1;
 	}
 
 	if (doctype->system_missing == false) {
-		system_id = parser_strndup(
-				(const char *) doctype->system_id.ptr,
-				(size_t) doctype->system_id.len);
+		system_id = parser_strndup((const char *)doctype->system_id.ptr,
+					   (size_t)doctype->system_id.len);
 	} else {
 		system_id = strdup("");
 	}
 	if (system_id == NULL) {
-		dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+		dom_parser->msg(DOM_MSG_CRITICAL,
+				dom_parser->mctx,
 				"Can't create doctype system id");
 		goto clean2;
 	}
 
-	err = dom_implementation_create_document_type(qname,
-			public_id, system_id, &dtype);
+	err = dom_implementation_create_document_type(
+		qname, public_id, system_id, &dtype);
 	if (err != DOM_NO_ERR) {
-		dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+		dom_parser->msg(DOM_MSG_CRITICAL,
+				dom_parser->mctx,
 				"Can't create the document type");
 		goto clean3;
 	}
@@ -183,10 +187,10 @@ fail:
 		return HUBBUB_OK;
 }
 
-static hubbub_error create_element(void *parser, const hubbub_tag *tag,
-		void **result)
+static hubbub_error
+create_element(void *parser, const hubbub_tag *tag, void **result)
 {
-	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *) parser;
+	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *)parser;
 	dom_exception err;
 	dom_string *name;
 	struct dom_element *element = NULL;
@@ -196,24 +200,30 @@ static hubbub_error create_element(void *parser, const hubbub_tag *tag,
 
 	err = dom_string_create_interned(tag->name.ptr, tag->name.len, &name);
 	if (err != DOM_NO_ERR) {
-		dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+		dom_parser->msg(DOM_MSG_CRITICAL,
+				dom_parser->mctx,
 				"Can't create element name");
 		goto fail;
 	}
 
 	if (tag->ns == HUBBUB_NS_NULL) {
-		err = dom_document_create_element(dom_parser->doc, name,
-				&element);
+		err = dom_document_create_element(dom_parser->doc,
+						  name,
+						  &element);
 		if (err != DOM_NO_ERR) {
-			dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+			dom_parser->msg(DOM_MSG_CRITICAL,
+					dom_parser->mctx,
 					"Can't create the DOM element");
 			goto clean1;
 		}
 	} else {
 		err = dom_document_create_element_ns(dom_parser->doc,
-				dom_namespaces[tag->ns], name, &element);
+						     dom_namespaces[tag->ns],
+						     name,
+						     &element);
 		if (err != DOM_NO_ERR) {
-			dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+			dom_parser->msg(DOM_MSG_CRITICAL,
+					dom_parser->mctx,
 					"Can't create the DOM element");
 			goto clean1;
 		}
@@ -223,8 +233,8 @@ static hubbub_error create_element(void *parser, const hubbub_tag *tag,
 	assert(element != NULL);
 
 	if (tag->n_attributes > 0) {
-		herr = add_attributes(parser, element, tag->attributes,
-				tag->n_attributes);
+		herr = add_attributes(
+			parser, element, tag->attributes, tag->n_attributes);
 		if (herr != HUBBUB_OK)
 			goto clean1;
 	}
@@ -233,26 +243,33 @@ static hubbub_error create_element(void *parser, const hubbub_tag *tag,
 	dom_html_element_type tag_type;
 	err = dom_html_element_get_tag_type(element, &tag_type);
 	if (err != DOM_NO_ERR) {
-		dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+		dom_parser->msg(DOM_MSG_CRITICAL,
+				dom_parser->mctx,
 				"Can't get tag type out of element");
 		goto clean1;
 	}
 
 	switch (tag_type) {
 	case DOM_HTML_ELEMENT_TYPE_SCRIPT: {
-		/* Kickstart of https://html.spec.whatwg.org/multipage/scripting.html#script-processing-model */
-		dom_html_script_element *script = (dom_html_script_element *)element;
+		/* Kickstart of
+		 * https://html.spec.whatwg.org/multipage/scripting.html#script-processing-model
+		 */
+		dom_html_script_element *script = (dom_html_script_element *)
+			element;
 		dom_html_script_element_flags flags;
 		err = dom_html_script_element_get_flags(script, &flags);
 		if (err != DOM_NO_ERR) {
-			dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
-					"Can't get flags out of script element");
+			dom_parser->msg(
+				DOM_MSG_CRITICAL,
+				dom_parser->mctx,
+				"Can't get flags out of script element");
 			goto clean1;
 		}
 		flags |= DOM_HTML_SCRIPT_ELEMENT_FLAG_PARSER_INSERTED;
 		err = dom_html_script_element_set_flags(script, flags);
 		if (err != DOM_NO_ERR) {
-			dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+			dom_parser->msg(DOM_MSG_CRITICAL,
+					dom_parser->mctx,
 					"Can't set flags into script element");
 			goto clean1;
 		}
@@ -276,10 +293,10 @@ fail:
 		return HUBBUB_OK;
 }
 
-static hubbub_error create_text(void *parser, const hubbub_string *data,
-		void **result)
+static hubbub_error
+create_text(void *parser, const hubbub_string *data, void **result)
 {
-	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *) parser;
+	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *)parser;
 	dom_exception err;
 	dom_string *str;
 	struct dom_text *text = NULL;
@@ -288,15 +305,18 @@ static hubbub_error create_text(void *parser, const hubbub_string *data,
 
 	err = dom_string_create(data->ptr, data->len, &str);
 	if (err != DOM_NO_ERR) {
-		dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
-				"Can't create text '%.*s'", data->len,
+		dom_parser->msg(DOM_MSG_CRITICAL,
+				dom_parser->mctx,
+				"Can't create text '%.*s'",
+				data->len,
 				data->ptr);
 		goto fail;
 	}
 
 	err = dom_document_create_text_node(dom_parser->doc, str, &text);
 	if (err != DOM_NO_ERR) {
-		dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+		dom_parser->msg(DOM_MSG_CRITICAL,
+				dom_parser->mctx,
 				"Can't create the DOM text node");
 		goto clean1;
 	}
@@ -310,12 +330,11 @@ fail:
 		return HUBBUB_UNKNOWN;
 	else
 		return HUBBUB_OK;
-
 }
 
 static hubbub_error ref_node(void *parser, void *node)
 {
-	struct dom_node *dnode = (struct dom_node *) node;
+	struct dom_node *dnode = (struct dom_node *)node;
 
 	UNUSED(parser);
 
@@ -326,7 +345,7 @@ static hubbub_error ref_node(void *parser, void *node)
 
 static hubbub_error unref_node(void *parser, void *node)
 {
-	struct dom_node *dnode = (struct dom_node *) node;
+	struct dom_node *dnode = (struct dom_node *)node;
 
 	UNUSED(parser);
 
@@ -335,111 +354,127 @@ static hubbub_error unref_node(void *parser, void *node)
 	return HUBBUB_OK;
 }
 
-static hubbub_error append_child(void *parser, void *parent, void *child,
-		void **result)
+static hubbub_error
+append_child(void *parser, void *parent, void *child, void **result)
 {
-	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *) parser;
+	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *)parser;
 	dom_exception err;
 
-	err = dom_node_append_child((struct dom_node *) parent,
-				    (struct dom_node *) child,
-				    (struct dom_node **) result);
+	err = dom_node_append_child((struct dom_node *)parent,
+				    (struct dom_node *)child,
+				    (struct dom_node **)result);
 	if (err != DOM_NO_ERR) {
-		dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+		dom_parser->msg(DOM_MSG_CRITICAL,
+				dom_parser->mctx,
 				"Can't append child '%p' for parent '%p'",
-				child, parent);
+				child,
+				parent);
 		return HUBBUB_UNKNOWN;
 	}
 
 	return HUBBUB_OK;
 }
 
-static hubbub_error insert_before(void *parser, void *parent, void *child,
-		void *ref_child, void **result)
+static hubbub_error insert_before(void *parser,
+				  void *parent,
+				  void *child,
+				  void *ref_child,
+				  void **result)
 {
-	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *) parser;
+	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *)parser;
 	dom_exception err;
 
-	err = dom_node_insert_before((struct dom_node *) parent,
-			(struct dom_node *) child,
-			(struct dom_node *) ref_child,
-			(struct dom_node **) result);
+	err = dom_node_insert_before((struct dom_node *)parent,
+				     (struct dom_node *)child,
+				     (struct dom_node *)ref_child,
+				     (struct dom_node **)result);
 	if (err != DOM_NO_ERR) {
-		dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+		dom_parser->msg(DOM_MSG_CRITICAL,
+				dom_parser->mctx,
 				"Can't insert node '%p' before node '%p'",
-				child, ref_child);
+				child,
+				ref_child);
 		return HUBBUB_UNKNOWN;
 	}
 
 	return HUBBUB_OK;
 }
 
-static hubbub_error remove_child(void *parser, void *parent, void *child,
-		void **result)
+static hubbub_error
+remove_child(void *parser, void *parent, void *child, void **result)
 {
-	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *) parser;
+	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *)parser;
 	dom_exception err;
 
-	err = dom_node_remove_child((struct dom_node *) parent,
-			(struct dom_node *) child,
-			(struct dom_node **) result);
+	err = dom_node_remove_child((struct dom_node *)parent,
+				    (struct dom_node *)child,
+				    (struct dom_node **)result);
 	if (err != DOM_NO_ERR) {
-		dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
-				"Can't remove child '%p'", child);
+		dom_parser->msg(DOM_MSG_CRITICAL,
+				dom_parser->mctx,
+				"Can't remove child '%p'",
+				child);
 		return HUBBUB_UNKNOWN;
 	}
 
 	return HUBBUB_OK;
 }
 
-static hubbub_error clone_node(void *parser, void *node, bool deep,
-		void **result)
+static hubbub_error
+clone_node(void *parser, void *node, bool deep, void **result)
 {
-	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *) parser;
+	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *)parser;
 	dom_exception err;
 
-	err = dom_node_clone_node((struct dom_node *) node, deep,
-			(struct dom_node **) result);
+	err = dom_node_clone_node((struct dom_node *)node,
+				  deep,
+				  (struct dom_node **)result);
 	if (err != DOM_NO_ERR) {
-		dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
-				"Can't clone node '%p'", node);
+		dom_parser->msg(DOM_MSG_CRITICAL,
+				dom_parser->mctx,
+				"Can't clone node '%p'",
+				node);
 		return HUBBUB_UNKNOWN;
 	}
 
 	return HUBBUB_OK;
 }
 
-static hubbub_error reparent_children(void *parser, void *node,
-		void *new_parent)
+static hubbub_error
+reparent_children(void *parser, void *node, void *new_parent)
 {
-	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *) parser;
+	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *)parser;
 	dom_exception err;
 	struct dom_node *child, *result;
 
-	while(true) {
-		err = dom_node_get_first_child((struct dom_node *) node,
-				&child);
+	while (true) {
+		err = dom_node_get_first_child((struct dom_node *)node, &child);
 		if (err != DOM_NO_ERR) {
-			dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+			dom_parser->msg(DOM_MSG_CRITICAL,
+					dom_parser->mctx,
 					"Error in dom_note_get_first_child");
 			return HUBBUB_UNKNOWN;
 		}
 		if (child == NULL)
 			break;
 
-		err = dom_node_remove_child(node, (struct dom_node *) child,
-				&result);
+		err = dom_node_remove_child(node,
+					    (struct dom_node *)child,
+					    &result);
 		if (err != DOM_NO_ERR) {
-			dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+			dom_parser->msg(DOM_MSG_CRITICAL,
+					dom_parser->mctx,
 					"Error in dom_node_remove_child");
 			goto fail;
 		}
 		dom_node_unref(result);
 
-		err = dom_node_append_child((struct dom_node *) new_parent,
-				(struct dom_node *) child, &result);
+		err = dom_node_append_child((struct dom_node *)new_parent,
+					    (struct dom_node *)child,
+					    &result);
 		if (err != DOM_NO_ERR) {
-			dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+			dom_parser->msg(DOM_MSG_CRITICAL,
+					dom_parser->mctx,
 					"Error in dom_node_append_child");
 			goto fail;
 		}
@@ -453,18 +488,18 @@ fail:
 	return HUBBUB_UNKNOWN;
 }
 
-static hubbub_error get_parent(void *parser, void *node, bool element_only,
-		void **result)
+static hubbub_error
+get_parent(void *parser, void *node, bool element_only, void **result)
 {
-	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *) parser;
+	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *)parser;
 	dom_exception err;
 	struct dom_node *parent;
 	dom_node_type type = DOM_NODE_TYPE_COUNT;
 
-	err = dom_node_get_parent_node((struct dom_node *) node,
-			&parent);
+	err = dom_node_get_parent_node((struct dom_node *)node, &parent);
 	if (err != DOM_NO_ERR) {
-		dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+		dom_parser->msg(DOM_MSG_CRITICAL,
+				dom_parser->mctx,
 				"Error in dom_node_get_parent");
 		return HUBBUB_UNKNOWN;
 	}
@@ -475,7 +510,8 @@ static hubbub_error get_parent(void *parser, void *node, bool element_only,
 
 	err = dom_node_get_node_type(parent, &type);
 	if (err != DOM_NO_ERR) {
-		dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+		dom_parser->msg(DOM_MSG_CRITICAL,
+				dom_parser->mctx,
 				"Error in dom_node_get_type");
 		goto fail;
 	}
@@ -496,12 +532,13 @@ fail:
 
 static hubbub_error has_children(void *parser, void *node, bool *result)
 {
-	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *) parser;
+	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *)parser;
 	dom_exception err;
 
-	err = dom_node_has_child_nodes((struct dom_node *) node, result);
+	err = dom_node_has_child_nodes((struct dom_node *)node, result);
 	if (err != DOM_NO_ERR) {
-		dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+		dom_parser->msg(DOM_MSG_CRITICAL,
+				dom_parser->mctx,
 				"Error in dom_node_has_child_nodes");
 		return HUBBUB_UNKNOWN;
 	}
@@ -510,58 +547,67 @@ static hubbub_error has_children(void *parser, void *node, bool *result)
 
 static hubbub_error form_associate(void *parser, void *form, void *node)
 {
-	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *) parser;
+	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *)parser;
 	dom_html_form_element *form_ele = form;
 	dom_node_internal *ele = node;
 	dom_html_document *doc = (dom_html_document *)ele->owner;
 	dom_exception err = DOM_NO_ERR;
-	
+
 	/* Determine the kind of the node we have here. */
-	if (dom_string_caseless_isequal(ele->name,
-			doc->elements[DOM_HTML_ELEMENT_TYPE_BUTTON])) {
+	if (dom_string_caseless_isequal(
+		    ele->name, doc->elements[DOM_HTML_ELEMENT_TYPE_BUTTON])) {
 		err = _dom_html_button_element_set_form(
 			(dom_html_button_element *)node, form_ele);
 		if (err != DOM_NO_ERR) {
-			dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+			dom_parser->msg(DOM_MSG_CRITICAL,
+					dom_parser->mctx,
 					"Error in form_associate");
 			return HUBBUB_UNKNOWN;
 		}
-	} else if (dom_string_caseless_isequal(ele->name,
-			doc->elements[DOM_HTML_ELEMENT_TYPE_INPUT])) {
+	} else if (dom_string_caseless_isequal(
+			   ele->name,
+			   doc->elements[DOM_HTML_ELEMENT_TYPE_INPUT])) {
 		err = _dom_html_input_element_set_form(
 			(dom_html_input_element *)node, form_ele);
 		if (err != DOM_NO_ERR) {
-			dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+			dom_parser->msg(DOM_MSG_CRITICAL,
+					dom_parser->mctx,
 					"Error in form_associate");
 			return HUBBUB_UNKNOWN;
 		}
-	} else if (dom_string_caseless_isequal(ele->name,
-			doc->elements[DOM_HTML_ELEMENT_TYPE_SELECT])) {
+	} else if (dom_string_caseless_isequal(
+			   ele->name,
+			   doc->elements[DOM_HTML_ELEMENT_TYPE_SELECT])) {
 		err = _dom_html_select_element_set_form(
 			(dom_html_select_element *)node, form_ele);
 		if (err != DOM_NO_ERR) {
-			dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+			dom_parser->msg(DOM_MSG_CRITICAL,
+					dom_parser->mctx,
 					"Error in form_associate");
 			return HUBBUB_UNKNOWN;
 		}
-	} else if (dom_string_caseless_isequal(ele->name,
-			doc->elements[DOM_HTML_ELEMENT_TYPE_TEXTAREA])) {
+	} else if (dom_string_caseless_isequal(
+			   ele->name,
+			   doc->elements[DOM_HTML_ELEMENT_TYPE_TEXTAREA])) {
 		err = _dom_html_text_area_element_set_form(
 			(dom_html_text_area_element *)node, form_ele);
 		if (err != DOM_NO_ERR) {
-			dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+			dom_parser->msg(DOM_MSG_CRITICAL,
+					dom_parser->mctx,
 					"Error in form_associate");
 			return HUBBUB_UNKNOWN;
 		}
 	}
-	
+
 	return HUBBUB_OK;
 }
 
-static hubbub_error add_attributes(void *parser, void *node,
-		const hubbub_attribute *attributes, uint32_t n_attributes)
+static hubbub_error add_attributes(void *parser,
+				   void *node,
+				   const hubbub_attribute *attributes,
+				   uint32_t n_attributes)
 {
-	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *) parser;
+	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *)parser;
 	dom_exception err;
 	uint32_t i;
 
@@ -569,17 +615,21 @@ static hubbub_error add_attributes(void *parser, void *node,
 		dom_string *name, *value;
 
 		err = dom_string_create_interned(attributes[i].name.ptr,
-				attributes[i].name.len, &name);
+						 attributes[i].name.len,
+						 &name);
 		if (err != DOM_NO_ERR) {
-			dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+			dom_parser->msg(DOM_MSG_CRITICAL,
+					dom_parser->mctx,
 					"Can't create attribute name");
 			goto fail;
 		}
 
 		err = dom_string_create(attributes[i].value.ptr,
-				attributes[i].value.len, &value);
+					attributes[i].value.len,
+					&value);
 		if (err != DOM_NO_ERR) {
-			dom_parser->msg(DOM_MSG_CRITICAL, dom_parser->mctx,
+			dom_parser->msg(DOM_MSG_CRITICAL,
+					dom_parser->mctx,
 					"Can't create attribute value");
 			dom_string_unref(name);
 			goto fail;
@@ -587,8 +637,7 @@ static hubbub_error add_attributes(void *parser, void *node,
 
 		if (attributes[i].ns == HUBBUB_NS_NULL) {
 			err = dom_element_set_attribute(
-					(struct dom_element *) node, name,
-					value);
+				(struct dom_element *)node, name, value);
 			dom_string_unref(name);
 			dom_string_unref(value);
 			if (err != DOM_NO_ERR) {
@@ -598,9 +647,10 @@ static hubbub_error add_attributes(void *parser, void *node,
 			}
 		} else {
 			err = dom_element_set_attribute_ns(
-					(struct dom_element *) node,
-					dom_namespaces[attributes[i].ns], name,
-					value);
+				(struct dom_element *)node,
+				dom_namespaces[attributes[i].ns],
+				name,
+				value);
 			dom_string_unref(name);
 			dom_string_unref(value);
 			if (err != DOM_NO_ERR) {
@@ -619,7 +669,7 @@ fail:
 
 static hubbub_error set_quirks_mode(void *parser, hubbub_quirks_mode mode)
 {
-	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *) parser;
+	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *)parser;
 
 	switch (mode) {
 	case HUBBUB_QUIRKS_MODE_NONE:
@@ -641,7 +691,7 @@ static hubbub_error set_quirks_mode(void *parser, hubbub_quirks_mode mode)
 
 static hubbub_error change_encoding(void *parser, const char *charset)
 {
-	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *) parser;
+	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *)parser;
 	hubbub_charset_source source;
 	const char *name;
 
@@ -654,7 +704,8 @@ static hubbub_error change_encoding(void *parser, const char *charset)
 	name = hubbub_parser_read_charset(dom_parser->parser, &source);
 
 	if (source == HUBBUB_CHARSET_CONFIDENT) {
-		dom_parser->encoding_source = DOM_HUBBUB_ENCODING_SOURCE_DETECTED;
+		dom_parser->encoding_source =
+			DOM_HUBBUB_ENCODING_SOURCE_DETECTED;
 		dom_parser->encoding = charset;
 		return HUBBUB_OK;
 	}
@@ -678,7 +729,7 @@ static hubbub_error change_encoding(void *parser, const char *charset)
 
 static hubbub_error complete_script(void *parser, void *script)
 {
-	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *) parser;
+	dom_hubbub_parser *dom_parser = (dom_hubbub_parser *)parser;
 	dom_hubbub_error err;
 
 	err = dom_parser->script(dom_parser->mctx, (struct dom_node *)script);
@@ -694,33 +745,33 @@ static hubbub_error complete_script(void *parser, void *script)
 	return HUBBUB_UNKNOWN;
 }
 
-static hubbub_tree_handler tree_handler = {
-	create_comment,
-	create_doctype,
-	create_element,
-	create_text,
-	ref_node,
-	unref_node,
-	append_child,
-	insert_before,
-	remove_child,
-	clone_node,
-	reparent_children,
-	get_parent,
-	has_children,
-	form_associate,
-	add_attributes,
-	set_quirks_mode,
-	change_encoding,
-	complete_script,
-	NULL
-};
+static hubbub_tree_handler tree_handler = {create_comment,
+					   create_doctype,
+					   create_element,
+					   create_text,
+					   ref_node,
+					   unref_node,
+					   append_child,
+					   insert_before,
+					   remove_child,
+					   clone_node,
+					   reparent_children,
+					   get_parent,
+					   has_children,
+					   form_associate,
+					   add_attributes,
+					   set_quirks_mode,
+					   change_encoding,
+					   complete_script,
+					   NULL};
 
 /**
  * Default message callback
  */
-static void dom_hubbub_parser_default_msg(uint32_t severity, void *ctx,
-		const char *msg, ...)
+static void dom_hubbub_parser_default_msg(uint32_t severity,
+					  void *ctx,
+					  const char *msg,
+					  ...)
 {
 	UNUSED(severity);
 	UNUSED(ctx);
@@ -746,10 +797,9 @@ dom_hubbub_parser_default_script(void *ctx, struct dom_node *node)
  * \param document Pointer to location to receive document.
  * \return Error code
  */
-dom_hubbub_error
-dom_hubbub_parser_create(dom_hubbub_parser_params *params,
-			 dom_hubbub_parser **parser,
-			 dom_document **document)
+dom_hubbub_error dom_hubbub_parser_create(dom_hubbub_parser_params *params,
+					  dom_hubbub_parser **parser,
+					  dom_document **document)
 {
 	dom_hubbub_parser *binding;
 	hubbub_parser_optparams optparams;
@@ -802,7 +852,7 @@ dom_hubbub_parser_create(dom_hubbub_parser_params *params,
 	error = hubbub_parser_create(binding->encoding,
 				     params->fix_enc,
 				     &binding->parser);
-	if (error != HUBBUB_OK)	 {
+	if (error != HUBBUB_OK) {
 		free(binding);
 		return (DOM_HUBBUB_HUBBUB_ERR | error);
 	}
@@ -845,11 +895,13 @@ dom_hubbub_parser_create(dom_hubbub_parser_params *params,
 	/* set the document id parameter before the parse so searches
 	 * based on id succeed.
 	 */
-	err = dom_string_create_interned((const uint8_t *) "id",
+	err = dom_string_create_interned((const uint8_t *)"id",
 					 SLEN("id"),
 					 &idname);
 	if (err != DOM_NO_ERR) {
-		binding->msg(DOM_MSG_ERROR, binding->mctx, "Can't set DOM document id name");
+		binding->msg(DOM_MSG_ERROR,
+			     binding->mctx,
+			     "Can't set DOM document id name");
 		hubbub_parser_destroy(binding->parser);
 		free(binding);
 		return DOM_HUBBUB_DOM;
@@ -933,15 +985,14 @@ dom_hubbub_fragment_parser_create(dom_hubbub_parser_params *params,
 	error = hubbub_parser_create(binding->encoding,
 				     params->fix_enc,
 				     &binding->parser);
-	if (error != HUBBUB_OK)	 {
+	if (error != HUBBUB_OK) {
 		dom_node_unref(binding->doc);
 		free(binding);
 		return (DOM_HUBBUB_HUBBUB_ERR | error);
 	}
 
 	/* create DOM document fragment */
-	err = dom_document_create_document_fragment(binding->doc,
-						    fragment);
+	err = dom_document_create_document_fragment(binding->doc, fragment);
 	if (err != DOM_NO_ERR) {
 		hubbub_parser_destroy(binding->parser);
 		dom_node_unref(binding->doc);
@@ -978,10 +1029,9 @@ dom_hubbub_fragment_parser_create(dom_hubbub_parser_params *params,
 }
 
 
-dom_hubbub_error
-dom_hubbub_parser_insert_chunk(dom_hubbub_parser *parser,
-			       const uint8_t *data,
-			       size_t length)
+dom_hubbub_error dom_hubbub_parser_insert_chunk(dom_hubbub_parser *parser,
+						const uint8_t *data,
+						size_t length)
 {
 	hubbub_parser_insert_chunk(parser->parser, data, length);
 
@@ -1000,7 +1050,7 @@ void dom_hubbub_parser_destroy(dom_hubbub_parser *parser)
 	parser->parser = NULL;
 
 	if (parser->doc != NULL) {
-		dom_node_unref((struct dom_node *) parser->doc);
+		dom_node_unref((struct dom_node *)parser->doc);
 		parser->doc = NULL;
 	}
 
@@ -1017,7 +1067,8 @@ void dom_hubbub_parser_destroy(dom_hubbub_parser *parser)
  *         DOM_HUBBUB_HUBBUB_ERR | <hubbub_error> on failure
  */
 dom_hubbub_error dom_hubbub_parser_parse_chunk(dom_hubbub_parser *parser,
-		const uint8_t *data, size_t len)
+					       const uint8_t *data,
+					       size_t len)
 {
 	hubbub_error err;
 
@@ -1042,8 +1093,10 @@ dom_hubbub_error dom_hubbub_parser_completed(dom_hubbub_parser *parser)
 
 	err = hubbub_parser_completed(parser->parser);
 	if (err != HUBBUB_OK) {
-		parser->msg(DOM_MSG_ERROR, parser->mctx,
-				"hubbub_parser_completed failed: %d", err);
+		parser->msg(DOM_MSG_ERROR,
+			    parser->mctx,
+			    "hubbub_parser_completed failed: %d",
+			    err);
 		return DOM_HUBBUB_HUBBUB_ERR | err;
 	}
 
@@ -1060,12 +1113,11 @@ dom_hubbub_error dom_hubbub_parser_completed(dom_hubbub_parser *parser)
  * \return the encoding name
  */
 const char *dom_hubbub_parser_get_encoding(dom_hubbub_parser *parser,
-		dom_hubbub_encoding_source *source)
+					   dom_hubbub_encoding_source *source)
 {
 	*source = parser->encoding_source;
 
-	return parser->encoding != NULL ? parser->encoding
-					: "Windows-1252";
+	return parser->encoding != NULL ? parser->encoding : "Windows-1252";
 }
 
 /**
@@ -1082,7 +1134,9 @@ dom_hubbub_error dom_hubbub_parser_pause(dom_hubbub_parser *parser, bool pause)
 	hubbub_parser_optparams params;
 
 	params.pause_parse = pause;
-	err = hubbub_parser_setopt(parser->parser, HUBBUB_PARSER_PAUSE, &params);
+	err = hubbub_parser_setopt(parser->parser,
+				   HUBBUB_PARSER_PAUSE,
+				   &params);
 	if (err != HUBBUB_OK)
 		return DOM_HUBBUB_HUBBUB_ERR | err;
 

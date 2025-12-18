@@ -1,7 +1,7 @@
 /*
  * Copyright 2003 James Bursa <bursa@users.sourceforge.net>
  * Copyright 2008 Daniel Silverstone <dsilvers@netsurf-browser.org>
- * 
+ *
  * This file is part of NetSurf, http://www.netsurf-browser.org/
  *
  * NetSurf is free software; you can redistribute it and/or modify

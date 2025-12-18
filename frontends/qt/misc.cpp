@@ -31,7 +31,6 @@ extern "C" {
 #include "neosurf/utils/sys_time.h"
 #include "neosurf/utils/log.h"
 #include "neosurf/misc.h"
-
 }
 
 #include "qt/misc.h"
@@ -44,8 +43,7 @@ static struct nscallback *schedule_list = NULL;
 /**
  * scheduled callback.
  */
-struct nscallback
-{
+struct nscallback {
 	struct nscallback *next;
 	struct timeval tv;
 	void (*callback)(void *p);
@@ -113,7 +111,9 @@ int nsqt_schedule_run(void)
 	/* make rettime relative to now */
 	timersub(&nexttime, &tv, &rettime);
 
-	NSLOG(schedule, DEBUG, "returning time to next event as %ldms",
+	NSLOG(schedule,
+	      DEBUG,
+	      "returning time to next event as %ldms",
 	      (long)((rettime.tv_sec * 1000) + (rettime.tv_usec / 1000)));
 
 	/* return next event time in milliseconds (24days max wait) */
@@ -147,12 +147,15 @@ static nserror schedule_remove(void (*callback)(void *p), void *p)
 	prev_nscb = NULL;
 
 	while (cur_nscb != NULL) {
-		if ((cur_nscb->callback ==  callback) &&
-		    (cur_nscb->p ==  p)) {
+		if ((cur_nscb->callback == callback) && (cur_nscb->p == p)) {
 			/* item to remove */
 
-			NSLOG(schedule, DEBUG, "callback entry %p removing  %p(%p)",
-			      cur_nscb, cur_nscb->callback, cur_nscb->p);
+			NSLOG(schedule,
+			      DEBUG,
+			      "callback entry %p removing  %p(%p)",
+			      cur_nscb,
+			      cur_nscb->callback,
+			      cur_nscb->p);
 
 			/* remove callback */
 			unlnk_nscb = cur_nscb;
@@ -163,7 +166,7 @@ static nserror schedule_remove(void (*callback)(void *p), void *p)
 			} else {
 				prev_nscb->next = cur_nscb;
 			}
-			free (unlnk_nscb);
+			free(unlnk_nscb);
 			removed = true;
 		} else {
 			/* move to next element */
@@ -212,7 +215,7 @@ nserror nsqt_schedule(int tival, void (*callback)(void *p), void *p)
 	tv.tv_sec = tival / 1000; /* miliseconds to seconds */
 	tv.tv_usec = (tival % 1000) * 1000; /* remainder to microseconds */
 
-	nscb = (struct nscallback*)calloc(1, sizeof(struct nscallback));
+	nscb = (struct nscallback *)calloc(1, sizeof(struct nscallback));
 
 	gettimeofday(&nscb->tv, NULL);
 	timeradd(&nscb->tv, &tv, &nscb->tv);

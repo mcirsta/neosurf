@@ -50,7 +50,6 @@ struct nsgtk_local_history_window {
 static struct nsgtk_local_history_window *local_history_window = NULL;
 
 
-
 /**
  * callback for mouse action on local history window
  *
@@ -60,10 +59,10 @@ static struct nsgtk_local_history_window *local_history_window = NULL;
  * \param y location of event
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror
-nsgtk_local_history_mouse(struct nsgtk_corewindow *nsgtk_cw,
-		    browser_mouse_state mouse_state,
-		    int x, int y)
+static nserror nsgtk_local_history_mouse(struct nsgtk_corewindow *nsgtk_cw,
+					 browser_mouse_state mouse_state,
+					 int x,
+					 int y)
 {
 	struct nsgtk_local_history_window *lhw;
 	/* technically degenerate container of */
@@ -106,11 +105,9 @@ nsgtk_local_history_key(struct nsgtk_corewindow *nsgtk_cw, uint32_t nskey)
 static nserror
 nsgtk_local_history_draw(struct nsgtk_corewindow *nsgtk_cw, struct rect *r)
 {
-	struct redraw_context ctx = {
-		.interactive = true,
-		.background_images = true,
-		.plot = &nsgtk_plotters
-	};
+	struct redraw_context ctx = {.interactive = true,
+				     .background_images = true,
+				     .plot = &nsgtk_plotters};
 	struct nsgtk_local_history_window *lhw;
 
 	/* technically degenerate container of */
@@ -156,8 +153,8 @@ nsgtk_local_history_init(struct browser_window *bw,
 
 	gtk_builder_connect_signals(ncwin->builder, NULL);
 
-	ncwin->wnd = GTK_WINDOW(gtk_builder_get_object(ncwin->builder,
-						       "wndHistory"));
+	ncwin->wnd = GTK_WINDOW(
+		gtk_builder_get_object(ncwin->builder, "wndHistory"));
 
 	/* Configure for transient behaviour */
 	gtk_window_set_type_hint(GTK_WINDOW(ncwin->wnd),
@@ -166,12 +163,10 @@ nsgtk_local_history_init(struct browser_window *bw,
 
 
 	ncwin->core.scrolled = GTK_SCROLLED_WINDOW(
-		gtk_builder_get_object(ncwin->builder,
-				       "HistoryScrolled"));
+		gtk_builder_get_object(ncwin->builder, "HistoryScrolled"));
 
 	ncwin->core.drawing_area = GTK_DRAWING_AREA(
-		gtk_builder_get_object(ncwin->builder,
-				       "HistoryDrawingArea"));
+		gtk_builder_get_object(ncwin->builder, "HistoryDrawingArea"));
 
 	/* make the delete event hide the window */
 	g_signal_connect(G_OBJECT(ncwin->wnd),
@@ -214,8 +209,8 @@ nsgtk_local_history_init(struct browser_window *bw,
 
 
 /* exported function documented gtk/history.h */
-nserror nsgtk_local_history_present(GtkWindow *parent,
-				    struct browser_window *bw)
+nserror
+nsgtk_local_history_present(GtkWindow *parent, struct browser_window *bw)
 {
 	nserror res;
 	int prnt_width, prnt_height;
@@ -226,7 +221,8 @@ nserror nsgtk_local_history_present(GtkWindow *parent,
 					    local_history_window->wnd);
 		gtk_window_set_transient_for(local_history_window->wnd, parent);
 		gtk_window_set_screen(local_history_window->wnd,
-				      gtk_widget_get_screen(GTK_WIDGET(parent)));
+				      gtk_widget_get_screen(
+					      GTK_WIDGET(parent)));
 
 		gtk_window_get_size(parent, &prnt_width, &prnt_height);
 
@@ -245,7 +241,8 @@ nserror nsgtk_local_history_present(GtkWindow *parent,
 		gtk_window_resize(local_history_window->wnd, width, height);
 
 		/* Attempt to place the window in the right place */
-		nsgtk_scaffolding_position_local_history(nsgtk_current_scaffolding());
+		nsgtk_scaffolding_position_local_history(
+			nsgtk_current_scaffolding());
 
 		gtk_widget_show(GTK_WIDGET(local_history_window->wnd));
 		gtk_widget_grab_focus(GTK_WIDGET(local_history_window->wnd));
@@ -291,7 +288,6 @@ nserror nsgtk_local_history_destroy(void)
 	}
 
 	return res;
-
 }
 
 /* exported function documented gtk/history.h */

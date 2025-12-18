@@ -20,13 +20,13 @@ struct css_computed_style *table_s[TS_SIZE];
 
 static inline uint32_t css__arena_hash_style(struct css_computed_style *s)
 {
-	return css__arena_hash((const uint8_t *) &s->i, sizeof(s->i));
+	return css__arena_hash((const uint8_t *)&s->i, sizeof(s->i));
 }
 
 
-static inline bool arena__compare_computed_content_item(
-		const struct css_computed_content_item *a,
-		const struct css_computed_content_item *b)
+static inline bool
+arena__compare_computed_content_item(const struct css_computed_content_item *a,
+				     const struct css_computed_content_item *b)
 {
 	if (a == NULL && b == NULL) {
 		return true;
@@ -43,9 +43,9 @@ static inline bool arena__compare_computed_content_item(
 }
 
 
-static inline bool arena__compare_css_computed_counter(
-		const struct css_computed_counter *a,
-		const struct css_computed_counter *b)
+static inline bool
+arena__compare_css_computed_counter(const struct css_computed_counter *a,
+				    const struct css_computed_counter *b)
 {
 	bool match;
 
@@ -57,18 +57,15 @@ static inline bool arena__compare_css_computed_counter(
 	}
 
 	if (a->value == b->value &&
-			lwc_string_isequal(a->name, b->name,
-					&match) == lwc_error_ok &&
-			match == true) {
+	    lwc_string_isequal(a->name, b->name, &match) == lwc_error_ok &&
+	    match == true) {
 		return true;
 	}
 
 	return false;
 }
 
-static inline bool arena__compare_string_list(
-		lwc_string **a,
-		lwc_string **b)
+static inline bool arena__compare_string_list(lwc_string **a, lwc_string **b)
 {
 	if (a == NULL && b == NULL) {
 		return true;
@@ -81,7 +78,7 @@ static inline bool arena__compare_string_list(
 		bool match;
 
 		if (lwc_string_isequal(*a, *b, &match) != lwc_error_ok ||
-				match == false) {
+		    match == false) {
 			return false;
 		}
 
@@ -97,47 +94,36 @@ static inline bool arena__compare_string_list(
 }
 
 
-static inline bool css__arena_style_is_equal(
-		struct css_computed_style *a,
-		struct css_computed_style *b)
+static inline bool css__arena_style_is_equal(struct css_computed_style *a,
+					     struct css_computed_style *b)
 {
 	if (memcmp(&a->i, &b->i, sizeof(struct css_computed_style_i)) != 0) {
 		return false;
 	}
 
-	if (!arena__compare_string_list(
-			a->font_family,
-			b->font_family)) {
+	if (!arena__compare_string_list(a->font_family, b->font_family)) {
 		return false;
 	}
 
-	if (!arena__compare_css_computed_counter(
-			a->counter_increment,
-			b->counter_increment)) {
+	if (!arena__compare_css_computed_counter(a->counter_increment,
+						 b->counter_increment)) {
 		return false;
 	}
 
-	if (!arena__compare_css_computed_counter(
-			a->counter_reset,
-			b->counter_reset)) {
+	if (!arena__compare_css_computed_counter(a->counter_reset,
+						 b->counter_reset)) {
 		return false;
 	}
 
-	if (!arena__compare_computed_content_item(
-			a->content,
-			b->content)) {
+	if (!arena__compare_computed_content_item(a->content, b->content)) {
 		return false;
 	}
 
-	if (!arena__compare_string_list(
-			a->cursor,
-			b->cursor)) {
+	if (!arena__compare_string_list(a->cursor, b->cursor)) {
 		return false;
 	}
 
-	if (!arena__compare_string_list(
-			a->quotes,
-			b->quotes)) {
+	if (!arena__compare_string_list(a->quotes, b->quotes)) {
 		return false;
 	}
 

@@ -32,12 +32,10 @@
 #define ICON_MARGIN 2
 #define MAX_ICONS 2
 
-#define IS_VALID_ICON_ENTRY_POSITION(pos) \
-	((pos) == SEXY_ICON_ENTRY_PRIMARY || \
-	 (pos) == SEXY_ICON_ENTRY_SECONDARY)
+#define IS_VALID_ICON_ENTRY_POSITION(pos)                                      \
+	((pos) == SEXY_ICON_ENTRY_PRIMARY || (pos) == SEXY_ICON_ENTRY_SECONDARY)
 
-typedef struct
-{
+typedef struct {
 	GtkImage *icon;
 	gboolean highlight;
 	gboolean hovered;
@@ -45,19 +43,13 @@ typedef struct
 
 } SexyIconInfo;
 
-struct _SexyIconEntryPriv
-{
+struct _SexyIconEntryPriv {
 	SexyIconInfo icons[MAX_ICONS];
 
 	gulong icon_released_id;
 };
 
-enum
-{
-	ICON_PRESSED,
-	ICON_RELEASED,
-	LAST_SIGNAL
-};
+enum { ICON_PRESSED, ICON_RELEASED, LAST_SIGNAL };
 
 /* static void sexy_icon_entry_class_init(SexyIconEntryClass *klass); */
 static void sexy_icon_entry_editable_init(GtkEditableClass *iface);
@@ -68,30 +60,31 @@ static void sexy_icon_entry_map(GtkWidget *widget);
 static void sexy_icon_entry_unmap(GtkWidget *widget);
 static void sexy_icon_entry_realize(GtkWidget *widget);
 static void sexy_icon_entry_unrealize(GtkWidget *widget);
-static void sexy_icon_entry_size_request(GtkWidget *widget,
-										  GtkRequisition *requisition);
-static void sexy_icon_entry_size_allocate(GtkWidget *widget,
-										   GtkAllocation *allocation);
+static void
+sexy_icon_entry_size_request(GtkWidget *widget, GtkRequisition *requisition);
+static void
+sexy_icon_entry_size_allocate(GtkWidget *widget, GtkAllocation *allocation);
 static gint sexy_icon_entry_expose(GtkWidget *widget, GdkEventExpose *event);
-static gint sexy_icon_entry_enter_notify(GtkWidget *widget,
-											   GdkEventCrossing *event);
-static gint sexy_icon_entry_leave_notify(GtkWidget *widget,
-											   GdkEventCrossing *event);
-static gint sexy_icon_entry_button_press(GtkWidget *widget,
-											   GdkEventButton *event);
-static gint sexy_icon_entry_button_release(GtkWidget *widget,
-												 GdkEventButton *event);
+static gint
+sexy_icon_entry_enter_notify(GtkWidget *widget, GdkEventCrossing *event);
+static gint
+sexy_icon_entry_leave_notify(GtkWidget *widget, GdkEventCrossing *event);
+static gint
+sexy_icon_entry_button_press(GtkWidget *widget, GdkEventButton *event);
+static gint
+sexy_icon_entry_button_release(GtkWidget *widget, GdkEventButton *event);
 
 static GtkEntryClass *parent_class = NULL;
 static guint signals[LAST_SIGNAL] = {0};
 
-G_DEFINE_TYPE_EXTENDED(SexyIconEntry, sexy_icon_entry, GTK_TYPE_ENTRY,
-					   0,
-					   G_IMPLEMENT_INTERFACE(GTK_TYPE_EDITABLE,
-											 sexy_icon_entry_editable_init));
+G_DEFINE_TYPE_EXTENDED(SexyIconEntry,
+		       sexy_icon_entry,
+		       GTK_TYPE_ENTRY,
+		       0,
+		       G_IMPLEMENT_INTERFACE(GTK_TYPE_EDITABLE,
+					     sexy_icon_entry_editable_init));
 
-void
-sexy_icon_entry_class_init(SexyIconEntryClass *klass)
+void sexy_icon_entry_class_init(SexyIconEntryClass *klass)
 {
 	GObjectClass *gobject_class;
 	GtkObjectClass *object_class;
@@ -101,9 +94,9 @@ sexy_icon_entry_class_init(SexyIconEntryClass *klass)
 	parent_class = g_type_class_peek_parent(klass);
 
 	gobject_class = G_OBJECT_CLASS(klass);
-	object_class  = GTK_OBJECT_CLASS(klass);
-	widget_class  = GTK_WIDGET_CLASS(klass);
-	entry_class   = GTK_ENTRY_CLASS(klass);
+	object_class = GTK_OBJECT_CLASS(klass);
+	widget_class = GTK_WIDGET_CLASS(klass);
+	entry_class = GTK_ENTRY_CLASS(klass);
 
 	gobject_class->finalize = sexy_icon_entry_finalize;
 
@@ -129,19 +122,21 @@ sexy_icon_entry_class_init(SexyIconEntryClass *klass)
 	 *
 	 * The ::icon-pressed signal is emitted when an icon is clicked.
 	 */
-	/* signal modified to compile directly in NetSurf - param 8 of 
+	/* signal modified to compile directly in NetSurf - param 8 of
 	 * g_signal_new() changed from marshal type to NULL - so there may
 	 * well be no working signal */
-	signals[ICON_PRESSED] =
-		g_signal_new("icon_pressed",
-					 G_TYPE_FROM_CLASS(gobject_class),
-					 G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-					 G_STRUCT_OFFSET(SexyIconEntryClass, icon_pressed),
-					 NULL, NULL,
-					 NULL,
-					 G_TYPE_NONE, 2,
-					 G_TYPE_INT,
-					 G_TYPE_INT);
+	signals[ICON_PRESSED] = g_signal_new(
+		"icon_pressed",
+		G_TYPE_FROM_CLASS(gobject_class),
+		G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+		G_STRUCT_OFFSET(SexyIconEntryClass, icon_pressed),
+		NULL,
+		NULL,
+		NULL,
+		G_TYPE_NONE,
+		2,
+		G_TYPE_INT,
+		G_TYPE_INT);
 
 	/*
 	 * SexyIconEntry::icon-released:
@@ -152,34 +147,31 @@ sexy_icon_entry_class_init(SexyIconEntryClass *klass)
 	 * The ::icon-released signal is emitted on the button release from a
 	 * mouse click.
 	 */
-	/* signal modified to compile directly in NetSurf - param 8 of 
-	* g_signal_new() changed from marshal type to NULL - so there may
-	* well be no working signal */
-	signals[ICON_RELEASED] =
-		g_signal_new("icon_released",
-					 G_TYPE_FROM_CLASS(gobject_class),
-					 G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
-					 G_STRUCT_OFFSET(SexyIconEntryClass, icon_released),
-					 NULL, NULL,
-					 NULL,
-					 G_TYPE_NONE, 2,
-					 G_TYPE_INT,
-					 G_TYPE_INT);
+	/* signal modified to compile directly in NetSurf - param 8 of
+	 * g_signal_new() changed from marshal type to NULL - so there may
+	 * well be no working signal */
+	signals[ICON_RELEASED] = g_signal_new(
+		"icon_released",
+		G_TYPE_FROM_CLASS(gobject_class),
+		G_SIGNAL_RUN_LAST | G_SIGNAL_ACTION,
+		G_STRUCT_OFFSET(SexyIconEntryClass, icon_released),
+		NULL,
+		NULL,
+		NULL,
+		G_TYPE_NONE,
+		2,
+		G_TYPE_INT,
+		G_TYPE_INT);
 }
 
-static void
-sexy_icon_entry_editable_init(GtkEditableClass *iface)
-{
-};
+static void sexy_icon_entry_editable_init(GtkEditableClass *iface) {};
 
-void
-sexy_icon_entry_init(SexyIconEntry *entry)
+void sexy_icon_entry_init(SexyIconEntry *entry)
 {
 	entry->priv = g_new0(SexyIconEntryPriv, 1);
 }
 
-static void
-sexy_icon_entry_finalize(GObject *obj)
+static void sexy_icon_entry_finalize(GObject *obj)
 {
 	SexyIconEntry *entry;
 
@@ -194,8 +186,7 @@ sexy_icon_entry_finalize(GObject *obj)
 		G_OBJECT_CLASS(parent_class)->finalize(obj);
 }
 
-static void
-sexy_icon_entry_destroy(GtkObject *obj)
+static void sexy_icon_entry_destroy(GtkObject *obj)
 {
 	SexyIconEntry *entry;
 
@@ -208,34 +199,29 @@ sexy_icon_entry_destroy(GtkObject *obj)
 		GTK_OBJECT_CLASS(parent_class)->destroy(obj);
 }
 
-static void
-sexy_icon_entry_map(GtkWidget *widget)
+static void sexy_icon_entry_map(GtkWidget *widget)
 {
-	if (nsgtk_widget_get_realized(widget) && !nsgtk_widget_get_mapped(widget))
-	{
+	if (nsgtk_widget_get_realized(widget) &&
+	    !nsgtk_widget_get_mapped(widget)) {
 		SexyIconEntry *entry = SEXY_ICON_ENTRY(widget);
 		int i;
 
 		GTK_WIDGET_CLASS(parent_class)->map(widget);
 
-		for (i = 0; i < MAX_ICONS; i++)
-		{
+		for (i = 0; i < MAX_ICONS; i++) {
 			if (entry->priv->icons[i].icon != NULL)
 				gdk_window_show(entry->priv->icons[i].window);
 		}
 	}
 }
 
-static void
-sexy_icon_entry_unmap(GtkWidget *widget)
+static void sexy_icon_entry_unmap(GtkWidget *widget)
 {
-	if (nsgtk_widget_get_mapped(widget))
-	{
+	if (nsgtk_widget_get_mapped(widget)) {
 		SexyIconEntry *entry = SEXY_ICON_ENTRY(widget);
 		int i;
 
-		for (i = 0; i < MAX_ICONS; i++)
-		{
+		for (i = 0; i < MAX_ICONS; i++) {
 			if (entry->priv->icons[i].icon != NULL)
 				gdk_window_hide(entry->priv->icons[i].window);
 		}
@@ -244,8 +230,7 @@ sexy_icon_entry_unmap(GtkWidget *widget)
 	}
 }
 
-static gint
-get_icon_width(SexyIconEntry *entry, SexyIconEntryPosition icon_pos)
+static gint get_icon_width(SexyIconEntry *entry, SexyIconEntryPosition icon_pos)
 {
 	GtkRequisition requisition;
 	gint menu_icon_width;
@@ -263,38 +248,34 @@ get_icon_width(SexyIconEntry *entry, SexyIconEntryPosition icon_pos)
 	return width;
 }
 
-static void
-get_borders(SexyIconEntry *entry, gint *xborder, gint *yborder)
+static void get_borders(SexyIconEntry *entry, gint *xborder, gint *yborder)
 {
 	GtkWidget *widget = GTK_WIDGET(entry);
 	gint focus_width;
 	gboolean interior_focus;
 
 	gtk_widget_style_get(widget,
-						 "interior-focus", &interior_focus,
-						 "focus-line-width", &focus_width,
-						 NULL);
+			     "interior-focus",
+			     &interior_focus,
+			     "focus-line-width",
+			     &focus_width,
+			     NULL);
 
-	if (gtk_entry_get_has_frame(GTK_ENTRY(entry)))
-	{
+	if (gtk_entry_get_has_frame(GTK_ENTRY(entry))) {
 		*xborder = widget->style->xthickness;
 		*yborder = widget->style->ythickness;
-	}
-	else
-	{
+	} else {
 		*xborder = 0;
 		*yborder = 0;
 	}
 
-	if (!interior_focus)
-	{
+	if (!interior_focus) {
 		*xborder += focus_width;
 		*yborder += focus_width;
 	}
 }
 
-static void
-get_text_area_size(SexyIconEntry *entry, GtkAllocation *alloc)
+static void get_text_area_size(SexyIconEntry *entry, GtkAllocation *alloc)
 {
 	GtkWidget *widget = GTK_WIDGET(entry);
 	GtkRequisition requisition;
@@ -303,29 +284,30 @@ get_text_area_size(SexyIconEntry *entry, GtkAllocation *alloc)
 	gtk_widget_get_child_requisition(widget, &requisition);
 	get_borders(entry, &xborder, &yborder);
 
-	alloc->x      = xborder;
-	alloc->y      = yborder;
-	alloc->width  = widget->allocation.width - xborder * 2;
-	alloc->height = requisition.height       - yborder * 2;
+	alloc->x = xborder;
+	alloc->y = yborder;
+	alloc->width = widget->allocation.width - xborder * 2;
+	alloc->height = requisition.height - yborder * 2;
 }
 
-static void
-get_icon_allocation(SexyIconEntry *icon_entry,
-					gboolean left,
-					GtkAllocation *widget_alloc,
-					GtkAllocation *text_area_alloc,
-					GtkAllocation *allocation,
-					SexyIconEntryPosition *icon_pos)
+static void get_icon_allocation(SexyIconEntry *icon_entry,
+				gboolean left,
+				GtkAllocation *widget_alloc,
+				GtkAllocation *text_area_alloc,
+				GtkAllocation *allocation,
+				SexyIconEntryPosition *icon_pos)
 {
 	gboolean rtl;
 
 	rtl = (gtk_widget_get_direction(GTK_WIDGET(icon_entry)) ==
-		   GTK_TEXT_DIR_RTL);
+	       GTK_TEXT_DIR_RTL);
 
 	if (left)
-		*icon_pos = (rtl ? SEXY_ICON_ENTRY_SECONDARY : SEXY_ICON_ENTRY_PRIMARY);
+		*icon_pos = (rtl ? SEXY_ICON_ENTRY_SECONDARY
+				 : SEXY_ICON_ENTRY_PRIMARY);
 	else
-		*icon_pos = (rtl ? SEXY_ICON_ENTRY_PRIMARY : SEXY_ICON_ENTRY_SECONDARY);
+		*icon_pos = (rtl ? SEXY_ICON_ENTRY_PRIMARY
+				 : SEXY_ICON_ENTRY_SECONDARY);
 
 	allocation->y = text_area_alloc->y;
 	allocation->width = get_icon_width(icon_entry, *icon_pos);
@@ -333,15 +315,13 @@ get_icon_allocation(SexyIconEntry *icon_entry,
 
 	if (left)
 		allocation->x = text_area_alloc->x + ICON_MARGIN;
-	else
-	{
+	else {
 		allocation->x = text_area_alloc->x + text_area_alloc->width -
-		                allocation->width - ICON_MARGIN;
+				allocation->width - ICON_MARGIN;
 	}
 }
 
-static void
-sexy_icon_entry_realize(GtkWidget *widget)
+static void sexy_icon_entry_realize(GtkWidget *widget)
 {
 	SexyIconEntry *entry = SEXY_ICON_ENTRY(widget);
 	GdkWindowAttr attributes;
@@ -359,39 +339,38 @@ sexy_icon_entry_realize(GtkWidget *widget)
 	attributes.visual = gtk_widget_get_visual(widget);
 	attributes.colormap = gtk_widget_get_colormap(widget);
 	attributes.event_mask = gtk_widget_get_events(widget);
-	attributes.event_mask |=
-		(GDK_EXPOSURE_MASK
-		 | GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK
-		 | GDK_ENTER_NOTIFY_MASK | GDK_LEAVE_NOTIFY_MASK);
+	attributes.event_mask |= (GDK_EXPOSURE_MASK | GDK_BUTTON_PRESS_MASK |
+				  GDK_BUTTON_RELEASE_MASK |
+				  GDK_ENTER_NOTIFY_MASK |
+				  GDK_LEAVE_NOTIFY_MASK);
 
 	attributes_mask = GDK_WA_X | GDK_WA_Y | GDK_WA_VISUAL | GDK_WA_COLORMAP;
 
-	for (i = 0; i < MAX_ICONS; i++)
-	{
+	for (i = 0; i < MAX_ICONS; i++) {
 		SexyIconInfo *icon_info;
 
 		icon_info = &entry->priv->icons[i];
-		icon_info->window = gdk_window_new(widget->window, &attributes,
-										   attributes_mask);
+		icon_info->window = gdk_window_new(widget->window,
+						   &attributes,
+						   attributes_mask);
 		gdk_window_set_user_data(icon_info->window, widget);
 
-		gdk_window_set_background(icon_info->window,
+		gdk_window_set_background(
+			icon_info->window,
 			&widget->style->base[nsgtk_widget_get_state(widget)]);
 	}
 
 	gtk_widget_queue_resize(widget);
 }
 
-static void
-sexy_icon_entry_unrealize(GtkWidget *widget)
+static void sexy_icon_entry_unrealize(GtkWidget *widget)
 {
 	SexyIconEntry *entry = SEXY_ICON_ENTRY(widget);
 	int i;
 
 	GTK_WIDGET_CLASS(parent_class)->unrealize(widget);
 
-	for (i = 0; i < MAX_ICONS; i++)
-	{
+	for (i = 0; i < MAX_ICONS; i++) {
 		SexyIconInfo *icon_info = &entry->priv->icons[i];
 
 		gdk_window_destroy(icon_info->window);
@@ -408,10 +387,9 @@ sexy_icon_entry_size_request(GtkWidget *widget, GtkRequisition *requisition)
 	int i;
 
 	gtkentry = GTK_ENTRY(widget);
-	entry    = SEXY_ICON_ENTRY(widget);
+	entry = SEXY_ICON_ENTRY(widget);
 
-	for (i = 0; i < MAX_ICONS; i++)
-	{
+	for (i = 0; i < MAX_ICONS; i++) {
 		int icon_width = get_icon_width(entry, i);
 
 		if (icon_width > 0)
@@ -434,15 +412,22 @@ place_windows(SexyIconEntry *icon_entry, GtkAllocation *widget_alloc)
 	GtkAllocation text_area_alloc;
 
 	get_text_area_size(icon_entry, &text_area_alloc);
-	get_icon_allocation(icon_entry, TRUE, widget_alloc, &text_area_alloc,
-						&left_icon_alloc, &left_icon_pos);
-	get_icon_allocation(icon_entry, FALSE, widget_alloc, &text_area_alloc,
-						&right_icon_alloc, &right_icon_pos);
+	get_icon_allocation(icon_entry,
+			    TRUE,
+			    widget_alloc,
+			    &text_area_alloc,
+			    &left_icon_alloc,
+			    &left_icon_pos);
+	get_icon_allocation(icon_entry,
+			    FALSE,
+			    widget_alloc,
+			    &text_area_alloc,
+			    &right_icon_alloc,
+			    &right_icon_pos);
 
-	if (left_icon_alloc.width > 0)
-	{
+	if (left_icon_alloc.width > 0) {
 		text_area_alloc.x = left_icon_alloc.x + left_icon_alloc.width +
-		                    ICON_MARGIN;
+				    ICON_MARGIN;
 	}
 
 	if (right_icon_alloc.width > 0)
@@ -451,16 +436,22 @@ place_windows(SexyIconEntry *icon_entry, GtkAllocation *widget_alloc)
 	text_area_alloc.width -= text_area_alloc.x;
 
 	gdk_window_move_resize(icon_entry->priv->icons[left_icon_pos].window,
-						   left_icon_alloc.x, left_icon_alloc.y,
-						   left_icon_alloc.width, left_icon_alloc.height);
+			       left_icon_alloc.x,
+			       left_icon_alloc.y,
+			       left_icon_alloc.width,
+			       left_icon_alloc.height);
 
 	gdk_window_move_resize(icon_entry->priv->icons[right_icon_pos].window,
-						   right_icon_alloc.x, right_icon_alloc.y,
-						   right_icon_alloc.width, right_icon_alloc.height);
+			       right_icon_alloc.x,
+			       right_icon_alloc.y,
+			       right_icon_alloc.width,
+			       right_icon_alloc.height);
 
 	gdk_window_move_resize(GTK_ENTRY(icon_entry)->text_area,
-						   text_area_alloc.x, text_area_alloc.y,
-						   text_area_alloc.width, text_area_alloc.height);
+			       text_area_alloc.x,
+			       text_area_alloc.y,
+			       text_area_alloc.width,
+			       text_area_alloc.height);
 }
 
 static void
@@ -485,29 +476,29 @@ get_pixbuf_from_icon(SexyIconEntry *entry, SexyIconEntryPosition icon_pos)
 	SexyIconInfo *icon_info = &entry->priv->icons[icon_pos];
 	GtkIconSize size;
 
-	switch (gtk_image_get_storage_type(GTK_IMAGE(icon_info->icon)))
-	{
-		case GTK_IMAGE_PIXBUF:
-			pixbuf = gtk_image_get_pixbuf(GTK_IMAGE(icon_info->icon));
-			g_object_ref(pixbuf);
-			break;
+	switch (gtk_image_get_storage_type(GTK_IMAGE(icon_info->icon))) {
+	case GTK_IMAGE_PIXBUF:
+		pixbuf = gtk_image_get_pixbuf(GTK_IMAGE(icon_info->icon));
+		g_object_ref(pixbuf);
+		break;
 
-		case GTK_IMAGE_STOCK:
-			gtk_image_get_stock(GTK_IMAGE(icon_info->icon), &stock_id, &size);
-			pixbuf = gtk_widget_render_icon(GTK_WIDGET(entry),
-											stock_id, size, NULL);
-			break;
+	case GTK_IMAGE_STOCK:
+		gtk_image_get_stock(GTK_IMAGE(icon_info->icon),
+				    &stock_id,
+				    &size);
+		pixbuf = gtk_widget_render_icon(
+			GTK_WIDGET(entry), stock_id, size, NULL);
+		break;
 
-		default:
-			return NULL;
+	default:
+		return NULL;
 	}
 
 	return pixbuf;
 }
 
 /* Kudos to the gnome-panel guys. */
-static void
-colorshift_pixbuf(GdkPixbuf *dest, GdkPixbuf *src, int shift)
+static void colorshift_pixbuf(GdkPixbuf *dest, GdkPixbuf *src, int shift)
 {
 	gint i, j;
 	gint width, height, has_alpha, src_rowstride, dest_rowstride;
@@ -518,21 +509,19 @@ colorshift_pixbuf(GdkPixbuf *dest, GdkPixbuf *src, int shift)
 	int val;
 	guchar r, g, b;
 
-	has_alpha       = gdk_pixbuf_get_has_alpha(src);
-	width           = gdk_pixbuf_get_width(src);
-	height          = gdk_pixbuf_get_height(src);
-	src_rowstride   = gdk_pixbuf_get_rowstride(src);
-	dest_rowstride  = gdk_pixbuf_get_rowstride(dest);
+	has_alpha = gdk_pixbuf_get_has_alpha(src);
+	width = gdk_pixbuf_get_width(src);
+	height = gdk_pixbuf_get_height(src);
+	src_rowstride = gdk_pixbuf_get_rowstride(src);
+	dest_rowstride = gdk_pixbuf_get_rowstride(dest);
 	original_pixels = gdk_pixbuf_get_pixels(src);
-	target_pixels   = gdk_pixbuf_get_pixels(dest);
+	target_pixels = gdk_pixbuf_get_pixels(dest);
 
-	for (i = 0; i < height; i++)
-	{
-		pix_dest = target_pixels   + i * dest_rowstride;
-		pix_src  = original_pixels + i * src_rowstride;
+	for (i = 0; i < height; i++) {
+		pix_dest = target_pixels + i * dest_rowstride;
+		pix_src = original_pixels + i * src_rowstride;
 
-		for (j = 0; j < width; j++)
-		{
+		for (j = 0; j < width; j++) {
 			r = *(pix_src++);
 			g = *(pix_src++);
 			b = *(pix_src++);
@@ -552,8 +541,7 @@ colorshift_pixbuf(GdkPixbuf *dest, GdkPixbuf *src, int shift)
 	}
 }
 
-static void
-draw_icon(GtkWidget *widget, SexyIconEntryPosition icon_pos)
+static void draw_icon(GtkWidget *widget, SexyIconEntryPosition icon_pos)
 {
 	SexyIconEntry *entry = SEXY_ICON_ENTRY(widget);
 	SexyIconInfo *icon_info = &entry->priv->icons[icon_pos];
@@ -568,34 +556,32 @@ draw_icon(GtkWidget *widget, SexyIconEntryPosition icon_pos)
 
 	gdk_drawable_get_size(icon_info->window, &width, &height);
 
-	if (width == 1 || height == 1)
-	{
+	if (width == 1 || height == 1) {
 		/*
-		 * size_allocate hasn't been called yet. These are the default values.
+		 * size_allocate hasn't been called yet. These are the default
+		 * values.
 		 */
 		return;
 	}
 
-	if (gdk_pixbuf_get_height(pixbuf) > height)
-	{
+	if (gdk_pixbuf_get_height(pixbuf) > height) {
 		GdkPixbuf *temp_pixbuf;
 		int scale;
 
 		scale = height - (2 * ICON_MARGIN);
 
-		temp_pixbuf = gdk_pixbuf_scale_simple(pixbuf, scale, scale,
-											  GDK_INTERP_BILINEAR);
+		temp_pixbuf = gdk_pixbuf_scale_simple(
+			pixbuf, scale, scale, GDK_INTERP_BILINEAR);
 
 		g_object_unref(pixbuf);
 
 		pixbuf = temp_pixbuf;
 	}
 
-	x = (width  - gdk_pixbuf_get_width(pixbuf)) / 2;
+	x = (width - gdk_pixbuf_get_width(pixbuf)) / 2;
 	y = (height - gdk_pixbuf_get_height(pixbuf)) / 2;
 
-	if (icon_info->hovered)
-	{
+	if (icon_info->hovered) {
 		GdkPixbuf *temp_pixbuf;
 
 		temp_pixbuf = gdk_pixbuf_copy(pixbuf);
@@ -607,15 +593,23 @@ draw_icon(GtkWidget *widget, SexyIconEntryPosition icon_pos)
 		pixbuf = temp_pixbuf;
 	}
 
-	gdk_draw_pixbuf(icon_info->window, widget->style->black_gc, pixbuf,
-					0, 0, x, y, -1, -1,
-					GDK_RGB_DITHER_NORMAL, 0, 0);
+	gdk_draw_pixbuf(icon_info->window,
+			widget->style->black_gc,
+			pixbuf,
+			0,
+			0,
+			x,
+			y,
+			-1,
+			-1,
+			GDK_RGB_DITHER_NORMAL,
+			0,
+			0);
 
 	g_object_unref(pixbuf);
 }
 
-static gint
-sexy_icon_entry_expose(GtkWidget *widget, GdkEventExpose *event)
+static gint sexy_icon_entry_expose(GtkWidget *widget, GdkEventExpose *event)
 {
 	SexyIconEntry *entry;
 
@@ -624,27 +618,34 @@ sexy_icon_entry_expose(GtkWidget *widget, GdkEventExpose *event)
 
 	entry = SEXY_ICON_ENTRY(widget);
 
-	if (nsgtk_widget_is_drawable(widget))
-	{
+	if (nsgtk_widget_is_drawable(widget)) {
 		gboolean found = FALSE;
 		int i;
 
-		for (i = 0; i < MAX_ICONS && !found; i++)
-		{
+		for (i = 0; i < MAX_ICONS && !found; i++) {
 			SexyIconInfo *icon_info = &entry->priv->icons[i];
 
-			if (event->window == icon_info->window)
-			{
+			if (event->window == icon_info->window) {
 				gint width;
 				GtkAllocation text_area_alloc;
 
 				get_text_area_size(entry, &text_area_alloc);
-				gdk_drawable_get_size(icon_info->window, &width, NULL);
+				gdk_drawable_get_size(icon_info->window,
+						      &width,
+						      NULL);
 
-				gtk_paint_flat_box(widget->style, icon_info->window,
-								   nsgtk_widget_get_state(widget), GTK_SHADOW_NONE,
-								   NULL, widget, "entry_bg",
-								   0, 0, width, text_area_alloc.height);
+				gtk_paint_flat_box(widget->style,
+						   icon_info->window,
+						   nsgtk_widget_get_state(
+							   widget),
+						   GTK_SHADOW_NONE,
+						   NULL,
+						   widget,
+						   "entry_bg",
+						   0,
+						   0,
+						   width,
+						   text_area_alloc.height);
 
 				draw_icon(widget, i);
 
@@ -653,23 +654,22 @@ sexy_icon_entry_expose(GtkWidget *widget, GdkEventExpose *event)
 		}
 
 		if (!found)
-			GTK_WIDGET_CLASS(parent_class)->expose_event(widget, event);
+			GTK_WIDGET_CLASS(parent_class)
+				->expose_event(widget, event);
 	}
 
 	return FALSE;
 }
 
-static void
-update_icon(GObject *obj, GParamSpec *param, SexyIconEntry *entry)
+static void update_icon(GObject *obj, GParamSpec *param, SexyIconEntry *entry)
 {
-	if (param != NULL)
-	{
+	if (param != NULL) {
 		const char *name = g_param_spec_get_name(param);
 
-		if (strcmp(name, "pixbuf")   && strcmp(name, "stock")  &&
-			strcmp(name, "image")    && strcmp(name, "pixmap") &&
-			strcmp(name, "icon_set") && strcmp(name, "pixbuf_animation"))
-		{
+		if (strcmp(name, "pixbuf") && strcmp(name, "stock") &&
+		    strcmp(name, "image") && strcmp(name, "pixmap") &&
+		    strcmp(name, "icon_set") &&
+		    strcmp(name, "pixbuf_animation")) {
 			return;
 		}
 	}
@@ -683,12 +683,9 @@ sexy_icon_entry_enter_notify(GtkWidget *widget, GdkEventCrossing *event)
 	SexyIconEntry *entry = SEXY_ICON_ENTRY(widget);
 	int i;
 
-	for (i = 0; i < MAX_ICONS; i++)
-	{
-		if (event->window == entry->priv->icons[i].window)
-		{
-			if (sexy_icon_entry_get_icon_highlight(entry, i))
-			{
+	for (i = 0; i < MAX_ICONS; i++) {
+		if (event->window == entry->priv->icons[i].window) {
+			if (sexy_icon_entry_get_icon_highlight(entry, i)) {
 				entry->priv->icons[i].hovered = TRUE;
 
 				update_icon(NULL, NULL, entry);
@@ -707,12 +704,9 @@ sexy_icon_entry_leave_notify(GtkWidget *widget, GdkEventCrossing *event)
 	SexyIconEntry *entry = SEXY_ICON_ENTRY(widget);
 	int i;
 
-	for (i = 0; i < MAX_ICONS; i++)
-	{
-		if (event->window == entry->priv->icons[i].window)
-		{
-			if (sexy_icon_entry_get_icon_highlight(entry, i))
-			{
+	for (i = 0; i < MAX_ICONS; i++) {
+		if (event->window == entry->priv->icons[i].window) {
+			if (sexy_icon_entry_get_icon_highlight(entry, i)) {
 				entry->priv->icons[i].hovered = FALSE;
 
 				update_icon(NULL, NULL, entry);
@@ -731,27 +725,28 @@ sexy_icon_entry_button_press(GtkWidget *widget, GdkEventButton *event)
 	SexyIconEntry *entry = SEXY_ICON_ENTRY(widget);
 	int i;
 
-	for (i = 0; i < MAX_ICONS; i++)
-	{
-		if (event->window == entry->priv->icons[i].window)
-		{
+	for (i = 0; i < MAX_ICONS; i++) {
+		if (event->window == entry->priv->icons[i].window) {
 			if (event->button == 1 &&
-				sexy_icon_entry_get_icon_highlight(entry, i))
-			{
+			    sexy_icon_entry_get_icon_highlight(entry, i)) {
 				entry->priv->icons[i].hovered = FALSE;
 
 				update_icon(NULL, NULL, entry);
 			}
 
-			g_signal_emit(entry, signals[ICON_PRESSED], 0, i, event->button);
+			g_signal_emit(entry,
+				      signals[ICON_PRESSED],
+				      0,
+				      i,
+				      event->button);
 
 			return TRUE;
 		}
 	}
 
 	if (GTK_WIDGET_CLASS(parent_class)->button_press_event)
-		return GTK_WIDGET_CLASS(parent_class)->button_press_event(widget,
-																  event);
+		return GTK_WIDGET_CLASS(parent_class)
+			->button_press_event(widget, event);
 
 	return FALSE;
 }
@@ -762,34 +757,35 @@ sexy_icon_entry_button_release(GtkWidget *widget, GdkEventButton *event)
 	SexyIconEntry *entry = SEXY_ICON_ENTRY(widget);
 	int i;
 
-	for (i = 0; i < MAX_ICONS; i++)
-	{
+	for (i = 0; i < MAX_ICONS; i++) {
 		GdkWindow *icon_window = entry->priv->icons[i].window;
 
-		if (event->window == icon_window)
-		{
+		if (event->window == icon_window) {
 			int width, height;
 			gdk_drawable_get_size(icon_window, &width, &height);
 
 			if (event->button == 1 &&
-				sexy_icon_entry_get_icon_highlight(entry, i) &&
-				event->x >= 0     && event->y >= 0 &&
-				event->x <= width && event->y <= height)
-			{
+			    sexy_icon_entry_get_icon_highlight(entry, i) &&
+			    event->x >= 0 && event->y >= 0 &&
+			    event->x <= width && event->y <= height) {
 				entry->priv->icons[i].hovered = TRUE;
 
 				update_icon(NULL, NULL, entry);
 			}
 
-			g_signal_emit(entry, signals[ICON_RELEASED], 0, i, event->button);
+			g_signal_emit(entry,
+				      signals[ICON_RELEASED],
+				      0,
+				      i,
+				      event->button);
 
 			return TRUE;
 		}
 	}
 
 	if (GTK_WIDGET_CLASS(parent_class)->button_release_event)
-		return GTK_WIDGET_CLASS(parent_class)->button_release_event(widget,
-																	event);
+		return GTK_WIDGET_CLASS(parent_class)
+			->button_release_event(widget, event);
 
 	return FALSE;
 }
@@ -801,8 +797,7 @@ sexy_icon_entry_button_release(GtkWidget *widget, GdkEventButton *event)
  *
  * Returns a new #SexyIconEntry.
  */
-GtkWidget *
-sexy_icon_entry_new(void)
+GtkWidget *sexy_icon_entry_new(void)
 {
 	return GTK_WIDGET(g_object_new(SEXY_TYPE_ICON_ENTRY, NULL));
 }
@@ -815,9 +810,9 @@ sexy_icon_entry_new(void)
  *
  * Sets the icon shown in the entry
  */
-void
-sexy_icon_entry_set_icon(SexyIconEntry *entry, SexyIconEntryPosition icon_pos,
-						 GtkImage *icon)
+void sexy_icon_entry_set_icon(SexyIconEntry *entry,
+			      SexyIconEntryPosition icon_pos,
+			      GtkImage *icon)
 {
 	SexyIconInfo *icon_info;
 
@@ -832,34 +827,33 @@ sexy_icon_entry_set_icon(SexyIconEntry *entry, SexyIconEntryPosition icon_pos,
 		return;
 
 	if (icon_pos == SEXY_ICON_ENTRY_SECONDARY &&
-		entry->priv->icon_released_id != 0)
-	{
-		g_signal_handler_disconnect(entry, entry->priv->icon_released_id);
+	    entry->priv->icon_released_id != 0) {
+		g_signal_handler_disconnect(entry,
+					    entry->priv->icon_released_id);
 		entry->priv->icon_released_id = 0;
 	}
 
-	if (icon == NULL)
-	{
-		if (icon_info->icon != NULL)
-		{
+	if (icon == NULL) {
+		if (icon_info->icon != NULL) {
 			gtk_widget_destroy(GTK_WIDGET(icon_info->icon));
 			icon_info->icon = NULL;
 
 			/*
-			 * Explicitly check, as the pointer may become invalidated
-			 * during destruction.
+			 * Explicitly check, as the pointer may become
+			 * invalidated during destruction.
 			 */
-			if (icon_info->window != NULL && GDK_IS_WINDOW(icon_info->window))
+			if (icon_info->window != NULL &&
+			    GDK_IS_WINDOW(icon_info->window))
 				gdk_window_hide(icon_info->window);
 		}
-	}
-	else
-	{
+	} else {
 		if (icon_info->window != NULL && icon_info->icon == NULL)
 			gdk_window_show(icon_info->window);
 
-		g_signal_connect(G_OBJECT(icon), "notify",
-						 G_CALLBACK(update_icon), entry);
+		g_signal_connect(G_OBJECT(icon),
+				 "notify",
+				 G_CALLBACK(update_icon),
+				 entry);
 
 		icon_info->icon = icon;
 		g_object_ref(icon);
@@ -876,10 +870,9 @@ sexy_icon_entry_set_icon(SexyIconEntry *entry, SexyIconEntryPosition icon_pos,
  *
  * Determines whether the icon will highlight on mouse-over.
  */
-void
-sexy_icon_entry_set_icon_highlight(SexyIconEntry *entry,
-								   SexyIconEntryPosition icon_pos,
-								   gboolean highlight)
+void sexy_icon_entry_set_icon_highlight(SexyIconEntry *entry,
+					SexyIconEntryPosition icon_pos,
+					gboolean highlight)
 {
 	SexyIconInfo *icon_info;
 
@@ -904,9 +897,8 @@ sexy_icon_entry_set_icon_highlight(SexyIconEntry *entry,
  *
  * Returns: A #GtkImage.
  */
-GtkImage *
-sexy_icon_entry_get_icon(const SexyIconEntry *entry,
-						 SexyIconEntryPosition icon_pos)
+GtkImage *sexy_icon_entry_get_icon(const SexyIconEntry *entry,
+				   SexyIconEntryPosition icon_pos)
 {
 	g_return_val_if_fail(entry != NULL, NULL);
 	g_return_val_if_fail(SEXY_IS_ICON_ENTRY(entry), NULL);
@@ -924,9 +916,8 @@ sexy_icon_entry_get_icon(const SexyIconEntry *entry,
  *
  * Returns: TRUE if icon highlights.
  */
-gboolean
-sexy_icon_entry_get_icon_highlight(const SexyIconEntry *entry,
-								   SexyIconEntryPosition icon_pos)
+gboolean sexy_icon_entry_get_icon_highlight(const SexyIconEntry *entry,
+					    SexyIconEntryPosition icon_pos)
 {
 	g_return_val_if_fail(entry != NULL, FALSE);
 	g_return_val_if_fail(SEXY_IS_ICON_ENTRY(entry), FALSE);
@@ -935,10 +926,9 @@ sexy_icon_entry_get_icon_highlight(const SexyIconEntry *entry,
 	return entry->priv->icons[icon_pos].highlight;
 }
 
-static void
-clear_button_clicked_cb(SexyIconEntry *icon_entry,
-						SexyIconEntryPosition icon_pos,
-						int button)
+static void clear_button_clicked_cb(SexyIconEntry *icon_entry,
+				    SexyIconEntryPosition icon_pos,
+				    int button)
 {
 	if (icon_pos != SEXY_ICON_ENTRY_SECONDARY || button != 1)
 		return;
@@ -953,8 +943,7 @@ clear_button_clicked_cb(SexyIconEntry *icon_entry,
  * A convenience function to add a clear button to the end of the entry.
  * This is useful for search boxes.
  */
-void
-sexy_icon_entry_add_clear_button(SexyIconEntry *icon_entry)
+void sexy_icon_entry_add_clear_button(SexyIconEntry *icon_entry)
 {
 	GtkWidget *icon;
 
@@ -968,15 +957,17 @@ sexy_icon_entry_add_clear_button(SexyIconEntry *icon_entry)
 				 SEXY_ICON_ENTRY_SECONDARY,
 				 GTK_IMAGE(icon));
 	sexy_icon_entry_set_icon_highlight(SEXY_ICON_ENTRY(icon_entry),
-					   SEXY_ICON_ENTRY_SECONDARY, TRUE);
+					   SEXY_ICON_ENTRY_SECONDARY,
+					   TRUE);
 
-	if (icon_entry->priv->icon_released_id != 0)
-	{
+	if (icon_entry->priv->icon_released_id != 0) {
 		g_signal_handler_disconnect(icon_entry,
 					    icon_entry->priv->icon_released_id);
 	}
 
-	icon_entry->priv->icon_released_id =
-		g_signal_connect(G_OBJECT(icon_entry), "icon_released",
-						 G_CALLBACK(clear_button_clicked_cb), NULL);
+	icon_entry->priv->icon_released_id = g_signal_connect(
+		G_OBJECT(icon_entry),
+		"icon_released",
+		G_CALLBACK(clear_button_clicked_cb),
+		NULL);
 }

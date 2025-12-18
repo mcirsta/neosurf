@@ -10,66 +10,79 @@
 #include "visurf/visurf.h"
 
 struct nsvi_config config = {
-	.caret = {
-		.color = 0x000000FF,
-	},
+	.caret =
+		{
+			.color = 0x000000FF,
+		},
 
 	// strdup()'d in nsvi_config_init
 	.font = (char *)"monospace 10",
 
-	.hints = {
-		.alphabet = (char *)"asdfjkl",
-		.bg = 0xEE2222FF,
-		.border = {
-			.color = 0xFFFFFFFF,
-			.width = 0,
+	.hints =
+		{
+			.alphabet = (char *)"asdfjkl",
+			.bg = 0xEE2222FF,
+			.border =
+				{
+					.color = 0xFFFFFFFF,
+					.width = 0,
+				},
+			.fg = 0xFFFFFFFF,
+			.like = 0x000000FF,
 		},
-		.fg = 0xFFFFFFFF,
-		.like = 0x000000FF,
-	},
 
 	.home = (char *)"about:welcome",
 
 	.margin = 3,
 
-	.status = {
-		.exline = {
-			.fg = 0xFFFFFFFF,
-			.bg = 0x222222FF,
+	.status =
+		{
+			.exline =
+				{
+					.fg = 0xFFFFFFFF,
+					.bg = 0x222222FF,
+				},
+			.follow =
+				{
+					.fg = 0xFFFFFFFF,
+					.bg = 0x0087BDFF,
+				},
+			.insert =
+				{
+					.fg = 0xFFFFFFFF,
+					.bg = 0x008800FF,
+				},
+			.normal =
+				{
+					.fg = 0xFFFFFFFF,
+					.bg = 0x111111FF,
+				},
+			.error =
+				{
+					.fg = 0xFFFFFFFF,
+					.bg = 0xFF0000FF,
+				},
 		},
-		.follow = {
-			.fg = 0xFFFFFFFF,
-			.bg = 0x0087BDFF,
-		},
-		.insert = {
-			.fg = 0xFFFFFFFF,
-			.bg = 0x008800FF,
-		},
-		.normal = {
-			.fg = 0xFFFFFFFF,
-			.bg = 0x111111FF,
-		},
-		.error = {
-			.fg = 0xFFFFFFFF,
-			.bg = 0xFF0000FF,
-		},
-	},
 
-	.tabs = {
-		.selected = {
-			.fg = 0xFFFFFFFF,
-			.bg = 0x223366FF,
+	.tabs =
+		{
+			.selected =
+				{
+					.fg = 0xFFFFFFFF,
+					.bg = 0x223366FF,
+				},
+			.throbber =
+				{
+					.loaded = 0x008000FF,
+					.loading = 0x8888FFFF,
+					.width = 5,
+				},
+			.unselected =
+				{
+					.fg = 0xFFFFFFFF,
+					.bg = 0x222222FF,
+				},
 		},
-		.throbber =  {
-			.loaded = 0x008000FF,
-			.loading = 0x8888FFFF,
-			.width = 5,
-		},
-		.unselected = {
-			.fg = 0xFFFFFFFF,
-			.bg = 0x222222FF,
-		},
-	},
 };
 
 enum nsvi_config_kind {
@@ -222,10 +235,10 @@ static struct nsvi_config_info config_info[] = {
 	},
 };
 
-void
-nsvi_config_init(void)
+void nsvi_config_init(void)
 {
-	for (size_t i = 0; i < sizeof(config_info) / sizeof(config_info[0]); i++) {
+	for (size_t i = 0; i < sizeof(config_info) / sizeof(config_info[0]);
+	     i++) {
 		switch (config_info[i].kind) {
 		case CONFIG_COLOR:
 		case CONFIG_UINT:
@@ -239,10 +252,10 @@ nsvi_config_init(void)
 	nsvi_config_set("urlfilter", "urlfilter");
 }
 
-void
-nsvi_config_finish(void)
+void nsvi_config_finish(void)
 {
-	for (size_t i = 0; i < sizeof(config_info) / sizeof(config_info[0]); i++) {
+	for (size_t i = 0; i < sizeof(config_info) / sizeof(config_info[0]);
+	     i++) {
 		switch (config_info[i].kind) {
 		case CONFIG_COLOR:
 		case CONFIG_UINT:
@@ -255,8 +268,7 @@ nsvi_config_finish(void)
 	}
 }
 
-static int
-config_compar(const void *a, const void *b)
+static int config_compar(const void *a, const void *b)
 {
 	const char *key = a;
 	const struct nsvi_config_info *info = b;
@@ -266,8 +278,7 @@ config_compar(const void *a, const void *b)
 	return strcmp(key, info->name);
 }
 
-static bool
-nsvi_set_filter(struct nsvi_filter *filter, const char *command)
+static bool nsvi_set_filter(struct nsvi_filter *filter, const char *command)
 {
 	return false; // Filters are not currently used. XXX
 	/*int stdinpipe[2];
@@ -316,12 +327,14 @@ nsvi_set_filter(struct nsvi_filter *filter, const char *command)
 	return true;*/
 }
 
-bool
-nsvi_config_set(const char *name, const char *value)
+bool nsvi_config_set(const char *name, const char *value)
 {
-	struct nsvi_config_info *info = bsearch(name, &config_info,
-		sizeof(config_info) / sizeof(config_info[0]),
-		sizeof(config_info[0]), config_compar);
+	struct nsvi_config_info *info = bsearch(name,
+						&config_info,
+						sizeof(config_info) /
+							sizeof(config_info[0]),
+						sizeof(config_info[0]),
+						config_compar);
 	if (info == NULL) {
 		return false;
 	}

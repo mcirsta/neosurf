@@ -12,11 +12,12 @@
 
 typedef struct dom_html_html_element dom_html_html_element;
 
-dom_exception dom_html_html_element_get_version(
-		struct dom_html_html_element *element, dom_string **version);  
-dom_exception dom_html_html_element_set_version(
-		struct dom_html_html_element *element, dom_string *version);
+dom_exception
+dom_html_html_element_get_version(struct dom_html_html_element *element,
+				  dom_string **version);
+dom_exception
+dom_html_html_element_set_version(struct dom_html_html_element *element,
+				  dom_string *version);
 
 
 #endif
-

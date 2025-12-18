@@ -60,28 +60,29 @@ typedef struct save_complete_entry {
 } save_complete_entry;
 
 typedef struct save_complete_ctx {
-    const char *path;
-    save_complete_entry *list;
-    save_complete_set_type_cb set_type;
+	const char *path;
+	save_complete_entry *list;
+	save_complete_set_type_cb set_type;
 
-    nsurl *base;
-    FILE *fp;
-    enum { STATE_NORMAL, STATE_IN_STYLE } iter_state;
+	nsurl *base;
+	FILE *fp;
+	enum { STATE_NORMAL, STATE_IN_STYLE } iter_state;
 } save_complete_ctx;
 
-typedef enum {
-	EVENT_ENTER,
-	EVENT_LEAVE
-} save_complete_event_type;
+typedef enum { EVENT_ENTER, EVENT_LEAVE } save_complete_event_type;
 
 
-static nserror save_complete_save_html(save_complete_ctx *ctx, struct hlcache_handle *c, bool index);
+static nserror save_complete_save_html(save_complete_ctx *ctx,
+				       struct hlcache_handle *c,
+				       bool index);
 static nserror save_complete_save_imported_sheets(save_complete_ctx *ctx,
-		struct nscss_import *imports, uint32_t import_count);
+						  struct nscss_import *imports,
+						  uint32_t import_count);
 
 
 static void save_complete_ctx_initialise(save_complete_ctx *ctx,
-		const char *path, save_complete_set_type_cb set_type)
+					 const char *path,
+					 save_complete_set_type_cb set_type)
 {
 	ctx->path = path;
 	ctx->list = NULL;
@@ -99,13 +100,12 @@ static void save_complete_ctx_finalise(save_complete_ctx *ctx)
 	}
 }
 
-static nserror
-save_complete_ctx_add_content(save_complete_ctx *ctx,
-			      struct hlcache_handle *content)
+static nserror save_complete_ctx_add_content(save_complete_ctx *ctx,
+					     struct hlcache_handle *content)
 {
 	save_complete_entry *entry;
 
-	entry = malloc(sizeof (*entry));
+	entry = malloc(sizeof(*entry));
 	if (entry == NULL) {
 		return NSERROR_NOMEM;
 	}
@@ -141,9 +141,8 @@ save_complete_ctx_find_content(save_complete_ctx *ctx, const nsurl *url)
 }
 
 
-static bool
-save_complete_ctx_has_content(save_complete_ctx *ctx,
-			      struct hlcache_handle *content)
+static bool save_complete_ctx_has_content(save_complete_ctx *ctx,
+					  struct hlcache_handle *content)
 {
 	save_complete_entry *entry;
 
@@ -156,12 +155,11 @@ save_complete_ctx_has_content(save_complete_ctx *ctx,
 	return false;
 }
 
-static nserror
-save_complete_save_buffer(save_complete_ctx *ctx,
-			  const char *leafname,
-			  const uint8_t *data,
-			  size_t data_len,
-			  lwc_string *mime_type)
+static nserror save_complete_save_buffer(save_complete_ctx *ctx,
+					 const char *leafname,
+					 const uint8_t *data,
+					 size_t data_len,
+					 lwc_string *mime_type)
 {
 	nserror ret;
 	FILE *fp;
@@ -195,13 +193,12 @@ save_complete_save_buffer(save_complete_ctx *ctx,
 /**
  * perform a posix regexec on a string without a null terminator
  */
-static int
-snregexec(regex_t *preg,
-	 const char *string,
-	 size_t stringlen,
-	 size_t nmatch,
-	 regmatch_t pmatch[],
-	 int eflags)
+static int snregexec(regex_t *preg,
+		     const char *string,
+		     size_t stringlen,
+		     size_t nmatch,
+		     regmatch_t pmatch[],
+		     int eflags)
 {
 	char *strbuf;
 	int matches;
@@ -230,12 +227,11 @@ snregexec(regex_t *preg,
  * \param osize updated with the size of the result.
  * \return converted source, or NULL on out of memory.
  */
-static uint8_t *
-save_complete_rewrite_stylesheet_urls(save_complete_ctx *ctx,
-				      const uint8_t *source,
-				      size_t size,
-				      const nsurl *base,
-				      size_t *osize)
+static uint8_t *save_complete_rewrite_stylesheet_urls(save_complete_ctx *ctx,
+						      const uint8_t *source,
+						      size_t size,
+						      const nsurl *base,
+						      size_t *osize)
 {
 	uint8_t *rewritten;
 	unsigned long offset = 0;
@@ -273,11 +269,11 @@ save_complete_rewrite_stylesheet_urls(save_complete_ctx *ctx,
 		int m;
 
 		m = snregexec(&save_complete_import_re,
-			     (const char *)source + offset,
-			     size - offset,
-			     11,
-			     match,
-			     0);
+			      (const char *)source + offset,
+			      size - offset,
+			      11,
+			      match,
+			      0);
 		if (m)
 			break;
 
@@ -323,23 +319,25 @@ save_complete_rewrite_stylesheet_urls(save_complete_ctx *ctx,
 			if (content != NULL) {
 				/* replace import */
 				char buf[64];
-				snprintf(buf, sizeof buf, "@import '%p'",
-						content);
+				snprintf(buf,
+					 sizeof buf,
+					 "@import '%p'",
+					 content);
 				memcpy(rewritten + *osize, buf, strlen(buf));
 				*osize += strlen(buf);
 			} else {
 				/* copy import */
 				memcpy(rewritten + *osize,
-					source + offset + match[0].rm_so,
-					match[0].rm_eo - match[0].rm_so);
+				       source + offset + match[0].rm_so,
+				       match[0].rm_eo - match[0].rm_so);
 				*osize += match[0].rm_eo - match[0].rm_so;
 			}
 			nsurl_unref(url);
 		} else {
 			/* copy import */
 			memcpy(rewritten + *osize,
-				source + offset + match[0].rm_so,
-				match[0].rm_eo - match[0].rm_so);
+			       source + offset + match[0].rm_so,
+			       match[0].rm_eo - match[0].rm_so);
 			*osize += match[0].rm_eo - match[0].rm_so;
 		}
 
@@ -369,8 +367,8 @@ save_complete_save_stylesheet(save_complete_ctx *ctx, hlcache_handle *css)
 	char filename[32];
 	nserror result;
 
-	if (save_complete_ctx_find_content(ctx,
-			hlcache_handle_get_url(css)) != NULL) {
+	if (save_complete_ctx_find_content(ctx, hlcache_handle_get_url(css)) !=
+	    NULL) {
 		return NSERROR_OK;
 	}
 
@@ -380,20 +378,18 @@ save_complete_save_stylesheet(save_complete_ctx *ctx, hlcache_handle *css)
 	}
 
 	imports = nscss_get_imports(css, &import_count);
-	result = save_complete_save_imported_sheets(ctx,
-						    imports,
-						    import_count);
+	result = save_complete_save_imported_sheets(ctx, imports, import_count);
 	if (result != NSERROR_OK) {
 		return result;
 	}
 
 	css_data = content_get_source_data(css, &css_size);
-	source = save_complete_rewrite_stylesheet_urls(
-		ctx,
-		css_data,
-		css_size,
-		hlcache_handle_get_url(css),
-		&source_len);
+	source = save_complete_rewrite_stylesheet_urls(ctx,
+						       css_data,
+						       css_size,
+						       hlcache_handle_get_url(
+							       css),
+						       &source_len);
 	if (source == NULL) {
 		return NSERROR_NOMEM;
 	}
@@ -406,8 +402,8 @@ save_complete_save_stylesheet(save_complete_ctx *ctx, hlcache_handle *css)
 
 	snprintf(filename, sizeof filename, "%p", css);
 
-	result = save_complete_save_buffer(ctx, filename,
-			source, source_len, type);
+	result = save_complete_save_buffer(
+		ctx, filename, source, source_len, type);
 
 	lwc_string_unref(type);
 	free(source);
@@ -415,10 +411,9 @@ save_complete_save_stylesheet(save_complete_ctx *ctx, hlcache_handle *css)
 	return result;
 }
 
-static nserror
-save_complete_save_imported_sheets(save_complete_ctx *ctx,
-				   struct nscss_import *imports,
-				   uint32_t import_count)
+static nserror save_complete_save_imported_sheets(save_complete_ctx *ctx,
+						  struct nscss_import *imports,
+						  uint32_t import_count)
 {
 	nserror res = NSERROR_OK;
 	uint32_t i;
@@ -436,9 +431,8 @@ save_complete_save_imported_sheets(save_complete_ctx *ctx,
 	return res;
 }
 
-static nserror
-save_complete_save_html_stylesheet(save_complete_ctx *ctx,
-				   struct html_stylesheet *sheet)
+static nserror save_complete_save_html_stylesheet(save_complete_ctx *ctx,
+						  struct html_stylesheet *sheet)
 {
 	if (sheet->sheet == NULL) {
 		return NSERROR_OK;
@@ -448,8 +442,7 @@ save_complete_save_html_stylesheet(save_complete_ctx *ctx,
 }
 
 static nserror
-save_complete_save_html_stylesheets(save_complete_ctx *ctx,
-				    hlcache_handle *c)
+save_complete_save_html_stylesheets(save_complete_ctx *ctx, hlcache_handle *c)
 {
 	struct html_stylesheet *sheets;
 	unsigned int i, count;
@@ -485,8 +478,8 @@ save_complete_save_html_object(save_complete_ctx *ctx, hlcache_handle *obj)
 		return NSERROR_OK;
 	}
 
-	if (save_complete_ctx_find_content(ctx,
-			hlcache_handle_get_url(obj)) != NULL) {
+	if (save_complete_ctx_find_content(ctx, hlcache_handle_get_url(obj)) !=
+	    NULL) {
 		return NSERROR_OK;
 	}
 
@@ -506,7 +499,8 @@ save_complete_save_html_object(save_complete_ctx *ctx, hlcache_handle *obj)
 		return NSERROR_NOMEM;
 	}
 
-	result = save_complete_save_buffer(ctx, filename, obj_data, obj_size, type);
+	result = save_complete_save_buffer(
+		ctx, filename, obj_data, obj_size, type);
 
 	lwc_string_unref(type);
 
@@ -514,8 +508,7 @@ save_complete_save_html_object(save_complete_ctx *ctx, hlcache_handle *obj)
 }
 
 static nserror
-save_complete_save_html_objects(save_complete_ctx *ctx,
-				hlcache_handle *c)
+save_complete_save_html_objects(save_complete_ctx *ctx, hlcache_handle *c)
 {
 	struct content_html_object *object;
 	unsigned int count;
@@ -524,9 +517,9 @@ save_complete_save_html_objects(save_complete_ctx *ctx,
 	object = html_get_objects(c, &count);
 
 	for (; object != NULL; object = object->next) {
-		if ((object->content != NULL) &&
-		    (object->box != NULL)) {
-			res = save_complete_save_html_object(ctx, object->content);
+		if ((object->content != NULL) && (object->box != NULL)) {
+			res = save_complete_save_html_object(ctx,
+							     object->content);
 			if (res != NSERROR_OK) {
 				return res;
 			}
@@ -536,12 +529,12 @@ save_complete_save_html_objects(save_complete_ctx *ctx,
 	return NSERROR_OK;
 }
 
-static bool
-save_complete_libdom_treewalk(dom_node *root,
-			      bool (*callback)(dom_node *node,
-				       save_complete_event_type event_type,
-					       void *ctx),
-			      void *ctx)
+static bool save_complete_libdom_treewalk(
+	dom_node *root,
+	bool (*callback)(dom_node *node,
+			 save_complete_event_type event_type,
+			 void *ctx),
+	void *ctx)
 {
 	dom_node *node;
 
@@ -557,7 +550,7 @@ save_complete_libdom_treewalk(dom_node *root,
 			break;
 		}
 
-		if (next != NULL) {  /* 1. children */
+		if (next != NULL) { /* 1. children */
 			dom_node_unref(node);
 			node = next;
 		} else {
@@ -567,16 +560,16 @@ save_complete_libdom_treewalk(dom_node *root,
 				break;
 			}
 
-			if (next != NULL) {  /* 2. siblings */
+			if (next != NULL) { /* 2. siblings */
 				if (callback(node, EVENT_LEAVE, ctx) == false) {
 					return false;
 				}
 				dom_node_unref(node);
 				node = next;
-			} else {  /* 3. ancestor siblings */
+			} else { /* 3. ancestor siblings */
 				while (node != NULL) {
 					exc = dom_node_get_next_sibling(node,
-							&next);
+									&next);
 					if (exc != DOM_NO_ERR) {
 						dom_node_unref(node);
 						node = NULL;
@@ -589,15 +582,15 @@ save_complete_libdom_treewalk(dom_node *root,
 					}
 
 					exc = dom_node_get_parent_node(node,
-							&next);
+								       &next);
 					if (exc != DOM_NO_ERR) {
 						dom_node_unref(node);
 						node = NULL;
 						break;
 					}
 
-					if (callback(node, EVENT_LEAVE,
-							ctx) == false) {
+					if (callback(node, EVENT_LEAVE, ctx) ==
+					    false) {
 						return false;
 					}
 					dom_node_unref(node);
@@ -626,14 +619,14 @@ save_complete_libdom_treewalk(dom_node *root,
 		if (callback(node, EVENT_ENTER, ctx) == false) {
 			return false; /* callback caused early termination */
 		}
-
 	}
 
 	return true;
 }
 
 static bool save_complete_rewrite_url_value(save_complete_ctx *ctx,
-		const char *value, size_t value_len)
+					    const char *value,
+					    size_t value_len)
 {
 	nsurl *url;
 	hlcache_handle *content;
@@ -653,8 +646,10 @@ static bool save_complete_rewrite_url_value(save_complete_ctx *ctx,
 			fprintf(ctx->fp, "\"%p\"", content);
 		} else {
 			/* no match found */
-			error = utf8_to_html(nsurl_access(url), "UTF-8",
-					nsurl_length(url), &escaped);
+			error = utf8_to_html(nsurl_access(url),
+					     "UTF-8",
+					     nsurl_length(url),
+					     &escaped);
 			nsurl_unref(url);
 
 			if (error != NSERROR_OK)
@@ -678,7 +673,8 @@ static bool save_complete_rewrite_url_value(save_complete_ctx *ctx,
 }
 
 static bool save_complete_write_value(save_complete_ctx *ctx,
-		const char *value, size_t value_len)
+				      const char *value,
+				      size_t value_len)
 {
 	char *escaped;
 	nserror ret;
@@ -695,8 +691,9 @@ static bool save_complete_write_value(save_complete_ctx *ctx,
 }
 
 static bool save_complete_handle_attr_value(save_complete_ctx *ctx,
-		dom_string *node_name, dom_string *attr_name,
-		dom_string *attr_value)
+					    dom_string *node_name,
+					    dom_string *attr_name,
+					    dom_string *attr_value)
 {
 	const char *node_data = dom_string_data(node_name);
 	size_t node_len = dom_string_byte_length(node_name);
@@ -717,75 +714,72 @@ static bool save_complete_handle_attr_value(save_complete_ctx *ctx,
 	 */
 	/* 1 */
 	if (name_len == SLEN("data") &&
-			strncasecmp(name_data, "data", name_len) == 0) {
+	    strncasecmp(name_data, "data", name_len) == 0) {
 		if (node_len == SLEN("object") &&
-				strncasecmp(node_data,
-						"object", node_len) == 0) {
+		    strncasecmp(node_data, "object", node_len) == 0) {
 			return save_complete_rewrite_url_value(ctx,
-					value_data, value_len);
+							       value_data,
+							       value_len);
 		} else {
 			return save_complete_write_value(ctx,
-					value_data, value_len);
+							 value_data,
+							 value_len);
 		}
 	}
 	/* 2 */
 	else if (name_len == SLEN("href") &&
-			strncasecmp(name_data, "href", name_len) == 0) {
+		 strncasecmp(name_data, "href", name_len) == 0) {
 		if ((node_len == SLEN("a") &&
-				strncasecmp(node_data, "a", node_len) == 0) ||
-			(node_len == SLEN("area") &&
-				strncasecmp(node_data, "area",
-					node_len) == 0) ||
-			(node_len == SLEN("link") &&
-				strncasecmp(node_data, "link",
-					node_len) == 0)) {
+		     strncasecmp(node_data, "a", node_len) == 0) ||
+		    (node_len == SLEN("area") &&
+		     strncasecmp(node_data, "area", node_len) == 0) ||
+		    (node_len == SLEN("link") &&
+		     strncasecmp(node_data, "link", node_len) == 0)) {
 			return save_complete_rewrite_url_value(ctx,
-					value_data, value_len);
+							       value_data,
+							       value_len);
 		} else {
 			return save_complete_write_value(ctx,
-					value_data, value_len);
+							 value_data,
+							 value_len);
 		}
 	}
 	/* 3 */
 	else if (name_len == SLEN("src") &&
-			strncasecmp(name_data, "src", name_len) == 0) {
+		 strncasecmp(name_data, "src", name_len) == 0) {
 		if ((node_len == SLEN("frame") &&
-				strncasecmp(node_data, "frame",
-					node_len) == 0) ||
-			(node_len == SLEN("iframe") &&
-				strncasecmp(node_data, "iframe",
-					node_len) == 0) ||
-			(node_len == SLEN("input") &&
-				strncasecmp(node_data, "input",
-					node_len) == 0) ||
-			(node_len == SLEN("img") &&
-				strncasecmp(node_data, "img",
-					node_len) == 0) ||
-			(node_len == SLEN("script") &&
-				strncasecmp(node_data, "script",
-					node_len) == 0)) {
+		     strncasecmp(node_data, "frame", node_len) == 0) ||
+		    (node_len == SLEN("iframe") &&
+		     strncasecmp(node_data, "iframe", node_len) == 0) ||
+		    (node_len == SLEN("input") &&
+		     strncasecmp(node_data, "input", node_len) == 0) ||
+		    (node_len == SLEN("img") &&
+		     strncasecmp(node_data, "img", node_len) == 0) ||
+		    (node_len == SLEN("script") &&
+		     strncasecmp(node_data, "script", node_len) == 0)) {
 			return save_complete_rewrite_url_value(ctx,
-					value_data, value_len);
+							       value_data,
+							       value_len);
 		} else {
 			return save_complete_write_value(ctx,
-					value_data, value_len);
+							 value_data,
+							 value_len);
 		}
 	}
 	/* 4 */
 	else if (name_len == SLEN("background") &&
-			strncasecmp(name_data, "background", name_len) == 0) {
+		 strncasecmp(name_data, "background", name_len) == 0) {
 		return save_complete_rewrite_url_value(ctx,
-				value_data, value_len);
+						       value_data,
+						       value_len);
 	} else {
-		return save_complete_write_value(ctx,
-				value_data, value_len);
+		return save_complete_write_value(ctx, value_data, value_len);
 	}
 }
 
-static bool
-save_complete_handle_attr(save_complete_ctx *ctx,
-			  dom_string *node_name,
-			  dom_attr *attr)
+static bool save_complete_handle_attr(save_complete_ctx *ctx,
+				      dom_string *node_name,
+				      dom_attr *attr)
 {
 	dom_string *name;
 	const char *name_data;
@@ -814,8 +808,8 @@ save_complete_handle_attr(save_complete_ctx *ctx,
 
 	if (value != NULL) {
 		fputc('=', ctx->fp);
-		if (save_complete_handle_attr_value(ctx, node_name,
-				name, value) == false) {
+		if (save_complete_handle_attr_value(
+			    ctx, node_name, name, value) == false) {
 			dom_string_unref(value);
 			dom_string_unref(name);
 			return false;
@@ -828,10 +822,9 @@ save_complete_handle_attr(save_complete_ctx *ctx,
 	return true;
 }
 
-static bool
-save_complete_handle_attrs(save_complete_ctx *ctx,
-			   dom_string *node_name,
-			   dom_namednodemap *attrs)
+static bool save_complete_handle_attrs(save_complete_ctx *ctx,
+				       dom_string *node_name,
+				       dom_namednodemap *attrs)
 {
 	uint32_t length, i;
 	dom_exception error;
@@ -843,7 +836,7 @@ save_complete_handle_attrs(save_complete_ctx *ctx,
 	for (i = 0; i < length; i++) {
 		dom_attr *attr;
 
-		error = dom_namednodemap_item(attrs, i, (void *) &attr);
+		error = dom_namednodemap_item(attrs, i, (void *)&attr);
 		if (error != DOM_NO_ERR)
 			return false;
 
@@ -861,10 +854,9 @@ save_complete_handle_attrs(save_complete_ctx *ctx,
 	return true;
 }
 
-static bool
-save_complete_handle_element(save_complete_ctx *ctx,
-			     dom_node *node,
-			     save_complete_event_type event_type)
+static bool save_complete_handle_element(save_complete_ctx *ctx,
+					 dom_node *node,
+					 save_complete_event_type event_type)
 {
 	dom_string *name;
 	dom_namednodemap *attrs;
@@ -897,9 +889,8 @@ save_complete_handle_element(save_complete_ctx *ctx,
 		} else {
 			/* Elide meta charsets */
 			dom_string *value;
-			error = dom_element_get_attribute(node,
-						  corestring_dom_http_equiv,
-						  &value);
+			error = dom_element_get_attribute(
+				node, corestring_dom_http_equiv, &value);
 			if (error != DOM_NO_ERR) {
 				dom_string_unref(name);
 				return false;
@@ -907,8 +898,8 @@ save_complete_handle_element(save_complete_ctx *ctx,
 
 			if (value != NULL) {
 				if (dom_string_length(value) ==
-					SLEN("Content-Type") &&
-					strncasecmp(dom_string_data(value),
+					    SLEN("Content-Type") &&
+				    strncasecmp(dom_string_data(value),
 						"Content-Type",
 						SLEN("Content-Type")) == 0)
 					process = false;
@@ -917,8 +908,8 @@ save_complete_handle_element(save_complete_ctx *ctx,
 			} else {
 				bool yes;
 
-				error = dom_element_has_attribute(node,
-						corestring_dom_charset, &yes);
+				error = dom_element_has_attribute(
+					node, corestring_dom_charset, &yes);
 				if (error != DOM_NO_ERR) {
 					dom_string_unref(name);
 					return false;
@@ -929,8 +920,8 @@ save_complete_handle_element(save_complete_ctx *ctx,
 			}
 		}
 	} else if (event_type == EVENT_LEAVE &&
-			((name_len == SLEN("link") &&
-			strncasecmp(name_data, "link", name_len) == 0))) {
+		   ((name_len == SLEN("link") &&
+		     strncasecmp(name_data, "link", name_len) == 0))) {
 		/* Don't emit close tags for void elements */
 		process = false;
 	}
@@ -966,7 +957,7 @@ save_complete_handle_element(save_complete_ctx *ctx,
 
 	/* Rewrite contents of style elements */
 	if (event_type == EVENT_ENTER && name_len == SLEN("style") &&
-			strncasecmp(name_data, "style", name_len) == 0) {
+	    strncasecmp(name_data, "style", name_len) == 0) {
 		dom_string *content;
 
 		error = dom_node_get_text_content(node, &content);
@@ -981,11 +972,11 @@ save_complete_handle_element(save_complete_ctx *ctx,
 
 			/* Rewrite @import rules */
 			rewritten = save_complete_rewrite_stylesheet_urls(
-					ctx,
-					(const uint8_t *)dom_string_data(content),
-					dom_string_byte_length(content),
-					ctx->base,
-					&len);
+				ctx,
+				(const uint8_t *)dom_string_data(content),
+				dom_string_byte_length(content),
+				ctx->base,
+				&len);
 			if (rewritten == NULL) {
 				dom_string_unref(content);
 				dom_string_unref(name);
@@ -1001,11 +992,11 @@ save_complete_handle_element(save_complete_ctx *ctx,
 
 		ctx->iter_state = STATE_IN_STYLE;
 	} else if (event_type == EVENT_ENTER && name_len == SLEN("head") &&
-			strncasecmp(name_data, "head", name_len) == 0) {
+		   strncasecmp(name_data, "head", name_len) == 0) {
 		/* If this is a HEAD element, insert a meta charset */
 		fputs("<META http-equiv=\"Content-Type\" "
-				"content=\"text/html; charset=utf-8\">",
-				ctx->fp);
+		      "content=\"text/html; charset=utf-8\">",
+		      ctx->fp);
 	}
 
 	dom_string_unref(name);
@@ -1013,10 +1004,9 @@ save_complete_handle_element(save_complete_ctx *ctx,
 	return true;
 }
 
-static bool
-save_complete_node_handler(dom_node *node,
-			   save_complete_event_type event_type,
-			   void *ctxin)
+static bool save_complete_node_handler(dom_node *node,
+				       save_complete_event_type event_type,
+				       void *ctxin)
 {
 	save_complete_ctx *ctx = ctxin;
 	dom_node_type type;
@@ -1053,13 +1043,15 @@ save_complete_node_handler(dom_node *node,
 				text_data = dom_string_data(text);
 				text_len = dom_string_byte_length(text);
 
-				ret = utf8_to_html(text_data, "UTF-8",
-						text_len, &escaped);
+				ret = utf8_to_html(
+					text_data, "UTF-8", text_len, &escaped);
 				if (ret != NSERROR_OK)
 					return false;
 
-				fwrite(escaped, sizeof(*escaped),
-						strlen(escaped), ctx->fp);
+				fwrite(escaped,
+				       sizeof(*escaped),
+				       strlen(escaped),
+				       ctx->fp);
 
 				free(escaped);
 
@@ -1103,8 +1095,10 @@ save_complete_node_handler(dom_node *node,
 			name_len = dom_string_byte_length(name);
 
 			if (name_len > 0)
-				fprintf(ctx->fp, " PUBLIC \"%.*s\"",
-						(int) name_len, name_data);
+				fprintf(ctx->fp,
+					" PUBLIC \"%.*s\"",
+					(int)name_len,
+					name_data);
 
 			dom_string_unref(name);
 		}
@@ -1118,8 +1112,10 @@ save_complete_node_handler(dom_node *node,
 			name_len = dom_string_byte_length(name);
 
 			if (name_len > 0)
-				fprintf(ctx->fp, " \"%.*s\"",
-						(int) name_len, name_data);
+				fprintf(ctx->fp,
+					" \"%.*s\"",
+					(int)name_len,
+					name_data);
 
 			dom_string_unref(name);
 		}
@@ -1134,10 +1130,9 @@ save_complete_node_handler(dom_node *node,
 	return true;
 }
 
-static nserror
-save_complete_save_html_document(save_complete_ctx *ctx,
-				 hlcache_handle *c,
-				 bool index)
+static nserror save_complete_save_html_document(save_complete_ctx *ctx,
+						hlcache_handle *c,
+						bool index)
 {
 	nserror ret;
 	FILE *fp;
@@ -1202,9 +1197,7 @@ save_complete_save_html_document(save_complete_ctx *ctx,
  * \return  true on success, false on error and error reported
  */
 static nserror
-save_complete_save_html(save_complete_ctx *ctx,
-			hlcache_handle *c,
-			bool index)
+save_complete_save_html(save_complete_ctx *ctx, hlcache_handle *c, bool index)
 {
 	nserror res;
 
@@ -1254,10 +1247,10 @@ static nserror save_complete_inventory(save_complete_ctx *ctx)
 	}
 
 	for (entry = ctx->list; entry != NULL; entry = entry->next) {
-		fprintf(fp, "%p %s\n",
+		fprintf(fp,
+			"%p %s\n",
 			entry->content,
-			nsurl_access(hlcache_handle_get_url(
-					     entry->content)));
+			nsurl_access(hlcache_handle_get_url(entry->content)));
 	}
 
 	fclose(fp);
@@ -1277,8 +1270,11 @@ static nserror regcomp_wrapper(regex_t *preg, const char *regex, int cflags)
 	if (r) {
 		char errbuf[200];
 		regerror(r, preg, errbuf, sizeof errbuf);
-		NSLOG(neosurf, INFO, "Failed to compile regexp '%s': %s\n",
-		      regex, errbuf);
+		NSLOG(neosurf,
+		      INFO,
+		      "Failed to compile regexp '%s': %s\n",
+		      regex,
+		      errbuf);
 		return NSERROR_INIT_FAILED;
 	}
 	return NSERROR_OK;
@@ -1290,31 +1286,31 @@ void save_complete_init(void)
 {
 	/* Match an @import rule - see CSS 2.1 G.1. */
 	regcomp_wrapper(&save_complete_import_re,
-			"@import"		/* IMPORT_SYM */
-			"[ \t\r\n\f]*"		/* S* */
+			"@import" /* IMPORT_SYM */
+			"[ \t\r\n\f]*" /* S* */
 			/* 1 */
-			"("			/* [ */
+			"(" /* [ */
 			/* 2 3 */
-			"\"(([^\"]|[\\]\")*)\""	/* STRING (approximated) */
+			"\"(([^\"]|[\\]\")*)\"" /* STRING (approximated) */
 			"|"
 			/* 4 5 */
 			"'(([^']|[\\]')*)'"
-			"|"			/* | */
-			"url\\([ \t\r\n\f]*"	/* URI (approximated) */
-			     /* 6 7 */
-			     "\"(([^\"]|[\\]\")*)\""
-			     "[ \t\r\n\f]*\\)"
+			"|" /* | */
+			"url\\([ \t\r\n\f]*" /* URI (approximated) */
+			/* 6 7 */
+			"\"(([^\"]|[\\]\")*)\""
+			"[ \t\r\n\f]*\\)"
 			"|"
 			"url\\([ \t\r\n\f]*"
-			    /* 8 9 */
-			     "'(([^']|[\\]')*)'"
-			     "[ \t\r\n\f]*\\)"
+			/* 8 9 */
+			"'(([^']|[\\]')*)'"
+			"[ \t\r\n\f]*\\)"
 			"|"
 			"url\\([ \t\r\n\f]*"
-			   /* 10 */
-			     "([^) \t\r\n\f]*)"
-			     "[ \t\r\n\f]*\\)"
-			")",			/* ] */
+			/* 10 */
+			"([^) \t\r\n\f]*)"
+			"[ \t\r\n\f]*\\)"
+			")", /* ] */
 			REG_EXTENDED | REG_ICASE);
 }
 
@@ -1326,10 +1322,9 @@ nserror save_complete_finalise(void)
 }
 
 /* Documented in save_complete.h */
-nserror
-save_complete(hlcache_handle *c,
-	      const char *path,
-	      save_complete_set_type_cb set_type)
+nserror save_complete(hlcache_handle *c,
+		      const char *path,
+		      save_complete_set_type_cb set_type)
 {
 	nserror result;
 	save_complete_ctx ctx;

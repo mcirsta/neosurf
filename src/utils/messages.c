@@ -61,20 +61,19 @@ static struct hash_table *messages_create_ctx(int hash_size)
 		const char *key;
 		const char *value;
 	} fallback[] = {
-		{ "LoginDescription",
-		  "The site %s is requesting your username and password. "
-		  "The realm is \"%s\""},
-		{ "PrivacyDescription",
-		  "A privacy error occurred while communicating with %s this "
-		  "may be a site configuration error or an attempt to steal "
-		  "private information (passwords, messages or credit cards)"},
-		{ "TimeoutDescription",
-		  "A connection to %s could not be established. The site may "
-		  "be temporarily unavailable or too busy to respond."},
-		{ "FetchErrorDescription",
-		  "An error occurred when connecting to %s"},
-		{ NULL, NULL}
-	};
+		{"LoginDescription",
+		 "The site %s is requesting your username and password. "
+		 "The realm is \"%s\""},
+		{"PrivacyDescription",
+		 "A privacy error occurred while communicating with %s this "
+		 "may be a site configuration error or an attempt to steal "
+		 "private information (passwords, messages or credit cards)"},
+		{"TimeoutDescription",
+		 "A connection to %s could not be established. The site may "
+		 "be temporarily unavailable or too busy to respond."},
+		{"FetchErrorDescription",
+		 "An error occurred when connecting to %s"},
+		{NULL, NULL}};
 	nctx = hash_create(hash_size);
 
 	if (nctx != NULL) {
@@ -126,7 +125,8 @@ static nserror messages_load_ctx(const char *path, struct hash_table **ctx)
 
 	nctx = messages_create_ctx(HASH_SIZE);
 	if (nctx == NULL) {
-		NSLOG(neosurf, INFO,
+		NSLOG(neosurf,
+		      INFO,
 		      "Unable to create hash table for messages file %s",
 		      path);
 		return NSERROR_NOMEM;
@@ -150,8 +150,7 @@ static nserror messages_load_ctx(const char *path, struct hash_table **ctx)
  * \param  ctx  context of messages file to look up in
  * \return value of message, or key if not found
  */
-static const char *
-messages_get_ctx(const char *key, struct hash_table *ctx)
+static const char *messages_get_ctx(const char *key, struct hash_table *ctx)
 {
 	const char *r = NULL;
 
@@ -401,7 +400,8 @@ const char *messages_get_errorcode(nserror code)
 
 	case NSERROR_BAD_CERTS:
 		/* Certificate chain verification failure */
-		return messages_get_ctx("CertificateVerificationNeeded", messages_hash);
+		return messages_get_ctx("CertificateVerificationNeeded",
+					messages_hash);
 
 	case NSERROR_TIMEOUT:
 		/* Operation timed out */
@@ -449,7 +449,8 @@ const char *messages_get_sslcode(ssl_cert_err code)
 
 	case SSL_CERT_ERR_CHAIN_SELF_SIGNED:
 		/* This certificate chain is self signed */
-		return messages_get_ctx("SSLCertErrChainSelfSigned", messages_hash);
+		return messages_get_ctx("SSLCertErrChainSelfSigned",
+					messages_hash);
 
 	case SSL_CERT_ERR_REVOKED:
 		/* This certificate has been revoked */
@@ -457,12 +458,12 @@ const char *messages_get_sslcode(ssl_cert_err code)
 
 	case SSL_CERT_ERR_HOSTNAME_MISMATCH:
 		/* Common name is invalid */
-		return messages_get_ctx("SSLCertErrHostnameMismatch", messages_hash);
+		return messages_get_ctx("SSLCertErrHostnameMismatch",
+					messages_hash);
 
 	case SSL_CERT_ERR_CERT_MISSING:
 		/* Common name is invalid */
 		return messages_get_ctx("SSLCertErrCertMissing", messages_hash);
-
 	}
 
 	/* The switch has no default, so the compiler should tell us when we

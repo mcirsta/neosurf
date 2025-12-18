@@ -53,19 +53,18 @@ colour nscolours[NSCOLOUR__COUNT];
  * \param[out] fg_bad     Returns the bad foreground colour.
  * \param[out] border     Returns the border colour.
  */
-static nserror nscolour__get(
-		const char *name_bg,
-		const char *name_fg,
-		unsigned bg_num,
-		unsigned bg_den,
-		colour *bg,
-		colour *bg_hover,
-		colour *fg,
-		colour *fg_subtle,
-		colour *fg_faded,
-		colour *fg_good,
-		colour *fg_bad,
-		colour *border)
+static nserror nscolour__get(const char *name_bg,
+			     const char *name_fg,
+			     unsigned bg_num,
+			     unsigned bg_den,
+			     colour *bg,
+			     colour *bg_hover,
+			     colour *fg,
+			     colour *fg_subtle,
+			     colour *fg_faded,
+			     colour *fg_good,
+			     colour *fg_bad,
+			     colour *border)
 {
 	nserror res;
 	bool dark_mode;
@@ -98,9 +97,8 @@ static nserror nscolour__get(
 	dark_mode = colour_lightness(*fg) > colour_lightness(*bg);
 
 	if (bg_hover != NULL) {
-		*bg_hover = dark_mode ?
-				half_lighten_colour(*bg) :
-				half_darken_colour(*bg);
+		*bg_hover = dark_mode ? half_lighten_colour(*bg)
+				      : half_darken_colour(*bg);
 	}
 
 	if (fg_subtle != NULL) {
@@ -112,13 +110,14 @@ static nserror nscolour__get(
 	}
 
 	if (fg_good != NULL) {
-		*fg_good = colour_engorge_component(*fg, !dark_mode,
-				PLOT_COLOUR_COMPONENT_GREEN);
+		*fg_good = colour_engorge_component(
+			*fg, !dark_mode, PLOT_COLOUR_COMPONENT_GREEN);
 	}
 
 	if (fg_bad != NULL) {
-		*fg_bad = colour_engorge_component(*fg, !dark_mode,
-				PLOT_COLOUR_COMPONENT_RED);
+		*fg_bad = colour_engorge_component(*fg,
+						   !dark_mode,
+						   PLOT_COLOUR_COMPONENT_RED);
 	}
 
 	if (border != NULL) {
@@ -133,71 +132,82 @@ nserror nscolour_update(void)
 {
 	nserror res;
 
-	res = nscolour__get("Canvas", "CanvasText", 16, 16,
-			&nscolours[NSCOLOUR_WIN_EVEN_BG],
-			&nscolours[NSCOLOUR_WIN_EVEN_BG_HOVER],
-			&nscolours[NSCOLOUR_WIN_EVEN_FG],
-			&nscolours[NSCOLOUR_WIN_EVEN_FG_SUBTLE],
-			&nscolours[NSCOLOUR_WIN_EVEN_FG_FADED],
-			&nscolours[NSCOLOUR_WIN_EVEN_FG_GOOD],
-			&nscolours[NSCOLOUR_WIN_EVEN_FG_BAD],
-			&nscolours[NSCOLOUR_WIN_EVEN_BORDER]);
+	res = nscolour__get("Canvas",
+			    "CanvasText",
+			    16,
+			    16,
+			    &nscolours[NSCOLOUR_WIN_EVEN_BG],
+			    &nscolours[NSCOLOUR_WIN_EVEN_BG_HOVER],
+			    &nscolours[NSCOLOUR_WIN_EVEN_FG],
+			    &nscolours[NSCOLOUR_WIN_EVEN_FG_SUBTLE],
+			    &nscolours[NSCOLOUR_WIN_EVEN_FG_FADED],
+			    &nscolours[NSCOLOUR_WIN_EVEN_FG_GOOD],
+			    &nscolours[NSCOLOUR_WIN_EVEN_FG_BAD],
+			    &nscolours[NSCOLOUR_WIN_EVEN_BORDER]);
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
-	res = nscolour__get("Canvas", "CanvasText", 15, 16,
-			&nscolours[NSCOLOUR_WIN_ODD_BG],
-			&nscolours[NSCOLOUR_WIN_ODD_BG_HOVER],
-			&nscolours[NSCOLOUR_WIN_ODD_FG],
-			&nscolours[NSCOLOUR_WIN_ODD_FG_SUBTLE],
-			&nscolours[NSCOLOUR_WIN_ODD_FG_FADED],
-			&nscolours[NSCOLOUR_WIN_ODD_FG_GOOD],
-			&nscolours[NSCOLOUR_WIN_ODD_FG_BAD],
-			&nscolours[NSCOLOUR_WIN_ODD_BORDER]);
+	res = nscolour__get("Canvas",
+			    "CanvasText",
+			    15,
+			    16,
+			    &nscolours[NSCOLOUR_WIN_ODD_BG],
+			    &nscolours[NSCOLOUR_WIN_ODD_BG_HOVER],
+			    &nscolours[NSCOLOUR_WIN_ODD_FG],
+			    &nscolours[NSCOLOUR_WIN_ODD_FG_SUBTLE],
+			    &nscolours[NSCOLOUR_WIN_ODD_FG_FADED],
+			    &nscolours[NSCOLOUR_WIN_ODD_FG_GOOD],
+			    &nscolours[NSCOLOUR_WIN_ODD_FG_BAD],
+			    &nscolours[NSCOLOUR_WIN_ODD_BORDER]);
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
-	res = nscolour__get("Highlight", "HighlightText", 16, 16,
-			&nscolours[NSCOLOUR_SEL_BG],
-			NULL,
-			&nscolours[NSCOLOUR_SEL_FG],
-			&nscolours[NSCOLOUR_SEL_FG_SUBTLE],
-			NULL,
-			NULL,
-			NULL,
-			NULL);
+	res = nscolour__get("Highlight",
+			    "HighlightText",
+			    16,
+			    16,
+			    &nscolours[NSCOLOUR_SEL_BG],
+			    NULL,
+			    &nscolours[NSCOLOUR_SEL_FG],
+			    &nscolours[NSCOLOUR_SEL_FG_SUBTLE],
+			    NULL,
+			    NULL,
+			    NULL,
+			    NULL);
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
-	res = ns_system_colour_char("Canvas",
-			&nscolours[NSCOLOUR_SCROLL_WELL]);
+	res = ns_system_colour_char("Canvas", &nscolours[NSCOLOUR_SCROLL_WELL]);
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
-	res = nscolour__get("ButtonFace", "ButtonText", 16, 16,
-			&nscolours[NSCOLOUR_BUTTON_BG],
-			NULL,
-			&nscolours[NSCOLOUR_BUTTON_FG],
-			NULL,
-			NULL,
-			NULL,
-			NULL,
-			NULL);
+	res = nscolour__get("ButtonFace",
+			    "ButtonText",
+			    16,
+			    16,
+			    &nscolours[NSCOLOUR_BUTTON_BG],
+			    NULL,
+			    &nscolours[NSCOLOUR_BUTTON_FG],
+			    NULL,
+			    NULL,
+			    NULL,
+			    NULL,
+			    NULL);
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
-	nscolours[NSCOLOUR_TEXT_INPUT_BG] =
-			colour_to_bw_nearest(nscolours[NSCOLOUR_WIN_EVEN_BG]);
-	nscolours[NSCOLOUR_TEXT_INPUT_FG] =
-			colour_to_bw_nearest(nscolours[NSCOLOUR_WIN_EVEN_FG]);
-	nscolours[NSCOLOUR_TEXT_INPUT_FG_SUBTLE] =
-			blend_colour(nscolours[NSCOLOUR_TEXT_INPUT_BG],
-			             nscolours[NSCOLOUR_TEXT_INPUT_FG]);
+	nscolours[NSCOLOUR_TEXT_INPUT_BG] = colour_to_bw_nearest(
+		nscolours[NSCOLOUR_WIN_EVEN_BG]);
+	nscolours[NSCOLOUR_TEXT_INPUT_FG] = colour_to_bw_nearest(
+		nscolours[NSCOLOUR_WIN_EVEN_FG]);
+	nscolours[NSCOLOUR_TEXT_INPUT_FG_SUBTLE] = blend_colour(
+		nscolours[NSCOLOUR_TEXT_INPUT_BG],
+		nscolours[NSCOLOUR_TEXT_INPUT_FG]);
 
 	return NSERROR_OK;
 }
@@ -210,67 +220,68 @@ nserror nscolour_get_stylesheet(const char **stylesheet_out)
 
 	assert(stylesheet_out != NULL);
 
-	ret = snprintf(buffer, sizeof(buffer),
-			".ns-odd-bg {\n"
-			"\tbackground-color: #%06"PRIx32";\n"
-			"}\n"
-			".ns-odd-bg-hover {\n"
-			"\tbackground-color: #%06"PRIx32";\n"
-			"}\n"
-			".ns-odd-fg {\n"
-			"\tcolor: #%06"PRIx32";\n"
-			"}\n"
-			".ns-odd-fg-subtle {\n"
-			"\tcolor: #%06"PRIx32";\n"
-			"}\n"
-			".ns-odd-fg-faded {\n"
-			"\tcolor: #%06"PRIx32";\n"
-			"}\n"
-			".ns-odd-fg-good {\n"
-			"\tcolor: #%06"PRIx32";\n"
-			"}\n"
-			".ns-odd-fg-bad {\n"
-			"\tcolor: #%06"PRIx32";\n"
-			"}\n"
-			".ns-even-bg {\n"
-			"\tbackground-color: #%06"PRIx32";\n"
-			"}\n"
-			".ns-even-bg-hover {\n"
-			"\tbackground-color: #%06"PRIx32";\n"
-			"}\n"
-			".ns-even-fg {\n"
-			"\tcolor: #%06"PRIx32";\n"
-			"}\n"
-			".ns-even-fg-subtle {\n"
-			"\tcolor: #%06"PRIx32";\n"
-			"}\n"
-			".ns-even-fg-faded {\n"
-			"\tcolor: #%06"PRIx32";\n"
-			"}\n"
-			".ns-even-fg-good {\n"
-			"\tcolor: #%06"PRIx32";\n"
-			"}\n"
-			".ns-even-fg-bad {\n"
-			"\tcolor: #%06"PRIx32";\n"
-			"}\n"
-			".ns-border {\n"
-			"\tborder-color: #%06"PRIx32";\n"
-			"}\n",
-			colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_BG]),
-			colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_BG_HOVER]),
-			colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_FG]),
-			colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_FG_SUBTLE]),
-			colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_FG_FADED]),
-			colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_FG_GOOD]),
-			colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_FG_BAD]),
-			colour_rb_swap(nscolours[NSCOLOUR_WIN_EVEN_BG]),
-			colour_rb_swap(nscolours[NSCOLOUR_WIN_EVEN_BG_HOVER]),
-			colour_rb_swap(nscolours[NSCOLOUR_WIN_EVEN_FG]),
-			colour_rb_swap(nscolours[NSCOLOUR_WIN_EVEN_FG_SUBTLE]),
-			colour_rb_swap(nscolours[NSCOLOUR_WIN_EVEN_FG_FADED]),
-			colour_rb_swap(nscolours[NSCOLOUR_WIN_EVEN_FG_GOOD]),
-			colour_rb_swap(nscolours[NSCOLOUR_WIN_EVEN_FG_BAD]),
-			colour_rb_swap(nscolours[NSCOLOUR_WIN_EVEN_BORDER]));
+	ret = snprintf(buffer,
+		       sizeof(buffer),
+		       ".ns-odd-bg {\n"
+		       "\tbackground-color: #%06" PRIx32 ";\n"
+		       "}\n"
+		       ".ns-odd-bg-hover {\n"
+		       "\tbackground-color: #%06" PRIx32 ";\n"
+		       "}\n"
+		       ".ns-odd-fg {\n"
+		       "\tcolor: #%06" PRIx32 ";\n"
+		       "}\n"
+		       ".ns-odd-fg-subtle {\n"
+		       "\tcolor: #%06" PRIx32 ";\n"
+		       "}\n"
+		       ".ns-odd-fg-faded {\n"
+		       "\tcolor: #%06" PRIx32 ";\n"
+		       "}\n"
+		       ".ns-odd-fg-good {\n"
+		       "\tcolor: #%06" PRIx32 ";\n"
+		       "}\n"
+		       ".ns-odd-fg-bad {\n"
+		       "\tcolor: #%06" PRIx32 ";\n"
+		       "}\n"
+		       ".ns-even-bg {\n"
+		       "\tbackground-color: #%06" PRIx32 ";\n"
+		       "}\n"
+		       ".ns-even-bg-hover {\n"
+		       "\tbackground-color: #%06" PRIx32 ";\n"
+		       "}\n"
+		       ".ns-even-fg {\n"
+		       "\tcolor: #%06" PRIx32 ";\n"
+		       "}\n"
+		       ".ns-even-fg-subtle {\n"
+		       "\tcolor: #%06" PRIx32 ";\n"
+		       "}\n"
+		       ".ns-even-fg-faded {\n"
+		       "\tcolor: #%06" PRIx32 ";\n"
+		       "}\n"
+		       ".ns-even-fg-good {\n"
+		       "\tcolor: #%06" PRIx32 ";\n"
+		       "}\n"
+		       ".ns-even-fg-bad {\n"
+		       "\tcolor: #%06" PRIx32 ";\n"
+		       "}\n"
+		       ".ns-border {\n"
+		       "\tborder-color: #%06" PRIx32 ";\n"
+		       "}\n",
+		       colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_BG]),
+		       colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_BG_HOVER]),
+		       colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_FG]),
+		       colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_FG_SUBTLE]),
+		       colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_FG_FADED]),
+		       colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_FG_GOOD]),
+		       colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_FG_BAD]),
+		       colour_rb_swap(nscolours[NSCOLOUR_WIN_EVEN_BG]),
+		       colour_rb_swap(nscolours[NSCOLOUR_WIN_EVEN_BG_HOVER]),
+		       colour_rb_swap(nscolours[NSCOLOUR_WIN_EVEN_FG]),
+		       colour_rb_swap(nscolours[NSCOLOUR_WIN_EVEN_FG_SUBTLE]),
+		       colour_rb_swap(nscolours[NSCOLOUR_WIN_EVEN_FG_FADED]),
+		       colour_rb_swap(nscolours[NSCOLOUR_WIN_EVEN_FG_GOOD]),
+		       colour_rb_swap(nscolours[NSCOLOUR_WIN_EVEN_FG_BAD]),
+		       colour_rb_swap(nscolours[NSCOLOUR_WIN_EVEN_BORDER]));
 	assert(ret > 0 && (size_t)ret < sizeof(buffer));
 	if (ret < 0 || (size_t)ret >= sizeof(buffer)) {
 		/* Error or buffer too small */

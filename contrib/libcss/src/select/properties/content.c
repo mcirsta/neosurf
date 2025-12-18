@@ -14,8 +14,8 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_content(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error
+css__cascade_content(uint32_t opv, css_style *style, css_select_state *state)
 {
 	uint16_t value = CSS_CONTENT_INHERIT;
 	css_computed_content_item *content = NULL;
@@ -35,12 +35,15 @@ css_error css__cascade_content(uint32_t opv, css_style *style,
 				lwc_string *he;
 				css_computed_content_item *temp;
 
-				css__stylesheet_string_get(style->sheet,
-					*((css_code_t *) style->bytecode), &he);
+				css__stylesheet_string_get(
+					style->sheet,
+					*((css_code_t *)style->bytecode),
+					&he);
 
-				temp = realloc(content,
-						(n_contents + 1) *
-						sizeof(css_computed_content_item));
+				temp = realloc(
+					content,
+					(n_contents +
+					 1) * sizeof(css_computed_content_item));
 				if (temp == NULL) {
 					if (content != NULL) {
 						free(content);
@@ -49,49 +52,67 @@ css_error css__cascade_content(uint32_t opv, css_style *style,
 				}
 
 				content = temp;
-				memset(content + n_contents, 0, sizeof(css_computed_content_item));
+				memset(content + n_contents,
+				       0,
+				       sizeof(css_computed_content_item));
 
 				switch (v & 0xff) {
 				case CONTENT_COUNTER:
-					advance_bytecode(style, sizeof(css_code_t));
+					advance_bytecode(style,
+							 sizeof(css_code_t));
 
 					content[n_contents].type =
 						CSS_COMPUTED_CONTENT_COUNTER;
-					content[n_contents].data.counter.name = he;
-					content[n_contents].data.counter.style = v >> CONTENT_COUNTER_STYLE_SHIFT;
+					content[n_contents].data.counter.name =
+						he;
+					content[n_contents].data.counter.style =
+						v >>
+						CONTENT_COUNTER_STYLE_SHIFT;
 					break;
-				case CONTENT_COUNTERS:
-				{
+				case CONTENT_COUNTERS: {
 					lwc_string *sep;
 
-					advance_bytecode(style, sizeof(css_code_t));
+					advance_bytecode(style,
+							 sizeof(css_code_t));
 
-					css__stylesheet_string_get(style->sheet, *((css_code_t *) style->bytecode), &sep);
-					advance_bytecode(style, sizeof(css_code_t));
+					css__stylesheet_string_get(
+						style->sheet,
+						*((css_code_t *)
+							  style->bytecode),
+						&sep);
+					advance_bytecode(style,
+							 sizeof(css_code_t));
 
 					content[n_contents].type =
 						CSS_COMPUTED_CONTENT_COUNTERS;
-					content[n_contents].data.counters.name = he;
-					content[n_contents].data.counters.sep = sep;
-					content[n_contents].data.counters.style = v >> CONTENT_COUNTERS_STYLE_SHIFT;
-				}
-					break;
+					content[n_contents].data.counters.name =
+						he;
+					content[n_contents].data.counters.sep =
+						sep;
+					content[n_contents]
+						.data.counters.style =
+						v >>
+						CONTENT_COUNTERS_STYLE_SHIFT;
+				} break;
 				case CONTENT_URI:
-					advance_bytecode(style, sizeof(css_code_t));
+					advance_bytecode(style,
+							 sizeof(css_code_t));
 
 					content[n_contents].type =
 						CSS_COMPUTED_CONTENT_URI;
 					content[n_contents].data.uri = he;
 					break;
 				case CONTENT_ATTR:
-					advance_bytecode(style, sizeof(css_code_t));
+					advance_bytecode(style,
+							 sizeof(css_code_t));
 
 					content[n_contents].type =
 						CSS_COMPUTED_CONTENT_ATTR;
 					content[n_contents].data.attr = he;
 					break;
 				case CONTENT_STRING:
-					advance_bytecode(style, sizeof(css_code_t));
+					advance_bytecode(style,
+							 sizeof(css_code_t));
 
 					content[n_contents].type =
 						CSS_COMPUTED_CONTENT_STRING;
@@ -117,7 +138,7 @@ css_error css__cascade_content(uint32_t opv, css_style *style,
 
 				n_contents++;
 
-				v = *((uint32_t *) style->bytecode);
+				v = *((uint32_t *)style->bytecode);
 				advance_bytecode(style, sizeof(v));
 			}
 		}
@@ -127,8 +148,9 @@ css_error css__cascade_content(uint32_t opv, css_style *style,
 	if (n_contents > 0) {
 		css_computed_content_item *temp;
 
-		temp = realloc(content, (n_contents + 1) *
-				sizeof(css_computed_content_item));
+		temp = realloc(content,
+			       (n_contents + 1) *
+				       sizeof(css_computed_content_item));
 		if (temp == NULL) {
 			free(content);
 			return CSS_NOMEM;
@@ -139,8 +161,10 @@ css_error css__cascade_content(uint32_t opv, css_style *style,
 		content[n_contents].type = CSS_COMPUTED_CONTENT_NONE;
 	}
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			getFlagValue(opv))) {
+	if (css__outranks_existing(getOpcode(opv),
+				   isImportant(opv),
+				   state,
+				   getFlagValue(opv))) {
 		css_error error;
 
 		error = set_content(state->computed, value, content);
@@ -155,17 +179,17 @@ css_error css__cascade_content(uint32_t opv, css_style *style,
 	return CSS_OK;
 }
 
-css_error css__set_content_from_hint(const css_hint *hint,
-		css_computed_style *style)
+css_error
+css__set_content_from_hint(const css_hint *hint, css_computed_style *style)
 {
 	css_computed_content_item *item;
 	css_error error;
 
 	error = set_content(style, hint->status, hint->data.content);
 
-	for (item = hint->data.content; item != NULL &&
-			item->type != CSS_COMPUTED_CONTENT_NONE;
-			item++) {
+	for (item = hint->data.content;
+	     item != NULL && item->type != CSS_COMPUTED_CONTENT_NONE;
+	     item++) {
 		switch (item->type) {
 		case CSS_COMPUTED_CONTENT_STRING:
 			lwc_string_unref(item->data.string);
@@ -199,9 +223,8 @@ css_error css__initial_content(css_select_state *state)
 	return set_content(state->computed, CSS_CONTENT_NORMAL, NULL);
 }
 
-css_error css__copy_content(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error
+css__copy_content(const css_computed_style *from, css_computed_style *to)
 {
 	css_error error;
 	css_computed_content_item *copy = NULL;
@@ -226,13 +249,12 @@ css_error css__copy_content(
 }
 
 css_error css__compose_content(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+			       const css_computed_style *child,
+			       css_computed_style *result)
 {
 	const css_computed_content_item *items = NULL;
 	uint8_t type = get_content(child, &items);
 
-	return css__copy_content(
-			type == CSS_CONTENT_INHERIT ? parent : child,
-			result);
+	return css__copy_content(type == CSS_CONTENT_INHERIT ? parent : child,
+				 result);
 }

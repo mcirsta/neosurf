@@ -23,7 +23,7 @@
 
 #if defined(__NetBSD__)
 #include <sys/param.h>
-#if (defined(__NetBSD_Version__) && __NetBSD_Prereq__(8,0,0))
+#if (defined(__NetBSD_Version__) && __NetBSD_Prereq__(8, 0, 0))
 #define NetBSD_v8
 #endif
 #endif
@@ -36,24 +36,18 @@
 
 /* Try to detect which features the target OS supports */
 
-#if (defined(_GNU_SOURCE) && \
-     !defined(__APPLE__) || \
-     defined(__amigaos4__) || \
-     defined(__HAIKU__) || \
-     (defined(_POSIX_C_SOURCE) && ((_POSIX_C_SOURCE - 0) >= 200809L)) && \
-     !defined(__riscos__))
+#if (defined(_GNU_SOURCE) && !defined(__APPLE__) || defined(__amigaos4__) ||   \
+     defined(__HAIKU__) ||                                                     \
+     (defined(_POSIX_C_SOURCE) && ((_POSIX_C_SOURCE - 0) >= 200809L)) &&       \
+	     !defined(__riscos__))
 #define HAVE_STRNDUP
 #else
 #undef HAVE_STRNDUP
 char *strndup(const char *s, size_t n);
 #endif
 
-#if ((defined(_GNU_SOURCE) ||			\
-      defined(NS_NEW_GLIBC) || \
-      defined(__APPLE__) ||			\
-      defined(__HAIKU__) ||			\
-      defined(__NetBSD__) ||			\
-      defined(__OpenBSD__)) &&			\
+#if ((defined(_GNU_SOURCE) || defined(NS_NEW_GLIBC) || defined(__APPLE__) ||   \
+      defined(__HAIKU__) || defined(__NetBSD__) || defined(__OpenBSD__)) &&    \
      !defined(__serenity__))
 #define HAVE_STRCASESTR
 #else
@@ -64,12 +58,8 @@ char *strcasestr(const char *haystack, const char *needle);
 /* Although these platforms might have strftime or strptime they
  *  appear not to support the time_t seconds format specifier.
  */
-#if (defined(_WIN32) ||	      \
-     defined(__riscos__) ||   \
-     defined(__HAIKU__) ||    \
-     defined(__BEOS__) ||     \
-     defined(__amigaos4__) || \
-     defined(__AMIGA__) ||    \
+#if (defined(_WIN32) || defined(__riscos__) || defined(__HAIKU__) ||           \
+     defined(__BEOS__) || defined(__amigaos4__) || defined(__AMIGA__) ||       \
      defined(__MINT__))
 #undef HAVE_STRPTIME
 #undef HAVE_STRFTIME
@@ -81,11 +71,8 @@ char *strcasestr(const char *haystack, const char *needle);
 /* For some reason, UnixLib defines this unconditionally. Assume we're using
  *  UnixLib if building for RISC OS.
  */
-#if ((defined(_GNU_SOURCE) && !defined(__APPLE__)) ||	\
-     defined(NS_NEW_GLIBC) ||				\
-     defined(__riscos__) ||				\
-     defined(__HAIKU__) ||				\
-     defined(NetBSD_v8))
+#if ((defined(_GNU_SOURCE) && !defined(__APPLE__)) || defined(NS_NEW_GLIBC) || \
+     defined(__riscos__) || defined(__HAIKU__) || defined(NetBSD_v8))
 #define HAVE_STRCHRNUL
 #else
 #undef HAVE_STRCHRNUL
@@ -108,8 +95,7 @@ char *strchrnul(const char *s, int c);
 #endif
 
 #define HAVE_INETATON
-#if (defined(_WIN32) || \
-     defined(__serenity__))
+#if (defined(_WIN32) || defined(__serenity__))
 #undef HAVE_INETATON
 #endif
 
@@ -145,20 +131,23 @@ char *realpath(const char *path, char *resolved_path);
 #endif
 
 #define HAVE_MMAP
-#if (defined(_WIN32) || defined(__riscos__) || defined(__HAIKU__) || defined(__BEOS__) || defined(__amigaos4__) || defined(__AMIGA__) || defined(__MINT__))
+#if (defined(_WIN32) || defined(__riscos__) || defined(__HAIKU__) ||           \
+     defined(__BEOS__) || defined(__amigaos4__) || defined(__AMIGA__) ||       \
+     defined(__MINT__))
 #undef HAVE_MMAP
 #endif
 
 #define HAVE_SCANDIR
-#if (defined(_WIN32) ||				\
-     defined(__serenity__))
+#if (defined(_WIN32) || defined(__serenity__))
 #undef HAVE_SCANDIR
 #endif
 
 #define HAVE_DIRFD
 #define HAVE_UNLINKAT
 #define HAVE_FSTATAT
-#if (defined(_WIN32) || defined(__riscos__) || defined(__HAIKU__) || defined(__BEOS__) || defined(__amigaos4__) || defined(__AMIGA__) || defined(__MINT__))
+#if (defined(_WIN32) || defined(__riscos__) || defined(__HAIKU__) ||           \
+     defined(__BEOS__) || defined(__amigaos4__) || defined(__AMIGA__) ||       \
+     defined(__MINT__))
 #undef HAVE_DIRFD
 #undef HAVE_UNLINKAT
 #undef HAVE_FSTATAT
@@ -170,7 +159,7 @@ char *realpath(const char *path, char *resolved_path);
 #endif
 
 /* execinfo available for backtrace */
-#if ((defined(__linux__) && defined(__GLIBC__) && !defined(__UCLIBC__)) || \
+#if ((defined(__linux__) && defined(__GLIBC__) && !defined(__UCLIBC__)) ||     \
      defined(__APPLE__))
 #define HAVE_EXECINFO
 #endif
@@ -178,34 +167,33 @@ char *realpath(const char *path, char *resolved_path);
 /* This section toggles build options on and off.
  * Simply undefine a symbol to turn the relevant feature off.
  *
- * IF ADDING A FEATURE HERE, ADD IT TO Docs/Doxyfile's "PREDEFINED" DEFINITION AS WELL.
+ * IF ADDING A FEATURE HERE, ADD IT TO Docs/Doxyfile's "PREDEFINED" DEFINITION
+ * AS WELL.
  */
 
 /* Platform specific features */
 #if defined(riscos)
-    /* Theme auto-install */
-    #define WITH_THEME_INSTALL
+/* Theme auto-install */
+#define WITH_THEME_INSTALL
 #elif defined(__HAIKU__) || defined(__BEOS__)
-    /* for intptr_t */
-    #include <inttypes.h>
-    #if defined(__HAIKU__)
-        /*not yet: #define WITH_MMAP*/
-    #endif
-    #if defined(__BEOS__)
-    	/* Not even BONE has it. */
-    	#define NO_IPV6 1
-    #endif
+/* for intptr_t */
+#include <inttypes.h>
+#if defined(__HAIKU__)
+/*not yet: #define WITH_MMAP*/
+#endif
+#if defined(__BEOS__)
+/* Not even BONE has it. */
+#define NO_IPV6 1
+#endif
 #else
-    /* We're likely to have a working mmap() */
-    #define WITH_MMAP
+/* We're likely to have a working mmap() */
+#define WITH_MMAP
 #endif
 
 /* IPv6 */
-#if (defined(__amigaos4__) ||			\
-     defined(__AMIGA__) ||			\
-     defined(nsatari) ||			\
+#if (defined(__amigaos4__) || defined(__AMIGA__) || defined(nsatari) ||        \
      defined(__serenity__))
-	#define NO_IPV6
+#define NO_IPV6
 #endif
 
 /* Default log filters */

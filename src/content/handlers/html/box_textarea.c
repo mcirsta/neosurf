@@ -44,7 +44,7 @@ nserror box_textarea_keypress(html_content *html, struct box *box, uint32_t key)
 {
 	struct form_control *gadget = box->gadget;
 	struct textarea *ta = gadget->data.text.ta;
-	struct form* form = box->gadget->form;
+	struct form *form = box->gadget->form;
 	struct content *c = (struct content *)html;
 	nserror res = NSERROR_OK;
 
@@ -63,54 +63,46 @@ nserror box_textarea_keypress(html_content *html, struct box *box, uint32_t key)
 	case NS_KEY_NL:
 	case NS_KEY_CR:
 		if (form) {
-			res = form_submit(content_get_url(c),
-					  html->bw,
-					  form,
-					  NULL);
+			res = form_submit(
+				content_get_url(c), html->bw, form, NULL);
 		}
 		break;
 
-	case NS_KEY_TAB:
-		{
-			struct form_control *next_input;
-			/* Find next text entry field that is actually
-			 * displayed (i.e. has an associated box) */
-			for (next_input = gadget->next;
-			     next_input &&
-				     ((next_input->type != GADGET_TEXTBOX &&
-				       next_input->type != GADGET_TEXTAREA &&
-				       next_input->type != GADGET_PASSWORD) ||
-				      !next_input->box);
-			     next_input = next_input->next)
-				;
+	case NS_KEY_TAB: {
+		struct form_control *next_input;
+		/* Find next text entry field that is actually
+		 * displayed (i.e. has an associated box) */
+		for (next_input = gadget->next;
+		     next_input && ((next_input->type != GADGET_TEXTBOX &&
+				     next_input->type != GADGET_TEXTAREA &&
+				     next_input->type != GADGET_PASSWORD) ||
+				    !next_input->box);
+		     next_input = next_input->next)
+			;
 
-			if (next_input != NULL) {
-				textarea_set_caret(ta, -1);
-				textarea_set_caret(next_input->data.text.ta, 0);
-			}
+		if (next_input != NULL) {
+			textarea_set_caret(ta, -1);
+			textarea_set_caret(next_input->data.text.ta, 0);
 		}
-		break;
+	} break;
 
-	case NS_KEY_SHIFT_TAB:
-		{
-			struct form_control *prev_input;
-			/* Find previous text entry field that is actually
-			 * displayed (i.e. has an associated box) */
-			for (prev_input = gadget->prev;
-			     prev_input &&
-				     ((prev_input->type != GADGET_TEXTBOX &&
-				       prev_input->type != GADGET_TEXTAREA &&
-				       prev_input->type != GADGET_PASSWORD) ||
-				      !prev_input->box);
-			     prev_input = prev_input->prev)
-				;
+	case NS_KEY_SHIFT_TAB: {
+		struct form_control *prev_input;
+		/* Find previous text entry field that is actually
+		 * displayed (i.e. has an associated box) */
+		for (prev_input = gadget->prev;
+		     prev_input && ((prev_input->type != GADGET_TEXTBOX &&
+				     prev_input->type != GADGET_TEXTAREA &&
+				     prev_input->type != GADGET_PASSWORD) ||
+				    !prev_input->box);
+		     prev_input = prev_input->prev)
+			;
 
-			if (prev_input != NULL) {
-				textarea_set_caret(ta, -1);
-				textarea_set_caret(prev_input->data.text.ta, 0);
-			}
+		if (prev_input != NULL) {
+			textarea_set_caret(ta, -1);
+			textarea_set_caret(prev_input->data.text.ta, 0);
 		}
-		break;
+	} break;
 
 	default:
 		/* Pass to textarea widget */
@@ -142,16 +134,13 @@ static void box_textarea_callback(void *data, struct textarea_msg *msg)
 			union html_drag_owner drag_owner;
 			drag_owner.no_owner = true;
 
-			html_set_drag_type(html, drag_type, drag_owner,
-					NULL);
+			html_set_drag_type(html, drag_type, drag_owner, NULL);
 		} else {
 			/* Textarea drag started */
-			struct rect rect = {
-				.x0 = INT_MIN,
-				.y0 = INT_MIN,
-				.x1 = INT_MAX,
-				.y1 = INT_MAX
-			};
+			struct rect rect = {.x0 = INT_MIN,
+					    .y0 = INT_MIN,
+					    .x1 = INT_MAX,
+					    .y1 = INT_MAX};
 			union html_drag_owner drag_owner;
 			drag_owner.textarea = box;
 
@@ -171,7 +160,8 @@ static void box_textarea_callback(void *data, struct textarea_msg *msg)
 				break;
 
 			default:
-				NSLOG(neosurf, INFO,
+				NSLOG(neosurf,
+				      INFO,
 				      "Drag type %d not handled.",
 				      msg->data.drag);
 				/* This is a logic faliure in the
@@ -183,8 +173,7 @@ static void box_textarea_callback(void *data, struct textarea_msg *msg)
 		}
 		break;
 
-	case TEXTAREA_MSG_REDRAW_REQUEST:
-	{
+	case TEXTAREA_MSG_REDRAW_REQUEST: {
 		/* Request redraw of the required textarea rectangle */
 		int x, y;
 
@@ -196,13 +185,13 @@ static void box_textarea_callback(void *data, struct textarea_msg *msg)
 
 		box_coords(box, &x, &y);
 
-		content__request_redraw((struct content *)html,
-				x + msg->data.redraw.x0,
-				y + msg->data.redraw.y0,
-				msg->data.redraw.x1 - msg->data.redraw.x0,
-				msg->data.redraw.y1 - msg->data.redraw.y0);
-	}
-		break;
+		content__request_redraw(
+			(struct content *)html,
+			x + msg->data.redraw.x0,
+			y + msg->data.redraw.y0,
+			msg->data.redraw.x1 - msg->data.redraw.x0,
+			msg->data.redraw.y1 - msg->data.redraw.y0);
+	} break;
 
 	case TEXTAREA_MSG_SELECTION_REPORT:
 		if (msg->data.selection.have_selection) {
@@ -210,16 +199,17 @@ static void box_textarea_callback(void *data, struct textarea_msg *msg)
 			union html_selection_owner sel_owner;
 			sel_owner.textarea = box;
 
-			html_set_selection(html, HTML_SELECTION_TEXTAREA,
-					sel_owner,
-					msg->data.selection.read_only);
+			html_set_selection(html,
+					   HTML_SELECTION_TEXTAREA,
+					   sel_owner,
+					   msg->data.selection.read_only);
 		} else {
 			/* The textarea now has no selection */
 			union html_selection_owner sel_owner;
 			sel_owner.none = true;
 
-			html_set_selection(html, HTML_SELECTION_NONE,
-					sel_owner, true);
+			html_set_selection(
+				html, HTML_SELECTION_NONE, sel_owner, true);
 		}
 		break;
 
@@ -230,17 +220,25 @@ static void box_textarea_callback(void *data, struct textarea_msg *msg)
 		if (msg->data.caret.type == TEXTAREA_CARET_HIDE) {
 			union html_focus_owner focus_owner;
 			focus_owner.textarea = box;
-			html_set_focus(html, HTML_FOCUS_TEXTAREA,
-					focus_owner, true, 0, 0, 0, NULL);
+			html_set_focus(html,
+				       HTML_FOCUS_TEXTAREA,
+				       focus_owner,
+				       true,
+				       0,
+				       0,
+				       0,
+				       NULL);
 		} else {
 			union html_focus_owner focus_owner;
 			focus_owner.textarea = box;
-			html_set_focus(html, HTML_FOCUS_TEXTAREA,
-					focus_owner, false,
-					msg->data.caret.pos.x,
-					msg->data.caret.pos.y,
-					msg->data.caret.pos.height,
-					msg->data.caret.pos.clip);
+			html_set_focus(html,
+				       HTML_FOCUS_TEXTAREA,
+				       focus_owner,
+				       false,
+				       msg->data.caret.pos.x,
+				       msg->data.caret.pos.y,
+				       msg->data.caret.pos.height,
+				       msg->data.caret.pos.clip);
 		}
 		break;
 
@@ -255,7 +253,8 @@ static void box_textarea_callback(void *data, struct textarea_msg *msg)
 
 /* Exported interface, documented in box_textarea.h */
 bool box_textarea_create_textarea(html_content *html,
-		struct box *box, struct dom_node *node)
+				  struct box *box,
+				  struct dom_node *node)
 {
 	dom_string *dom_text = NULL;
 	dom_exception err;
@@ -276,21 +275,21 @@ bool box_textarea_create_textarea(html_content *html,
 
 	assert(gadget != NULL);
 	assert(gadget->type == GADGET_TEXTAREA ||
-			gadget->type == GADGET_TEXTBOX ||
-			gadget->type == GADGET_PASSWORD);
+	       gadget->type == GADGET_TEXTBOX ||
+	       gadget->type == GADGET_PASSWORD);
 
 	if (gadget->type == GADGET_TEXTAREA) {
 		dom_html_text_area_element *textarea =
-				(dom_html_text_area_element *) node;
+			(dom_html_text_area_element *)node;
 		ta_flags = TEXTAREA_MULTILINE;
 
-		err = dom_html_text_area_element_get_read_only(
-				textarea, &read_only);
+		err = dom_html_text_area_element_get_read_only(textarea,
+							       &read_only);
 		if (err != DOM_NO_ERR)
 			return false;
 
-		err = dom_html_text_area_element_get_disabled(
-				textarea, &disabled);
+		err = dom_html_text_area_element_get_disabled(textarea,
+							      &disabled);
 		if (err != DOM_NO_ERR)
 			return false;
 
@@ -300,15 +299,13 @@ bool box_textarea_create_textarea(html_content *html,
 			return false;
 
 	} else {
-		dom_html_input_element *input = (dom_html_input_element *) node;
+		dom_html_input_element *input = (dom_html_input_element *)node;
 
-		err = dom_html_input_element_get_read_only(
-				input, &read_only);
+		err = dom_html_input_element_get_read_only(input, &read_only);
 		if (err != DOM_NO_ERR)
 			return false;
 
-		err = dom_html_input_element_get_disabled(
-				input, &disabled);
+		err = dom_html_input_element_get_disabled(input, &disabled);
 		if (err != DOM_NO_ERR)
 			return false;
 
@@ -357,8 +354,10 @@ bool box_textarea_create_textarea(html_content *html,
 	/* Hand reference to dom text over to gadget */
 	gadget->data.text.initial = dom_text;
 
-	gadget->data.text.ta = textarea_create(ta_flags, &ta_setup,
-			box_textarea_callback, &gadget->data.text.data);
+	gadget->data.text.ta = textarea_create(ta_flags,
+					       &ta_setup,
+					       box_textarea_callback,
+					       &gadget->data.text.data);
 
 	if (gadget->data.text.ta == NULL) {
 		return false;

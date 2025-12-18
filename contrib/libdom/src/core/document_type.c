@@ -21,25 +21,18 @@
  * DOM DocumentType node
  */
 struct dom_document_type {
-	dom_node_internal base;		/**< Base node */
+	dom_node_internal base; /**< Base node */
 
-	dom_string *public_id;	/**< Doctype public ID */
-	dom_string *system_id;	/**< Doctype system ID */
+	dom_string *public_id; /**< Doctype public ID */
+	dom_string *system_id; /**< Doctype system ID */
 };
 
 static const struct dom_document_type_vtable document_type_vtable = {
-	{
-		{
-			DOM_NODE_EVENT_TARGET_VTABLE
-		},
-		DOM_NODE_VTABLE_DOCUMENT_TYPE
-	},
-	DOM_DOCUMENT_TYPE_VTABLE
-};
+	{{DOM_NODE_EVENT_TARGET_VTABLE}, DOM_NODE_VTABLE_DOCUMENT_TYPE},
+	DOM_DOCUMENT_TYPE_VTABLE};
 
 static const struct dom_node_protect_vtable dt_protect_vtable = {
-	DOM_DT_PROTECT_VTABLE
-};
+	DOM_DT_PROTECT_VTABLE};
 
 
 /*----------------------------------------------------------------------*/
@@ -62,8 +55,9 @@ static const struct dom_node_protect_vtable dt_protect_vtable = {
  * finished with it.
  */
 dom_exception _dom_document_type_create(dom_string *qname,
-		dom_string *public_id, dom_string *system_id,
-		dom_document_type **doctype)
+					dom_string *public_id,
+					dom_string *system_id,
+					dom_document_type **doctype)
 {
 	dom_document_type *result;
 	dom_exception err;
@@ -76,9 +70,9 @@ dom_exception _dom_document_type_create(dom_string *qname,
 	/* Initialise the vtable */
 	result->base.base.vtable = &document_type_vtable;
 	result->base.vtable = &dt_protect_vtable;
-	
-	err = _dom_document_type_initialise(result, qname, 
-			public_id, system_id);
+
+	err = _dom_document_type_initialise(
+		result, qname, public_id, system_id);
 	if (err != DOM_NO_ERR) {
 		free(result);
 		return err;
@@ -98,7 +92,7 @@ dom_exception _dom_document_type_create(dom_string *qname,
  */
 void _dom_document_type_destroy(dom_node_internal *doctypenode)
 {
-	dom_document_type *doctype = (dom_document_type *) doctypenode;
+	dom_document_type *doctype = (dom_document_type *)doctypenode;
 
 	/* Finalise base class */
 	_dom_document_type_finalise(doctype);
@@ -109,8 +103,9 @@ void _dom_document_type_destroy(dom_node_internal *doctypenode)
 
 /* Initialise this document_type */
 dom_exception _dom_document_type_initialise(dom_document_type *doctype,
-		dom_string *qname, dom_string *public_id,
-		dom_string *system_id)
+					    dom_string *qname,
+					    dom_string *public_id,
+					    dom_string *system_id)
 {
 	dom_string *prefix, *localname;
 	dom_exception err;
@@ -122,8 +117,13 @@ dom_exception _dom_document_type_initialise(dom_document_type *doctype,
 	/* TODO: I should figure out how the namespaceURI can be got */
 
 	/* Initialise base node */
-	err = _dom_node_initialise(&doctype->base, NULL,
-			DOM_DOCUMENT_TYPE_NODE, localname, NULL, NULL, prefix);
+	err = _dom_node_initialise(&doctype->base,
+				   NULL,
+				   DOM_DOCUMENT_TYPE_NODE,
+				   localname,
+				   NULL,
+				   NULL,
+				   prefix);
 	if (err != DOM_NO_ERR) {
 		dom_string_unref(prefix);
 		dom_string_unref(localname);
@@ -154,9 +154,9 @@ void _dom_document_type_finalise(dom_document_type *doctype)
 		dom_string_unref(doctype->public_id);
 	if (doctype->system_id != NULL)
 		dom_string_unref(doctype->system_id);
-	
+
 	assert(doctype->base.owner != NULL || doctype->base.user_data == NULL);
-	
+
 	_dom_node_finalise(&doctype->base);
 }
 
@@ -179,8 +179,8 @@ void _dom_document_type_finalise(dom_document_type *doctype)
  * We don't support this API now, so this function call should always
  * return DOM_NOT_SUPPORTED_ERR.
  */
-dom_exception _dom_document_type_get_name(dom_document_type *doc_type,
-		dom_string **result)
+dom_exception
+_dom_document_type_get_name(dom_document_type *doc_type, dom_string **result)
 {
 	return dom_node_get_node_name(doc_type, result);
 }
@@ -199,9 +199,8 @@ dom_exception _dom_document_type_get_name(dom_document_type *doc_type,
  * We don't support this API now, so this function call should always
  * return DOM_NOT_SUPPORTED_ERR.
  */
-dom_exception _dom_document_type_get_entities(
-		dom_document_type *doc_type,
-		dom_namednodemap **result)
+dom_exception _dom_document_type_get_entities(dom_document_type *doc_type,
+					      dom_namednodemap **result)
 {
 	UNUSED(doc_type);
 	UNUSED(result);
@@ -223,9 +222,8 @@ dom_exception _dom_document_type_get_entities(
  * We don't support this API now, so this function call should always
  * return DOM_NOT_SUPPORTED_ERR.
  */
-dom_exception _dom_document_type_get_notations(
-		dom_document_type *doc_type,
-		dom_namednodemap **result)
+dom_exception _dom_document_type_get_notations(dom_document_type *doc_type,
+					       dom_namednodemap **result)
 {
 	UNUSED(doc_type);
 	UNUSED(result);
@@ -244,15 +242,14 @@ dom_exception _dom_document_type_get_notations(
  * the responsibility of the caller to unref the string once it has
  * finished with it.
  */
-dom_exception _dom_document_type_get_public_id(
-		dom_document_type *doc_type,
-		dom_string **result)
+dom_exception _dom_document_type_get_public_id(dom_document_type *doc_type,
+					       dom_string **result)
 {
 	if (doc_type->public_id != NULL)
 		*result = dom_string_ref(doc_type->public_id);
 	else
 		*result = NULL;
-	
+
 	return DOM_NO_ERR;
 }
 
@@ -267,15 +264,14 @@ dom_exception _dom_document_type_get_public_id(
  * the responsibility of the caller to unref the string once it has
  * finished with it.
  */
-dom_exception _dom_document_type_get_system_id(
-		dom_document_type *doc_type,
-		dom_string **result)
+dom_exception _dom_document_type_get_system_id(dom_document_type *doc_type,
+					       dom_string **result)
 {
 	if (doc_type->system_id != NULL)
 		*result = dom_string_ref(doc_type->system_id);
 	else
 		*result = NULL;
-	
+
 	return DOM_NO_ERR;
 }
 
@@ -293,9 +289,9 @@ dom_exception _dom_document_type_get_system_id(
  * We don't support this API now, so this function call should always
  * return DOM_NOT_SUPPORTED_ERR.
  */
-dom_exception _dom_document_type_get_internal_subset(
-		dom_document_type *doc_type,
-		dom_string **result)
+dom_exception
+_dom_document_type_get_internal_subset(dom_document_type *doc_type,
+				       dom_string **result)
 {
 	UNUSED(doc_type);
 	UNUSED(result);
@@ -304,21 +300,21 @@ dom_exception _dom_document_type_get_internal_subset(
 }
 
 dom_exception _dom_document_type_get_text_content(dom_node_internal *node,
-                                                  dom_string **result)
+						  dom_string **result)
 {
 	UNUSED(node);
-	
+
 	*result = NULL;
-	
+
 	return DOM_NO_ERR;
 }
 
 dom_exception _dom_document_type_set_text_content(dom_node_internal *node,
-                                                  dom_string *content)
+						  dom_string *content)
 {
 	UNUSED(node);
 	UNUSED(content);
-	
+
 	return DOM_NO_ERR;
 }
 
@@ -340,4 +336,3 @@ dom_exception _dom_dt_copy(dom_node_internal *old, dom_node_internal **copy)
 
 	return DOM_NOT_SUPPORTED_ERR;
 }
-

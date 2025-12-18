@@ -31,10 +31,10 @@ struct plotter_table;
 struct print_settings;
 
 /** Printer interface */
-struct printer{
+struct printer {
 	const struct plotter_table *plotter;
 
-	bool (*print_begin) (struct print_settings*);
+	bool (*print_begin)(struct print_settings *);
 
 	bool (*print_next_page)(void);
 

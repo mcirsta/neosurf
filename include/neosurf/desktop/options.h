@@ -20,7 +20,7 @@
  * \file
  * Option available on all platforms
  *
- * Non-platform specific options can be added by editing this file 
+ * Non-platform specific options can be added by editing this file
  *
  * Platform specific options should be added in the platform options.h.
  *
@@ -40,16 +40,16 @@
 #endif
 
 /** An HTTP proxy should be used. */
-NSOPTION_BOOL(http_proxy, false) 
+NSOPTION_BOOL(http_proxy, false)
 
 /** Hostname of proxy. */
-NSOPTION_STRING(http_proxy_host, NULL) 
+NSOPTION_STRING(http_proxy_host, NULL)
 
 /** Proxy port. */
-NSOPTION_INTEGER(http_proxy_port, 8080) 
+NSOPTION_INTEGER(http_proxy_port, 8080)
 
 /** Proxy authentication method. */
-NSOPTION_INTEGER(http_proxy_auth, OPTION_HTTP_PROXY_AUTH_NONE) 
+NSOPTION_INTEGER(http_proxy_auth, OPTION_HTTP_PROXY_AUTH_NONE)
 
 /** Proxy authentication user name */
 NSOPTION_STRING(http_proxy_auth_user, NULL)
@@ -107,8 +107,9 @@ NSOPTION_BOOL(block_advertisements, false)
 /** Control popups e.g. noniteractive opening windows with window.open */
 NSOPTION_BOOL(disable_popups, false)
 
-/** Disable website tracking, see	                
- * http://www.w3.org/Submission/2011/SUBM-web-tracking-protection-20110224/#dnt-uas */
+/** Disable website tracking, see
+ * http://www.w3.org/Submission/2011/SUBM-web-tracking-protection-20110224/#dnt-uas
+ */
 NSOPTION_BOOL(do_not_track, false)
 
 /** Whether to send the referer HTTP header */

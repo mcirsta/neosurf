@@ -52,9 +52,10 @@ void http___item_list_destroy(http__item *list)
  *
  * \note Ownership of the \a first item is passed to this function.
  */
-nserror http___item_list_parse(const char **input, 
-		http__itemparser itemparser, http__item *first, 
-		http__item **items)
+nserror http___item_list_parse(const char **input,
+			       http__itemparser itemparser,
+			       http__item *first,
+			       http__item **items)
 {
 	const char *pos = *input;
 	const char separator = *pos;
@@ -95,5 +96,3 @@ nserror http___item_list_parse(const char **input,
 
 	return error;
 }
-
-

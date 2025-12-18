@@ -32,11 +32,10 @@ static inline uint32_t css__arena_hash(const uint8_t *data, size_t len)
 	while (len >= 4) {
 		/* If we could ensure 4-byte alignment of the input, this
 		 * could be faster. */
-		uint32_t k =
-				(((uint32_t) data[0])      ) |
-				(((uint32_t) data[1]) <<  8) |
-				(((uint32_t) data[2]) << 16) |
-				(((uint32_t) data[3]) << 24);
+		uint32_t k = (((uint32_t)data[0])) |
+			     (((uint32_t)data[1]) << 8) |
+			     (((uint32_t)data[2]) << 16) |
+			     (((uint32_t)data[3]) << 24);
 
 		k *= m;
 		k ^= k >> r;
@@ -49,9 +48,12 @@ static inline uint32_t css__arena_hash(const uint8_t *data, size_t len)
 
 	/* Hash any left over bytes */
 	switch (len) {
-	case 3: h ^= data[2] << 16; /* Fall through */
-	case 2: h ^= data[1] << 8;  /* Fall through */
-	case 1: h ^= data[0];
+	case 3:
+		h ^= data[2] << 16; /* Fall through */
+	case 2:
+		h ^= data[1] << 8; /* Fall through */
+	case 1:
+		h ^= data[0];
 		h *= m;
 	}
 
@@ -64,4 +66,3 @@ static inline uint32_t css__arena_hash(const uint8_t *data, size_t len)
 }
 
 #endif
-

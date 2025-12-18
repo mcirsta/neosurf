@@ -28,8 +28,9 @@
  *		   If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_border_width(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+				  const parserutils_vector *vector,
+				  int32_t *ctx,
+				  css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	int prev_ctx;
@@ -50,23 +51,23 @@ css_error css__parse_border_width(css_language *c,
 	flag_value = get_css_flag_value(c, token);
 
 	if (flag_value != FLAG_VALUE__NONE) {
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BORDER_TOP_WIDTH);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BORDER_TOP_WIDTH);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BORDER_RIGHT_WIDTH);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BORDER_RIGHT_WIDTH);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BORDER_BOTTOM_WIDTH);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BORDER_BOTTOM_WIDTH);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BORDER_LEFT_WIDTH);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BORDER_LEFT_WIDTH);
 		if (error == CSS_OK)
 			parserutils_vector_iterate(vector, ctx);
 
@@ -82,22 +83,40 @@ css_error css__parse_border_width(css_language *c,
 			return CSS_INVALID;
 		}
 
-		if ((token->type == CSS_TOKEN_IDENT) && (lwc_string_caseless_isequal(token->idata, c->strings[THIN], &match) == lwc_error_ok && match)) {
-			side_val[side_count] =  BORDER_WIDTH_THIN;
+		if ((token->type == CSS_TOKEN_IDENT) &&
+		    (lwc_string_caseless_isequal(token->idata,
+						 c->strings[THIN],
+						 &match) == lwc_error_ok &&
+		     match)) {
+			side_val[side_count] = BORDER_WIDTH_THIN;
 			parserutils_vector_iterate(vector, ctx);
 			error = CSS_OK;
-		} else if ((token->type == CSS_TOKEN_IDENT) && (lwc_string_caseless_isequal(token->idata, c->strings[MEDIUM], &match) == lwc_error_ok && match)) {
-			side_val[side_count] =  BORDER_WIDTH_MEDIUM;
+		} else if ((token->type == CSS_TOKEN_IDENT) &&
+			   (lwc_string_caseless_isequal(
+				    token->idata, c->strings[MEDIUM], &match) ==
+				    lwc_error_ok &&
+			    match)) {
+			side_val[side_count] = BORDER_WIDTH_MEDIUM;
 			parserutils_vector_iterate(vector, ctx);
 			error = CSS_OK;
-		} else if ((token->type == CSS_TOKEN_IDENT) && (lwc_string_caseless_isequal(token->idata, c->strings[THICK], &match) == lwc_error_ok && match)) {
+		} else if ((token->type == CSS_TOKEN_IDENT) &&
+			   (lwc_string_caseless_isequal(
+				    token->idata, c->strings[THICK], &match) ==
+				    lwc_error_ok &&
+			    match)) {
 			parserutils_vector_iterate(vector, ctx);
 			error = CSS_OK;
-			side_val[side_count] =  BORDER_WIDTH_THICK;
+			side_val[side_count] = BORDER_WIDTH_THICK;
 		} else {
 			side_val[side_count] = BORDER_WIDTH_SET;
 
-			error = css__parse_unit_specifier(c, vector, ctx, UNIT_PX, &side_length[side_count], &side_unit[side_count]);
+			error = css__parse_unit_specifier(
+				c,
+				vector,
+				ctx,
+				UNIT_PX,
+				&side_length[side_count],
+				&side_unit[side_count]);
 			if (error == CSS_OK) {
 				if (side_unit[side_count] == UNIT_PCT ||
 				    side_unit[side_count] & UNIT_ANGLE ||
@@ -127,17 +146,20 @@ css_error css__parse_border_width(css_language *c,
 	} while ((*ctx != prev_ctx) && (token != NULL) && (side_count < 4));
 
 
-#define SIDE_APPEND(OP,NUM)								\
-	error = css__stylesheet_style_appendOPV(result, (OP), 0, side_val[(NUM)]);	\
-	if (error != CSS_OK)								\
-		break;									\
-	if (side_val[(NUM)] == BORDER_WIDTH_SET) {					\
-		error = css__stylesheet_style_append(result, side_length[(NUM)]);	\
-		if (error != CSS_OK)							\
-			break;								\
-		error = css__stylesheet_style_append(result, side_unit[(NUM)]);		\
-		if (error != CSS_OK)							\
-			break;								\
+#define SIDE_APPEND(OP, NUM)                                                   \
+	error = css__stylesheet_style_appendOPV(                               \
+		result, (OP), 0, side_val[(NUM)]);                             \
+	if (error != CSS_OK)                                                   \
+		break;                                                         \
+	if (side_val[(NUM)] == BORDER_WIDTH_SET) {                             \
+		error = css__stylesheet_style_append(result,                   \
+						     side_length[(NUM)]);      \
+		if (error != CSS_OK)                                           \
+			break;                                                 \
+		error = css__stylesheet_style_append(result,                   \
+						     side_unit[(NUM)]);        \
+		if (error != CSS_OK)                                           \
+			break;                                                 \
 	}
 
 	switch (side_count) {

@@ -59,7 +59,7 @@ struct gui_fetch_table {
 	 * \return A netsurf url object containing the full URL of the resource
 	 *         path or NULL if a suitable resource URL can not be generated.
 	 */
-	struct nsurl* (*get_resource_url)(const char *path);
+	struct nsurl *(*get_resource_url)(const char *path);
 
 	/**
 	 * Translate resource to source data.
@@ -74,7 +74,9 @@ struct gui_fetch_table {
 	 * \return NSERROR_OK and the data and length values updated
 	 *         else appropriate error code.
 	 */
-	nserror (*get_resource_data)(const char *path, const uint8_t **data, size_t *data_len);
+	nserror (*get_resource_data)(const char *path,
+				     const uint8_t **data,
+				     size_t *data_len);
 
 	/**
 	 * Releases source data.

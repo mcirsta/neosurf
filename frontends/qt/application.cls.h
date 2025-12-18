@@ -39,12 +39,15 @@ extern "C" {
 #include "qt/local_history.cls.h"
 #include "qt/cookies.cls.h"
 
-class NS_Exception {
-public:
+class NS_Exception
+{
+      public:
 	std::string m_str;
 	nserror m_err;
 
-	NS_Exception(std::string str, nserror err):m_str(str),m_err(err) {}
+	NS_Exception(std::string str, nserror err) : m_str(str), m_err(err)
+	{
+	}
 };
 
 /**
@@ -53,13 +56,15 @@ public:
 class NS_Application : public QApplication
 {
 	Q_OBJECT
-public:
-	NS_Application(int &argc, char **argv, struct neosurf_table *nsqt_table);
+      public:
+	NS_Application(int &argc,
+		       char **argv,
+		       struct neosurf_table *nsqt_table);
 	~NS_Application();
 
-	static NS_Application* s_nsqt_instance;
+	static NS_Application *s_nsqt_instance;
 
-	bool event(QEvent* event) override;
+	bool event(QEvent *event) override;
 
 	void next_schedule(int ms);
 
@@ -85,7 +90,7 @@ public:
 	/**
 	 * get application instance
 	 */
-	static NS_Application* instance();
+	static NS_Application *instance();
 
 	/**
 	 * create a new browsing context in a tab or window
@@ -94,7 +99,9 @@ public:
 	 * \param existing an existing browser window or NULL.
 	 * \param intab if the new widget should be a window or tab in existing.
 	 */
-	static nserror create_browser_widget(nsurl *url, struct browser_window *existing, bool intab);
+	static nserror create_browser_widget(nsurl *url,
+					     struct browser_window *existing,
+					     bool intab);
 
 	/**
 	 * create a new browsing context in a tab or window
@@ -103,7 +110,9 @@ public:
 	 * \param existing an existing browser window or NULL.
 	 * \param intab if the new widget should be a window or tab in existing.
 	 */
-	static nserror create_browser_widget(struct hlcache_handle *hlchandle, struct browser_window *existing, bool intab);
+	static nserror create_browser_widget(struct hlcache_handle *hlchandle,
+					     struct browser_window *existing,
+					     bool intab);
 
 	/**
 	 * create a new browsing context in a tab or window
@@ -111,12 +120,13 @@ public:
 	 * \param existing an existing browser window or NULL.
 	 * \param intab if the new widget should be a window or tab in existing.
 	 */
-	static nserror create_browser_widget(struct browser_window *existing, bool intab);
+	static nserror
+	create_browser_widget(struct browser_window *existing, bool intab);
 
-public slots:
+      public slots:
 	void schedule_run();
 
-private:
+      private:
 	static bool nslog_stream_configure(FILE *fptr);
 	/**
 	 * Set option defaults for qt frontend

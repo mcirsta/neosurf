@@ -9,8 +9,7 @@
 #define libcss_hint_h_
 
 #ifdef __cplusplus
-extern "C"
-{
+extern "C" {
 #endif
 
 #include <libwapcaplet/libwapcaplet.h>
@@ -49,8 +48,8 @@ typedef struct css_hint {
 		lwc_string **strings;
 	} data;
 
-	uint32_t prop;		/**< Property index */
-	uint8_t status;		/**< Property value */
+	uint32_t prop; /**< Property index */
+	uint8_t status; /**< Property value */
 } css_hint;
 
 #ifdef __cplusplus

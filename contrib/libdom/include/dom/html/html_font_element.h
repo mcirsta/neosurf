@@ -14,21 +14,21 @@
 
 typedef struct dom_html_font_element dom_html_font_element;
 
-dom_exception dom_html_font_element_get_color(
-	dom_html_font_element *ele, dom_string **color);
+dom_exception
+dom_html_font_element_get_color(dom_html_font_element *ele, dom_string **color);
 
-dom_exception dom_html_font_element_set_color(
-	dom_html_font_element *ele, dom_string *color);
+dom_exception
+dom_html_font_element_set_color(dom_html_font_element *ele, dom_string *color);
 
-dom_exception dom_html_font_element_get_face(
-	dom_html_font_element *ele, dom_string **face);
+dom_exception
+dom_html_font_element_get_face(dom_html_font_element *ele, dom_string **face);
 
-dom_exception dom_html_font_element_set_face(
-	dom_html_font_element *ele, dom_string *face);
+dom_exception
+dom_html_font_element_set_face(dom_html_font_element *ele, dom_string *face);
 
-dom_exception dom_html_font_element_get_size(
-	dom_html_font_element *ele, dom_string **size);
+dom_exception
+dom_html_font_element_get_size(dom_html_font_element *ele, dom_string **size);
 
-dom_exception dom_html_font_element_set_size(
-	dom_html_font_element *ele, dom_string *size);
+dom_exception
+dom_html_font_element_set_size(dom_html_font_element *ele, dom_string *size);
 #endif

@@ -78,7 +78,7 @@ static bool bitmap_get_opaque(void *bitmap)
 static unsigned char *bitmap_get_buffer(void *bitmap)
 {
 	struct bitmap *bmap = bitmap;
-  
+
 	return (unsigned char *)(bmap->ptr);
 }
 
@@ -105,8 +105,8 @@ static int bitmap_get_height(void *bitmap)
 	return bmap->height;
 }
 
-static nserror bitmap_render(struct bitmap *bitmap,
-			     struct hlcache_handle *content)
+static nserror
+bitmap_render(struct bitmap *bitmap, struct hlcache_handle *content)
 {
 	moutf(MOUT_GENERIC, "BITMAP RENDER");
 	return NSERROR_OK;

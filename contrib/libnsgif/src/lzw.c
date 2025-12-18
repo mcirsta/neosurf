@@ -37,12 +37,12 @@
  */
 struct lzw_read_ctx {
 	const uint8_t *restrict data; /**< Pointer to start of input data */
-	size_t data_len;              /**< Input data length */
-	size_t data_sb_next;          /**< Offset to sub-block size */
+	size_t data_len; /**< Input data length */
+	size_t data_sb_next; /**< Offset to sub-block size */
 
 	const uint8_t *sb_data; /**< Pointer to current sub-block in data */
-	size_t sb_bit;          /**< Current bit offset in sub-block */
-	uint32_t sb_bit_count;  /**< Bit count in sub-block */
+	size_t sb_bit; /**< Current bit offset in sub-block */
+	uint32_t sb_bit_count; /**< Bit count in sub-block */
 };
 
 /**
@@ -56,9 +56,9 @@ struct lzw_read_ctx {
  * is the last entry in the record.
  */
 struct lzw_table_entry {
-	uint8_t  value;   /**< Last value for record ending at entry. */
-	uint8_t  first;   /**< First value in entry's entire record. */
-	uint16_t count;   /**< Count of values in this entry's record. */
+	uint8_t value; /**< Last value for record ending at entry. */
+	uint8_t first; /**< First value in entry's entire record. */
+	uint16_t count; /**< Count of values in this entry's record. */
 	uint16_t extends; /**< Offset in table to previous entry. */
 };
 
@@ -68,25 +68,25 @@ struct lzw_table_entry {
 struct lzw_ctx {
 	struct lzw_read_ctx input; /**< Input reading context */
 
-	uint16_t prev_code;       /**< Code read from input previously. */
+	uint16_t prev_code; /**< Code read from input previously. */
 	uint16_t prev_code_first; /**< First value of previous code. */
 	uint16_t prev_code_count; /**< Total values for previous code. */
 
-	uint8_t  initial_code_size; /**< Starting LZW code size. */
+	uint8_t initial_code_size; /**< Starting LZW code size. */
 
-	uint8_t  code_size; /**< Current LZW code size. */
-	uint16_t code_max;  /**< Max code value for current code size. */
+	uint8_t code_size; /**< Current LZW code size. */
+	uint16_t code_max; /**< Max code value for current code size. */
 
 	uint16_t clear_code; /**< Special Clear code value */
-	uint16_t eoi_code;   /**< Special End of Information code value */
+	uint16_t eoi_code; /**< Special End of Information code value */
 
 	uint16_t table_size; /**< Next position in table to fill. */
 
 	uint16_t output_code; /**< Code that has been partially output. */
 	uint16_t output_left; /**< Number of values left for output_code. */
 
-	bool     has_transparency;     /**< Whether the image is opaque. */
-	uint8_t  transparency_idx;     /**< Index representing transparency. */
+	bool has_transparency; /**< Whether the image is opaque. */
+	uint8_t transparency_idx; /**< Index representing transparency. */
 	const uint32_t *restrict colour_map; /**< Index to colour mapping. */
 
 	/** LZW code table. Generated during decode. */
@@ -160,10 +160,9 @@ static lzw_result lzw__block_advance(struct lzw_read_ctx *restrict ctx)
  * \param[out] code_out   Returns an LZW code on success.
  * \return LZW_OK or LZW_OK_EOD on success, appropriate error otherwise.
  */
-static inline lzw_result lzw__read_code(
-		struct lzw_read_ctx *restrict ctx,
-		uint16_t code_size,
-		uint16_t *restrict code_out)
+static inline lzw_result lzw__read_code(struct lzw_read_ctx *restrict ctx,
+					uint16_t code_size,
+					uint16_t *restrict code_out)
 {
 	uint32_t code = 0;
 	uint32_t current_bit = ctx->sb_bit & 0x7;
@@ -171,16 +170,17 @@ static inline lzw_result lzw__read_code(
 	if (ctx->sb_bit + 24 <= ctx->sb_bit_count) {
 		/* Fast path: read three bytes from this sub-block */
 		const uint8_t *data = ctx->sb_data + (ctx->sb_bit >> 3);
-		code |= *data++ <<  0;
-		code |= *data++ <<  8;
-		code |= *data   << 16;
+		code |= *data++ << 0;
+		code |= *data++ << 8;
+		code |= *data << 16;
 		ctx->sb_bit += code_size;
 	} else {
 		/* Slow path: code spans sub-blocks */
 		uint8_t byte_advance = (current_bit + code_size) >> 3;
 		uint8_t byte = 0;
-		uint8_t bits_remaining_0 = (code_size < (8u - current_bit)) ?
-				code_size : (8u - current_bit);
+		uint8_t bits_remaining_0 = (code_size < (8u - current_bit))
+						   ? code_size
+						   : (8u - current_bit);
 		uint8_t bits_remaining_1 = code_size - bits_remaining_0;
 		uint8_t bits_used[3] = {
 			[0] = bits_remaining_0,
@@ -196,7 +196,7 @@ static inline lzw_result lzw__read_code(
 
 			/* Get any data from end of this sub-block */
 			while (byte <= byte_advance &&
-					ctx->sb_bit < ctx->sb_bit_count) {
+			       ctx->sb_bit < ctx->sb_bit_count) {
 				code |= data[ctx->sb_bit >> 3] << (byte << 3);
 				ctx->sb_bit += bits_used[byte];
 				byte++;
@@ -226,9 +226,8 @@ static inline lzw_result lzw__read_code(
  * \param[out]  code_out  Returns next code after a clear code.
  * \return LZW_OK or error code.
  */
-static inline lzw_result lzw__handle_clear(
-		struct lzw_ctx *ctx,
-		uint16_t *code_out)
+static inline lzw_result
+lzw__handle_clear(struct lzw_ctx *ctx, uint16_t *code_out)
 {
 	uint16_t code;
 
@@ -240,7 +239,8 @@ static inline lzw_result lzw__handle_clear(
 	/* There might be a sequence of clear codes, so process them all */
 	do {
 		lzw_result res = lzw__read_code(&ctx->input,
-				ctx->code_size, &code);
+						ctx->code_size,
+						&code);
 		if (res != LZW_OK) {
 			return res;
 		}
@@ -256,12 +256,11 @@ static inline lzw_result lzw__handle_clear(
 }
 
 /* Exported function, documented in lzw.h */
-lzw_result lzw_decode_init(
-		struct lzw_ctx *ctx,
-		uint8_t minimum_code_size,
-		const uint8_t *input_data,
-		size_t input_length,
-		size_t input_pos)
+lzw_result lzw_decode_init(struct lzw_ctx *ctx,
+			   uint8_t minimum_code_size,
+			   const uint8_t *input_data,
+			   size_t input_length,
+			   size_t input_pos)
 {
 	struct lzw_table_entry *table = ctx->table;
 	lzw_result res;
@@ -283,7 +282,7 @@ lzw_result lzw_decode_init(
 	ctx->initial_code_size = minimum_code_size + 1;
 
 	ctx->clear_code = (1 << minimum_code_size) + 0;
-	ctx->eoi_code   = (1 << minimum_code_size) + 1;
+	ctx->eoi_code = (1 << minimum_code_size) + 1;
 
 	ctx->output_left = 0;
 
@@ -316,14 +315,13 @@ lzw_result lzw_decode_init(
 }
 
 /* Exported function, documented in lzw.h */
-lzw_result lzw_decode_init_map(
-		struct lzw_ctx *ctx,
-		uint8_t minimum_code_size,
-		uint32_t transparency_idx,
-		const uint32_t *colour_table,
-		const uint8_t *input_data,
-		size_t input_length,
-		size_t input_pos)
+lzw_result lzw_decode_init_map(struct lzw_ctx *ctx,
+			       uint8_t minimum_code_size,
+			       uint32_t transparency_idx,
+			       const uint32_t *colour_table,
+			       const uint8_t *input_data,
+			       size_t input_length,
+			       size_t input_pos)
 {
 	lzw_result res;
 
@@ -331,8 +329,8 @@ lzw_result lzw_decode_init_map(
 		return LZW_BAD_PARAM;
 	}
 
-	res = lzw_decode_init(ctx, minimum_code_size,
-			input_data, input_length, input_pos);
+	res = lzw_decode_init(
+		ctx, minimum_code_size, input_data, input_length, input_pos);
 	if (res != LZW_OK) {
 		return res;
 	}
@@ -350,9 +348,7 @@ lzw_result lzw_decode_init_map(
  * \param[in]  ctx   LZW reading context, updated.
  * \param[in]  code  Last value code for new table entry.
  */
-static inline void lzw__table_add_entry(
-		struct lzw_ctx *ctx,
-		uint16_t code)
+static inline void lzw__table_add_entry(struct lzw_ctx *ctx, uint16_t code)
 {
 	struct lzw_table_entry *entry = &ctx->table[ctx->table_size];
 
@@ -364,13 +360,12 @@ static inline void lzw__table_add_entry(
 	ctx->table_size++;
 }
 
-typedef uint32_t (*lzw_writer_fn)(
-		struct lzw_ctx *ctx,
-		void *restrict output_data,
-		uint32_t output_length,
-		uint32_t output_pos,
-		uint16_t code,
-		uint16_t left);
+typedef uint32_t (*lzw_writer_fn)(struct lzw_ctx *ctx,
+				  void *restrict output_data,
+				  uint32_t output_length,
+				  uint32_t output_pos,
+				  uint16_t code,
+				  uint16_t left);
 
 /**
  * Get the next LZW code and write its value(s) to output buffer.
@@ -382,12 +377,11 @@ typedef uint32_t (*lzw_writer_fn)(
  * \param[in,out] output_written  Number of values written. Updated on exit.
  * \return LZW_OK on success, or appropriate error code otherwise.
  */
-static inline lzw_result lzw__decode(
-		struct lzw_ctx    *ctx,
-		lzw_writer_fn      write_fn,
-		void     *restrict output_data,
-		uint32_t           output_length,
-		uint32_t *restrict output_written)
+static inline lzw_result lzw__decode(struct lzw_ctx *ctx,
+				     lzw_writer_fn write_fn,
+				     void *restrict output_data,
+				     uint32_t output_length,
+				     uint32_t *restrict output_written)
 {
 	lzw_result res;
 	uint16_t code;
@@ -415,9 +409,9 @@ static inline lzw_result lzw__decode(
 
 	} else if (ctx->table_size < LZW_TABLE_ENTRY_MAX) {
 		uint16_t size = ctx->table_size;
-		lzw__table_add_entry(ctx, (code < size) ?
-				ctx->table[code].first :
-				ctx->prev_code_first);
+		lzw__table_add_entry(ctx,
+				     (code < size) ? ctx->table[code].first
+						   : ctx->prev_code_first);
 
 		/* Ensure code size is increased, if needed. */
 		if (size == ctx->code_max && ctx->code_size < LZW_CODE_MAX) {
@@ -427,8 +421,11 @@ static inline lzw_result lzw__decode(
 	}
 
 	*output_written += write_fn(ctx,
-			output_data, output_length, *output_written,
-			code, ctx->table[code].count);
+				    output_data,
+				    output_length,
+				    *output_written,
+				    code,
+				    ctx->table[code].count);
 
 	/* Store details of this code as "previous code" to the context. */
 	ctx->prev_code_first = ctx->table[code].first;
@@ -455,14 +452,14 @@ static inline lzw_result lzw__decode(
  * \return Number of pixel values written.
  */
 static inline uint32_t lzw__write_fn(struct lzw_ctx *ctx,
-		void *restrict output_data,
-		uint32_t output_length,
-		uint32_t output_used,
-		uint16_t code,
-		uint16_t left)
+				     void *restrict output_data,
+				     uint32_t output_length,
+				     uint32_t output_used,
+				     uint16_t code,
+				     uint16_t left)
 {
 	uint8_t *restrict output_pos = (uint8_t *)output_data + output_used;
-	const struct lzw_table_entry * const table = ctx->table;
+	const struct lzw_table_entry *const table = ctx->table;
 	uint32_t space = output_length - output_used;
 	uint16_t count = left;
 
@@ -494,8 +491,8 @@ static inline uint32_t lzw__write_fn(struct lzw_ctx *ctx,
 
 /* Exported function, documented in lzw.h */
 lzw_result lzw_decode(struct lzw_ctx *ctx,
-		const uint8_t *restrict *const restrict output_data,
-		uint32_t *restrict                      output_written)
+		      const uint8_t *restrict *const restrict output_data,
+		      uint32_t *restrict output_written)
 {
 	const uint32_t output_length = sizeof(ctx->stack_base);
 
@@ -504,13 +501,19 @@ lzw_result lzw_decode(struct lzw_ctx *ctx,
 
 	if (ctx->output_left != 0) {
 		*output_written += lzw__write_fn(ctx,
-				ctx->stack_base, output_length, *output_written,
-				ctx->output_code, ctx->output_left);
+						 ctx->stack_base,
+						 output_length,
+						 *output_written,
+						 ctx->output_code,
+						 ctx->output_left);
 	}
 
 	while (*output_written != output_length) {
-		lzw_result res = lzw__decode(ctx, lzw__write_fn,
-				ctx->stack_base, output_length, output_written);
+		lzw_result res = lzw__decode(ctx,
+					     lzw__write_fn,
+					     ctx->stack_base,
+					     output_length,
+					     output_written);
 		if (res != LZW_OK) {
 			return res;
 		}
@@ -536,14 +539,14 @@ lzw_result lzw_decode(struct lzw_ctx *ctx,
  * \return Number of pixel values written.
  */
 static inline uint32_t lzw__map_write_fn(struct lzw_ctx *ctx,
-		void *restrict output_data,
-		uint32_t output_length,
-		uint32_t output_used,
-		uint16_t code,
-		uint16_t left)
+					 void *restrict output_data,
+					 uint32_t output_length,
+					 uint32_t output_used,
+					 uint16_t code,
+					 uint16_t left)
 {
 	uint32_t *restrict output_pos = (uint32_t *)output_data + output_used;
-	const struct lzw_table_entry * const table = ctx->table;
+	const struct lzw_table_entry *const table = ctx->table;
 	uint32_t space = output_length - output_used;
 	uint16_t count = left;
 
@@ -585,9 +588,9 @@ static inline uint32_t lzw__map_write_fn(struct lzw_ctx *ctx,
 
 /* Exported function, documented in lzw.h */
 lzw_result lzw_decode_map(struct lzw_ctx *ctx,
-		uint32_t *restrict output_data,
-		uint32_t           output_length,
-		uint32_t *restrict output_written)
+			  uint32_t *restrict output_data,
+			  uint32_t output_length,
+			  uint32_t *restrict output_written)
 {
 	*output_written = 0;
 
@@ -597,13 +600,19 @@ lzw_result lzw_decode_map(struct lzw_ctx *ctx,
 
 	if (ctx->output_left != 0) {
 		*output_written += lzw__map_write_fn(ctx,
-				output_data, output_length, *output_written,
-				ctx->output_code, ctx->output_left);
+						     output_data,
+						     output_length,
+						     *output_written,
+						     ctx->output_code,
+						     ctx->output_left);
 	}
 
 	while (*output_written != output_length) {
-		lzw_result res = lzw__decode(ctx, lzw__map_write_fn,
-				output_data, output_length, output_written);
+		lzw_result res = lzw__decode(ctx,
+					     lzw__map_write_fn,
+					     output_data,
+					     output_length,
+					     output_written);
 		if (res != LZW_OK) {
 			return res;
 		}

@@ -17,9 +17,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- /** \file
-  * Font handling in Haru pdf documents (interface).
-  */
+/** \file
+ * Font handling in Haru pdf documents (interface).
+ */
 
 #ifndef _NETSURF_DESKTOP_FONT_HARU_H_
 #define _NETSURF_DESKTOP_FONT_HARU_H_
@@ -29,8 +29,10 @@
 #include "desktop/font.h"
 
 bool haru_nsfont_apply_style(const plot_font_style_t *fstyle,
-			      	HPDF_Doc doc, HPDF_Page page,
-	  			HPDF_Font *font, HPDF_REAL *font_size);
+			     HPDF_Doc doc,
+			     HPDF_Page page,
+			     HPDF_Font *font,
+			     HPDF_REAL *font_size);
 
 void haru_nsfont_set_scale(float s);
 

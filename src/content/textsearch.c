@@ -115,11 +115,10 @@ struct textsearch_context {
 /**
  * broadcast textsearch message
  */
-static inline void
-textsearch_broadcast(struct textsearch_context *textsearch,
-		     int type,
-		     bool state,
-		     const char *string)
+static inline void textsearch_broadcast(struct textsearch_context *textsearch,
+					int type,
+					bool state,
+					const char *string)
 {
 	union content_msg_data msg_data;
 	msg_data.textsearch.type = type;
@@ -200,19 +199,18 @@ static void search_show_all(bool all, struct textsearch_context *context)
  * \param string_len length of search string
  * \param flags flags to control the search.
  */
-static nserror
-search_text(struct textsearch_context *context,
-	    const char *string,
-	    int string_len,
-	    search_flags_t flags)
+static nserror search_text(struct textsearch_context *context,
+			   const char *string,
+			   int string_len,
+			   search_flags_t flags)
 {
 	struct rect bounds;
 	union content_msg_data msg_data;
 	bool case_sensitive, forwards, showall;
 	nserror res = NSERROR_OK;
 
-	case_sensitive = ((flags & SEARCH_FLAG_CASE_SENSITIVE) != 0) ?
-			true : false;
+	case_sensitive = ((flags & SEARCH_FLAG_CASE_SENSITIVE) != 0) ? true
+								     : false;
 	forwards = ((flags & SEARCH_FLAG_FORWARDS) != 0) ? true : false;
 	showall = ((flags & SEARCH_FLAG_SHOWALL) != 0) ? true : false;
 
@@ -238,7 +236,8 @@ search_text(struct textsearch_context *context,
 		}
 
 		/* indicate find operation starting */
-		textsearch_broadcast(context, CONTENT_TEXTSEARCH_FIND, true, NULL);
+		textsearch_broadcast(
+			context, CONTENT_TEXTSEARCH_FIND, true, NULL);
 
 
 		/* call content find handler */
@@ -249,7 +248,8 @@ search_text(struct textsearch_context *context,
 							   case_sensitive);
 
 		/* indicate find operation finished */
-		textsearch_broadcast(context, CONTENT_TEXTSEARCH_FIND, false, NULL);
+		textsearch_broadcast(
+			context, CONTENT_TEXTSEARCH_FIND, false, NULL);
 
 		if (res != NSERROR_OK) {
 			free_matches(context);
@@ -302,12 +302,13 @@ search_text(struct textsearch_context *context,
 	}
 
 	/* call content match bounds handler */
-	res = context->c->handler->textsearch_bounds(context->c,
-					context->current->start_idx,
-					context->current->end_idx,
-					context->current->start_box,
-					context->current->end_box,
-					&bounds);
+	res = context->c->handler->textsearch_bounds(
+		context->c,
+		context->current->start_idx,
+		context->current->end_idx,
+		context->current->start_box,
+		context->current->end_box,
+		&bounds);
 	if (res == NSERROR_OK) {
 		msg_data.scroll.area = true;
 		msg_data.scroll.x0 = bounds.x0;
@@ -330,10 +331,9 @@ search_text(struct textsearch_context *context,
  * \param flags   The flags forward/back etc
  * \param string  The string to match
  */
-static nserror
-content_textsearch_step(struct textsearch_context *textsearch,
-			search_flags_t flags,
-			const char *string)
+static nserror content_textsearch_step(struct textsearch_context *textsearch,
+				       search_flags_t flags,
+				       const char *string)
 {
 	int string_len;
 	int i = 0;
@@ -342,10 +342,8 @@ content_textsearch_step(struct textsearch_context *textsearch,
 	assert(textsearch != NULL);
 
 	/* broadcast recent query string */
-	textsearch_broadcast(textsearch,
-			     CONTENT_TEXTSEARCH_RECENT,
-			     false,
-			     string);
+	textsearch_broadcast(
+		textsearch, CONTENT_TEXTSEARCH_RECENT, false, string);
 
 	string_len = strlen(string);
 	for (i = 0; i < string_len; i++) {
@@ -361,30 +359,22 @@ content_textsearch_step(struct textsearch_context *textsearch,
 		free_matches(textsearch);
 
 		/* update match state */
-		textsearch_broadcast(textsearch,
-				     CONTENT_TEXTSEARCH_MATCH,
-				     true,
-				     NULL);
+		textsearch_broadcast(
+			textsearch, CONTENT_TEXTSEARCH_MATCH, true, NULL);
 
 		/* update back state */
-		textsearch_broadcast(textsearch,
-				     CONTENT_TEXTSEARCH_BACK,
-				     false,
-				     NULL);
+		textsearch_broadcast(
+			textsearch, CONTENT_TEXTSEARCH_BACK, false, NULL);
 
 		/* update forward state */
-		textsearch_broadcast(textsearch,
-				     CONTENT_TEXTSEARCH_FORWARD,
-				     false,
-				     NULL);
+		textsearch_broadcast(
+			textsearch, CONTENT_TEXTSEARCH_FORWARD, false, NULL);
 
 		/* clear scroll */
 		msg_data.scroll.area = false;
 		msg_data.scroll.x0 = 0;
 		msg_data.scroll.y0 = 0;
-		content_broadcast(textsearch->c,
-				  CONTENT_MSG_SCROLL,
-				  &msg_data);
+		content_broadcast(textsearch->c, CONTENT_MSG_SCROLL, &msg_data);
 	}
 
 	return res;
@@ -471,18 +461,20 @@ content_textsearch_create(struct content *c,
 
 
 /* exported interface, documented in content/textsearch.h */
-const char *
-content_textsearch_find_pattern(const char *string,
-				int s_len,
-				const char *pattern,
-				int p_len,
-				bool case_sens,
-				unsigned int *m_len)
+const char *content_textsearch_find_pattern(const char *string,
+					    int s_len,
+					    const char *pattern,
+					    int p_len,
+					    bool case_sens,
+					    unsigned int *m_len)
 {
-	struct { const char *ss, *s, *p; bool first; } context[16];
+	struct {
+		const char *ss, *s, *p;
+		bool first;
+	} context[16];
 	const char *ep = pattern + p_len;
-	const char *es = string  + s_len;
-	const char *p = pattern - 1;  /* a virtual '*' before the pattern */
+	const char *es = string + s_len;
+	const char *p = pattern - 1; /* a virtual '*' before the pattern */
 	const char *ss = string;
 	const char *s = string;
 	bool first = true;
@@ -494,12 +486,15 @@ content_textsearch_find_pattern(const char *string,
 			char ch;
 
 			/* skip any further asterisks; one is the same as many
-			*/
-			do p++; while (p < ep && *p == '*');
+			 */
+			do
+				p++;
+			while (p < ep && *p == '*');
 
 			/* if we're at the end of the pattern, yes, it matches
-			*/
-			if (p >= ep) break;
+			 */
+			if (p >= ep)
+				break;
 
 			/* anything matches a # so continue matching from
 			   here, and stack a context that will try to match
@@ -509,10 +504,12 @@ content_textsearch_find_pattern(const char *string,
 			if (ch != '#') {
 				/* scan forwards until we find a match for
 				   this char */
-				if (!case_sens) ch = ascii_to_upper(ch);
+				if (!case_sens)
+					ch = ascii_to_upper(ch);
 				while (s < es) {
 					if (case_sens) {
-						if (*s == ch) break;
+						if (*s == ch)
+							break;
 					} else if (ascii_to_upper(*s) == ch)
 						break;
 					s++;
@@ -524,8 +521,8 @@ content_textsearch_find_pattern(const char *string,
 				   fails; we may then resume */
 				if (top < (int)NOF_ELEMENTS(context)) {
 					context[top].ss = ss;
-					context[top].s  = s + 1;
-					context[top].p  = p - 1;
+					context[top].s = s + 1;
+					context[top].p = p - 1;
 					/* ptr to last asterisk */
 					context[top].first = first;
 					top++;
@@ -550,10 +547,11 @@ content_textsearch_find_pattern(const char *string,
 				if (case_sens)
 					matches = (*s == ch);
 				else
-					matches = (ascii_to_upper(*s) == ascii_to_upper(ch));
+					matches = (ascii_to_upper(*s) ==
+						   ascii_to_upper(ch));
 			}
 			if (matches && first) {
-				ss = s;  /* remember first non-'*' char */
+				ss = s; /* remember first non-'*' char */
 				first = false;
 			}
 		} else {
@@ -561,16 +559,17 @@ content_textsearch_find_pattern(const char *string,
 		}
 
 		if (matches) {
-			p++; s++;
+			p++;
+			s++;
 		} else {
 			/* doesn't match,
 			 * resume with stacked context if we have one */
 			if (--top < 0)
-				return NULL;  /* no match, give up */
+				return NULL; /* no match, give up */
 
 			ss = context[top].ss;
-			s  = context[top].s;
-			p  = context[top].p;
+			s = context[top].s;
+			p = context[top].p;
 			first = context[top].first;
 		}
 	}
@@ -582,12 +581,11 @@ content_textsearch_find_pattern(const char *string,
 
 
 /* exported interface, documented in content/textsearch.h */
-nserror
-content_textsearch_add_match(struct textsearch_context *context,
-			     unsigned start_idx,
-			     unsigned end_idx,
-			     struct box *start_box,
-			     struct box *end_box)
+nserror content_textsearch_add_match(struct textsearch_context *context,
+				     unsigned start_idx,
+				     unsigned end_idx,
+				     struct box *start_box,
+				     struct box *end_box)
 {
 	struct list_entry *entry;
 
@@ -619,22 +617,20 @@ content_textsearch_add_match(struct textsearch_context *context,
 
 
 /* exported interface, documented in content/textsearch.h */
-bool
-content_textsearch_ishighlighted(struct textsearch_context *textsearch,
-				 unsigned start_offset,
-				 unsigned end_offset,
-				 unsigned *start_idx,
-				 unsigned *end_idx)
+bool content_textsearch_ishighlighted(struct textsearch_context *textsearch,
+				      unsigned start_offset,
+				      unsigned end_offset,
+				      unsigned *start_idx,
+				      unsigned *end_idx)
 {
 	struct list_entry *cur;
 
 	for (cur = textsearch->found->next; cur != NULL; cur = cur->next) {
-		if (cur->sel &&
-		    selection_highlighted(cur->sel,
-					  start_offset,
-					  end_offset,
-					  start_idx,
-					  end_idx)) {
+		if (cur->sel && selection_highlighted(cur->sel,
+						      start_offset,
+						      end_offset,
+						      start_idx,
+						      end_idx)) {
 			return true;
 		}
 	}
@@ -659,16 +655,11 @@ nserror content_textsearch_destroy(struct textsearch_context *textsearch)
 	}
 
 	/* update back state */
-	textsearch_broadcast(textsearch,
-			     CONTENT_TEXTSEARCH_BACK,
-			     true,
-			     NULL);
+	textsearch_broadcast(textsearch, CONTENT_TEXTSEARCH_BACK, true, NULL);
 
 	/* update forward state */
-	textsearch_broadcast(textsearch,
-			     CONTENT_TEXTSEARCH_FORWARD,
-			     true,
-			     NULL);
+	textsearch_broadcast(
+		textsearch, CONTENT_TEXTSEARCH_FORWARD, true, NULL);
 
 	free_matches(textsearch);
 	free(textsearch);
@@ -678,19 +669,17 @@ nserror content_textsearch_destroy(struct textsearch_context *textsearch)
 
 
 /* exported interface, documented in content/content.h */
-nserror
-content_textsearch(struct hlcache_handle *h,
-		   void *context,
-		   search_flags_t flags,
-		   const char *string)
+nserror content_textsearch(struct hlcache_handle *h,
+			   void *context,
+			   search_flags_t flags,
+			   const char *string)
 {
 	struct content *c = hlcache_handle_get_content(h);
 	nserror res;
 
 	assert(c != NULL);
 
-	if (string != NULL &&
-	    c->textsearch.string != NULL &&
+	if (string != NULL && c->textsearch.string != NULL &&
 	    c->textsearch.context != NULL &&
 	    strcmp(string, c->textsearch.string) == 0) {
 		/* Continue prev. search */
@@ -736,5 +725,5 @@ nserror content_textsearch_clear(struct hlcache_handle *h)
 	struct content *c = hlcache_handle_get_content(h);
 	assert(c != 0);
 
-	return(content_textsearch__clear(c));
+	return (content_textsearch__clear(c));
 }

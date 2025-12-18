@@ -32,8 +32,8 @@ typedef struct {
  * "name : value" is encoded as "name = value"
  * "name" is encoded by setting the operator to "bool"
  * "value op name" is encoded verbatim (with op2 set to "unused")
- * "name op value" inverts the operator to encode (i.e < becomes >=) (and sets op2 to "unused")
- * "value op name op value" is encoded using op2 and value2
+ * "name op value" inverts the operator to encode (i.e < becomes >=) (and sets
+ * op2 to "unused") "value op name op value" is encoded using op2 and value2
  */
 typedef enum {
 	CSS_MQ_FEATURE_OP_BOOL, /* op only */
@@ -58,16 +58,13 @@ typedef struct css_mq_cond_or_feature css_mq_cond_or_feature;
 
 typedef struct {
 	uint32_t negate : 1, /* set if "not" */
-		 op     : 1; /* clear if "and", set if "or" */
+		op : 1; /* clear if "and", set if "or" */
 	uint32_t nparts;
 	css_mq_cond_or_feature **parts;
 } css_mq_cond;
 
 struct css_mq_cond_or_feature {
-	enum {
-		CSS_MQ_FEATURE,
-		CSS_MQ_COND
-	} type;
+	enum { CSS_MQ_FEATURE, CSS_MQ_COND } type;
 	union {
 		css_mq_cond *cond;
 		css_mq_feature *feat;
@@ -84,12 +81,14 @@ typedef struct css_mq_query {
 } css_mq_query;
 
 css_error css_parse_media_query(lwc_string **strings,
-		const uint8_t *mq, size_t len,
-		css_mq_query **media_out);
+				const uint8_t *mq,
+				size_t len,
+				css_mq_query **media_out);
 
 css_error css__mq_parse_media_list(lwc_string **strings,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_mq_query **media);
+				   const parserutils_vector *vector,
+				   int32_t *ctx,
+				   css_mq_query **media);
 
 void css__mq_query_destroy(css_mq_query *media);
 

@@ -46,23 +46,23 @@
 #include "windows/schedule.h"
 
 struct gui_download_window {
-	HWND			hwnd;
-	char			*title;
-	char			*filename;
-	char			*domain;
-	char			*time_left;
-	char			*total_size;
-	char			*original_total_size;
-	int			size;
-	int			downloaded;
-	unsigned int		progress;
-	int			time_remaining;
-	struct timeval		start_time;
-	int			speed;
-	int			error;
-	struct gui_window	*window;
-	FILE			*file;
-	download_status		status;
+	HWND hwnd;
+	char *title;
+	char *filename;
+	char *domain;
+	char *time_left;
+	char *total_size;
+	char *original_total_size;
+	int size;
+	int downloaded;
+	unsigned int progress;
+	int time_remaining;
+	struct timeval start_time;
+	int speed;
+	int error;
+	struct gui_window *window;
+	FILE *file;
+	download_status status;
 };
 
 static bool downloading = false;
@@ -90,23 +90,33 @@ static void nsws_download_update_label(void *p)
 		w->time_left = malloc(i + SLEN(" s") + 1);
 		if (w->time_left != NULL) {
 			if (w->time_remaining > 3600)
-				sprintf(w->time_left, "%d h",
+				sprintf(w->time_left,
+					"%d h",
 					w->time_remaining / 3600);
 			else if (w->time_remaining > 60)
-				sprintf(w->time_left, "%d m",
+				sprintf(w->time_left,
+					"%d m",
 					w->time_remaining / 60);
 			else
-				sprintf(w->time_left, "%d s",
+				sprintf(w->time_left,
+					"%d s",
 					w->time_remaining);
 		}
 	}
 	char label[strlen(w->title) + strlen(size) + strlen(w->total_size) +
-		   + strlen(w->domain) + strlen(w->filename) +
+		   +strlen(w->domain) + strlen(w->filename) +
 		   SLEN("download  from  to \n[\t/\t]\n estimate of time"
-			" remaining ") + i + 1];
-	sprintf(label, "download %s  from %s to %s\n[%s\t/\t%s] [%d%%]\n"
-		"estimate of time remaining %s", w->title, w->domain,
-		w->filename, size, w->total_size, w->progress / 100,
+			" remaining ") +
+		   i + 1];
+	sprintf(label,
+		"download %s  from %s to %s\n[%s\t/\t%s] [%d%%]\n"
+		"estimate of time remaining %s",
+		w->title,
+		w->domain,
+		w->filename,
+		size,
+		w->total_size,
+		w->progress / 100,
 		w->time_left);
 	if (w->time_left != NULL) {
 		free(w->time_left);
@@ -155,17 +165,19 @@ static void nsws_download_clear_data(struct gui_download_window *w)
 }
 
 
-static INT_PTR CALLBACK
-nsws_download_event_callback(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+static INT_PTR CALLBACK nsws_download_event_callback(HWND hwnd,
+						     UINT msg,
+						     WPARAM wparam,
+						     LPARAM lparam)
 {
-	switch(msg) {
+	switch (msg) {
 	case WM_INITDIALOG:
 		nsws_download_update_label((void *)download1);
 		nsws_download_update_progress((void *)download1);
 		return TRUE;
 
 	case WM_COMMAND:
-		switch(LOWORD(wparam)) {
+		switch (LOWORD(wparam)) {
 		case IDOK:
 			if (download1->downloaded != download1->size)
 				return TRUE;
@@ -206,8 +218,8 @@ gui_download_window_create(download_context *ctx, struct gui_window *gui)
 		return NULL;
 	}
 	downloading = true;
-	struct gui_download_window *w =
-		malloc(sizeof(struct gui_download_window));
+	struct gui_download_window *w = malloc(
+		sizeof(struct gui_download_window));
 	if (w == NULL) {
 		win32_warning(messages_get("NoMemory"), 0);
 		return NULL;
@@ -216,9 +228,8 @@ gui_download_window_create(download_context *ctx, struct gui_window *gui)
 	char *domain, *filename, *destination;
 	nsurl *url = download_context_get_url(ctx);
 	bool unknown_size = (total_size == 0);
-	const char *size = (unknown_size) ?
-		messages_get("UnknownSize") :
-		human_friendly_bytesize(total_size);
+	const char *size = (unknown_size) ? messages_get("UnknownSize")
+					  : human_friendly_bytesize(total_size);
 
 	if (nsurl_nice(url, &filename, false) != NSERROR_OK) {
 		filename = strdup(messages_get("UnknownFile"));
@@ -230,7 +241,8 @@ gui_download_window_create(download_context *ctx, struct gui_window *gui)
 	}
 
 	if (nsurl_has_component(url, NSURL_HOST)) {
-		domain = strdup(lwc_string_data(nsurl_get_component(url, NSURL_HOST)));
+		domain = strdup(
+			lwc_string_data(nsurl_get_component(url, NSURL_HOST)));
 	} else {
 		domain = strdup(messages_get("UnknownHost"));
 	}
@@ -248,14 +260,19 @@ gui_download_window_create(download_context *ctx, struct gui_window *gui)
 		free(w);
 		return NULL;
 	}
-	SHGetFolderPath(NULL, CSIDL_DESKTOP, NULL, SHGFP_TYPE_CURRENT,
-			destination);
+	SHGetFolderPath(
+		NULL, CSIDL_DESKTOP, NULL, SHGFP_TYPE_CURRENT, destination);
 	if (strlen(destination) < PATH_MAX - 2)
 		strcat(destination, "/");
 	if (strlen(destination) + strlen(filename) < PATH_MAX - 1)
 		strcat(destination, filename);
-	NSLOG(neosurf, INFO, "download %s [%s] from %s to %s", filename,
-	      size, domain, destination);
+	NSLOG(neosurf,
+	      INFO,
+	      "download %s [%s] from %s to %s",
+	      filename,
+	      size,
+	      domain,
+	      destination);
 	w->title = filename;
 	w->domain = domain;
 	w->size = total_size;
@@ -305,9 +322,9 @@ gui_download_window_create(download_context *ctx, struct gui_window *gui)
 }
 
 
-static nserror
-gui_download_window_data(struct gui_download_window *w, const char *data,
-			 unsigned int size)
+static nserror gui_download_window_data(struct gui_download_window *w,
+					const char *data,
+					unsigned int size)
 {
 	if ((w == NULL) || (w->file == NULL))
 		return NSERROR_SAVE_FAILED;
@@ -315,20 +332,24 @@ gui_download_window_data(struct gui_download_window *w, const char *data,
 	struct timeval val;
 	res = fwrite((void *)data, 1, size, w->file);
 	if (res != size)
-		NSLOG(neosurf, INFO, "file write error %"PRIsizet" of %u", size - res,
+		NSLOG(neosurf,
+		      INFO,
+		      "file write error %" PRIsizet " of %u",
+		      size - res,
 		      size);
 	w->downloaded += res;
-	w->progress = (unsigned int)(((long long)(w->downloaded) * 10000)
-				     / w->size);
+	w->progress = (unsigned int)(((long long)(w->downloaded) * 10000) /
+				     w->size);
 	gettimeofday(&val, NULL);
-	w->time_remaining = (w->progress == 0) ? -1 :
-		(int)((val.tv_sec - w->start_time.tv_sec) *
-		      (10000 - w->progress) / w->progress);
+	w->time_remaining =
+		(w->progress == 0) ? -1
+				   : (int)((val.tv_sec - w->start_time.tv_sec) *
+					   (10000 - w->progress) / w->progress);
 	return NSERROR_OK;
 }
 
-static void gui_download_window_error(struct gui_download_window *w,
-				      const char *error_msg)
+static void
+gui_download_window_error(struct gui_download_window *w, const char *error_msg)
 {
 	NSLOG(neosurf, INFO, "error %s", error_msg);
 }

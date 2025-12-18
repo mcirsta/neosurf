@@ -74,16 +74,16 @@ struct ns_cert_info {
 	struct ns_cert_name subject_name; /**< Subject details */
 	struct ns_cert_name issuer_name; /**< Issuer details */
 	struct ns_cert_pkey public_key; /**< public key details */
-	long version;		/**< Certificate version */
-	char *not_before;	/**< Valid from date */
-	char *not_after;	/**< Valid to date */
-	int sig_type;		/**< Signature type */
-	char *sig_algor;        /**< Signature Algorithm */
-	char *serialnum;	/**< Serial number */
+	long version; /**< Certificate version */
+	char *not_before; /**< Valid from date */
+	char *not_after; /**< Valid to date */
+	int sig_type; /**< Signature type */
+	char *sig_algor; /**< Signature Algorithm */
+	char *serialnum; /**< Serial number */
 	char *sha1fingerprint; /**< fingerprint shar1 encoded */
 	char *sha256fingerprint; /**< fingerprint shar256 encoded */
 	struct ns_cert_san *san; /**< subject alternative names */
-	ssl_cert_err err;       /**< Whatever is wrong with this certificate */
+	ssl_cert_err err; /**< Whatever is wrong with this certificate */
 };
 
 /**
@@ -137,13 +137,13 @@ static nserror free_ns_cert_info(struct ns_cert_info *cinfo)
 #if (OPENSSL_VERSION_NUMBER < 0x30000000L)
 /* OpenSSL 1.1.1 or LibreSSL */
 
-# if defined(LIBRESSL_VERSION_NUMBER)
-  /* LibreSSL */
-#  if (LIBRESSL_VERSION_NUMBER < 0x3050000fL)
-   /* LibreSSL <3.5.0 */
+#if defined(LIBRESSL_VERSION_NUMBER)
+/* LibreSSL */
+#if (LIBRESSL_VERSION_NUMBER < 0x3050000fL)
+/* LibreSSL <3.5.0 */
 
-#   if (LIBRESSL_VERSION_NUMBER < 0x2070000fL)
-    /* LibreSSL <2.7.0 */
+#if (LIBRESSL_VERSION_NUMBER < 0x2070000fL)
+/* LibreSSL <2.7.0 */
 static int ns_X509_get_signature_nid(X509 *cert)
 {
 	return OBJ_obj2nid(cert->cert_info->key->algor->algorithm);
@@ -153,10 +153,10 @@ static const unsigned char *ns_ASN1_STRING_get0_data(ASN1_STRING *asn1str)
 {
 	return (const unsigned char *)ASN1_STRING_data(asn1str);
 }
-#   else
-#    define ns_X509_get_signature_nid X509_get_signature_nid
-#    define ns_ASN1_STRING_get0_data ASN1_STRING_get0_data
-#   endif
+#else
+#define ns_X509_get_signature_nid X509_get_signature_nid
+#define ns_ASN1_STRING_get0_data ASN1_STRING_get0_data
+#endif
 
 static const BIGNUM *ns_RSA_get0_n(const RSA *d)
 {
@@ -167,23 +167,25 @@ static const BIGNUM *ns_RSA_get0_e(const RSA *d)
 {
 	return d->e;
 }
-#  else
-   /* LibreSSL >= 3.5.0 */
-#   define ns_X509_get_signature_nid X509_get_signature_nid
-#   define ns_ASN1_STRING_get0_data ASN1_STRING_get0_data
-#   define ns_RSA_get0_n RSA_get0_n
-#   define ns_RSA_get0_e RSA_get0_e
-#  endif
-# else
-  /* OpenSSL 1.1.1 */
-#  define ns_X509_get_signature_nid X509_get_signature_nid
-#  define ns_ASN1_STRING_get0_data ASN1_STRING_get0_data
-#  define ns_RSA_get0_n RSA_get0_n
-#  define ns_RSA_get0_e RSA_get0_e
-# endif
+#else
+/* LibreSSL >= 3.5.0 */
+#define ns_X509_get_signature_nid X509_get_signature_nid
+#define ns_ASN1_STRING_get0_data ASN1_STRING_get0_data
+#define ns_RSA_get0_n RSA_get0_n
+#define ns_RSA_get0_e RSA_get0_e
+#endif
+#else
+/* OpenSSL 1.1.1 */
+#define ns_X509_get_signature_nid X509_get_signature_nid
+#define ns_ASN1_STRING_get0_data ASN1_STRING_get0_data
+#define ns_RSA_get0_n RSA_get0_n
+#define ns_RSA_get0_e RSA_get0_e
+#endif
 
 static int ns_EVP_PKEY_get_bn_param(const EVP_PKEY *pkey,
-		const char *key_name, BIGNUM **bn) {
+				    const char *key_name,
+				    BIGNUM **bn)
+{
 	RSA *rsa;
 	BIGNUM *result = NULL;
 
@@ -195,7 +197,7 @@ static int ns_EVP_PKEY_get_bn_param(const EVP_PKEY *pkey,
 	if (EVP_PKEY_base_id(pkey) != EVP_PKEY_RSA)
 		return 0;
 
-	rsa = EVP_PKEY_get1_RSA((EVP_PKEY *) pkey);
+	rsa = EVP_PKEY_get1_RSA((EVP_PKEY *)pkey);
 	if (rsa == NULL)
 		return 0;
 
@@ -217,8 +219,10 @@ static int ns_EVP_PKEY_get_bn_param(const EVP_PKEY *pkey,
 }
 
 static int ns_EVP_PKEY_get_utf8_string_param(const EVP_PKEY *pkey,
-		const char *key_name, char *str, size_t max_len,
-		size_t *out_len)
+					     const char *key_name,
+					     char *str,
+					     size_t max_len,
+					     size_t *out_len)
 {
 	const EC_GROUP *ecgroup;
 	const char *group;
@@ -236,7 +240,7 @@ static int ns_EVP_PKEY_get_utf8_string_param(const EVP_PKEY *pkey,
 	if (strcmp(key_name, "group") != 0)
 		return 0;
 
-	ec = EVP_PKEY_get1_EC_KEY((EVP_PKEY *) pkey);
+	ec = EVP_PKEY_get1_EC_KEY((EVP_PKEY *)pkey);
 
 	ecgroup = EC_KEY_get0_group(ec);
 	if (ecgroup == NULL) {
@@ -259,8 +263,10 @@ static int ns_EVP_PKEY_get_utf8_string_param(const EVP_PKEY *pkey,
 }
 
 static int ns_EVP_PKEY_get_octet_string_param(const EVP_PKEY *pkey,
-		const char *key_name, unsigned char *buf, size_t max_len,
-		size_t *out_len)
+					      const char *key_name,
+					      unsigned char *buf,
+					      size_t max_len,
+					      size_t *out_len)
 {
 	const EC_GROUP *ecgroup;
 	const EC_POINT *ecpoint;
@@ -279,7 +285,7 @@ static int ns_EVP_PKEY_get_octet_string_param(const EVP_PKEY *pkey,
 	if (strcmp(key_name, "encoded-pub-key") != 0)
 		return 0;
 
-	ec = EVP_PKEY_get1_EC_KEY((EVP_PKEY *) pkey);
+	ec = EVP_PKEY_get1_EC_KEY((EVP_PKEY *)pkey);
 	if (ec == NULL)
 		return 0;
 
@@ -295,12 +301,13 @@ static int ns_EVP_PKEY_get_octet_string_param(const EVP_PKEY *pkey,
 						 0,
 						 bnctx);
 			if (len != 0 && len <= max_len) {
-				if (EC_POINT_point2oct(ecgroup,
-						       ecpoint,
-						       POINT_CONVERSION_UNCOMPRESSED,
-						       buf,
-						       len,
-						       bnctx) == len)
+				if (EC_POINT_point2oct(
+					    ecgroup,
+					    ecpoint,
+					    POINT_CONVERSION_UNCOMPRESSED,
+					    buf,
+					    len,
+					    bnctx) == len)
 					ret = 1;
 			}
 			if (out_len != NULL)
@@ -327,12 +334,12 @@ static int ns_EVP_PKEY_get_octet_string_param(const EVP_PKEY *pkey,
 /**
  * extract certificate name information
  *
- * \param xname The X509 name to convert. The reference is borrowed so is not freeed
+ * \param xname The X509 name to convert. The reference is borrowed so is not
+ * freeed
  * \param iname The info structure to recive the extracted parameters.
  * \return NSERROR_OK on success else error code
  */
-static nserror
-xname_to_info(X509_NAME *xname, struct ns_cert_name *iname)
+static nserror xname_to_info(X509_NAME *xname, struct ns_cert_name *iname)
 {
 	int entryidx;
 	int entrycnt;
@@ -370,14 +377,17 @@ xname_to_info(X509_NAME *xname, struct ns_cert_name *iname)
 		case NID_organizationalUnitName:
 			field = &iname->organisation_unit;
 			break;
-		default :
+		default:
 			field = NULL;
 			break;
 		}
 		if (field != NULL) {
 			*field = strdup((const char *)value_str);
-			NSLOG(neosurf, DEEPDEBUG,
-			      "NID:%d value: %s", name_nid, *field);
+			NSLOG(neosurf,
+			      DEEPDEBUG,
+			      "NID:%d value: %s",
+			      name_nid,
+			      *field);
 		} else {
 			NSLOG(neosurf, DEEPDEBUG, "NID:%d", name_nid);
 		}
@@ -443,8 +453,22 @@ static char *bindup(unsigned char *bin, unsigned int binlen)
 	char *dst;
 	char *out;
 	unsigned int idx;
-	const char hex[] = { '0', '1', '2', '3', '4', '5', '6', '7',
-			     '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+	const char hex[] = {'0',
+			    '1',
+			    '2',
+			    '3',
+			    '4',
+			    '5',
+			    '6',
+			    '7',
+			    '8',
+			    '9',
+			    'A',
+			    'B',
+			    'C',
+			    'D',
+			    'E',
+			    'F'};
 
 	/* allow space fox XY to expand to XX&#58;YY&#58; */
 	dst = malloc(binlen * 7);
@@ -475,8 +499,7 @@ static char *bindup(unsigned char *bin, unsigned int binlen)
  * \param ikey The public key info structure to fill
  * \rerun NSERROR_OK on success else error code.
  */
-static nserror
-rsa_to_info(EVP_PKEY *pkey, struct ns_cert_pkey *ikey)
+static nserror rsa_to_info(EVP_PKEY *pkey, struct ns_cert_pkey *ikey)
 {
 	BIGNUM *n = NULL, *e = NULL;
 	char *tmp;
@@ -520,8 +543,7 @@ rsa_to_info(EVP_PKEY *pkey, struct ns_cert_pkey *ikey)
  * \param ikey The public key info structure to fill
  * \rerun NSERROR_OK on success else error code.
  */
-static nserror
-dsa_to_info(EVP_PKEY *pkey, struct ns_cert_pkey *ikey)
+static nserror dsa_to_info(EVP_PKEY *pkey, struct ns_cert_pkey *ikey)
 {
 	ikey->algor = strdup("DSA");
 
@@ -538,8 +560,7 @@ dsa_to_info(EVP_PKEY *pkey, struct ns_cert_pkey *ikey)
  * \param ikey The public key info structure to fill
  * \rerun NSERROR_OK on success else error code.
  */
-static nserror
-dh_to_info(EVP_PKEY *pkey, struct ns_cert_pkey *ikey)
+static nserror dh_to_info(EVP_PKEY *pkey, struct ns_cert_pkey *ikey)
 {
 	ikey->algor = strdup("Diffie Hellman");
 
@@ -556,8 +577,7 @@ dh_to_info(EVP_PKEY *pkey, struct ns_cert_pkey *ikey)
  * \param ikey The public key info structure to fill
  * \rerun NSERROR_OK on success else error code.
  */
-static nserror
-ec_to_info(EVP_PKEY *pkey, struct ns_cert_pkey *ikey)
+static nserror ec_to_info(EVP_PKEY *pkey, struct ns_cert_pkey *ikey)
 {
 	size_t len;
 
@@ -570,8 +590,11 @@ ec_to_info(EVP_PKEY *pkey, struct ns_cert_pkey *ikey)
 	if (len != 0) {
 		ikey->curve = malloc(len + 1);
 		if (ikey->curve != NULL) {
-			if (ns_EVP_PKEY_get_utf8_string_param(pkey, "group",
-					ikey->curve, len + 1, NULL) == 0) {
+			if (ns_EVP_PKEY_get_utf8_string_param(pkey,
+							      "group",
+							      ikey->curve,
+							      len + 1,
+							      NULL) == 0) {
 				free(ikey->curve);
 				ikey->curve = NULL;
 			}
@@ -579,14 +602,17 @@ ec_to_info(EVP_PKEY *pkey, struct ns_cert_pkey *ikey)
 	}
 
 	len = 0;
-	ns_EVP_PKEY_get_octet_string_param(pkey, "encoded-pub-key",
-			NULL, 0, &len);
+	ns_EVP_PKEY_get_octet_string_param(
+		pkey, "encoded-pub-key", NULL, 0, &len);
 	if (len != 0) {
 		unsigned char *point = malloc(len);
 		if (point != NULL) {
-			if (ns_EVP_PKEY_get_octet_string_param(pkey,
-					"encoded-pub-key", point, len,
-					NULL) == 1) {
+			if (ns_EVP_PKEY_get_octet_string_param(
+				    pkey,
+				    "encoded-pub-key",
+				    point,
+				    len,
+				    NULL) == 1) {
 				ikey->public = bindup(point, len);
 			}
 			free(point);
@@ -603,8 +629,7 @@ ec_to_info(EVP_PKEY *pkey, struct ns_cert_pkey *ikey)
  * \param ikey The public key info structure to fill
  * \rerun NSERROR_OK on success else error code.
  */
-static nserror
-pkey_to_info(EVP_PKEY *pkey, struct ns_cert_pkey *ikey)
+static nserror pkey_to_info(EVP_PKEY *pkey, struct ns_cert_pkey *ikey)
 {
 	nserror res;
 
@@ -662,7 +687,8 @@ static nserror san_to_info(X509 *cert, struct ns_cert_san **prev_next)
 
 		if (current_name->type == GEN_DNS) {
 			/* extract DNS name into info structure */
-			dns_name = ns_ASN1_STRING_get0_data(current_name->d.dNSName);
+			dns_name = ns_ASN1_STRING_get0_data(
+				current_name->d.dNSName);
 
 			isan = malloc(sizeof(struct ns_cert_san));
 			if (isan != NULL) {
@@ -688,16 +714,15 @@ static nserror san_to_info(X509 *cert, struct ns_cert_san **prev_next)
 	return NSERROR_OK;
 }
 
-static nserror
-der_to_certinfo(const uint8_t *der,
-		size_t der_length,
-		struct ns_cert_info *info)
+static nserror der_to_certinfo(const uint8_t *der,
+			       size_t der_length,
+			       struct ns_cert_info *info)
 {
 	BIO *mem;
 	BUF_MEM *buf;
 	const ASN1_INTEGER *asn1_num;
 	BIGNUM *bignum;
-	X509 *cert;		/**< Pointer to certificate */
+	X509 *cert; /**< Pointer to certificate */
 
 	if (der == NULL) {
 		return NSERROR_OK;
@@ -720,7 +745,7 @@ der_to_certinfo(const uint8_t *der,
 	mem = BIO_new(BIO_s_mem());
 	ASN1_TIME_print(mem, X509_get_notBefore(cert));
 	BIO_get_mem_ptr(mem, &buf);
-	(void) BIO_set_close(mem, BIO_NOCLOSE);
+	(void)BIO_set_close(mem, BIO_NOCLOSE);
 	BIO_free(mem);
 	info->not_before = calloc(1, buf->length + 1);
 	if (info->not_before != NULL) {
@@ -730,10 +755,9 @@ der_to_certinfo(const uint8_t *der,
 
 	/* not after date */
 	mem = BIO_new(BIO_s_mem());
-	ASN1_TIME_print(mem,
-			X509_get_notAfter(cert));
+	ASN1_TIME_print(mem, X509_get_notAfter(cert));
 	BIO_get_mem_ptr(mem, &buf);
-	(void) BIO_set_close(mem, BIO_NOCLOSE);
+	(void)BIO_set_close(mem, BIO_NOCLOSE);
 	BIO_free(mem);
 	info->not_after = calloc(1, buf->length + 1);
 	if (info->not_after != NULL) {
@@ -747,7 +771,7 @@ der_to_certinfo(const uint8_t *der,
 	/* signature algorithm */
 	int pkey_nid = ns_X509_get_signature_nid(cert);
 	if (pkey_nid != NID_undef) {
-		const char* sslbuf = OBJ_nid2ln(pkey_nid);
+		const char *sslbuf = OBJ_nid2ln(pkey_nid);
 		if (sslbuf != NULL) {
 			info->sig_algor = strdup(sslbuf);
 		}
@@ -778,7 +802,8 @@ der_to_certinfo(const uint8_t *der,
 	buff = malloc(EVP_MD_size(digest));
 	if (buff != NULL) {
 		rc = X509_digest(cert, digest, buff, &dig_len);
-		if ((rc == 1) && (dig_len == (unsigned int)EVP_MD_size(digest))) {
+		if ((rc == 1) &&
+		    (dig_len == (unsigned int)EVP_MD_size(digest))) {
 			info->sha1fingerprint = bindup(buff, dig_len);
 		}
 		free(buff);
@@ -788,7 +813,8 @@ der_to_certinfo(const uint8_t *der,
 	buff = malloc(EVP_MD_size(digest));
 	if (buff != NULL) {
 		rc = X509_digest(cert, digest, buff, &dig_len);
-		if ((rc == 1) && (dig_len == (unsigned int)EVP_MD_size(digest))) {
+		if ((rc == 1) &&
+		    (dig_len == (unsigned int)EVP_MD_size(digest))) {
 			info->sha256fingerprint = bindup(buff, dig_len);
 		}
 		free(buff);
@@ -812,9 +838,8 @@ der_to_certinfo(const uint8_t *der,
 }
 
 /* copy certificate data */
-static nserror
-convert_chain_to_cert_info(const struct cert_chain *chain,
-			   struct ns_cert_info **cert_info_out)
+static nserror convert_chain_to_cert_info(const struct cert_chain *chain,
+					  struct ns_cert_info **cert_info_out)
 {
 	struct ns_cert_info *certs;
 	size_t depth;
@@ -825,7 +850,7 @@ convert_chain_to_cert_info(const struct cert_chain *chain,
 		return NSERROR_NOMEM;
 	}
 
-	for (depth = 0; depth < chain->depth;depth++) {
+	for (depth = 0; depth < chain->depth; depth++) {
 		res = der_to_certinfo(chain->certs[depth].der,
 				      chain->certs[depth].der_length,
 				      certs + depth);
@@ -841,67 +866,71 @@ convert_chain_to_cert_info(const struct cert_chain *chain,
 }
 
 #else
-static nserror
-convert_chain_to_cert_info(const struct cert_chain *chain,
-			   struct ns_cert_info **cert_info_out)
+static nserror convert_chain_to_cert_info(const struct cert_chain *chain,
+					  struct ns_cert_info **cert_info_out)
 {
 	return NSERROR_NOT_IMPLEMENTED;
 }
 #endif
 
 
-static nserror
-format_certificate_name(struct fetch_about_context *ctx,
-			struct ns_cert_name *cert_name)
+static nserror format_certificate_name(struct fetch_about_context *ctx,
+				       struct ns_cert_name *cert_name)
 {
 	nserror res;
-	res = fetch_about_ssenddataf(ctx,
-			 "<tr><th>Common Name</th><td>%s</td></tr>\n",
-			 cert_name->common_name);
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<tr><th>Common Name</th><td>%s</td></tr>\n",
+		cert_name->common_name);
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
 	if (cert_name->organisation != NULL) {
-		res = fetch_about_ssenddataf(ctx,
-				 "<tr><th>Organisation</th><td>%s</td></tr>\n",
-				 cert_name->organisation);
+		res = fetch_about_ssenddataf(
+			ctx,
+			"<tr><th>Organisation</th><td>%s</td></tr>\n",
+			cert_name->organisation);
 		if (res != NSERROR_OK) {
 			return res;
 		}
 	}
 
 	if (cert_name->organisation_unit != NULL) {
-		res = fetch_about_ssenddataf(ctx,
-				 "<tr><th>Organisation Unit</th><td>%s</td></tr>\n",
-				 cert_name->organisation_unit);
+		res = fetch_about_ssenddataf(
+			ctx,
+			"<tr><th>Organisation Unit</th><td>%s</td></tr>\n",
+			cert_name->organisation_unit);
 		if (res != NSERROR_OK) {
 			return res;
 		}
 	}
 
 	if (cert_name->locality != NULL) {
-		res = fetch_about_ssenddataf(ctx,
-				 "<tr><th>Locality</th><td>%s</td></tr>\n",
-				 cert_name->locality);
+		res = fetch_about_ssenddataf(
+			ctx,
+			"<tr><th>Locality</th><td>%s</td></tr>\n",
+			cert_name->locality);
 		if (res != NSERROR_OK) {
 			return res;
 		}
 	}
 
 	if (cert_name->province != NULL) {
-		res = fetch_about_ssenddataf(ctx,
-				 "<tr><th>Province</th><td>%s</td></tr>\n",
-				 cert_name->province);
+		res = fetch_about_ssenddataf(
+			ctx,
+			"<tr><th>Province</th><td>%s</td></tr>\n",
+			cert_name->province);
 		if (res != NSERROR_OK) {
 			return res;
 		}
 	}
 
 	if (cert_name->country != NULL) {
-		res = fetch_about_ssenddataf(ctx,
-				 "<tr><th>Country</th><td>%s</td></tr>\n",
-				 cert_name->country);
+		res = fetch_about_ssenddataf(
+			ctx,
+			"<tr><th>Country</th><td>%s</td></tr>\n",
+			cert_name->country);
 		if (res != NSERROR_OK) {
 			return res;
 		}
@@ -914,8 +943,7 @@ format_certificate_name(struct fetch_about_context *ctx,
  * output formatted certificate subject alternate names
  */
 static nserror
-format_certificate_san(struct fetch_about_context *ctx,
-			      struct ns_cert_san *san)
+format_certificate_san(struct fetch_about_context *ctx, struct ns_cert_san *san)
 {
 	nserror res;
 
@@ -923,17 +951,19 @@ format_certificate_san(struct fetch_about_context *ctx,
 		return NSERROR_OK;
 	}
 
-	res = fetch_about_ssenddataf(ctx,
-			 "<table class=\"info\">\n"
-			 "<tr><th>Alternative Names</th><td><hr></td></tr>\n");
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<table class=\"info\">\n"
+		"<tr><th>Alternative Names</th><td><hr></td></tr>\n");
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
 	while (san != NULL) {
-		res = fetch_about_ssenddataf(ctx,
-				 "<tr><th>DNS Name</th><td>%s</td></tr>\n",
-				 san->name);
+		res = fetch_about_ssenddataf(
+			ctx,
+			"<tr><th>DNS Name</th><td>%s</td></tr>\n",
+			san->name);
 		if (res != NSERROR_OK) {
 			return res;
 		}
@@ -944,13 +974,11 @@ format_certificate_san(struct fetch_about_context *ctx,
 	res = fetch_about_ssenddataf(ctx, "</table>\n");
 
 	return res;
-
 }
 
 
-static nserror
-format_certificate_public_key(struct fetch_about_context *ctx,
-			      struct ns_cert_pkey *public_key)
+static nserror format_certificate_public_key(struct fetch_about_context *ctx,
+					     struct ns_cert_pkey *public_key)
 {
 	nserror res;
 
@@ -959,49 +987,54 @@ format_certificate_public_key(struct fetch_about_context *ctx,
 		return NSERROR_OK;
 	}
 
-	res = fetch_about_ssenddataf(ctx,
-			 "<table class=\"info\">\n"
-			 "<tr><th>Public Key</th><td><hr></td></tr>\n"
-			 "<tr><th>Algorithm</th><td>%s</td></tr>\n"
-			 "<tr><th>Key Size</th><td>%d</td></tr>\n",
-			 public_key->algor,
-			 public_key->size);
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<table class=\"info\">\n"
+		"<tr><th>Public Key</th><td><hr></td></tr>\n"
+		"<tr><th>Algorithm</th><td>%s</td></tr>\n"
+		"<tr><th>Key Size</th><td>%d</td></tr>\n",
+		public_key->algor,
+		public_key->size);
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
 
 	if (public_key->exponent != NULL) {
-		res = fetch_about_ssenddataf(ctx,
-				 "<tr><th>Exponent</th><td>%s</td></tr>\n",
-				 public_key->exponent);
+		res = fetch_about_ssenddataf(
+			ctx,
+			"<tr><th>Exponent</th><td>%s</td></tr>\n",
+			public_key->exponent);
 		if (res != NSERROR_OK) {
 			return res;
 		}
 	}
 
 	if (public_key->modulus != NULL) {
-		res = fetch_about_ssenddataf(ctx,
-				 "<tr><th>Modulus</th><td class=\"data\">%s</td></tr>\n",
-				 public_key->modulus);
+		res = fetch_about_ssenddataf(
+			ctx,
+			"<tr><th>Modulus</th><td class=\"data\">%s</td></tr>\n",
+			public_key->modulus);
 		if (res != NSERROR_OK) {
 			return res;
 		}
 	}
 
 	if (public_key->curve != NULL) {
-		res = fetch_about_ssenddataf(ctx,
-				 "<tr><th>Curve</th><td>%s</td></tr>\n",
-				 public_key->curve);
+		res = fetch_about_ssenddataf(
+			ctx,
+			"<tr><th>Curve</th><td>%s</td></tr>\n",
+			public_key->curve);
 		if (res != NSERROR_OK) {
 			return res;
 		}
 	}
 
 	if (public_key->public != NULL) {
-		res = fetch_about_ssenddataf(ctx,
-				 "<tr><th>Public Value</th><td>%s</td></tr>\n",
-				 public_key->public);
+		res = fetch_about_ssenddataf(
+			ctx,
+			"<tr><th>Public Value</th><td>%s</td></tr>\n",
+			public_key->public);
 		if (res != NSERROR_OK) {
 			return res;
 		}
@@ -1012,39 +1045,41 @@ format_certificate_public_key(struct fetch_about_context *ctx,
 	return res;
 }
 
-static nserror
-format_certificate_fingerprint(struct fetch_about_context *ctx,
-			      struct ns_cert_info *cert_info)
+static nserror format_certificate_fingerprint(struct fetch_about_context *ctx,
+					      struct ns_cert_info *cert_info)
 {
 	nserror res;
 
 	if ((cert_info->sha1fingerprint == NULL) &&
-	    (cert_info->sha256fingerprint == NULL))  {
+	    (cert_info->sha256fingerprint == NULL)) {
 		/* skip the table if no fingerprints */
 		return NSERROR_OK;
 	}
 
 
-	res = fetch_about_ssenddataf(ctx,
-			 "<table class=\"info\">\n"
-			 "<tr><th>Fingerprints</th><td><hr></td></tr>\n");
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<table class=\"info\">\n"
+		"<tr><th>Fingerprints</th><td><hr></td></tr>\n");
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
 	if (cert_info->sha256fingerprint != NULL) {
-		res = fetch_about_ssenddataf(ctx,
-				 "<tr><th>SHA-256</th><td class=\"data\">%s</td></tr>\n",
-				 cert_info->sha256fingerprint);
+		res = fetch_about_ssenddataf(
+			ctx,
+			"<tr><th>SHA-256</th><td class=\"data\">%s</td></tr>\n",
+			cert_info->sha256fingerprint);
 		if (res != NSERROR_OK) {
 			return res;
 		}
 	}
 
 	if (cert_info->sha1fingerprint != NULL) {
-		res = fetch_about_ssenddataf(ctx,
-				 "<tr><th>SHA-1</th><td class=\"data\">%s</td></tr>\n",
-				 cert_info->sha1fingerprint);
+		res = fetch_about_ssenddataf(
+			ctx,
+			"<tr><th>SHA-1</th><td class=\"data\">%s</td></tr>\n",
+			cert_info->sha1fingerprint);
 		if (res != NSERROR_OK) {
 			return res;
 		}
@@ -1055,37 +1090,40 @@ format_certificate_fingerprint(struct fetch_about_context *ctx,
 	return res;
 }
 
-static nserror
-format_certificate(struct fetch_about_context *ctx,
-		   struct ns_cert_info *cert_info,
-		   size_t depth)
+static nserror format_certificate(struct fetch_about_context *ctx,
+				  struct ns_cert_info *cert_info,
+				  size_t depth)
 {
 	nserror res;
 
 	res = fetch_about_ssenddataf(ctx,
-			 "<h2 id=\"%"PRIsizet"\" class=\"ns-border\">%s</h2>\n",
-			 depth, cert_info->subject_name.common_name);
+				     "<h2 id=\"%" PRIsizet
+				     "\" class=\"ns-border\">%s</h2>\n",
+				     depth,
+				     cert_info->subject_name.common_name);
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
 	if (cert_info->err != SSL_CERT_ERR_OK) {
 		res = fetch_about_ssenddataf(ctx,
-				 "<table class=\"info\">\n"
-				 "<tr class=\"ns-even-fg-bad\">"
-				 "<th>Fault</th>"
-				 "<td>%s</td>"
-				 "</tr>"
-				 "</table>\n",
-				 messages_get_sslcode(cert_info->err));
+					     "<table class=\"info\">\n"
+					     "<tr class=\"ns-even-fg-bad\">"
+					     "<th>Fault</th>"
+					     "<td>%s</td>"
+					     "</tr>"
+					     "</table>\n",
+					     messages_get_sslcode(
+						     cert_info->err));
 		if (res != NSERROR_OK) {
 			return res;
 		}
 	}
 
-	res = fetch_about_ssenddataf(ctx,
-			 "<table class=\"info\">\n"
-			 "<tr><th>Issued To</th><td><hr></td></tr>\n");
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<table class=\"info\">\n"
+		"<tr><th>Issued To</th><td><hr></td></tr>\n");
 	if (res != NSERROR_OK) {
 		return res;
 	}
@@ -1095,15 +1133,15 @@ format_certificate(struct fetch_about_context *ctx,
 		return res;
 	}
 
-	res = fetch_about_ssenddataf(ctx,
-			 "</table>\n");
+	res = fetch_about_ssenddataf(ctx, "</table>\n");
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
-	res = fetch_about_ssenddataf(ctx,
-			 "<table class=\"info\">\n"
-			 "<tr><th>Issued By</th><td><hr></td></tr>\n");
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<table class=\"info\">\n"
+		"<tr><th>Issued By</th><td><hr></td></tr>\n");
 	if (res != NSERROR_OK) {
 		return res;
 	}
@@ -1113,20 +1151,20 @@ format_certificate(struct fetch_about_context *ctx,
 		return res;
 	}
 
-	res = fetch_about_ssenddataf(ctx,
-			 "</table>\n");
+	res = fetch_about_ssenddataf(ctx, "</table>\n");
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
-	res = fetch_about_ssenddataf(ctx,
-			 "<table class=\"info\">\n"
-			 "<tr><th>Validity</th><td><hr></td></tr>\n"
-			 "<tr><th>Valid From</th><td>%s</td></tr>\n"
-			 "<tr><th>Valid Until</th><td>%s</td></tr>\n"
-			 "</table>\n",
-			 cert_info->not_before,
-			 cert_info->not_after);
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<table class=\"info\">\n"
+		"<tr><th>Validity</th><td><hr></td></tr>\n"
+		"<tr><th>Valid From</th><td>%s</td></tr>\n"
+		"<tr><th>Valid Until</th><td>%s</td></tr>\n"
+		"</table>\n",
+		cert_info->not_before,
+		cert_info->not_after);
 	if (res != NSERROR_OK) {
 		return res;
 	}
@@ -1141,17 +1179,19 @@ format_certificate(struct fetch_about_context *ctx,
 		return res;
 	}
 
-	res = fetch_about_ssenddataf(ctx,
-			 "<table class=\"info\">\n"
-			 "<tr><th>Miscellaneous</th><td><hr></td></tr>\n");
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<table class=\"info\">\n"
+		"<tr><th>Miscellaneous</th><td><hr></td></tr>\n");
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
 	if (cert_info->serialnum != NULL) {
-		res = fetch_about_ssenddataf(ctx,
-				 "<tr><th>Serial Number</th><td>%s</td></tr>\n",
-				 cert_info->serialnum);
+		res = fetch_about_ssenddataf(
+			ctx,
+			"<tr><th>Serial Number</th><td>%s</td></tr>\n",
+			cert_info->serialnum);
 		if (res != NSERROR_OK) {
 			return res;
 		}
@@ -1159,18 +1199,18 @@ format_certificate(struct fetch_about_context *ctx,
 
 	if (cert_info->sig_algor != NULL) {
 		res = fetch_about_ssenddataf(ctx,
-				 "<tr><th>Signature Algorithm</th>"
-				 "<td>%s</td></tr>\n",
-				 cert_info->sig_algor);
+					     "<tr><th>Signature Algorithm</th>"
+					     "<td>%s</td></tr>\n",
+					     cert_info->sig_algor);
 		if (res != NSERROR_OK) {
 			return res;
 		}
 	}
 
 	res = fetch_about_ssenddataf(ctx,
-			 "<tr><th>Version</th><td>%ld</td></tr>\n"
-			 "</table>\n",
-			 cert_info->version);
+				     "<tr><th>Version</th><td>%ld</td></tr>\n"
+				     "</table>\n",
+				     cert_info->version);
 	if (res != NSERROR_OK) {
 		return res;
 	}
@@ -1205,21 +1245,23 @@ bool fetch_about_certificate_handler(struct fetch_about_context *ctx)
 		goto fetch_about_certificate_handler_aborted;
 
 	/* page head */
-	res = fetch_about_ssenddataf(ctx,
-			"<html>\n<head>\n"
-			"<title>NeoSurf Browser Certificate Viewer</title>\n"
-			"<link rel=\"stylesheet\" type=\"text/css\" "
-					"href=\"resource:internal.css\">\n"
-			"</head>\n"
-			"<body id=\"certificate\" class=\"ns-even-bg ns-even-fg ns-border\">\n"
-			"<h1 class=\"ns-border\">Certificate</h1>\n");
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<html>\n<head>\n"
+		"<title>NeoSurf Browser Certificate Viewer</title>\n"
+		"<link rel=\"stylesheet\" type=\"text/css\" "
+		"href=\"resource:internal.css\">\n"
+		"</head>\n"
+		"<body id=\"certificate\" class=\"ns-even-bg ns-even-fg ns-border\">\n"
+		"<h1 class=\"ns-border\">Certificate</h1>\n");
 	if (res != NSERROR_OK) {
 		goto fetch_about_certificate_handler_aborted;
 	}
 
 	res = cert_chain_from_query(fetch_about_get_url(ctx), &chain);
 	if (res != NSERROR_OK) {
-		res = fetch_about_ssenddataf(ctx, "<p>Could not process that</p>\n");
+		res = fetch_about_ssenddataf(ctx,
+					     "<p>Could not process that</p>\n");
 		if (res != NSERROR_OK) {
 			goto fetch_about_certificate_handler_aborted;
 		}
@@ -1235,15 +1277,17 @@ bool fetch_about_certificate_handler(struct fetch_about_context *ctx)
 			}
 
 			for (depth = 0; depth < chain->depth; depth++) {
-				res = fetch_about_ssenddataf(ctx, "<li><a href=\"#%"PRIsizet"\">%s</a></li>\n",
-						depth, (cert_info + depth)
-							->subject_name
-								.common_name);
+				res = fetch_about_ssenddataf(
+					ctx,
+					"<li><a href=\"#%" PRIsizet
+					"\">%s</a></li>\n",
+					depth,
+					(cert_info + depth)
+						->subject_name.common_name);
 				if (res != NSERROR_OK) {
 					free_ns_cert_info(cert_info);
 					goto fetch_about_certificate_handler_aborted;
 				}
-
 			}
 
 			res = fetch_about_ssenddataf(ctx, "</ul>\n");
@@ -1253,19 +1297,19 @@ bool fetch_about_certificate_handler(struct fetch_about_context *ctx)
 			}
 
 			for (depth = 0; depth < chain->depth; depth++) {
-				res = format_certificate(ctx, cert_info + depth,
-						depth);
+				res = format_certificate(ctx,
+							 cert_info + depth,
+							 depth);
 				if (res != NSERROR_OK) {
 					free_ns_cert_info(cert_info);
 					goto fetch_about_certificate_handler_aborted;
 				}
-
 			}
 			free_ns_cert_info(cert_info);
 
 		} else {
-			res = fetch_about_ssenddataf(ctx,
-					 "<p>Invalid certificate data</p>\n");
+			res = fetch_about_ssenddataf(
+				ctx, "<p>Invalid certificate data</p>\n");
 			if (res != NSERROR_OK) {
 				goto fetch_about_certificate_handler_aborted;
 			}

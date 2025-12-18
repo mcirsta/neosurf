@@ -90,22 +90,22 @@ static bool html_process_inserted_base(html_content *htmlc, dom_node *node)
 		 *  underscore
 		 */
 		if (*dom_string_data(atr_string) != '_' ||
-				dom_string_caseless_lwc_isequal(atr_string,
-						corestring_lwc__blank) ||
-				dom_string_caseless_lwc_isequal(atr_string,
-						corestring_lwc__self) ||
-				dom_string_caseless_lwc_isequal(atr_string,
-						corestring_lwc__parent) ||
-				dom_string_caseless_lwc_isequal(atr_string,
-						corestring_lwc__top)) {
-			htmlc->base_target = strdup(dom_string_data(atr_string));
+		    dom_string_caseless_lwc_isequal(atr_string,
+						    corestring_lwc__blank) ||
+		    dom_string_caseless_lwc_isequal(atr_string,
+						    corestring_lwc__self) ||
+		    dom_string_caseless_lwc_isequal(atr_string,
+						    corestring_lwc__parent) ||
+		    dom_string_caseless_lwc_isequal(atr_string,
+						    corestring_lwc__top)) {
+			htmlc->base_target = strdup(
+				dom_string_data(atr_string));
 		}
 		dom_string_unref(atr_string);
 	}
 
 	return true;
 }
-
 
 
 /**
@@ -191,8 +191,9 @@ static bool html_process_inserted_link(html_content *c, dom_node *node)
 	}
 
 	/* get nsurl */
-	error = nsurl_join(c->base_url, dom_string_data(atr_string),
-			&link.href);
+	error = nsurl_join(c->base_url,
+			   dom_string_data(atr_string),
+			   &link.href);
 	dom_string_unref(atr_string);
 	if (error != NSERROR_OK) {
 		lwc_string_unref(link.rel);
@@ -202,15 +203,15 @@ static bool html_process_inserted_link(html_content *c, dom_node *node)
 	/* look for optional properties -- we don't care if internment fails */
 
 	exc = dom_element_get_attribute(node,
-			corestring_dom_hreflang, &atr_string);
+					corestring_dom_hreflang,
+					&atr_string);
 	if ((exc == DOM_NO_ERR) && (atr_string != NULL)) {
 		/* get a lwc string containing the href lang */
 		(void)dom_string_intern(atr_string, &link.hreflang);
 		dom_string_unref(atr_string);
 	}
 
-	exc = dom_element_get_attribute(node,
-			corestring_dom_type, &atr_string);
+	exc = dom_element_get_attribute(node, corestring_dom_type, &atr_string);
 	if ((exc == DOM_NO_ERR) && (atr_string != NULL)) {
 		/* get a lwc string containing the type */
 		(void)dom_string_intern(atr_string, &link.type);
@@ -218,7 +219,8 @@ static bool html_process_inserted_link(html_content *c, dom_node *node)
 	}
 
 	exc = dom_element_get_attribute(node,
-			corestring_dom_media, &atr_string);
+					corestring_dom_media,
+					&atr_string);
 	if ((exc == DOM_NO_ERR) && (atr_string != NULL)) {
 		/* get a lwc string containing the media */
 		(void)dom_string_intern(atr_string, &link.media);
@@ -226,7 +228,8 @@ static bool html_process_inserted_link(html_content *c, dom_node *node)
 	}
 
 	exc = dom_element_get_attribute(node,
-			corestring_dom_sizes, &atr_string);
+					corestring_dom_sizes,
+					&atr_string);
 	if ((exc == DOM_NO_ERR) && (atr_string != NULL)) {
 		/* get a lwc string containing the sizes */
 		(void)dom_string_intern(atr_string, &link.sizes);
@@ -262,15 +265,22 @@ dom_SCRIPT_showed_up(html_content *htmlc, dom_html_script_element *script)
 	bool within;
 
 	if (!htmlc->enable_scripting) {
-		NSLOG(neosurf, INFO, "Encountered a script, but scripting is off, ignoring");
+		NSLOG(neosurf,
+		      INFO,
+		      "Encountered a script, but scripting is off, ignoring");
 		return;
 	}
 
-	NSLOG(neosurf, DEEPDEBUG, "Encountered a script, node %p showed up", script);
+	NSLOG(neosurf,
+	      DEEPDEBUG,
+	      "Encountered a script, node %p showed up",
+	      script);
 
 	exc = dom_html_script_element_get_flags(script, &flags);
 	if (exc != DOM_NO_ERR) {
-		NSLOG(neosurf, DEEPDEBUG, "Unable to retrieve flags, giving up");
+		NSLOG(neosurf,
+		      DEEPDEBUG,
+		      "Unable to retrieve flags, giving up");
 		return;
 	}
 
@@ -281,21 +291,29 @@ dom_SCRIPT_showed_up(html_content *htmlc, dom_html_script_element *script)
 
 	exc = dom_node_contains(htmlc->document, script, &within);
 	if (exc != DOM_NO_ERR) {
-		NSLOG(neosurf, DEBUG, "Unable to determine if script was within document, ignoring");
+		NSLOG(neosurf,
+		      DEBUG,
+		      "Unable to determine if script was within document, ignoring");
 		return;
 	}
 
 	if (!within) {
-		NSLOG(neosurf, DEBUG, "Script was not within the document, ignoring for now");
+		NSLOG(neosurf,
+		      DEBUG,
+		      "Script was not within the document, ignoring for now");
 		return;
 	}
 
-	res = html_process_script(htmlc, (dom_node *) script);
+	res = html_process_script(htmlc, (dom_node *)script);
 	if (res == DOM_HUBBUB_OK) {
-		NSLOG(neosurf, DEEPDEBUG, "Inserted script has finished running");
+		NSLOG(neosurf,
+		      DEEPDEBUG,
+		      "Inserted script has finished running");
 	} else {
 		if (res == (DOM_HUBBUB_HUBBUB_ERR | HUBBUB_PAUSED)) {
-			NSLOG(neosurf, DEEPDEBUG, "Inserted script has launced asynchronously");
+			NSLOG(neosurf,
+			      DEEPDEBUG,
+			      "Inserted script has launced asynchronously");
 		} else {
 			NSLOG(neosurf, DEEPDEBUG, "Failure starting script");
 		}
@@ -380,7 +398,7 @@ static nserror html_process_inserted_meta(html_content *c, dom_node *n)
 		return NSERROR_OK;
 	}
 
-	msg_data.delay = (int) strtol(url, &new_url, 10);
+	msg_data.delay = (int)strtol(url, &new_url, 10);
 	/* a very small delay and self-referencing URL can cause a loop
 	 * that grinds machines to a halt. To prevent this we set a
 	 * minimum refresh delay of 1s. */
@@ -391,8 +409,7 @@ static nserror html_process_inserted_meta(html_content *c, dom_node *n)
 	url = new_url;
 
 	/* fracpart? (ignored, as delay is integer only) */
-	while (url < end && (('0' <= *url && *url <= '9') ||
-			*url == '.')) {
+	while (url < end && (('0' <= *url && *url <= '9') || *url == '.')) {
 		url++;
 	}
 
@@ -502,7 +519,6 @@ static nserror html_process_inserted_meta(html_content *c, dom_node *n)
 		}
 
 		free(new_url);
-
 	}
 
 	dom_string_unref(content);
@@ -649,14 +665,15 @@ dom_default_action_DOMNodeInserted_cb(struct dom_event *evt, void *pw)
 				content_broadcast(&htmlc->base,
 						  CONTENT_MSG_GETTHREAD,
 						  &msg_data);
-				NSLOG(neosurf, INFO,
+				NSLOG(neosurf,
+				      INFO,
 				      "javascript context: %p (htmlc: %p)",
 				      htmlc->jsthread,
 				      htmlc);
 			}
 			if (htmlc->jsthread != NULL) {
 				js_handle_new_element(htmlc->jsthread,
-						      (dom_element *) node);
+						      (dom_element *)node);
 			}
 		}
 	}
@@ -690,7 +707,8 @@ dom_default_action_DOMNodeInsertedIntoDocument_cb(struct dom_event *evt,
 
 			switch (tag_type) {
 			case DOM_HTML_ELEMENT_TYPE_SCRIPT:
-				dom_SCRIPT_showed_up(htmlc, (dom_html_script_element *) node);
+				dom_SCRIPT_showed_up(
+					htmlc, (dom_html_script_element *)node);
 				[[fallthrough]];
 			default:
 				break;
@@ -735,12 +753,13 @@ dom_default_action_DOMSubtreeModified_cb(struct dom_event *evt, void *pw)
 			case DOM_HTML_ELEMENT_TYPE_STYLE:
 				if (nsoption_bool(author_level_css)) {
 					html_css_update_style(htmlc,
-							(dom_node *)node);
+							      (dom_node *)node);
 				}
 				break;
 			case DOM_HTML_ELEMENT_TYPE_TEXTAREA:
 			case DOM_HTML_ELEMENT_TYPE_INPUT:
-				html_texty_element_update(htmlc, (dom_node *)node);
+				html_texty_element_update(htmlc,
+							  (dom_node *)node);
 				[[fallthrough]];
 			default:
 				break;
@@ -754,8 +773,7 @@ dom_default_action_DOMSubtreeModified_cb(struct dom_event *evt, void *pw)
 /**
  * callback for default action finished
  */
-static void
-dom_default_action_finished_cb(struct dom_event *evt, void *pw)
+static void dom_default_action_finished_cb(struct dom_event *evt, void *pw)
 {
 	html_content *htmlc = pw;
 
@@ -767,18 +785,25 @@ dom_default_action_finished_cb(struct dom_event *evt, void *pw)
 /* exported interface documented in html/dom_event.c */
 dom_default_action_callback
 html_dom_event_fetcher(dom_string *type,
-		  dom_default_action_phase phase,
-		  void **pw)
+		       dom_default_action_phase phase,
+		       void **pw)
 {
-	NSLOG(neosurf, DEEPDEBUG,
-	      "phase:%d type:%s", phase, dom_string_data(type));
+	NSLOG(neosurf,
+	      DEEPDEBUG,
+	      "phase:%d type:%s",
+	      phase,
+	      dom_string_data(type));
 
 	if (phase == DOM_DEFAULT_ACTION_END) {
 		if (dom_string_isequal(type, corestring_dom_DOMNodeInserted)) {
 			return dom_default_action_DOMNodeInserted_cb;
-		} else if (dom_string_isequal(type, corestring_dom_DOMNodeInsertedIntoDocument)) {
+		} else if (
+			dom_string_isequal(
+				type,
+				corestring_dom_DOMNodeInsertedIntoDocument)) {
 			return dom_default_action_DOMNodeInsertedIntoDocument_cb;
-		} else if (dom_string_isequal(type, corestring_dom_DOMSubtreeModified)) {
+		} else if (dom_string_isequal(
+				   type, corestring_dom_DOMSubtreeModified)) {
 			return dom_default_action_DOMSubtreeModified_cb;
 		}
 	} else if (phase == DOM_DEFAULT_ACTION_FINISHED) {

@@ -33,9 +33,8 @@ static struct nscallback *schedule_list = NULL;
 /**
  * scheduled callback.
  */
-struct nscallback
-{
-        struct nscallback *next;
+struct nscallback {
+	struct nscallback *next;
 	uint64_t tv; /* Absolute time in microseconds */
 	void (*callback)(void *p);
 	void *p;
@@ -68,47 +67,47 @@ static uint64_t get_monotonic_time_us(void)
 
 static nserror schedule_remove(void (*callback)(void *p), void *p)
 {
-        struct nscallback *cur_nscb;
-        struct nscallback *prev_nscb;
-        struct nscallback *unlnk_nscb;
+	struct nscallback *cur_nscb;
+	struct nscallback *prev_nscb;
+	struct nscallback *unlnk_nscb;
 
 	/* check there is something on the list to remove */
-        if (schedule_list == NULL) {
-                return NSERROR_OK;
+	if (schedule_list == NULL) {
+		return NSERROR_OK;
 	}
 
 	NSLOG(schedule, DEBUG, "removing %p, %p", callback, p);
 
-        cur_nscb = schedule_list;
-        prev_nscb = NULL;
+	cur_nscb = schedule_list;
+	prev_nscb = NULL;
 
-        while (cur_nscb != NULL) {
-                if ((cur_nscb->callback ==  callback) &&
-                    (cur_nscb->p ==  p)) {
-                        /* item to remove */
+	while (cur_nscb != NULL) {
+		if ((cur_nscb->callback == callback) && (cur_nscb->p == p)) {
+			/* item to remove */
 
-                        NSLOG(schedule, DEBUG,
+			NSLOG(schedule,
+			      DEBUG,
 			      "callback entry %p removing  %p(%p)",
 			      cur_nscb,
 			      cur_nscb->callback,
 			      cur_nscb->p);
 
-                        /* remove callback */
-                        unlnk_nscb = cur_nscb;
-                        cur_nscb = unlnk_nscb->next;
+			/* remove callback */
+			unlnk_nscb = cur_nscb;
+			cur_nscb = unlnk_nscb->next;
 
-                        if (prev_nscb == NULL) {
-                                schedule_list = cur_nscb;
-                        } else {
-                                prev_nscb->next = cur_nscb;
-                        }
-                        free (unlnk_nscb);
-                } else {
-                        /* move to next element */
-                        prev_nscb = cur_nscb;
-                        cur_nscb = prev_nscb->next;
-                }
-        }
+			if (prev_nscb == NULL) {
+				schedule_list = cur_nscb;
+			} else {
+				prev_nscb->next = cur_nscb;
+			}
+			free(unlnk_nscb);
+		} else {
+			/* move to next element */
+			prev_nscb = cur_nscb;
+			cur_nscb = prev_nscb->next;
+		}
+	}
 	return NSERROR_OK;
 }
 
@@ -130,9 +129,13 @@ nserror win32_schedule(int ival, void (*callback)(void *p), void *p)
 		return NSERROR_NOMEM;
 	}
 
-	NSLOG(schedule, DEBUG,
+	NSLOG(schedule,
+	      DEBUG,
 	      "adding callback %p for %p(%p) at %d ms",
-	       nscb, callback, p, ival);
+	      nscb,
+	      callback,
+	      p,
+	      ival);
 
 	/* Store absolute time in microseconds */
 	nscb->tv = get_monotonic_time_us() + ((uint64_t)ival * 1000);
@@ -140,7 +143,7 @@ nserror win32_schedule(int ival, void (*callback)(void *p), void *p)
 	nscb->callback = callback;
 	nscb->p = p;
 
-        /* Insert into list maintaining sort order by time */
+	/* Insert into list maintaining sort order by time */
 	if (schedule_list == NULL || nscb->tv < schedule_list->tv) {
 		/* Insert at head */
 		nscb->next = schedule_list;
@@ -162,26 +165,26 @@ nserror win32_schedule(int ival, void (*callback)(void *p), void *p)
 }
 
 /* exported interface documented in schedule.h */
-int 
-schedule_run(void)
+int schedule_run(void)
 {
 	uint64_t now;
 	uint64_t nexttime;
-        struct nscallback *cur_nscb;
-        struct nscallback *unlnk_nscb;
+	struct nscallback *cur_nscb;
+	struct nscallback *unlnk_nscb;
 
-        if (schedule_list == NULL)
-                return -1;
+	if (schedule_list == NULL)
+		return -1;
 
 	now = get_monotonic_time_us();
 
 	/* Process all callbacks that are due (head of the sorted list) */
-        while (schedule_list != NULL && schedule_list->tv <= now) {
+	while (schedule_list != NULL && schedule_list->tv <= now) {
 		/* Remove head */
 		unlnk_nscb = schedule_list;
 		schedule_list = unlnk_nscb->next;
 
-		NSLOG(schedule, DEBUG,
+		NSLOG(schedule,
+		      DEBUG,
 		      "callback entry %p running %p(%p)",
 		      unlnk_nscb,
 		      unlnk_nscb->callback,
@@ -192,7 +195,7 @@ schedule_run(void)
 
 		free(unlnk_nscb);
 
-		/* Reset 'now' in case callback took a long time? 
+		/* Reset 'now' in case callback took a long time?
 		 * For now we stick to the initial capture time to ensure
 		 * we don't get stuck in a loop processing 0-delay reschedules.
 		 */
@@ -214,9 +217,11 @@ schedule_run(void)
 	/* Convert microseconds to milliseconds, rounding up */
 	int timeout = (int)((diff + 999) / 1000);
 
-	NSLOG(schedule, DEBUG,
+	NSLOG(schedule,
+	      DEBUG,
 	      "returning time to next event as %dms (diff %lldus)",
-	      timeout, diff);
+	      timeout,
+	      diff);
 
 	return timeout;
 }
@@ -225,21 +230,22 @@ schedule_run(void)
 void list_schedule(void)
 {
 	uint64_t now;
-        struct nscallback *cur_nscb;
+	struct nscallback *cur_nscb;
 
 	now = get_monotonic_time_us();
 
-        NSLOG(neosurf, INFO, "schedule list at %lld", now);
+	NSLOG(neosurf, INFO, "schedule list at %lld", now);
 
-        cur_nscb = schedule_list;
+	cur_nscb = schedule_list;
 
-        while (cur_nscb != NULL) {
-                NSLOG(neosurf, INFO,
+	while (cur_nscb != NULL) {
+		NSLOG(neosurf,
+		      INFO,
 		      "Schedule %p at %lld",
 		      cur_nscb,
 		      cur_nscb->tv);
-                cur_nscb = cur_nscb->next;
-        }
+		cur_nscb = cur_nscb->next;
+	}
 }
 
 

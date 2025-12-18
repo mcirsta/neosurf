@@ -49,101 +49,98 @@
  */
 
 enum {
-	sSTART		=  0,
-	sATKEYWORD	=  1,
-	sSTRING		=  2,
-	sHASH		=  3,
-	sNUMBER		=  4,
-	sCDO		=  5,
-	sCDC		=  6,
-	sS		=  7,
-	sCOMMENT	=  8,
-	sMATCH		=  9,
-	sURI		= 10,
-	sIDENT		= 11,
-	sESCAPEDIDENT	= 12,
-	sURL		= 13,
-	sUCR		= 14
+	sSTART = 0,
+	sATKEYWORD = 1,
+	sSTRING = 2,
+	sHASH = 3,
+	sNUMBER = 4,
+	sCDO = 5,
+	sCDC = 6,
+	sS = 7,
+	sCOMMENT = 8,
+	sMATCH = 9,
+	sURI = 10,
+	sIDENT = 11,
+	sESCAPEDIDENT = 12,
+	sURL = 13,
+	sUCR = 14
 };
 
 /**
  * CSS lexer object
  */
-struct css_lexer
-{
-	parserutils_inputstream *input;	/**< Inputstream containing CSS */
+struct css_lexer {
+	parserutils_inputstream *input; /**< Inputstream containing CSS */
 
-	size_t bytesReadForToken;	/**< Total bytes read from the
-					 * inputstream for the current token */
+	size_t bytesReadForToken; /**< Total bytes read from the
+				   * inputstream for the current token */
 
-	css_token token;		/**< The current token */
+	css_token token; /**< The current token */
 
-	bool escapeSeen;		/**< Whether an escape sequence has
-					 * been seen while processing the input
-					 * for the current token */
-	parserutils_buffer *unescapedTokenData;	/**< Buffer containing
+	bool escapeSeen; /**< Whether an escape sequence has
+			  * been seen while processing the input
+			  * for the current token */
+	parserutils_buffer *unescapedTokenData; /**< Buffer containing
 						 * unescaped token data
 						 * (used iff escapeSeen == true)
 						 */
 
-	unsigned int state    : 4,	/**< Current state */
-		     substate : 4;	/**< Current substate */
+	unsigned int state : 4, /**< Current state */
+		substate : 4; /**< Current substate */
 
 	struct {
-		uint8_t first;		/**< First character read for token */
-		size_t origBytes;	/**< Storage of current number of
-					 * bytes read, for rewinding */
-		bool lastWasStar;	/**< Whether the previous character
-					 * was an asterisk */
-		bool lastWasCR;		/**< Whether the previous character
-					 * was CR */
-		size_t bytesForURL;	/**< Input bytes read for "url(", for
-					 * rewinding */
-		size_t dataLenForURL;	/**< Output length for "url(", for
-					 * rewinding */
-		int hexCount;		/**< Counter for reading hex digits */
-	} context;			/**< Context for the current state */
+		uint8_t first; /**< First character read for token */
+		size_t origBytes; /**< Storage of current number of
+				   * bytes read, for rewinding */
+		bool lastWasStar; /**< Whether the previous character
+				   * was an asterisk */
+		bool lastWasCR; /**< Whether the previous character
+				 * was CR */
+		size_t bytesForURL; /**< Input bytes read for "url(", for
+				     * rewinding */
+		size_t dataLenForURL; /**< Output length for "url(", for
+				       * rewinding */
+		int hexCount; /**< Counter for reading hex digits */
+	} context; /**< Context for the current state */
 
-	bool emit_comments;		/**< Whether to emit comment tokens */
+	bool emit_comments; /**< Whether to emit comment tokens */
 
-	uint32_t currentCol;		/**< Current column in source */
-	uint32_t currentLine;		/**< Current line in source */
+	uint32_t currentCol; /**< Current column in source */
+	uint32_t currentLine; /**< Current line in source */
 };
 
-#define APPEND(lexer, data, len)					\
-do {									\
-	css_error error;						\
-	error = appendToTokenData((lexer), 				\
-			(const uint8_t *) (data), (len));		\
-	if (error != CSS_OK)						\
-		return error;						\
-	(lexer)->bytesReadForToken += (len);				\
-	(lexer)->currentCol += (len);					\
-} while(0)								\
+#define APPEND(lexer, data, len)                                               \
+	do {                                                                   \
+		css_error error;                                               \
+		error = appendToTokenData((lexer),                             \
+					  (const uint8_t *)(data),             \
+					  (len));                              \
+		if (error != CSS_OK)                                           \
+			return error;                                          \
+		(lexer)->bytesReadForToken += (len);                           \
+		(lexer)->currentCol += (len);                                  \
+	} while (0)
 
-static css_error appendToTokenData(css_lexer *lexer,
-		const uint8_t *data, size_t len);
-static css_error emitToken(css_lexer *lexer, css_token_type type,
-		css_token **token);
+static css_error
+appendToTokenData(css_lexer *lexer, const uint8_t *data, size_t len);
+static css_error
+emitToken(css_lexer *lexer, css_token_type type, css_token **token);
 
 static css_error AtKeyword(css_lexer *lexer, css_token **token);
-static css_error CDCOrIdentOrFunctionOrNPD(css_lexer *lexer,
-		css_token **token);
+static css_error CDCOrIdentOrFunctionOrNPD(css_lexer *lexer, css_token **token);
 static css_error CDO(css_lexer *lexer, css_token **token);
 static css_error Comment(css_lexer *lexer, css_token **token);
-static css_error EscapedIdentOrFunction(css_lexer *lexer,
-		css_token **token);
+static css_error EscapedIdentOrFunction(css_lexer *lexer, css_token **token);
 static css_error Hash(css_lexer *lexer, css_token **token);
-static css_error IdentOrFunction(css_lexer *lexer,
-		css_token **token);
+static css_error IdentOrFunction(css_lexer *lexer, css_token **token);
 static css_error Match(css_lexer *lexer, css_token **token);
-static css_error NumberOrPercentageOrDimension(css_lexer *lexer,
-		css_token **token);
+static css_error
+NumberOrPercentageOrDimension(css_lexer *lexer, css_token **token);
 static css_error S(css_lexer *lexer, css_token **token);
 static css_error Start(css_lexer *lexer, css_token **token);
 static css_error String(css_lexer *lexer, css_token **token);
-static css_error URIOrUnicodeRangeOrIdentOrFunction(
-		css_lexer *lexer, css_token **token);
+static css_error
+URIOrUnicodeRangeOrIdentOrFunction(css_lexer *lexer, css_token **token);
 static css_error URI(css_lexer *lexer, css_token **token);
 static css_error UnicodeRange(css_lexer *lexer, css_token **token);
 
@@ -227,8 +224,9 @@ css_error css__lexer_destroy(css_lexer *lexer)
  * \param params  Option-specific parameters
  * \return CSS_OK on success, appropriate error otherwise
  */
-css_error css__lexer_setopt(css_lexer *lexer, css_lexer_opttype type,
-		css_lexer_optparams *params)
+css_error css__lexer_setopt(css_lexer *lexer,
+			    css_lexer_opttype type,
+			    css_lexer_optparams *params)
 {
 	if (lexer == NULL || params == NULL)
 		return CSS_BADPARM;
@@ -266,8 +264,7 @@ css_error css__lexer_get_token(css_lexer *lexer, css_token **token)
 	if (lexer == NULL || token == NULL)
 		return CSS_BADPARM;
 
-	switch (lexer->state)
-	{
+	switch (lexer->state) {
 	case sSTART:
 	start:
 		return Start(lexer, token);
@@ -288,7 +285,7 @@ css_error css__lexer_get_token(css_lexer *lexer, css_token **token)
 	case sCOMMENT:
 		error = Comment(lexer, token);
 		if (!lexer->emit_comments && error == CSS_OK &&
-				(*token)->type == CSS_TOKEN_COMMENT)
+		    (*token)->type == CSS_TOKEN_COMMENT)
 			goto start;
 		return error;
 	case sMATCH:
@@ -332,8 +329,8 @@ css_error appendToTokenData(css_lexer *lexer, const uint8_t *data, size_t len)
 
 	if (lexer->escapeSeen) {
 		css_error error = css_error_from_parserutils_error(
-				parserutils_buffer_append(
-					lexer->unescapedTokenData, data, len));
+			parserutils_buffer_append(
+				lexer->unescapedTokenData, data, len));
 		if (error != CSS_OK)
 			return error;
 	}
@@ -351,8 +348,7 @@ css_error appendToTokenData(css_lexer *lexer, const uint8_t *data, size_t len)
  * \param token  Pointer to location to receive pointer to token
  * \return CSS_OK on success, appropriate error otherwise
  */
-css_error emitToken(css_lexer *lexer, css_token_type type,
-		css_token **token)
+css_error emitToken(css_lexer *lexer, css_token_type type, css_token **token)
 {
 	css_token *t = &lexer->token;
 
@@ -367,16 +363,16 @@ css_error emitToken(css_lexer *lexer, css_token_type type,
 		const uint8_t *data;
 		parserutils_error error;
 
-		error = parserutils_inputstream_peek(lexer->input, 0,
-				&data, &clen);
+		error = parserutils_inputstream_peek(
+			lexer->input, 0, &data, &clen);
 
 #ifndef NDEBUG
 		assert(type == CSS_TOKEN_EOF || error == PARSERUTILS_OK);
 #else
-		(void) error;
+		(void)error;
 #endif
 
-		t->data.data = (type == CSS_TOKEN_EOF) ? NULL : (uint8_t *) data;
+		t->data.data = (type == CSS_TOKEN_EOF) ? NULL : (uint8_t *)data;
 	}
 
 	switch (type) {
@@ -391,8 +387,9 @@ css_error emitToken(css_lexer *lexer, css_token_type type,
 		t->data.len -= 1;
 
 		/* Strip the trailing quote, iff it exists (may have hit EOF) */
-		if (t->data.len > 0 && (t->data.data[t->data.len - 1] == '"' ||
-				t->data.data[t->data.len - 1] == '\'')) {
+		if (t->data.len > 0 &&
+		    (t->data.data[t->data.len - 1] == '"' ||
+		     t->data.data[t->data.len - 1] == '\'')) {
 			t->data.len -= 1;
 		}
 		break;
@@ -434,13 +431,14 @@ css_error emitToken(css_lexer *lexer, css_token_type type,
 
 		/* Strip any trailing whitespace */
 		while (t->data.len > 0 &&
-				isSpace(t->data.data[t->data.len - 1])) {
+		       isSpace(t->data.data[t->data.len - 1])) {
 			t->data.len--;
 		}
 
 		/* Strip any trailing quote */
-		if (t->data.len > 0 && (t->data.data[t->data.len - 1] == '"' ||
-				t->data.data[t->data.len - 1] == '\'')) {
+		if (t->data.len > 0 &&
+		    (t->data.data[t->data.len - 1] == '"' ||
+		     t->data.data[t->data.len - 1] == '\'')) {
 			t->data.len -= 1;
 		}
 		break;
@@ -494,8 +492,8 @@ css_error AtKeyword(css_lexer *lexer, css_token **token)
 
 	switch (lexer->substate) {
 	case Initial:
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -569,8 +567,8 @@ css_error CDCOrIdentOrFunctionOrNPD(css_lexer *lexer, css_token **token)
 
 	switch (lexer->substate) {
 	case Initial:
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -617,8 +615,8 @@ css_error CDCOrIdentOrFunctionOrNPD(css_lexer *lexer, css_token **token)
 		lexer->substate = Gt;
 
 		/* Ok, so we're dealing with CDC. Expect a '>' */
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -684,8 +682,8 @@ css_error CDO(css_lexer *lexer, css_token **token)
 	switch (lexer->substate) {
 	case Initial:
 		/* Expect '!' */
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -712,8 +710,8 @@ css_error CDO(css_lexer *lexer, css_token **token)
 		lexer->substate = Dash1;
 
 		/* Expect '-' */
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -741,8 +739,8 @@ css_error CDO(css_lexer *lexer, css_token **token)
 		lexer->substate = Dash2;
 
 		/* Expect '-' */
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -783,8 +781,8 @@ css_error Comment(css_lexer *lexer, css_token **token)
 	 */
 	switch (lexer->substate) {
 	case Initial:
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -803,10 +801,13 @@ css_error Comment(css_lexer *lexer, css_token **token)
 		lexer->substate = InComment;
 
 		while (1) {
-			perror = parserutils_inputstream_peek(lexer->input,
-					lexer->bytesReadForToken, &cptr, &clen);
+			perror = parserutils_inputstream_peek(
+				lexer->input,
+				lexer->bytesReadForToken,
+				&cptr,
+				&clen);
 			if (perror != PARSERUTILS_OK &&
-					perror != PARSERUTILS_EOF)
+			    perror != PARSERUTILS_EOF)
 				return css_error_from_parserutils_error(perror);
 
 			if (perror == PARSERUTILS_EOF) {
@@ -914,8 +915,8 @@ css_error IdentOrFunction(css_lexer *lexer, css_token **token)
 	case Bracket:
 		lexer->substate = Bracket;
 
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -955,8 +956,8 @@ css_error Match(css_lexer *lexer, css_token **token)
 	 * The first character has been consumed.
 	 */
 
-	perror = parserutils_inputstream_peek(lexer->input,
-			lexer->bytesReadForToken, &cptr, &clen);
+	perror = parserutils_inputstream_peek(
+		lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 	if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 		return css_error_from_parserutils_error(perror);
 
@@ -1001,8 +1002,14 @@ css_error NumberOrPercentageOrDimension(css_lexer *lexer, css_token **token)
 	size_t clen;
 	css_error error;
 	parserutils_error perror;
-	enum { Initial = 0, Dot = 1, MoreDigits = 2,
-		Suffix = 3, NMChars = 4, Escape = 5 };
+	enum {
+		Initial = 0,
+		Dot = 1,
+		MoreDigits = 2,
+		Suffix = 3,
+		NMChars = 4,
+		Escape = 5
+	};
 
 	/* NUMBER = num = [-+]? ([0-9]+ | [0-9]* '.' [0-9]+)
 	 * PERCENTAGE = num '%'
@@ -1022,18 +1029,19 @@ css_error NumberOrPercentageOrDimension(css_lexer *lexer, css_token **token)
 	case Dot:
 		lexer->substate = Dot;
 
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
 		if (perror == PARSERUTILS_EOF) {
 			if (t->data.len == 1 && (lexer->context.first == '.' ||
-					lexer->context.first == '+'))
+						 lexer->context.first == '+'))
 				return emitToken(lexer, CSS_TOKEN_CHAR, token);
 			else
-				return emitToken(lexer, CSS_TOKEN_NUMBER,
-						token);
+				return emitToken(lexer,
+						 CSS_TOKEN_NUMBER,
+						 token);
 		}
 
 		c = *cptr;
@@ -1067,25 +1075,26 @@ css_error NumberOrPercentageOrDimension(css_lexer *lexer, css_token **token)
 	suffix:
 		lexer->substate = Suffix;
 
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
 		if (perror == PARSERUTILS_EOF) {
 			if (t->data.len == 1 && (lexer->context.first == '.' ||
-					lexer->context.first == '+'))
+						 lexer->context.first == '+'))
 				return emitToken(lexer, CSS_TOKEN_CHAR, token);
 			else
-				return emitToken(lexer, CSS_TOKEN_NUMBER,
-						token);
+				return emitToken(lexer,
+						 CSS_TOKEN_NUMBER,
+						 token);
 		}
 
 		c = *cptr;
 
 		/* A solitary '.' or '+' is a CHAR, not numeric */
 		if (t->data.len == 1 && (lexer->context.first == '.' ||
-				lexer->context.first == '+'))
+					 lexer->context.first == '+'))
 			return emitToken(lexer, CSS_TOKEN_CHAR, token);
 
 		if (c == '%') {
@@ -1125,7 +1134,8 @@ css_error NumberOrPercentageOrDimension(css_lexer *lexer, css_token **token)
 
 				/* This can only be a number */
 				return emitToken(lexer,
-						CSS_TOKEN_NUMBER, token);
+						 CSS_TOKEN_NUMBER,
+						 token);
 			}
 
 			return error;
@@ -1166,8 +1176,8 @@ start:
 
 	/* Advance past the input read for the previous token */
 	if (lexer->bytesReadForToken > 0) {
-		parserutils_inputstream_advance(
-				lexer->input, lexer->bytesReadForToken);
+		parserutils_inputstream_advance(lexer->input,
+						lexer->bytesReadForToken);
 		lexer->bytesReadForToken = 0;
 	}
 
@@ -1204,7 +1214,8 @@ start:
 		lexer->state = sATKEYWORD;
 		lexer->substate = 0;
 		return AtKeyword(lexer, token);
-	case '"': case '\'':
+	case '"':
+	case '\'':
 		lexer->state = sSTRING;
 		lexer->substate = 0;
 		lexer->context.first = c;
@@ -1214,9 +1225,18 @@ start:
 		lexer->substate = 0;
 		lexer->context.origBytes = lexer->bytesReadForToken;
 		return Hash(lexer, token);
-	case '0': case '1': case '2': case '3': case '4':
-	case '5': case '6': case '7': case '8': case '9':
-	case '.': case '+':
+	case '0':
+	case '1':
+	case '2':
+	case '3':
+	case '4':
+	case '5':
+	case '6':
+	case '7':
+	case '8':
+	case '9':
+	case '.':
+	case '+':
 		lexer->state = sNUMBER;
 		lexer->substate = 0;
 		lexer->context.first = c;
@@ -1229,7 +1249,11 @@ start:
 		lexer->state = sCDC;
 		lexer->substate = 0;
 		return CDCOrIdentOrFunctionOrNPD(lexer, token);
-	case ' ': case '\t': case '\r': case '\n': case '\f':
+	case ' ':
+	case '\t':
+	case '\r':
+	case '\n':
+	case '\f':
 		lexer->state = sS;
 		lexer->substate = 0;
 		if (c == '\n' || c == '\f') {
@@ -1245,28 +1269,73 @@ start:
 		lexer->context.lastWasCR = false;
 		error = Comment(lexer, token);
 		if (!lexer->emit_comments && error == CSS_OK &&
-				(*token)->type == CSS_TOKEN_COMMENT)
+		    (*token)->type == CSS_TOKEN_COMMENT)
 			goto start;
 		return error;
-	case '~': case '|': case '^': case '$': case '*':
+	case '~':
+	case '|':
+	case '^':
+	case '$':
+	case '*':
 		lexer->state = sMATCH;
 		lexer->substate = 0;
 		lexer->context.first = c;
 		return Match(lexer, token);
-	case 'u': case 'U':
+	case 'u':
+	case 'U':
 		lexer->state = sURI;
 		lexer->substate = 0;
 		return URIOrUnicodeRangeOrIdentOrFunction(lexer, token);
-	case 'a': case 'b': case 'c': case 'd': case 'e': case 'f':
-	case 'g': case 'h': case 'i': case 'j': case 'k': case 'l':
-	case 'm': case 'n': case 'o': case 'p': case 'q': case 'r':
-	case 's': case 't': /*  'u'*/ case 'v': case 'w': case 'x':
-	case 'y': case 'z':
-	case 'A': case 'B': case 'C': case 'D': case 'E': case 'F':
-	case 'G': case 'H': case 'I': case 'J': case 'K': case 'L':
-	case 'M': case 'N': case 'O': case 'P': case 'Q': case 'R':
-	case 'S': case 'T': /*  'U'*/ case 'V': case 'W': case 'X':
-	case 'Y': case 'Z':
+	case 'a':
+	case 'b':
+	case 'c':
+	case 'd':
+	case 'e':
+	case 'f':
+	case 'g':
+	case 'h':
+	case 'i':
+	case 'j':
+	case 'k':
+	case 'l':
+	case 'm':
+	case 'n':
+	case 'o':
+	case 'p':
+	case 'q':
+	case 'r':
+	case 's':
+	case 't': /*  'u'*/
+	case 'v':
+	case 'w':
+	case 'x':
+	case 'y':
+	case 'z':
+	case 'A':
+	case 'B':
+	case 'C':
+	case 'D':
+	case 'E':
+	case 'F':
+	case 'G':
+	case 'H':
+	case 'I':
+	case 'J':
+	case 'K':
+	case 'L':
+	case 'M':
+	case 'N':
+	case 'O':
+	case 'P':
+	case 'Q':
+	case 'R':
+	case 'S':
+	case 'T': /*  'U'*/
+	case 'V':
+	case 'W':
+	case 'X':
+	case 'Y':
+	case 'Z':
 	case '_':
 		lexer->state = sIDENT;
 		lexer->substate = 0;
@@ -1277,8 +1346,8 @@ start:
 		return EscapedIdentOrFunction(lexer, token);
 	case '>':
 		/* Check for >= */
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF) {
 			return css_error_from_parserutils_error(perror);
 		}
@@ -1313,13 +1382,13 @@ css_error String(css_lexer *lexer, css_token **token)
 
 	/* EOF will be reprocessed in Start() */
 	return emitToken(lexer,
-			error == CSS_OK ? CSS_TOKEN_STRING
-					: CSS_TOKEN_INVALID_STRING,
-			token);
+			 error == CSS_OK ? CSS_TOKEN_STRING
+					 : CSS_TOKEN_INVALID_STRING,
+			 token);
 }
 
-css_error URIOrUnicodeRangeOrIdentOrFunction(css_lexer *lexer,
-		css_token **token)
+css_error
+URIOrUnicodeRangeOrIdentOrFunction(css_lexer *lexer, css_token **token)
 {
 	const uint8_t *cptr;
 	uint8_t c;
@@ -1334,8 +1403,8 @@ css_error URIOrUnicodeRangeOrIdentOrFunction(css_lexer *lexer,
 	 * The 'u' (or 'U') has been consumed.
 	 */
 
-	perror = parserutils_inputstream_peek(lexer->input,
-			lexer->bytesReadForToken, &cptr, &clen);
+	perror = parserutils_inputstream_peek(
+		lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 	if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 		return css_error_from_parserutils_error(perror);
 
@@ -1374,8 +1443,16 @@ css_error URI(css_lexer *lexer, css_token **token)
 	size_t clen;
 	css_error error;
 	parserutils_error perror;
-	enum { Initial = 0, LParen = 1, W1 = 2, Quote = 3,
-		URL = 4, W2 = 5, RParen = 6, String = 7 };
+	enum {
+		Initial = 0,
+		LParen = 1,
+		W1 = 2,
+		Quote = 3,
+		URL = 4,
+		W2 = 5,
+		RParen = 6,
+		String = 7
+	};
 
 	/* URI = "url(" w (string | urlchar*) w ')'
 	 *
@@ -1384,8 +1461,8 @@ css_error URI(css_lexer *lexer, css_token **token)
 
 	switch (lexer->substate) {
 	case Initial:
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -1408,8 +1485,8 @@ css_error URI(css_lexer *lexer, css_token **token)
 	case LParen:
 		lexer->substate = LParen;
 
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -1445,8 +1522,8 @@ css_error URI(css_lexer *lexer, css_token **token)
 	case Quote:
 		lexer->substate = Quote;
 
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -1495,8 +1572,8 @@ css_error URI(css_lexer *lexer, css_token **token)
 	case RParen:
 		lexer->substate = RParen;
 
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -1560,10 +1637,13 @@ css_error UnicodeRange(css_lexer *lexer, css_token **token)
 	case Initial:
 		/* Attempt to consume 6 hex digits (or question marks) */
 		for (; lexer->context.hexCount < 6; lexer->context.hexCount++) {
-			perror = parserutils_inputstream_peek(lexer->input,
-					lexer->bytesReadForToken, &cptr, &clen);
+			perror = parserutils_inputstream_peek(
+				lexer->input,
+				lexer->bytesReadForToken,
+				&cptr,
+				&clen);
 			if (perror != PARSERUTILS_OK &&
-					perror != PARSERUTILS_EOF)
+			    perror != PARSERUTILS_EOF)
 				return css_error_from_parserutils_error(perror);
 
 			if (perror == PARSERUTILS_EOF) {
@@ -1573,10 +1653,13 @@ css_error UnicodeRange(css_lexer *lexer, css_token **token)
 					t->data.len -= 1;
 					/* u == IDENT */
 					return emitToken(lexer,
-							CSS_TOKEN_IDENT, token);
+							 CSS_TOKEN_IDENT,
+							 token);
 				} else {
-					return emitToken(lexer,
-						CSS_TOKEN_UNICODE_RANGE, token);
+					return emitToken(
+						lexer,
+						CSS_TOKEN_UNICODE_RANGE,
+						token);
 				}
 			}
 
@@ -1600,15 +1683,19 @@ css_error UnicodeRange(css_lexer *lexer, css_token **token)
 
 		if (lexer->context.hexCount == 6) {
 			/* Consumed 6 valid characters. Look for '-' */
-			perror = parserutils_inputstream_peek(lexer->input,
-					lexer->bytesReadForToken, &cptr, &clen);
+			perror = parserutils_inputstream_peek(
+				lexer->input,
+				lexer->bytesReadForToken,
+				&cptr,
+				&clen);
 			if (perror != PARSERUTILS_OK &&
-					perror != PARSERUTILS_EOF)
+			    perror != PARSERUTILS_EOF)
 				return css_error_from_parserutils_error(perror);
 
 			if (perror == PARSERUTILS_EOF)
 				return emitToken(lexer,
-						CSS_TOKEN_UNICODE_RANGE, token);
+						 CSS_TOKEN_UNICODE_RANGE,
+						 token);
 
 			c = *cptr;
 		}
@@ -1631,10 +1718,13 @@ css_error UnicodeRange(css_lexer *lexer, css_token **token)
 
 		/* Consume up to 6 hex digits */
 		for (; lexer->context.hexCount < 6; lexer->context.hexCount++) {
-			perror = parserutils_inputstream_peek(lexer->input,
-					lexer->bytesReadForToken, &cptr, &clen);
+			perror = parserutils_inputstream_peek(
+				lexer->input,
+				lexer->bytesReadForToken,
+				&cptr,
+				&clen);
 			if (perror != PARSERUTILS_OK &&
-					perror != PARSERUTILS_EOF)
+			    perror != PARSERUTILS_EOF)
 				return css_error_from_parserutils_error(perror);
 
 			if (perror == PARSERUTILS_EOF) {
@@ -1645,7 +1735,8 @@ css_error UnicodeRange(css_lexer *lexer, css_token **token)
 				}
 
 				return emitToken(lexer,
-						CSS_TOKEN_UNICODE_RANGE, token);
+						 CSS_TOKEN_UNICODE_RANGE,
+						 token);
 			}
 
 			c = *cptr;
@@ -1682,8 +1773,8 @@ css_error consumeDigits(css_lexer *lexer)
 
 	/* Consume all digits */
 	do {
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -1713,8 +1804,8 @@ css_error consumeEscape(css_lexer *lexer, bool nl)
 	 * The '\' has been consumed.
 	 */
 
-	perror = parserutils_inputstream_peek(lexer->input,
-			lexer->bytesReadForToken, &cptr, &clen);
+	perror = parserutils_inputstream_peek(
+		lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 	if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 		return css_error_from_parserutils_error(perror);
 
@@ -1740,14 +1831,15 @@ css_error consumeEscape(css_lexer *lexer, bool nl)
 	if (!lexer->escapeSeen) {
 		if (lexer->bytesReadForToken > 1) {
 			perror = parserutils_inputstream_peek(
-					lexer->input, 0, &sdata, &slen);
+				lexer->input, 0, &sdata, &slen);
 
 			assert(perror == PARSERUTILS_OK);
 
 			/* -1 to skip '\\' */
 			perror = parserutils_buffer_append(
-					lexer->unescapedTokenData,
-					sdata, lexer->bytesReadForToken - 1);
+				lexer->unescapedTokenData,
+				sdata,
+				lexer->bytesReadForToken - 1);
 			if (perror != PARSERUTILS_OK)
 				return css_error_from_parserutils_error(perror);
 		}
@@ -1771,7 +1863,10 @@ css_error consumeEscape(css_lexer *lexer, bool nl)
 	/* If we're handling escaped newlines, convert CR(LF)? to LF */
 	if (nl && c == '\r') {
 		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken + clen, &cptr, &clen);
+						      lexer->bytesReadForToken +
+							      clen,
+						      &cptr,
+						      &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -1811,8 +1906,8 @@ css_error consumeNMChars(css_lexer *lexer)
 	/* nmchar = [a-zA-Z] | '-' | '_' | nonascii | escape */
 
 	do {
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -1867,8 +1962,8 @@ css_error consumeString(css_lexer *lexer)
 	 */
 
 	do {
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -1887,7 +1982,7 @@ css_error consumeString(css_lexer *lexer)
 			/* Invalid character in string */
 			return CSS_INVALID;
 		}
-	} while(c != quote);
+	} while (c != quote);
 
 	/* Append closing quote to token data */
 	APPEND(lexer, cptr, clen);
@@ -1906,8 +2001,8 @@ css_error consumeStringChars(css_lexer *lexer)
 	/* stringchar = urlchar | ' ' | ')' | '\' nl */
 
 	do {
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -1937,7 +2032,6 @@ css_error consumeStringChars(css_lexer *lexer)
 	} while (startStringChar(c));
 
 	return CSS_OK;
-
 }
 
 css_error consumeUnicode(css_lexer *lexer, uint32_t ucs)
@@ -1960,8 +2054,8 @@ css_error consumeUnicode(css_lexer *lexer, uint32_t ucs)
 
 	/* Attempt to consume a further five hex digits */
 	for (count = 0; count < 5; count++) {
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF) {
 			/* Rewind what we've read */
 			lexer->bytesReadForToken = bytesReadInit;
@@ -1984,11 +2078,10 @@ css_error consumeUnicode(css_lexer *lexer, uint32_t ucs)
 
 	/* Sanitise UCS4 character */
 	if (ucs > 0x10FFFF || ucs <= 0x0008 || ucs == 0x000B ||
-			(0x000E <= ucs && ucs <= 0x001F) ||
-			(0x007F <= ucs && ucs <= 0x009F) ||
-			(0xD800 <= ucs && ucs <= 0xDFFF) ||
-			(0xFDD0 <= ucs && ucs <= 0xFDEF) ||
-			(ucs & 0xFFFE) == 0xFFFE) {
+	    (0x000E <= ucs && ucs <= 0x001F) ||
+	    (0x007F <= ucs && ucs <= 0x009F) ||
+	    (0xD800 <= ucs && ucs <= 0xDFFF) ||
+	    (0xFDD0 <= ucs && ucs <= 0xFDEF) || (ucs & 0xFFFE) == 0xFFFE) {
 		ucs = 0xFFFD;
 	} else if (ucs == 0x000D) {
 		ucs = 0x000A;
@@ -1999,8 +2092,8 @@ css_error consumeUnicode(css_lexer *lexer, uint32_t ucs)
 	assert(perror == PARSERUTILS_OK);
 
 	/* Attempt to read a trailing whitespace character */
-	perror = parserutils_inputstream_peek(lexer->input,
-			lexer->bytesReadForToken, &cptr, &clen);
+	perror = parserutils_inputstream_peek(
+		lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 	if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF) {
 		/* Rewind what we've read */
 		lexer->bytesReadForToken = bytesReadInit;
@@ -2012,7 +2105,10 @@ css_error consumeUnicode(css_lexer *lexer, uint32_t ucs)
 		const uint8_t *pCR = cptr;
 
 		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken + 1, &cptr, &clen);
+						      lexer->bytesReadForToken +
+							      1,
+						      &cptr,
+						      &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF) {
 			/* Rewind what we've read */
 			lexer->bytesReadForToken = bytesReadInit;
@@ -2034,8 +2130,9 @@ css_error consumeUnicode(css_lexer *lexer, uint32_t ucs)
 	/* We can't use the APPEND() macro here as we want to rewind correctly
 	 * on error. Additionally, lexer->bytesReadForToken has already been
 	 * advanced */
-	error = appendToTokenData(lexer, (const uint8_t *) utf8,
-			sizeof(utf8) - utf8len);
+	error = appendToTokenData(lexer,
+				  (const uint8_t *)utf8,
+				  sizeof(utf8) - utf8len);
 	if (error != CSS_OK) {
 		/* Rewind what we've read */
 		lexer->bytesReadForToken = bytesReadInit;
@@ -2056,8 +2153,8 @@ css_error consumeUnicode(css_lexer *lexer, uint32_t ucs)
 		lexer->currentLine++;
 	} else {
 		/* +2 for '\' and first digit */
-		lexer->currentCol += lexer->bytesReadForToken -
-				bytesReadInit + 2;
+		lexer->currentCol += lexer->bytesReadForToken - bytesReadInit +
+				     2;
 	}
 
 	return CSS_OK;
@@ -2074,8 +2171,8 @@ css_error consumeURLChars(css_lexer *lexer)
 	/* urlchar = [\t!#-&(*-~] | nonascii | escape */
 
 	do {
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -2122,8 +2219,8 @@ css_error consumeWChars(css_lexer *lexer)
 	parserutils_error perror;
 
 	do {
-		perror = parserutils_inputstream_peek(lexer->input,
-				lexer->bytesReadForToken, &cptr, &clen);
+		perror = parserutils_inputstream_peek(
+			lexer->input, lexer->bytesReadForToken, &cptr, &clen);
 		if (perror != PARSERUTILS_OK && perror != PARSERUTILS_EOF)
 			return css_error_from_parserutils_error(perror);
 
@@ -2163,13 +2260,13 @@ css_error consumeWChars(css_lexer *lexer)
 bool startNMChar(uint8_t c)
 {
 	return c == '_' || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') ||
-		('0' <= c && c <= '9') || c == '-' || c >= 0x80 || c == '\\';
+	       ('0' <= c && c <= '9') || c == '-' || c >= 0x80 || c == '\\';
 }
 
 bool startNMStart(uint8_t c)
 {
 	return c == '_' || ('a' <= c && c <= 'z') || ('A' <= c && c <= 'Z') ||
-		c >= 0x80 || c == '\\';
+	       c >= 0x80 || c == '\\';
 }
 
 bool startStringChar(uint8_t c)
@@ -2180,11 +2277,10 @@ bool startStringChar(uint8_t c)
 bool startURLChar(uint8_t c)
 {
 	return c == '\t' || c == '!' || ('#' <= c && c <= '&') || c == '(' ||
-		('*' <= c && c <= '~') || c >= 0x80 || c == '\\';
+	       ('*' <= c && c <= '~') || c >= 0x80 || c == '\\';
 }
 
 bool isSpace(uint8_t c)
 {
 	return c == ' ' || c == '\r' || c == '\n' || c == '\f' || c == '\t';
 }
-

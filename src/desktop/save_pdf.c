@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
- /** \file
+/** \file
  * Target independent PDF plotting using Haru Free PDF Library.
  */
 
@@ -71,28 +71,46 @@
 /* #define PDF_DEBUG */
 /* #define PDF_DEBUG_DUMPGRID */
 
-static bool pdf_plot_rectangle(int x0, int y0, int x1, int y1, const plot_style_t *style);
-static bool pdf_plot_line(int x0, int y0, int x1, int y1, const plot_style_t *pstyle);
-static bool pdf_plot_polygon(const int *p, unsigned int n, const plot_style_t *style);
+static bool
+pdf_plot_rectangle(int x0, int y0, int x1, int y1, const plot_style_t *style);
+static bool
+pdf_plot_line(int x0, int y0, int x1, int y1, const plot_style_t *pstyle);
+static bool
+pdf_plot_polygon(const int *p, unsigned int n, const plot_style_t *style);
 static bool pdf_plot_clip(const struct rect *clip);
-static bool pdf_plot_text(int x, int y, const char *text, size_t length,
-		const plot_font_style_t *fstyle);
+static bool pdf_plot_text(int x,
+			  int y,
+			  const char *text,
+			  size_t length,
+			  const plot_font_style_t *fstyle);
 static bool pdf_plot_disc(int x, int y, int radius, const plot_style_t *style);
-static bool pdf_plot_arc(int x, int y, int radius, int angle1, int angle2,
-    		const plot_style_t *style);
-static bool pdf_plot_bitmap_tile(int x, int y, int width, int height,
-		struct bitmap *bitmap, colour bg,
-		bitmap_flags_t flags);
-static bool pdf_plot_path(const float *p, unsigned int n, colour fill, float width,
-		colour c, const float transform[6]);
+static bool pdf_plot_arc(int x,
+			 int y,
+			 int radius,
+			 int angle1,
+			 int angle2,
+			 const plot_style_t *style);
+static bool pdf_plot_bitmap_tile(int x,
+				 int y,
+				 int width,
+				 int height,
+				 struct bitmap *bitmap,
+				 colour bg,
+				 bitmap_flags_t flags);
+static bool pdf_plot_path(const float *p,
+			  unsigned int n,
+			  colour fill,
+			  float width,
+			  colour c,
+			  const float transform[6]);
 
 static HPDF_Image pdf_extract_image(struct bitmap *bitmap);
 
-static void error_handler(HPDF_STATUS error_no, HPDF_STATUS detail_no,
-		void *user_data);
+static void
+error_handler(HPDF_STATUS error_no, HPDF_STATUS detail_no, void *user_data);
 
 #ifdef PDF_DEBUG_DUMPGRID
-static void pdf_plot_grid(int x_dist,int y_dist,unsigned int colour);
+static void pdf_plot_grid(int x_dist, int y_dist, unsigned int colour);
 #endif
 
 typedef enum {
@@ -124,8 +142,11 @@ typedef struct {
 	DashPattern_e dash; /**< Current dash state.  */
 } PDFW_GState;
 
-static void apply_clip_and_mode(bool selectTextMode, colour fillCol,
-	colour strokeCol, float lineWidth, DashPattern_e dash);
+static void apply_clip_and_mode(bool selectTextMode,
+				colour fillCol,
+				colour strokeCol,
+				float lineWidth,
+				DashPattern_e dash);
 
 #define PDFW_MAX_GSTATES 4
 static PDFW_GState pdfw_gs[PDFW_MAX_GSTATES];
@@ -157,27 +178,40 @@ static const struct plotter_table pdf_plotters = {
 	.option_knockout = false,
 };
 
-const struct printer pdf_printer = {
-	&pdf_plotters,
-	pdf_begin,
-	pdf_next_page,
-	pdf_end
-};
+const struct printer pdf_printer = {&pdf_plotters,
+				    pdf_begin,
+				    pdf_next_page,
+				    pdf_end};
 
 static char *owner_pass;
 static char *user_pass;
 
-bool pdf_plot_rectangle(int x0, int y0, int x1, int y1, const plot_style_t *pstyle)
+bool pdf_plot_rectangle(int x0,
+			int y0,
+			int x1,
+			int y1,
+			const plot_style_t *pstyle)
 {
 	DashPattern_e dash;
 #ifdef PDF_DEBUG
-	NSLOG(netsurf, INFO, "%d %d %d %d %f %X", x0, y0, x1, y1,
-	      page_height - y0, pstyle->fill_colour);
+	NSLOG(netsurf,
+	      INFO,
+	      "%d %d %d %d %f %X",
+	      x0,
+	      y0,
+	      x1,
+	      y1,
+	      page_height - y0,
+	      pstyle->fill_colour);
 #endif
 
 	if (pstyle->fill_type != PLOT_OP_TYPE_NONE) {
 
-		apply_clip_and_mode(false, pstyle->fill_colour, NS_TRANSPARENT, 0., DashPattern_eNone);
+		apply_clip_and_mode(false,
+				    pstyle->fill_colour,
+				    NS_TRANSPARENT,
+				    0.,
+				    DashPattern_eNone);
 
 		/* Normalize boundaries of the area - to prevent
 		   overflows.  It is needed only in a few functions,
@@ -190,9 +224,9 @@ bool pdf_plot_rectangle(int x0, int y0, int x1, int y1, const plot_style_t *psty
 		x1 = min(max(x1, 0), page_width);
 		y1 = min(max(y1, 0), page_height);
 
-		HPDF_Page_Rectangle(pdf_page, x0, page_height - y1, x1 - x0, y1 - y0);
+		HPDF_Page_Rectangle(
+			pdf_page, x0, page_height - y1, x1 - x0, y1 - y0);
 		HPDF_Page_Fill(pdf_page);
-
 	}
 
 	if (pstyle->stroke_type != PLOT_OP_TYPE_NONE) {
@@ -209,16 +243,17 @@ bool pdf_plot_rectangle(int x0, int y0, int x1, int y1, const plot_style_t *psty
 		default:
 			dash = DashPattern_eNone;
 			break;
-
 		}
 
 		apply_clip_and_mode(false,
-				NS_TRANSPARENT,
-				pstyle->stroke_colour,
-				plot_style_int_to_fixed(pstyle->stroke_width),
-				dash);
+				    NS_TRANSPARENT,
+				    pstyle->stroke_colour,
+				    plot_style_int_to_fixed(
+					    pstyle->stroke_width),
+				    dash);
 
-		HPDF_Page_Rectangle(pdf_page, x0, page_height - y0, x1 - x0, -(y1 - y0));
+		HPDF_Page_Rectangle(
+			pdf_page, x0, page_height - y0, x1 - x0, -(y1 - y0));
 		HPDF_Page_Stroke(pdf_page);
 	}
 
@@ -241,14 +276,13 @@ bool pdf_plot_line(int x0, int y0, int x1, int y1, const plot_style_t *pstyle)
 	default:
 		dash = DashPattern_eNone;
 		break;
-
 	}
 
 	apply_clip_and_mode(false,
-			NS_TRANSPARENT,
-			pstyle->stroke_colour,
-			plot_style_int_to_fixed(pstyle->stroke_width),
-			dash);
+			    NS_TRANSPARENT,
+			    pstyle->stroke_colour,
+			    plot_style_int_to_fixed(pstyle->stroke_width),
+			    dash);
 
 	HPDF_Page_MoveTo(pdf_page, x0, page_height - y0);
 	HPDF_Page_LineTo(pdf_page, x1, page_height - y1);
@@ -268,21 +302,33 @@ bool pdf_plot_polygon(const int *p, unsigned int n, const plot_style_t *style)
 	if (n == 0)
 		return true;
 
-	apply_clip_and_mode(false, style->fill_colour, NS_TRANSPARENT, 0., DashPattern_eNone);
+	apply_clip_and_mode(false,
+			    style->fill_colour,
+			    NS_TRANSPARENT,
+			    0.,
+			    DashPattern_eNone);
 
 	HPDF_Page_MoveTo(pdf_page, p[0], page_height - p[1]);
-	for (i = 1 ; i<n ; i++) {
-		HPDF_Page_LineTo(pdf_page, p[i*2], page_height - p[i*2+1]);
+	for (i = 1; i < n; i++) {
+		HPDF_Page_LineTo(pdf_page,
+				 p[i * 2],
+				 page_height - p[i * 2 + 1]);
 #ifdef PDF_DEBUG
-		pmaxx = max(pmaxx, p[i*2]);
-		pmaxy = max(pmaxy, p[i*2+1]);
-		pminx = min(pminx, p[i*2]);
-		pminy = min(pminy, p[i*2+1]);
+		pmaxx = max(pmaxx, p[i * 2]);
+		pmaxy = max(pmaxy, p[i * 2 + 1]);
+		pminx = min(pminx, p[i * 2]);
+		pminy = min(pminy, p[i * 2 + 1]);
 #endif
 	}
 
 #ifdef PDF_DEBUG
-	NSLOG(netsurf, INFO, "%d %d %d %d %f", pminx, pminy, pmaxx, pmaxy,
+	NSLOG(netsurf,
+	      INFO,
+	      "%d %d %d %d %f",
+	      pminx,
+	      pminy,
+	      pmaxx,
+	      pmaxy,
 	      page_height - pminy);
 #endif
 
@@ -296,7 +342,12 @@ bool pdf_plot_polygon(const int *p, unsigned int n, const plot_style_t *style)
 bool pdf_plot_clip(const struct rect *clip)
 {
 #ifdef PDF_DEBUG
-	NSLOG(netsurf, INFO, "%d %d %d %d", clip->x0, clip->y0, clip->x1,
+	NSLOG(netsurf,
+	      INFO,
+	      "%d %d %d %d",
+	      clip->x0,
+	      clip->y0,
+	      clip->x1,
 	      clip->y1);
 #endif
 
@@ -313,8 +364,11 @@ bool pdf_plot_clip(const struct rect *clip)
 	return true;
 }
 
-bool pdf_plot_text(int x, int y, const char *text, size_t length,
-		const plot_font_style_t *fstyle)
+bool pdf_plot_text(int x,
+		   int y,
+		   const char *text,
+		   size_t length,
+		   const plot_font_style_t *fstyle)
 {
 #ifdef PDF_DEBUG
 	NSLOG(netsurf, INFO, ". %d %d %.*s", x, y, (int)length, text);
@@ -326,21 +380,24 @@ bool pdf_plot_text(int x, int y, const char *text, size_t length,
 	if (length == 0)
 		return true;
 
-	apply_clip_and_mode(true, fstyle->foreground, NS_TRANSPARENT, 0.,
-			DashPattern_eNone);
+	apply_clip_and_mode(true,
+			    fstyle->foreground,
+			    NS_TRANSPARENT,
+			    0.,
+			    DashPattern_eNone);
 
 	haru_nsfont_apply_style(fstyle, pdf_doc, pdf_page, &pdf_font, &size);
 	pdfw_gs_font(pdf_page, pdf_font, size);
 
 	/* FIXME: UTF-8 to current font encoding needs to done.  Or the font
 	 * encoding needs to be UTF-8 or other Unicode encoding.  */
-	word = (char *)malloc( sizeof(char) * (length+1) );
+	word = (char *)malloc(sizeof(char) * (length + 1));
 	if (word == NULL)
 		return false;
 	memcpy(word, text, length);
 	word[length] = '\0';
 
-	HPDF_Page_TextOut (pdf_page, x, page_height - y, word);
+	HPDF_Page_TextOut(pdf_page, x, page_height - y, word);
 
 	free(word);
 
@@ -356,7 +413,8 @@ bool pdf_plot_disc(int x, int y, int radius, const plot_style_t *style)
 		apply_clip_and_mode(false,
 				    style->fill_colour,
 				    NS_TRANSPARENT,
-				    1., DashPattern_eNone);
+				    1.,
+				    DashPattern_eNone);
 
 		HPDF_Page_Circle(pdf_page, x, page_height - y, radius);
 
@@ -368,7 +426,8 @@ bool pdf_plot_disc(int x, int y, int radius, const plot_style_t *style)
 		apply_clip_and_mode(false,
 				    NS_TRANSPARENT,
 				    style->stroke_colour,
-				    1., DashPattern_eNone);
+				    1.,
+				    DashPattern_eNone);
 
 		HPDF_Page_Circle(pdf_page, x, page_height - y, radius);
 
@@ -378,15 +437,31 @@ bool pdf_plot_disc(int x, int y, int radius, const plot_style_t *style)
 	return true;
 }
 
-bool pdf_plot_arc(int x, int y, int radius, int angle1, int angle2, const plot_style_t *style)
+bool pdf_plot_arc(int x,
+		  int y,
+		  int radius,
+		  int angle1,
+		  int angle2,
+		  const plot_style_t *style)
 {
 #ifdef PDF_DEBUG
-	NSLOG(netsurf, INFO, "%d %d %d %d %d %X", x, y, radius, angle1,
-	      angle2, style->stroke_colour);
+	NSLOG(netsurf,
+	      INFO,
+	      "%d %d %d %d %d %X",
+	      x,
+	      y,
+	      radius,
+	      angle1,
+	      angle2,
+	      style->stroke_colour);
 #endif
 
 	/* FIXME: line width 1 is ok ? */
-	apply_clip_and_mode(false, NS_TRANSPARENT, style->fill_colour, 1., DashPattern_eNone);
+	apply_clip_and_mode(false,
+			    NS_TRANSPARENT,
+			    style->fill_colour,
+			    1.,
+			    DashPattern_eNone);
 
 	/* Normalize angles */
 	angle1 %= 360;
@@ -401,37 +476,52 @@ bool pdf_plot_arc(int x, int y, int radius, int angle1, int angle2, const plot_s
 }
 
 
-bool pdf_plot_bitmap_tile(int x, int y, int width, int height,
-		struct bitmap *bitmap, colour bg,
-  		bitmap_flags_t flags)
+bool pdf_plot_bitmap_tile(int x,
+			  int y,
+			  int width,
+			  int height,
+			  struct bitmap *bitmap,
+			  colour bg,
+			  bitmap_flags_t flags)
 {
 	HPDF_Image image;
-	HPDF_REAL current_x, current_y ;
+	HPDF_REAL current_x, current_y;
 	HPDF_REAL max_width, max_height;
 
 #ifdef PDF_DEBUG
-	NSLOG(netsurf, INFO, "%d %d %d %d %p 0x%x", x, y, width, height,
-	      bitmap, bg);
+	NSLOG(netsurf,
+	      INFO,
+	      "%d %d %d %d %p 0x%x",
+	      x,
+	      y,
+	      width,
+	      height,
+	      bitmap,
+	      bg);
 #endif
- 	if (width == 0 || height == 0)
- 		return true;
+	if (width == 0 || height == 0)
+		return true;
 
-	apply_clip_and_mode(false, NS_TRANSPARENT, NS_TRANSPARENT, 0., DashPattern_eNone);
+	apply_clip_and_mode(
+		false, NS_TRANSPARENT, NS_TRANSPARENT, 0., DashPattern_eNone);
 
 	image = pdf_extract_image(bitmap);
 	if (!image)
 		return false;
 
 	/*The position of the next tile*/
-	max_width =  (flags & BITMAPF_REPEAT_X) ? page_width : width;
+	max_width = (flags & BITMAPF_REPEAT_X) ? page_width : width;
 	max_height = (flags & BITMAPF_REPEAT_Y) ? page_height : height;
 
 	for (current_y = 0; current_y < max_height; current_y += height)
 		for (current_x = 0; current_x < max_width; current_x += width)
-			HPDF_Page_DrawImage(pdf_page, image,
-					current_x + x,
-					page_height - current_y - y - height,
-					width, height);
+			HPDF_Page_DrawImage(pdf_page,
+					    image,
+					    current_x + x,
+					    page_height - current_y - y -
+						    height,
+					    width,
+					    height);
 
 	return true;
 }
@@ -453,13 +543,14 @@ HPDF_Image pdf_extract_image(struct bitmap *bitmap)
 		*/
 		source_data = content_get_source_data(content, &source_size);
 
-		switch(content_get_type(content)){
+		switch (content_get_type(content)) {
 		/*Handle "embeddable" types of images*/
 		case CONTENT_JPEG:
- 			image = HPDF_LoadJpegImageFromMem(pdf_doc,
- 					(const HPDF_BYTE *) source_data,
- 					source_size);
- 			break;
+			image = HPDF_LoadJpegImageFromMem(
+				pdf_doc,
+				(const HPDF_BYTE *)source_data,
+				source_size);
+			break;
 
 		/*Disabled until HARU PNG support will be more stable.
 
@@ -485,10 +576,12 @@ HPDF_Image pdf_extract_image(struct bitmap *bitmap)
 		img_height = bitmap_get_height(bitmap);
 		img_rowstride = bitmap_get_rowstride(bitmap);
 
-		rgb_buffer = (unsigned char *)malloc(3 * img_width * img_height);
+		rgb_buffer = (unsigned char *)malloc(3 * img_width *
+						     img_height);
 		alpha_buffer = (unsigned char *)malloc(img_width * img_height);
 		if (rgb_buffer == NULL || alpha_buffer == NULL) {
-			NSLOG(neosurf, INFO,
+			NSLOG(neosurf,
+			      INFO,
 			      "Not enough memory to create RGB buffer");
 			free(rgb_buffer);
 			free(alpha_buffer);
@@ -498,25 +591,35 @@ HPDF_Image pdf_extract_image(struct bitmap *bitmap)
 		for (i = 0; i < img_height; i++)
 			for (j = 0; j < img_width; j++) {
 				rgb_buffer[((i * img_width) + j) * 3] =
-				  img_buffer[(i * img_rowstride) + (j * 4)];
+					img_buffer[(i * img_rowstride) +
+						   (j * 4)];
 
 				rgb_buffer[(((i * img_width) + j) * 3) + 1] =
-				  img_buffer[(i * img_rowstride) + (j * 4) + 1];
+					img_buffer[(i * img_rowstride) +
+						   (j * 4) + 1];
 
 				rgb_buffer[(((i * img_width) + j) * 3) + 2] =
-				  img_buffer[(i * img_rowstride) + (j * 4) + 2];
+					img_buffer[(i * img_rowstride) +
+						   (j * 4) + 2];
 
-				alpha_buffer[(i * img_width)+j] =
-				  img_buffer[(i * img_rowstride) + (j * 4) + 3];
+				alpha_buffer[(i * img_width) + j] =
+					img_buffer[(i * img_rowstride) +
+						   (j * 4) + 3];
 			}
 
-		smask = HPDF_LoadRawImageFromMem(pdf_doc, alpha_buffer,
-				img_width, img_height,
-     				HPDF_CS_DEVICE_GRAY, 8);
+		smask = HPDF_LoadRawImageFromMem(pdf_doc,
+						 alpha_buffer,
+						 img_width,
+						 img_height,
+						 HPDF_CS_DEVICE_GRAY,
+						 8);
 
-		image = HPDF_LoadRawImageFromMem(pdf_doc, rgb_buffer,
-				img_width, img_height,
-     				HPDF_CS_DEVICE_RGB, 8);
+		image = HPDF_LoadRawImageFromMem(pdf_doc,
+						 rgb_buffer,
+						 img_width,
+						 img_height,
+						 HPDF_CS_DEVICE_RGB,
+						 8);
 
 		if (HPDF_Image_AddSMask(image, smask) != HPDF_OK)
 			image = NULL;
@@ -542,8 +645,11 @@ HPDF_Image pdf_extract_image(struct bitmap *bitmap)
  * \param dash Desired dash pattern. Only taken into account when strokeCol
  * is different from NS_TRANSPARENT.
  */
-static void apply_clip_and_mode(bool selectTextMode, colour fillCol,
-		colour strokeCol, float lineWidth, DashPattern_e dash)
+static void apply_clip_and_mode(bool selectTextMode,
+				colour fillCol,
+				colour strokeCol,
+				float lineWidth,
+				DashPattern_e dash)
 {
 	/* Leave text mode when
 	 *  1) we're not setting text anymore
@@ -579,10 +685,11 @@ static void apply_clip_and_mode(bool selectTextMode, colour fillCol,
 	if (clip_update_needed) {
 		pdfw_gs_save(pdf_page);
 
-		HPDF_Page_Rectangle(pdf_page, last_clip_x0,
-				page_height - last_clip_y1,
-				last_clip_x1 - last_clip_x0,
-				last_clip_y1 - last_clip_y0);
+		HPDF_Page_Rectangle(pdf_page,
+				    last_clip_x0,
+				    page_height - last_clip_y1,
+				    last_clip_x1 - last_clip_x0,
+				    last_clip_y1 - last_clip_y0);
 		HPDF_Page_Clip(pdf_page);
 		HPDF_Page_EndPath(pdf_page);
 
@@ -602,12 +709,16 @@ static inline float transform_x(const float transform[6], float x, float y)
 
 static inline float transform_y(const float transform[6], float x, float y)
 {
-	return page_height
-		- (transform[1] * x + transform[3] * y + transform[5]);
+	return page_height -
+	       (transform[1] * x + transform[3] * y + transform[5]);
 }
 
-bool pdf_plot_path(const float *p, unsigned int n, colour fill, float width,
-		colour c, const float transform[6])
+bool pdf_plot_path(const float *p,
+		   unsigned int n,
+		   colour fill,
+		   float width,
+		   colour c,
+		   const float transform[6])
 {
 	unsigned int i;
 	bool empty_path;
@@ -628,30 +739,33 @@ bool pdf_plot_path(const float *p, unsigned int n, colour fill, float width,
 	apply_clip_and_mode(false, fill, c, width, DashPattern_eNone);
 
 	empty_path = true;
-	for (i = 0 ; i < n ; ) {
+	for (i = 0; i < n;) {
 		if (p[i] == PLOTTER_PATH_MOVE) {
-			HPDF_Page_MoveTo(pdf_page,
-					transform_x(transform, p[i+1], p[i+2]),
-					transform_y(transform, p[i+1], p[i+2]));
-			i+= 3;
+			HPDF_Page_MoveTo(
+				pdf_page,
+				transform_x(transform, p[i + 1], p[i + 2]),
+				transform_y(transform, p[i + 1], p[i + 2]));
+			i += 3;
 		} else if (p[i] == PLOTTER_PATH_CLOSE) {
 			if (!empty_path)
 				HPDF_Page_ClosePath(pdf_page);
 			i++;
 		} else if (p[i] == PLOTTER_PATH_LINE) {
-			HPDF_Page_LineTo(pdf_page,
-					transform_x(transform, p[i+1], p[i+2]),
-					transform_y(transform, p[i+1], p[i+2]));
-			i+=3;
+			HPDF_Page_LineTo(
+				pdf_page,
+				transform_x(transform, p[i + 1], p[i + 2]),
+				transform_y(transform, p[i + 1], p[i + 2]));
+			i += 3;
 			empty_path = false;
 		} else if (p[i] == PLOTTER_PATH_BEZIER) {
-			HPDF_Page_CurveTo(pdf_page,
-					transform_x(transform, p[i+1], p[i+2]),
-					transform_y(transform, p[i+1], p[i+2]),
-					transform_x(transform, p[i+3], p[i+4]),
-					transform_y(transform, p[i+3], p[i+4]),
-					transform_x(transform, p[i+5], p[i+6]),
-					transform_y(transform, p[i+5], p[i+6]));
+			HPDF_Page_CurveTo(
+				pdf_page,
+				transform_x(transform, p[i + 1], p[i + 2]),
+				transform_y(transform, p[i + 1], p[i + 2]),
+				transform_x(transform, p[i + 3], p[i + 4]),
+				transform_y(transform, p[i + 3], p[i + 4]),
+				transform_x(transform, p[i + 5], p[i + 6]),
+				transform_y(transform, p[i + 5], p[i + 6]));
 			i += 7;
 			empty_path = false;
 		} else {
@@ -670,8 +784,7 @@ bool pdf_plot_path(const float *p, unsigned int n, colour fill, float width,
 			HPDF_Page_FillStroke(pdf_page);
 		else
 			HPDF_Page_Fill(pdf_page);
-	}
-	else
+	} else
 		HPDF_Page_Stroke(pdf_page);
 
 	return true;
@@ -698,16 +811,17 @@ bool pdf_begin(struct print_settings *print_settings)
 	settings = print_settings;
 
 	page_width = settings->page_width -
-			FIXTOFLT(FSUB(settings->margins[MARGINLEFT],
-			settings->margins[MARGINRIGHT]));
+		     FIXTOFLT(FSUB(settings->margins[MARGINLEFT],
+				   settings->margins[MARGINRIGHT]));
 
 	page_height = settings->page_height -
-			FIXTOFLT(settings->margins[MARGINTOP]);
+		      FIXTOFLT(settings->margins[MARGINTOP]);
 
 
 #ifndef PDF_DEBUG
 	if (option_enable_PDF_compression)
-		HPDF_SetCompressionMode(pdf_doc, HPDF_COMP_ALL); /*Compression on*/
+		HPDF_SetCompressionMode(pdf_doc,
+					HPDF_COMP_ALL); /*Compression on*/
 #endif
 	HPDF_SetInfoAttr(pdf_doc, HPDF_INFO_CREATOR, user_agent_string());
 
@@ -727,8 +841,11 @@ bool pdf_next_page(void)
 #endif
 	clip_update_needed = false;
 	if (pdf_page != NULL) {
-		apply_clip_and_mode(false, NS_TRANSPARENT, NS_TRANSPARENT, 0.,
-				DashPattern_eNone);
+		apply_clip_and_mode(false,
+				    NS_TRANSPARENT,
+				    NS_TRANSPARENT,
+				    0.,
+				    DashPattern_eNone);
 		pdfw_gs_restore(pdf_page);
 	}
 
@@ -742,11 +859,16 @@ bool pdf_next_page(void)
 	if (pdf_page == NULL)
 		return false;
 
-	HPDF_Page_SetWidth (pdf_page, settings->page_width);
+	HPDF_Page_SetWidth(pdf_page, settings->page_width);
 	HPDF_Page_SetHeight(pdf_page, settings->page_height);
 
-	HPDF_Page_Concat(pdf_page, 1, 0, 0, 1,
-			FIXTOFLT(settings->margins[MARGINLEFT]), 0);
+	HPDF_Page_Concat(pdf_page,
+			 1,
+			 0,
+			 0,
+			 1,
+			 FIXTOFLT(settings->margins[MARGINLEFT]),
+			 0);
 
 	pdfw_gs_save(pdf_page);
 
@@ -765,8 +887,11 @@ void pdf_end(void)
 #endif
 	clip_update_needed = false;
 	if (pdf_page != NULL) {
-		apply_clip_and_mode(false, NS_TRANSPARENT, NS_TRANSPARENT, 0.,
-				DashPattern_eNone);
+		apply_clip_and_mode(false,
+				    NS_TRANSPARENT,
+				    NS_TRANSPARENT,
+				    0.,
+				    DashPattern_eNone);
 		pdfw_gs_restore(pdf_page);
 	}
 
@@ -781,8 +906,9 @@ void pdf_end(void)
 
 	/*Encryption on*/
 	if (option_enable_PDF_password)
-		guit->misc->pdf_password(&owner_pass, &user_pass,
-				(void *)settings->output);
+		guit->misc->pdf_password(&owner_pass,
+					 &user_pass,
+					 (void *)settings->output);
 	else
 		save_pdf(settings->output);
 #ifdef PDF_DEBUG
@@ -795,7 +921,7 @@ nserror save_pdf(const char *path)
 {
 	nserror res = NSERROR_OK;
 
-	if (option_enable_PDF_password && owner_pass != NULL ) {
+	if (option_enable_PDF_password && owner_pass != NULL) {
 		HPDF_SetPassword(pdf_doc, owner_pass, user_pass);
 		HPDF_SetEncryptionMode(pdf_doc, HPDF_ENCRYPT_R3, 16);
 		free(owner_pass);
@@ -821,12 +947,15 @@ nserror save_pdf(const char *path)
  * for debugging purposes - it immediately exits the program on the first error,
  * as it would otherwise flood the user with all resulting complications,
  * covering the most important error source.
-*/
-static void error_handler(HPDF_STATUS error_no, HPDF_STATUS detail_no,
-		void *user_data)
+ */
+static void
+error_handler(HPDF_STATUS error_no, HPDF_STATUS detail_no, void *user_data)
 {
-	NSLOG(neosurf, INFO, "ERROR:\n\terror_no=%x\n\tdetail_no=%d\n",
-	      (HPDF_UINT)error_no, (HPDF_UINT)detail_no);
+	NSLOG(neosurf,
+	      INFO,
+	      "ERROR:\n\terror_no=%x\n\tdetail_no=%d\n",
+	      (HPDF_UINT)error_no,
+	      (HPDF_UINT)detail_no);
 #ifdef PDF_DEBUG
 	exit(1);
 #endif
@@ -835,14 +964,14 @@ static void error_handler(HPDF_STATUS error_no, HPDF_STATUS detail_no,
 /**
  * This function plots a grid - used for debug purposes to check if all
  * elements' final coordinates are correct.
-*/
+ */
 #ifdef PDF_DEBUG_DUMPGRID
 void pdf_plot_grid(int x_dist, int y_dist, unsigned int colour)
 {
-	for (int i = x_dist ; i < page_width ; i += x_dist)
+	for (int i = x_dist; i < page_width; i += x_dist)
 		pdf_plot_line(i, 0, i, page_height, 1, colour, false, false);
 
-	for (int i = y_dist ; i < page_height ; i += x_dist)
+	for (int i = y_dist; i < page_height; i += x_dist)
 		pdf_plot_line(0, i, page_width, i, 1, colour, false, false);
 }
 #endif
@@ -853,12 +982,15 @@ void pdf_plot_grid(int x_dist, int y_dist, unsigned int colour)
 void pdfw_gs_init()
 {
 	pdfw_gs_level = 0;
-	pdfw_gs[0].fillColour = 0x00000000; /* Default PDF fill colour is black.  */
-	pdfw_gs[0].strokeColour = 0x00000000; /* Default PDF stroke colour is black.  */
+	pdfw_gs[0].fillColour =
+		0x00000000; /* Default PDF fill colour is black.  */
+	pdfw_gs[0].strokeColour =
+		0x00000000; /* Default PDF stroke colour is black.  */
 	pdfw_gs[0].lineWidth = 1.0; /* Default PDF line width is 1.  */
 	pdfw_gs[0].font = NULL;
 	pdfw_gs[0].font_size = 0.;
-	pdfw_gs[0].dash = DashPattern_eNone; /* Default dash state is a solid line.  */
+	pdfw_gs[0].dash =
+		DashPattern_eNone; /* Default dash state is a solid line.  */
 }
 
 /**
@@ -887,8 +1019,8 @@ void pdfw_gs_restore(HPDF_Page page)
 	HPDF_Page_GRestore(page);
 }
 
-#define RBYTE(x) (((x) & 0x0000FF) >>  0)
-#define GBYTE(x) (((x) & 0x00FF00) >>  8)
+#define RBYTE(x) (((x) & 0x0000FF) >> 0)
+#define GBYTE(x) (((x) & 0x00FF00) >> 8)
 #define BBYTE(x) (((x) & 0xFF0000) >> 16)
 #define R(x) (RBYTE(x) / 255.)
 #define G(x) (GBYTE(x) / 255.)
@@ -951,8 +1083,8 @@ void pdfw_gs_linewidth(HPDF_Page page, float lineWidth)
  */
 void pdfw_gs_font(HPDF_Page page, HPDF_Font font, HPDF_REAL font_size)
 {
-	if (font == pdfw_gs[pdfw_gs_level].font
-		&& font_size == pdfw_gs[pdfw_gs_level].font_size)
+	if (font == pdfw_gs[pdfw_gs_level].font &&
+	    font_size == pdfw_gs[pdfw_gs_level].font_size)
 		return;
 	pdfw_gs[pdfw_gs_level].font = font;
 	pdfw_gs[pdfw_gs_level].font_size = font_size;
@@ -971,20 +1103,20 @@ void pdfw_gs_dash(HPDF_Page page, DashPattern_e dash)
 		return;
 	pdfw_gs[pdfw_gs_level].dash = dash;
 	switch (dash) {
-		case DashPattern_eNone: {
-			HPDF_Page_SetDash(page, NULL, 0, 0);
-			break;
-		}
-		case DashPattern_eDash: {
-			const HPDF_UINT16 dash_ptn[] = {3};
-			HPDF_Page_SetDash(page, dash_ptn, 1, 1);
-			break;
-		}
-		case DashPattern_eDotted: {
-			const HPDF_UINT16 dash_ptn[] = {1};
-			HPDF_Page_SetDash(page, dash_ptn, 1, 1);
-			break;
-		}
+	case DashPattern_eNone: {
+		HPDF_Page_SetDash(page, NULL, 0, 0);
+		break;
+	}
+	case DashPattern_eDash: {
+		const HPDF_UINT16 dash_ptn[] = {3};
+		HPDF_Page_SetDash(page, dash_ptn, 1, 1);
+		break;
+	}
+	case DashPattern_eDotted: {
+		const HPDF_UINT16 dash_ptn[] = {1};
+		HPDF_Page_SetDash(page, dash_ptn, 1, 1);
+		break;
+	}
 	}
 }
 

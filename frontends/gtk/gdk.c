@@ -22,31 +22,39 @@
 
 #include "gtk/gdk.h"
 
-static void
-convert_alpha(guchar  *dest_data,
-               int      dest_stride,
-               guchar  *src_data,
-               int      src_stride,
-               int      width,
-               int      height)
+static void convert_alpha(guchar *dest_data,
+			  int dest_stride,
+			  guchar *src_data,
+			  int src_stride,
+			  int width,
+			  int height)
 {
 	int x, y;
 
 	for (y = 0; y < height; y++) {
 		/* this cast is safe, the buffer is appropriately aligned */
-		guint32 *src = (void *) src_data;
+		guint32 *src = (void *)src_data;
 
 		for (x = 0; x < width; x++) {
 			guint alpha = src[x] >> 24;
 
-			if (alpha == 0)	{
+			if (alpha == 0) {
 				dest_data[x * 4 + 0] = 0;
 				dest_data[x * 4 + 1] = 0;
 				dest_data[x * 4 + 2] = 0;
 			} else {
-				dest_data[x * 4 + 0] = (((src[x] & 0xff0000) >> 16) * 255 + alpha / 2) / alpha;
-				dest_data[x * 4 + 1] = (((src[x] & 0x00ff00) >>  8) * 255 + alpha / 2) / alpha;
-				dest_data[x * 4 + 2] = (((src[x] & 0x0000ff) >>  0) * 255 + alpha / 2) / alpha;
+				dest_data[x * 4 + 0] = (((src[x] & 0xff0000) >>
+							 16) * 255 +
+							alpha / 2) /
+						       alpha;
+				dest_data[x * 4 + 1] = (((src[x] & 0x00ff00) >>
+							 8) * 255 +
+							alpha / 2) /
+						       alpha;
+				dest_data[x * 4 + 2] = (((src[x] & 0x0000ff) >>
+							 0) * 255 +
+							alpha / 2) /
+						       alpha;
 			}
 			dest_data[x * 4 + 3] = alpha;
 		}
@@ -57,8 +65,9 @@ convert_alpha(guchar  *dest_data,
 }
 
 
-GdkPixbuf *
-nsgdk_pixbuf_get_from_surface(cairo_surface_t *surface, int scwidth, int scheight)
+GdkPixbuf *nsgdk_pixbuf_get_from_surface(cairo_surface_t *surface,
+					 int scwidth,
+					 int scheight)
 {
 	int width, height; /* source width and height */
 	cairo_surface_t *scsurface; /* scaled surface */
@@ -72,7 +81,7 @@ nsgdk_pixbuf_get_from_surface(cairo_surface_t *surface, int scwidth, int scheigh
 	}
 
 	memset(gdk_pixbuf_get_pixels(pixbuf),
-	       0xff, 
+	       0xff,
 	       gdk_pixbuf_get_rowstride(pixbuf) * (size_t)scheight);
 
 	/* scale cairo surface into new surface the target size */
@@ -83,7 +92,9 @@ nsgdk_pixbuf_get_from_surface(cairo_surface_t *surface, int scwidth, int scheigh
 	height = cairo_image_surface_get_height(surface);
 
 	/* scaled surface always has an alpha chanel for ease */
-	scsurface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, scwidth, scheight);
+	scsurface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
+					       scwidth,
+					       scheight);
 	if (cairo_surface_status(scsurface) != CAIRO_STATUS_SUCCESS) {
 		cairo_surface_destroy(scsurface);
 		g_object_unref(pixbuf);
@@ -101,14 +112,14 @@ nsgdk_pixbuf_get_from_surface(cairo_surface_t *surface, int scwidth, int scheigh
 	 * alpha, which would occur with the default
 	 * EXTEND_NONE. Use EXTEND_PAD for 1.2 or newer
 	 */
-	cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REFLECT); 
+	cairo_pattern_set_extend(cairo_get_source(cr), CAIRO_EXTEND_REFLECT);
 
 	/* Replace the destination with the source instead of overlaying */
 	cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
 
 	/* Do the actual drawing */
 	cairo_paint(cr);
-   
+
 	cairo_destroy(cr);
 
 	/* copy data from surface into pixmap */
@@ -116,10 +127,10 @@ nsgdk_pixbuf_get_from_surface(cairo_surface_t *surface, int scwidth, int scheigh
 		      gdk_pixbuf_get_rowstride(pixbuf),
 		      cairo_image_surface_get_data(scsurface),
 		      cairo_image_surface_get_stride(scsurface),
-		      scwidth, scheight);
+		      scwidth,
+		      scheight);
 
 	cairo_surface_destroy(scsurface);
 
 	return pixbuf;
 }
-

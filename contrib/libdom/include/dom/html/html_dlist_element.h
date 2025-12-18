@@ -14,10 +14,10 @@
 
 typedef struct dom_html_dlist_element dom_html_dlist_element;
 
-dom_exception dom_html_dlist_element_get_compact(
-	dom_html_dlist_element *ele, bool *compact);
+dom_exception
+dom_html_dlist_element_get_compact(dom_html_dlist_element *ele, bool *compact);
 
-dom_exception dom_html_dlist_element_set_compact(
-	dom_html_dlist_element *ele, bool compact);
+dom_exception
+dom_html_dlist_element_set_compact(dom_html_dlist_element *ele, bool compact);
 
 #endif

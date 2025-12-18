@@ -24,8 +24,8 @@
 #include "content/handlers/css/internal.h"
 
 /* exported interface documented in content/handlers/css/internal.h */
-css_error nscss_resolve_url(void *pw, const char *base,
-		lwc_string *rel, lwc_string **abs)
+css_error
+nscss_resolve_url(void *pw, const char *base, lwc_string *rel, lwc_string **abs)
 {
 	lwc_error lerror;
 	nserror error;
@@ -50,7 +50,8 @@ css_error nscss_resolve_url(void *pw, const char *base,
 
 	/* Intern it */
 	lerror = lwc_intern_string(nsurl_access(nsabs),
-			nsurl_length(nsabs), abs);
+				   nsurl_length(nsabs),
+				   abs);
 	if (lerror != lwc_error_ok) {
 		*abs = NULL;
 		nsurl_unref(nsabs);

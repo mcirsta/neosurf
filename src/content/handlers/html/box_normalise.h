@@ -52,15 +52,15 @@
  * parent               permitted child nodes
  * BLOCK, INLINE_BLOCK  BLOCK, INLINE_CONTAINER, TABLE, FLEX
  * FLEX, INLINE_FLEX    BLOCK, INLINE_CONTAINER, TABLE, FLEX
- * INLINE_CONTAINER     INLINE, INLINE_BLOCK, FLOAT_LEFT, FLOAT_RIGHT, BR, TEXT, INLINE_FLEX
- * INLINE, TEXT         none
- * TABLE                at least 1 TABLE_ROW_GROUP
- * TABLE_ROW_GROUP      at least 1 TABLE_ROW
- * TABLE_ROW            at least 1 TABLE_CELL
- * TABLE_CELL           BLOCK, INLINE_CONTAINER, TABLE, FLEX (same as BLOCK)
- * FLOAT_(LEFT|RIGHT)   exactly 1 BLOCK, TABLE or FLEX
+ * INLINE_CONTAINER     INLINE, INLINE_BLOCK, FLOAT_LEFT, FLOAT_RIGHT, BR, TEXT,
+ * INLINE_FLEX INLINE, TEXT         none TABLE                at least 1
+ * TABLE_ROW_GROUP TABLE_ROW_GROUP      at least 1 TABLE_ROW TABLE_ROW at least
+ * 1 TABLE_CELL TABLE_CELL           BLOCK, INLINE_CONTAINER, TABLE, FLEX (same
+ * as BLOCK) FLOAT_(LEFT|RIGHT)   exactly 1 BLOCK, TABLE or FLEX
  * \endcode
  */
-bool box_normalise_block(struct box *block, const struct box *root, struct html_content *c);
+bool box_normalise_block(struct box *block,
+			 const struct box *root,
+			 struct html_content *c);
 
 #endif

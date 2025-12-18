@@ -28,8 +28,9 @@
  *		   If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_margin(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+			    const parserutils_vector *vector,
+			    int32_t *ctx,
+			    css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	int prev_ctx;
@@ -50,23 +51,27 @@ css_error css__parse_margin(css_language *c,
 	flag_value = get_css_flag_value(c, token);
 
 	if (flag_value != FLAG_VALUE__NONE) {
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_MARGIN_TOP);
+		error = css_stylesheet_style_flag_value(result,
+							flag_value,
+							CSS_PROP_MARGIN_TOP);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_MARGIN_RIGHT);
+		error = css_stylesheet_style_flag_value(result,
+							flag_value,
+							CSS_PROP_MARGIN_RIGHT);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_MARGIN_BOTTOM);
+		error = css_stylesheet_style_flag_value(result,
+							flag_value,
+							CSS_PROP_MARGIN_BOTTOM);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_MARGIN_LEFT);
+		error = css_stylesheet_style_flag_value(result,
+							flag_value,
+							CSS_PROP_MARGIN_LEFT);
 		if (error == CSS_OK)
 			parserutils_vector_iterate(vector, ctx);
 
@@ -84,17 +89,27 @@ css_error css__parse_margin(css_language *c,
 			return CSS_INVALID;
 		}
 
-		if ((token->type == CSS_TOKEN_IDENT) && (lwc_string_caseless_isequal(token->idata, c->strings[AUTO], &match) == lwc_error_ok && match)) {
-			side_val[side_count] =  MARGIN_AUTO;
+		if ((token->type == CSS_TOKEN_IDENT) &&
+		    (lwc_string_caseless_isequal(token->idata,
+						 c->strings[AUTO],
+						 &match) == lwc_error_ok &&
+		     match)) {
+			side_val[side_count] = MARGIN_AUTO;
 			parserutils_vector_iterate(vector, ctx);
 			error = CSS_OK;
 		} else {
 			side_val[side_count] = MARGIN_SET;
 
-			error = css__parse_unit_specifier(c, vector, ctx, UNIT_PX, &side_length[side_count], &side_unit[side_count]);
+			error = css__parse_unit_specifier(
+				c,
+				vector,
+				ctx,
+				UNIT_PX,
+				&side_length[side_count],
+				&side_unit[side_count]);
 			if (error == CSS_OK) {
-				if (side_unit[side_count] & UNIT_ANGLE||
-				    side_unit[side_count] & UNIT_TIME||
+				if (side_unit[side_count] & UNIT_ANGLE ||
+				    side_unit[side_count] & UNIT_TIME ||
 				    side_unit[side_count] & UNIT_FREQ) {
 					*ctx = orig_ctx;
 					return CSS_INVALID;
@@ -115,17 +130,20 @@ css_error css__parse_margin(css_language *c,
 	} while ((*ctx != prev_ctx) && (token != NULL) && (side_count < 4));
 
 
-#define SIDE_APPEND(OP,NUM)								\
-	error = css__stylesheet_style_appendOPV(result, (OP), 0, side_val[(NUM)]);	\
-	if (error != CSS_OK)								\
-		break;									\
-	if (side_val[(NUM)] == MARGIN_SET) {						\
-		error = css__stylesheet_style_append(result, side_length[(NUM)]);	\
-		if (error != CSS_OK)							\
-			break;								\
-		error = css__stylesheet_style_append(result, side_unit[(NUM)]);		\
-		if (error != CSS_OK)							\
-			break;								\
+#define SIDE_APPEND(OP, NUM)                                                   \
+	error = css__stylesheet_style_appendOPV(                               \
+		result, (OP), 0, side_val[(NUM)]);                             \
+	if (error != CSS_OK)                                                   \
+		break;                                                         \
+	if (side_val[(NUM)] == MARGIN_SET) {                                   \
+		error = css__stylesheet_style_append(result,                   \
+						     side_length[(NUM)]);      \
+		if (error != CSS_OK)                                           \
+			break;                                                 \
+		error = css__stylesheet_style_append(result,                   \
+						     side_unit[(NUM)]);        \
+		if (error != CSS_OK)                                           \
+			break;                                                 \
 	}
 
 	switch (side_count) {
@@ -162,4 +180,3 @@ css_error css__parse_margin(css_language *c,
 
 	return error;
 }
-

@@ -87,8 +87,9 @@ int main(int argc, char *argv[])
 
 	buffer = malloc(size);
 	if (!buffer) {
-		fprintf(stderr, "Unable to allocate %lld bytes\n",
-				(long long) size);
+		fprintf(stderr,
+			"Unable to allocate %lld bytes\n",
+			(long long)size);
 		return 1;
 	}
 
@@ -122,9 +123,10 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "svgtiny_NOT_SVG");
 			break;
 		case svgtiny_SVG_ERROR:
-			fprintf(stderr, "svgtiny_SVG_ERROR: line %i: %s",
-					diagram->error_line,
-					diagram->error_message);
+			fprintf(stderr,
+				"svgtiny_SVG_ERROR: line %i: %s",
+				diagram->error_line,
+				diagram->error_message);
 			break;
 		default:
 			fprintf(stderr, "unknown svgtiny_code %i", code);
@@ -161,17 +163,22 @@ void gui_init(void)
 		die("XOpenDisplay failed: is DISPLAY set?");
 
 	diagram_window = XCreateSimpleWindow(display,
-			DefaultRootWindow(display),
-			0, 0, diagram->width, diagram->height, 0, 0, 0);
+					     DefaultRootWindow(display),
+					     0,
+					     0,
+					     diagram->width,
+					     diagram->height,
+					     0,
+					     0,
+					     0);
 
 	update_window_title();
 
 	XMapWindow(display, diagram_window);
-	XSelectInput(display, diagram_window,
-			KeyPressMask |
-			ButtonPressMask |
-			ExposureMask |
-			StructureNotifyMask);
+	XSelectInput(display,
+		     diagram_window,
+		     KeyPressMask | ButtonPressMask | ExposureMask |
+			     StructureNotifyMask);
 
 	wm_protocols_atom = XInternAtom(display, "WM_PROTOCOLS", False);
 	wm_delete_window_atom = XInternAtom(display, "WM_DELETE_WINDOW", False);
@@ -205,8 +212,11 @@ void update_window_title(void)
 
 	base_name = basename(svg_path_copy);
 
-	snprintf(title, sizeof title, "%s (%i%%) - svgtiny",
-			base_name, (int) roundf(scale * 100.0));
+	snprintf(title,
+		 sizeof title,
+		 "%s (%i%%) - svgtiny",
+		 base_name,
+		 (int)roundf(scale * 100.0));
 
 	XStoreName(display, diagram_window, title);
 
@@ -235,9 +245,8 @@ void gui_poll(void)
 		break;
 	case ClientMessage:
 		if (event.xclient.message_type == wm_protocols_atom &&
-				event.xclient.format == 32 &&
-				(Atom) event.xclient.data.l[0] ==
-				wm_delete_window_atom)
+		    event.xclient.format == 32 &&
+		    (Atom)event.xclient.data.l[0] == wm_delete_window_atom)
 			quit = true;
 		break;
 	default:
@@ -274,13 +283,13 @@ void event_diagram_key_press(XKeyEvent *key_event)
 	case XK_KP_Add:
 		new_scale += 0.1;
 		break;
-	
+
 	case XK_1:
 	case XK_KP_Multiply:
 	case XK_KP_1:
 		new_scale = 1;
 		break;
-	
+
 	case XK_2:
 	case XK_KP_2:
 		new_scale = 2;
@@ -324,9 +333,12 @@ void event_diagram_expose(const XExposeEvent *expose_event)
 	if (expose_event->count != 0)
 		return;
 
-	surface = cairo_xlib_surface_create(display, diagram_window,
-			DefaultVisual(display, DefaultScreen(display)),
-			diagram->width * scale, diagram->height * scale);
+	surface = cairo_xlib_surface_create(
+		display,
+		diagram_window,
+		DefaultVisual(display, DefaultScreen(display)),
+		diagram->width * scale,
+		diagram->height * scale);
 	if (!surface) {
 		fprintf(stderr, "cairo_xlib_surface_create failed\n");
 		return;
@@ -335,8 +347,9 @@ void event_diagram_expose(const XExposeEvent *expose_event)
 	cr = cairo_create(surface);
 	status = cairo_status(cr);
 	if (status != CAIRO_STATUS_SUCCESS) {
-		fprintf(stderr, "cairo_create failed: %s\n",
-				cairo_status_to_string(status));
+		fprintf(stderr,
+			"cairo_create failed: %s\n",
+			cairo_status_to_string(status));
 		cairo_destroy(cr);
 		cairo_surface_destroy(surface);
 		return;
@@ -350,21 +363,23 @@ void event_diagram_expose(const XExposeEvent *expose_event)
 			render_path(cr, scale, &diagram->shape[i]);
 
 		} else if (diagram->shape[i].text) {
-			cairo_set_source_rgb(cr,
+			cairo_set_source_rgb(
+				cr,
 				svgtiny_RED(diagram->shape[i].stroke) / 255.0,
 				svgtiny_GREEN(diagram->shape[i].stroke) / 255.0,
 				svgtiny_BLUE(diagram->shape[i].stroke) / 255.0);
 			cairo_move_to(cr,
-					scale * diagram->shape[i].text_x,
-					scale * diagram->shape[i].text_y);
+				      scale * diagram->shape[i].text_x,
+				      scale * diagram->shape[i].text_y);
 			cairo_show_text(cr, diagram->shape[i].text);
 		}
 	}
 
 	status = cairo_status(cr);
 	if (status != CAIRO_STATUS_SUCCESS) {
-		fprintf(stderr, "cairo error: %s\n",
-				cairo_status_to_string(status));
+		fprintf(stderr,
+			"cairo error: %s\n",
+			cairo_status_to_string(status));
 		cairo_destroy(cr);
 		cairo_surface_destroy(surface);
 		return;
@@ -383,12 +398,12 @@ void render_path(cairo_t *cr, float scale, struct svgtiny_shape *path)
 	unsigned int j;
 
 	cairo_new_path(cr);
-	for (j = 0; j != path->path_length; ) {
-		switch ((int) path->path[j]) {
+	for (j = 0; j != path->path_length;) {
+		switch ((int)path->path[j]) {
 		case svgtiny_PATH_MOVE:
 			cairo_move_to(cr,
-					scale * path->path[j + 1],
-					scale * path->path[j + 2]);
+				      scale * path->path[j + 1],
+				      scale * path->path[j + 2]);
 			j += 3;
 			break;
 		case svgtiny_PATH_CLOSE:
@@ -397,18 +412,18 @@ void render_path(cairo_t *cr, float scale, struct svgtiny_shape *path)
 			break;
 		case svgtiny_PATH_LINE:
 			cairo_line_to(cr,
-					scale * path->path[j + 1],
-					scale * path->path[j + 2]);
+				      scale * path->path[j + 1],
+				      scale * path->path[j + 2]);
 			j += 3;
 			break;
 		case svgtiny_PATH_BEZIER:
 			cairo_curve_to(cr,
-					scale * path->path[j + 1],
-					scale * path->path[j + 2],
-					scale * path->path[j + 3],
-					scale * path->path[j + 4],
-					scale * path->path[j + 5],
-					scale * path->path[j + 6]);
+				       scale * path->path[j + 1],
+				       scale * path->path[j + 2],
+				       scale * path->path[j + 3],
+				       scale * path->path[j + 4],
+				       scale * path->path[j + 5],
+				       scale * path->path[j + 6]);
 			j += 7;
 			break;
 		default:
@@ -418,16 +433,16 @@ void render_path(cairo_t *cr, float scale, struct svgtiny_shape *path)
 	}
 	if (path->fill != svgtiny_TRANSPARENT) {
 		cairo_set_source_rgb(cr,
-				svgtiny_RED(path->fill) / 255.0,
-				svgtiny_GREEN(path->fill) / 255.0,
-				svgtiny_BLUE(path->fill) / 255.0);
+				     svgtiny_RED(path->fill) / 255.0,
+				     svgtiny_GREEN(path->fill) / 255.0,
+				     svgtiny_BLUE(path->fill) / 255.0);
 		cairo_fill_preserve(cr);
 	}
 	if (path->stroke != svgtiny_TRANSPARENT) {
 		cairo_set_source_rgb(cr,
-				svgtiny_RED(path->stroke) / 255.0,
-				svgtiny_GREEN(path->stroke) / 255.0,
-				svgtiny_BLUE(path->stroke) / 255.0);
+				     svgtiny_RED(path->stroke) / 255.0,
+				     svgtiny_GREEN(path->stroke) / 255.0,
+				     svgtiny_BLUE(path->stroke) / 255.0);
 		cairo_set_line_width(cr, scale * path->stroke_width);
 		cairo_stroke_preserve(cr);
 	}
@@ -442,4 +457,3 @@ void die(const char *message)
 	fprintf(stderr, "%s\n", message);
 	exit(1);
 }
-

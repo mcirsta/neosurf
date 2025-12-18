@@ -21,8 +21,8 @@
  * \param token        The token to handle
  * \return True to reprocess token, false otherwise
  */
-hubbub_error handle_in_select(hubbub_treebuilder *treebuilder,
-		const hubbub_token *token)
+hubbub_error
+handle_in_select(hubbub_treebuilder *treebuilder, const hubbub_token *token)
 {
 	hubbub_error err = HUBBUB_OK;
 
@@ -35,60 +35,61 @@ hubbub_error handle_in_select(hubbub_treebuilder *treebuilder,
 		err = append_text(treebuilder, &token->data.character);
 		break;
 	case HUBBUB_TOKEN_COMMENT:
-		err = process_comment_append(treebuilder, token,
-				treebuilder->context.element_stack[
-				treebuilder->context.current_node].node);
+		err = process_comment_append(
+			treebuilder,
+			token,
+			treebuilder->context
+				.element_stack[treebuilder->context
+						       .current_node]
+				.node);
 		break;
 	case HUBBUB_TOKEN_DOCTYPE:
 		/** \todo parse error */
 		break;
-	case HUBBUB_TOKEN_START_TAG:
-	{
-		element_type type = element_type_from_name(treebuilder,
-				&token->data.tag.name);
+	case HUBBUB_TOKEN_START_TAG: {
+		element_type type = element_type_from_name(
+			treebuilder, &token->data.tag.name);
 
 		if (type == HTML) {
 			/* Process as if "in body" */
 			err = handle_in_body(treebuilder, token);
 		} else if (type == OPTION) {
 			if (current_node(treebuilder) == OPTION) {
-				element_stack_pop(treebuilder, &ns, &otype,
-						&node);
+				element_stack_pop(
+					treebuilder, &ns, &otype, &node);
 
 				treebuilder->tree_handler->unref_node(
-						treebuilder->tree_handler->ctx,
-						node);
+					treebuilder->tree_handler->ctx, node);
 			}
 
-			err = insert_element(treebuilder, &token->data.tag, 
-					true);
+			err = insert_element(treebuilder,
+					     &token->data.tag,
+					     true);
 		} else if (type == OPTGROUP) {
 			if (current_node(treebuilder) == OPTION) {
-				element_stack_pop(treebuilder, &ns, &otype,
-						&node);
+				element_stack_pop(
+					treebuilder, &ns, &otype, &node);
 
 				treebuilder->tree_handler->unref_node(
-						treebuilder->tree_handler->ctx,
-						node);
+					treebuilder->tree_handler->ctx, node);
 			}
 
 			if (current_node(treebuilder) == OPTGROUP) {
-				element_stack_pop(treebuilder, &ns, &otype,
-						&node);
+				element_stack_pop(
+					treebuilder, &ns, &otype, &node);
 
 				treebuilder->tree_handler->unref_node(
-						treebuilder->tree_handler->ctx,
-						node);
+					treebuilder->tree_handler->ctx, node);
 			}
 
-			err = insert_element(treebuilder, &token->data.tag, 
-					true);
+			err = insert_element(treebuilder,
+					     &token->data.tag,
+					     true);
 		} else if (type == SELECT || type == INPUT ||
-				type == TEXTAREA) {
+			   type == TEXTAREA) {
 
 			if (element_in_scope(treebuilder, SELECT, true)) {
-				element_stack_pop_until(treebuilder, 
-						SELECT);
+				element_stack_pop_until(treebuilder, SELECT);
 				reset_insertion_mode(treebuilder);
 			} else {
 				/* fragment case */
@@ -102,61 +103,53 @@ hubbub_error handle_in_select(hubbub_treebuilder *treebuilder,
 		} else {
 			/** \todo parse error */
 		}
-	}
-		break;
-	case HUBBUB_TOKEN_END_TAG:
-	{
-		element_type type = element_type_from_name(treebuilder,
-				&token->data.tag.name);
+	} break;
+	case HUBBUB_TOKEN_END_TAG: {
+		element_type type = element_type_from_name(
+			treebuilder, &token->data.tag.name);
 
 		if (type == OPTGROUP) {
 			if (current_node(treebuilder) == OPTION &&
-					prev_node(treebuilder) == OPTGROUP) {
-				element_stack_pop(treebuilder, &ns, &otype,
-						&node);
+			    prev_node(treebuilder) == OPTGROUP) {
+				element_stack_pop(
+					treebuilder, &ns, &otype, &node);
 
 				treebuilder->tree_handler->unref_node(
-						treebuilder->tree_handler->ctx,
-						node);
+					treebuilder->tree_handler->ctx, node);
 			}
 
 			if (current_node(treebuilder) == OPTGROUP) {
-				element_stack_pop(treebuilder, &ns, &otype,
-						&node);
+				element_stack_pop(
+					treebuilder, &ns, &otype, &node);
 
 				treebuilder->tree_handler->unref_node(
-						treebuilder->tree_handler->ctx,
-						node);
+					treebuilder->tree_handler->ctx, node);
 			} else {
 				/** \todo parse error */
 			}
 		} else if (type == OPTION) {
 			if (current_node(treebuilder) == OPTION) {
-				element_stack_pop(treebuilder, &ns, &otype,
-						&node);
+				element_stack_pop(
+					treebuilder, &ns, &otype, &node);
 
 				treebuilder->tree_handler->unref_node(
-						treebuilder->tree_handler->ctx,
-						node);
+					treebuilder->tree_handler->ctx, node);
 			} else {
 				/** \todo parse error */
 			}
 		} else if (type == SELECT) {
 			if (element_in_scope(treebuilder, SELECT, true)) {
-				element_stack_pop_until(treebuilder, 
-						SELECT);
+				element_stack_pop_until(treebuilder, SELECT);
 				reset_insertion_mode(treebuilder);
 			} else {
 				/* fragment case */
 				/** \todo parse error */
 			}
 		}
-	}
-		break;
+	} break;
 	case HUBBUB_TOKEN_EOF:
 		break;
 	}
 
 	return err;
 }
-

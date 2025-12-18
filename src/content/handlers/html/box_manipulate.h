@@ -42,7 +42,14 @@
  * styles is always owned by the box, if it is set.
  * style is only owned by the box in the case of implied boxes.
  */
-struct box * box_create(css_select_results *styles, css_computed_style *style, bool style_owned, struct nsurl *href, const char *target, const char *title, lwc_string *id, void *context);
+struct box *box_create(css_select_results *styles,
+		       css_computed_style *style,
+		       bool style_owned,
+		       struct nsurl *href,
+		       const char *target,
+		       const char *title,
+		       lwc_string *id,
+		       void *context);
 
 
 /**
@@ -99,8 +106,10 @@ void box_free_box(struct box *box);
  * \param right		whether the vertical scrollbar should be present
  * \return		true on success false otherwise
  */
-nserror box_handle_scrollbars(struct content *c, struct box *box,
-		bool bottom, bool right);
+nserror box_handle_scrollbars(struct content *c,
+			      struct box *box,
+			      bool bottom,
+			      bool right);
 
 
 #endif

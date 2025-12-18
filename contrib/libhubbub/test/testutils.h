@@ -13,11 +13,15 @@
 /* Redefine assert, so we can simply use the standard assert mechanism
  * within testcases and exit with the right output for the testrunner
  * to do the right thing. */
-void __assert2(const char *expr, const char *function,
-		const char *file, int line);
+void __assert2(const char *expr,
+	       const char *function,
+	       const char *file,
+	       int line);
 
-void __assert2(const char *expr, const char *function,
-		const char *file, int line)
+void __assert2(const char *expr,
+	       const char *function,
+	       const char *file,
+	       int line)
 {
 	UNUSED(function);
 	UNUSED(file);
@@ -27,8 +31,8 @@ void __assert2(const char *expr, const char *function,
 	exit(EXIT_FAILURE);
 }
 
-#define assert(expr) \
-  ((void) ((expr) || (__assert2 (#expr, __func__, __FILE__, __LINE__), 0)))
+#define assert(expr)                                                           \
+	((void)((expr) || (__assert2(#expr, __func__, __FILE__, __LINE__), 0)))
 
 
 /**

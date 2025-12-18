@@ -57,4 +57,3 @@ const char *hubbub_error_to_string(hubbub_error error)
 
 	return result;
 }
-

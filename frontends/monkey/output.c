@@ -24,7 +24,7 @@
 /**
  * output type prefixes
  */
-static const char *type_text[]={
+static const char *type_text[] = {
 	"DIE",
 	"ERROR",
 	"WARN",

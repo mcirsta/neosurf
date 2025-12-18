@@ -15,9 +15,11 @@
 typedef struct dom_html_table_caption_element dom_html_table_caption_element;
 
 dom_exception dom_html_table_caption_element_get_align(
-	dom_html_table_caption_element *element, dom_string **align);
+	dom_html_table_caption_element *element,
+	dom_string **align);
 
 dom_exception dom_html_table_caption_element_set_align(
-	dom_html_table_caption_element *element, dom_string *align);
+	dom_html_table_caption_element *element,
+	dom_string *align);
 
 #endif

@@ -56,14 +56,12 @@
  * Does nothing if the components are the same, so ensure match is
  * preset to true.
  */
-#define nsurl__component_compare(c1, c2, match)			\
-	if (c1 && c2 && lwc_error_ok ==				\
-			lwc_string_isequal(c1, c2, match)) {	\
-		/* do nothing */                                \
-	} else if (c1 || c2) {					\
-		*match = false;					\
+#define nsurl__component_compare(c1, c2, match)                                \
+	if (c1 && c2 && lwc_error_ok == lwc_string_isequal(c1, c2, match)) {   \
+		/* do nothing */                                               \
+	} else if (c1 || c2) {                                                 \
+		*match = false;                                                \
 	}
-
 
 
 /******************************************************************************
@@ -112,7 +110,8 @@ bool nsurl_compare(const nsurl *url1, const nsurl *url2, nsurl_component parts)
 
 	if (parts & NSURL_PATH) {
 		nsurl__component_compare(url1->components.path,
-				url2->components.path, &match);
+					 url2->components.path,
+					 &match);
 
 		if (match == false)
 			return false;
@@ -120,7 +119,8 @@ bool nsurl_compare(const nsurl *url1, const nsurl *url2, nsurl_component parts)
 
 	if (parts & NSURL_HOST) {
 		nsurl__component_compare(url1->components.host,
-				url2->components.host, &match);
+					 url2->components.host,
+					 &match);
 
 		if (match == false)
 			return false;
@@ -128,7 +128,8 @@ bool nsurl_compare(const nsurl *url1, const nsurl *url2, nsurl_component parts)
 
 	if (parts & NSURL_QUERY) {
 		nsurl__component_compare(url1->components.query,
-				url2->components.query, &match);
+					 url2->components.query,
+					 &match);
 
 		if (match == false)
 			return false;
@@ -136,7 +137,8 @@ bool nsurl_compare(const nsurl *url1, const nsurl *url2, nsurl_component parts)
 
 	if (parts & NSURL_SCHEME) {
 		nsurl__component_compare(url1->components.scheme,
-				url2->components.scheme, &match);
+					 url2->components.scheme,
+					 &match);
 
 		if (match == false)
 			return false;
@@ -144,7 +146,8 @@ bool nsurl_compare(const nsurl *url1, const nsurl *url2, nsurl_component parts)
 
 	if (parts & NSURL_USERNAME) {
 		nsurl__component_compare(url1->components.username,
-				url2->components.username, &match);
+					 url2->components.username,
+					 &match);
 
 		if (match == false)
 			return false;
@@ -152,7 +155,8 @@ bool nsurl_compare(const nsurl *url1, const nsurl *url2, nsurl_component parts)
 
 	if (parts & NSURL_PASSWORD) {
 		nsurl__component_compare(url1->components.password,
-				url2->components.password, &match);
+					 url2->components.password,
+					 &match);
 
 		if (match == false)
 			return false;
@@ -160,7 +164,8 @@ bool nsurl_compare(const nsurl *url1, const nsurl *url2, nsurl_component parts)
 
 	if (parts & NSURL_PORT) {
 		nsurl__component_compare(url1->components.port,
-				url2->components.port, &match);
+					 url2->components.port,
+					 &match);
 
 		if (match == false)
 			return false;
@@ -168,7 +173,8 @@ bool nsurl_compare(const nsurl *url1, const nsurl *url2, nsurl_component parts)
 
 	if (parts & NSURL_FRAGMENT) {
 		nsurl__component_compare(url1->components.fragment,
-				url2->components.fragment, &match);
+					 url2->components.fragment,
+					 &match);
 
 		if (match == false)
 			return false;
@@ -179,13 +185,13 @@ bool nsurl_compare(const nsurl *url1, const nsurl *url2, nsurl_component parts)
 
 
 /* exported interface, documented in nsurl.h */
-nserror nsurl_get(const nsurl *url, nsurl_component parts,
-		char **url_s, size_t *url_l)
+nserror
+nsurl_get(const nsurl *url, nsurl_component parts, char **url_s, size_t *url_l)
 {
 	assert(url != NULL);
 
-	return nsurl__components_to_string(&(url->components), parts, 0,
-			url_s, url_l);
+	return nsurl__components_to_string(
+		&(url->components), parts, 0, url_s, url_l);
 }
 
 
@@ -196,40 +202,47 @@ lwc_string *nsurl_get_component(const nsurl *url, nsurl_component part)
 
 	switch (part) {
 	case NSURL_SCHEME:
-		return (url->components.scheme != NULL) ?
-				lwc_string_ref(url->components.scheme) : NULL;
+		return (url->components.scheme != NULL)
+			       ? lwc_string_ref(url->components.scheme)
+			       : NULL;
 
 	case NSURL_USERNAME:
-		return (url->components.username != NULL) ?
-				lwc_string_ref(url->components.username) : NULL;
+		return (url->components.username != NULL)
+			       ? lwc_string_ref(url->components.username)
+			       : NULL;
 
 	case NSURL_PASSWORD:
-		return (url->components.password != NULL) ?
-				lwc_string_ref(url->components.password) : NULL;
+		return (url->components.password != NULL)
+			       ? lwc_string_ref(url->components.password)
+			       : NULL;
 
 	case NSURL_HOST:
-		return (url->components.host != NULL) ?
-				lwc_string_ref(url->components.host) : NULL;
+		return (url->components.host != NULL)
+			       ? lwc_string_ref(url->components.host)
+			       : NULL;
 
 	case NSURL_PORT:
-		return (url->components.port != NULL) ?
-				lwc_string_ref(url->components.port) : NULL;
+		return (url->components.port != NULL)
+			       ? lwc_string_ref(url->components.port)
+			       : NULL;
 
 	case NSURL_PATH:
-		return (url->components.path != NULL) ?
-				lwc_string_ref(url->components.path) : NULL;
+		return (url->components.path != NULL)
+			       ? lwc_string_ref(url->components.path)
+			       : NULL;
 
 	case NSURL_QUERY:
-		return (url->components.query != NULL) ?
-				lwc_string_ref(url->components.query) : NULL;
+		return (url->components.query != NULL)
+			       ? lwc_string_ref(url->components.query)
+			       : NULL;
 
 	case NSURL_FRAGMENT:
-		return (url->components.fragment != NULL) ?
-				lwc_string_ref(url->components.fragment) : NULL;
+		return (url->components.fragment != NULL)
+			       ? lwc_string_ref(url->components.fragment)
+			       : NULL;
 
 	default:
-		NSLOG(neosurf, INFO,
-		      "Unsupported value passed to part param.");
+		NSLOG(neosurf, INFO, "Unsupported value passed to part param.");
 		assert(0);
 	}
 
@@ -304,8 +317,7 @@ bool nsurl_has_component(const nsurl *url, nsurl_component part)
 			return false;
 
 	default:
-		NSLOG(neosurf, INFO,
-		      "Unsupported value passed to part param.");
+		NSLOG(neosurf, INFO, "Unsupported value passed to part param.");
 		assert(0);
 	}
 
@@ -356,8 +368,10 @@ nserror nsurl_get_utf8(const nsurl *url, char **url_s, size_t *url_l)
 	}
 
 	host = url->components.host;
-	err = idna_decode(lwc_string_data(host), lwc_string_length(host),
-			&idna_host, &idna_host_len);
+	err = idna_decode(lwc_string_data(host),
+			  lwc_string_length(host),
+			  &idna_host,
+			  &idna_host_len);
 	if (err != NSERROR_OK) {
 		/* Fall back to non-IDNA */
 		idna_host_len = lwc_string_length(host);
@@ -370,16 +384,16 @@ nserror nsurl_get_utf8(const nsurl *url, char **url_s, size_t *url_l)
 		idna_host[idna_host_len] = '\0';
 	}
 
-	err = nsurl_get(url,
-			NSURL_SCHEME | NSURL_CREDENTIALS,
-			&scheme, &scheme_len);
+	err = nsurl_get(
+		url, NSURL_SCHEME | NSURL_CREDENTIALS, &scheme, &scheme_len);
 	if (err != NSERROR_OK) {
 		goto cleanup;
 	}
 
 	err = nsurl_get(url,
 			NSURL_PORT | NSURL_PATH | NSURL_QUERY | NSURL_FRAGMENT,
-			&path, &path_len);
+			&path,
+			&path_len);
 	if (err != NSERROR_OK) {
 		goto cleanup;
 	}
@@ -495,20 +509,20 @@ nserror nsurl_defragment(const nsurl *url, nsurl **no_frag)
 	}
 
 	/* Copy components */
-	(*no_frag)->components.scheme =
-			nsurl__component_copy(url->components.scheme);
-	(*no_frag)->components.username =
-			nsurl__component_copy(url->components.username);
-	(*no_frag)->components.password =
-			nsurl__component_copy(url->components.password);
-	(*no_frag)->components.host =
-			nsurl__component_copy(url->components.host);
-	(*no_frag)->components.port =
-			nsurl__component_copy(url->components.port);
-	(*no_frag)->components.path =
-			nsurl__component_copy(url->components.path);
-	(*no_frag)->components.query =
-			nsurl__component_copy(url->components.query);
+	(*no_frag)->components.scheme = nsurl__component_copy(
+		url->components.scheme);
+	(*no_frag)->components.username = nsurl__component_copy(
+		url->components.username);
+	(*no_frag)->components.password = nsurl__component_copy(
+		url->components.password);
+	(*no_frag)->components.host = nsurl__component_copy(
+		url->components.host);
+	(*no_frag)->components.port = nsurl__component_copy(
+		url->components.port);
+	(*no_frag)->components.path = nsurl__component_copy(
+		url->components.path);
+	(*no_frag)->components.query = nsurl__component_copy(
+		url->components.query);
 	(*no_frag)->components.fragment = NULL;
 
 	(*no_frag)->components.scheme_type = url->components.scheme_type;
@@ -570,22 +584,21 @@ nserror nsurl_refragment(const nsurl *url, lwc_string *frag, nsurl **new_url)
 	*pos = '\0';
 
 	/* Copy components */
-	(*new_url)->components.scheme =
-			nsurl__component_copy(url->components.scheme);
-	(*new_url)->components.username =
-			nsurl__component_copy(url->components.username);
-	(*new_url)->components.password =
-			nsurl__component_copy(url->components.password);
-	(*new_url)->components.host =
-			nsurl__component_copy(url->components.host);
-	(*new_url)->components.port =
-			nsurl__component_copy(url->components.port);
-	(*new_url)->components.path =
-			nsurl__component_copy(url->components.path);
-	(*new_url)->components.query =
-			nsurl__component_copy(url->components.query);
-	(*new_url)->components.fragment =
-			lwc_string_ref(frag);
+	(*new_url)->components.scheme = nsurl__component_copy(
+		url->components.scheme);
+	(*new_url)->components.username = nsurl__component_copy(
+		url->components.username);
+	(*new_url)->components.password = nsurl__component_copy(
+		url->components.password);
+	(*new_url)->components.host = nsurl__component_copy(
+		url->components.host);
+	(*new_url)->components.port = nsurl__component_copy(
+		url->components.port);
+	(*new_url)->components.path = nsurl__component_copy(
+		url->components.path);
+	(*new_url)->components.query = nsurl__component_copy(
+		url->components.query);
+	(*new_url)->components.fragment = lwc_string_ref(frag);
 
 	(*new_url)->components.scheme_type = url->components.scheme_type;
 
@@ -600,14 +613,14 @@ nserror nsurl_refragment(const nsurl *url, lwc_string *frag, nsurl **new_url)
 
 
 /* exported interface, documented in nsurl.h */
-nserror nsurl_replace_query(const nsurl *url, const char *query,
-		nsurl **new_url)
+nserror
+nsurl_replace_query(const nsurl *url, const char *query, nsurl **new_url)
 {
-	int query_len;    /* Length of new query string excluding '?' */
+	int query_len; /* Length of new query string excluding '?' */
 	int frag_len = 0; /* Length of fragment, excluding '#' */
-	int base_len;     /* Length of URL up to start of query */
-	char *pos;        /* current position in output string */
-	size_t length;    /* new url string length */
+	int base_len; /* Length of URL up to start of query */
+	char *pos; /* current position in output string */
+	size_t length; /* new url string length */
 	lwc_string *lwc_query = NULL;
 
 	assert(url != NULL);
@@ -618,9 +631,8 @@ nserror nsurl_replace_query(const nsurl *url, const char *query,
 		length++; /* allow for '?' */
 
 		/* intern string */
-		if (lwc_intern_string(query,
-				      query_len,
-				      &lwc_query) != lwc_error_ok) {
+		if (lwc_intern_string(query, query_len, &lwc_query) !=
+		    lwc_error_ok) {
 			return NSERROR_NOMEM;
 		}
 	}
@@ -668,21 +680,21 @@ nserror nsurl_replace_query(const nsurl *url, const char *query,
 	*pos = '\0';
 
 	/* Copy components */
-	(*new_url)->components.scheme =
-			nsurl__component_copy(url->components.scheme);
-	(*new_url)->components.username =
-			nsurl__component_copy(url->components.username);
-	(*new_url)->components.password =
-			nsurl__component_copy(url->components.password);
-	(*new_url)->components.host =
-			nsurl__component_copy(url->components.host);
-	(*new_url)->components.port =
-			nsurl__component_copy(url->components.port);
-	(*new_url)->components.path =
-			nsurl__component_copy(url->components.path);
+	(*new_url)->components.scheme = nsurl__component_copy(
+		url->components.scheme);
+	(*new_url)->components.username = nsurl__component_copy(
+		url->components.username);
+	(*new_url)->components.password = nsurl__component_copy(
+		url->components.password);
+	(*new_url)->components.host = nsurl__component_copy(
+		url->components.host);
+	(*new_url)->components.port = nsurl__component_copy(
+		url->components.port);
+	(*new_url)->components.path = nsurl__component_copy(
+		url->components.path);
 	(*new_url)->components.query = lwc_query;
-	(*new_url)->components.fragment =
-			nsurl__component_copy(url->components.fragment);
+	(*new_url)->components.fragment = nsurl__component_copy(
+		url->components.fragment);
 
 	(*new_url)->components.scheme_type = url->components.scheme_type;
 
@@ -697,8 +709,8 @@ nserror nsurl_replace_query(const nsurl *url, const char *query,
 
 
 /* exported interface, documented in nsurl.h */
-nserror nsurl_replace_scheme(const nsurl *url, lwc_string *scheme,
-		nsurl **new_url)
+nserror
+nsurl_replace_scheme(const nsurl *url, lwc_string *scheme, nsurl **new_url)
 {
 	int scheme_len;
 	int base_len;
@@ -733,41 +745,51 @@ nserror nsurl_replace_scheme(const nsurl *url, lwc_string *scheme,
 	pos = (*new_url)->string;
 	memcpy(pos, lwc_string_data(scheme), scheme_len);
 	memcpy(pos + scheme_len,
-			url->string + url->length - base_len, base_len);
+	       url->string + url->length - base_len,
+	       base_len);
 	pos[len] = '\0';
 
 	/* Copy components */
 	(*new_url)->components.scheme = lwc_string_ref(scheme);
-	(*new_url)->components.username =
-			nsurl__component_copy(url->components.username);
-	(*new_url)->components.password =
-			nsurl__component_copy(url->components.password);
-	(*new_url)->components.host =
-			nsurl__component_copy(url->components.host);
-	(*new_url)->components.port =
-			nsurl__component_copy(url->components.port);
-	(*new_url)->components.path =
-			nsurl__component_copy(url->components.path);
-	(*new_url)->components.query =
-			nsurl__component_copy(url->components.query);
-	(*new_url)->components.fragment =
-			nsurl__component_copy(url->components.fragment);
+	(*new_url)->components.username = nsurl__component_copy(
+		url->components.username);
+	(*new_url)->components.password = nsurl__component_copy(
+		url->components.password);
+	(*new_url)->components.host = nsurl__component_copy(
+		url->components.host);
+	(*new_url)->components.port = nsurl__component_copy(
+		url->components.port);
+	(*new_url)->components.path = nsurl__component_copy(
+		url->components.path);
+	(*new_url)->components.query = nsurl__component_copy(
+		url->components.query);
+	(*new_url)->components.fragment = nsurl__component_copy(
+		url->components.fragment);
 
 	/* Compute new scheme type */
-	if (lwc_string_caseless_isequal(scheme, corestring_lwc_http,
-			&match) == lwc_error_ok && match == true) {
+	if (lwc_string_caseless_isequal(scheme, corestring_lwc_http, &match) ==
+		    lwc_error_ok &&
+	    match == true) {
 		(*new_url)->components.scheme_type = NSURL_SCHEME_HTTP;
-	} else if (lwc_string_caseless_isequal(scheme, corestring_lwc_https,
-			&match) == lwc_error_ok && match == true) {
+	} else if (lwc_string_caseless_isequal(scheme,
+					       corestring_lwc_https,
+					       &match) == lwc_error_ok &&
+		   match == true) {
 		(*new_url)->components.scheme_type = NSURL_SCHEME_HTTPS;
-	} else if (lwc_string_caseless_isequal(scheme, corestring_lwc_file,
-			&match) == lwc_error_ok && match == true) {
+	} else if (lwc_string_caseless_isequal(scheme,
+					       corestring_lwc_file,
+					       &match) == lwc_error_ok &&
+		   match == true) {
 		(*new_url)->components.scheme_type = NSURL_SCHEME_FILE;
-	} else if (lwc_string_caseless_isequal(scheme, corestring_lwc_ftp,
-			&match) == lwc_error_ok && match == true) {
+	} else if (lwc_string_caseless_isequal(scheme,
+					       corestring_lwc_ftp,
+					       &match) == lwc_error_ok &&
+		   match == true) {
 		(*new_url)->components.scheme_type = NSURL_SCHEME_FTP;
-	} else if (lwc_string_caseless_isequal(scheme, corestring_lwc_mailto,
-			&match) == lwc_error_ok && match == true) {
+	} else if (lwc_string_caseless_isequal(scheme,
+					       corestring_lwc_mailto,
+					       &match) == lwc_error_ok &&
+		   match == true) {
 		(*new_url)->components.scheme_type = NSURL_SCHEME_MAILTO;
 	} else {
 		(*new_url)->components.scheme_type = NSURL_SCHEME_OTHER;
@@ -800,7 +822,8 @@ nserror nsurl_nice(const nsurl *url, char **result, bool remove_extensions)
 	if ((url->components.path != NULL) &&
 	    (lwc_string_length(url->components.path) != 0) &&
 	    (lwc_string_isequal(url->components.path,
-			corestring_lwc_slash_, &match) == lwc_error_ok) &&
+				corestring_lwc_slash_,
+				&match) == lwc_error_ok) &&
 	    (match == false)) {
 		bool first = true;
 		bool keep_looking;
@@ -827,15 +850,15 @@ nserror nsurl_nice(const nsurl *url, char **result, bool remove_extensions)
 			}
 
 			if (first) {
-				if (strncasecmp("/default.", data + pos,
+				if (strncasecmp("/default.",
+						data + pos,
 						SLEN("/default.")) == 0) {
 					keep_looking = true;
 
 				} else if (strncasecmp("/index.",
-							data + pos,
-							6) == 0) {
+						       data + pos,
+						       6) == 0) {
 					keep_looking = true;
-
 				}
 				first = false;
 			}
@@ -846,7 +869,7 @@ nserror nsurl_nice(const nsurl *url, char **result, bool remove_extensions)
 			pos++;
 
 		if (strncasecmp("default.", data + pos, 8) != 0 &&
-				strncasecmp("index.", data + pos, 6) != 0) {
+		    strncasecmp("index.", data + pos, 6) != 0) {
 			size_t end = pos;
 			while (data[end] != '\0' && data[end] != '/') {
 				end++;
@@ -894,13 +917,14 @@ nserror nsurl_parent(const nsurl *url, nsurl **new_url)
 	lwc_string *lwc_path;
 	size_t old_path_len, new_path_len;
 	size_t len;
-	const char* path = NULL;
+	const char *path = NULL;
 	char *pos;
 
 	assert(url != NULL);
 
-	old_path_len = (url->components.path == NULL) ? 0 :
-			lwc_string_length(url->components.path);
+	old_path_len = (url->components.path == NULL)
+			       ? 0
+			       : lwc_string_length(url->components.path);
 
 	/* Find new path length */
 	if (old_path_len == 0) {
@@ -916,7 +940,7 @@ nserror nsurl_parent(const nsurl *url, nsurl **new_url)
 
 			/* Work back to next / */
 			while (new_path_len > 0 &&
-					path[new_path_len - 1] != '/')
+			       path[new_path_len - 1] != '/')
 				new_path_len--;
 		}
 	}
@@ -944,8 +968,8 @@ nserror nsurl_parent(const nsurl *url, nsurl **new_url)
 	} else if (old_path_len == new_path_len) {
 		lwc_path = lwc_string_ref(url->components.path);
 	} else {
-		if (lwc_intern_string(path, new_path_len,
-				&lwc_path) != lwc_error_ok) {
+		if (lwc_intern_string(path, new_path_len, &lwc_path) !=
+		    lwc_error_ok) {
 			free(*new_url);
 			return NSERROR_NOMEM;
 		}
@@ -960,16 +984,16 @@ nserror nsurl_parent(const nsurl *url, nsurl **new_url)
 	*pos = '\0';
 
 	/* Copy components */
-	(*new_url)->components.scheme =
-			nsurl__component_copy(url->components.scheme);
-	(*new_url)->components.username =
-			nsurl__component_copy(url->components.username);
-	(*new_url)->components.password =
-			nsurl__component_copy(url->components.password);
-	(*new_url)->components.host =
-			nsurl__component_copy(url->components.host);
-	(*new_url)->components.port =
-			nsurl__component_copy(url->components.port);
+	(*new_url)->components.scheme = nsurl__component_copy(
+		url->components.scheme);
+	(*new_url)->components.username = nsurl__component_copy(
+		url->components.username);
+	(*new_url)->components.password = nsurl__component_copy(
+		url->components.password);
+	(*new_url)->components.host = nsurl__component_copy(
+		url->components.host);
+	(*new_url)->components.port = nsurl__component_copy(
+		url->components.port);
 	(*new_url)->components.path = lwc_path;
 	(*new_url)->components.query = NULL;
 	(*new_url)->components.fragment = NULL;
@@ -988,32 +1012,43 @@ nserror nsurl_parent(const nsurl *url, nsurl **new_url)
 /* exported interface, documented in nsurl.h */
 void nsurl_dump(const nsurl *url)
 {
-    fprintf(stderr, "nsurl components for %p "
-            "(refs: %i hash: %08x):\n",
-            url, url->count, (unsigned int)url->hash);
+	fprintf(stderr,
+		"nsurl components for %p "
+		"(refs: %i hash: %08x):\n",
+		url,
+		url->count,
+		(unsigned int)url->hash);
 
 	if (url->components.scheme)
-		fprintf(stderr, "  Scheme: %s\n",
-				lwc_string_data(url->components.scheme));
+		fprintf(stderr,
+			"  Scheme: %s\n",
+			lwc_string_data(url->components.scheme));
 	if (url->components.username)
-		fprintf(stderr, "Username: %s\n",
-				lwc_string_data(url->components.username));
+		fprintf(stderr,
+			"Username: %s\n",
+			lwc_string_data(url->components.username));
 	if (url->components.password)
-		fprintf(stderr, "Password: %s\n",
-				lwc_string_data(url->components.password));
+		fprintf(stderr,
+			"Password: %s\n",
+			lwc_string_data(url->components.password));
 	if (url->components.host)
-		fprintf(stderr, "    Host: %s\n",
-				lwc_string_data(url->components.host));
+		fprintf(stderr,
+			"    Host: %s\n",
+			lwc_string_data(url->components.host));
 	if (url->components.port)
-		fprintf(stderr, "    Port: %s\n",
-				lwc_string_data(url->components.port));
+		fprintf(stderr,
+			"    Port: %s\n",
+			lwc_string_data(url->components.port));
 	if (url->components.path)
-		fprintf(stderr, "    Path: %s\n",
-				lwc_string_data(url->components.path));
+		fprintf(stderr,
+			"    Path: %s\n",
+			lwc_string_data(url->components.path));
 	if (url->components.query)
-		fprintf(stderr, "   Query: %s\n",
-				lwc_string_data(url->components.query));
+		fprintf(stderr,
+			"   Query: %s\n",
+			lwc_string_data(url->components.query));
 	if (url->components.fragment)
-		fprintf(stderr, "Fragment: %s\n",
-				lwc_string_data(url->components.fragment));
+		fprintf(stderr,
+			"Fragment: %s\n",
+			lwc_string_data(url->components.fragment));
 }

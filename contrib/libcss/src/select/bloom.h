@@ -41,15 +41,13 @@
 #define CSS_BLOOM_SIZE 4
 
 
-
 /* Check valid bloom filter size */
 #if !(CSS_BLOOM_SIZE == 4 || CSS_BLOOM_SIZE == 8 || CSS_BLOOM_SIZE == 16)
-# error Unsupported bloom filter size.  Size must be {4|8|16}.
+#error Unsupported bloom filter size.  Size must be {4|8|16}.
 #endif
 
 /* Setup index bit mask */
 #define INDEX_BITS_N (CSS_BLOOM_SIZE - 1)
-
 
 
 /* type for bloom */
@@ -62,8 +60,8 @@ typedef uint32_t css_bloom;
  * \param bloom	bloom filter to insert into
  * \param hash	libwapcaplet hash value to insert
  */
-static inline void css_bloom_add_hash(css_bloom bloom[CSS_BLOOM_SIZE],
-		lwc_hash hash)
+static inline void
+css_bloom_add_hash(css_bloom bloom[CSS_BLOOM_SIZE], lwc_hash hash)
 {
 	unsigned int bit = hash & 0x1f; /* Top 5 bits */
 	unsigned int index = (hash >> 5) & INDEX_BITS_N; /* Next N bits */
@@ -79,8 +77,8 @@ static inline void css_bloom_add_hash(css_bloom bloom[CSS_BLOOM_SIZE],
  * \param hash	libwapcaplet hash value to look for
  * \return true hash value is already set in bloom
  */
-static inline bool css_bloom_has_hash(const css_bloom bloom[CSS_BLOOM_SIZE],
-		lwc_hash hash)
+static inline bool
+css_bloom_has_hash(const css_bloom bloom[CSS_BLOOM_SIZE], lwc_hash hash)
 {
 	unsigned int bit = hash & 0x1f; /* Top 5 bits */
 	unsigned int index = (hash >> 5) & INDEX_BITS_N; /* Next N bits */
@@ -96,9 +94,8 @@ static inline bool css_bloom_has_hash(const css_bloom bloom[CSS_BLOOM_SIZE],
  * \param b	superset bloom
  * \return true iff 'a' is subset of 'b'
  */
-static inline bool css_bloom_in_bloom(
-		const css_bloom a[CSS_BLOOM_SIZE],
-		const css_bloom b[CSS_BLOOM_SIZE])
+static inline bool css_bloom_in_bloom(const css_bloom a[CSS_BLOOM_SIZE],
+				      const css_bloom b[CSS_BLOOM_SIZE])
 {
 	if ((a[0] & b[0]) != a[0])
 		return false;
@@ -146,9 +143,8 @@ static inline bool css_bloom_in_bloom(
  * \param a	bloom to insert
  * \param b	target bloom
  */
-static inline void css_bloom_merge(
-		const css_bloom a[restrict CSS_BLOOM_SIZE],
-		      css_bloom b[restrict CSS_BLOOM_SIZE])
+static inline void css_bloom_merge(const css_bloom a[restrict CSS_BLOOM_SIZE],
+				   css_bloom b[restrict CSS_BLOOM_SIZE])
 {
 	b[0] |= a[0];
 	b[1] |= a[1];

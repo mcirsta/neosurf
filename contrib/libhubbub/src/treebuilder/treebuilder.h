@@ -37,26 +37,25 @@ typedef union hubbub_treebuilder_optparams {
 	struct {
 		hubbub_error_handler handler;
 		void *pw;
-	} error_handler;			/**< Error handling callback */
+	} error_handler; /**< Error handling callback */
 
-	hubbub_tree_handler *tree_handler;	/**< Tree handling callbacks */
+	hubbub_tree_handler *tree_handler; /**< Tree handling callbacks */
 
-	void *document_node;			/**< The document node */
+	void *document_node; /**< The document node */
 
-	bool enable_scripting;			/**< Enable scripting */
+	bool enable_scripting; /**< Enable scripting */
 } hubbub_treebuilder_optparams;
 
 /* Create a hubbub treebuilder */
 hubbub_error hubbub_treebuilder_create(hubbub_tokeniser *tokeniser,
-		hubbub_treebuilder **treebuilder);
+				       hubbub_treebuilder **treebuilder);
 
 /* Destroy a hubbub treebuilder */
 hubbub_error hubbub_treebuilder_destroy(hubbub_treebuilder *treebuilder);
 
 /* Configure a hubbub treebuilder */
 hubbub_error hubbub_treebuilder_setopt(hubbub_treebuilder *treebuilder,
-		hubbub_treebuilder_opttype type,
-		hubbub_treebuilder_optparams *params);
+				       hubbub_treebuilder_opttype type,
+				       hubbub_treebuilder_optparams *params);
 
 #endif
-

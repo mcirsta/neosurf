@@ -38,46 +38,52 @@ struct nsw32_corewindow {
 
 	/** window title */
 	const char *title;
-	
-        /** drag status set by core */
-        core_window_drag_status drag_status;
-	
-        /**
-         * callback to draw on drawable area of nsw32 core window
-         *
-         * \param nsw32_cw The nsw32 core window structure.
-         * \param r The rectangle of the window that needs updating.
-         * \return NSERROR_OK on success otherwise apropriate error code
-         */
-        nserror (*draw)(struct nsw32_corewindow *nsw32_cw, int scrollx, int scrolly, struct rect *r);
 
-        /**
-         * callback for keypress on nsw32 core window
-         *
-         * \param nsw32_cw The nsw32 core window structure.
-         * \param nskey The netsurf key code.
-         * \return NSERROR_OK if key processed,
-         *         NSERROR_NOT_IMPLEMENTED if key not processed
-         *         otherwise apropriate error code
-         */
-        nserror (*key)(struct nsw32_corewindow *nsw32_cw, uint32_t nskey);
+	/** drag status set by core */
+	core_window_drag_status drag_status;
 
-        /**
-         * callback for mouse event on nsw32 core window
-         *
-         * \param nsw32_cw The nsw32 core window structure.
-         * \param mouse_state mouse state
-         * \param x location of event
-         * \param y location of event
-         * \return NSERROR_OK on sucess otherwise apropriate error code.
-         */
-        nserror (*mouse)(struct nsw32_corewindow *nsw32_cw, browser_mouse_state mouse_state, int x, int y);
+	/**
+	 * callback to draw on drawable area of nsw32 core window
+	 *
+	 * \param nsw32_cw The nsw32 core window structure.
+	 * \param r The rectangle of the window that needs updating.
+	 * \return NSERROR_OK on success otherwise apropriate error code
+	 */
+	nserror (*draw)(struct nsw32_corewindow *nsw32_cw,
+			int scrollx,
+			int scrolly,
+			struct rect *r);
+
+	/**
+	 * callback for keypress on nsw32 core window
+	 *
+	 * \param nsw32_cw The nsw32 core window structure.
+	 * \param nskey The netsurf key code.
+	 * \return NSERROR_OK if key processed,
+	 *         NSERROR_NOT_IMPLEMENTED if key not processed
+	 *         otherwise apropriate error code
+	 */
+	nserror (*key)(struct nsw32_corewindow *nsw32_cw, uint32_t nskey);
+
+	/**
+	 * callback for mouse event on nsw32 core window
+	 *
+	 * \param nsw32_cw The nsw32 core window structure.
+	 * \param mouse_state mouse state
+	 * \param x location of event
+	 * \param y location of event
+	 * \return NSERROR_OK on sucess otherwise apropriate error code.
+	 */
+	nserror (*mouse)(struct nsw32_corewindow *nsw32_cw,
+			 browser_mouse_state mouse_state,
+			 int x,
+			 int y);
 
 	/**
 	 * callback for window close event
 	 *
-         * \param nsw32_cw The nsw32 core window structure.
-         * \return NSERROR_OK on sucess otherwise apropriate error code.
+	 * \param nsw32_cw The nsw32 core window structure.
+	 * \return NSERROR_OK on sucess otherwise apropriate error code.
 	 */
 	nserror (*close)(struct nsw32_corewindow *nsw32_cw);
 };

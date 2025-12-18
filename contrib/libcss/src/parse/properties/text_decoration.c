@@ -28,8 +28,9 @@
  *                 If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_text_decoration(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+				     const parserutils_vector *vector,
+				     int32_t *ctx,
+				     css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	css_error error = CSS_INVALID;
@@ -40,7 +41,7 @@ css_error css__parse_text_decoration(css_language *c,
 	/* IDENT([ underline || overline || line-through || blink ])
 	 * | IDENT (none, inherit) */
 	token = parserutils_vector_iterate(vector, ctx);
-	if ((token == NULL) || (token->type != CSS_TOKEN_IDENT) ) {
+	if ((token == NULL) || (token->type != CSS_TOKEN_IDENT)) {
 		*ctx = orig_ctx;
 		return CSS_INVALID;
 	}
@@ -48,22 +49,29 @@ css_error css__parse_text_decoration(css_language *c,
 	flag_value = get_css_flag_value(c, token);
 
 	if (lwc_string_caseless_isequal(token->idata,
-			c->strings[INHERIT],
-			&match) == lwc_error_ok && match) {
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_TEXT_DECORATION);
+					c->strings[INHERIT],
+					&match) == lwc_error_ok &&
+	    match) {
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_TEXT_DECORATION);
 
 	} else if (lwc_string_caseless_isequal(token->idata,
-				c->strings[NONE],
-				&match) == lwc_error_ok && match) {
-		error = css__stylesheet_style_appendOPV(result,
-				CSS_PROP_TEXT_DECORATION, 0, TEXT_DECORATION_NONE);
+					       c->strings[NONE],
+					       &match) == lwc_error_ok &&
+		   match) {
+		error = css__stylesheet_style_appendOPV(
+			result,
+			CSS_PROP_TEXT_DECORATION,
+			0,
+			TEXT_DECORATION_NONE);
 	} else {
 		uint16_t value = 0;
 		while (token != NULL) {
-			if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[UNDERLINE],
-					&match) == lwc_error_ok && match)) {
+			if ((lwc_string_caseless_isequal(token->idata,
+							 c->strings[UNDERLINE],
+							 &match) ==
+				     lwc_error_ok &&
+			     match)) {
 				if ((value & TEXT_DECORATION_UNDERLINE) == 0)
 					value |= TEXT_DECORATION_UNDERLINE;
 				else {
@@ -71,8 +79,10 @@ css_error css__parse_text_decoration(css_language *c,
 					return CSS_INVALID;
 				}
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[OVERLINE],
-					&match) == lwc_error_ok && match)) {
+					    token->idata,
+					    c->strings[OVERLINE],
+					    &match) == lwc_error_ok &&
+				    match)) {
 				if ((value & TEXT_DECORATION_OVERLINE) == 0)
 					value |= TEXT_DECORATION_OVERLINE;
 				else {
@@ -80,8 +90,10 @@ css_error css__parse_text_decoration(css_language *c,
 					return CSS_INVALID;
 				}
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[LINE_THROUGH],
-					&match) == lwc_error_ok && match)) {
+					    token->idata,
+					    c->strings[LINE_THROUGH],
+					    &match) == lwc_error_ok &&
+				    match)) {
 				if ((value & TEXT_DECORATION_LINE_THROUGH) == 0)
 					value |= TEXT_DECORATION_LINE_THROUGH;
 				else {
@@ -89,8 +101,10 @@ css_error css__parse_text_decoration(css_language *c,
 					return CSS_INVALID;
 				}
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[BLINK],
-					&match) == lwc_error_ok && match)) {
+					    token->idata,
+					    c->strings[BLINK],
+					    &match) == lwc_error_ok &&
+				    match)) {
 				if ((value & TEXT_DECORATION_BLINK) == 0)
 					value |= TEXT_DECORATION_BLINK;
 				else {
@@ -109,8 +123,8 @@ css_error css__parse_text_decoration(css_language *c,
 				break;
 			token = parserutils_vector_iterate(vector, ctx);
 		}
-		error = css__stylesheet_style_appendOPV(result,
-				CSS_PROP_TEXT_DECORATION, 0, value);
+		error = css__stylesheet_style_appendOPV(
+			result, CSS_PROP_TEXT_DECORATION, 0, value);
 	}
 
 	if (error != CSS_OK)

@@ -26,4 +26,4 @@
 
 extern struct gui_file_table *win32_file_table;
 
-#endif 
+#endif

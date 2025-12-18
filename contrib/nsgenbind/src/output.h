@@ -30,7 +30,8 @@ int output_close(struct opctx *opctx);
 /**
  * output formatted data to file
  */
-int outputf(struct opctx *opctx, const char *fmt, ...) __attribute__ ((format (printf, 2, 3)));
+int outputf(struct opctx *opctx, const char *fmt, ...)
+	__attribute__((format(printf, 2, 3)));
 
 int outputc(struct opctx *opctx, int c);
 

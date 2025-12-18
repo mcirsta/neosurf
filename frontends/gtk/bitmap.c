@@ -63,8 +63,10 @@ static void *bitmap_create(int width, int height, enum gui_bitmap_flags flags)
 			gbitmap->opaque = true;
 		}
 
-		gbitmap->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-		if (cairo_surface_status(gbitmap->surface) != CAIRO_STATUS_SUCCESS) {
+		gbitmap->surface = cairo_image_surface_create(
+			CAIRO_FORMAT_ARGB32, width, height);
+		if (cairo_surface_status(gbitmap->surface) !=
+		    CAIRO_STATUS_SUCCESS) {
 			cairo_surface_destroy(gbitmap->surface);
 			free(gbitmap);
 			gbitmap = NULL;
@@ -121,7 +123,7 @@ static unsigned char *bitmap_get_buffer(void *vbitmap)
 	cairo_surface_flush(gbitmap->surface);
 	pixels = cairo_image_surface_get_data(gbitmap->surface);
 
-	return (unsigned char *) pixels;
+	return (unsigned char *)pixels;
 }
 
 
@@ -207,11 +209,9 @@ bitmap_render(struct bitmap *bitmap, struct hlcache_handle *content)
 	cairo_t *old_cr;
 	gint dwidth, dheight;
 	int cwidth, cheight;
-	struct redraw_context ctx = {
-		.interactive = false,
-		.background_images = true,
-		.plot = &nsgtk_plotters
-	};
+	struct redraw_context ctx = {.interactive = false,
+				     .background_images = true,
+				     .plot = &nsgtk_plotters};
 
 	assert(content);
 	assert(bitmap);
@@ -231,12 +231,14 @@ bitmap_render(struct bitmap *bitmap, struct hlcache_handle *content)
 	 * aspect ratio of the required thumbnail. */
 	cheight = ((cwidth * dheight) + (dwidth / 2)) / dwidth;
 
-	/* At this point, we MUST have decided to render something non-zero sized */
+	/* At this point, we MUST have decided to render something non-zero
+	 * sized */
 	assert(cwidth > 0);
 	assert(cheight > 0);
 
 	/*  Create surface to render into */
-	surface = cairo_surface_create_similar(dsurface, CAIRO_CONTENT_COLOR_ALPHA, cwidth, cheight);
+	surface = cairo_surface_create_similar(
+		dsurface, CAIRO_CONTENT_COLOR_ALPHA, cwidth, cheight);
 
 	if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
 		cairo_surface_destroy(surface);
@@ -255,8 +257,8 @@ bitmap_render(struct bitmap *bitmap, struct hlcache_handle *content)
 	cairo_t *cr = cairo_create(dsurface);
 
 	/* Scale *before* setting the source surface (1) */
-	cairo_scale (cr, (double)dwidth / cwidth, (double)dheight / cheight);
-	cairo_set_source_surface (cr, surface, 0, 0);
+	cairo_scale(cr, (double)dwidth / cwidth, (double)dheight / cheight);
+	cairo_set_source_surface(cr, surface, 0, 0);
 
 	/* To avoid getting the edge pixels blended with 0 alpha,
 	 * which would occur with the default EXTEND_NONE. Use

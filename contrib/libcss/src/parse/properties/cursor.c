@@ -27,8 +27,9 @@
  *                 If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_cursor(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+			    const parserutils_vector *vector,
+			    int32_t *ctx,
+			    css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	css_error error = CSS_OK;
@@ -43,8 +44,7 @@ css_error css__parse_cursor(css_language *c,
 	 */
 	token = parserutils_vector_iterate(vector, ctx);
 	if ((token == NULL) ||
-	    (token->type != CSS_TOKEN_IDENT &&
-	     token->type != CSS_TOKEN_URI)) {
+	    (token->type != CSS_TOKEN_IDENT && token->type != CSS_TOKEN_URI)) {
 		*ctx = orig_ctx;
 		return CSS_INVALID;
 	}
@@ -52,15 +52,18 @@ css_error css__parse_cursor(css_language *c,
 	flag_value = get_css_flag_value(c, token);
 
 	if (flag_value != FLAG_VALUE__NONE) {
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_CURSOR);
+		error = css_stylesheet_style_flag_value(result,
+							flag_value,
+							CSS_PROP_CURSOR);
 	} else {
 		bool first = true;
 
 /* Macro to output the value marker, awkward because we need to check
  * first to determine how the value is constructed.
  */
-#define CSS_APPEND(CSSVAL) css__stylesheet_style_append(result, first?buildOPV(CSS_PROP_CURSOR, 0, CSSVAL):CSSVAL)
+#define CSS_APPEND(CSSVAL)                                                     \
+	css__stylesheet_style_append(                                          \
+		result, first ? buildOPV(CSS_PROP_CURSOR, 0, CSSVAL) : CSSVAL)
 
 
 		/* URI* */
@@ -69,16 +72,17 @@ css_error css__parse_cursor(css_language *c,
 			uint32_t uri_snumber;
 
 			error = c->sheet->resolve(c->sheet->resolve_pw,
-					c->sheet->url,
-					token->idata, &uri);
+						  c->sheet->url,
+						  token->idata,
+						  &uri);
 			if (error != CSS_OK) {
 				*ctx = orig_ctx;
 				return error;
 			}
 
 			error = css__stylesheet_string_add(c->sheet,
-							  uri,
-							  &uri_snumber);
+							   uri,
+							   &uri_snumber);
 			if (error != CSS_OK) {
 				*ctx = orig_ctx;
 				return error;
@@ -90,7 +94,8 @@ css_error css__parse_cursor(css_language *c,
 				return error;
 			}
 
-			error = css__stylesheet_style_append(result, uri_snumber);
+			error = css__stylesheet_style_append(result,
+							     uri_snumber);
 			if (error != CSS_OK) {
 				*ctx = orig_ctx;
 				return error;
@@ -110,7 +115,7 @@ css_error css__parse_cursor(css_language *c,
 			/* Expect either URI or IDENT */
 			token = parserutils_vector_iterate(vector, ctx);
 			if (token == NULL || (token->type != CSS_TOKEN_IDENT &&
-					token->type != CSS_TOKEN_URI)) {
+					      token->type != CSS_TOKEN_URI)) {
 				*ctx = orig_ctx;
 				return CSS_INVALID;
 			}
@@ -121,78 +126,110 @@ css_error css__parse_cursor(css_language *c,
 		/* IDENT */
 		if (token != NULL && token->type == CSS_TOKEN_IDENT) {
 			if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[AUTO],
-					&match) == lwc_error_ok && match)) {
-				error=CSS_APPEND(CURSOR_AUTO);
+				     token->idata, c->strings[AUTO], &match) ==
+				     lwc_error_ok &&
+			     match)) {
+				error = CSS_APPEND(CURSOR_AUTO);
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[CROSSHAIR],
-					&match) == lwc_error_ok && match)) {
-				error=CSS_APPEND(CURSOR_CROSSHAIR);
+					    token->idata,
+					    c->strings[CROSSHAIR],
+					    &match) == lwc_error_ok &&
+				    match)) {
+				error = CSS_APPEND(CURSOR_CROSSHAIR);
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[DEFAULT],
-					&match) == lwc_error_ok && match)) {
-				error=CSS_APPEND(CURSOR_DEFAULT);
+					    token->idata,
+					    c->strings[DEFAULT],
+					    &match) == lwc_error_ok &&
+				    match)) {
+				error = CSS_APPEND(CURSOR_DEFAULT);
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[POINTER],
-					&match) == lwc_error_ok && match)) {
-				error=CSS_APPEND(CURSOR_POINTER);
+					    token->idata,
+					    c->strings[POINTER],
+					    &match) == lwc_error_ok &&
+				    match)) {
+				error = CSS_APPEND(CURSOR_POINTER);
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[MOVE],
-					&match) == lwc_error_ok && match)) {
-				error=CSS_APPEND(CURSOR_MOVE);
+					    token->idata,
+					    c->strings[MOVE],
+					    &match) == lwc_error_ok &&
+				    match)) {
+				error = CSS_APPEND(CURSOR_MOVE);
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[E_RESIZE],
-					&match) == lwc_error_ok && match)) {
-				error=CSS_APPEND(CURSOR_E_RESIZE);
+					    token->idata,
+					    c->strings[E_RESIZE],
+					    &match) == lwc_error_ok &&
+				    match)) {
+				error = CSS_APPEND(CURSOR_E_RESIZE);
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[NE_RESIZE],
-					&match) == lwc_error_ok && match)) {
-				error=CSS_APPEND(CURSOR_NE_RESIZE);
+					    token->idata,
+					    c->strings[NE_RESIZE],
+					    &match) == lwc_error_ok &&
+				    match)) {
+				error = CSS_APPEND(CURSOR_NE_RESIZE);
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[NW_RESIZE],
-					&match) == lwc_error_ok && match)) {
-				error=CSS_APPEND(CURSOR_NW_RESIZE);
+					    token->idata,
+					    c->strings[NW_RESIZE],
+					    &match) == lwc_error_ok &&
+				    match)) {
+				error = CSS_APPEND(CURSOR_NW_RESIZE);
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[N_RESIZE],
-					&match) == lwc_error_ok && match)) {
-				error=CSS_APPEND(CURSOR_N_RESIZE);
+					    token->idata,
+					    c->strings[N_RESIZE],
+					    &match) == lwc_error_ok &&
+				    match)) {
+				error = CSS_APPEND(CURSOR_N_RESIZE);
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[SE_RESIZE],
-					&match) == lwc_error_ok && match)) {
-				error=CSS_APPEND(CURSOR_SE_RESIZE);
+					    token->idata,
+					    c->strings[SE_RESIZE],
+					    &match) == lwc_error_ok &&
+				    match)) {
+				error = CSS_APPEND(CURSOR_SE_RESIZE);
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[SW_RESIZE],
-					&match) == lwc_error_ok && match)) {
-				error=CSS_APPEND(CURSOR_SW_RESIZE);
+					    token->idata,
+					    c->strings[SW_RESIZE],
+					    &match) == lwc_error_ok &&
+				    match)) {
+				error = CSS_APPEND(CURSOR_SW_RESIZE);
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[S_RESIZE],
-					&match) == lwc_error_ok && match)) {
-				error=CSS_APPEND(CURSOR_S_RESIZE);
+					    token->idata,
+					    c->strings[S_RESIZE],
+					    &match) == lwc_error_ok &&
+				    match)) {
+				error = CSS_APPEND(CURSOR_S_RESIZE);
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[W_RESIZE],
-					&match) == lwc_error_ok && match)) {
-				error=CSS_APPEND(CURSOR_W_RESIZE);
+					    token->idata,
+					    c->strings[W_RESIZE],
+					    &match) == lwc_error_ok &&
+				    match)) {
+				error = CSS_APPEND(CURSOR_W_RESIZE);
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[LIBCSS_TEXT],
-					&match) == lwc_error_ok && match)) {
-				error=CSS_APPEND(CURSOR_TEXT);
+					    token->idata,
+					    c->strings[LIBCSS_TEXT],
+					    &match) == lwc_error_ok &&
+				    match)) {
+				error = CSS_APPEND(CURSOR_TEXT);
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[WAIT],
-					&match) == lwc_error_ok && match)) {
-				error=CSS_APPEND(CURSOR_WAIT);
+					    token->idata,
+					    c->strings[WAIT],
+					    &match) == lwc_error_ok &&
+				    match)) {
+				error = CSS_APPEND(CURSOR_WAIT);
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[HELP],
-					&match) == lwc_error_ok && match)) {
-				error=CSS_APPEND(CURSOR_HELP);
+					    token->idata,
+					    c->strings[HELP],
+					    &match) == lwc_error_ok &&
+				    match)) {
+				error = CSS_APPEND(CURSOR_HELP);
 			} else if ((lwc_string_caseless_isequal(
-					token->idata, c->strings[PROGRESS],
-					&match) == lwc_error_ok && match)) {
-				error=CSS_APPEND(CURSOR_PROGRESS);
+					    token->idata,
+					    c->strings[PROGRESS],
+					    &match) == lwc_error_ok &&
+				    match)) {
+				error = CSS_APPEND(CURSOR_PROGRESS);
 			} else {
-				error =  CSS_INVALID;
+				error = CSS_INVALID;
 			}
 		}
-
 	}
 
 	if (error != CSS_OK)
@@ -200,4 +237,3 @@ css_error css__parse_cursor(css_language *c,
 
 	return error;
 }
-

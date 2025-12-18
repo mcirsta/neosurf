@@ -35,7 +35,6 @@ extern "C" {
 #include "utils/filepath.h"
 #include "utils/file.h"
 #include "neosurf/fetch.h"
-
 }
 
 #include "qt/fetch.h"
@@ -53,29 +52,29 @@ extern "C" {
 static const char *nsqt_fetch_filetype(const char *unix_path)
 {
 	int l;
-	char * res = (char*)"text/html";
+	char *res = (char *)"text/html";
 	l = strlen(unix_path);
 	NSLOG(netsurf, INFO, "unix path: %s", unix_path);
 
 
 	if (2 < l && strcasecmp(unix_path + l - 3, "f79") == 0)
-		res = (char*)"text/css";
+		res = (char *)"text/css";
 	else if (2 < l && strcasecmp(unix_path + l - 3, "css") == 0)
-		res = (char*)"text/css";
+		res = (char *)"text/css";
 	else if (2 < l && strcasecmp(unix_path + l - 3, "jpg") == 0)
-		res = (char*)"image/jpeg";
+		res = (char *)"image/jpeg";
 	else if (3 < l && strcasecmp(unix_path + l - 4, "jpeg") == 0)
-		res = (char*)"image/jpeg";
+		res = (char *)"image/jpeg";
 	else if (2 < l && strcasecmp(unix_path + l - 3, "gif") == 0)
-		res = (char*)"image/gif";
+		res = (char *)"image/gif";
 	else if (2 < l && strcasecmp(unix_path + l - 3, "png") == 0)
-		res = (char*)"image/png";
+		res = (char *)"image/png";
 	else if (2 < l && strcasecmp(unix_path + l - 3, "jng") == 0)
-		res = (char*)"image/jng";
+		res = (char *)"image/jng";
 	else if (2 < l && strcasecmp(unix_path + l - 3, "svg") == 0)
-		res = (char*)"image/svg";
+		res = (char *)"image/svg";
 	else if (2 < l && strcasecmp(unix_path + l - 3, "txt") == 0)
-		res = (char*)"text/plain";
+		res = (char *)"text/plain";
 
 	NSLOG(netsurf, INFO, "mime type: %s", res);
 	return res;
@@ -104,10 +103,9 @@ static nsurl *nsqt_get_resource_url(const char *path)
 	return url;
 }
 
-static nserror
-nsqt_get_resource_data(const char *resname,
-		       const uint8_t **data_out,
-		       size_t *data_size_out)
+static nserror nsqt_get_resource_data(const char *resname,
+				      const uint8_t **data_out,
+				      size_t *data_size_out)
 {
 	QResource resource(resname);
 	if (!resource.isValid()) {

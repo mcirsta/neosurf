@@ -39,7 +39,7 @@ static nsurl *gui_get_resource_url(const char *path)
 	char buf[PATH_MAX];
 	nsurl *url = NULL;
 
-    neosurf_path_to_nsurl(filepath_sfind(respaths, buf, path), &url);
+	neosurf_path_to_nsurl(filepath_sfind(respaths, buf, path), &url);
 
 	return url;
 }

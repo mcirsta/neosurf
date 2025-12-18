@@ -15,7 +15,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 #ifndef _NETSURF_DESKTOP_HOTLIST_H_
 #define _NETSURF_DESKTOP_HOTLIST_H_
 
@@ -122,7 +122,8 @@ void hotlist_update_url(struct nsurl *url);
  * \param y		Y-offset in px from top of hotlist.  Ignored if (!at_y).
  * \return NSERROR_OK on success, appropriate error otherwise
  */
-nserror hotlist_add_entry(struct nsurl *url, const char *title, bool at_y, int y);
+nserror
+hotlist_add_entry(struct nsurl *url, const char *title, bool at_y, int y);
 
 /**
  * Add a folder to the hotlist.
@@ -160,7 +161,9 @@ typedef nserror (*hotlist_folder_enter_cb)(void *ctx, const char *title);
  * \param title		The entry's title
  * \return NSERROR_OK on success, or appropriate error otherwise
  */
-typedef nserror (*hotlist_address_cb)(void *ctx, struct nsurl *url, const char *title);
+typedef nserror (*hotlist_address_cb)(void *ctx,
+				      struct nsurl *url,
+				      const char *title);
 
 /**
  * Client callback for hotlist_iterate, reporting a hotlist folder departure
@@ -187,9 +190,9 @@ typedef nserror (*hotlist_folder_leave_cb)(void *ctx);
  *                provide the folder callbacks.
  */
 nserror hotlist_iterate(void *ctx,
-		hotlist_folder_enter_cb enter_cb,
-		hotlist_address_cb address_cb,
-		hotlist_folder_leave_cb leave_cb);
+			hotlist_folder_enter_cb enter_cb,
+			hotlist_address_cb address_cb,
+			hotlist_folder_leave_cb leave_cb);
 
 /**
  * Redraw the hotlist.
@@ -199,8 +202,10 @@ nserror hotlist_iterate(void *ctx,
  * \param clip		Current clip rectangle (wrt tree origin)
  * \param ctx		Current redraw context
  */
-void hotlist_redraw(int x, int y, struct rect *clip,
-		const struct redraw_context *ctx);
+void hotlist_redraw(int x,
+		    int y,
+		    struct rect *clip,
+		    const struct redraw_context *ctx);
 
 /**
  * Handles all kinds of mouse action

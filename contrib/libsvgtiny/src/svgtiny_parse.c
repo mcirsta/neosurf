@@ -39,9 +39,10 @@
  *         left unchanged. The textend is always updated to indicate the last
  *         character parsed.
  *
- * A number is started by 0 (started by sign) or more spaces (0x20), tabs (0x09),
- * carridge returns (0xD) and newlines (0xA) followed by a decimal number.
- * A number is defined as https://www.w3.org/TR/css-syntax-3/#typedef-number-token
+ * A number is started by 0 (started by sign) or more spaces (0x20), tabs
+ * (0x09), carridge returns (0xD) and newlines (0xA) followed by a decimal
+ * number. A number is defined as
+ * https://www.w3.org/TR/css-syntax-3/#typedef-number-token
  *
  * This state machine parses number text into a sign, significand and exponent
  * then builds a single precision float from those values.
@@ -76,8 +77,10 @@ svgtiny_parse_number(const char *text, const char **textend, float *value)
 		SNEGATIVE,
 	};
 	enum b10sign sign = SPOSITIVE; /* sign of number being constructed */
-	unsigned int significand = 0; /* significand of number being constructed */
-	int exponent = 0; /* exponent of the significand (distinct from exponent part) */
+	unsigned int significand =
+		0; /* significand of number being constructed */
+	int exponent = 0; /* exponent of the significand (distinct from exponent
+			     part) */
 	enum b10sign exp_sign = SPOSITIVE; /* sign of exponent part */
 	unsigned int exp_value = 0; /* value of the exponent part */
 	unsigned int digit_count = 0; /* has an actual digit been seen */
@@ -87,7 +90,10 @@ svgtiny_parse_number(const char *text, const char **textend, float *value)
 		switch (state) {
 		case STATE_WHITESPACE:
 			switch (*cur) {
-			case 0x9: case 0xA: case 0xD: case 0x20:
+			case 0x9:
+			case 0xA:
+			case 0xD:
+			case 0x20:
 				/* skip whitespace */
 				continue;
 
@@ -108,8 +114,16 @@ svgtiny_parse_number(const char *text, const char **textend, float *value)
 				state = STATE_NUMBER;
 				continue;
 
-			case '0': case '1': case '2': case '3': case '4':
-			case '5': case '6': case '7': case '8':	case '9':
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
 				significand = (*cur - '0');
 				digit_count = 1;
 				state = STATE_NUMBER;
@@ -122,17 +136,27 @@ svgtiny_parse_number(const char *text, const char **textend, float *value)
 			break;
 
 		case STATE_NUMBER:
-			switch(*cur) {
+			switch (*cur) {
 			case '.':
 				state = STATE_FRACT;
 				continue;
 
-			case '0': case '1': case '2': case '3':	case '4':
-			case '5': case '6': case '7': case '8':	case '9':
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
 				digit_count += 1;
 				if (significand < SIGNIFICAND_MAX) {
-					/* still space to acumulate digits in the significand */
-					significand = (significand * 10) + (*cur - '0');
+					/* still space to acumulate digits in
+					 * the significand */
+					significand = (significand * 10) +
+						      (*cur - '0');
 				} else {
 					/* significand has accumulated all the
 					 * digits it can so just extend the
@@ -144,9 +168,9 @@ svgtiny_parse_number(const char *text, const char **textend, float *value)
 			case 'e':
 			case 'E':
 				if (digit_count == 0) {
-					/* number has no digits before exponent which is a syntax error */
+					/* number has no digits before exponent
+					 * which is a syntax error */
 					goto svgtiny_parse_number_end;
-
 				}
 				state = STATE_SIGNEXPONENT;
 				continue;
@@ -159,13 +183,23 @@ svgtiny_parse_number(const char *text, const char **textend, float *value)
 			break;
 
 		case STATE_FRACT:
-			switch(*cur) {
-			case '0': case '1': case '2': case '3':	case '4':
-			case '5': case '6': case '7': case '8':	case '9':
+			switch (*cur) {
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
 				digit_count += 1;
 				if (significand < SIGNIFICAND_MAX) {
-					/* still space to acumulate digits in the significand */
-					significand = (significand * 10) + (*cur - '0');
+					/* still space to acumulate digits in
+					 * the significand */
+					significand = (significand * 10) +
+						      (*cur - '0');
 					exponent -= 1;
 				}
 
@@ -174,9 +208,9 @@ svgtiny_parse_number(const char *text, const char **textend, float *value)
 			case 'e':
 			case 'E':
 				if (digit_count == 0) {
-					/* number has no digits before exponent which is a syntax error */
+					/* number has no digits before exponent
+					 * which is a syntax error */
 					goto svgtiny_parse_number_end;
-
 				}
 				state = STATE_SIGNEXPONENT;
 				continue;
@@ -184,12 +218,11 @@ svgtiny_parse_number(const char *text, const char **textend, float *value)
 			default:
 				/* anything else completes conversion */
 				goto svgtiny_parse_number_end;
-
 			}
 			break;
 
 		case STATE_SIGNEXPONENT:
-			switch(*cur) {
+			switch (*cur) {
 			case '-':
 				exp_sign = SNEGATIVE;
 				state = STATE_EXPONENT;
@@ -199,11 +232,21 @@ svgtiny_parse_number(const char *text, const char **textend, float *value)
 				state = STATE_EXPONENT;
 				continue;
 
-			case '0': case '1': case '2': case '3':	case '4':
-			case '5': case '6': case '7': case '8':	case '9':
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
 				if (exp_value < 1000) {
-					/* still space to acumulate digits in the exponent value */
-					exp_value = (exp_value * 10) + (*cur - '0');
+					/* still space to acumulate digits in
+					 * the exponent value */
+					exp_value = (exp_value * 10) +
+						    (*cur - '0');
 				}
 				state = STATE_EXPONENT;
 				continue;
@@ -211,17 +254,26 @@ svgtiny_parse_number(const char *text, const char **textend, float *value)
 			default:
 				/* anything else completes conversion */
 				goto svgtiny_parse_number_end;
-
 			}
 			break;
 
 		case STATE_EXPONENT:
-			switch(*cur) {
-			case '0': case '1': case '2': case '3':	case '4':
-			case '5': case '6': case '7': case '8':	case '9':
+			switch (*cur) {
+			case '0':
+			case '1':
+			case '2':
+			case '3':
+			case '4':
+			case '5':
+			case '6':
+			case '7':
+			case '8':
+			case '9':
 				if (exp_value < 1000) {
-					/* still space to acumulate digits in the exponent value */
-					exp_value = (exp_value * 10) + (*cur - '0');
+					/* still space to acumulate digits in
+					 * the exponent value */
+					exp_value = (exp_value * 10) +
+						    (*cur - '0');
 				}
 
 				continue;
@@ -229,7 +281,6 @@ svgtiny_parse_number(const char *text, const char **textend, float *value)
 			default:
 				/* anything else completes conversion */
 				goto svgtiny_parse_number_end;
-
 			}
 			break;
 		}
@@ -316,11 +367,9 @@ static inline void advance_hex(const char **cursor, const char *textend)
  */
 static inline void advance_id(const char **cursor, const char *textend)
 {
-	while((*cursor) < textend) {
-		if ((**cursor == 0x20) ||
-		    (**cursor == 0x09) ||
-		    (**cursor == 0x0A) ||
-		    (**cursor == 0x0D) ||
+	while ((*cursor) < textend) {
+		if ((**cursor == 0x20) || (**cursor == 0x09) ||
+		    (**cursor == 0x0A) || (**cursor == 0x0D) ||
 		    (**cursor == ')')) {
 			break;
 		}
@@ -328,14 +377,14 @@ static inline void advance_id(const char **cursor, const char *textend)
 	}
 }
 
-static inline void advance_property_name(const char **cursor, const char *textend)
+static inline void
+advance_property_name(const char **cursor, const char *textend)
 {
 	while ((*cursor) < textend) {
 		if (((**cursor < 0x30 /* 0 */) || (**cursor > 0x39 /* 9 */)) &&
 		    ((**cursor < 0x41 /* A */) || (**cursor > 0x5A /* Z */)) &&
 		    ((**cursor < 0x61 /* a */) || (**cursor > 0x7A /* z */)) &&
-		    (**cursor != '-') &&
-		    (**cursor != '_')) {
+		    (**cursor != '-') && (**cursor != '_')) {
 			break;
 		}
 		(*cursor)++;
@@ -348,11 +397,10 @@ static inline void advance_property_name(const char **cursor, const char *texten
  *
  * This limits url links to identifiers within the document.
  */
-static inline svgtiny_code
-parse_url_fragment(const char **text,
-		   const char *textend,
-		   const char **idout,
-		   int *idlenout)
+static inline svgtiny_code parse_url_fragment(const char **text,
+					      const char *textend,
+					      const char **idout,
+					      int *idlenout)
 {
 	const char *cursor = *text;
 	const char *idstart = cursor;
@@ -389,11 +437,10 @@ parse_url_fragment(const char **text,
 /**
  * get an element in the document from a url
  */
-static svgtiny_code
-element_from_url(const char **url,
-		 size_t urllen,
-		 struct svgtiny_parse_state *state,
-		 dom_element **element)
+static svgtiny_code element_from_url(const char **url,
+				     size_t urllen,
+				     struct svgtiny_parse_state *state,
+				     dom_element **element)
 {
 	svgtiny_code res;
 	dom_exception exc;
@@ -449,13 +496,13 @@ apply_transform(enum transform_type transform,
 		float *paramv,
 		struct svgtiny_transformation_matrix *tm)
 {
-        /* initialise matrix to cartesian standard basis
+	/* initialise matrix to cartesian standard basis
 	 * | 1 0 0 |
 	 * | 0 1 0 |
 	 * | 0 0 1 |
 	 */
 	float a = 1, b = 0, c = 0, d = 1, e = 0, f = 0; /* parameter matrix */
-	float za,zb,zc,zd,ze,zf; /* temporary matrix */
+	float za, zb, zc, zd, ze, zf; /* temporary matrix */
 	float angle;
 
 	/* there must be at least one parameter */
@@ -469,12 +516,12 @@ apply_transform(enum transform_type transform,
 			/* too few parameters */
 			return svgtiny_SVG_ERROR;
 		}
-		a=paramv[0];
-		b=paramv[1];
-		c=paramv[2];
-		d=paramv[3];
-		e=paramv[4];
-		f=paramv[5];
+		a = paramv[0];
+		b = paramv[1];
+		c = paramv[2];
+		d = paramv[3];
+		e = paramv[4];
+		f = paramv[5];
 		break;
 
 	case TRANSFORM_TRANSLATE:
@@ -499,12 +546,10 @@ apply_transform(enum transform_type transform,
 		d = cos(angle);
 
 		if (paramc == 3) {
-			e = -paramv[1] * cos(angle) +
-				paramv[2] * sin(angle) +
-				paramv[1];
-			f = -paramv[1] * sin(angle) -
-				paramv[2] * cos(angle) +
-				paramv[2];
+			e = -paramv[1] * cos(angle) + paramv[2] * sin(angle) +
+			    paramv[1];
+			f = -paramv[1] * sin(angle) - paramv[2] * cos(angle) +
+			    paramv[2];
 		} else if (paramc == 2) {
 			/* one or three paramters only*/
 			return svgtiny_SVG_ERROR;
@@ -548,8 +593,8 @@ apply_transform(enum transform_type transform,
 /* determine transform function */
 static inline svgtiny_code
 parse_transform_function(const char **cursor,
-		     const char *textend,
-		     enum transform_type *transformout)
+			 const char *textend,
+			 enum transform_type *transformout)
 {
 	const char *tokstart;
 	size_t toklen;
@@ -557,22 +602,14 @@ parse_transform_function(const char **cursor,
 
 	tokstart = *cursor;
 	while ((*cursor) < textend) {
-		if ((**cursor != 0x61 /* a */) &&
-		    (**cursor != 0x65 /* e */) &&
-		    (**cursor != 0x74 /* t */) &&
-		    (**cursor != 0x73 /* s */) &&
-		    (**cursor != 0x72 /* r */) &&
-		    (**cursor != 0x6B /* k */) &&
-		    (**cursor != 0x6C /* l */) &&
-		    (**cursor != 0x77 /* w */) &&
-		    (**cursor != 0x63 /* c */) &&
-		    (**cursor != 0x69 /* i */) &&
-		    (**cursor != 0x6D /* m */) &&
-		    (**cursor != 0x6E /* n */) &&
-		    (**cursor != 0x6F /* o */) &&
-		    (**cursor != 0x78 /* x */) &&
-		    (**cursor != 0x58 /* X */) &&
-		    (**cursor != 0x59 /* Y */)) {
+		if ((**cursor != 0x61 /* a */) && (**cursor != 0x65 /* e */) &&
+		    (**cursor != 0x74 /* t */) && (**cursor != 0x73 /* s */) &&
+		    (**cursor != 0x72 /* r */) && (**cursor != 0x6B /* k */) &&
+		    (**cursor != 0x6C /* l */) && (**cursor != 0x77 /* w */) &&
+		    (**cursor != 0x63 /* c */) && (**cursor != 0x69 /* i */) &&
+		    (**cursor != 0x6D /* m */) && (**cursor != 0x6E /* n */) &&
+		    (**cursor != 0x6F /* o */) && (**cursor != 0x78 /* x */) &&
+		    (**cursor != 0x58 /* X */) && (**cursor != 0x59 /* Y */)) {
 			break;
 		}
 		(*cursor)++;
@@ -616,15 +653,17 @@ parse_transform_function(const char **cursor,
  *
  * \param cursor current cursor
  * \param textend end of buffer
- * \param paramc max number of permitted parameters on input and number found on output
- * \param paramv vector of float point numbers to put result in must have space for paramc entries
- * \return svgtiny_OK and paramc and paramv updated or svgtiny_SVG_ERROR on error
+ * \param paramc max number of permitted parameters on input and number found on
+ * output
+ * \param paramv vector of float point numbers to put result in must have space
+ * for paramc entries
+ * \return svgtiny_OK and paramc and paramv updated or svgtiny_SVG_ERROR on
+ * error
  */
-static inline svgtiny_code
-parse_transform_parameters(const char **cursor,
-			   const char *textend,
-			   int *paramc,
-			   float *paramv)
+static inline svgtiny_code parse_transform_parameters(const char **cursor,
+						      const char *textend,
+						      int *paramc,
+						      float *paramv)
 {
 	int param_idx = 0;
 	int param_max;
@@ -633,9 +672,11 @@ parse_transform_parameters(const char **cursor,
 
 	param_max = *paramc;
 
-	for(param_idx = 0; param_idx < param_max; param_idx++) {
+	for (param_idx = 0; param_idx < param_max; param_idx++) {
 		tokend = textend;
-		err = svgtiny_parse_number(*cursor, &tokend, &paramv[param_idx]);
+		err = svgtiny_parse_number(*cursor,
+					   &tokend,
+					   &paramv[param_idx]);
 		if (err != svgtiny_OK) {
 			/* failed to parse number */
 			return err;
@@ -685,7 +726,7 @@ static inline unsigned int hexd_to_int(const char *digit)
 
 	if ((*digit >= 0x30 /* 0 */) && (*digit <= 0x39 /* 9 */)) {
 		value -= 0x30;
-	} else if ((*digit >= 0x41 /* A */) && (*digit <= 0x46 /* F */) ) {
+	} else if ((*digit >= 0x41 /* A */) && (*digit <= 0x46 /* F */)) {
 		value -= 0x37;
 	} else if (((*digit >= 0x61 /* a */) && (*digit <= 0x66 /* f */))) {
 		value -= 0x57;
@@ -710,7 +751,7 @@ static inline unsigned int hexdd_to_int(const char *digits)
 static inline svgtiny_code
 parse_hex_color(const char **cursor, const char *textend, svgtiny_colour *c)
 {
-	unsigned int r, g, b, a=0xff;
+	unsigned int r, g, b, a = 0xff;
 	const char *tokstart;
 
 	/* hex-color */
@@ -774,10 +815,9 @@ parse_hex_color(const char **cursor, const char *textend, svgtiny_colour *c)
  *
  * The only actual supported color function is rgb
  */
-static inline svgtiny_code
-parse_color_function(const char **cursorout,
-		     const char *textend,
-		     svgtiny_colour *c)
+static inline svgtiny_code parse_color_function(const char **cursorout,
+						const char *textend,
+						svgtiny_colour *c)
 {
 	const char *cursor = *cursorout;
 	const char *argend = cursor;
@@ -792,9 +832,7 @@ parse_color_function(const char **cursorout,
 
 	if (((cursor[0] != 'r') && (cursor[0] != 'R')) ||
 	    ((cursor[1] != 'g') && (cursor[1] != 'G')) ||
-	    ((cursor[2] != 'b') && (cursor[2] != 'B')) ||
-	    (cursor[3] != '('))
-	{
+	    ((cursor[2] != 'b') && (cursor[2] != 'B')) || (cursor[3] != '(')) {
 		/* only function currently supported is rgb */
 		return svgtiny_SVG_ERROR;
 	}
@@ -879,16 +917,14 @@ parse_paint_url(const char **cursorout,
 
 	if (((cursor[0] != 'u') && (cursor[0] != 'U')) ||
 	    ((cursor[1] != 'r') && (cursor[1] != 'R')) ||
-	    ((cursor[2] != 'l') && (cursor[2] != 'L')) ||
-	    (cursor[3] != '('))
-	{
+	    ((cursor[2] != 'l') && (cursor[2] != 'L')) || (cursor[3] != '(')) {
 		/* only function currently supported is url */
 		return svgtiny_SVG_ERROR;
 	}
 	cursor += 4;
 
 	res = element_from_url(&cursor, textend - cursor, state, &ref);
-	if (res != svgtiny_OK){
+	if (res != svgtiny_OK) {
 		return res;
 	}
 	if (ref == NULL) {
@@ -926,9 +962,7 @@ svgtiny_code svgtiny_parse_none(const char *cursor, const char *textend)
 		/* too short to be none */
 		return svgtiny_SVG_ERROR;
 	}
-	if (cursor[0] != 'n' ||
-	    cursor[1] != 'o' ||
-	    cursor[2] != 'n' ||
+	if (cursor[0] != 'n' || cursor[1] != 'o' || cursor[2] != 'n' ||
 	    cursor[3] != 'e') {
 		/* keyword doesnt match */
 		return svgtiny_SVG_ERROR;
@@ -1015,24 +1049,24 @@ svgtiny_parse_offset(const char *text, size_t textlen, float *offset)
  */
 static inline svgtiny_code
 dispatch_op(const char *value,
-            size_t value_len,
-            struct svgtiny_parse_state *state,
-            struct svgtiny_parse_internal_operation *styleop)
+	    size_t value_len,
+	    struct svgtiny_parse_state *state,
+	    struct svgtiny_parse_internal_operation *styleop)
 {
-    float parse_len;
-    svgtiny_code res = svgtiny_OK;
+	float parse_len;
+	svgtiny_code res = svgtiny_OK;
 
-    switch (styleop->operation) {
+	switch (styleop->operation) {
 	case SVGTIOP_NONE:
 		res = svgtiny_SVG_ERROR;
 		break;
 
 	case SVGTIOP_PAINT:
 		res = svgtiny_parse_paint(value,
-				    value_len,
-				    styleop->param,
-				    state,
-				    styleop->value);
+					  value_len,
+					  styleop->param,
+					  state,
+					  styleop->value);
 		break;
 
 	case SVGTIOP_COLOR:
@@ -1041,112 +1075,117 @@ dispatch_op(const char *value,
 
 	case SVGTIOP_LENGTH:
 		res = svgtiny_parse_length(value,
-				     value_len,
-				     *((int *)styleop->param),
-				     styleop->value);
+					   value_len,
+					   *((int *)styleop->param),
+					   styleop->value);
 		break;
 
 	case SVGTIOP_INTLENGTH:
-		res = svgtiny_parse_length(value,
-				     value_len,
-				     *((int *)styleop->param),
-				     &parse_len);
+		res = svgtiny_parse_length(
+			value, value_len, *((int *)styleop->param), &parse_len);
 		*((int *)styleop->value) = parse_len;
 		break;
 
-    case SVGTIOP_OFFSET:
-        res = svgtiny_parse_offset(value, value_len, styleop->value);
-        break;
-    case SVGTIOP_NUMBER: {
-        const char *cursor = value;
-        const char *numend = value + value_len;
-        float number = 0;
-        advance_whitespace(&cursor, numend);
-        res = svgtiny_parse_number(cursor, &numend, &number);
-        if (res == svgtiny_OK) {
-            *((float *)styleop->value) = number;
-        }
-        break;
-    }
-    case SVGTIOP_KEYWORD: {
-        const struct svgtiny_keyword_map *map = (const struct svgtiny_keyword_map *)styleop->param;
-        const char *cursor = value;
-        const char *end = value + value_len;
-        /* trim leading whitespace */
-        advance_whitespace(&cursor, end);
-        while (end > cursor && svg_is_whitespace(end[-1])) {
-            end--;
-        }
-        size_t vlen = end - cursor;
-        bool matched = false;
-        while (map && map->keyword) {
-            size_t klen = strlen(map->keyword);
-            if (klen == vlen && memcmp(cursor, map->keyword, vlen) == 0) {
-                *((int *)styleop->value) = map->value;
-                matched = true;
-                break;
-            }
-            map++;
-        }
-        res = matched ? svgtiny_OK : svgtiny_SVG_ERROR;
-        break;
-    }
-    case SVGTIOP_DASHARRAY: {
-        const char *cursor = value;
-        const char *textend = value + value_len;
-        advance_whitespace(&cursor, textend);
-        struct svgtiny_dasharray_dest *dest = (struct svgtiny_dasharray_dest *)styleop->value;
-        float *arr = NULL;
-        unsigned int count = 0;
-        unsigned int cap = 0;
-        svgtiny_code err = svgtiny_OK;
-        err = svgtiny_parse_none(cursor, textend);
-        if (err == svgtiny_OK) {
-            if (dest && dest->arrayp && dest->countp) {
-                *(dest->arrayp) = NULL;
-                *(dest->countp) = 0;
-            }
-            break;
-        }
-        while (cursor < textend) {
-            const char *numend = textend;
-            float number;
-            err = svgtiny_parse_number(cursor, &numend, &number);
-            if (err != svgtiny_OK) {
-                break;
-            }
-            if (count == cap) {
-                unsigned int newcap = cap == 0 ? 4 : cap * 2;
-                float *narr = realloc(arr, newcap * sizeof(float));
-                if (narr == NULL) {
-                    free(arr);
-                    arr = NULL;
-                    count = 0;
-                    cap = 0;
-                    break;
-                }
-                arr = narr;
-                cap = newcap;
-            }
-            arr[count++] = number;
-            cursor = numend;
-            while (cursor < textend && (*cursor == ' ' || *cursor == '\t' || *cursor == '\r' || *cursor == '\n' || *cursor == ',')) {
-                cursor++;
-            }
-        }
-        if (dest && dest->arrayp && dest->countp) {
-            *(dest->arrayp) = arr;
-            *(dest->countp) = count;
-        } else {
-            free(arr);
-        }
-        break;
-    }
-    }
-    if (res == svgtiny_OK && styleop->mark != NULL) {
-        *(styleop->mark) = true;
-    }
-    return res;
+	case SVGTIOP_OFFSET:
+		res = svgtiny_parse_offset(value, value_len, styleop->value);
+		break;
+	case SVGTIOP_NUMBER: {
+		const char *cursor = value;
+		const char *numend = value + value_len;
+		float number = 0;
+		advance_whitespace(&cursor, numend);
+		res = svgtiny_parse_number(cursor, &numend, &number);
+		if (res == svgtiny_OK) {
+			*((float *)styleop->value) = number;
+		}
+		break;
+	}
+	case SVGTIOP_KEYWORD: {
+		const struct svgtiny_keyword_map *map =
+			(const struct svgtiny_keyword_map *)styleop->param;
+		const char *cursor = value;
+		const char *end = value + value_len;
+		/* trim leading whitespace */
+		advance_whitespace(&cursor, end);
+		while (end > cursor && svg_is_whitespace(end[-1])) {
+			end--;
+		}
+		size_t vlen = end - cursor;
+		bool matched = false;
+		while (map && map->keyword) {
+			size_t klen = strlen(map->keyword);
+			if (klen == vlen &&
+			    memcmp(cursor, map->keyword, vlen) == 0) {
+				*((int *)styleop->value) = map->value;
+				matched = true;
+				break;
+			}
+			map++;
+		}
+		res = matched ? svgtiny_OK : svgtiny_SVG_ERROR;
+		break;
+	}
+	case SVGTIOP_DASHARRAY: {
+		const char *cursor = value;
+		const char *textend = value + value_len;
+		advance_whitespace(&cursor, textend);
+		struct svgtiny_dasharray_dest *dest =
+			(struct svgtiny_dasharray_dest *)styleop->value;
+		float *arr = NULL;
+		unsigned int count = 0;
+		unsigned int cap = 0;
+		svgtiny_code err = svgtiny_OK;
+		err = svgtiny_parse_none(cursor, textend);
+		if (err == svgtiny_OK) {
+			if (dest && dest->arrayp && dest->countp) {
+				*(dest->arrayp) = NULL;
+				*(dest->countp) = 0;
+			}
+			break;
+		}
+		while (cursor < textend) {
+			const char *numend = textend;
+			float number;
+			err = svgtiny_parse_number(cursor, &numend, &number);
+			if (err != svgtiny_OK) {
+				break;
+			}
+			if (count == cap) {
+				unsigned int newcap = cap == 0 ? 4 : cap * 2;
+				float *narr = realloc(arr,
+						      newcap * sizeof(float));
+				if (narr == NULL) {
+					free(arr);
+					arr = NULL;
+					count = 0;
+					cap = 0;
+					break;
+				}
+				arr = narr;
+				cap = newcap;
+			}
+			arr[count++] = number;
+			cursor = numend;
+			while (cursor < textend &&
+			       (*cursor == ' ' || *cursor == '\t' ||
+				*cursor == '\r' || *cursor == '\n' ||
+				*cursor == ',')) {
+				cursor++;
+			}
+		}
+		if (dest && dest->arrayp && dest->countp) {
+			*(dest->arrayp) = arr;
+			*(dest->countp) = count;
+		} else {
+			free(arr);
+		}
+		break;
+	}
+	}
+	if (res == svgtiny_OK && styleop->mark != NULL) {
+		*(styleop->mark) = true;
+	}
+	return res;
 }
 
 /**
@@ -1199,9 +1238,12 @@ parse_declaration(const char *declaration,
 	/* search style operations for a match */
 	for (styleop = styleops; styleop->key != NULL; styleop++) {
 		if ((dom_string_byte_length(styleop->key) == key_len) &&
-		    (memcmp(declaration, dom_string_data(styleop->key), key_len) == 0)) {
+		    (memcmp(declaration,
+			    dom_string_data(styleop->key),
+			    key_len) == 0)) {
 			/* found the operation, stop iterating */
-			return dispatch_op(cursor, end - cursor, state, styleop);
+			return dispatch_op(
+				cursor, end - cursor, state, styleop);
 		}
 	}
 
@@ -1226,14 +1268,14 @@ parse_declaration(const char *declaration,
  * This is a series of numbers separated by 0 (started by sign)
  * or more tabs (0x9), spaces (0x20), carrige returns (0xD) and newlines (0xA)
  * there may also be a comma in the separating whitespace after the preamble
- * A number is defined as https://www.w3.org/TR/css-syntax-3/#typedef-number-token
+ * A number is defined as
+ * https://www.w3.org/TR/css-syntax-3/#typedef-number-token
  *
  */
-svgtiny_code
-svgtiny_parse_poly_points(const char *text,
-			  size_t textlen,
-			  float *pointv,
-			  unsigned int *pointc)
+svgtiny_code svgtiny_parse_poly_points(const char *text,
+				       size_t textlen,
+				       float *pointv,
+				       unsigned int *pointc)
 {
 	const char *textend = text + textlen;
 	const char *numberend = NULL;
@@ -1246,7 +1288,7 @@ svgtiny_parse_poly_points(const char *text,
 	*pointc = 0;
 
 	while (cursor < textend) {
-		numberend=textend;
+		numberend = textend;
 		err = svgtiny_parse_number(cursor, &numberend, &point);
 		if (err != svgtiny_OK) {
 			break;
@@ -1260,7 +1302,7 @@ svgtiny_parse_poly_points(const char *text,
 			pointv[(*pointc)++] = point;
 		} else {
 			even = 1;
-			oddpoint=point;
+			oddpoint = point;
 		}
 
 		/* advance cursor past whitespace (or comma) */
@@ -1274,17 +1316,17 @@ svgtiny_parse_poly_points(const char *text,
 /**
  * Parse a length as a number of pixels.
  */
-svgtiny_code
-svgtiny_parse_length(const char *text,
-		     size_t textlen,
-		     int viewport_size,
-		     float *length)
+svgtiny_code svgtiny_parse_length(const char *text,
+				  size_t textlen,
+				  int viewport_size,
+				  float *length)
 {
 	svgtiny_code err;
 	float number;
 	const char *unit;
 	int unitlen;
-	float font_size = 20; /*css_len2px(&state.style.font_size.value.length, 0);*/
+	float font_size =
+		20; /*css_len2px(&state.style.font_size.value.length, 0);*/
 
 	unit = text + textlen;
 	err = svgtiny_parse_number(text, &unit, &number);
@@ -1294,9 +1336,9 @@ svgtiny_parse_length(const char *text,
 		unitlen = (text + textlen) - unit;
 	}
 
-    while (unitlen > 0 && svg_is_whitespace(unit[unitlen - 1])) {
-        unitlen--;
-    }
+	while (unitlen > 0 && svg_is_whitespace(unit[unitlen - 1])) {
+		unitlen--;
+	}
 
 	/* decode the unit */
 	*length = 0;
@@ -1400,16 +1442,15 @@ svgtiny_parse_length(const char *text,
  *
  *
  */
-svgtiny_code
-svgtiny_parse_transform(const char *text,
-			size_t textlen,
-			struct svgtiny_transformation_matrix *tm)
+svgtiny_code svgtiny_parse_transform(const char *text,
+				     size_t textlen,
+				     struct svgtiny_transformation_matrix *tm)
 {
 	const char *cursor = text; /* text cursor */
 	const char *textend = text + textlen;
 	enum transform_type transform = TRANSFORM_UNK;
 	/* mapping of maimum number of parameters for each transform */
-	const int param_max[]={0,6,2,2,3,1,1};
+	const int param_max[] = {0, 6, 2, 2, 3, 1, 1};
 	const char *paramend;
 	int paramc;
 	float paramv[6];
@@ -1436,8 +1477,9 @@ svgtiny_parse_transform(const char *text,
 		}
 		cursor++;
 
-		paramc=param_max[transform];
-		err = parse_transform_parameters(&cursor, textend, &paramc, paramv);
+		paramc = param_max[transform];
+		err = parse_transform_parameters(
+			&cursor, textend, &paramc, paramv);
 		if (err != svgtiny_OK) {
 			/* invalid parameters */
 			goto transform_parse_complete;
@@ -1521,12 +1563,11 @@ svgtiny_parse_color(const char *text, size_t textlen, svgtiny_colour *c)
  *
  * <min-x>,? <min-y>,? <width>,? <height>
  */
-svgtiny_code
-svgtiny_parse_viewbox(const char *text,
-		      size_t textlen,
-		      float viewport_width,
-		      float viewport_height,
-		      struct svgtiny_transformation_matrix *tm)
+svgtiny_code svgtiny_parse_viewbox(const char *text,
+				   size_t textlen,
+				   float viewport_width,
+				   float viewport_height,
+				   struct svgtiny_transformation_matrix *tm)
 {
 	const char *cursor = text; /* text cursor */
 	const char *textend = text + textlen;
@@ -1540,7 +1581,9 @@ svgtiny_parse_viewbox(const char *text,
 
 	for (paramidx = 0; paramidx < 3; paramidx++) {
 		paramend = textend;
-		res = svgtiny_parse_number(cursor, &paramend, &paramv[paramidx]);
+		res = svgtiny_parse_number(cursor,
+					   &paramend,
+					   &paramv[paramidx]);
 		if (res != svgtiny_OK) {
 			/* failed to parse number */
 			return res;
@@ -1601,8 +1644,7 @@ svgtiny_parse_inline_style(dom_element *node,
 		advance_whitespace(&cursor, textend);
 		declaration_start = cursor;
 		while (cursor < textend) {
-			if ((*cursor == ';') &&
-			    (*(cursor - 1) != '\\')) {
+			if ((*cursor == ';') && (*(cursor - 1) != '\\')) {
 				break;
 			}
 			cursor++;
@@ -1652,10 +1694,9 @@ svgtiny_parse_attributes(dom_element *node,
  * \param element result element pointer or NULL if no matching element
  * \return svgtiny_OK and element updated else error code
  */
-svgtiny_code
-svgtiny_parse_element_from_href(dom_element *node,
-				struct svgtiny_parse_state *state,
-				dom_element **element)
+svgtiny_code svgtiny_parse_element_from_href(dom_element *node,
+					     struct svgtiny_parse_state *state,
+					     dom_element **element)
 {
 	dom_exception exc;
 	dom_string *attr;
@@ -1678,10 +1719,8 @@ svgtiny_parse_element_from_href(dom_element *node,
 		}
 
 		/* attempt to get href attribute in xlink namespace */
-		exc = dom_element_get_attribute_ns(node,
-						   xmlns_xlink,
-						   state->interned_href,
-						   &attr);
+		exc = dom_element_get_attribute_ns(
+			node, xmlns_xlink, state->interned_href, &attr);
 		dom_string_unref(xmlns_xlink);
 		if (exc != DOM_NO_ERR) {
 			return svgtiny_LIBDOM_ERROR;
@@ -1694,10 +1733,8 @@ svgtiny_parse_element_from_href(dom_element *node,
 	}
 
 	url = dom_string_data(attr);
-	res = element_from_url(&url,
-			       dom_string_byte_length(attr),
-			       state,
-			       element);
+	res = element_from_url(
+		&url, dom_string_byte_length(attr), state, element);
 
 	dom_string_unref(attr);
 	return res;

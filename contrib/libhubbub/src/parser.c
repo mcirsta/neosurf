@@ -22,9 +22,9 @@
  * Hubbub parser object
  */
 struct hubbub_parser {
-	parserutils_inputstream *stream;	/**< Input stream instance */
-	hubbub_tokeniser *tok;		/**< Tokeniser instance */
-	hubbub_treebuilder *tb;		/**< Treebuilder instance */
+	parserutils_inputstream *stream; /**< Input stream instance */
+	hubbub_tokeniser *tok; /**< Tokeniser instance */
+	hubbub_treebuilder *tb; /**< Treebuilder instance */
 };
 
 /**
@@ -38,8 +38,8 @@ struct hubbub_parser {
  *         HUBBUB_NOMEM on memory exhaustion,
  *         HUBBUB_BADENCODING if \p enc is unsupported
  */
-hubbub_error hubbub_parser_create(const char *enc, bool fix_enc,
-		hubbub_parser **parser)
+hubbub_error
+hubbub_parser_create(const char *enc, bool fix_enc, hubbub_parser **parser)
 {
 	parserutils_error perror;
 	hubbub_error error;
@@ -55,8 +55,8 @@ hubbub_error hubbub_parser_create(const char *enc, bool fix_enc,
 	/* If we have an encoding and we're permitted to fix up likely broken
 	 * ones, then attempt to do so. */
 	if (enc != NULL && fix_enc == true) {
-		uint16_t mibenum = parserutils_charset_mibenum_from_name(enc,
-				strlen(enc));
+		uint16_t mibenum = parserutils_charset_mibenum_from_name(
+			enc, strlen(enc));
 
 		if (mibenum != 0) {
 			hubbub_charset_fix_charset(&mibenum);
@@ -65,9 +65,11 @@ hubbub_error hubbub_parser_create(const char *enc, bool fix_enc,
 		}
 	}
 
-	perror = parserutils_inputstream_create(enc,
+	perror = parserutils_inputstream_create(
+		enc,
 		enc != NULL ? HUBBUB_CHARSET_CONFIDENT : HUBBUB_CHARSET_UNKNOWN,
-		hubbub_charset_extract, &p->stream);
+		hubbub_charset_extract,
+		&p->stream);
 	if (perror != PARSERUTILS_OK) {
 		free(p);
 		return hubbub_error_from_parserutils_error(perror);
@@ -124,8 +126,8 @@ hubbub_error hubbub_parser_destroy(hubbub_parser *parser)
  * \return HUBBUB_OK on success, appropriate error otherwise
  */
 hubbub_error hubbub_parser_setopt(hubbub_parser *parser,
-		hubbub_parser_opttype type,
-		hubbub_parser_optparams *params)
+				  hubbub_parser_opttype type,
+				  hubbub_parser_optparams *params)
 {
 	hubbub_error result = HUBBUB_OK;
 
@@ -140,59 +142,67 @@ hubbub_error hubbub_parser_setopt(hubbub_parser *parser,
 			hubbub_treebuilder_destroy(parser->tb);
 			parser->tb = NULL;
 		}
-		result = hubbub_tokeniser_setopt(parser->tok,
-				HUBBUB_TOKENISER_TOKEN_HANDLER,
-				(hubbub_tokeniser_optparams *) params);
+		result = hubbub_tokeniser_setopt(
+			parser->tok,
+			HUBBUB_TOKENISER_TOKEN_HANDLER,
+			(hubbub_tokeniser_optparams *)params);
 		break;
 
 	case HUBBUB_PARSER_ERROR_HANDLER:
 		/* The error handler does not cascade, so tell both the
 		 * treebuilder (if extant) and the tokeniser. */
 		if (parser->tb != NULL) {
-			result = hubbub_treebuilder_setopt(parser->tb,
-					HUBBUB_TREEBUILDER_ERROR_HANDLER,
-					(hubbub_treebuilder_optparams *) params);
+			result = hubbub_treebuilder_setopt(
+				parser->tb,
+				HUBBUB_TREEBUILDER_ERROR_HANDLER,
+				(hubbub_treebuilder_optparams *)params);
 		}
 		if (result == HUBBUB_OK) {
-			result = hubbub_tokeniser_setopt(parser->tok,
-					HUBBUB_TOKENISER_ERROR_HANDLER,
-					(hubbub_tokeniser_optparams *) params);
+			result = hubbub_tokeniser_setopt(
+				parser->tok,
+				HUBBUB_TOKENISER_ERROR_HANDLER,
+				(hubbub_tokeniser_optparams *)params);
 		}
 		break;
 
 	case HUBBUB_PARSER_CONTENT_MODEL:
-		result = hubbub_tokeniser_setopt(parser->tok,
-				HUBBUB_TOKENISER_CONTENT_MODEL,
-				(hubbub_tokeniser_optparams *) params);
+		result = hubbub_tokeniser_setopt(
+			parser->tok,
+			HUBBUB_TOKENISER_CONTENT_MODEL,
+			(hubbub_tokeniser_optparams *)params);
 		break;
 
 	case HUBBUB_PARSER_PAUSE:
-		result = hubbub_tokeniser_setopt(parser->tok,
-				HUBBUB_TOKENISER_PAUSE,
-				(hubbub_tokeniser_optparams *) params);
+		result = hubbub_tokeniser_setopt(
+			parser->tok,
+			HUBBUB_TOKENISER_PAUSE,
+			(hubbub_tokeniser_optparams *)params);
 		break;
 
 	case HUBBUB_PARSER_TREE_HANDLER:
 		if (parser->tb != NULL) {
-			result = hubbub_treebuilder_setopt(parser->tb,
-					HUBBUB_TREEBUILDER_TREE_HANDLER,
-					(hubbub_treebuilder_optparams *) params);
+			result = hubbub_treebuilder_setopt(
+				parser->tb,
+				HUBBUB_TREEBUILDER_TREE_HANDLER,
+				(hubbub_treebuilder_optparams *)params);
 		}
 		break;
 
 	case HUBBUB_PARSER_DOCUMENT_NODE:
 		if (parser->tb != NULL) {
-			result = hubbub_treebuilder_setopt(parser->tb,
-					HUBBUB_TREEBUILDER_DOCUMENT_NODE,
-					(hubbub_treebuilder_optparams *) params);
+			result = hubbub_treebuilder_setopt(
+				parser->tb,
+				HUBBUB_TREEBUILDER_DOCUMENT_NODE,
+				(hubbub_treebuilder_optparams *)params);
 		}
 		break;
 
 	case HUBBUB_PARSER_ENABLE_SCRIPTING:
 		if (parser->tb != NULL) {
-			result = hubbub_treebuilder_setopt(parser->tb,
-					HUBBUB_TREEBUILDER_ENABLE_SCRIPTING,
-					(hubbub_treebuilder_optparams *) params);
+			result = hubbub_treebuilder_setopt(
+				parser->tb,
+				HUBBUB_TREEBUILDER_ENABLE_SCRIPTING,
+				(hubbub_treebuilder_optparams *)params);
 		}
 		break;
 
@@ -209,14 +219,15 @@ hubbub_error hubbub_parser_setopt(hubbub_parser *parser,
  * Inserts the given data into the input stream ready for parsing but
  * does not cause any additional processing of the input. This is
  * useful to allow hubbub callbacks to add computed data to the input.
- * 
+ *
  * \param parser  Parser instance to use
  * \param data    Data to parse (encoded in UTF-8)
  * \param len     Length, in bytes, of data
  * \return HUBBUB_OK on success, appropriate error otherwise
  */
 hubbub_error hubbub_parser_insert_chunk(hubbub_parser *parser,
-		const uint8_t *data, size_t len)
+					const uint8_t *data,
+					size_t len)
 {
 	if (parser == NULL || data == NULL)
 		return HUBBUB_BADPARM;
@@ -233,7 +244,8 @@ hubbub_error hubbub_parser_insert_chunk(hubbub_parser *parser,
  * \return HUBBUB_OK on success, appropriate error otherwise
  */
 hubbub_error hubbub_parser_parse_chunk(hubbub_parser *parser,
-		const uint8_t *data, size_t len)
+				       const uint8_t *data,
+				       size_t len)
 {
 	parserutils_error perror;
 	hubbub_error error;
@@ -251,8 +263,10 @@ hubbub_error hubbub_parser_parse_chunk(hubbub_parser *parser,
 		 * support. We've not actually processed any data at this
 		 * point so fall back to Windows-1252 and hope for the best
 		 */
-		perror = parserutils_inputstream_change_charset(parser->stream,
-				"Windows-1252", HUBBUB_CHARSET_TENTATIVE);
+		perror = parserutils_inputstream_change_charset(
+			parser->stream,
+			"Windows-1252",
+			HUBBUB_CHARSET_TENTATIVE);
 		/* Under no circumstances should we get here if we've managed
 		 * to process data. If there is a way, I want to know about it
 		 */
@@ -302,8 +316,8 @@ hubbub_error hubbub_parser_completed(hubbub_parser *parser)
  * \param source  Pointer to location to receive charset source
  * \return Pointer to charset name (constant; do not free), or NULL if unknown
  */
-const char *hubbub_parser_read_charset(hubbub_parser *parser,
-		hubbub_charset_source *source)
+const char *
+hubbub_parser_read_charset(hubbub_parser *parser, hubbub_charset_source *source)
 {
 	const char *name;
 	uint32_t src;
@@ -313,8 +327,7 @@ const char *hubbub_parser_read_charset(hubbub_parser *parser,
 
 	name = parserutils_inputstream_read_charset(parser->stream, &src);
 
-	*source = (hubbub_charset_source) src;
+	*source = (hubbub_charset_source)src;
 
 	return name;
 }
-

@@ -45,12 +45,12 @@ struct hashmap_s {
 	 * The parameters to be used for this hashmap
 	 */
 	hashmap_parameters_t *params;
-	
+
 	/**
 	 * The buckets for the hash chains
 	 */
 	hashmap_entry_t **buckets;
-	
+
 	/**
 	 * The number of buckets in this map
 	 */
@@ -63,8 +63,7 @@ struct hashmap_s {
 };
 
 /* Exported function, documented in hashmap.h */
-hashmap_t *
-hashmap_create(hashmap_parameters_t *params)
+hashmap_t *hashmap_create(hashmap_parameters_t *params)
 {
 	hashmap_t *ret = malloc(sizeof(hashmap_t));
 	if (ret == NULL) {
@@ -87,15 +86,13 @@ hashmap_create(hashmap_parameters_t *params)
 }
 
 /* Exported function, documented in hashmap.h */
-void
-hashmap_destroy(hashmap_t *hashmap)
+void hashmap_destroy(hashmap_t *hashmap)
 {
 	uint32_t bucket;
 	hashmap_entry_t *entry;
 
 	for (bucket = 0; bucket < hashmap->bucket_count; bucket++) {
-		for (entry = hashmap->buckets[bucket];
-		     entry != NULL;) {
+		for (entry = hashmap->buckets[bucket]; entry != NULL;) {
 			hashmap_entry_t *next = entry->next;
 			hashmap->params->value_destroy(entry->value);
 			hashmap->params->key_destroy(entry->key);
@@ -109,13 +106,12 @@ hashmap_destroy(hashmap_t *hashmap)
 }
 
 /* Exported function, documented in hashmap.h */
-void *
-hashmap_lookup(hashmap_t *hashmap, void *key)
+void *hashmap_lookup(hashmap_t *hashmap, void *key)
 {
 	uint32_t hash = hashmap->params->key_hash(key);
 	hashmap_entry_t *entry = hashmap->buckets[hash % hashmap->bucket_count];
 
-	for(;entry != NULL; entry = entry->next) {
+	for (; entry != NULL; entry = entry->next) {
 		if (entry->key_hash == hash) {
 			if (hashmap->params->key_eq(key, entry->key)) {
 				return entry->value;
@@ -127,15 +123,14 @@ hashmap_lookup(hashmap_t *hashmap, void *key)
 }
 
 /* Exported function, documented in hashmap.h */
-void *
-hashmap_insert(hashmap_t *hashmap, void *key)
+void *hashmap_insert(hashmap_t *hashmap, void *key)
 {
 	uint32_t hash = hashmap->params->key_hash(key);
 	uint32_t bucket = hash % hashmap->bucket_count;
 	hashmap_entry_t *entry = hashmap->buckets[bucket];
 	void *new_key, *new_value;
 
-	for(;entry != NULL; entry = entry->next) {
+	for (; entry != NULL; entry = entry->next) {
 		if (entry->key_hash == hash) {
 			if (hashmap->params->key_eq(key, entry->key)) {
 				/* This key is already here */
@@ -144,7 +139,8 @@ hashmap_insert(hashmap_t *hashmap, void *key)
 					/* Allocation failed */
 					return NULL;
 				}
-				new_value = hashmap->params->value_alloc(entry->key);
+				new_value = hashmap->params->value_alloc(
+					entry->key);
 				if (new_value == NULL) {
 					/* Allocation failed */
 					hashmap->params->key_destroy(new_key);
@@ -165,7 +161,7 @@ hashmap_insert(hashmap_t *hashmap, void *key)
 	if (entry == NULL) {
 		return NULL;
 	}
-	
+
 	memset(entry, 0, sizeof(*entry));
 
 	entry->key = hashmap->params->key_clone(key);
@@ -202,14 +198,13 @@ err:
 }
 
 /* Exported function, documented in hashmap.h */
-bool
-hashmap_remove(hashmap_t *hashmap, void *key)
+bool hashmap_remove(hashmap_t *hashmap, void *key)
 {
 	uint32_t hash = hashmap->params->key_hash(key);
-	
+
 	hashmap_entry_t *entry = hashmap->buckets[hash % hashmap->bucket_count];
 
-	for(;entry != NULL; entry = entry->next) {
+	for (; entry != NULL; entry = entry->next) {
 		if (entry->key_hash == hash) {
 			if (hashmap->params->key_eq(key, entry->key)) {
 				hashmap->params->value_destroy(entry->value);
@@ -229,12 +224,9 @@ hashmap_remove(hashmap_t *hashmap, void *key)
 }
 
 /* Exported function, documented in hashmap.h */
-bool
-hashmap_iterate(hashmap_t *hashmap, hashmap_iteration_cb_t cb, void *ctx)
+bool hashmap_iterate(hashmap_t *hashmap, hashmap_iteration_cb_t cb, void *ctx)
 {
-	for (uint32_t bucket = 0;
-	     bucket < hashmap->bucket_count;
-	     bucket++) {
+	for (uint32_t bucket = 0; bucket < hashmap->bucket_count; bucket++) {
 		for (hashmap_entry_t *entry = hashmap->buckets[bucket];
 		     entry != NULL;
 		     entry = entry->next) {
@@ -248,8 +240,7 @@ hashmap_iterate(hashmap_t *hashmap, hashmap_iteration_cb_t cb, void *ctx)
 }
 
 /* Exported function, documented in hashmap.h */
-size_t
-hashmap_count(hashmap_t *hashmap)
+size_t hashmap_count(hashmap_t *hashmap)
 {
 	return hashmap->entry_count;
 }

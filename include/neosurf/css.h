@@ -32,11 +32,9 @@
  * \param c The CSS color to convert
  * \return Corresponding NetSurf colour primitive
  */
-#define nscss_color_to_ns(c) \
-		( ((~c) & 0xff000000)        | \
-		 ((( c) & 0xff0000  ) >> 16) | \
-		  (( c) & 0xff00    )        | \
-		 ((( c) & 0xff      ) << 16))
+#define nscss_color_to_ns(c)                                                   \
+	(((~c) & 0xff000000) | (((c) & 0xff0000) >> 16) | ((c) & 0xff00) |     \
+	 (((c) & 0xff) << 16))
 
 
 /**
@@ -47,11 +45,9 @@
  * \param c The NetSurf color to convert
  * \return Corresponding CSS colour primitive
  */
-#define ns_color_to_nscss(c) \
-		( ((~c) & 0xff000000)        | \
-		 ((( c) & 0xff0000  ) >> 16) | \
-		  (( c) & 0xff00    )        | \
-		 ((( c) & 0xff      ) << 16))
+#define ns_color_to_nscss(c)                                                   \
+	(((~c) & 0xff000000) | (((c) & 0xff0000) >> 16) | ((c) & 0xff00) |     \
+	 (((c) & 0xff) << 16))
 
 /**
  * Determine if a CSS color primitive is transparent
@@ -59,7 +55,6 @@
  * \param color  The CSS color to consider
  * \return True if the color is transparent, false otherwise
  */
-#define nscss_color_is_transparent(color) \
-		(((color) >> 24) == 0)
+#define nscss_color_is_transparent(color) (((color) >> 24) == 0)
 
 #endif

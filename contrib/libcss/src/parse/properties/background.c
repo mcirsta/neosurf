@@ -28,8 +28,9 @@
  *		   If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_background(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+				const parserutils_vector *vector,
+				int32_t *ctx,
+				css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	int prev_ctx;
@@ -40,11 +41,11 @@ css_error css__parse_background(css_language *c,
 	bool image = true;
 	bool position = true;
 	bool repeat = true;
-	css_style * attachment_style;
-	css_style * color_style;
-	css_style * image_style;
-	css_style * position_style;
-	css_style * repeat_style;
+	css_style *attachment_style;
+	css_style *color_style;
+	css_style *image_style;
+	css_style *position_style;
+	css_style *repeat_style;
 	enum flag_value flag_value;
 
 	/* Firstly, handle inherit */
@@ -55,28 +56,28 @@ css_error css__parse_background(css_language *c,
 	flag_value = get_css_flag_value(c, token);
 
 	if (flag_value != FLAG_VALUE__NONE) {
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BACKGROUND_ATTACHMENT);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BACKGROUND_ATTACHMENT);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BACKGROUND_COLOR);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BACKGROUND_COLOR);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BACKGROUND_IMAGE);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BACKGROUND_IMAGE);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BACKGROUND_POSITION);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BACKGROUND_POSITION);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BACKGROUND_REPEAT);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BACKGROUND_REPEAT);
 		if (error == CSS_OK)
 			parserutils_vector_iterate(vector, ctx);
 
@@ -132,24 +133,25 @@ css_error css__parse_background(css_language *c,
 		 * haven't already got a value for this property.
 		 */
 		if ((attachment) &&
-		    (error = css__parse_background_attachment(c, vector, ctx,
-					    attachment_style)) == CSS_OK) {
+		    (error = css__parse_background_attachment(
+			     c, vector, ctx, attachment_style)) == CSS_OK) {
 			attachment = false;
 		} else if ((color) &&
-			   (error = css__parse_background_color(c, vector, ctx,
-					    color_style)) == CSS_OK) {
+			   (error = css__parse_background_color(
+				    c, vector, ctx, color_style)) == CSS_OK) {
 			color = false;
 		} else if ((image) &&
-			   (error = css__parse_background_image(c, vector, ctx,
-					    image_style)) == CSS_OK) {
+			   (error = css__parse_background_image(
+				    c, vector, ctx, image_style)) == CSS_OK) {
 			image = false;
 		} else if ((position) &&
-			   (error = css__parse_background_position(c, vector, ctx,
-					position_style)) == CSS_OK) {
+			   (error = css__parse_background_position(
+				    c, vector, ctx, position_style)) ==
+				   CSS_OK) {
 			position = false;
 		} else if ((repeat) &&
-			   (error = css__parse_background_repeat(c, vector, ctx,
-					repeat_style)) == CSS_OK) {
+			   (error = css__parse_background_repeat(
+				    c, vector, ctx, repeat_style)) == CSS_OK) {
 			repeat = false;
 		}
 
@@ -164,42 +166,52 @@ css_error css__parse_background(css_language *c,
 	} while (*ctx != prev_ctx && token != NULL);
 
 	if (attachment) {
-		error = css__stylesheet_style_appendOPV(attachment_style,
-				CSS_PROP_BACKGROUND_ATTACHMENT, 0,
-				BACKGROUND_ATTACHMENT_SCROLL);
+		error = css__stylesheet_style_appendOPV(
+			attachment_style,
+			CSS_PROP_BACKGROUND_ATTACHMENT,
+			0,
+			BACKGROUND_ATTACHMENT_SCROLL);
 		if (error != CSS_OK)
 			goto css__parse_background_cleanup;
 	}
 
 	if (color) {
-		error = css__stylesheet_style_appendOPV(color_style,
-				CSS_PROP_BACKGROUND_COLOR, 0,
-				BACKGROUND_COLOR_TRANSPARENT);
+		error = css__stylesheet_style_appendOPV(
+			color_style,
+			CSS_PROP_BACKGROUND_COLOR,
+			0,
+			BACKGROUND_COLOR_TRANSPARENT);
 		if (error != CSS_OK)
 			goto css__parse_background_cleanup;
 	}
 
 	if (image) {
-		error = css__stylesheet_style_appendOPV(image_style,
-				CSS_PROP_BACKGROUND_IMAGE,
-				0, BACKGROUND_IMAGE_NONE);
+		error = css__stylesheet_style_appendOPV(
+			image_style,
+			CSS_PROP_BACKGROUND_IMAGE,
+			0,
+			BACKGROUND_IMAGE_NONE);
 		if (error != CSS_OK)
 			goto css__parse_background_cleanup;
 	}
 
 	if (position) {
-		error = css__stylesheet_style_appendOPV(position_style,
-				CSS_PROP_BACKGROUND_POSITION,
-				0, BACKGROUND_POSITION_HORZ_LEFT |
+		error = css__stylesheet_style_appendOPV(
+			position_style,
+			CSS_PROP_BACKGROUND_POSITION,
+			0,
+			BACKGROUND_POSITION_HORZ_LEFT |
 				BACKGROUND_POSITION_VERT_TOP);
 		if (error != CSS_OK)
 			goto css__parse_background_cleanup;
 	}
 
 	if (repeat) {
-		error = css__stylesheet_style_appendOPV(repeat_style,
-				CSS_PROP_BACKGROUND_REPEAT,
-				0, BACKGROUND_REPEAT_REPEAT);
+		error = css__stylesheet_style_appendOPV(
+			repeat_style,
+			CSS_PROP_BACKGROUND_REPEAT,
+			0,
+			BACKGROUND_REPEAT_REPEAT);
 		if (error != CSS_OK)
 			goto css__parse_background_cleanup;
 	}
@@ -233,12 +245,4 @@ css__parse_background_cleanup:
 		*ctx = orig_ctx;
 
 	return error;
-
-
 }
-
-
-
-
-
-

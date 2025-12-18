@@ -19,69 +19,74 @@
 
 
 /* Function declarations. */
-static css_error resolve_url(void *pw,
-		const char *base, lwc_string *rel, lwc_string **abs);
+static css_error
+resolve_url(void *pw, const char *base, lwc_string *rel, lwc_string **abs);
 static void die(const char *text, css_error code);
 
-static css_error node_name(void *pw, void *node,
-		css_qname *qname);
-static css_error node_classes(void *pw, void *node,
-		lwc_string ***classes, uint32_t *n_classes);
-static css_error node_id(void *pw, void *node,
-		lwc_string **id);
-static css_error named_ancestor_node(void *pw, void *node,
-		const css_qname *qname,
-		void **ancestor);
-static css_error named_parent_node(void *pw, void *node,
-		const css_qname *qname,
-		void **parent);
-static css_error named_sibling_node(void *pw, void *node,
-		const css_qname *qname,
-		void **sibling);
-static css_error named_generic_sibling_node(void *pw, void *node,
-		const css_qname *qname,
-		void **sibling);
+static css_error node_name(void *pw, void *node, css_qname *qname);
+static css_error
+node_classes(void *pw, void *node, lwc_string ***classes, uint32_t *n_classes);
+static css_error node_id(void *pw, void *node, lwc_string **id);
+static css_error named_ancestor_node(void *pw,
+				     void *node,
+				     const css_qname *qname,
+				     void **ancestor);
+static css_error
+named_parent_node(void *pw, void *node, const css_qname *qname, void **parent);
+static css_error named_sibling_node(void *pw,
+				    void *node,
+				    const css_qname *qname,
+				    void **sibling);
+static css_error named_generic_sibling_node(void *pw,
+					    void *node,
+					    const css_qname *qname,
+					    void **sibling);
 static css_error parent_node(void *pw, void *node, void **parent);
 static css_error sibling_node(void *pw, void *node, void **sibling);
-static css_error node_has_name(void *pw, void *node,
-		const css_qname *qname,
-		bool *match);
-static css_error node_has_class(void *pw, void *node,
-		lwc_string *name,
-		bool *match);
-static css_error node_has_id(void *pw, void *node,
-		lwc_string *name,
-		bool *match);
-static css_error node_has_attribute(void *pw, void *node,
-		const css_qname *qname,
-		bool *match);
-static css_error node_has_attribute_equal(void *pw, void *node,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match);
-static css_error node_has_attribute_dashmatch(void *pw, void *node,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match);
-static css_error node_has_attribute_includes(void *pw, void *node,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match);
-static css_error node_has_attribute_prefix(void *pw, void *node,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match);
-static css_error node_has_attribute_suffix(void *pw, void *node,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match);
-static css_error node_has_attribute_substring(void *pw, void *node,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match);
+static css_error
+node_has_name(void *pw, void *node, const css_qname *qname, bool *match);
+static css_error
+node_has_class(void *pw, void *node, lwc_string *name, bool *match);
+static css_error
+node_has_id(void *pw, void *node, lwc_string *name, bool *match);
+static css_error
+node_has_attribute(void *pw, void *node, const css_qname *qname, bool *match);
+static css_error node_has_attribute_equal(void *pw,
+					  void *node,
+					  const css_qname *qname,
+					  lwc_string *value,
+					  bool *match);
+static css_error node_has_attribute_dashmatch(void *pw,
+					      void *node,
+					      const css_qname *qname,
+					      lwc_string *value,
+					      bool *match);
+static css_error node_has_attribute_includes(void *pw,
+					     void *node,
+					     const css_qname *qname,
+					     lwc_string *value,
+					     bool *match);
+static css_error node_has_attribute_prefix(void *pw,
+					   void *node,
+					   const css_qname *qname,
+					   lwc_string *value,
+					   bool *match);
+static css_error node_has_attribute_suffix(void *pw,
+					   void *node,
+					   const css_qname *qname,
+					   lwc_string *value,
+					   bool *match);
+static css_error node_has_attribute_substring(void *pw,
+					      void *node,
+					      const css_qname *qname,
+					      lwc_string *value,
+					      bool *match);
 static css_error node_is_root(void *pw, void *node, bool *match);
-static css_error node_count_siblings(void *pw, void *node,
-		bool same_name, bool after, int32_t *count);
+static css_error node_count_siblings(void *pw,
+				     void *node,
+				     bool same_name,
+				     bool after,
+				     int32_t *count);
 static css_error node_is_empty(void *pw, void *node, bool *match);
 static css_error node_is_link(void *pw, void *node, bool *match);
 static css_error node_is_visited(void *pw, void *node, bool *match);
@@ -92,26 +97,28 @@ static css_error node_is_enabled(void *pw, void *node, bool *match);
 static css_error node_is_disabled(void *pw, void *node, bool *match);
 static css_error node_is_checked(void *pw, void *node, bool *match);
 static css_error node_is_target(void *pw, void *node, bool *match);
-static css_error node_is_lang(void *pw, void *node,
-		lwc_string *lang, bool *match);
-static css_error node_presentational_hint(void *pw, void *node,
-		uint32_t *nhints, css_hint **hints);
-static css_error ua_default_for_property(void *pw, uint32_t property,
-		css_hint *hint);
-static css_error set_libcss_node_data(void *pw, void *n,
-		void *libcss_node_data);
-static css_error get_libcss_node_data(void *pw, void *n,
-		void **libcss_node_data);
+static css_error
+node_is_lang(void *pw, void *node, lwc_string *lang, bool *match);
+static css_error node_presentational_hint(void *pw,
+					  void *node,
+					  uint32_t *nhints,
+					  css_hint **hints);
+static css_error
+ua_default_for_property(void *pw, uint32_t property, css_hint *hint);
+static css_error
+set_libcss_node_data(void *pw, void *n, void *libcss_node_data);
+static css_error
+get_libcss_node_data(void *pw, void *n, void **libcss_node_data);
 
 static css_unit_ctx unit_len_ctx = {
-	.viewport_width    = 800 * (1 << CSS_RADIX_POINT),
-	.viewport_height   = 600 * (1 << CSS_RADIX_POINT),
-	.font_size_default =  16 * (1 << CSS_RADIX_POINT),
-	.font_size_minimum =   6 * (1 << CSS_RADIX_POINT),
-	.device_dpi        =  96 * (1 << CSS_RADIX_POINT),
-	.root_style        = NULL, /* We don't have a root node yet. */
-	.pw                = NULL, /* We're not implementing measure callback */
-	.measure           = NULL, /* We're not implementing measure callback */
+	.viewport_width = 800 * (1 << CSS_RADIX_POINT),
+	.viewport_height = 600 * (1 << CSS_RADIX_POINT),
+	.font_size_default = 16 * (1 << CSS_RADIX_POINT),
+	.font_size_minimum = 6 * (1 << CSS_RADIX_POINT),
+	.device_dpi = 96 * (1 << CSS_RADIX_POINT),
+	.root_style = NULL, /* We don't have a root node yet. */
+	.pw = NULL, /* We're not implementing measure callback */
+	.measure = NULL, /* We're not implementing measure callback */
 };
 
 /* Table of function pointers for the LibCSS Select API. */
@@ -161,9 +168,10 @@ void lwc_callback(lwc_string *str, void *pw)
 {
 	(void)(pw);
 
-	fprintf(stderr, "Leaked string: %.*s\n",
-			(int)lwc_string_length(str),
-			lwc_string_data(str));
+	fprintf(stderr,
+		"Leaked string: %.*s\n",
+		(int)lwc_string_length(str),
+		lwc_string_data(str));
 }
 
 int main(int argc, char **argv)
@@ -172,8 +180,8 @@ int main(int argc, char **argv)
 	css_stylesheet *sheet;
 	size_t size;
 	const char data[] = "h1 { color: red } "
-		"h4 { color: #321; } "
-		"h4, h5 { color: #123456; }";
+			    "h4 { color: #321; } "
+			    "h4, h5 { color: #123456; }";
 	css_select_ctx *select_ctx;
 	uint32_t count;
 	unsigned int hh;
@@ -212,8 +220,9 @@ int main(int argc, char **argv)
 
 
 	/* parse some CSS source */
-	code = css_stylesheet_append_data(sheet, (const uint8_t *) data,
-			sizeof data);
+	code = css_stylesheet_append_data(sheet,
+					  (const uint8_t *)data,
+					  sizeof data);
 	if (code != CSS_OK && code != CSS_NEEDDATA)
 		die("css_stylesheet_append_data", code);
 	code = css_stylesheet_data_done(sheet);
@@ -229,8 +238,8 @@ int main(int argc, char **argv)
 	code = css_select_ctx_create(&select_ctx);
 	if (code != CSS_OK)
 		die("css_select_ctx_create", code);
-	code = css_select_ctx_append_sheet(select_ctx, sheet, CSS_ORIGIN_AUTHOR,
-			NULL);
+	code = css_select_ctx_append_sheet(
+		select_ctx, sheet, CSS_ORIGIN_AUTHOR, NULL);
 	if (code != CSS_OK)
 		die("css_select_ctx_append_sheet", code);
 	code = css_select_ctx_count_sheets(select_ctx, &count);
@@ -253,19 +262,21 @@ int main(int argc, char **argv)
 		snprintf(element, sizeof element, "h%i", hh);
 		lwc_intern_string(element, strlen(element), &element_name);
 
-		code = css_select_style(select_ctx, element_name,
-				&unit_len_ctx,
-				&media, NULL,
-				&select_handler, 0,
-				&style);
+		code = css_select_style(select_ctx,
+					element_name,
+					&unit_len_ctx,
+					&media,
+					NULL,
+					&select_handler,
+					0,
+					&style);
 		if (code != CSS_OK)
 			die("css_select_style", code);
 
 		lwc_string_unref(element_name);
 
 		color_type = css_computed_color(
-				style->styles[CSS_PSEUDO_ELEMENT_NONE],
-				&color_shade);
+			style->styles[CSS_PSEUDO_ELEMENT_NONE], &color_shade);
 		if (color_type == CSS_COLOR_INHERIT)
 			printf("color of h%i is 'inherit'\n", hh);
 		else
@@ -290,8 +301,8 @@ int main(int argc, char **argv)
 }
 
 
-css_error resolve_url(void *pw,
-		const char *base, lwc_string *rel, lwc_string **abs)
+css_error
+resolve_url(void *pw, const char *base, lwc_string *rel, lwc_string **abs)
 {
 	UNUSED(pw);
 	UNUSED(base);
@@ -305,11 +316,13 @@ css_error resolve_url(void *pw,
 
 void die(const char *text, css_error code)
 {
-	fprintf(stderr, "ERROR: %s: %i: %s\n",
-			text, code, css_error_to_string(code));
+	fprintf(stderr,
+		"ERROR: %s: %i: %s\n",
+		text,
+		code,
+		css_error_to_string(code));
 	exit(EXIT_FAILURE);
 }
-
 
 
 /* Select handlers. Our "document tree" is actually just a single node, which is
@@ -327,8 +340,8 @@ css_error node_name(void *pw, void *n, css_qname *qname)
 	return CSS_OK;
 }
 
-css_error node_classes(void *pw, void *n,
-		lwc_string ***classes, uint32_t *n_classes)
+css_error
+node_classes(void *pw, void *n, lwc_string ***classes, uint32_t *n_classes)
 {
 	UNUSED(pw);
 	UNUSED(n);
@@ -345,9 +358,8 @@ css_error node_id(void *pw, void *n, lwc_string **id)
 	return CSS_OK;
 }
 
-css_error named_ancestor_node(void *pw, void *n,
-		const css_qname *qname,
-		void **ancestor)
+css_error
+named_ancestor_node(void *pw, void *n, const css_qname *qname, void **ancestor)
 {
 	UNUSED(pw);
 	UNUSED(n);
@@ -356,9 +368,8 @@ css_error named_ancestor_node(void *pw, void *n,
 	return CSS_OK;
 }
 
-css_error named_parent_node(void *pw, void *n,
-		const css_qname *qname,
-		void **parent)
+css_error
+named_parent_node(void *pw, void *n, const css_qname *qname, void **parent)
 {
 	UNUSED(pw);
 	UNUSED(n);
@@ -367,9 +378,10 @@ css_error named_parent_node(void *pw, void *n,
 	return CSS_OK;
 }
 
-css_error named_generic_sibling_node(void *pw, void *n,
-		const css_qname *qname,
-		void **sibling)
+css_error named_generic_sibling_node(void *pw,
+				     void *n,
+				     const css_qname *qname,
+				     void **sibling)
 {
 	UNUSED(pw);
 	UNUSED(n);
@@ -378,9 +390,8 @@ css_error named_generic_sibling_node(void *pw, void *n,
 	return CSS_OK;
 }
 
-css_error named_sibling_node(void *pw, void *n,
-		const css_qname *qname,
-		void **sibling)
+css_error
+named_sibling_node(void *pw, void *n, const css_qname *qname, void **sibling)
 {
 	UNUSED(pw);
 	UNUSED(n);
@@ -405,20 +416,16 @@ css_error sibling_node(void *pw, void *n, void **sibling)
 	return CSS_OK;
 }
 
-css_error node_has_name(void *pw, void *n,
-		const css_qname *qname,
-		bool *match)
+css_error node_has_name(void *pw, void *n, const css_qname *qname, bool *match)
 {
 	lwc_string *node = n;
 	UNUSED(pw);
 	assert(lwc_string_caseless_isequal(node, qname->name, match) ==
-			lwc_error_ok);
+	       lwc_error_ok);
 	return CSS_OK;
 }
 
-css_error node_has_class(void *pw, void *n,
-		lwc_string *name,
-		bool *match)
+css_error node_has_class(void *pw, void *n, lwc_string *name, bool *match)
 {
 	UNUSED(pw);
 	UNUSED(n);
@@ -427,9 +434,7 @@ css_error node_has_class(void *pw, void *n,
 	return CSS_OK;
 }
 
-css_error node_has_id(void *pw, void *n,
-		lwc_string *name,
-		bool *match)
+css_error node_has_id(void *pw, void *n, lwc_string *name, bool *match)
 {
 	UNUSED(pw);
 	UNUSED(n);
@@ -438,9 +443,8 @@ css_error node_has_id(void *pw, void *n,
 	return CSS_OK;
 }
 
-css_error node_has_attribute(void *pw, void *n,
-		const css_qname *qname,
-		bool *match)
+css_error
+node_has_attribute(void *pw, void *n, const css_qname *qname, bool *match)
 {
 	UNUSED(pw);
 	UNUSED(n);
@@ -449,23 +453,11 @@ css_error node_has_attribute(void *pw, void *n,
 	return CSS_OK;
 }
 
-css_error node_has_attribute_equal(void *pw, void *n,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match)
-{
-	UNUSED(pw);
-	UNUSED(n);
-	UNUSED(qname);
-	UNUSED(value);
-	*match = false;
-	return CSS_OK;
-}
-
-css_error node_has_attribute_dashmatch(void *pw, void *n,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match)
+css_error node_has_attribute_equal(void *pw,
+				   void *n,
+				   const css_qname *qname,
+				   lwc_string *value,
+				   bool *match)
 {
 	UNUSED(pw);
 	UNUSED(n);
@@ -475,10 +467,11 @@ css_error node_has_attribute_dashmatch(void *pw, void *n,
 	return CSS_OK;
 }
 
-css_error node_has_attribute_includes(void *pw, void *n,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match)
+css_error node_has_attribute_dashmatch(void *pw,
+				       void *n,
+				       const css_qname *qname,
+				       lwc_string *value,
+				       bool *match)
 {
 	UNUSED(pw);
 	UNUSED(n);
@@ -488,10 +481,11 @@ css_error node_has_attribute_includes(void *pw, void *n,
 	return CSS_OK;
 }
 
-css_error node_has_attribute_prefix(void *pw, void *n,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match)
+css_error node_has_attribute_includes(void *pw,
+				      void *n,
+				      const css_qname *qname,
+				      lwc_string *value,
+				      bool *match)
 {
 	UNUSED(pw);
 	UNUSED(n);
@@ -501,10 +495,11 @@ css_error node_has_attribute_prefix(void *pw, void *n,
 	return CSS_OK;
 }
 
-css_error node_has_attribute_suffix(void *pw, void *n,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match)
+css_error node_has_attribute_prefix(void *pw,
+				    void *n,
+				    const css_qname *qname,
+				    lwc_string *value,
+				    bool *match)
 {
 	UNUSED(pw);
 	UNUSED(n);
@@ -514,10 +509,25 @@ css_error node_has_attribute_suffix(void *pw, void *n,
 	return CSS_OK;
 }
 
-css_error node_has_attribute_substring(void *pw, void *n,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match)
+css_error node_has_attribute_suffix(void *pw,
+				    void *n,
+				    const css_qname *qname,
+				    lwc_string *value,
+				    bool *match)
+{
+	UNUSED(pw);
+	UNUSED(n);
+	UNUSED(qname);
+	UNUSED(value);
+	*match = false;
+	return CSS_OK;
+}
+
+css_error node_has_attribute_substring(void *pw,
+				       void *n,
+				       const css_qname *qname,
+				       lwc_string *value,
+				       bool *match)
 {
 	UNUSED(pw);
 	UNUSED(n);
@@ -543,8 +553,11 @@ css_error node_is_root(void *pw, void *n, bool *match)
 	return CSS_OK;
 }
 
-css_error node_count_siblings(void *pw, void *n,
-		bool same_name, bool after, int32_t *count)
+css_error node_count_siblings(void *pw,
+			      void *n,
+			      bool same_name,
+			      bool after,
+			      int32_t *count)
 {
 	UNUSED(pw);
 	UNUSED(n);
@@ -635,9 +648,7 @@ css_error node_is_target(void *pw, void *n, bool *match)
 }
 
 
-css_error node_is_lang(void *pw, void *n,
-		lwc_string *lang,
-		bool *match)
+css_error node_is_lang(void *pw, void *n, lwc_string *lang, bool *match)
 {
 	UNUSED(pw);
 	UNUSED(n);
@@ -646,8 +657,10 @@ css_error node_is_lang(void *pw, void *n,
 	return CSS_OK;
 }
 
-css_error node_presentational_hint(void *pw, void *node,
-		uint32_t *nhints, css_hint **hints)
+css_error node_presentational_hint(void *pw,
+				   void *node,
+				   uint32_t *nhints,
+				   css_hint **hints)
 {
 	UNUSED(pw);
 	UNUSED(node);
@@ -681,21 +694,24 @@ css_error ua_default_for_property(void *pw, uint32_t property, css_hint *hint)
 	return CSS_OK;
 }
 
-static css_error set_libcss_node_data(void *pw, void *n,
-		void *libcss_node_data)
+static css_error set_libcss_node_data(void *pw, void *n, void *libcss_node_data)
 {
 	UNUSED(pw);
 	UNUSED(n);
 
 	/* Since we're not storing it, ensure node data gets deleted */
-	css_libcss_node_data_handler(&select_handler, CSS_NODE_DELETED,
-			pw, n, NULL, libcss_node_data);
+	css_libcss_node_data_handler(&select_handler,
+				     CSS_NODE_DELETED,
+				     pw,
+				     n,
+				     NULL,
+				     libcss_node_data);
 
 	return CSS_OK;
 }
 
-static css_error get_libcss_node_data(void *pw, void *n,
-		void **libcss_node_data)
+static css_error
+get_libcss_node_data(void *pw, void *n, void **libcss_node_data)
 {
 	UNUSED(pw);
 	UNUSED(n);
@@ -703,5 +719,3 @@ static css_error get_libcss_node_data(void *pw, void *n,
 
 	return CSS_OK;
 }
-
-

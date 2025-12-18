@@ -86,8 +86,9 @@
 #define FRAME_DEPTH 8
 
 /* Forward declare internal navigation function */
-static nserror browser_window__navigate_internal(
-	struct browser_window *bw, struct browser_fetch_parameters *params);
+static nserror
+browser_window__navigate_internal(struct browser_window *bw,
+				  struct browser_fetch_parameters *params);
 
 
 /**
@@ -150,10 +151,10 @@ browser_window__free_fetch_parameters(struct browser_fetch_parameters *params)
  * \param x Updated to x-coord of top left of scrollbar widget
  * \param y Updated to y-coord of top left of scrollbar widget
  */
-static inline void
-browser_window_get_scrollbar_pos(struct browser_window *bw,
-				 bool horizontal,
-				 int *x, int *y)
+static inline void browser_window_get_scrollbar_pos(struct browser_window *bw,
+						    bool horizontal,
+						    int *x,
+						    int *y)
 {
 	if (horizontal) {
 		*x = 0;
@@ -199,10 +200,9 @@ static inline int get_vert_scrollbar_len(struct browser_window *bw)
  * \param selection true if bw has a selection, false if removing selection
  * \param read_only true iff selection is read only (e.g. can't cut it)
  */
-static void
-browser_window_set_selection(struct browser_window *bw,
-			     bool selection,
-			     bool read_only)
+static void browser_window_set_selection(struct browser_window *bw,
+					 bool selection,
+					 bool read_only)
 {
 	struct browser_window *top;
 
@@ -212,8 +212,7 @@ browser_window_set_selection(struct browser_window *bw,
 
 	assert(top != NULL);
 
-	if (bw != top->selection.bw &&
-	    top->selection.bw != NULL &&
+	if (bw != top->selection.bw && top->selection.bw != NULL &&
 	    top->selection.bw->current_content != NULL) {
 		/* clear old selection */
 		content_clear_selection(top->selection.bw->current_content);
@@ -268,7 +267,8 @@ browser_window_set_scroll(struct browser_window *bw, const struct rect *rect)
  */
 static nserror
 browser_window__get_contextual_content(struct browser_window *bw,
-				       int x, int y,
+				       int x,
+				       int y,
 				       struct browser_window_features *data)
 {
 	nserror ret = NSERROR_OK;
@@ -291,24 +291,22 @@ browser_window__get_contextual_content(struct browser_window *bw,
 			bwc = &bw->children[cur_child];
 
 			/* Skip this frame if (x, y) coord lies outside */
-			if ((x < bwc->x) ||
-			    (bwc->x + bwc->width < x) ||
-			    (y < bwc->y) ||
-			    (bwc->y + bwc->height < y)) {
+			if ((x < bwc->x) || (bwc->x + bwc->width < x) ||
+			    (y < bwc->y) || (bwc->y + bwc->height < y)) {
 				continue;
 			}
 
 			/* Pass request into this child */
-			return browser_window__get_contextual_content(bwc,
-					      (x - bwc->x), (y - bwc->y), data);
+			return browser_window__get_contextual_content(
+				bwc, (x - bwc->x), (y - bwc->y), data);
 		}
 
 		/* Coordinate not contained by any frame */
 
 	} else if (bw->current_content != NULL) {
 		/* Pass request to content */
-		ret = content_get_contextual_content(bw->current_content,
-						     x, y, data);
+		ret = content_get_contextual_content(
+			bw->current_content, x, y, data);
 		data->main = bw->current_content;
 	}
 
@@ -319,13 +317,12 @@ browser_window__get_contextual_content(struct browser_window *bw,
 /**
  * implements the download operation of a window navigate
  */
-static nserror
-browser_window_download(struct browser_window *bw,
-			nsurl *url,
-			nsurl *nsref,
-			uint32_t fetch_flags,
-			bool fetch_is_post,
-			llcache_post_data *post)
+static nserror browser_window_download(struct browser_window *bw,
+				       nsurl *url,
+				       nsurl *nsref,
+				       uint32_t fetch_flags,
+				       bool fetch_is_post,
+				       llcache_post_data *post)
 {
 	llcache_handle *l;
 	struct browser_window *root;
@@ -337,9 +334,13 @@ browser_window_download(struct browser_window *bw,
 	fetch_flags |= LLCACHE_RETRIEVE_FORCE_FETCH;
 	fetch_flags |= LLCACHE_RETRIEVE_STREAM_DATA;
 
-	error = llcache_handle_retrieve(url, fetch_flags, nsref,
+	error = llcache_handle_retrieve(url,
+					fetch_flags,
+					nsref,
 					fetch_is_post ? post : NULL,
-					NULL, NULL, &l);
+					NULL,
+					NULL,
+					&l);
 	if (error == NSERROR_NO_FETCH_HANDLER) {
 		/* no internal handler for this type, call out to frontend */
 		error = guit->misc->launch_url(url);
@@ -348,8 +349,10 @@ browser_window_download(struct browser_window *bw,
 	} else {
 		error = download_context_create(l, root->window);
 		if (error != NSERROR_OK) {
-			NSLOG(neosurf, INFO,
-			      "Failed creating download context: %d", error);
+			NSLOG(neosurf,
+			      INFO,
+			      "Failed creating download context: %d",
+			      error);
 			llcache_handle_abort(l);
 			llcache_handle_release(l);
 		}
@@ -436,10 +439,9 @@ static nserror browser_window_stop_throbber(struct browser_window *bw)
  * \param pw a context containing the browser window
  * \return NSERROR_OK on success else appropriate error code.
  */
-static nserror
-browser_window_favicon_callback(hlcache_handle *c,
-				const hlcache_event *event,
-				void *pw)
+static nserror browser_window_favicon_callback(hlcache_handle *c,
+					       const hlcache_event *event,
+					       void *pw)
 {
 	struct browser_window *bw = pw;
 
@@ -479,25 +481,28 @@ browser_window_favicon_callback(hlcache_handle *c,
 
 			error = nsurl_create("resource:favicon.ico", &nsurl);
 			if (error != NSERROR_OK) {
-				NSLOG(neosurf, INFO,
+				NSLOG(neosurf,
+				      INFO,
 				      "Unable to create default location url");
 			} else {
-				hlcache_handle_retrieve(nsurl,
-							HLCACHE_RETRIEVE_SNIFF_TYPE,
-							nsref, NULL,
-							browser_window_favicon_callback,
-							bw, NULL, CONTENT_IMAGE,
-							&bw->favicon.loading);
+				hlcache_handle_retrieve(
+					nsurl,
+					HLCACHE_RETRIEVE_SNIFF_TYPE,
+					nsref,
+					NULL,
+					browser_window_favicon_callback,
+					bw,
+					NULL,
+					CONTENT_IMAGE,
+					&bw->favicon.loading);
 
 				nsurl_unref(nsurl);
 			}
-
 		}
 		break;
 
 	default:
 		break;
-
 	}
 	return NSERROR_OK;
 }
@@ -510,17 +515,16 @@ browser_window_favicon_callback(hlcache_handle *c,
  * \param bw A top level browser window.
  * \param link A link context or NULL to attempt fallback scanning.
  */
-static nserror
-browser_window_update_favicon(hlcache_handle *c,
-			      struct browser_window *bw,
-			      struct content_rfc5988_link *link)
+static nserror browser_window_update_favicon(hlcache_handle *c,
+					     struct browser_window *bw,
+					     struct content_rfc5988_link *link)
 {
 	nsurl *nsref = NULL;
 	nsurl *nsurl;
 	nserror res;
 
 	assert(c != NULL);
-	assert(bw !=NULL);
+	assert(bw != NULL);
 
 	if (bw->window == NULL) {
 		/* Not top-level browser window; not interested */
@@ -541,7 +545,8 @@ browser_window_update_favicon(hlcache_handle *c,
 
 	if (link == NULL) {
 		/* Look for "shortcut icon" */
-		link = content_find_rfc5988_link(c, corestring_lwc_shortcut_icon);
+		link = content_find_rfc5988_link(c,
+						 corestring_lwc_shortcut_icon);
 	}
 
 	if (link == NULL) {
@@ -576,7 +581,8 @@ browser_window_update_favicon(hlcache_handle *c,
 			res = nsurl_create("resource:favicon.ico", &nsurl);
 		}
 		if (res != NSERROR_OK) {
-			NSLOG(neosurf, INFO,
+			NSLOG(neosurf,
+			      INFO,
 			      "Unable to create default location url");
 			return res;
 		}
@@ -585,11 +591,13 @@ browser_window_update_favicon(hlcache_handle *c,
 	}
 
 	if (link == NULL) {
-		NSLOG(neosurf, INFO,
+		NSLOG(neosurf,
+		      INFO,
 		      "fetching general favicon from '%s'",
 		      nsurl_access(nsurl));
 	} else {
-		NSLOG(neosurf, INFO,
+		NSLOG(neosurf,
+		      INFO,
 		      "fetching favicon rel:%s '%s'",
 		      lwc_string_data(link->rel),
 		      nsurl_access(nsurl));
@@ -628,9 +636,9 @@ static void browser_window_refresh(void *p)
 
 	assert(bw->current_content != NULL &&
 	       (content_get_status(bw->current_content) ==
-		CONTENT_STATUS_READY ||
+			CONTENT_STATUS_READY ||
 		content_get_status(bw->current_content) ==
-		CONTENT_STATUS_DONE));
+			CONTENT_STATUS_DONE));
 
 	/* Ignore if the refresh URL has gone
 	 * (may happen if a fetch error occurred) */
@@ -659,23 +667,15 @@ static void browser_window_refresh(void *p)
 		parent = bw->current_content;
 	}
 
-	browser_window_navigate(bw,
-				refresh,
-				url,
-				flags,
-				NULL,
-				NULL,
-				parent);
-
+	browser_window_navigate(bw, refresh, url, flags, NULL, NULL, parent);
 }
 
 
 /**
  * Transfer the loading_content to a new download window.
  */
-static void
-browser_window_convert_to_download(struct browser_window *bw,
-				   llcache_handle *stream)
+static void browser_window_convert_to_download(struct browser_window *bw,
+					       llcache_handle *stream)
 {
 	struct browser_window *root = browser_window_get_root(bw);
 	nserror error;
@@ -710,18 +710,15 @@ static bool frag_scroll(struct browser_window *bw)
 		return false;
 	}
 
-	if (!html_get_id_offset(bw->current_content,
-				bw->frag_id,
-				&rect.x0,
-				&rect.y0)) {
+	if (!html_get_id_offset(
+		    bw->current_content, bw->frag_id, &rect.x0, &rect.y0)) {
 		return false;
 	}
 
 	rect.x1 = rect.x0;
 	rect.y1 = rect.y0;
 	if (browser_window_set_scroll(bw, &rect) == NSERROR_OK) {
-		if (bw->current_content != NULL &&
-		    bw->history != NULL &&
+		if (bw->current_content != NULL && bw->history != NULL &&
 		    bw->history->current != NULL) {
 			browser_window_history_update(bw, bw->current_content);
 		}
@@ -739,12 +736,7 @@ static bool frag_scroll(struct browser_window *bw)
  */
 static void browser_window_update(struct browser_window *bw, bool scroll_to_top)
 {
-	static const struct rect zrect = {
-		.x0 = 0,
-		.y0 = 0,
-		.x1 = 0,
-		.y1 = 0
-	};
+	static const struct rect zrect = {.x0 = 0, .y0 = 0, .x1 = 0, .y1 = 0};
 
 	if (bw->current_content == NULL) {
 		return;
@@ -790,27 +782,25 @@ static void browser_window_update(struct browser_window *bw, bool scroll_to_top)
 
 		break;
 
-	case BROWSER_WINDOW_FRAME:
-		{
-			struct rect rect;
-			browser_window_update_extent(bw);
+	case BROWSER_WINDOW_FRAME: {
+		struct rect rect;
+		browser_window_update_extent(bw);
 
-			if (scroll_to_top) {
-				browser_window_set_scroll(bw, &zrect);
-			}
-
-			/* if frag_id exists, then try to scroll to it */
-			/** @todo don't do this if the user has scrolled */
-			frag_scroll(bw);
-
-			rect.x0 = scrollbar_get_offset(bw->scroll_x);
-			rect.y0 = scrollbar_get_offset(bw->scroll_y);
-			rect.x1 = rect.x0 + bw->width;
-			rect.y1 = rect.y0 + bw->height;
-
-			browser_window_invalidate_rect(bw, &rect);
+		if (scroll_to_top) {
+			browser_window_set_scroll(bw, &zrect);
 		}
-		break;
+
+		/* if frag_id exists, then try to scroll to it */
+		/** @todo don't do this if the user has scrolled */
+		frag_scroll(bw);
+
+		rect.x0 = scrollbar_get_offset(bw->scroll_x);
+		rect.y0 = scrollbar_get_offset(bw->scroll_y);
+		rect.x1 = rect.x0 + bw->width;
+		rect.y1 = rect.y0 + bw->height;
+
+		browser_window_invalidate_rect(bw, &rect);
+	} break;
 
 	default:
 	case BROWSER_WINDOW_FRAMESET:
@@ -841,7 +831,9 @@ static nserror browser_window_content_ready(struct browser_window *bw)
 		/* Transfer the fetch parameters */
 		browser_window__free_fetch_parameters(&bw->current_parameters);
 		bw->current_parameters = bw->loading_parameters;
-		memset(&bw->loading_parameters, 0, sizeof(bw->loading_parameters));
+		memset(&bw->loading_parameters,
+		       0,
+		       sizeof(bw->loading_parameters));
 		/* Transfer the certificate chain */
 		cert_chain_free(bw->current_cert_chain);
 		bw->current_cert_chain = bw->loading_cert_chain;
@@ -859,10 +851,11 @@ static nserror browser_window_content_ready(struct browser_window *bw)
 		nsurl *url = hlcache_handle_get_url(bw->current_content);
 
 		if (urldb_add_url(url)) {
-			urldb_set_url_title(url, content_get_title(bw->current_content));
+			urldb_set_url_title(
+				url, content_get_title(bw->current_content));
 			urldb_update_url_visit_data(url);
-			urldb_set_url_content_type(url,
-						   content_get_type(bw->current_content));
+			urldb_set_url_content_type(
+				url, content_get_type(bw->current_content));
 
 			/* This is safe as we've just added the URL */
 			global_history_add(urldb_get_url(url));
@@ -891,7 +884,9 @@ static nserror browser_window_content_ready(struct browser_window *bw)
 		 *  thumbnail (content_redraw), we need to do it after
 		 *  content_reformat.
 		 */
-		browser_window_history_add(bw, bw->current_content, bw->frag_id);
+		browser_window_history_add(bw,
+					   bw->current_content,
+					   bw->frag_id);
 	}
 
 	browser_window_remove_caret(bw, false);
@@ -905,7 +900,8 @@ static nserror browser_window_content_ready(struct browser_window *bw)
 	/* new content; set scroll_to_top */
 	browser_window_update(bw, true);
 	content_open(bw->current_content, bw, 0, 0);
-	browser_window_set_status(bw, content_get_status_message(bw->current_content));
+	browser_window_set_status(
+		bw, content_get_status_message(bw->current_content));
 
 	/* frames */
 	res = browser_window_create_frameset(bw);
@@ -916,7 +912,8 @@ static nserror browser_window_content_ready(struct browser_window *bw)
 	/* Indicate page status may have changed */
 	if (res == NSERROR_OK) {
 		struct browser_window *root = browser_window_get_root(bw);
-		res = guit->window->event(root->window, GW_EVENT_PAGE_INFO_CHANGE);
+		res = guit->window->event(root->window,
+					  GW_EVENT_PAGE_INFO_CHANGE);
 	}
 
 	return res;
@@ -926,8 +923,7 @@ static nserror browser_window_content_ready(struct browser_window *bw)
 /**
  * handle message for content done on browser window
  */
-static nserror
-browser_window_content_done(struct browser_window *bw)
+static nserror browser_window_content_done(struct browser_window *bw)
 {
 	float sx, sy;
 	struct rect rect;
@@ -937,26 +933,32 @@ browser_window_content_done(struct browser_window *bw)
 	if (bw->window == NULL) {
 		/* Updated browser window's scrollbars. */
 		/**
-		 * \todo update browser window scrollbars before CONTENT_MSG_DONE
+		 * \todo update browser window scrollbars before
+		 * CONTENT_MSG_DONE
 		 */
 		browser_window_reformat(bw, true, bw->width, bw->height);
 		browser_window_handle_scrollbars(bw);
 	}
 
 	browser_window_update(bw, false);
-	browser_window_set_status(bw, content_get_status_message(bw->current_content));
+	browser_window_set_status(
+		bw, content_get_status_message(bw->current_content));
 	browser_window_stop_throbber(bw);
 	browser_window_update_favicon(bw->current_content, bw, NULL);
 
 	if (browser_window_history_get_scroll(bw, &sx, &sy) == NSERROR_OK) {
-		scrollx = (int)((float)content_get_width(bw->current_content) * sx);
-		scrolly = (int)((float)content_get_height(bw->current_content) * sy);
+		scrollx = (int)((float)content_get_width(bw->current_content) *
+				sx);
+		scrolly = (int)((float)content_get_height(bw->current_content) *
+				sy);
 		rect.x0 = rect.x1 = scrollx;
 		rect.y0 = rect.y1 = scrolly;
 		if (browser_window_set_scroll(bw, &rect) != NSERROR_OK) {
-			NSLOG(neosurf, WARNING,
+			NSLOG(neosurf,
+			      WARNING,
 			      "Unable to set browser scroll offsets to %d by %d",
-			      scrollx, scrolly);
+			      scrollx,
+			      scrolly);
 		}
 	}
 
@@ -966,9 +968,13 @@ browser_window_content_done(struct browser_window *bw)
 	}
 
 	if (bw->refresh_interval != -1) {
-		NSLOG(neosurf, INFO, "Content done. Scheduling refresh in %d ms", bw->refresh_interval * 10);
+		NSLOG(neosurf,
+		      INFO,
+		      "Content done. Scheduling refresh in %d ms",
+		      bw->refresh_interval * 10);
 		guit->misc->schedule(bw->refresh_interval * 10,
-				     browser_window_refresh, bw);
+				     browser_window_refresh,
+				     bw);
 	}
 
 	return NSERROR_OK;
@@ -978,8 +984,7 @@ browser_window_content_done(struct browser_window *bw)
 /**
  * Handle query responses from SSL requests
  */
-static nserror
-browser_window__handle_ssl_query_response(bool proceed, void *pw)
+static nserror browser_window__handle_ssl_query_response(bool proceed, void *pw)
 {
 	struct browser_window *bw = (struct browser_window *)pw;
 
@@ -1019,10 +1024,9 @@ browser_window__handle_ssl_query_response(bool proceed, void *pw)
  * \param[out] password_out  Returns password on success.  Owned by caller.
  * \return NSERROR_OK, or appropriate error code.
  */
-static nserror
-browser_window__unpack_userpass(const char *userpass,
-				char **username_out,
-				char **password_out)
+static nserror browser_window__unpack_userpass(const char *userpass,
+					       char **username_out,
+					       char **password_out)
 {
 	const char *tmp;
 	char *username;
@@ -1080,10 +1084,9 @@ browser_window__unpack_userpass(const char *userpass,
  *                           Owned by caller.
  * \return NSERROR_OK, or appropriate error code.
  */
-static nserror
-browser_window__build_userpass(const char *username,
-			       const char *password,
-			       char **userpass_out)
+static nserror browser_window__build_userpass(const char *username,
+					      const char *password,
+					      char **userpass_out)
 {
 	char *userpass;
 	size_t len;
@@ -1105,12 +1108,11 @@ browser_window__build_userpass(const char *username,
 /**
  * Handle a response from the UI when prompted for credentials
  */
-static nserror
-browser_window__handle_userpass_response(nsurl *url,
-					 const char *realm,
-					 const char *username,
-					 const char *password,
-					 void *pw)
+static nserror browser_window__handle_userpass_response(nsurl *url,
+							const char *realm,
+							const char *username,
+							const char *password,
+							void *pw)
 {
 	struct browser_window *bw = (struct browser_window *)pw;
 	char *userpass;
@@ -1146,10 +1148,10 @@ browser_window__handle_userpass_response(nsurl *url,
  * Handle login request (BAD_AUTH) during fetch
  *
  */
-static nserror
-browser_window__handle_login(struct browser_window *bw,
-			     const char *realm,
-			     nsurl *url) {
+static nserror browser_window__handle_login(struct browser_window *bw,
+					    const char *realm,
+					    nsurl *url)
+{
 	char *username = NULL, *password = NULL;
 	nserror err = NSERROR_OK;
 	struct browser_fetch_parameters params;
@@ -1158,8 +1160,7 @@ browser_window__handle_login(struct browser_window *bw,
 
 	/* Step one, retrieve what we have */
 	err = browser_window__unpack_userpass(
-				      urldb_get_auth_details(url, realm),
-				      &username, &password);
+		urldb_get_auth_details(url, realm), &username, &password);
 	if (err != NSERROR_OK) {
 		goto out;
 	}
@@ -1167,7 +1168,9 @@ browser_window__handle_login(struct browser_window *bw,
 	/* Step two, construct our fetch parameters */
 	params.url = nsurl_ref(corestring_nsurl_about_query_auth);
 	params.referrer = nsurl_ref(url);
-	params.flags = BW_NAVIGATE_HISTORY | BW_NAVIGATE_NO_TERMINAL_HISTORY_UPDATE | BW_NAVIGATE_INTERNAL;
+	params.flags = BW_NAVIGATE_HISTORY |
+		       BW_NAVIGATE_NO_TERMINAL_HISTORY_UPDATE |
+		       BW_NAVIGATE_INTERNAL;
 
 	err = fetch_multipart_data_new_kv(&params.post_multipart,
 					  "siteurl",
@@ -1205,13 +1208,17 @@ browser_window__handle_login(struct browser_window *bw,
 		goto out;
 	}
 
-	err = guit->misc->login(url, realm, username, password,
-				browser_window__handle_userpass_response, bw);
+	err = guit->misc->login(url,
+				realm,
+				username,
+				password,
+				browser_window__handle_userpass_response,
+				bw);
 
 	if (err == NSERROR_NOT_IMPLEMENTED) {
 		err = NSERROR_OK;
 	}
- out:
+out:
 	if (username != NULL) {
 		free(username);
 	}
@@ -1227,8 +1234,7 @@ browser_window__handle_login(struct browser_window *bw,
  * Handle a certificate verification request (BAD_CERTS) during a fetch
  */
 static nserror
-browser_window__handle_bad_certs(struct browser_window *bw,
-				 nsurl *url)
+browser_window__handle_bad_certs(struct browser_window *bw, nsurl *url)
 {
 	struct browser_fetch_parameters params;
 	nserror err;
@@ -1241,7 +1247,9 @@ browser_window__handle_bad_certs(struct browser_window *bw,
 
 	params.url = nsurl_ref(corestring_nsurl_about_query_ssl);
 	params.referrer = nsurl_ref(url);
-	params.flags = BW_NAVIGATE_HISTORY | BW_NAVIGATE_NO_TERMINAL_HISTORY_UPDATE | BW_NAVIGATE_INTERNAL;
+	params.flags = BW_NAVIGATE_HISTORY |
+		       BW_NAVIGATE_NO_TERMINAL_HISTORY_UPDATE |
+		       BW_NAVIGATE_INTERNAL;
 
 	err = fetch_multipart_data_new_kv(&params.post_multipart,
 					  "siteurl",
@@ -1251,9 +1259,12 @@ browser_window__handle_bad_certs(struct browser_window *bw,
 	}
 
 	if (bw->loading_cert_chain != NULL) {
-		for (depth = 0; depth < bw->loading_cert_chain->depth; ++depth) {
-			size_t idx = bw->loading_cert_chain->depth - (depth + 1);
-			ssl_cert_err err = bw->loading_cert_chain->certs[idx].err;
+		for (depth = 0; depth < bw->loading_cert_chain->depth;
+		     ++depth) {
+			size_t idx = bw->loading_cert_chain->depth -
+				     (depth + 1);
+			ssl_cert_err err =
+				bw->loading_cert_chain->certs[idx].err;
 			if (err != SSL_CERT_ERR_OK) {
 				reason = messages_get_sslcode(err);
 				break;
@@ -1287,7 +1298,7 @@ browser_window__handle_bad_certs(struct browser_window *bw,
 		goto out;
 	}
 
- out:
+out:
 	browser_window__free_fetch_parameters(&params);
 	if (chainurl != NULL)
 		nsurl_unref(chainurl);
@@ -1308,7 +1319,9 @@ browser_window__handle_timeout(struct browser_window *bw, nsurl *url)
 
 	params.url = nsurl_ref(corestring_nsurl_about_query_timeout);
 	params.referrer = nsurl_ref(url);
-	params.flags = BW_NAVIGATE_HISTORY | BW_NAVIGATE_NO_TERMINAL_HISTORY_UPDATE | BW_NAVIGATE_INTERNAL;
+	params.flags = BW_NAVIGATE_HISTORY |
+		       BW_NAVIGATE_NO_TERMINAL_HISTORY_UPDATE |
+		       BW_NAVIGATE_INTERNAL;
 
 	err = fetch_multipart_data_new_kv(&params.post_multipart,
 					  "siteurl",
@@ -1324,7 +1337,7 @@ browser_window__handle_timeout(struct browser_window *bw, nsurl *url)
 		goto out;
 	}
 
- out:
+out:
 	browser_window__free_fetch_parameters(&params);
 	return err;
 }
@@ -1333,21 +1346,26 @@ browser_window__handle_timeout(struct browser_window *bw, nsurl *url)
 /**
  * Handle non specific errors during a fetch
  */
-static nserror
-browser_window__handle_fetcherror(struct browser_window *bw,
-				  const char *reason,
-				  nsurl *url)
+static nserror browser_window__handle_fetcherror(struct browser_window *bw,
+						 const char *reason,
+						 nsurl *url)
 {
 	struct browser_fetch_parameters params;
 	nserror err;
 
 	memset(&params, 0, sizeof(params));
 
-	NSLOG(neosurf, ERROR, "Fetch error for %s: %s", nsurl_access(url), reason);
+	NSLOG(neosurf,
+	      ERROR,
+	      "Fetch error for %s: %s",
+	      nsurl_access(url),
+	      reason);
 
 	params.url = nsurl_ref(corestring_nsurl_about_query_fetcherror);
 	params.referrer = nsurl_ref(url);
-	params.flags = BW_NAVIGATE_HISTORY | BW_NAVIGATE_NO_TERMINAL_HISTORY_UPDATE | BW_NAVIGATE_INTERNAL;
+	params.flags = BW_NAVIGATE_HISTORY |
+		       BW_NAVIGATE_NO_TERMINAL_HISTORY_UPDATE |
+		       BW_NAVIGATE_INTERNAL;
 
 	err = fetch_multipart_data_new_kv(&params.post_multipart,
 					  "siteurl",
@@ -1370,7 +1388,7 @@ browser_window__handle_fetcherror(struct browser_window *bw,
 		goto out;
 	}
 
- out:
+out:
 	browser_window__free_fetch_parameters(&params);
 	return err;
 }
@@ -1379,10 +1397,9 @@ browser_window__handle_fetcherror(struct browser_window *bw,
 /**
  * Handle errors during content fetch
  */
-static nserror
-browser_window__handle_error(struct browser_window *bw,
-			     hlcache_handle *c,
-			     const hlcache_event *event)
+static nserror browser_window__handle_error(struct browser_window *bw,
+					    hlcache_handle *c,
+					    const hlcache_event *event)
 {
 	const char *message = event->data.errordata.errormsg;
 	nserror code = event->data.errordata.errorcode;
@@ -1392,8 +1409,12 @@ browser_window__handle_error(struct browser_window *bw,
 	/* Unexpected OK? */
 	/* assert(code != NSERROR_OK); */
 	if (code == NSERROR_OK) {
-		NSLOG(neosurf, ERROR, "Received CONTENT_MSG_ERROR with NSERROR_OK! Message: %s", 
-		      event->data.errordata.errormsg ? event->data.errordata.errormsg : "NULL");
+		NSLOG(neosurf,
+		      ERROR,
+		      "Received CONTENT_MSG_ERROR with NSERROR_OK! Message: %s",
+		      event->data.errordata.errormsg
+			      ? event->data.errordata.errormsg
+			      : "NULL");
 		code = NSERROR_UNKNOWN;
 	}
 
@@ -1403,8 +1424,12 @@ browser_window__handle_error(struct browser_window *bw,
 		message = messages_get(message);
 	}
 
-	NSLOG(neosurf, INFO, "browser_window__handle_error: code=%d message='%s' url='%s'", 
-	      code, message, nsurl_access(url));
+	NSLOG(neosurf,
+	      INFO,
+	      "browser_window__handle_error: code=%d message='%s' url='%s'",
+	      code,
+	      message,
+	      nsurl_access(url));
 
 	if (c == bw->loading_content) {
 		bw->loading_content = NULL;
@@ -1504,8 +1529,8 @@ browser_window_callback(hlcache_handle *c, const hlcache_event *event, void *pw)
 #endif
 		{
 			bw->refresh_interval = -1;
-			browser_window_set_status(bw,
-						  content_get_status_message(c));
+			browser_window_set_status(
+				bw, content_get_status_message(c));
 		}
 		break;
 
@@ -1530,7 +1555,8 @@ browser_window_callback(hlcache_handle *c, const hlcache_event *event, void *pw)
 		if (urldb_add_url(event->data.redirect.from)) {
 			urldb_update_url_visit_data(event->data.redirect.from);
 		}
-		browser_window_refresh_url_bar_internal(bw, event->data.redirect.to);
+		browser_window_refresh_url_bar_internal(
+			bw, event->data.redirect.to);
 		break;
 
 	case CONTENT_MSG_STATUS:
@@ -1540,7 +1566,7 @@ browser_window_callback(hlcache_handle *c, const hlcache_event *event, void *pw)
 			if (bw->loading_content != NULL) {
 				/* Give preference to any loading content */
 				status = content_get_status_message(
-							bw->loading_content);
+					bw->loading_content);
 			}
 
 			if (status == NULL) {
@@ -1552,8 +1578,8 @@ browser_window_callback(hlcache_handle *c, const hlcache_event *event, void *pw)
 			}
 		} else {
 			/* Object content wants to set explicit message */
-			browser_window_set_status(bw,
-					event->data.explicit_status_text);
+			browser_window_set_status(
+				bw, event->data.explicit_status_text);
 		}
 		break;
 
@@ -1575,174 +1601,165 @@ browser_window_callback(hlcache_handle *c, const hlcache_event *event, void *pw)
 		}
 		break;
 
-	case CONTENT_MSG_REDRAW:
-		{
-			struct rect rect = {
-					    .x0 = event->data.redraw.x,
-					    .y0 = event->data.redraw.y,
-					    .x1 = event->data.redraw.x + event->data.redraw.width,
-					    .y1 = event->data.redraw.y + event->data.redraw.height
-			};
+	case CONTENT_MSG_REDRAW: {
+		struct rect rect = {
+			.x0 = event->data.redraw.x,
+			.y0 = event->data.redraw.y,
+			.x1 = event->data.redraw.x + event->data.redraw.width,
+			.y1 = event->data.redraw.y + event->data.redraw.height};
 
-			browser_window_invalidate_rect(bw, &rect);
-		}
-		break;
+		browser_window_invalidate_rect(bw, &rect);
+	} break;
 
 	case CONTENT_MSG_REFRESH:
 		bw->refresh_interval = event->data.delay * 100;
-		NSLOG(neosurf, INFO, "CONTENT_MSG_REFRESH received. Scheduling refresh in %d ms", bw->refresh_interval * 10);
+		NSLOG(neosurf,
+		      INFO,
+		      "CONTENT_MSG_REFRESH received. Scheduling refresh in %d ms",
+		      bw->refresh_interval * 10);
 		guit->misc->schedule(bw->refresh_interval * 10,
-				     browser_window_refresh, bw);
+				     browser_window_refresh,
+				     bw);
 		break;
 
 	case CONTENT_MSG_LINK: /* content has an rfc5988 link element */
-		{
-			bool match;
+	{
+		bool match;
 
-			/* Handle "icon" and "shortcut icon" */
-			if ((lwc_string_caseless_isequal(
-							 event->data.rfc5988_link->rel,
-							 corestring_lwc_icon,
-							 &match) == lwc_error_ok && match) ||
-			    (lwc_string_caseless_isequal(
-							 event->data.rfc5988_link->rel,
-							 corestring_lwc_shortcut_icon,
-							 &match) == lwc_error_ok && match)) {
-				/* it's a favicon perhaps start a fetch for it */
-				browser_window_update_favicon(c, bw,
+		/* Handle "icon" and "shortcut icon" */
+		if ((lwc_string_caseless_isequal(event->data.rfc5988_link->rel,
+						 corestring_lwc_icon,
+						 &match) == lwc_error_ok &&
+		     match) ||
+		    (lwc_string_caseless_isequal(event->data.rfc5988_link->rel,
+						 corestring_lwc_shortcut_icon,
+						 &match) == lwc_error_ok &&
+		     match)) {
+			/* it's a favicon perhaps start a fetch for it */
+			browser_window_update_favicon(c,
+						      bw,
 						      event->data.rfc5988_link);
-			}
 		}
-		break;
+	} break;
 
-	case CONTENT_MSG_GETTHREAD:
-		{
-			/* only the content object created by the browser
-			 * window requires a new javascript thread object
+	case CONTENT_MSG_GETTHREAD: {
+		/* only the content object created by the browser
+		 * window requires a new javascript thread object
+		 */
+		jsthread *thread;
+		assert(bw->loading_content == c);
+
+		if (js_newthread(bw->jsheap,
+				 bw,
+				 hlcache_handle_get_content(c),
+				 &thread) == NSERROR_OK) {
+			/* The content which is requesting the thread
+			 * is required to keep hold of it and
+			 * to destroy it when it is finished with it.
 			 */
-			jsthread *thread;
-			assert(bw->loading_content == c);
-
-			if (js_newthread(bw->jsheap,
-					 bw,
-					 hlcache_handle_get_content(c),
-					 &thread) == NSERROR_OK) {
-				/* The content which is requesting the thread
-				 * is required to keep hold of it and
-				 * to destroy it when it is finished with it.
-				 */
-				*(event->data.jsthread) = thread;
-			}
+			*(event->data.jsthread) = thread;
 		}
+	} break;
+
+	case CONTENT_MSG_GETDIMS: {
+		int width;
+		int height;
+
+		browser_window_get_dimensions(bw, &width, &height);
+
+		*(event->data.getdims.viewport_width) = width / bw->scale;
+		*(event->data.getdims.viewport_height) = height / bw->scale;
 		break;
+	}
 
-	case CONTENT_MSG_GETDIMS:
-		{
-			int width;
-			int height;
+	case CONTENT_MSG_SCROLL: {
+		struct rect rect = {
+			.x0 = event->data.scroll.x0,
+			.y0 = event->data.scroll.y0,
+		};
 
-			browser_window_get_dimensions(bw, &width, &height);
-
-			*(event->data.getdims.viewport_width) = width / bw->scale;
-			*(event->data.getdims.viewport_height) = height / bw->scale;
+		/* Content wants to be scrolled */
+		if (bw->current_content != c) {
 			break;
 		}
 
-	case CONTENT_MSG_SCROLL:
-		{
-			struct rect rect = {
-					    .x0 = event->data.scroll.x0,
-					    .y0 = event->data.scroll.y0,
-			};
+		if (event->data.scroll.area) {
+			rect.x1 = event->data.scroll.x1;
+			rect.y1 = event->data.scroll.y1;
+		} else {
+			rect.x1 = event->data.scroll.x0;
+			rect.y1 = event->data.scroll.y0;
+		}
+		browser_window_set_scroll(bw, &rect);
 
-			/* Content wants to be scrolled */
-			if (bw->current_content != c) {
-				break;
-			}
+		break;
+	}
 
-			if (event->data.scroll.area) {
-				rect.x1 = event->data.scroll.x1;
-				rect.y1 = event->data.scroll.y1;
-			} else {
-				rect.x1 = event->data.scroll.x0;
-				rect.y1 = event->data.scroll.y0;
-			}
-			browser_window_set_scroll(bw, &rect);
+	case CONTENT_MSG_DRAGSAVE: {
+		/* Content wants drag save of a content */
+		struct browser_window *root = browser_window_get_root(bw);
+		hlcache_handle *save = event->data.dragsave.content;
 
+		if (save == NULL) {
+			save = c;
+		}
+
+		switch (event->data.dragsave.type) {
+		case CONTENT_SAVE_ORIG:
+			guit->window->drag_save_object(root->window,
+						       save,
+						       GUI_SAVE_OBJECT_ORIG);
+			break;
+
+		case CONTENT_SAVE_NATIVE:
+			guit->window->drag_save_object(root->window,
+						       save,
+						       GUI_SAVE_OBJECT_NATIVE);
+			break;
+
+		case CONTENT_SAVE_COMPLETE:
+			guit->window->drag_save_object(root->window,
+						       save,
+						       GUI_SAVE_COMPLETE);
+			break;
+
+		case CONTENT_SAVE_SOURCE:
+			guit->window->drag_save_object(root->window,
+						       save,
+						       GUI_SAVE_SOURCE);
 			break;
 		}
+	} break;
 
-	case CONTENT_MSG_DRAGSAVE:
-		{
-			/* Content wants drag save of a content */
-			struct browser_window *root = browser_window_get_root(bw);
-			hlcache_handle *save = event->data.dragsave.content;
-
-			if (save == NULL) {
-				save = c;
-			}
-
-			switch(event->data.dragsave.type) {
-			case CONTENT_SAVE_ORIG:
-				guit->window->drag_save_object(root->window,
-							       save,
-							       GUI_SAVE_OBJECT_ORIG);
-				break;
-
-			case CONTENT_SAVE_NATIVE:
-				guit->window->drag_save_object(root->window,
-							       save,
-							       GUI_SAVE_OBJECT_NATIVE);
-				break;
-
-			case CONTENT_SAVE_COMPLETE:
-				guit->window->drag_save_object(root->window,
-							       save,
-							       GUI_SAVE_COMPLETE);
-				break;
-
-			case CONTENT_SAVE_SOURCE:
-				guit->window->drag_save_object(root->window,
-							       save,
-							       GUI_SAVE_SOURCE);
-				break;
-			}
-		}
-		break;
-
-	case CONTENT_MSG_SAVELINK:
-		{
-			/* Content wants a link to be saved */
-			struct browser_window *root = browser_window_get_root(bw);
-			guit->window->save_link(root->window,
-						event->data.savelink.url,
-						event->data.savelink.title);
-		}
-		break;
+	case CONTENT_MSG_SAVELINK: {
+		/* Content wants a link to be saved */
+		struct browser_window *root = browser_window_get_root(bw);
+		guit->window->save_link(root->window,
+					event->data.savelink.url,
+					event->data.savelink.title);
+	} break;
 
 	case CONTENT_MSG_POINTER:
 		/* Content wants to have specific mouse pointer */
 		browser_window_set_pointer(bw, event->data.pointer);
 		break;
 
-	case CONTENT_MSG_DRAG:
-		{
-			browser_drag_type bdt = DRAGGING_NONE;
+	case CONTENT_MSG_DRAG: {
+		browser_drag_type bdt = DRAGGING_NONE;
 
-			switch (event->data.drag.type) {
-			case CONTENT_DRAG_NONE:
-				bdt = DRAGGING_NONE;
-				break;
-			case CONTENT_DRAG_SCROLL:
-				bdt = DRAGGING_CONTENT_SCROLLBAR;
-				break;
-			case CONTENT_DRAG_SELECTION:
-				bdt = DRAGGING_SELECTION;
-				break;
-			}
-			browser_window_set_drag_type(bw, bdt, event->data.drag.rect);
+		switch (event->data.drag.type) {
+		case CONTENT_DRAG_NONE:
+			bdt = DRAGGING_NONE;
+			break;
+		case CONTENT_DRAG_SCROLL:
+			bdt = DRAGGING_CONTENT_SCROLLBAR;
+			break;
+		case CONTENT_DRAG_SELECTION:
+			bdt = DRAGGING_SELECTION;
+			break;
 		}
-		break;
+		browser_window_set_drag_type(bw, bdt, event->data.drag.rect);
+	} break;
 
 	case CONTENT_MSG_CARET:
 		switch (event->data.caret.type) {
@@ -1770,20 +1787,22 @@ browser_window_callback(hlcache_handle *c, const hlcache_event *event, void *pw)
 
 	case CONTENT_MSG_SELECTMENU:
 		if (event->data.select_menu.gadget->type == GADGET_SELECT) {
-			struct browser_window *root =
-				browser_window_get_root(bw);
-			guit->window->create_form_select_menu(root->window,
-							      event->data.select_menu.gadget);
+			struct browser_window *root = browser_window_get_root(
+				bw);
+			guit->window->create_form_select_menu(
+				root->window, event->data.select_menu.gadget);
 		}
 
 		break;
 
 	case CONTENT_MSG_GADGETCLICK:
 		if (event->data.gadget_click.gadget->type == GADGET_FILE) {
-			struct browser_window *root =
-				browser_window_get_root(bw);
-			guit->window->file_gadget_open(root->window, c,
-						       event->data.gadget_click.gadget);
+			struct browser_window *root = browser_window_get_root(
+				bw);
+			guit->window->file_gadget_open(
+				root->window,
+				c,
+				event->data.gadget_click.gadget);
 		}
 
 		break;
@@ -1807,8 +1826,9 @@ browser_window_callback(hlcache_handle *c, const hlcache_event *event, void *pw)
 			break;
 
 		case CONTENT_TEXTSEARCH_FORWARD:
-			guit->search->forward_state(event->data.textsearch.state,
-						    event->data.textsearch.ctx);
+			guit->search->forward_state(
+				event->data.textsearch.state,
+				event->data.textsearch.ctx);
 			break;
 
 		case CONTENT_TEXTSEARCH_RECENT:
@@ -1866,8 +1886,10 @@ nserror browser_window_destroy_internal(struct browser_window *bw)
 
 	/* clear any pending callbacks */
 	guit->misc->schedule(-1, browser_window_refresh, bw);
-	NSLOG(neosurf, INFO,
-	      "Clearing reformat schedule for browser window %p", bw);
+	NSLOG(neosurf,
+	      INFO,
+	      "Clearing reformat schedule for browser window %p",
+	      bw);
 	guit->misc->schedule(-1, scheduled_reformat, bw);
 
 	/* If this brower window is not the root window, and has focus, unset
@@ -1940,8 +1962,11 @@ nserror browser_window_destroy_internal(struct browser_window *bw)
 	bw->status.text = NULL;
 	browser_window__free_fetch_parameters(&bw->current_parameters);
 	browser_window__free_fetch_parameters(&bw->loading_parameters);
-	NSLOG(neosurf, INFO, "Status text cache match:miss %d:%d",
-	      bw->status.match, bw->status.miss);
+	NSLOG(neosurf,
+	      INFO,
+	      "Status text cache match:miss %d:%d",
+	      bw->status.match,
+	      bw->status.miss);
 
 	return NSERROR_OK;
 }
@@ -1976,7 +2001,8 @@ browser_window_set_scale_internal(struct browser_window *bw, float scale)
 
 	/* scale frames */
 	for (i = 0; i < (bw->cols * bw->rows); i++) {
-		res = browser_window_set_scale_internal(&bw->children[i], scale);
+		res = browser_window_set_scale_internal(&bw->children[i],
+							scale);
 	}
 
 	/* scale iframes */
@@ -2023,8 +2049,7 @@ browser_window_find_target_internal(struct browser_window *bw,
 	if (bw->children != NULL) {
 		for (i = 0; i < (bw->cols * bw->rows); i++) {
 			if ((bw->children[i].name) &&
-			    (!strcasecmp(bw->children[i].name,
-					 target))) {
+			    (!strcasecmp(bw->children[i].name, target))) {
 				if ((page == &bw->children[i]) ||
 				    (depth > *rdepth)) {
 					*rdepth = depth;
@@ -2033,9 +2058,12 @@ browser_window_find_target_internal(struct browser_window *bw,
 			}
 			if (bw->children[i].children)
 				browser_window_find_target_internal(
-							    &bw->children[i],
-							    target, depth, page,
-							    rdepth, bw_target);
+					&bw->children[i],
+					target,
+					depth,
+					page,
+					rdepth,
+					bw_target);
 		}
 	}
 
@@ -2063,10 +2091,10 @@ browser_window_find_target_internal(struct browser_window *bw,
  * \todo Remove this function, once these things are associated with content,
  *       rather than bw.
  */
-static void
-browser_window_mouse_drag_end(struct browser_window *bw,
-			      browser_mouse_state mouse,
-			      int x, int y)
+static void browser_window_mouse_drag_end(struct browser_window *bw,
+					  browser_mouse_state mouse,
+					  int x,
+					  int y)
 {
 	int scr_x, scr_y;
 
@@ -2115,10 +2143,10 @@ browser_window_mouse_drag_end(struct browser_window *bw,
  * \param x The scaled x co-ordinate of the event
  * \param y The scaled y co-ordinate of the event
  */
-static void
-browser_window_mouse_click_internal(struct browser_window *bw,
-				    browser_mouse_state mouse,
-				    int x, int y)
+static void browser_window_mouse_click_internal(struct browser_window *bw,
+						browser_mouse_state mouse,
+						int x,
+						int y)
 {
 	hlcache_handle *c = bw->current_content;
 	const char *status = NULL;
@@ -2134,8 +2162,7 @@ browser_window_mouse_click_internal(struct browser_window *bw,
 
 			child = &bw->children[cur_child];
 
-			if ((x < child->x) ||
-			    (y < child->y) ||
+			if ((x < child->x) || (y < child->y) ||
 			    (child->x + child->width < x) ||
 			    (child->y + child->height < y)) {
 				/* Click not in this child */
@@ -2147,8 +2174,10 @@ browser_window_mouse_click_internal(struct browser_window *bw,
 			browser_window_mouse_click_internal(
 				child,
 				mouse,
-				x - child->x + scrollbar_get_offset(child->scroll_x),
-				y - child->y + scrollbar_get_offset(child->scroll_y));
+				x - child->x +
+					scrollbar_get_offset(child->scroll_x),
+				y - child->y +
+					scrollbar_get_offset(child->scroll_y));
 
 			/* Mouse action was for this child, we're done */
 			return;
@@ -2169,9 +2198,8 @@ browser_window_mouse_click_internal(struct browser_window *bw,
 		if (scr_x > 0 && scr_x < get_horz_scrollbar_len(bw) &&
 		    scr_y > 0 && scr_y < SCROLLBAR_WIDTH) {
 			status = scrollbar_mouse_status_to_message(
-					   scrollbar_mouse_action(
-						  bw->scroll_x, mouse,
-						  scr_x, scr_y));
+				scrollbar_mouse_action(
+					bw->scroll_x, mouse, scr_x, scr_y));
 			pointer = BROWSER_POINTER_DEFAULT;
 
 			if (status != NULL)
@@ -2191,11 +2219,8 @@ browser_window_mouse_click_internal(struct browser_window *bw,
 		if (scr_y > 0 && scr_y < get_vert_scrollbar_len(bw) &&
 		    scr_x > 0 && scr_x < SCROLLBAR_WIDTH) {
 			status = scrollbar_mouse_status_to_message(
-						scrollbar_mouse_action(
-							bw->scroll_y,
-							mouse,
-							scr_x,
-							scr_y));
+				scrollbar_mouse_action(
+					bw->scroll_y, mouse, scr_x, scr_y));
 			pointer = BROWSER_POINTER_DEFAULT;
 
 			if (status != NULL) {
@@ -2209,31 +2234,29 @@ browser_window_mouse_click_internal(struct browser_window *bw,
 
 	switch (content_get_type(c)) {
 	case CONTENT_HTML:
-	case CONTENT_TEXTPLAIN:
-		{
-			/* Give bw focus */
-			struct browser_window *root_bw = browser_window_get_root(bw);
-			if (bw != root_bw->focus) {
-				browser_window_remove_caret(bw, false);
-				browser_window_set_selection(bw, false, true);
-				root_bw->focus = bw;
-			}
-
-			/* Pass mouse action to content */
-			content_mouse_action(c, bw, mouse, x, y);
+	case CONTENT_TEXTPLAIN: {
+		/* Give bw focus */
+		struct browser_window *root_bw = browser_window_get_root(bw);
+		if (bw != root_bw->focus) {
+			browser_window_remove_caret(bw, false);
+			browser_window_set_selection(bw, false, true);
+			root_bw->focus = bw;
 		}
-		break;
+
+		/* Pass mouse action to content */
+		content_mouse_action(c, bw, mouse, x, y);
+	} break;
 	default:
 		if (mouse & BROWSER_MOUSE_MOD_2) {
 			if (mouse & BROWSER_MOUSE_DRAG_2) {
-				guit->window->drag_save_object(bw->window, c,
-							       GUI_SAVE_OBJECT_NATIVE);
+				guit->window->drag_save_object(
+					bw->window, c, GUI_SAVE_OBJECT_NATIVE);
 			} else if (mouse & BROWSER_MOUSE_DRAG_1) {
-				guit->window->drag_save_object(bw->window, c,
-							       GUI_SAVE_OBJECT_ORIG);
+				guit->window->drag_save_object(
+					bw->window, c, GUI_SAVE_OBJECT_ORIG);
 			}
-		} else if (mouse & (BROWSER_MOUSE_DRAG_1 |
-				    BROWSER_MOUSE_DRAG_2)) {
+		} else if (mouse &
+			   (BROWSER_MOUSE_DRAG_1 | BROWSER_MOUSE_DRAG_2)) {
 			browser_window_page_drag_start(bw, x, y);
 			browser_window_set_pointer(bw, BROWSER_POINTER_MOVE);
 		}
@@ -2250,10 +2273,10 @@ browser_window_mouse_click_internal(struct browser_window *bw,
  * \param x The scaled x co-ordinate of the event
  * \param y The scaled y co-ordinate of the event
  */
-static void
-browser_window_mouse_track_internal(struct browser_window *bw,
-				    browser_mouse_state mouse,
-				    int x, int y)
+static void browser_window_mouse_track_internal(struct browser_window *bw,
+						browser_mouse_state mouse,
+						int x,
+						int y)
 {
 	hlcache_handle *c = bw->current_content;
 	const char *status = NULL;
@@ -2270,15 +2293,16 @@ browser_window_mouse_track_internal(struct browser_window *bw,
 		browser_window_get_position(drag_bw, true, &off_x, &off_y);
 
 		if (drag_bw->browser_window_type == BROWSER_WINDOW_FRAME) {
-			browser_window_mouse_track_internal(drag_bw,
-							    mouse,
-							    x - off_x,
-							    y - off_y);
+			browser_window_mouse_track_internal(
+				drag_bw, mouse, x - off_x, y - off_y);
 
-		} else if (drag_bw->browser_window_type == BROWSER_WINDOW_IFRAME) {
-			browser_window_mouse_track_internal(drag_bw, mouse,
-							    x - off_x / bw->scale,
-							    y - off_y / bw->scale);
+		} else if (drag_bw->browser_window_type ==
+			   BROWSER_WINDOW_IFRAME) {
+			browser_window_mouse_track_internal(
+				drag_bw,
+				mouse,
+				x - off_x / bw->scale,
+				y - off_y / bw->scale);
 		}
 		return;
 	}
@@ -2293,8 +2317,7 @@ browser_window_mouse_track_internal(struct browser_window *bw,
 
 			child = &bw->children[cur_child];
 
-			if ((x < child->x) ||
-			    (y < child->y) ||
+			if ((x < child->x) || (y < child->y) ||
 			    (child->x + child->width < x) ||
 			    (child->y + child->height < y)) {
 				/* Click not in this child */
@@ -2306,8 +2329,10 @@ browser_window_mouse_track_internal(struct browser_window *bw,
 			browser_window_mouse_track_internal(
 				child,
 				mouse,
-				x - child->x + scrollbar_get_offset(child->scroll_x),
-				y - child->y + scrollbar_get_offset(child->scroll_y));
+				x - child->x +
+					scrollbar_get_offset(child->scroll_x),
+				y - child->y +
+					scrollbar_get_offset(child->scroll_y));
 
 			/* Mouse action was for this child, we're done */
 			return;
@@ -2334,17 +2359,13 @@ browser_window_mouse_track_internal(struct browser_window *bw,
 		scr_y = y - scr_y - scrollbar_get_offset(bw->scroll_y);
 
 		if ((bw->drag.type == DRAGGING_SCR_X) ||
-		    (scr_x > 0 &&
-		     scr_x < get_horz_scrollbar_len(bw) &&
-		     scr_y > 0 &&
-		     scr_y < SCROLLBAR_WIDTH &&
+		    (scr_x > 0 && scr_x < get_horz_scrollbar_len(bw) &&
+		     scr_y > 0 && scr_y < SCROLLBAR_WIDTH &&
 		     bw->drag.type == DRAGGING_NONE)) {
 			/* Start a scrollbar drag, or continue existing drag */
 			status = scrollbar_mouse_status_to_message(
-					scrollbar_mouse_action(bw->scroll_x,
-							       mouse,
-							       scr_x,
-							       scr_y));
+				scrollbar_mouse_action(
+					bw->scroll_x, mouse, scr_x, scr_y));
 			pointer = BROWSER_POINTER_DEFAULT;
 
 			if (status != NULL) {
@@ -2364,17 +2385,13 @@ browser_window_mouse_track_internal(struct browser_window *bw,
 		scr_y = y - scr_y - scrollbar_get_offset(bw->scroll_y);
 
 		if ((bw->drag.type == DRAGGING_SCR_Y) ||
-		    (scr_y > 0 &&
-		     scr_y < get_vert_scrollbar_len(bw) &&
-		     scr_x > 0 &&
-		     scr_x < SCROLLBAR_WIDTH &&
+		    (scr_y > 0 && scr_y < get_vert_scrollbar_len(bw) &&
+		     scr_x > 0 && scr_x < SCROLLBAR_WIDTH &&
 		     bw->drag.type == DRAGGING_NONE)) {
 			/* Start a scrollbar drag, or continue existing drag */
 			status = scrollbar_mouse_status_to_message(
-					scrollbar_mouse_action(bw->scroll_y,
-							       mouse,
-							       scr_x,
-							       scr_y));
+				scrollbar_mouse_action(
+					bw->scroll_y, mouse, scr_x, scr_y));
 			pointer = BROWSER_POINTER_DEFAULT;
 
 			if (status != NULL) {
@@ -2417,10 +2434,11 @@ browser_window_mouse_track_internal(struct browser_window *bw,
  * \param x The scaled x co-ordinate of the event
  * \param y The scaled y co-ordinate of the event
  */
-static bool
-browser_window_scroll_at_point_internal(struct browser_window *bw,
-					int x, int y,
-					int scrx, int scry)
+static bool browser_window_scroll_at_point_internal(struct browser_window *bw,
+						    int x,
+						    int y,
+						    int scrx,
+						    int scry)
 {
 	assert(bw != NULL);
 
@@ -2447,23 +2465,21 @@ browser_window_scroll_at_point_internal(struct browser_window *bw,
 
 			/* Pass request into this child */
 			return browser_window_scroll_at_point_internal(
-								bwc,
-								(x - bwc->x),
-								(y - bwc->y),
-								scrx, scry);
+				bwc, (x - bwc->x), (y - bwc->y), scrx, scry);
 		}
 	}
 
 	/* Try to scroll any current content */
 	if (bw->current_content != NULL &&
-	    content_scroll_at_point(bw->current_content, x, y, scrx, scry) == true) {
+	    content_scroll_at_point(bw->current_content, x, y, scrx, scry) ==
+		    true) {
 		/* Scroll handled by current content */
 		return true;
 	}
 
 	/* Try to scroll this window. */
 	return (int)scrollbar_scroll(bw->scroll_y, scry) |
-		(int)scrollbar_scroll(bw->scroll_x, scrx);
+	       (int)scrollbar_scroll(bw->scroll_x, scrx);
 }
 
 
@@ -2477,7 +2493,8 @@ browser_window_scroll_at_point_internal(struct browser_window *bw,
  */
 static bool
 browser_window_drop_file_at_point_internal(struct browser_window *bw,
-					   int x, int y,
+					   int x,
+					   int y,
 					   char *file)
 {
 	assert(bw != NULL);
@@ -2505,17 +2522,14 @@ browser_window_drop_file_at_point_internal(struct browser_window *bw,
 
 			/* Pass request into this child */
 			return browser_window_drop_file_at_point_internal(
-								bwc,
-								(x - bwc->x),
-								(y - bwc->y),
-								file);
+				bwc, (x - bwc->x), (y - bwc->y), file);
 		}
 	}
 
 	/* Pass file drop on to any content */
 	if (bw->current_content != NULL) {
-		return content_drop_file_at_point(bw->current_content,
-						  x, y, file);
+		return content_drop_file_at_point(
+			bw->current_content, x, y, file);
 	}
 
 	return false;
@@ -2531,8 +2545,7 @@ browser_window_drop_file_at_point_internal(struct browser_window *bw,
  * \param url The URL to check
  * \return true if an internal navigation url else false
  */
-static bool
-is_internal_navigate_url(nsurl *url)
+static bool is_internal_navigate_url(nsurl *url)
 {
 	bool is_internal = false;
 	lwc_string *scheme, *path;
@@ -2546,9 +2559,11 @@ is_internal_navigate_url(nsurl *url)
 					is_internal = true;
 				} else if (path == corestring_lwc_query_ssl) {
 					is_internal = true;
-				} else if (path == corestring_lwc_query_timeout) {
+				} else if (path ==
+					   corestring_lwc_query_timeout) {
 					is_internal = true;
-				} else if (path == corestring_lwc_query_fetcherror) {
+				} else if (path ==
+					   corestring_lwc_query_fetcherror) {
 					is_internal = true;
 				}
 			}
@@ -2573,8 +2588,7 @@ browser_window_get_name(struct browser_window *bw, const char **out_name)
 
 
 /* exported interface, documented in neosurf/browser_window.h */
-nserror
-browser_window_set_name(struct browser_window *bw, const char *name)
+nserror browser_window_set_name(struct browser_window *bw, const char *name)
 {
 	char *nname = NULL;
 
@@ -2598,11 +2612,11 @@ browser_window_set_name(struct browser_window *bw, const char *name)
 
 
 /* exported interface, documented in neosurf/browser_window.h */
-bool
-browser_window_redraw(struct browser_window *bw,
-		      int x, int y,
-		      const struct rect *clip,
-		      const struct redraw_context *ctx)
+bool browser_window_redraw(struct browser_window *bw,
+			   int x,
+			   int y,
+			   const struct rect *clip,
+			   const struct redraw_context *ctx)
 {
 	struct redraw_context new_ctx = *ctx;
 	int width = 0;
@@ -2613,7 +2627,7 @@ browser_window_redraw(struct browser_window *bw,
 	struct rect content_clip;
 	nserror res;
 
-    NSLOG(neosurf, DEBUG, "PROFILER: START Browser window redraw %p", bw);
+	NSLOG(neosurf, DEBUG, "PROFILER: START Browser window redraw %p", bw);
 
 	if (bw == NULL) {
 		NSLOG(neosurf, INFO, "NULL browser window");
@@ -2623,16 +2637,16 @@ browser_window_redraw(struct browser_window *bw,
 	x /= bw->scale;
 	y /= bw->scale;
 
-	if ((bw->current_content == NULL) &&
-	    (bw->children == NULL)) {
+	if ((bw->current_content == NULL) && (bw->children == NULL)) {
 		/* Browser window has no content, render blank fill */
 		ctx->plot->clip(ctx, clip);
-		return (ctx->plot->rectangle(ctx, plot_style_fill_white, clip) == NSERROR_OK);
+		return (ctx->plot->rectangle(ctx,
+					     plot_style_fill_white,
+					     clip) == NSERROR_OK);
 	}
 
 	/* Browser window has content OR children (frames) */
-	if ((bw->window != NULL) &&
-	    (ctx->plot->option_knockout)) {
+	if ((bw->window != NULL) && (ctx->plot->option_knockout)) {
 		/* Root browser window: start knockout */
 		knockout_plot_start(ctx, &new_ctx);
 	}
@@ -2647,9 +2661,9 @@ browser_window_redraw(struct browser_window *bw,
 
 		if (bw->window != NULL) {
 			/* Root browser window; start with blank fill */
-			plot_ok &= (new_ctx.plot->rectangle(ctx,
-							    plot_style_fill_white,
-							    clip) == NSERROR_OK);
+			plot_ok &= (new_ctx.plot->rectangle(
+					    ctx, plot_style_fill_white, clip) ==
+				    NSERROR_OK);
 		}
 
 		/* Loop through all children of bw */
@@ -2661,9 +2675,9 @@ browser_window_redraw(struct browser_window *bw,
 			content_clip.x0 = (x + child->x) * child->scale;
 			content_clip.y0 = (y + child->y) * child->scale;
 			content_clip.x1 = content_clip.x0 +
-				child->width * child->scale;
+					  child->width * child->scale;
 			content_clip.y1 = content_clip.y0 +
-				child->height * child->scale;
+					  child->height * child->scale;
 
 			/* Intersect it with clip rectangle */
 			if (content_clip.x0 < clip->x0)
@@ -2730,8 +2744,10 @@ browser_window_redraw(struct browser_window *bw,
 		int pos_x = 0, pos_y = 0;
 		struct browser_window *rbw = browser_window_get_root(bw);
 		if (rbw != NULL) {
-			if (browser_window_get_dimensions(rbw, &root_w, &root_h) == NSERROR_OK) {
-				browser_window_get_position(bw, true, &pos_x, &pos_y);
+			if (browser_window_get_dimensions(
+				    rbw, &root_w, &root_h) == NSERROR_OK) {
+				browser_window_get_position(
+					bw, true, &pos_x, &pos_y);
 				assert(root_w >= 0);
 				assert(root_h >= 0);
 			}
@@ -2741,8 +2757,17 @@ browser_window_redraw(struct browser_window *bw,
 		data.viewport_x = pos_x;
 		data.viewport_y = pos_y;
 
-		NSLOG(layout, INFO, "bw redraw baseline: bw %p pos_x %d pos_y %d scale %f root_w %d root_h %d content_clip x0 %d x1 %d",
-			bw, pos_x, pos_y, bw->scale, root_w, root_h, clip->x0, clip->x1);
+		NSLOG(layout,
+		      INFO,
+		      "bw redraw baseline: bw %p pos_x %d pos_y %d scale %f root_w %d root_h %d content_clip x0 %d x1 %d",
+		      bw,
+		      pos_x,
+		      pos_y,
+		      bw->scale,
+		      root_w,
+		      root_h,
+		      clip->x0,
+		      clip->x1);
 	}
 
 	content_clip = *clip;
@@ -2750,20 +2775,26 @@ browser_window_redraw(struct browser_window *bw,
 	if (!bw->window) {
 		int x0 = x * bw->scale;
 		int y0 = y * bw->scale;
-		int x1 = (x + bw->width - ((bw->scroll_y != NULL) ?
-					   SCROLLBAR_WIDTH : 0)) * bw->scale;
-		int y1 = (y + bw->height - ((bw->scroll_x != NULL) ?
-					    SCROLLBAR_WIDTH : 0)) * bw->scale;
+		int x1 = (x + bw->width -
+			  ((bw->scroll_y != NULL) ? SCROLLBAR_WIDTH : 0)) *
+			 bw->scale;
+		int y1 = (y + bw->height -
+			  ((bw->scroll_x != NULL) ? SCROLLBAR_WIDTH : 0)) *
+			 bw->scale;
 
-		if (content_clip.x0 < x0) content_clip.x0 = x0;
-		if (content_clip.y0 < y0) content_clip.y0 = y0;
-		if (x1 < content_clip.x1) content_clip.x1 = x1;
-		if (y1 < content_clip.y1) content_clip.y1 = y1;
+		if (content_clip.x0 < x0)
+			content_clip.x0 = x0;
+		if (content_clip.y0 < y0)
+			content_clip.y0 = y0;
+		if (x1 < content_clip.x1)
+			content_clip.x1 = x1;
+		if (y1 < content_clip.y1)
+			content_clip.y1 = y1;
 	}
 
 	/* Render the content */
-	plot_ok &= content_redraw(bw->current_content, &data,
-				  &content_clip, &new_ctx);
+	plot_ok &= content_redraw(
+		bw->current_content, &data, &content_clip, &new_ctx);
 
 	/* Back to full clip rect */
 	new_ctx.plot->clip(&new_ctx, clip);
@@ -2772,21 +2803,27 @@ browser_window_redraw(struct browser_window *bw,
 		/* Render scrollbars */
 		int off_x, off_y;
 		if (bw->scroll_x != NULL) {
-			browser_window_get_scrollbar_pos(bw, true,
-							 &off_x, &off_y);
+			browser_window_get_scrollbar_pos(
+				bw, true, &off_x, &off_y);
 			res = scrollbar_redraw(bw->scroll_x,
-					       x + off_x, y + off_y, clip,
-					       bw->scale, &new_ctx);
+					       x + off_x,
+					       y + off_y,
+					       clip,
+					       bw->scale,
+					       &new_ctx);
 			if (res != NSERROR_OK) {
 				plot_ok = false;
 			}
 		}
 		if (bw->scroll_y != NULL) {
-			browser_window_get_scrollbar_pos(bw, false,
-							 &off_x, &off_y);
+			browser_window_get_scrollbar_pos(
+				bw, false, &off_x, &off_y);
 			res = scrollbar_redraw(bw->scroll_y,
-					       x + off_x, y + off_y, clip,
-					       bw->scale, &new_ctx);
+					       x + off_x,
+					       y + off_y,
+					       clip,
+					       bw->scale,
+					       &new_ctx);
 			if (res != NSERROR_OK) {
 				plot_ok = false;
 			}
@@ -2798,7 +2835,7 @@ browser_window_redraw(struct browser_window *bw,
 		knockout_plot_end(ctx);
 	}
 
-    NSLOG(neosurf, DEBUG, "PROFILER: STOP Browser window redraw %p", bw);
+	NSLOG(neosurf, DEBUG, "PROFILER: STOP Browser window redraw %p", bw);
 	return plot_ok;
 }
 
@@ -2832,11 +2869,10 @@ void browser_window_update_extent(struct browser_window *bw)
 
 
 /* exported interface, documented in neosurf/browser_window.h */
-void
-browser_window_get_position(struct browser_window *bw,
-			    bool root,
-			    int *pos_x,
-			    int *pos_y)
+void browser_window_get_position(struct browser_window *bw,
+				 bool root,
+				 int *pos_x,
+				 int *pos_y)
 {
 	*pos_x = 0;
 	*pos_y = 0;
@@ -2860,9 +2896,9 @@ browser_window_get_position(struct browser_window *bw,
 			 * fall though */
 		case BROWSER_WINDOW_IFRAME:
 			*pos_x += (bw->x - scrollbar_get_offset(bw->scroll_x)) *
-				bw->scale;
+				  bw->scale;
 			*pos_y += (bw->y - scrollbar_get_offset(bw->scroll_y)) *
-				bw->scale;
+				  bw->scale;
 			break;
 		}
 
@@ -2887,7 +2923,8 @@ void browser_window_set_position(struct browser_window *bw, int x, int y)
 		bw->x = x;
 		bw->y = y;
 	} else {
-		NSLOG(neosurf, INFO,
+		NSLOG(neosurf,
+		      INFO,
 		      "Asked to set position of front end window.");
 		assert(0);
 	}
@@ -2895,10 +2932,9 @@ void browser_window_set_position(struct browser_window *bw, int x, int y)
 
 
 /* exported interface, documented in neosurf/browser_window.h */
-void
-browser_window_set_drag_type(struct browser_window *bw,
-			     browser_drag_type type,
-			     const struct rect *rect)
+void browser_window_set_drag_type(struct browser_window *bw,
+				  browser_drag_type type,
+				  const struct rect *rect)
 {
 	struct browser_window *top_bw = browser_window_get_root(bw);
 	gui_drag_type gtype;
@@ -2937,7 +2973,7 @@ browser_drag_type browser_window_get_drag_type(struct browser_window *bw)
 
 
 /* exported interface, documented in neosurf/browser_window.h */
-struct browser_window * browser_window_get_root(struct browser_window *bw)
+struct browser_window *browser_window_get_root(struct browser_window *bw)
 {
 	while (bw && bw->parent) {
 		bw = bw->parent;
@@ -2976,8 +3012,7 @@ bool browser_window_can_select(struct browser_window *bw)
 	/* TODO: We shouldn't have to know about specific content types
 	 *       here.  There should be a content_is_selectable() call. */
 	if (content_get_type(bw->current_content) != CONTENT_HTML &&
-	    content_get_type(bw->current_content) !=
-	    CONTENT_TEXTPLAIN)
+	    content_get_type(bw->current_content) != CONTENT_TEXTPLAIN)
 		return false;
 
 	return true;
@@ -2985,7 +3020,7 @@ bool browser_window_can_select(struct browser_window *bw)
 
 
 /* exported interface, documented in neosurf/browser_window.h */
-char * browser_window_get_selection(struct browser_window *bw)
+char *browser_window_get_selection(struct browser_window *bw)
 {
 	assert(bw->window);
 	assert(bw->parent == NULL);
@@ -3024,10 +3059,9 @@ bool browser_window_is_frameset(struct browser_window *bw)
 
 
 /* exported interface, documented in neosurf/browser_window.h */
-nserror
-browser_window_get_scrollbar_type(struct browser_window *bw,
-				  browser_scrolling *h,
-				  browser_scrolling *v)
+nserror browser_window_get_scrollbar_type(struct browser_window *bw,
+					  browser_scrolling *h,
+					  browser_scrolling *v)
 {
 	*h = bw->scrolling;
 	*v = bw->scrolling;
@@ -3037,10 +3071,10 @@ browser_window_get_scrollbar_type(struct browser_window *bw,
 
 
 /* exported interface, documented in neosurf/browser_window.h */
-nserror
-browser_window_get_features(struct browser_window *bw,
-			    int x, int y,
-			    struct browser_window_features *data)
+nserror browser_window_get_features(struct browser_window *bw,
+				    int x,
+				    int y,
+				    struct browser_window_features *data)
 {
 	/* clear the features structure to empty values */
 	data->link = NULL;
@@ -3050,55 +3084,47 @@ browser_window_get_features(struct browser_window *bw,
 	data->main = NULL;
 	data->form_features = CTX_FORM_NONE;
 
-	return browser_window__get_contextual_content(bw,
-						      x / bw->scale,
-						      y / bw->scale,
-						      data);
+	return browser_window__get_contextual_content(
+		bw, x / bw->scale, y / bw->scale, data);
 }
 
 
 /* exported interface, documented in neosurf/browser_window.h */
-bool
-browser_window_scroll_at_point(struct browser_window *bw,
-			       int x, int y,
-			       int scrx, int scry)
+bool browser_window_scroll_at_point(struct browser_window *bw,
+				    int x,
+				    int y,
+				    int scrx,
+				    int scry)
 {
-	return browser_window_scroll_at_point_internal(bw,
-						       x / bw->scale,
-						       y / bw->scale,
-						       scrx,
-						       scry);
+	return browser_window_scroll_at_point_internal(
+		bw, x / bw->scale, y / bw->scale, scrx, scry);
 }
 
 
 /* exported interface, documented in neosurf/browser_window.h */
-bool
-browser_window_drop_file_at_point(struct browser_window *bw,
-				  int x, int y,
-				  char *file)
+bool browser_window_drop_file_at_point(struct browser_window *bw,
+				       int x,
+				       int y,
+				       char *file)
 {
-	return browser_window_drop_file_at_point_internal(bw,
-							  x / bw->scale,
-							  y / bw->scale,
-							  file);
+	return browser_window_drop_file_at_point_internal(
+		bw, x / bw->scale, y / bw->scale, file);
 }
 
 
 /* exported interface, documented in neosurf/browser_window.h */
-void
-browser_window_set_gadget_filename(struct browser_window *bw,
-				   struct form_control *gadget,
-				   const char *fn)
+void browser_window_set_gadget_filename(struct browser_window *bw,
+					struct form_control *gadget,
+					const char *fn)
 {
 	html_set_file_gadget_filename(bw->current_content, gadget, fn);
 }
 
 
 /* exported interface, documented in neosurf/browser_window.h */
-nserror
-browser_window_debug_dump(struct browser_window *bw,
-			  FILE *f,
-			  enum content_debug op)
+nserror browser_window_debug_dump(struct browser_window *bw,
+				  FILE *f,
+				  enum content_debug op)
 {
 	if (bw->current_content != NULL) {
 		return content_debug_dump(bw->current_content, f, op);
@@ -3118,12 +3144,11 @@ nserror browser_window_debug(struct browser_window *bw, enum content_debug op)
 
 
 /* exported interface, documented in neosurf/browser_window.h */
-nserror
-browser_window_create(enum browser_window_create_flags flags,
-		      nsurl *url,
-		      nsurl *referrer,
-		      struct browser_window *existing,
-		      struct browser_window **bw)
+nserror browser_window_create(enum browser_window_create_flags flags,
+			      nsurl *url,
+			      nsurl *referrer,
+			      struct browser_window *existing,
+			      struct browser_window **bw)
 {
 	gui_window_create_flags gw_flags = GW_CREATE_NONE;
 	struct browser_window *ret;
@@ -3180,9 +3205,8 @@ browser_window_create(enum browser_window_create_flags flags,
 	if (flags & BW_CREATE_FOCUS_LOCATION)
 		gw_flags |= GW_CREATE_FOCUS_LOCATION;
 
-	ret->window = guit->window->create(ret,
-					   (existing != NULL) ? existing->window : NULL,
-					   gw_flags);
+	ret->window = guit->window->create(
+		ret, (existing != NULL) ? existing->window : NULL, gw_flags);
 
 	if (ret->window == NULL) {
 		browser_window_destroy(ret);
@@ -3198,13 +3222,8 @@ browser_window_create(enum browser_window_create_flags flags,
 		if (flags & BW_CREATE_HISTORY) {
 			nav_flags |= BW_NAVIGATE_HISTORY;
 		}
-		browser_window_navigate(ret,
-					url,
-					referrer,
-					nav_flags,
-					NULL,
-					NULL,
-					NULL);
+		browser_window_navigate(
+			ret, url, referrer, nav_flags, NULL, NULL, NULL);
 	}
 
 	if (bw != NULL) {
@@ -3216,10 +3235,9 @@ browser_window_create(enum browser_window_create_flags flags,
 
 
 /* exported internal interface, documented in desktop/browser_private.h */
-nserror
-browser_window_initialise_common(enum browser_window_create_flags flags,
-				 struct browser_window *bw,
-				 const struct browser_window *existing)
+nserror browser_window_initialise_common(enum browser_window_create_flags flags,
+					 struct browser_window *bw,
+					 const struct browser_window *existing)
 {
 	nserror err;
 	assert(bw);
@@ -3242,7 +3260,7 @@ browser_window_initialise_common(enum browser_window_create_flags flags,
 		err = browser_window_history_create(bw);
 
 		/* default scale */
-		bw->scale = (float) nsoption_int(scale) / 100.0;
+		bw->scale = (float)nsoption_int(scale) / 100.0;
 	}
 
 	if (err != NSERROR_OK)
@@ -3295,8 +3313,8 @@ nserror browser_window_refresh_url_bar(struct browser_window *bw)
 
 	if (bw->current_content == NULL) {
 		/* no content so return about:blank */
-		ret = browser_window_refresh_url_bar_internal(bw,
-						corestring_nsurl_about_blank);
+		ret = browser_window_refresh_url_bar_internal(
+			bw, corestring_nsurl_about_blank);
 	} else if (bw->throbbing && bw->loading_parameters.url != NULL) {
 		/* Throbbing and we have loading parameters, use those */
 		url = bw->loading_parameters.url;
@@ -3315,12 +3333,10 @@ nserror browser_window_refresh_url_bar(struct browser_window *bw)
 		} else {
 			url = hlcache_handle_get_url(bw->current_content);
 		}
-		ret = nsurl_refragment(
-				       url,
-				       bw->frag_id, &display_url);
+		ret = nsurl_refragment(url, bw->frag_id, &display_url);
 		if (ret == NSERROR_OK) {
-			ret = browser_window_refresh_url_bar_internal(bw,
-								display_url);
+			ret = browser_window_refresh_url_bar_internal(
+				bw, display_url);
 			nsurl_unref(display_url);
 		}
 	}
@@ -3330,14 +3346,13 @@ nserror browser_window_refresh_url_bar(struct browser_window *bw)
 
 
 /* exported interface documented in neosurf/browser_window.h */
-nserror
-browser_window_navigate(struct browser_window *bw,
-			nsurl *url,
-			nsurl *referrer,
-			enum browser_window_nav_flags flags,
-			char *post_urlenc,
-			struct fetch_multipart_data *post_multipart,
-			hlcache_handle *parent)
+nserror browser_window_navigate(struct browser_window *bw,
+				nsurl *url,
+				nsurl *referrer,
+				enum browser_window_nav_flags flags,
+				char *post_urlenc,
+				struct fetch_multipart_data *post_multipart,
+				hlcache_handle *parent)
 {
 	int depth = 0;
 	struct browser_window *cur;
@@ -3360,8 +3375,7 @@ browser_window_navigate(struct browser_window *bw,
 	 */
 	is_internal = is_internal_navigate_url(url);
 
-	if (is_internal &&
-	    !(flags & BW_NAVIGATE_INTERNAL)) {
+	if (is_internal && !(flags & BW_NAVIGATE_INTERNAL)) {
 		/* Internal navigation detected, but flag not set, only allow
 		 * this is there's a fetch multipart
 		 */
@@ -3383,10 +3397,8 @@ browser_window_navigate(struct browser_window *bw,
 	 * been suppressed.  In the suppressed case, the history code
 	 * updates the history itself before navigating.
 	 */
-	if (bw->current_content != NULL &&
-	    bw->history != NULL &&
-	    bw->history->current != NULL &&
-	    !is_internal &&
+	if (bw->current_content != NULL && bw->history != NULL &&
+	    bw->history->current != NULL && !is_internal &&
 	    !(flags & BW_NAVIGATE_NO_TERMINAL_HISTORY_UPDATE)) {
 		browser_window_history_update(bw, bw->current_content);
 	}
@@ -3428,12 +3440,8 @@ browser_window_navigate(struct browser_window *bw,
 
 	/* Get download out of the way */
 	if ((flags & BW_NAVIGATE_DOWNLOAD) != 0) {
-		error = browser_window_download(bw,
-						url,
-						referrer,
-						fetch_flags,
-						fetch_is_post,
-						&post);
+		error = browser_window_download(
+			bw, url, referrer, fetch_flags, fetch_is_post, &post);
 		nsurl_unref(url);
 		if (referrer != NULL) {
 			nsurl_unref(referrer);
@@ -3454,17 +3462,16 @@ browser_window_navigate(struct browser_window *bw,
 		/* Compare new URL with existing one (ignoring fragments) */
 		if ((bw->current_content != NULL) &&
 		    (hlcache_handle_get_url(bw->current_content) != NULL)) {
-			same_url = nsurl_compare(
-				url,
-				hlcache_handle_get_url(bw->current_content),
-				NSURL_COMPLETE);
+			same_url = nsurl_compare(url,
+						 hlcache_handle_get_url(
+							 bw->current_content),
+						 NSURL_COMPLETE);
 		}
 
 		/* if we're simply moving to another ID on the same page,
 		 * don't bother to fetch, just update the window.
 		 */
-		if ((same_url) &&
-		    (fetch_is_post == false) &&
+		if ((same_url) && (fetch_is_post == false) &&
 		    (nsurl_has_component(url, NSURL_QUERY) == false)) {
 			nsurl_unref(url);
 
@@ -3508,7 +3515,8 @@ browser_window_navigate(struct browser_window *bw,
 	}
 
 	if (post_multipart != NULL) {
-		params.post_multipart = fetch_multipart_data_clone(post_multipart);
+		params.post_multipart = fetch_multipart_data_clone(
+			post_multipart);
 	}
 
 	if (parent != NULL) {
@@ -3521,7 +3529,8 @@ browser_window_navigate(struct browser_window *bw,
 	if (is_internal) {
 		pass_params = &params;
 	} else {
-		/* At this point, we're navigating, so store the fetch parameters */
+		/* At this point, we're navigating, so store the fetch
+		 * parameters */
 		browser_window__free_fetch_parameters(&bw->loading_parameters);
 		memcpy(&bw->loading_parameters, &params, sizeof(params));
 		memset(&params, 0, sizeof(params));
@@ -3547,9 +3556,8 @@ browser_window_navigate(struct browser_window *bw,
 /**
  * Internal navigation handler for normal fetches
  */
-static nserror
-navigate_internal_real(struct browser_window *bw,
-		       struct browser_fetch_parameters *params)
+static nserror navigate_internal_real(struct browser_window *bw,
+				      struct browser_fetch_parameters *params)
 {
 	uint32_t fetch_flags = 0;
 	bool fetch_is_post;
@@ -3560,7 +3568,8 @@ navigate_internal_real(struct browser_window *bw,
 
 	NSLOG(neosurf, INFO, "Loading '%s'", nsurl_access(params->url));
 
-	fetch_is_post = (params->post_urlenc != NULL || params->post_multipart != NULL);
+	fetch_is_post = (params->post_urlenc != NULL ||
+			 params->post_multipart != NULL);
 
 	/* Clear SSL info for load */
 	cert_chain_free(bw->loading_cert_chain);
@@ -3598,7 +3607,8 @@ navigate_internal_real(struct browser_window *bw,
 				      fetch_is_post ? &post : NULL,
 				      browser_window_callback,
 				      bw,
-				      params->parent_charset != NULL ? &child : NULL,
+				      params->parent_charset != NULL ? &child
+								     : NULL,
 				      CONTENT_ANY,
 				      &c);
 
@@ -3610,8 +3620,8 @@ navigate_internal_real(struct browser_window *bw,
 			guit->window->set_icon(bw->window, NULL);
 		}
 		if (bw->internal_nav == false) {
-			res = browser_window_refresh_url_bar_internal(bw,
-								      params->url);
+			res = browser_window_refresh_url_bar_internal(
+				bw, params->url);
 		}
 		break;
 
@@ -3625,7 +3635,6 @@ navigate_internal_real(struct browser_window *bw,
 	default: /* report error to user */
 		browser_window_set_status(bw, messages_get_errorcode(res));
 		break;
-
 	}
 
 	/* Record time */
@@ -3653,8 +3662,10 @@ navigate_internal_query_auth(struct browser_window *bw,
 
 	assert(params->post_multipart != NULL);
 
-	is_login = fetch_multipart_data_find(params->post_multipart, "login") != NULL;
-	is_cancel = fetch_multipart_data_find(params->post_multipart, "cancel") != NULL;
+	is_login = fetch_multipart_data_find(params->post_multipart, "login") !=
+		   NULL;
+	is_cancel = fetch_multipart_data_find(params->post_multipart,
+					      "cancel") != NULL;
 
 	if (!(is_login || is_cancel)) {
 		/* This is a request, so pass it on */
@@ -3666,22 +3677,28 @@ navigate_internal_query_auth(struct browser_window *bw,
 		 * about:blank
 		 */
 		browser_window__free_fetch_parameters(&bw->loading_parameters);
-		bw->loading_parameters.url = nsurl_ref(corestring_nsurl_about_blank);
-		bw->loading_parameters.flags = BW_NAVIGATE_NO_TERMINAL_HISTORY_UPDATE | BW_NAVIGATE_INTERNAL;
+		bw->loading_parameters.url = nsurl_ref(
+			corestring_nsurl_about_blank);
+		bw->loading_parameters.flags =
+			BW_NAVIGATE_NO_TERMINAL_HISTORY_UPDATE |
+			BW_NAVIGATE_INTERNAL;
 		bw->internal_nav = true;
-		return browser_window__navigate_internal(bw, &bw->loading_parameters);
+		return browser_window__navigate_internal(
+			bw, &bw->loading_parameters);
 	}
 
 	/* We're processing a "login" attempt from the form */
 
 	/* Retrieve the data */
-	username = fetch_multipart_data_find(params->post_multipart, "username");
-	password = fetch_multipart_data_find(params->post_multipart, "password");
+	username = fetch_multipart_data_find(params->post_multipart,
+					     "username");
+	password = fetch_multipart_data_find(params->post_multipart,
+					     "password");
 	realm = fetch_multipart_data_find(params->post_multipart, "realm");
 	siteurl = fetch_multipart_data_find(params->post_multipart, "siteurl");
 
-	if (username == NULL || password == NULL ||
-	    realm == NULL || siteurl == NULL) {
+	if (username == NULL || password == NULL || realm == NULL ||
+	    siteurl == NULL) {
 		/* Bad inputs, simply fail */
 		return NSERROR_INVALID;
 	}
@@ -3728,8 +3745,10 @@ navigate_internal_query_ssl(struct browser_window *bw,
 
 	assert(params->post_multipart != NULL);
 
-	is_proceed = fetch_multipart_data_find(params->post_multipart, "proceed") != NULL;
-	is_back = fetch_multipart_data_find(params->post_multipart, "back") != NULL;
+	is_proceed = fetch_multipart_data_find(params->post_multipart,
+					       "proceed") != NULL;
+	is_back = fetch_multipart_data_find(params->post_multipart, "back") !=
+		  NULL;
 	siteurl = fetch_multipart_data_find(params->post_multipart, "siteurl");
 
 	if (!(is_proceed || is_back) || siteurl == NULL) {
@@ -3740,7 +3759,8 @@ navigate_internal_query_ssl(struct browser_window *bw,
 	if (nsurl_create(siteurl, &siteurl_ns) != NSERROR_OK) {
 		NSLOG(neosurf, ERROR, "Unable to reset ssl loading parameters");
 	} else {
-		/* In order that we may proceed, replace the loading parameters */
+		/* In order that we may proceed, replace the loading parameters
+		 */
 		nsurl_unref(bw->loading_parameters.url);
 		bw->loading_parameters.url = siteurl_ns;
 	}
@@ -3765,8 +3785,10 @@ navigate_internal_query_timeout(struct browser_window *bw,
 
 	assert(params->post_multipart != NULL);
 
-	is_retry = fetch_multipart_data_find(params->post_multipart, "retry") != NULL;
-	is_back = fetch_multipart_data_find(params->post_multipart, "back") != NULL;
+	is_retry = fetch_multipart_data_find(params->post_multipart, "retry") !=
+		   NULL;
+	is_back = fetch_multipart_data_find(params->post_multipart, "back") !=
+		  NULL;
 
 	if (is_back) {
 		/* do a rough-and-ready nav to the old 'current'
@@ -3801,8 +3823,10 @@ navigate_internal_query_fetcherror(struct browser_window *bw,
 
 	assert(params->post_multipart != NULL);
 
-	is_retry = fetch_multipart_data_find(params->post_multipart, "retry") != NULL;
-	is_back = fetch_multipart_data_find(params->post_multipart, "back") != NULL;
+	is_retry = fetch_multipart_data_find(params->post_multipart, "retry") !=
+		   NULL;
+	is_back = fetch_multipart_data_find(params->post_multipart, "back") !=
+		  NULL;
 
 	if (is_back) {
 		/* do a rough-and-ready nav to the old 'current'
@@ -3869,7 +3893,7 @@ browser_window__navigate_internal(struct browser_window *bw,
 
 	/* Fall through to a normal about: fetch */
 
- normal_fetch:
+normal_fetch:
 	return navigate_internal_real(bw, params);
 }
 
@@ -3881,12 +3905,12 @@ bool browser_window_up_available(struct browser_window *bw)
 
 	if (bw != NULL && bw->current_content != NULL) {
 		nsurl *parent;
-		nserror	err;
+		nserror err;
 		err = nsurl_parent(hlcache_handle_get_url(bw->current_content),
 				   &parent);
 		if (err == NSERROR_OK) {
 			result = nsurl_compare(hlcache_handle_get_url(
-						      bw->current_content),
+						       bw->current_content),
 					       parent,
 					       NSURL_COMPLETE) == false;
 			nsurl_unref(parent);
@@ -3920,12 +3944,16 @@ nserror browser_window_navigate_up(struct browser_window *bw, bool new_window)
 	}
 
 	if (new_window) {
-		err = browser_window_create(BW_CREATE_CLONE,
-					    parent, NULL, bw, NULL);
+		err = browser_window_create(
+			BW_CREATE_CLONE, parent, NULL, bw, NULL);
 	} else {
-		err = browser_window_navigate(bw, parent, NULL,
+		err = browser_window_navigate(bw,
+					      parent,
+					      NULL,
 					      BW_NAVIGATE_HISTORY,
-					      NULL, NULL, NULL);
+					      NULL,
+					      NULL,
+					      NULL);
 	}
 
 	nsurl_unref(parent);
@@ -3934,7 +3962,7 @@ nserror browser_window_navigate_up(struct browser_window *bw, bool new_window)
 
 
 /* Exported interface, documented in include/neosurf/browser_window.h */
-nsurl* browser_window_access_url(const struct browser_window *bw)
+nsurl *browser_window_access_url(const struct browser_window *bw)
 {
 	assert(bw != NULL);
 
@@ -3951,8 +3979,9 @@ nsurl* browser_window_access_url(const struct browser_window *bw)
 
 
 /* Exported interface, documented in include/neosurf/browser_window.h */
-nserror
-browser_window_get_url(struct browser_window *bw, bool fragment,nsurl** url_out)
+nserror browser_window_get_url(struct browser_window *bw,
+			       bool fragment,
+			       nsurl **url_out)
 {
 	nserror err;
 	nsurl *url;
@@ -3968,7 +3997,8 @@ browser_window_get_url(struct browser_window *bw, bool fragment,nsurl** url_out)
 
 	} else {
 		err = nsurl_refragment(browser_window_access_url(bw),
-				       bw->frag_id, &url);
+				       bw->frag_id,
+				       &url);
 		if (err != NSERROR_OK) {
 			return err;
 		}
@@ -3980,7 +4010,7 @@ browser_window_get_url(struct browser_window *bw, bool fragment,nsurl** url_out)
 
 
 /* Exported interface, documented in neosurf/browser_window.h */
-const char* browser_window_get_title(struct browser_window *bw)
+const char *browser_window_get_title(struct browser_window *bw)
 {
 	assert(bw != NULL);
 
@@ -3994,7 +4024,7 @@ const char* browser_window_get_title(struct browser_window *bw)
 
 
 /* Exported interface, documented in neosurf/browser_window.h */
-struct history * browser_window_get_history(struct browser_window *bw)
+struct history *browser_window_get_history(struct browser_window *bw)
 {
 	assert(bw != NULL);
 
@@ -4023,8 +4053,10 @@ struct hlcache_handle *browser_window_get_content(struct browser_window *bw)
 
 
 /* Exported interface, documented in neosurf/browser_window.h */
-nserror browser_window_get_extents(struct browser_window *bw, bool scaled,
-				   int *width, int *height)
+nserror browser_window_get_extents(struct browser_window *bw,
+				   bool scaled,
+				   int *width,
+				   int *height)
 {
 	assert(bw != NULL);
 
@@ -4051,10 +4083,9 @@ nserror browser_window_get_extents(struct browser_window *bw, bool scaled,
 
 
 /* exported internal interface, documented in desktop/browser_private.h */
-nserror
-browser_window_get_dimensions(struct browser_window *bw,
-			      int *width,
-			      int *height)
+nserror browser_window_get_dimensions(struct browser_window *bw,
+				      int *width,
+				      int *height)
 {
 	nserror res;
 	assert(bw);
@@ -4073,8 +4104,9 @@ browser_window_get_dimensions(struct browser_window *bw,
 
 
 /* Exported interface, documented in neosurf/browser_window.h */
-void
-browser_window_set_dimensions(struct browser_window *bw, int width, int height)
+void browser_window_set_dimensions(struct browser_window *bw,
+				   int width,
+				   int height)
 {
 	assert(bw);
 
@@ -4083,7 +4115,8 @@ browser_window_set_dimensions(struct browser_window *bw, int width, int height)
 		bw->width = width;
 		bw->height = height;
 	} else {
-		NSLOG(neosurf, INFO,
+		NSLOG(neosurf,
+		      INFO,
 		      "Asked to set dimensions of front end window.");
 		assert(0);
 	}
@@ -4169,8 +4202,7 @@ nserror browser_window_reload(struct browser_window *bw, bool all)
 	unsigned int i;
 	struct nsurl *reload_url;
 
-	if ((bw->current_content) == NULL ||
-	    (bw->loading_content) != NULL) {
+	if ((bw->current_content) == NULL || (bw->loading_content) != NULL) {
 		return NSERROR_INVALID;
 	}
 
@@ -4203,13 +4235,8 @@ nserror browser_window_reload(struct browser_window *bw, bool all)
 
 	reload_url = hlcache_handle_get_url(bw->current_content);
 
-	return browser_window_navigate(bw,
-				       reload_url,
-				       NULL,
-				       BW_NAVIGATE_NONE,
-				       NULL,
-				       NULL,
-				       NULL);
+	return browser_window_navigate(
+		bw, reload_url, NULL, BW_NAVIGATE_NONE, NULL, NULL, NULL);
 }
 
 
@@ -4221,8 +4248,7 @@ void browser_window_set_status(struct browser_window *bw, const char *text)
 	while (bw->parent)
 		bw = bw->parent;
 
-	if ((bw->status.text != NULL) &&
-	    (strcmp(text, bw->status.text) == 0)) {
+	if ((bw->status.text != NULL) && (strcmp(text, bw->status.text) == 0)) {
 		/* status text is unchanged */
 		bw->status.match++;
 		return;
@@ -4261,7 +4287,8 @@ void browser_window_set_pointer(struct browser_window *bw,
 
 	loading = ((bw->loading_content != NULL) ||
 		   ((bw->current_content != NULL) &&
-		    (content_get_status(bw->current_content) == CONTENT_STATUS_READY)));
+		    (content_get_status(bw->current_content) ==
+		     CONTENT_STATUS_READY)));
 
 	nsu_getmonotonic_ms(&ms_now);
 
@@ -4299,11 +4326,10 @@ nserror browser_window_schedule_reformat(struct browser_window *bw)
 
 
 /* exported function documented in neosurf/browser_window.h */
-void
-browser_window_reformat(struct browser_window *bw,
-			bool background,
-			int width,
-			int height)
+void browser_window_reformat(struct browser_window *bw,
+			     bool background,
+			     int width,
+			     int height)
 {
 	hlcache_handle *c = bw->current_content;
 
@@ -4312,16 +4338,16 @@ browser_window_reformat(struct browser_window *bw,
 
 	if (bw->browser_window_type != BROWSER_WINDOW_IFRAME) {
 		/* Iframe dimensions are already scaled in parent's layout */
-		width  /= bw->scale;
+		width /= bw->scale;
 		height /= bw->scale;
 	}
 
 	if (bw->window == NULL) {
 		/* Core managed browser window; subtract scrollbar width */
-		width  -= bw->scroll_y ? SCROLLBAR_WIDTH : 0;
+		width -= bw->scroll_y ? SCROLLBAR_WIDTH : 0;
 		height -= bw->scroll_x ? SCROLLBAR_WIDTH : 0;
 
-		width  = width  > 0 ? width  : 0;
+		width = width > 0 ? width : 0;
 		height = height > 0 ? height : 0;
 	}
 
@@ -4378,10 +4404,9 @@ float browser_window_get_scale(struct browser_window *bw)
 
 
 /* exported interface documented in neosurf/browser_window.h */
-struct browser_window *
-browser_window_find_target(struct browser_window *bw,
-			   const char *target,
-			   browser_mouse_state mouse)
+struct browser_window *browser_window_find_target(struct browser_window *bw,
+						  const char *target,
+						  browser_mouse_state mouse)
 {
 	struct browser_window *bw_target;
 	struct browser_window *top;
@@ -4395,8 +4420,7 @@ browser_window_find_target(struct browser_window *bw,
 
 	/* use the base target if we don't have one */
 	c = bw->current_content;
-	if (target == NULL &&
-	    c != NULL &&
+	if (target == NULL && c != NULL &&
 	    content_get_type(c) == CONTENT_HTML) {
 		target = html_get_base_target(c);
 	}
@@ -4419,7 +4443,7 @@ browser_window_find_target(struct browser_window *bw,
 
 	/* handle reserved keywords */
 	if (((nsoption_bool(button_2_tab)) &&
-	     (mouse & BROWSER_MOUSE_CLICK_2))||
+	     (mouse & BROWSER_MOUSE_CLICK_2)) ||
 	    ((!nsoption_bool(button_2_tab)) &&
 	     ((mouse & BROWSER_MOUSE_CLICK_1) &&
 	      (mouse & BROWSER_MOUSE_MOD_2))) ||
@@ -4434,7 +4458,8 @@ browser_window_find_target(struct browser_window *bw,
 		 * - button_2 opens in new tab and the link target is "_blank"
 		 */
 		flags |= BW_CREATE_TAB;
-		error = browser_window_create(flags, NULL, NULL, bw, &bw_target);
+		error = browser_window_create(
+			flags, NULL, NULL, bw, &bw_target);
 		if (error != NSERROR_OK) {
 			return bw;
 		}
@@ -4455,7 +4480,8 @@ browser_window_find_target(struct browser_window *bw,
 		 * - button_2 doesn't open in new tabs and the link target is
 		 *   "_blank"
 		 */
-		error = browser_window_create(flags, NULL, NULL, bw, &bw_target);
+		error = browser_window_create(
+			flags, NULL, NULL, bw, &bw_target);
 		if (error != NSERROR_OK) {
 			return bw;
 		}
@@ -4479,9 +4505,10 @@ browser_window_find_target(struct browser_window *bw,
 	 */
 	rdepth = -1;
 	bw_target = NULL;
-	for (top = bw; top->parent; top = top->parent);
-	browser_window_find_target_internal(top, target, 0, bw, &rdepth,
-					    &bw_target);
+	for (top = bw; top->parent; top = top->parent)
+		;
+	browser_window_find_target_internal(
+		top, target, 0, bw, &rdepth, &bw_target);
 	if (bw_target)
 		return bw_target;
 
@@ -4509,27 +4536,23 @@ browser_window_find_target(struct browser_window *bw,
 
 
 /* exported interface documented in neosurf/browser_window.h */
-void
-browser_window_mouse_track(struct browser_window *bw,
-			   browser_mouse_state mouse,
-			   int x, int y)
+void browser_window_mouse_track(struct browser_window *bw,
+				browser_mouse_state mouse,
+				int x,
+				int y)
 {
-	browser_window_mouse_track_internal(bw,
-					    mouse,
-					    x / bw->scale,
-					    y / bw->scale);
+	browser_window_mouse_track_internal(
+		bw, mouse, x / bw->scale, y / bw->scale);
 }
 
 /* exported interface documented in neosurf/browser_window.h */
-void
-browser_window_mouse_click(struct browser_window *bw,
-			   browser_mouse_state mouse,
-			   int x, int y)
+void browser_window_mouse_click(struct browser_window *bw,
+				browser_mouse_state mouse,
+				int x,
+				int y)
 {
-	browser_window_mouse_click_internal(bw,
-					    mouse,
-					    x / bw->scale,
-					    y / bw->scale);
+	browser_window_mouse_click_internal(
+		bw, mouse, x / bw->scale, y / bw->scale);
 }
 
 
@@ -4572,7 +4595,8 @@ bool browser_window_back_available(struct browser_window *bw)
 /* exported interface documented in neosurf/browser_window.h */
 bool browser_window_forward_available(struct browser_window *bw)
 {
-	return (bw && bw->history && browser_window_history_forward_available(bw));
+	return (bw && bw->history &&
+		browser_window_history_forward_available(bw));
 }
 
 /* exported interface documented in neosurf/browser_window.h */
@@ -4592,8 +4616,9 @@ bool browser_window_stop_available(struct browser_window *bw)
 }
 
 /* exported interface documented in neosurf/browser_window.h */
-bool
-browser_window_exec(struct browser_window *bw, const char *src, size_t srclen)
+bool browser_window_exec(struct browser_window *bw,
+			 const char *src,
+			 size_t srclen)
 {
 	assert(bw != NULL);
 
@@ -4615,12 +4640,11 @@ browser_window_exec(struct browser_window *bw, const char *src, size_t srclen)
 
 
 /* exported interface documented in browser_window.h */
-nserror
-browser_window_console_log(struct browser_window *bw,
-			   browser_window_console_source src,
-			   const char *msg,
-			   size_t msglen,
-			   browser_window_console_flags flags)
+nserror browser_window_console_log(struct browser_window *bw,
+				   browser_window_console_source src,
+				   const char *msg,
+				   size_t msglen,
+				   browser_window_console_flags flags)
 {
 	browser_window_console_flags log_level = flags & BW_CS_FLAG_LEVEL_MASK;
 	struct browser_window *root = browser_window_get_root(bw);
@@ -4633,12 +4657,18 @@ browser_window_console_log(struct browser_window *bw,
 
 	/* bw is the target of the log, but root is where we log it */
 
-	NSLOG(neosurf, DEEPDEBUG, "Logging message in %p targetted at %p", root, bw);
-	NSLOG(neosurf, DEEPDEBUG, "Log came from %s",
-	      ((src == BW_CS_INPUT) ? "user input" :
-	       (src == BW_CS_SCRIPT_ERROR) ? "script error" :
-	       (src == BW_CS_SCRIPT_CONSOLE) ? "script console" :
-	       "unknown input location"));
+	NSLOG(neosurf,
+	      DEEPDEBUG,
+	      "Logging message in %p targetted at %p",
+	      root,
+	      bw);
+	NSLOG(neosurf,
+	      DEEPDEBUG,
+	      "Log came from %s",
+	      ((src == BW_CS_INPUT)	       ? "user input"
+	       : (src == BW_CS_SCRIPT_ERROR)   ? "script error"
+	       : (src == BW_CS_SCRIPT_CONSOLE) ? "script console"
+					       : "unknown input location"));
 
 	switch (log_level) {
 	case BW_CS_FLAG_LEVEL_DEBUG:
@@ -4668,8 +4698,7 @@ browser_window_console_log(struct browser_window *bw,
 
 
 /* Exported interface, documented in browser_private.h */
-nserror
-browser_window__reload_current_parameters(struct browser_window *bw)
+nserror browser_window__reload_current_parameters(struct browser_window *bw)
 {
 	assert(bw != NULL);
 
@@ -4679,27 +4708,31 @@ browser_window__reload_current_parameters(struct browser_window *bw)
 	}
 
 	if (bw->current_parameters.post_multipart != NULL) {
-		fetch_multipart_data_destroy(bw->current_parameters.post_multipart);
+		fetch_multipart_data_destroy(
+			bw->current_parameters.post_multipart);
 		bw->current_parameters.post_multipart = NULL;
 	}
 
 	if (bw->current_parameters.url == NULL) {
 		/* We have never navigated so go to about:blank */
-		bw->current_parameters.url = nsurl_ref(corestring_nsurl_about_blank);
+		bw->current_parameters.url = nsurl_ref(
+			corestring_nsurl_about_blank);
 	}
 
 	bw->current_parameters.flags &= ~BW_NAVIGATE_HISTORY;
 	bw->internal_nav = false;
 
 	browser_window__free_fetch_parameters(&bw->loading_parameters);
-	memcpy(&bw->loading_parameters, &bw->current_parameters, sizeof(bw->loading_parameters));
+	memcpy(&bw->loading_parameters,
+	       &bw->current_parameters,
+	       sizeof(bw->loading_parameters));
 	memset(&bw->current_parameters, 0, sizeof(bw->current_parameters));
 	return browser_window__navigate_internal(bw, &bw->loading_parameters);
 }
 
 /* Exported interface, documented in browser_window.h */
-browser_window_page_info_state browser_window_get_page_info_state(
-		const struct browser_window *bw)
+browser_window_page_info_state
+browser_window_get_page_info_state(const struct browser_window *bw)
 {
 	lwc_string *scheme;
 	bool match;
@@ -4715,31 +4748,31 @@ browser_window_page_info_state browser_window_get_page_info_state(
 		hlcache_handle_get_url(bw->current_content), NSURL_SCHEME);
 
 	/* Is this an internal scheme? */
-	if ((lwc_string_isequal(scheme, corestring_lwc_about,
-				&match) == lwc_error_ok &&
+	if ((lwc_string_isequal(scheme, corestring_lwc_about, &match) ==
+		     lwc_error_ok &&
 	     (match == true)) ||
-	    (lwc_string_isequal(scheme, corestring_lwc_data,
-				&match) == lwc_error_ok &&
+	    (lwc_string_isequal(scheme, corestring_lwc_data, &match) ==
+		     lwc_error_ok &&
 	     (match == true)) ||
-	    (lwc_string_isequal(scheme, corestring_lwc_resource,
-				&match) == lwc_error_ok &&
+	    (lwc_string_isequal(scheme, corestring_lwc_resource, &match) ==
+		     lwc_error_ok &&
 	     (match == true))) {
 		lwc_string_unref(scheme);
 		return PAGE_STATE_INTERNAL;
 	}
 
 	/* Is this file:/// ? */
-	if (lwc_string_isequal(scheme, corestring_lwc_file,
-			       &match) == lwc_error_ok &&
+	if (lwc_string_isequal(scheme, corestring_lwc_file, &match) ==
+		    lwc_error_ok &&
 	    match == true) {
 		lwc_string_unref(scheme);
 		return PAGE_STATE_LOCAL;
 	}
 
 	/* If not https, from here on down that'd be insecure */
-	if ((lwc_string_isequal(scheme, corestring_lwc_https,
-			&match) == lwc_error_ok &&
-			(match == false))) {
+	if ((lwc_string_isequal(scheme, corestring_lwc_https, &match) ==
+		     lwc_error_ok &&
+	     (match == false))) {
 		/* Some remote content, not https, therefore insecure */
 		lwc_string_unref(scheme);
 		return PAGE_STATE_INSECURE;
@@ -4748,7 +4781,8 @@ browser_window_page_info_state browser_window_get_page_info_state(
 	lwc_string_unref(scheme);
 
 	/* Did we have to override this SSL setting? */
-	if (urldb_get_cert_permissions(hlcache_handle_get_url(bw->current_content))) {
+	if (urldb_get_cert_permissions(
+		    hlcache_handle_get_url(bw->current_content))) {
 		return PAGE_STATE_SECURE_OVERRIDE;
 	}
 
@@ -4762,9 +4796,8 @@ browser_window_page_info_state browser_window_get_page_info_state(
 }
 
 /* Exported interface, documented in browser_window.h */
-nserror
-browser_window_get_ssl_chain(struct browser_window *bw,
-			     struct cert_chain **chain)
+nserror browser_window_get_ssl_chain(struct browser_window *bw,
+				     struct cert_chain **chain)
 {
 	assert(bw != NULL);
 
@@ -4778,8 +4811,7 @@ browser_window_get_ssl_chain(struct browser_window *bw,
 }
 
 /* Exported interface, documented in browser_window.h */
-int browser_window_get_cookie_count(
-		const struct browser_window *bw)
+int browser_window_get_cookie_count(const struct browser_window *bw)
 {
 	int count = 0;
 	char *cookies = urldb_get_cookie(browser_window_access_url(bw), true);
@@ -4798,8 +4830,7 @@ int browser_window_get_cookie_count(
 }
 
 /* Exported interface, documented in browser_window.h */
-nserror browser_window_show_cookies(
-		const struct browser_window *bw)
+nserror browser_window_show_cookies(const struct browser_window *bw)
 {
 	nserror err;
 	nsurl *url = browser_window_access_url(bw);
@@ -4827,8 +4858,8 @@ nserror browser_window_show_certificates(struct browser_window *bw)
 	res = cert_chain_to_query(bw->current_cert_chain, &url);
 	if (res == NSERROR_OK) {
 		res = browser_window_create(BW_CREATE_HISTORY |
-					    BW_CREATE_FOREGROUND |
-					    BW_CREATE_TAB,
+						    BW_CREATE_FOREGROUND |
+						    BW_CREATE_TAB,
 					    url,
 					    NULL,
 					    bw,

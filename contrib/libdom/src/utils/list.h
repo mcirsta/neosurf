@@ -4,8 +4,8 @@
  *                http://www.opensource.org/licenses/mit-license.php
  * Copyright 2009 Bo Yang <struggleyb.nku@gmail.com>
  *
- * This file contains the list structure used to compose lists. 
- * 
+ * This file contains the list structure used to compose lists.
+ *
  * Note: This is a implementation of a doubld-linked cyclar list.
  */
 

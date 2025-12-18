@@ -93,7 +93,8 @@ nserror nsgtk_toolbar_set_url(struct nsgtk_toolbar *tb, nsurl *url);
  * \param pixbuf The pixel buffer data to use to set the web search icon
  * \return NSERROR_OK on success
  */
-nserror nsgtk_toolbar_set_websearch_image(struct nsgtk_toolbar *tb, GdkPixbuf *pixbuf);
+nserror
+nsgtk_toolbar_set_websearch_image(struct nsgtk_toolbar *tb, GdkPixbuf *pixbuf);
 
 
 /**
@@ -106,7 +107,8 @@ nserror nsgtk_toolbar_set_websearch_image(struct nsgtk_toolbar *tb, GdkPixbuf *p
  * \param itemid the id of the item to activate
  * \return NSERROR_OK on success
  */
-nserror nsgtk_toolbar_item_activate(struct nsgtk_toolbar *tb, nsgtk_toolbar_button itemid);
+nserror nsgtk_toolbar_item_activate(struct nsgtk_toolbar *tb,
+				    nsgtk_toolbar_button itemid);
 
 /**
  * set the toolbar to be shown or hidden

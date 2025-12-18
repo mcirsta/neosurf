@@ -28,14 +28,15 @@
  *		   If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_border_spacing(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+				    const parserutils_vector *vector,
+				    int32_t *ctx,
+				    css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	css_error error;
 	const css_token *token;
-	css_fixed length[2] = { 0 };
-	uint32_t unit[2] = { 0 };
+	css_fixed length[2] = {0};
+	uint32_t unit[2] = {0};
 	enum flag_value flag_value;
 
 	/* length length? | IDENT(inherit) */
@@ -50,20 +51,20 @@ css_error css__parse_border_spacing(css_language *c,
 	if (flag_value != FLAG_VALUE__NONE) {
 		parserutils_vector_iterate(vector, ctx);
 		/* inherit */
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_BORDER_SPACING);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_BORDER_SPACING);
 	} else {
 		int num_lengths = 0;
 
-		error = css__parse_unit_specifier(c, vector, ctx, UNIT_PX,
-				&length[0], &unit[0]);
+		error = css__parse_unit_specifier(
+			c, vector, ctx, UNIT_PX, &length[0], &unit[0]);
 		if (error != CSS_OK) {
 			*ctx = orig_ctx;
 			return error;
 		}
 
 		if (unit[0] & UNIT_ANGLE || unit[0] & UNIT_TIME ||
-				unit[0] & UNIT_FREQ || unit[0] & UNIT_PCT) {
+		    unit[0] & UNIT_FREQ || unit[0] & UNIT_PCT) {
 			*ctx = orig_ctx;
 			return CSS_INVALID;
 		}
@@ -79,13 +80,12 @@ css_error css__parse_border_spacing(css_language *c,
 			 * any remaining junk is thrown out.
 			 * Ctx will be preserved on error, as usual
 			 */
-			error = css__parse_unit_specifier(c, vector, ctx, UNIT_PX,
-					&length[1], &unit[1]);
+			error = css__parse_unit_specifier(
+				c, vector, ctx, UNIT_PX, &length[1], &unit[1]);
 			if (error == CSS_OK) {
 				if (unit[1] & UNIT_ANGLE ||
-						unit[1] & UNIT_TIME ||
-						unit[1] & UNIT_FREQ ||
-						unit[1] & UNIT_PCT) {
+				    unit[1] & UNIT_TIME ||
+				    unit[1] & UNIT_FREQ || unit[1] & UNIT_PCT) {
 					*ctx = orig_ctx;
 					return CSS_INVALID;
 				}
@@ -106,23 +106,16 @@ css_error css__parse_border_spacing(css_language *c,
 			return CSS_INVALID;
 		}
 
-		error = css__stylesheet_style_appendOPV(result,
-						       CSS_PROP_BORDER_SPACING,
-						       0,
-						       BORDER_SPACING_SET);
+		error = css__stylesheet_style_appendOPV(
+			result, CSS_PROP_BORDER_SPACING, 0, BORDER_SPACING_SET);
 
 		if (error != CSS_OK) {
 			*ctx = orig_ctx;
 			return error;
 		}
 
-		error = css__stylesheet_style_vappend(result,
-						     4,
-						     length[0],
-						     unit[0],
-						     length[1],
-						     unit[1]);
-
+		error = css__stylesheet_style_vappend(
+			result, 4, length[0], unit[0], length[1], unit[1]);
 	}
 
 	if (error != CSS_OK) {

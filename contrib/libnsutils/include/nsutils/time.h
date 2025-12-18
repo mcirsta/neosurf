@@ -30,5 +30,5 @@
  * \return NSERROR_OK on success else error code.
  */
 nsuerror nsu_getmonotonic_ms(uint64_t *current);
- 
+
 #endif

@@ -35,20 +35,21 @@ static parserutils_charset_handler *handler_table[] = {
  *         PARSERUTILS_NOMEM on memory exhaustion,
  *         PARSERUTILS_BADENCODING on unsupported charset
  */
-parserutils_error parserutils_charset_codec_create(const char *charset,
-		parserutils_charset_codec **codec)
+parserutils_error
+parserutils_charset_codec_create(const char *charset,
+				 parserutils_charset_codec **codec)
 {
 	parserutils_charset_codec *c;
 	parserutils_charset_handler **handler;
-	const parserutils_charset_aliases_canon * canon;
+	const parserutils_charset_aliases_canon *canon;
 	parserutils_error error;
 
 	if (charset == NULL || codec == NULL)
 		return PARSERUTILS_BADPARM;
 
 	/* Canonicalise parserutils_charset name. */
-	canon = parserutils__charset_alias_canonicalise(charset, 
-			strlen(charset));
+	canon = parserutils__charset_alias_canonicalise(charset,
+							strlen(charset));
 	if (canon == NULL)
 		return PARSERUTILS_BADENCODING;
 
@@ -83,8 +84,8 @@ parserutils_error parserutils_charset_codec_create(const char *charset,
  * \param codec  The codec to destroy
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error parserutils_charset_codec_destroy(
-		parserutils_charset_codec *codec)
+parserutils_error
+parserutils_charset_codec_destroy(parserutils_charset_codec *codec)
 {
 	if (codec == NULL)
 		return PARSERUTILS_BADPARM;
@@ -104,10 +105,10 @@ parserutils_error parserutils_charset_codec_destroy(
  * \param params  Option-specific parameters
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error parserutils_charset_codec_setopt(
-		parserutils_charset_codec *codec,
-		parserutils_charset_codec_opttype type,
-		parserutils_charset_codec_optparams *params)
+parserutils_error
+parserutils_charset_codec_setopt(parserutils_charset_codec *codec,
+				 parserutils_charset_codec_opttype type,
+				 parserutils_charset_codec_optparams *params)
 {
 	if (codec == NULL || params == NULL)
 		return PARSERUTILS_BADPARM;
@@ -133,14 +134,16 @@ parserutils_error parserutils_charset_codec_setopt(
  *
  * source, sourcelen, dest and destlen will be updated appropriately on exit
  */
-parserutils_error parserutils_charset_codec_encode(
-		parserutils_charset_codec *codec,
-		const uint8_t **source, size_t *sourcelen,
-		uint8_t **dest, size_t *destlen)
+parserutils_error
+parserutils_charset_codec_encode(parserutils_charset_codec *codec,
+				 const uint8_t **source,
+				 size_t *sourcelen,
+				 uint8_t **dest,
+				 size_t *destlen)
 {
 	if (codec == NULL || source == NULL || *source == NULL ||
-			sourcelen == NULL || dest == NULL || *dest == NULL ||
-			destlen == NULL)
+	    sourcelen == NULL || dest == NULL || *dest == NULL ||
+	    destlen == NULL)
 		return PARSERUTILS_BADPARM;
 
 	return codec->handler.encode(codec, source, sourcelen, dest, destlen);
@@ -160,14 +163,16 @@ parserutils_error parserutils_charset_codec_encode(
  *
  * Call this with a source length of 0 to flush any buffers.
  */
-parserutils_error parserutils_charset_codec_decode(
-		parserutils_charset_codec *codec,
-		const uint8_t **source, size_t *sourcelen,
-		uint8_t **dest, size_t *destlen)
+parserutils_error
+parserutils_charset_codec_decode(parserutils_charset_codec *codec,
+				 const uint8_t **source,
+				 size_t *sourcelen,
+				 uint8_t **dest,
+				 size_t *destlen)
 {
 	if (codec == NULL || source == NULL || *source == NULL ||
-			sourcelen == NULL || dest == NULL || *dest == NULL ||
-			destlen == NULL)
+	    sourcelen == NULL || dest == NULL || *dest == NULL ||
+	    destlen == NULL)
 		return PARSERUTILS_BADPARM;
 
 	return codec->handler.decode(codec, source, sourcelen, dest, destlen);
@@ -179,12 +184,11 @@ parserutils_error parserutils_charset_codec_decode(
  * \param codec  The codec to reset
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error parserutils_charset_codec_reset(
-		parserutils_charset_codec *codec)
+parserutils_error
+parserutils_charset_codec_reset(parserutils_charset_codec *codec)
 {
 	if (codec == NULL)
 		return PARSERUTILS_BADPARM;
 
 	return codec->handler.reset(codec);
 }
-

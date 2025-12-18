@@ -19,19 +19,14 @@
  * A DOM document fragment
  */
 struct dom_document_fragment {
-	dom_node_internal base;		/**< Base node */
+	dom_node_internal base; /**< Base node */
 };
 
-static const struct dom_node_vtable df_vtable = {
-	{
-		DOM_NODE_EVENT_TARGET_VTABLE
-	},
-	DOM_NODE_VTABLE
-};
+static const struct dom_node_vtable df_vtable = {{DOM_NODE_EVENT_TARGET_VTABLE},
+						 DOM_NODE_VTABLE};
 
 static const struct dom_node_protect_vtable df_protect_vtable = {
-	DOM_DF_PROTECT_VTABLE
-};
+	DOM_DF_PROTECT_VTABLE};
 
 /**
  * Create a document fragment
@@ -48,8 +43,9 @@ static const struct dom_node_protect_vtable df_protect_vtable = {
  * The returned node will already be referenced.
  */
 dom_exception _dom_document_fragment_create(dom_document *doc,
-		dom_string *name, dom_string *value,
-		dom_document_fragment **result)
+					    dom_string *name,
+					    dom_string *value,
+					    dom_document_fragment **result)
 {
 	dom_document_fragment *f;
 	dom_exception err;
@@ -62,8 +58,13 @@ dom_exception _dom_document_fragment_create(dom_document *doc,
 	f->base.vtable = &df_protect_vtable;
 
 	/* And initialise the node */
-	err = _dom_document_fragment_initialise(&f->base, doc, 
-			DOM_DOCUMENT_FRAGMENT_NODE, name, value, NULL, NULL);
+	err = _dom_document_fragment_initialise(&f->base,
+						doc,
+						DOM_DOCUMENT_FRAGMENT_NODE,
+						name,
+						value,
+						NULL,
+						NULL);
 	if (err != DOM_NO_ERR) {
 		free(f);
 		return err;
@@ -97,7 +98,7 @@ void _dom_document_fragment_destroy(dom_document_fragment *frag)
 /* The virtual destroy function of this class */
 void _dom_df_destroy(dom_node_internal *node)
 {
-	_dom_document_fragment_destroy((dom_document_fragment *) node);
+	_dom_document_fragment_destroy((dom_document_fragment *)node);
 }
 
 /* The copy constructor of this class */
@@ -116,8 +117,7 @@ dom_exception _dom_df_copy(dom_node_internal *old, dom_node_internal **copy)
 		return err;
 	}
 
-	*copy = (dom_node_internal *) new_f;
+	*copy = (dom_node_internal *)new_f;
 
 	return DOM_NO_ERR;
 }
-

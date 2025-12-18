@@ -9,13 +9,13 @@
 
 enum wl_keyboard_modifier {
 	MOD_SHIFT = 1 << 0,
-	MOD_CAPS  = 1 << 1,
-	MOD_CTRL  = 1 << 2,
-	MOD_ALT   = 1 << 3,
-	MOD_MOD2  = 1 << 4,
-	MOD_MOD3  = 1 << 5,
-	MOD_LOGO  = 1 << 6,
-	MOD_MOD5  = 1 << 7,
+	MOD_CAPS = 1 << 1,
+	MOD_CTRL = 1 << 2,
+	MOD_ALT = 1 << 3,
+	MOD_MOD2 = 1 << 4,
+	MOD_MOD3 = 1 << 5,
+	MOD_LOGO = 1 << 6,
+	MOD_MOD5 = 1 << 7,
 };
 
 struct nsvi_binding {
@@ -45,11 +45,13 @@ struct nsvi_bindings {
 };
 
 nserror nsvi_bindings_new(struct nsvi_bindings *state,
-		const char *desc, const char *cmd);
+			  const char *desc,
+			  const char *cmd);
 nserror nsvi_bindings_remove(struct nsvi_bindings *state, const char *desc);
 void nsvi_bindings_finish(struct nsvi_bindings *state);
 void nsvi_bindings_handle(struct nsvi_bindings *state,
-		xkb_keycode_t keycode, bool pressed);
+			  xkb_keycode_t keycode,
+			  bool pressed);
 uint32_t xkb_state_mask(struct xkb_state *state);
 
 #endif

@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define __STDBOOL_H__	1
+#define __STDBOOL_H__ 1
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -44,16 +44,14 @@ static struct {
 	const char *type;
 	const char *ext1;
 	const char *ext2;
-} default_types[] = {
-	{ "text/plain", "txt", NULL },
-	{ "text/html", "htm", "html" },
-	{ "text/css", "css", NULL },
-	{ "image/gif", "gif", NULL },
-	{ "image/jpeg", "jpg", "jpeg" },
-	{ "image/png", "png", NULL },
-	{ "image/jng", "jng", NULL },
-	{ NULL, NULL, NULL }
-};
+} default_types[] = {{"text/plain", "txt", NULL},
+		     {"text/html", "htm", "html"},
+		     {"text/css", "css", NULL},
+		     {"image/gif", "gif", NULL},
+		     {"image/jpeg", "jpg", "jpeg"},
+		     {"image/png", "png", NULL},
+		     {"image/jng", "jng", NULL},
+		     {NULL, NULL, NULL}};
 
 void beos_fetch_filetype_init(void)
 {
@@ -75,9 +73,11 @@ void beos_fetch_filetype_init(void)
 		// the mime db doesn't know about it yet
 		BMessage extensions('exts');
 		if (default_types[i].ext1)
-			extensions.AddString("extensions", default_types[i].ext1);
+			extensions.AddString("extensions",
+					     default_types[i].ext1);
 		if (default_types[i].ext2)
-			extensions.AddString("extensions", default_types[i].ext2);
+			extensions.AddString("extensions",
+					     default_types[i].ext2);
 		err = m.SetFileExtensions(&extensions);
 		if (err < B_OK) {
 			beos_warn_user("Mime", strerror(err));
@@ -133,6 +133,6 @@ const char *fetch_filetype(const char *unix_path)
 		if (err < B_OK)
 			return "text/plain";
 	}
-	
+
 	return type;
 }

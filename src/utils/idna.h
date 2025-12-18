@@ -40,7 +40,8 @@
  *
  * If return value != NSERROR_OK, output will be left untouched.
  */
-nserror idna_encode(const char *host, size_t len, char **ace_host, size_t *ace_len);
+nserror
+idna_encode(const char *host, size_t len, char **ace_host, size_t *ace_len);
 
 
 /**
@@ -54,7 +55,9 @@ nserror idna_encode(const char *host, size_t len, char **ace_host, size_t *ace_l
  *
  * If return value != NSERROR_OK, output will be left untouched.
  */
-nserror idna_decode(const char *ace_host, size_t ace_len, char **host, size_t *host_len);
+nserror idna_decode(const char *ace_host,
+		    size_t ace_len,
+		    char **host,
+		    size_t *host_len);
 
 #endif
-

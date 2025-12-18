@@ -19,7 +19,7 @@
 
 /* rsrc: URL handling. */
 
-#define __STDBOOL_H__	1
+#define __STDBOOL_H__ 1
 #include <stdlib.h>
 #include <assert.h>
 #include <errno.h>
@@ -62,7 +62,7 @@ struct fetch_rsrc_context {
 
 	bool aborted;
 	bool locked;
-	
+
 	struct fetch_rsrc_context *r_next, *r_prev;
 };
 
@@ -72,14 +72,18 @@ BResources *gAppResources = NULL;
 
 static bool fetch_rsrc_initialise(lwc_string *scheme)
 {
-	NSLOG(netsurf, INFO, "fetch_rsrc_initialise called for %s",
+	NSLOG(netsurf,
+	      INFO,
+	      "fetch_rsrc_initialise called for %s",
 	      lwc_string_data(scheme));
 	return true;
 }
 
 static void fetch_rsrc_finalise(lwc_string *scheme)
 {
-	NSLOG(netsurf, INFO, "fetch_rsrc_finalise called for %s",
+	NSLOG(netsurf,
+	      INFO,
+	      "fetch_rsrc_finalise called for %s",
 	      lwc_string_data(scheme));
 }
 
@@ -88,21 +92,24 @@ static bool fetch_rsrc_can_fetch(const nsurl *url)
 	return true;
 }
 
-static void *fetch_rsrc_setup(struct fetch *parent_fetch, nsurl *url,
-		 bool only_2xx, bool downgrade_tls, const char *post_urlenc,
-		 const struct fetch_multipart_data *post_multipart,
-		 const char **headers)
+static void *fetch_rsrc_setup(struct fetch *parent_fetch,
+			      nsurl *url,
+			      bool only_2xx,
+			      bool downgrade_tls,
+			      const char *post_urlenc,
+			      const struct fetch_multipart_data *post_multipart,
+			      const char **headers)
 {
 	struct fetch_rsrc_context *ctx;
 	ctx = (struct fetch_rsrc_context *)calloc(1, sizeof(*ctx));
-	
+
 	if (ctx == NULL)
 		return NULL;
-		
+
 	ctx->parent_fetch = parent_fetch;
 	/* TODO: keep as nsurl to avoid copy */
 	ctx->url = (char *)malloc(nsurl_length(url) + 1);
-	
+
 	if (ctx->url == NULL) {
 		free(ctx);
 		return NULL;
@@ -110,7 +117,7 @@ static void *fetch_rsrc_setup(struct fetch *parent_fetch, nsurl *url,
 	memcpy(ctx->url, nsurl_access(url), nsurl_length(url) + 1);
 
 	RING_INSERT(ring, ctx);
-	
+
 	return ctx;
 }
 
@@ -136,14 +143,14 @@ static void fetch_rsrc_abort(void *ctx)
 	struct fetch_rsrc_context *c = (struct fetch_rsrc_context *)ctx;
 
 	/* To avoid the poll loop having to deal with the fetch context
-	 * disappearing from under it, we simply flag the abort here. 
+	 * disappearing from under it, we simply flag the abort here.
 	 * The poll loop itself will perform the appropriate cleanup.
 	 */
 	c->aborted = true;
 }
 
-static void fetch_rsrc_send_callback(const fetch_msg *msg, 
-		struct fetch_rsrc_context *c)
+static void
+fetch_rsrc_send_callback(const fetch_msg *msg, struct fetch_rsrc_context *c)
 {
 	c->locked = true;
 	fetch_send_callback(msg, c->parent_fetch);
@@ -154,19 +161,19 @@ static bool fetch_rsrc_process(struct fetch_rsrc_context *c)
 {
 	fetch_msg msg;
 	char *params;
-	//char *at = NULL;
+	// char *at = NULL;
 	char *slash;
-	//char *comma = NULL;
-	//char *unescaped;
+	// char *comma = NULL;
+	// char *unescaped;
 	uint32 type = 'data'; // default for embeded files
 	int32 id = 0;
-	
+
 	/* format of a rsrc: URL is:
 	 *   rsrc://[TYPE][@NUM]/name[,mime]
 	 */
-	
+
 	NSLOG(netsurf, INFO, "*** Processing %s", c->url);
-	
+
 	if (strlen(c->url) < 7) {
 		/* 7 is the minimum possible length (rsrc://) */
 		msg.type = FETCH_ERROR;
@@ -174,12 +181,12 @@ static bool fetch_rsrc_process(struct fetch_rsrc_context *c)
 		fetch_rsrc_send_callback(&msg, c);
 		return false;
 	}
-	
+
 	/* skip the rsrc: part */
 	params = c->url + sizeof("rsrc://") - 1;
-	
+
 	/* find the slash */
-	if ( (slash = strchr(params, '/')) == NULL) {
+	if ((slash = strchr(params, '/')) == NULL) {
 		msg.type = FETCH_ERROR;
 		msg.data.error = "Malformed rsrc: URL";
 		fetch_rsrc_send_callback(&msg, c);
@@ -189,7 +196,7 @@ static bool fetch_rsrc_process(struct fetch_rsrc_context *c)
 	// doesn't exist in the filesystem but we should hit the internal types.
 	c->mimetype = strdup(fetch_filetype(slash));
 	c->name = strdup(slash + 1);
-	
+
 	if (c->mimetype == NULL) {
 		msg.type = FETCH_ERROR;
 		msg.data.error =
@@ -202,13 +209,19 @@ static bool fetch_rsrc_process(struct fetch_rsrc_context *c)
 		uint8 c1, c2, c3, c4;
 		if (sscanf(params, "%c%c%c%c", &c1, &c2, &c3, &c4) > 3) {
 			type = c1 << 24 | c2 << 16 | c3 << 8 | c4;
-			NSLOG(netsurf, INFO, "fetch_rsrc: type:%4.4s\n",
+			NSLOG(netsurf,
+			      INFO,
+			      "fetch_rsrc: type:%4.4s\n",
 			      (char *)&type);
 		}
 	}
 
-	NSLOG(netsurf, INFO, "fetch_rsrc: 0x%08" PRIx32 ", %" PRId32 ", '%s'\n",
-	      type, id, c->name);
+	NSLOG(netsurf,
+	      INFO,
+	      "fetch_rsrc: 0x%08" PRIx32 ", %" PRId32 ", '%s'\n",
+	      type,
+	      id,
+	      c->name);
 
 	bool found;
 	if (id)
@@ -259,8 +272,9 @@ static void fetch_rsrc_poll(lwc_string *scheme)
 	fetch_msg msg;
 	struct fetch_rsrc_context *c, *next;
 
-	if (ring == NULL) return;
-	
+	if (ring == NULL)
+		return;
+
 	/* Iterate over ring, processing each pending fetch */
 	c = ring;
 	do {
@@ -271,7 +285,7 @@ static void fetch_rsrc_poll(lwc_string *scheme)
 		/* Ignore fetches that have been flagged as locked.
 		 * This allows safe re-entrant calls to this function.
 		 * Re-entrancy can occur if, as a result of a callback,
-		 * the interested party causes fetch_poll() to be called 
+		 * the interested party causes fetch_poll() to be called
 		 * again.
 		 */
 		if (c->locked == true) {
@@ -283,7 +297,8 @@ static void fetch_rsrc_poll(lwc_string *scheme)
 			char header[64];
 
 			fetch_set_http_code(c->parent_fetch, 200);
-			NSLOG(netsurf, INFO,
+			NSLOG(netsurf,
+			      INFO,
 			      "setting rsrc: MIME type to %s, length to %zd",
 			      c->mimetype,
 			      c->datalen);
@@ -291,23 +306,28 @@ static void fetch_rsrc_poll(lwc_string *scheme)
 			 * Therefore, we _must_ check for this after _every_
 			 * call to fetch_rsrc_send_callback().
 			 */
-			snprintf(header, sizeof header, "Content-Type: %s",
-					c->mimetype);
+			snprintf(header,
+				 sizeof header,
+				 "Content-Type: %s",
+				 c->mimetype);
 			msg.type = FETCH_HEADER;
-			msg.data.header_or_data.buf = (const uint8_t *) header;
+			msg.data.header_or_data.buf = (const uint8_t *)header;
 			msg.data.header_or_data.len = strlen(header);
 			fetch_rsrc_send_callback(&msg, c);
 
-			snprintf(header, sizeof header, "Content-Length: %zd",
-					c->datalen);
+			snprintf(header,
+				 sizeof header,
+				 "Content-Length: %zd",
+				 c->datalen);
 			msg.type = FETCH_HEADER;
-			msg.data.header_or_data.buf = (const uint8_t *) header;
+			msg.data.header_or_data.buf = (const uint8_t *)header;
 			msg.data.header_or_data.len = strlen(header);
 			fetch_rsrc_send_callback(&msg, c);
 
 			if (!c->aborted) {
 				msg.type = FETCH_DATA;
-				msg.data.header_or_data.buf = (const uint8_t *) c->data;
+				msg.data.header_or_data.buf = (const uint8_t *)
+								      c->data;
 				msg.data.header_or_data.len = c->datalen;
 				fetch_rsrc_send_callback(&msg, c);
 			}
@@ -316,10 +336,12 @@ static void fetch_rsrc_poll(lwc_string *scheme)
 				fetch_rsrc_send_callback(&msg, c);
 			}
 		} else {
-			NSLOG(netsurf, INFO, "Processing of %s failed!",
+			NSLOG(netsurf,
+			      INFO,
+			      "Processing of %s failed!",
 			      c->url);
 
-			/* Ensure that we're unlocked here. If we aren't, 
+			/* Ensure that we're unlocked here. If we aren't,
 			 * then fetch_rsrc_process() is broken.
 			 */
 			assert(c->locked == false);
@@ -331,7 +353,7 @@ static void fetch_rsrc_poll(lwc_string *scheme)
 		/* Advance to next ring entry, exiting if we've reached
 		 * the start of the ring or the ring has become empty
 		 */
-	} while ( (c = next) != ring && ring != NULL);
+	} while ((c = next) != ring && ring != NULL);
 }
 
 /* BAppFileInfo is supposed to find the app's resources for us,
@@ -343,7 +365,7 @@ static int find_app_resources()
 	char path[B_PATH_NAME_LENGTH];
 	if (nsbeos_find_app_path(path) < B_OK)
 		return B_ERROR;
-	//fprintf(stderr, "loading resources from '%s'\n", path);
+	// fprintf(stderr, "loading resources from '%s'\n", path);
 
 	BFile file(path, B_READ_ONLY);
 	if (file.InitCheck() < 0)
@@ -378,8 +400,7 @@ void fetch_rsrc_register(void)
 		fetch_rsrc_free,
 		fetch_rsrc_poll,
 		NULL,
-		fetch_rsrc_finalise
-	};
+		fetch_rsrc_finalise};
 
 	err = find_app_resources();
 
@@ -390,13 +411,13 @@ void fetch_rsrc_register(void)
 
 	if (lwc_intern_string("rsrc", SLEN("rsrc"), &scheme) != lwc_error_ok) {
 		die("Failed to initialise the fetch module "
-				"(couldn't intern \"rsrc\").");
+		    "(couldn't intern \"rsrc\").");
 	}
 
 	ret = fetcher_add(scheme, &fetcher_ops_rsrc);
-        if (ret != NSERROR_OK) {
+	if (ret != NSERROR_OK) {
 		die("unable to add rsrc fetcher.");
-        }
+	}
 }
 
 void fetch_rsrc_unregister(void)

@@ -622,15 +622,14 @@ const char *msg_num_to_name(int msg)
 
 	case 0x2A3:
 		return "WM_MOUSELEAVE	";
-
 	}
 
-	sprintf(str,"%d",msg);
+	sprintf(str, "%d", msg);
 
 	return str;
 }
 
-void win_perror(const char * lpszFunction)
+void win_perror(const char *lpszFunction)
 {
 	/* Retrieve the system error message for the last-error code */
 
@@ -638,24 +637,29 @@ void win_perror(const char * lpszFunction)
 	LPVOID lpDisplayBuf;
 	DWORD dw = GetLastError();
 
-	FormatMessage(
-		FORMAT_MESSAGE_ALLOCATE_BUFFER |
-		FORMAT_MESSAGE_FROM_SYSTEM |
-		FORMAT_MESSAGE_IGNORE_INSERTS,
-		NULL,
-		dw,
-		MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-		(LPTSTR) &lpMsgBuf,
-		0, NULL );
+	FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER |
+			      FORMAT_MESSAGE_FROM_SYSTEM |
+			      FORMAT_MESSAGE_IGNORE_INSERTS,
+		      NULL,
+		      dw,
+		      MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+		      (LPTSTR)&lpMsgBuf,
+		      0,
+		      NULL);
 
 	/* Display the error message and exit the process */
 
-	lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT, (lstrlen((LPCTSTR)lpMsgBuf) + lstrlen((LPCTSTR)lpszFunction) + 40) * sizeof(TCHAR));
+	lpDisplayBuf = (LPVOID)LocalAlloc(LMEM_ZEROINIT,
+					  (lstrlen((LPCTSTR)lpMsgBuf) +
+					   lstrlen((LPCTSTR)lpszFunction) +
+					   40) * sizeof(TCHAR));
 
 	snprintf((LPTSTR)lpDisplayBuf,
 		 LocalSize(lpDisplayBuf) / sizeof(TCHAR),
 		 TEXT("%s failed with error %ld: %s"),
-		 lpszFunction, dw, (char *)lpMsgBuf);
+		 lpszFunction,
+		 dw,
+		 (char *)lpMsgBuf);
 	MessageBox(NULL, (LPCTSTR)lpDisplayBuf, TEXT("Error"), MB_OK);
 
 	LocalFree(lpMsgBuf);

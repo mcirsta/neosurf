@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 Vincent Sanders <vince@netsurf-browser.org> 
+ * Copyright 2016 Vincent Sanders <vince@netsurf-browser.org>
  *
  * This file is part of NetSurf, http://www.netsurf-browser.org/
  *

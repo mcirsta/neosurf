@@ -43,11 +43,11 @@ int main(int argc, char **argv)
 		return 1;
 	}
 
-	assert(parserutils_charset_codec_create("NATS-SEFI-ADD",
-			&codec) == PARSERUTILS_BADENCODING);
+	assert(parserutils_charset_codec_create("NATS-SEFI-ADD", &codec) ==
+	       PARSERUTILS_BADENCODING);
 
-	assert(parserutils_charset_codec_create("UTF-16",
-			&ctx.codec) == PARSERUTILS_OK);
+	assert(parserutils_charset_codec_create("UTF-16", &ctx.codec) ==
+	       PARSERUTILS_OK);
 
 	ctx.buflen = parse_filesize(argv[1]);
 	if (ctx.buflen == 0)
@@ -55,13 +55,13 @@ int main(int argc, char **argv)
 
 	ctx.buf = malloc(ctx.buflen);
 	if (ctx.buf == NULL) {
-		printf("Failed allocating %u bytes\n", (int) ctx.buflen);
+		printf("Failed allocating %u bytes\n", (int)ctx.buflen);
 		return 1;
 	}
 
 	ctx.exp = malloc(ctx.buflen);
 	if (ctx.exp == NULL) {
-		printf("Failed allocating %u bytes\n", (int) ctx.buflen);
+		printf("Failed allocating %u bytes\n", (int)ctx.buflen);
 		free(ctx.buf);
 		return 1;
 	}
@@ -109,7 +109,7 @@ static inline int hex2digit(char hex)
 
 bool handle_line(const char *data, size_t datalen, void *pw)
 {
-	line_ctx *ctx = (line_ctx *) pw;
+	line_ctx *ctx = (line_ctx *)pw;
 
 	if (data[0] == '#') {
 		if (ctx->inexp) {
@@ -118,7 +118,8 @@ bool handle_line(const char *data, size_t datalen, void *pw)
 			if (ctx->buf[ctx->bufused - 1] == '\n')
 				ctx->bufused -= 1;
 
-			if (ctx->expused != 0 && ctx->exp[ctx->expused - 1] == '\n')
+			if (ctx->expused != 0 &&
+			    ctx->exp[ctx->expused - 1] == '\n')
 				ctx->expused -= 1;
 
 			run_test(ctx);
@@ -130,7 +131,7 @@ bool handle_line(const char *data, size_t datalen, void *pw)
 			ctx->exp_ret = PARSERUTILS_OK;
 		}
 
-		if (strncasecmp(data+1, "data", 4) == 0) {
+		if (strncasecmp(data + 1, "data", 4) == 0) {
 			parserutils_charset_codec_optparams params;
 			const char *ptr = data + 6;
 
@@ -160,17 +161,18 @@ bool handle_line(const char *data, size_t datalen, void *pw)
 				ptr += 9;
 			}
 
-			assert(parserutils_charset_codec_setopt(ctx->codec,
-				PARSERUTILS_CHARSET_CODEC_ERROR_MODE,
-				(parserutils_charset_codec_optparams *) &params)
-				== PARSERUTILS_OK);
-		} else if (strncasecmp(data+1, "expected", 8) == 0) {
+			assert(parserutils_charset_codec_setopt(
+				       ctx->codec,
+				       PARSERUTILS_CHARSET_CODEC_ERROR_MODE,
+				       (parserutils_charset_codec_optparams
+						*)&params) == PARSERUTILS_OK);
+		} else if (strncasecmp(data + 1, "expected", 8) == 0) {
 			ctx->indata = false;
 			ctx->inexp = true;
 
-			ctx->exp_ret = parserutils_error_from_string(data + 10,
-					datalen - 10 - 1 /* \n */);
-		} else if (strncasecmp(data+1, "reset", 5) == 0) {
+			ctx->exp_ret = parserutils_error_from_string(
+				data + 10, datalen - 10 - 1 /* \n */);
+		} else if (strncasecmp(data + 1, "reset", 5) == 0) {
 			ctx->indata = false;
 			ctx->inexp = false;
 
@@ -187,22 +189,23 @@ bool handle_line(const char *data, size_t datalen, void *pw)
 					--datalen;
 					continue;
 				}
-				assert(datalen >= sizeof ("&#xNNNN")-1 \
-					&& data[0] == '&' && data[1] == '#' \
-					&& data[2] == 'x' && isxdigit(data[3]) \
-					&& isxdigit(data[4]) && isxdigit(data[5]) \
-					&& isxdigit(data[6]));
+				assert(datalen >= sizeof("&#xNNNN") - 1 &&
+				       data[0] == '&' && data[1] == '#' &&
+				       data[2] == 'x' && isxdigit(data[3]) &&
+				       isxdigit(data[4]) && isxdigit(data[5]) &&
+				       isxdigit(data[6]));
 				/* UTF-16 code is always host endian (different
 				   than UCS-32 !).  */
-				nCodePoint = (hex2digit(data[3]) << 12) | 
-						(hex2digit(data[4]) <<  8) | 
-						(hex2digit(data[5]) <<  4) | 
-						hex2digit(data[6]);
-				*((uint16_t *) (void *) (ctx->buf + ctx->bufused)) = 
-						nCodePoint;
+				nCodePoint = (hex2digit(data[3]) << 12) |
+					     (hex2digit(data[4]) << 8) |
+					     (hex2digit(data[5]) << 4) |
+					     hex2digit(data[6]);
+				*((uint16_t *)(void *)(ctx->buf +
+						       ctx->bufused)) =
+					nCodePoint;
 				ctx->bufused += 2;
-				data += sizeof ("&#xNNNN")-1;
-				datalen -= sizeof ("&#xNNNN")-1;
+				data += sizeof("&#xNNNN") - 1;
+				datalen -= sizeof("&#xNNNN") - 1;
 			}
 		}
 		if (ctx->inexp) {
@@ -215,29 +218,29 @@ bool handle_line(const char *data, size_t datalen, void *pw)
 					--datalen;
 					continue;
 				}
-				assert(datalen >= sizeof ("&#xXXXXYYYY")-1 \
-					&& data[0] == '&' && data[1] == '#' \
-					&& data[2] == 'x' && isxdigit(data[3]) \
-					&& isxdigit(data[4]) && isxdigit(data[5]) \
-					&& isxdigit(data[6]) && isxdigit(data[7]) \
-					&& isxdigit(data[8]) && isxdigit(data[9]) \
-					&& isxdigit(data[10]));
+				assert(datalen >= sizeof("&#xXXXXYYYY") - 1 &&
+				       data[0] == '&' && data[1] == '#' &&
+				       data[2] == 'x' && isxdigit(data[3]) &&
+				       isxdigit(data[4]) && isxdigit(data[5]) &&
+				       isxdigit(data[6]) && isxdigit(data[7]) &&
+				       isxdigit(data[8]) && isxdigit(data[9]) &&
+				       isxdigit(data[10]));
 				/* UCS-4 code is always big endian, so convert
 				   host endian to big endian.  */
-				nCodePoint =
-					htonl((hex2digit(data[3]) << 28)
-					| (hex2digit(data[4]) << 24)
-					| (hex2digit(data[5]) << 20)
-					| (hex2digit(data[6]) << 16)
-					| (hex2digit(data[7]) << 12)
-					| (hex2digit(data[8]) << 8)
-					| (hex2digit(data[9]) << 4)
-					| hex2digit(data[10]));
-				*((uint32_t *) (void *) (ctx->exp + ctx->expused)) = 
-						nCodePoint;
+				nCodePoint = htonl((hex2digit(data[3]) << 28) |
+						   (hex2digit(data[4]) << 24) |
+						   (hex2digit(data[5]) << 20) |
+						   (hex2digit(data[6]) << 16) |
+						   (hex2digit(data[7]) << 12) |
+						   (hex2digit(data[8]) << 8) |
+						   (hex2digit(data[9]) << 4) |
+						   hex2digit(data[10]));
+				*((uint32_t *)(void *)(ctx->exp +
+						       ctx->expused)) =
+					nCodePoint;
 				ctx->expused += 4;
-				data += sizeof ("&#xXXXXYYYY")-1;
-				datalen -= sizeof ("&#xXXXXYYYY")-1;
+				data += sizeof("&#xXXXXYYYY") - 1;
+				datalen -= sizeof("&#xXXXXYYYY") - 1;
 			}
 		}
 	}
@@ -256,13 +259,13 @@ void run_test(line_ctx *ctx)
 	size_t i;
 
 	if (ctx->dir == DECODE) {
-		assert(parserutils_charset_codec_decode(ctx->codec,
-				&psrc, &srclen,
-				&pdest, &destlen) == ctx->exp_ret);
+		assert(parserutils_charset_codec_decode(
+			       ctx->codec, &psrc, &srclen, &pdest, &destlen) ==
+		       ctx->exp_ret);
 	} else if (ctx->dir == ENCODE) {
-		assert(parserutils_charset_codec_encode(ctx->codec,
-				&psrc, &srclen,
-				&pdest, &destlen) == ctx->exp_ret);
+		assert(parserutils_charset_codec_encode(
+			       ctx->codec, &psrc, &srclen, &pdest, &destlen) ==
+		       ctx->exp_ret);
 	} else {
 		size_t templen = ctx->bufused * 4;
 		uint8_t *temp = malloc(templen);
@@ -270,9 +273,9 @@ void run_test(line_ctx *ctx)
 		const uint8_t *ptemp2;
 		size_t templen2;
 
-		assert(parserutils_charset_codec_decode(ctx->codec,
-				&psrc, &srclen,
-				&ptemp, &templen) == ctx->exp_ret);
+		assert(parserutils_charset_codec_decode(
+			       ctx->codec, &psrc, &srclen, &ptemp, &templen) ==
+		       ctx->exp_ret);
 		/* \todo currently there is no way to specify the number of
 		   consumed & produced data in case of a deliberate bad input
 		   data set.  */
@@ -283,8 +286,11 @@ void run_test(line_ctx *ctx)
 		ptemp2 = temp;
 		templen2 = ctx->bufused * 4 - templen;
 		assert(parserutils_charset_codec_encode(ctx->codec,
-				&ptemp2, &templen2,
-				&pdest, &destlen) == ctx->exp_ret);
+							&ptemp2,
+							&templen2,
+							&pdest,
+							&destlen) ==
+		       ctx->exp_ret);
 		if (ctx->exp_ret == PARSERUTILS_OK) {
 			assert(templen2 == 0);
 			assert(temp + (ctx->bufused * 4 - templen) == ptemp2);
@@ -301,13 +307,15 @@ void run_test(line_ctx *ctx)
 
 	printf("%d: Read '", ++testnum);
 	for (i = 0; i < ctx->expused; i++) {
-		printf("%c%c ", "0123456789abcdef"[(dest[i] >> 4) & 0xf],
-				"0123456789abcdef"[dest[i] & 0xf]);
+		printf("%c%c ",
+		       "0123456789abcdef"[(dest[i] >> 4) & 0xf],
+		       "0123456789abcdef"[dest[i] & 0xf]);
 	}
 	printf("' Expected '");
 	for (i = 0; i < ctx->expused; i++) {
-		printf("%c%c ", "0123456789abcdef"[(ctx->exp[i] >> 4) & 0xf],
-				"0123456789abcdef"[ctx->exp[i] & 0xf]);
+		printf("%c%c ",
+		       "0123456789abcdef"[(ctx->exp[i] >> 4) & 0xf],
+		       "0123456789abcdef"[ctx->exp[i] & 0xf]);
 	}
 	printf("'\n");
 
@@ -316,4 +324,3 @@ void run_test(line_ctx *ctx)
 
 	free(dest);
 }
-

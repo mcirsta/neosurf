@@ -26,7 +26,7 @@
 
 #include "gtk/toolbar_items.h"
 #include "gtk/window.h"
- 
+
 static GString *current_selection = NULL;
 static GtkClipboard *clipboard;
 
@@ -73,8 +73,10 @@ static void gui_get_clipboard(char **buffer, size_t *length)
  * \param  styles    Array of styles given to text runs, owned by core, or NULL
  * \param  n_styles  Number of text run styles in array
  */
-static void gui_set_clipboard(const char *buffer, size_t length,
-		nsclipboard_styles styles[], int n_styles)
+static void gui_set_clipboard(const char *buffer,
+			      size_t length,
+			      nsclipboard_styles styles[],
+			      int n_styles)
 {
 	clipboard = gtk_clipboard_get(GDK_SELECTION_CLIPBOARD);
 
@@ -84,11 +86,12 @@ static void gui_set_clipboard(const char *buffer, size_t length,
 		g_string_set_size(current_selection, 0);
 
 	current_selection = g_string_append_len(current_selection,
-			buffer, length);
+						buffer,
+						length);
 
 	gtk_clipboard_set_text(clipboard, current_selection->str, -1);
 }
- 
+
 static struct gui_clipboard_table clipboard_table = {
 	.get = gui_get_clipboard,
 	.set = gui_set_clipboard,

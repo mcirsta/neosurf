@@ -26,8 +26,9 @@
  *		   If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_fill_opacity(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+				  const parserutils_vector *vector,
+				  int32_t *ctx,
+				  css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	css_error error;
@@ -35,7 +36,8 @@ css_error css__parse_fill_opacity(css_language *c,
 	enum flag_value flag_value;
 
 	token = parserutils_vector_iterate(vector, ctx);
-	if ((token == NULL) || ((token->type != CSS_TOKEN_IDENT) && (token->type != CSS_TOKEN_NUMBER))) {
+	if ((token == NULL) || ((token->type != CSS_TOKEN_IDENT) &&
+				(token->type != CSS_TOKEN_NUMBER))) {
 		*ctx = orig_ctx;
 		return CSS_INVALID;
 	}
@@ -43,14 +45,17 @@ css_error css__parse_fill_opacity(css_language *c,
 	flag_value = get_css_flag_value(c, token);
 
 	if (flag_value != FLAG_VALUE__NONE) {
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_FILL_OPACITY);
+		error = css_stylesheet_style_flag_value(result,
+							flag_value,
+							CSS_PROP_FILL_OPACITY);
 
 	} else if (token->type == CSS_TOKEN_NUMBER) {
 		css_fixed num = 0;
 		size_t consumed = 0;
 
-		num = css__number_from_lwc_string(token->idata, false, &consumed);
+		num = css__number_from_lwc_string(token->idata,
+						  false,
+						  &consumed);
 		/* Invalid if there are trailing characters */
 		if (consumed != lwc_string_length(token->idata)) {
 			*ctx = orig_ctx;
@@ -63,7 +68,8 @@ css_error css__parse_fill_opacity(css_language *c,
 		if (num > INTTOFIX(1))
 			num = INTTOFIX(1);
 
-		error = css__stylesheet_style_appendOPV(result, CSS_PROP_FILL_OPACITY, 0, FILL_OPACITY_SET);
+		error = css__stylesheet_style_appendOPV(
+			result, CSS_PROP_FILL_OPACITY, 0, FILL_OPACITY_SET);
 		if (error != CSS_OK) {
 			*ctx = orig_ctx;
 			return error;
@@ -79,4 +85,3 @@ css_error css__parse_fill_opacity(css_language *c,
 
 	return error;
 }
-

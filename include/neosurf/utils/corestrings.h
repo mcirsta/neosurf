@@ -49,11 +49,11 @@ nserror corestrings_fini(void);
 struct dom_string;
 
 /* declare corestrings */
-#define CORESTRING_LWC_VALUE(NAME,VALUE)		\
+#define CORESTRING_LWC_VALUE(NAME, VALUE)                                      \
 	extern lwc_string *corestring_lwc_##NAME
-#define CORESTRING_DOM_VALUE(NAME,VALUE)		\
+#define CORESTRING_DOM_VALUE(NAME, VALUE)                                      \
 	extern struct dom_string *corestring_dom_##NAME
-#define CORESTRING_NSURL(NAME,VALUE) \
+#define CORESTRING_NSURL(NAME, VALUE)                                          \
 	extern struct nsurl *corestring_nsurl_##NAME
 #include <neosurf/utils/corestringlist.h>
 #undef CORESTRING_LWC_VALUE

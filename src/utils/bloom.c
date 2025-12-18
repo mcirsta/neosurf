@@ -38,7 +38,7 @@
 static inline uint32_t fnv(const char *datum, size_t len)
 {
 	uint32_t z = 0x811c9dc5;
-	
+
 	if (datum == NULL)
 		return 0;
 
@@ -59,18 +59,18 @@ struct bloom_filter {
 struct bloom_filter *bloom_create(size_t size)
 {
 	struct bloom_filter *r = calloc(1, sizeof(*r) + size);
-        
+
 	if (r == NULL)
 		return NULL;
-        
+
 	r->size = size;
-        
+
 	return r;
 }
 
 void bloom_destroy(struct bloom_filter *b)
 {
-        free(b);
+	free(b);
 }
 
 void bloom_insert_str(struct bloom_filter *b, const char *s, size_t z)
@@ -100,7 +100,7 @@ bool bloom_search_hash(struct bloom_filter *b, uint32_t hash)
 	unsigned int index = hash % (b->size << 3);
 	unsigned int byte_index = index >> 3;
 	unsigned int bit_index = index & 7;
-	
+
 	return (b->filter[byte_index] & (1 << bit_index)) != 0;
 }
 
@@ -108,4 +108,3 @@ uint32_t bloom_items(struct bloom_filter *b)
 {
 	return b->items;
 }
-

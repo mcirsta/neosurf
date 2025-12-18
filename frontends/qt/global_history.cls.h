@@ -29,11 +29,11 @@ class NS_Global_history : public NS_Corewindow
 {
 	Q_OBJECT
 
-public:
+      public:
 	NS_Global_history(QWidget *parent);
 	~NS_Global_history();
 
-private:
+      private:
 	void draw(struct rect *clip, struct redraw_context *ctx);
 	bool key_press(uint32_t nskey);
 	void mouse_action(browser_mouse_state mouse_state, int x, int y);

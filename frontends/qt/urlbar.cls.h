@@ -33,7 +33,6 @@ extern "C" {
 #include "neosurf/types.h"
 #include "neosurf/content_type.h"
 #include "neosurf/browser_window.h"
-
 }
 
 #include "qt/actions.cls.h"
@@ -49,20 +48,22 @@ extern "C" {
  *  the line edit.
  */
 #undef USE_ICON_FOR_SCALE
-//#define USE_ICON_FOR_SCALE
+// #define USE_ICON_FOR_SCALE
 
-class NS_URLBar :public QToolBar
+class NS_URLBar : public QToolBar
 {
 	Q_OBJECT
 
-public:
-	NS_URLBar(QWidget *parent, NS_Actions *actions, struct browser_window *bw);
+      public:
+	NS_URLBar(QWidget *parent,
+		  NS_Actions *actions,
+		  struct browser_window *bw);
 	nserror set_url(struct nsurl *url);
 
-public slots:
+      public slots:
 	void input_pressed();
 
-private:
+      private:
 	struct browser_window *m_bw;
 	QLineEdit *m_input;
 	QMenu *m_burgermenu;

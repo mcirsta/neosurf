@@ -27,8 +27,7 @@ extern "C" {
 #include "qt/page_info.cls.h"
 
 NS_Page_info::NS_Page_info(QWidget *parent, struct browser_window *bw)
-	: NS_Corewindow(parent, Qt::Popup),
-	  m_session(nullptr)
+	: NS_Corewindow(parent, Qt::Popup), m_session(nullptr)
 {
 	setAttribute(Qt::WA_DeleteOnClose);
 	page_info_create((struct core_window *)m_core_window, bw, &m_session);
@@ -52,11 +51,13 @@ bool NS_Page_info::key_press(uint32_t nskey)
 void NS_Page_info::mouse_action(browser_mouse_state mouse_state, int x, int y)
 {
 	bool did_something = false;
-	if ((mouse_state) && (!geometry().contains(mapToGlobal(QPoint(x,y))))) {
+	if ((mouse_state) &&
+	    (!geometry().contains(mapToGlobal(QPoint(x, y))))) {
 		/* click outside window */
 		did_something = true;
 	} else {
-		page_info_mouse_action(m_session, mouse_state, x, y, &did_something);
+		page_info_mouse_action(
+			m_session, mouse_state, x, y, &did_something);
 	}
 	if (did_something) {
 		close();

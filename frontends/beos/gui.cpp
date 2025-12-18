@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define __STDBOOL_H__	1
+#define __STDBOOL_H__ 1
 #include <assert.h>
 #include <ctype.h>
 #include <stdbool.h>
@@ -67,12 +67,11 @@ extern "C" {
 #include "netsurf/cookie_db.h"
 #include "netsurf/url_db.h"
 #include "content/fetch.h"
-
 }
 
 #include "beos/gui.h"
 #include "beos/gui_options.h"
-//#include "beos/completion.h"
+// #include "beos/completion.h"
 #include "beos/window.h"
 #include "beos/throbber.h"
 #include "beos/filetype.h"
@@ -83,8 +82,8 @@ extern "C" {
 #include "beos/bitmap.h"
 #include "beos/font.h"
 
-//TODO: use resources
-// enable using resources instead of files
+// TODO: use resources
+//  enable using resources instead of files
 #define USE_RESOURCES 1
 
 bool nsbeos_done = false;
@@ -98,9 +97,9 @@ struct gui_window *search_current_window = 0;
 
 BWindow *wndAbout;
 BWindow *wndWarning;
-//GladeXML *gladeWindows;
+// GladeXML *gladeWindows;
 BWindow *wndTooltip;
-//beosLabel *labelTooltip;
+// beosLabel *labelTooltip;
 BFilePanel *wndOpenFile;
 
 static thread_id sBAppThreadID;
@@ -121,13 +120,18 @@ nserror beos_warn_user(const char *warning, const char *detail)
 	if (detail)
 		text << ":\n" << detail;
 
-	alert = new BAlert("NetSurf Warning", text.String(), "Debug", "Ok",
-                           NULL, B_WIDTH_AS_USUAL, B_WARNING_ALERT);
+	alert = new BAlert("NetSurf Warning",
+			   text.String(),
+			   "Debug",
+			   "Ok",
+			   NULL,
+			   B_WIDTH_AS_USUAL,
+			   B_WARNING_ALERT);
 	if (alert->Go() < 1) {
 		debugger("warn_user");
-        }
-        
-        return NSERROR_OK;
+	}
+
+	return NSERROR_OK;
 }
 
 NSBrowserApplication::NSBrowserApplication()
@@ -141,43 +145,41 @@ NSBrowserApplication::~NSBrowserApplication()
 }
 
 
-void
-NSBrowserApplication::MessageReceived(BMessage *message)
+void NSBrowserApplication::MessageReceived(BMessage *message)
 {
 	switch (message->what) {
-		case B_REFS_RECEIVED:
-		case B_UI_SETTINGS_CHANGED:
-		// messages for top-level
-		// we'll just send them to the first window
-		case 'back':
-		case 'forw':
-		case 'stop':
-		case 'relo':
-		case 'home':
-		case 'urlc':
-		case 'urle':
-		case 'sear':
-		case 'menu':
-		// NetPositive messages
-		case B_NETPOSITIVE_OPEN_URL:
-		case B_NETPOSITIVE_BACK:
-		case B_NETPOSITIVE_FORWARD:
-		case B_NETPOSITIVE_HOME:
-		case B_NETPOSITIVE_RELOAD:
-		case B_NETPOSITIVE_STOP:
-		case B_NETPOSITIVE_DOWN:
-		case B_NETPOSITIVE_UP:
-			//DetachCurrentMessage();
-			//nsbeos_pipe_message(message, this, fGuiWindow);
-			break;
-		default:
-			BApplication::MessageReceived(message);
+	case B_REFS_RECEIVED:
+	case B_UI_SETTINGS_CHANGED:
+	// messages for top-level
+	// we'll just send them to the first window
+	case 'back':
+	case 'forw':
+	case 'stop':
+	case 'relo':
+	case 'home':
+	case 'urlc':
+	case 'urle':
+	case 'sear':
+	case 'menu':
+	// NetPositive messages
+	case B_NETPOSITIVE_OPEN_URL:
+	case B_NETPOSITIVE_BACK:
+	case B_NETPOSITIVE_FORWARD:
+	case B_NETPOSITIVE_HOME:
+	case B_NETPOSITIVE_RELOAD:
+	case B_NETPOSITIVE_STOP:
+	case B_NETPOSITIVE_DOWN:
+	case B_NETPOSITIVE_UP:
+		// DetachCurrentMessage();
+		// nsbeos_pipe_message(message, this, fGuiWindow);
+		break;
+	default:
+		BApplication::MessageReceived(message);
 	}
 }
 
 
-void
-NSBrowserApplication::ArgvReceived(int32 argc, char **argv)
+void NSBrowserApplication::ArgvReceived(int32 argc, char **argv)
 {
 	NSBrowserWindow *win = nsbeos_find_last_window();
 	if (!win) {
@@ -189,8 +191,7 @@ NSBrowserApplication::ArgvReceived(int32 argc, char **argv)
 }
 
 
-void
-NSBrowserApplication::RefsReceived(BMessage *message)
+void NSBrowserApplication::RefsReceived(BMessage *message)
 {
 	DetachCurrentMessage();
 	NSBrowserWindow *win = nsbeos_find_last_window();
@@ -203,15 +204,13 @@ NSBrowserApplication::RefsReceived(BMessage *message)
 }
 
 
-void
-NSBrowserApplication::AboutRequested()
+void NSBrowserApplication::AboutRequested()
 {
 	nsbeos_pipe_message(new BMessage(B_ABOUT_REQUESTED), NULL, NULL);
 }
 
 
-bool
-NSBrowserApplication::QuitRequested()
+bool NSBrowserApplication::QuitRequested()
 {
 	// let it notice it
 	nsbeos_pipe_message(new BMessage(B_QUIT_REQUESTED), NULL, NULL);
@@ -221,7 +220,6 @@ NSBrowserApplication::QuitRequested()
 
 
 // #pragma mark - implementation
-
 
 
 /* realpath fallback on R5 */
@@ -234,27 +232,32 @@ char *realpath(const char *f, char *buf)
 		strncpy(buf, f, MAXPATHLEN);
 		return NULL;
 	}
-	//printf("RP: '%s'\n", path.Path());
+	// printf("RP: '%s'\n", path.Path());
 	strncpy(buf, path.Path(), MAXPATHLEN);
 	return buf;
 }
 #endif
 
 /* finds the NetSurf binary image ID and path
- * 
+ *
  */
 image_id nsbeos_find_app_path(char *path)
 {
 	image_info info;
 	int32 cookie = 0;
 	while (get_next_image_info(0, &cookie, &info) == B_OK) {
-//fprintf(stderr, "%p <> %p, %p\n", (char *)&find_app_resources, (char *)info.text, (char *)info.text + info.text_size);
-		if (((char *)&nsbeos_find_app_path >= (char *)info.text)
-		 && ((char *)&nsbeos_find_app_path < (char *)info.text + info.text_size)) {
-//fprintf(stderr, "match\n");
+		// fprintf(stderr, "%p <> %p, %p\n", (char
+		// *)&find_app_resources, (char *)info.text, (char *)info.text +
+		// info.text_size);
+		if (((char *)&nsbeos_find_app_path >= (char *)info.text) &&
+		    ((char *)&nsbeos_find_app_path <
+		     (char *)info.text + info.text_size)) {
+			// fprintf(stderr, "match\n");
 			if (path) {
 				memset(path, 0, B_PATH_NAME_LENGTH);
-				strncpy(path, info.name, B_PATH_NAME_LENGTH-1);
+				strncpy(path,
+					info.name,
+					B_PATH_NAME_LENGTH - 1);
 			}
 			return info.id;
 		}
@@ -315,7 +318,7 @@ char *find_resource(char *buf, const char *filename, const char *def)
 	}
 
 
-	BPathFinder f((void*)find_resource);
+	BPathFinder f((void *)find_resource);
 
 	BPath p;
 	if (f.FindPath(B_FIND_PATH_APPS_DIRECTORY, "netsurf/res", p) == B_OK) {
@@ -357,13 +360,14 @@ static void check_homedir(void)
 
 	if (err < B_OK) {
 		/* we really can't continue without a home directory. */
-		NSLOG(netsurf, INFO,
+		NSLOG(netsurf,
+		      INFO,
 		      "Can't find user settings directory - nowhere to store state!");
 		die("NetSurf needs to find the user settings directory in order to run.\n");
 	}
 
 	path.Append("NetSurf");
-	err = create_directory(path.Path(), 0644); 
+	err = create_directory(path.Path(), 0644);
 	if (err < B_OK) {
 		NSLOG(netsurf, INFO, "Unable to create %s", path.Path());
 		die("NetSurf could not create its settings directory.\n");
@@ -395,7 +399,6 @@ static nsurl *gui_get_resource_url(const char *path)
 	nsurl_create(u.String(), &url);
 	return url;
 }
-
 
 
 #if !defined(__HAIKU__) && !defined(B_BEOS_VERSION_DANO)
@@ -434,11 +437,10 @@ static nsurl *gui_get_resource_url(const char *path)
 /**
  * set option from pen
  */
-static nserror
-set_colour_from_ui(struct nsoption_s *opts,
-                   color_which ui,
-                   enum nsoption_e option,
-                   colour def_colour)
+static nserror set_colour_from_ui(struct nsoption_s *opts,
+				  color_which ui,
+				  enum nsoption_e option,
+				  colour def_colour)
 {
 	if (ui != NOCOL) {
 		rgb_color c;
@@ -450,8 +452,8 @@ set_colour_from_ui(struct nsoption_s *opts,
 		}
 
 		def_colour = ((((uint32_t)c.blue << 16) & 0xff0000) |
-					  ((c.green << 8) & 0x00ff00) |
-					  ((c.red) & 0x0000ff));
+			      ((c.green << 8) & 0x00ff00) |
+			      ((c.red) & 0x0000ff));
 	}
 
 	opts[option].value.c = def_colour;
@@ -473,92 +475,57 @@ static nserror set_option_defaults(struct nsoption_s *defaults)
 		colour dflt;
 		enum nsoption_e option;
 	} entries[] = {
-		{
-			B_DOCUMENT_TEXT_COLOR,
-			0x00000000,
-			NSOPTION_sys_colour_AccentColor
-		}, {
-			B_CONTROL_HIGHLIGHT_COLOR,
-			0x00000000,
-			NSOPTION_sys_colour_AccentColorText
-		}, {
-			B_SHINE_COLOR,
-			0x00000000,
-			NSOPTION_sys_colour_ActiveText
-		}, {
-			B_CONTROL_BORDER_COLOR,
-			0x00000000,
-			NSOPTION_sys_colour_ButtonBorder
-		}, {
-			B_CONTROL_BACKGROUND_COLOR,
-			0x00aaaaaa,
-			NSOPTION_sys_colour_ButtonFace
-		}, {
-			B_CONTROL_TEXT_COLOR,
-			0x00000000,
-			NSOPTION_sys_colour_ButtonText
-		}, {
-			B_DOCUMENT_BACKGROUND_COLOR,
-			0x00aaaaaa,
-			NSOPTION_sys_colour_Canvas
-		}, {
-			B_DOCUMENT_TEXT_COLOR,
-			0x00000000,
-			NSOPTION_sys_colour_CanvasText
-		}, {
-			B_CONTROL_BACKGROUND_COLOR,
-			0x00000000,
-			NSOPTION_sys_colour_Field
-		}, {
-			B_CONTROL_TEXT_COLOR,
-			0x00000000,
-			NSOPTION_sys_colour_FieldText
-		}, {
-			NOCOL,
-			0x00777777,
-			NSOPTION_sys_colour_GrayText
-		}, {
-			NOCOL,
-			0x00ee0000,
-			NSOPTION_sys_colour_Highlight
-		}, {
-			NOCOL,
-			0x00000000,
-			NSOPTION_sys_colour_HighlightText
-		}, {
-			B_LINK_TEXT_COLOR,
-			0x00000000,
-			NSOPTION_sys_colour_LinkText
-		}, {
-			B_CONTROL_MARK_COLOR,
-			0x00000000,
-			NSOPTION_sys_colour_Mark
-		}, {
-			B_CONTROL_TEXT_COLOR,
-			0x00000000,
-			NSOPTION_sys_colour_MarkText
-		}, {
-			B_TOOL_TIP_BACKGROUND_COLOR,
-			0x00000000,
-			NSOPTION_sys_colour_SelectedItem
-		}, {
-			B_TOOL_TIP_TEXT_COLOR,
-			0x00000000,
-			NSOPTION_sys_colour_SelectedItemText
-		}, {
-			B_LINK_VISITED_COLOR,
-			0x00000000,
-			NSOPTION_sys_colour_VisitedText
-		}, {
-			NOCOL,
-			0x00000000,
-			NSOPTION_LISTEND
-		},
+		{B_DOCUMENT_TEXT_COLOR,
+		 0x00000000,
+		 NSOPTION_sys_colour_AccentColor},
+		{B_CONTROL_HIGHLIGHT_COLOR,
+		 0x00000000,
+		 NSOPTION_sys_colour_AccentColorText},
+		{B_SHINE_COLOR, 0x00000000, NSOPTION_sys_colour_ActiveText},
+		{B_CONTROL_BORDER_COLOR,
+		 0x00000000,
+		 NSOPTION_sys_colour_ButtonBorder},
+		{B_CONTROL_BACKGROUND_COLOR,
+		 0x00aaaaaa,
+		 NSOPTION_sys_colour_ButtonFace},
+		{B_CONTROL_TEXT_COLOR,
+		 0x00000000,
+		 NSOPTION_sys_colour_ButtonText},
+		{B_DOCUMENT_BACKGROUND_COLOR,
+		 0x00aaaaaa,
+		 NSOPTION_sys_colour_Canvas},
+		{B_DOCUMENT_TEXT_COLOR,
+		 0x00000000,
+		 NSOPTION_sys_colour_CanvasText},
+		{B_CONTROL_BACKGROUND_COLOR,
+		 0x00000000,
+		 NSOPTION_sys_colour_Field},
+		{B_CONTROL_TEXT_COLOR,
+		 0x00000000,
+		 NSOPTION_sys_colour_FieldText},
+		{NOCOL, 0x00777777, NSOPTION_sys_colour_GrayText},
+		{NOCOL, 0x00ee0000, NSOPTION_sys_colour_Highlight},
+		{NOCOL, 0x00000000, NSOPTION_sys_colour_HighlightText},
+		{B_LINK_TEXT_COLOR, 0x00000000, NSOPTION_sys_colour_LinkText},
+		{B_CONTROL_MARK_COLOR, 0x00000000, NSOPTION_sys_colour_Mark},
+		{B_CONTROL_TEXT_COLOR,
+		 0x00000000,
+		 NSOPTION_sys_colour_MarkText},
+		{B_TOOL_TIP_BACKGROUND_COLOR,
+		 0x00000000,
+		 NSOPTION_sys_colour_SelectedItem},
+		{B_TOOL_TIP_TEXT_COLOR,
+		 0x00000000,
+		 NSOPTION_sys_colour_SelectedItemText},
+		{B_LINK_VISITED_COLOR,
+		 0x00000000,
+		 NSOPTION_sys_colour_VisitedText},
+		{NOCOL, 0x00000000, NSOPTION_LISTEND},
 	};
 
 	int idx;
 
-	for (idx=0; entries[idx].option != NSOPTION_LISTEND; idx++) {
+	for (idx = 0; entries[idx].option != NSOPTION_LISTEND; idx++) {
 		set_colour_from_ui(defaults,
 				   entries[idx].ui,
 				   entries[idx].option,
@@ -578,7 +545,7 @@ void nsbeos_update_system_ui_colors(void)
  */
 static bool nslog_stream_configure(FILE *fptr)
 {
-        /* set log stream to be non-buffering */
+	/* set log stream to be non-buffering */
 	setbuf(fptr, NULL);
 
 	return true;
@@ -586,14 +553,15 @@ static bool nslog_stream_configure(FILE *fptr)
 
 static BPath get_messages_path()
 {
-	BPathFinder f((void*)get_messages_path);
+	BPathFinder f((void *)get_messages_path);
 
 	BPath p;
 	f.FindPath(B_FIND_PATH_APPS_DIRECTORY, "netsurf/res", p);
 	BString lang;
 #ifdef __HAIKU__
 	BMessage preferredLangs;
-	if (BLocaleRoster::Default()->GetPreferredLanguages(&preferredLangs) == B_OK) {
+	if (BLocaleRoster::Default()->GetPreferredLanguages(&preferredLangs) ==
+	    B_OK) {
 		preferredLangs.FindString("language", 0, &lang);
 		lang.Truncate(2);
 	}
@@ -611,7 +579,7 @@ static BPath get_messages_path()
 }
 
 
-static void gui_init(int argc, char** argv)
+static void gui_init(int argc, char **argv)
 {
 	const char *addr;
 	nsurl *url;
@@ -621,7 +589,10 @@ static void gui_init(int argc, char** argv)
 	if (pipe(sEventPipe) < 0)
 		return;
 	if (!replicated) {
-		sBAppThreadID = spawn_thread(bapp_thread, "BApplication(NetSurf)", B_NORMAL_PRIORITY, (void *)find_thread(NULL));
+		sBAppThreadID = spawn_thread(bapp_thread,
+					     "BApplication(NetSurf)",
+					     B_NORMAL_PRIORITY,
+					     (void *)find_thread(NULL));
 		if (sBAppThreadID < B_OK)
 			return; /* #### handle errors */
 		if (resume_thread(sBAppThreadID) < B_OK)
@@ -637,7 +608,7 @@ static void gui_init(int argc, char** argv)
 	// make sure the cache dir exists
 	create_directory(TEMP_FILENAME_PREFIX, 0700);
 
-	//nsbeos_completion_init();
+	// nsbeos_completion_init();
 
 
 	/* This is an ugly hack to just get the new-style throbber going.
@@ -645,8 +616,7 @@ static void gui_init(int argc, char** argv)
 	 */
 	{
 #define STROF(n) #n
-#define FIND_THROB(n) filenames[(n)] = \
-				"throbber/throbber" STROF(n) ".png";
+#define FIND_THROB(n) filenames[(n)] = "throbber/throbber" STROF(n) ".png";
 		const char *filenames[9];
 		FIND_THROB(0);
 		FIND_THROB(1);
@@ -658,9 +628,15 @@ static void gui_init(int argc, char** argv)
 		FIND_THROB(7);
 		FIND_THROB(8);
 		nsbeos_throbber_initialise_from_png(9,
-			filenames[0], filenames[1], filenames[2], filenames[3],
-			filenames[4], filenames[5], filenames[6], filenames[7], 
-			filenames[8]);
+						    filenames[0],
+						    filenames[1],
+						    filenames[2],
+						    filenames[3],
+						    filenames[4],
+						    filenames[5],
+						    filenames[6],
+						    filenames[7],
+						    filenames[8]);
 #undef FIND_THROB
 #undef STROF
 	}
@@ -677,9 +653,12 @@ static void gui_init(int argc, char** argv)
 	/* check what the font settings are, setting them to a default font
 	 * if they're not set - stops Pango whinging
 	 */
-#define SETFONTDEFAULT(OPTION,y) if (nsoption_charp(OPTION) == NULL) nsoption_set_charp(OPTION, strdup((y)))
+#define SETFONTDEFAULT(OPTION, y)                                              \
+	if (nsoption_charp(OPTION) == NULL)                                    \
+	nsoption_set_charp(OPTION, strdup((y)))
 
-	//XXX: use be_plain_font & friends, when we can check if font is serif or not.
+	// XXX: use be_plain_font & friends, when we can check if font is serif
+	// or not.
 /*
 	font_family family;
 	font_style style;
@@ -706,8 +685,9 @@ static void gui_init(int argc, char** argv)
 
 	nsbeos_options_init();
 
-	/* We don't yet have an implementation of "select" form elements (they should use a popup menu)
-	 * So we use the cross-platform code instead. */
+	/* We don't yet have an implementation of "select" form elements (they
+	 * should use a popup menu) So we use the cross-platform code instead.
+	 */
 	nsoption_set_bool(core_select_menu, true);
 
 	if (nsoption_charp(cookie_file) == NULL) {
@@ -720,7 +700,7 @@ static void gui_init(int argc, char** argv)
 		NSLOG(netsurf, INFO, "Using '%s' as Cookie Jar file", buf);
 		nsoption_set_charp(cookie_jar, strdup(buf));
 	}
-	if ((nsoption_charp(cookie_file) == NULL) || 
+	if ((nsoption_charp(cookie_file) == NULL) ||
 	    (nsoption_charp(cookie_jar) == NULL))
 		die("Failed initialising cookie options");
 
@@ -730,19 +710,19 @@ static void gui_init(int argc, char** argv)
 		nsoption_set_charp(url_file, strdup(buf));
 	}
 
-        if (nsoption_charp(ca_path) == NULL) {
-                find_resource(buf, "certs", "/etc/ssl/certs");
-                NSLOG(netsurf, INFO, "Using '%s' as certificate path", buf);
-                nsoption_set_charp(ca_path, strdup(buf));
-        }
+	if (nsoption_charp(ca_path) == NULL) {
+		find_resource(buf, "certs", "/etc/ssl/certs");
+		NSLOG(netsurf, INFO, "Using '%s' as certificate path", buf);
+		nsoption_set_charp(ca_path, strdup(buf));
+	}
 
-	//find_resource(buf, "mime.types", "/etc/mime.types");
+	// find_resource(buf, "mime.types", "/etc/mime.types");
 	beos_fetch_filetype_init();
 
 	urldb_load(nsoption_charp(url_file));
 	urldb_load_cookies(nsoption_charp(cookie_file));
 
-	//nsbeos_download_initialise();
+	// nsbeos_download_initialise();
 
 	if (!replicated)
 		be_app->Unlock();
@@ -759,11 +739,7 @@ static void gui_init(int argc, char** argv)
 	error = nsurl_create(addr, &url);
 	if (error == NSERROR_OK) {
 		error = browser_window_create(
-			BW_CREATE_HISTORY,
-			url,
-			NULL,
-			NULL,
-			NULL);
+			BW_CREATE_HISTORY, url, NULL, NULL, NULL);
 		nsurl_unref(url);
 	}
 	if (error != NSERROR_OK) {
@@ -776,13 +752,12 @@ static void gui_init(int argc, char** argv)
 		delete gFirstRefsReceived;
 		gFirstRefsReceived = NULL;
 	}
-
 }
 
 
-
-
-void nsbeos_pipe_message(BMessage *message, BView *_this, struct gui_window *gui)
+void nsbeos_pipe_message(BMessage *message,
+			 BView *_this,
+			 struct gui_window *gui)
 {
 	if (message == NULL) {
 		fprintf(stderr, "%s(NULL)!\n", __FUNCTION__);
@@ -796,7 +771,9 @@ void nsbeos_pipe_message(BMessage *message, BView *_this, struct gui_window *gui
 }
 
 
-void nsbeos_pipe_message_top(BMessage *message, BWindow *_this, struct beos_scaffolding *scaffold)
+void nsbeos_pipe_message_top(BMessage *message,
+			     BWindow *_this,
+			     struct beos_scaffolding *scaffold)
 {
 	if (message == NULL) {
 		fprintf(stderr, "%s(NULL)!\n", __FUNCTION__);
@@ -818,10 +795,10 @@ void nsbeos_gui_poll(void)
 	unsigned int fd_count = 0;
 	bigtime_t next_schedule = 0;
 
-        /* run the scheduler */
+	/* run the scheduler */
 	schedule_run();
 
-        /* get any active fetcher fd */
+	/* get any active fetcher fd */
 	fetch_fdset(&read_fd_set, &write_fd_set, &exc_fd_set, &max_fd);
 
 	// our own event pipe
@@ -831,24 +808,26 @@ void nsbeos_gui_poll(void)
 	max_fd = MAX(max_fd, sEventPipe[0]) + 1;
 
 	// compute schedule timeout
-        if (earliest_callback_timeout != B_INFINITE_TIMEOUT) {
-                next_schedule = earliest_callback_timeout - system_time();
-        } else {
-                next_schedule = earliest_callback_timeout;
-        }
+	if (earliest_callback_timeout != B_INFINITE_TIMEOUT) {
+		next_schedule = earliest_callback_timeout - system_time();
+	} else {
+		next_schedule = earliest_callback_timeout;
+	}
 
-        // we're quite late already...
-        if (next_schedule < 0)
-                next_schedule = 0;
+	// we're quite late already...
+	if (next_schedule < 0)
+		next_schedule = 0;
 
 	timeout.tv_sec = (long)(next_schedule / 1000000LL);
 	timeout.tv_usec = (long)(next_schedule % 1000000LL);
 
-	NSLOG(netsurf, DEEPDEBUG,
+	NSLOG(netsurf,
+	      DEEPDEBUG,
 	      "gui_poll: select(%d, ..., %Ldus",
-	      max_fd, next_schedule);
-	fd_count = select(max_fd, &read_fd_set, &write_fd_set, &exc_fd_set, 
-		&timeout);
+	      max_fd,
+	      next_schedule);
+	fd_count = select(
+		max_fd, &read_fd_set, &write_fd_set, &exc_fd_set, &timeout);
 	NSLOG(netsurf, DEEPDEBUG, "select: %d\n", fd_count);
 
 	if (fd_count > 0 && FD_ISSET(sEventPipe[0], &read_fd_set)) {
@@ -856,7 +835,8 @@ void nsbeos_gui_poll(void)
 		int len = read(sEventPipe[0], &message, sizeof(void *));
 		NSLOG(netsurf, DEEPDEBUG, "gui_poll: BMessage ? %d read", len);
 		if (len == sizeof(void *)) {
-			NSLOG(netsurf, DEEPDEBUG,
+			NSLOG(netsurf,
+			      DEEPDEBUG,
 			      "gui_poll: BMessage.what %-4.4s\n",
 			      (char *)&(message->what));
 			nsbeos_dispatch_event(message);
@@ -869,7 +849,7 @@ static void gui_quit(void)
 {
 	urldb_save_cookies(nsoption_charp(cookie_jar));
 	urldb_save(nsoption_charp(url_file));
-	//options_save_tree(hotlist,nsoption_charp(hotlist_file),messages_get("TreeHotlist"));
+	// options_save_tree(hotlist,nsoption_charp(hotlist_file),messages_get("TreeHotlist"));
 
 	free(nsoption_charp(cookie_file));
 	free(nsoption_charp(cookie_jar));
@@ -904,7 +884,7 @@ void nsbeos_gui_view_source(struct hlcache_handle *content)
 	size_t size;
 	const uint8_t *source;
 
-        source = content_get_source_data(content, &size);
+	source = content_get_source_data(content, &size);
 
 	if (!content || !source) {
 		beos_warn_user("MiscError", "No document source");
@@ -916,8 +896,8 @@ void nsbeos_gui_view_source(struct hlcache_handle *content)
 	if (temp_name) {
 		path.SetTo(temp_name);
 		BEntry entry;
-		if (entry.SetTo(path.Path()) >= B_OK 
-			&& entry.Exists() && entry.IsFile())
+		if (entry.SetTo(path.Path()) >= B_OK && entry.Exists() &&
+		    entry.IsFile())
 			done = true;
 	}
 	if (!done) {
@@ -941,7 +921,8 @@ void nsbeos_gui_view_source(struct hlcache_handle *content)
 			BMessage extensions;
 			if (type.GetFileExtensions(&extensions) == B_OK) {
 				BString ext;
-				if (extensions.FindString("extensions", &ext) == B_OK)
+				if (extensions.FindString("extensions", &ext) ==
+				    B_OK)
 					filename << "." << ext;
 			}
 			/* we unref(mime) later on, we just leak on error */
@@ -962,11 +943,13 @@ void nsbeos_gui_view_source(struct hlcache_handle *content)
 		}
 
 		if (mime) {
-			file.WriteAttr("BEOS:TYPE", B_MIME_STRING_TYPE, 0LL, 
-				lwc_string_data(mime), lwc_string_length(mime) + 1);
+			file.WriteAttr("BEOS:TYPE",
+				       B_MIME_STRING_TYPE,
+				       0LL,
+				       lwc_string_data(mime),
+				       lwc_string_length(mime) + 1);
 			lwc_string_unref(mime);
 		}
-		
 	}
 
 	entry_ref ref;
@@ -978,15 +961,13 @@ void nsbeos_gui_view_source(struct hlcache_handle *content)
 
 
 	// apps to try
-	const char *editorSigs[] = {
-		"text/x-source-code",
-		"application/x-vnd.beunited.pe",
-		"application/x-vnd.XEmacs",
-		"application/x-vnd.Haiku-StyledEdit",
-		"application/x-vnd.Be-STEE",
-		"application/x-vnd.yT-STEE",
-		NULL
-	};
+	const char *editorSigs[] = {"text/x-source-code",
+				    "application/x-vnd.beunited.pe",
+				    "application/x-vnd.XEmacs",
+				    "application/x-vnd.Haiku-StyledEdit",
+				    "application/x-vnd.Be-STEE",
+				    "application/x-vnd.yT-STEE",
+				    NULL};
 	int i;
 	for (i = 0; editorSigs[i]; i++) {
 		team_id team = -1;
@@ -994,9 +975,8 @@ void nsbeos_gui_view_source(struct hlcache_handle *content)
 			BMessenger msgr(editorSigs[i], team);
 			if (msgr.SendMessage(&m) >= B_OK)
 				break;
-
 		}
-		
+
 		err = be_roster->Launch(editorSigs[i], (BMessage *)&m, &team);
 		if (err >= B_OK || err == B_ALREADY_RUNNING)
 			break;
@@ -1026,24 +1006,28 @@ static nserror gui_launch_url(struct nsurl *url)
 	// if not there is likely no supporting app anyway
 	if (!BMimeType::IsValid(mimeType.String()))
 		return NSERROR_NO_FETCH_HANDLER;
-	char *args[2] = { (char *)nsurl_access(url), NULL };
+	char *args[2] = {(char *)nsurl_access(url), NULL};
 	status = be_roster->Launch(mimeType.String(), 1, args);
 	if (status < B_OK)
 		beos_warn_user("Cannot launch url", strerror(status));
-        return NSERROR_OK;
+	return NSERROR_OK;
 }
 
 
-
-void die(const char * const error)
+void die(const char *const error)
 {
 	fprintf(stderr, "%s", error);
 	BAlert *alert;
 	BString text("Cannot continue:\n");
 	text << error;
 
-	alert = new BAlert("NetSurf Error", text.String(), "Debug", "Ok", NULL, 
-		B_WIDTH_AS_USUAL, B_STOP_ALERT);
+	alert = new BAlert("NetSurf Error",
+			   text.String(),
+			   "Debug",
+			   "Ok",
+			   NULL,
+			   B_WIDTH_AS_USUAL,
+			   B_STOP_ALERT);
 	if (alert->Go() < 1)
 		debugger("die");
 
@@ -1065,14 +1049,14 @@ static struct gui_misc_table beos_misc_table = {
 	beos_schedule,
 	gui_quit,
 	gui_launch_url,
-	NULL, //401login
+	NULL, // 401login
 	NULL, // pdf_password (if we have Haru support)
 	NULL, // present_cookies
 };
 
 
 /** Normal entry point from OS */
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
 	nserror ret;
 	BPath options;
@@ -1082,20 +1066,19 @@ int main(int argc, char** argv)
 		NULL, /* corewindow */
 		beos_download_table,
 		beos_clipboard_table,
-                &beos_fetch_table,
-                NULL, /* use POSIX file */
-                NULL, /* default utf8 */
-                NULL, /* default search */
-                NULL, /* default web search */
-                NULL, /* default low level cache persistant storage */
-                beos_bitmap_table,
-                beos_layout_table
-	};
+		&beos_fetch_table,
+		NULL, /* use POSIX file */
+		NULL, /* default utf8 */
+		NULL, /* default search */
+		NULL, /* default web search */
+		NULL, /* default low level cache persistant storage */
+		beos_bitmap_table,
+		beos_layout_table};
 
-        ret = netsurf_register(&beos_table);
-        if (ret != NSERROR_OK) {
+	ret = netsurf_register(&beos_table);
+	if (ret != NSERROR_OK) {
 		die("NetSurf operation table failed registration");
-        }
+	}
 
 	if (find_directory(B_USER_SETTINGS_DIRECTORY, &options, true) == B_OK) {
 		options.Append("x-vnd.NetSurf");
@@ -1113,7 +1096,9 @@ int main(int argc, char** argv)
 	nslog_init(nslog_stream_configure, &argc, argv);
 
 	/* user options setup */
-	ret = nsoption_init(set_option_defaults, &nsoptions, &nsoptions_default);
+	ret = nsoption_init(set_option_defaults,
+			    &nsoptions,
+			    &nsoptions_default);
 	if (ret != NSERROR_OK) {
 		die("Options failed to initialise");
 	}
@@ -1122,13 +1107,14 @@ int main(int argc, char** argv)
 
 	/* common initialisation */
 	BResources resources;
-	resources.SetToImage((const void*)main);
+	resources.SetToImage((const void *)main);
 	size_t size = 0;
 
 	BString lang;
 #ifdef __HAIKU__
 	BMessage preferredLangs;
-	if (BLocaleRoster::Default()->GetPreferredLanguages(&preferredLangs) == B_OK) {
+	if (BLocaleRoster::Default()->GetPreferredLanguages(&preferredLangs) ==
+	    B_OK) {
 		preferredLangs.FindString("language", 0, &lang);
 	}
 #endif
@@ -1136,18 +1122,20 @@ int main(int argc, char** argv)
 		lang.SetTo(getenv("LC_MESSAGES"));
 
 	char path[12];
-	sprintf(path,"%.2s/Messages", lang.String());
+	sprintf(path, "%.2s/Messages", lang.String());
 	NSLOG(netsurf, INFO, "Loading messages from resource %s\n", path);
 
-	const uint8_t* res = (const uint8_t*)resources.LoadResource('data', path, &size);
+	const uint8_t *res = (const uint8_t *)resources.LoadResource('data',
+								     path,
+								     &size);
 	if (size > 0 && res != NULL) {
 		ret = messages_add_from_inline(res, size);
 	} else {
 		BPath messages = get_messages_path();
-        ret = messages_add_from_file(messages.Path());
+		ret = messages_add_from_file(messages.Path());
 	}
 
-        ret = netsurf_init(NULL);
+	ret = netsurf_init(NULL);
 	if (ret != NSERROR_OK) {
 		die("NetSurf failed to initialise");
 	}
@@ -1170,7 +1158,7 @@ int main(int argc, char** argv)
 }
 
 /** called when replicated from NSBaseView::Instantiate() */
-int gui_init_replicant(int argc, char** argv)
+int gui_init_replicant(int argc, char **argv)
 {
 	nserror ret;
 	BPath options;
@@ -1180,20 +1168,19 @@ int gui_init_replicant(int argc, char** argv)
 		NULL, /* corewindow */
 		beos_download_table,
 		beos_clipboard_table,
-                &beos_fetch_table,
-                NULL, /* use POSIX file */
-                NULL, /* default utf8 */
-                NULL, /* default search */
-                NULL, /* default web search */
-                NULL, /* default low level cache persistant storage */
-                beos_bitmap_table,
-                beos_layout_table
-	};
+		&beos_fetch_table,
+		NULL, /* use POSIX file */
+		NULL, /* default utf8 */
+		NULL, /* default search */
+		NULL, /* default web search */
+		NULL, /* default low level cache persistant storage */
+		beos_bitmap_table,
+		beos_layout_table};
 
-        ret = netsurf_register(&beos_table);
-        if (ret != NSERROR_OK) {
+	ret = netsurf_register(&beos_table);
+	if (ret != NSERROR_OK) {
 		die("NetSurf operation table failed registration");
-        }
+	}
 
 	if (find_directory(B_USER_SETTINGS_DIRECTORY, &options, true) == B_OK) {
 		options.Append("x-vnd.NetSurf");
@@ -1206,7 +1193,9 @@ int gui_init_replicant(int argc, char** argv)
 
 	// FIXME: use options as readonly for replicants
 	/* user options setup */
-	ret = nsoption_init(set_option_defaults, &nsoptions, &nsoptions_default);
+	ret = nsoption_init(set_option_defaults,
+			    &nsoptions,
+			    &nsoptions_default);
 	if (ret != NSERROR_OK) {
 		// FIXME: must not die when in replicant!
 		die("Options failed to initialise");
@@ -1216,9 +1205,9 @@ int gui_init_replicant(int argc, char** argv)
 
 	/* common initialisation */
 	BPath messages = get_messages_path();
-        ret = messages_add_from_file(messages.Path());
+	ret = messages_add_from_file(messages.Path());
 
-        ret = netsurf_init(NULL);
+	ret = netsurf_init(NULL);
 	if (ret != NSERROR_OK) {
 		// FIXME: must not die when in replicant!
 		die("NetSurf failed to initialise");

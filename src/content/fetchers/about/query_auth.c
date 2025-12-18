@@ -40,12 +40,11 @@
 /**
  * generate the description of the login query
  */
-static nserror
-get_authentication_description(struct nsurl *url,
-			       const char *realm,
-			       const char *username,
-			       const char *password,
-			       char **out_str)
+static nserror get_authentication_description(struct nsurl *url,
+					      const char *realm,
+					      const char *username,
+					      const char *password,
+					      char **out_str)
 {
 	nserror res;
 	char *url_s;
@@ -66,9 +65,13 @@ get_authentication_description(struct nsurl *url,
 
 	str = messages_get_buff(key, url_s, realm);
 	if (str != NULL) {
-		NSLOG(neosurf, INFO,
+		NSLOG(neosurf,
+		      INFO,
 		      "key:%s url:%s realm:%s str:%s",
-		      key, url_s, realm, str);
+		      key,
+		      url_s,
+		      realm,
+		      str);
 		*out_str = str;
 	} else {
 		res = NSERROR_NOMEM;
@@ -125,36 +128,36 @@ bool fetch_about_query_auth_handler(struct fetch_about_context *ctx)
 	fetch_about_set_http_code(ctx, 200);
 
 	/* content type */
-	if (fetch_about_send_header(ctx, "Content-Type: text/html; charset=utf-8")) {
+	if (fetch_about_send_header(ctx,
+				    "Content-Type: text/html; charset=utf-8")) {
 		goto fetch_about_query_auth_handler_aborted;
 	}
 
 	title = messages_get("LoginTitle");
-	res = fetch_about_ssenddataf(ctx,
-			"<html>\n<head>\n"
-			"<title>%s</title>\n"
-			"<link rel=\"stylesheet\" type=\"text/css\" "
-			"href=\"resource:internal.css\">\n"
-			"</head>\n"
-			"<body class=\"ns-even-bg ns-even-fg ns-border\" id =\"authentication\">\n"
-			"<h1 class=\"ns-border\">%s</h1>\n",
-			title, title);
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<html>\n<head>\n"
+		"<title>%s</title>\n"
+		"<link rel=\"stylesheet\" type=\"text/css\" "
+		"href=\"resource:internal.css\">\n"
+		"</head>\n"
+		"<body class=\"ns-even-bg ns-even-fg ns-border\" id =\"authentication\">\n"
+		"<h1 class=\"ns-border\">%s</h1>\n",
+		title,
+		title);
 	if (res != NSERROR_OK) {
 		goto fetch_about_query_auth_handler_aborted;
 	}
 
 	res = fetch_about_ssenddataf(ctx,
-			 "<form method=\"post\""
-			 " enctype=\"multipart/form-data\">");
+				     "<form method=\"post\""
+				     " enctype=\"multipart/form-data\">");
 	if (res != NSERROR_OK) {
 		goto fetch_about_query_auth_handler_aborted;
 	}
 
-	res = get_authentication_description(siteurl,
-					     realm,
-					     username,
-					     password,
-					     &description);
+	res = get_authentication_description(
+		siteurl, realm, username, password, &description);
 	if (res == NSERROR_OK) {
 		res = fetch_about_ssenddataf(ctx, "<p>%s</p>", description);
 		free(description);
@@ -169,23 +172,26 @@ bool fetch_about_query_auth_handler(struct fetch_about_context *ctx)
 	}
 
 	res = fetch_about_ssenddataf(ctx,
-			 "<tr>"
-			 "<th><label for=\"name\">%s:</label></th>"
-			 "<td><input type=\"text\" id=\"username\" "
-			 "name=\"username\" value=\"%s\"></td>"
-			 "</tr>",
-			 messages_get("Username"), username);
+				     "<tr>"
+				     "<th><label for=\"name\">%s:</label></th>"
+				     "<td><input type=\"text\" id=\"username\" "
+				     "name=\"username\" value=\"%s\"></td>"
+				     "</tr>",
+				     messages_get("Username"),
+				     username);
 	if (res != NSERROR_OK) {
 		goto fetch_about_query_auth_handler_aborted;
 	}
 
-	res = fetch_about_ssenddataf(ctx,
-			 "<tr>"
-			 "<th><label for=\"password\">%s:</label></th>"
-			 "<td><input type=\"password\" id=\"password\" "
-			 "name=\"password\" value=\"%s\"></td>"
-			 "</tr>",
-			 messages_get("Password"), password);
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<tr>"
+		"<th><label for=\"password\">%s:</label></th>"
+		"<td><input type=\"password\" id=\"password\" "
+		"name=\"password\" value=\"%s\"></td>"
+		"</tr>",
+		messages_get("Password"),
+		password);
 	if (res != NSERROR_OK) {
 		goto fetch_about_query_auth_handler_aborted;
 	}
@@ -195,15 +201,16 @@ bool fetch_about_query_auth_handler(struct fetch_about_context *ctx)
 		goto fetch_about_query_auth_handler_aborted;
 	}
 
-	res = fetch_about_ssenddataf(ctx,
-			 "<div id=\"buttons\">"
-			 "<input type=\"submit\" id=\"login\" name=\"login\" "
-			 "value=\"%s\" class=\"default-action\">"
-			 "<input type=\"submit\" id=\"cancel\" name=\"cancel\" "
-			 "value=\"%s\">"
-			 "</div>",
-			 messages_get("Login"),
-			 messages_get("Cancel"));
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<div id=\"buttons\">"
+		"<input type=\"submit\" id=\"login\" name=\"login\" "
+		"value=\"%s\" class=\"default-action\">"
+		"<input type=\"submit\" id=\"cancel\" name=\"cancel\" "
+		"value=\"%s\">"
+		"</div>",
+		messages_get("Login"),
+		messages_get("Cancel"));
 	if (res != NSERROR_OK) {
 		goto fetch_about_query_auth_handler_aborted;
 	}
@@ -212,17 +219,19 @@ bool fetch_about_query_auth_handler(struct fetch_about_context *ctx)
 	if (res != NSERROR_OK) {
 		url_s = strdup("");
 	}
-	res = fetch_about_ssenddataf(ctx,
-			 "<input type=\"hidden\" name=\"siteurl\" value=\"%s\">",
-			 url_s);
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<input type=\"hidden\" name=\"siteurl\" value=\"%s\">",
+		url_s);
 	free(url_s);
 	if (res != NSERROR_OK) {
 		goto fetch_about_query_auth_handler_aborted;
 	}
 
-	res = fetch_about_ssenddataf(ctx,
-			 "<input type=\"hidden\" name=\"realm\" value=\"%s\">",
-			 realm);
+	res = fetch_about_ssenddataf(
+		ctx,
+		"<input type=\"hidden\" name=\"realm\" value=\"%s\">",
+		realm);
 	if (res != NSERROR_OK) {
 		goto fetch_about_query_auth_handler_aborted;
 	}

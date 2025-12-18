@@ -28,8 +28,9 @@
  *		   If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_quotes(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+			    const parserutils_vector *vector,
+			    int32_t *ctx,
+			    css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	css_error error = CSS_INVALID;
@@ -39,9 +40,8 @@ css_error css__parse_quotes(css_language *c,
 
 	/* [ STRING STRING ]+ | IDENT(none,inherit) */
 	token = parserutils_vector_iterate(vector, ctx);
-	if ((token == NULL) ||
-	    ((token->type != CSS_TOKEN_IDENT) &&
-	     (token->type != CSS_TOKEN_STRING))) {
+	if ((token == NULL) || ((token->type != CSS_TOKEN_IDENT) &&
+				(token->type != CSS_TOKEN_STRING))) {
 		*ctx = orig_ctx;
 		return CSS_INVALID;
 	}
@@ -49,31 +49,36 @@ css_error css__parse_quotes(css_language *c,
 	flag_value = get_css_flag_value(c, token);
 
 	if (flag_value != FLAG_VALUE__NONE) {
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_QUOTES);
+		error = css_stylesheet_style_flag_value(result,
+							flag_value,
+							CSS_PROP_QUOTES);
 
 	} else if ((token->type == CSS_TOKEN_IDENT) &&
 		   (lwc_string_caseless_isequal(token->idata,
-				c->strings[NONE],
-				&match) == lwc_error_ok && match)) {
-		error = css__stylesheet_style_appendOPV(result,
-				CSS_PROP_QUOTES, 0, QUOTES_NONE);
+						c->strings[NONE],
+						&match) == lwc_error_ok &&
+		    match)) {
+		error = css__stylesheet_style_appendOPV(
+			result, CSS_PROP_QUOTES, 0, QUOTES_NONE);
 	} else if (token->type == CSS_TOKEN_STRING) {
 		bool first = true;
 
 /* Macro to output the value marker, awkward because we need to check
  * first to determine how the value is constructed.
  */
-#define CSS_FIRST_APPEND(CSSVAL) css__stylesheet_style_append(result, first?buildOPV(CSS_PROP_QUOTES, 0, CSSVAL):CSSVAL)
+#define CSS_FIRST_APPEND(CSSVAL)                                               \
+	css__stylesheet_style_append(                                          \
+		result, first ? buildOPV(CSS_PROP_QUOTES, 0, CSSVAL) : CSSVAL)
 
 		/* [ STRING STRING ]+ */
 		while ((token != NULL) && (token->type == CSS_TOKEN_STRING)) {
 			uint32_t open_snumber;
 			uint32_t close_snumber;
 
-			error = css__stylesheet_string_add(c->sheet,
-					lwc_string_ref(token->idata),
-					&open_snumber);
+			error = css__stylesheet_string_add(
+				c->sheet,
+				lwc_string_ref(token->idata),
+				&open_snumber);
 			if (error != CSS_OK)
 				break;
 
@@ -86,9 +91,10 @@ css_error css__parse_quotes(css_language *c,
 				break;
 			}
 
-			error = css__stylesheet_string_add(c->sheet,
-					lwc_string_ref(token->idata),
-					&close_snumber);
+			error = css__stylesheet_string_add(
+				c->sheet,
+				lwc_string_ref(token->idata),
+				&close_snumber);
 			if (error != CSS_OK)
 				break;
 
@@ -98,11 +104,13 @@ css_error css__parse_quotes(css_language *c,
 			if (error != CSS_OK)
 				break;
 
-			error = css__stylesheet_style_append(result, open_snumber);
+			error = css__stylesheet_style_append(result,
+							     open_snumber);
 			if (error != CSS_OK)
 				break;
 
-			error = css__stylesheet_style_append(result, close_snumber);
+			error = css__stylesheet_style_append(result,
+							     close_snumber);
 			if (error != CSS_OK)
 				break;
 
@@ -116,7 +124,8 @@ css_error css__parse_quotes(css_language *c,
 
 		if (error == CSS_OK) {
 			/* AddTerminator */
-			error = css__stylesheet_style_append(result, QUOTES_NONE);
+			error = css__stylesheet_style_append(result,
+							     QUOTES_NONE);
 		}
 	} else {
 		error = CSS_INVALID;

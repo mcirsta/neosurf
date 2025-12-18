@@ -31,8 +31,8 @@
 struct http_challenge {
 	http__item base;
 
-	lwc_string *scheme;		/**< Challenge scheme */
-	http_parameter *params;		/**< Challenge parameters */
+	lwc_string *scheme; /**< Challenge scheme */
+	http_parameter *params; /**< Challenge parameters */
 };
 
 /**
@@ -42,7 +42,7 @@ struct http_challenge {
  */
 static void http_destroy_challenge(http__item *item)
 {
-	http_challenge *self = (http_challenge *) item;
+	http_challenge *self = (http_challenge *)item;
 
 	lwc_string_unref(self->scheme);
 	http_parameter_list_destroy(self->params);
@@ -85,7 +85,7 @@ nserror http__parse_challenge(const char **input, http_challenge **challenge)
 
 	http__skip_LWS(&pos);
 
-	error = http__parse_parameter(&pos, (http__item **) &first);
+	error = http__parse_parameter(&pos, (http__item **)&first);
 	if (error != NSERROR_OK) {
 		lwc_string_unref(scheme);
 		return error;
@@ -94,8 +94,8 @@ nserror http__parse_challenge(const char **input, http_challenge **challenge)
 	http__skip_LWS(&pos);
 
 	if (*pos == ',') {
-		error = http__item_list_parse(&pos,
-				http__parse_parameter, first, &params);
+		error = http__item_list_parse(
+			&pos, http__parse_parameter, first, &params);
 		if (error != NSERROR_OK && error != NSERROR_NOT_FOUND) {
 			lwc_string_unref(scheme);
 			return error;
@@ -123,7 +123,8 @@ nserror http__parse_challenge(const char **input, http_challenge **challenge)
 
 /* See challenge.h for documentation */
 const http_challenge *http_challenge_list_iterate(const http_challenge *cur,
-		lwc_string **scheme, http_parameter **parameters)
+						  lwc_string **scheme,
+						  http_parameter **parameters)
 {
 	if (cur == NULL)
 		return NULL;
@@ -131,7 +132,7 @@ const http_challenge *http_challenge_list_iterate(const http_challenge *cur,
 	*scheme = lwc_string_ref(cur->scheme);
 	*parameters = cur->params;
 
-	return (http_challenge *) cur->base.next;
+	return (http_challenge *)cur->base.next;
 }
 
 /* See challenge.h for documentation */
@@ -139,4 +140,3 @@ void http_challenge_list_destroy(http_challenge *list)
 {
 	http__item_list_destroy(list);
 }
-

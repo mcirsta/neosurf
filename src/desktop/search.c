@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 /**
  * \file
  * Free text search (core)
@@ -34,11 +34,12 @@
 #include <neosurf/desktop/search.h>
 
 /* exported function documented in desktop/search.h */
-void browser_window_search(struct browser_window *bw, void *context,
-		search_flags_t flags, const char *string)
+void browser_window_search(struct browser_window *bw,
+			   void *context,
+			   search_flags_t flags,
+			   const char *string)
 {
-	if ((bw != NULL) &&
-	    (bw->current_content != NULL)) {
+	if ((bw != NULL) && (bw->current_content != NULL)) {
 		content_textsearch(bw->current_content, context, flags, string);
 	}
 }
@@ -46,8 +47,7 @@ void browser_window_search(struct browser_window *bw, void *context,
 /* exported function documented in desktop/search.h */
 void browser_window_search_clear(struct browser_window *bw)
 {
-	if ((bw != NULL) &&
-	    (bw->current_content != NULL)) {
+	if ((bw != NULL) && (bw->current_content != NULL)) {
 		content_textsearch_clear(bw->current_content);
 	}
 }

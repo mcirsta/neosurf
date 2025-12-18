@@ -84,7 +84,10 @@ struct nsgtk_corewindow {
 	 * \param y location of event
 	 * \return NSERROR_OK on success otherwise appropriate error code.
 	 */
-	nserror (*mouse)(struct nsgtk_corewindow *nsgtk_cw, browser_mouse_state mouse_state, int x, int y);
+	nserror (*mouse)(struct nsgtk_corewindow *nsgtk_cw,
+			 browser_mouse_state mouse_state,
+			 int x,
+			 int y);
 };
 
 /**

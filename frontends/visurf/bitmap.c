@@ -46,12 +46,15 @@ static void *bitmap_create(int width, int height, unsigned int state)
 	gbitmap = calloc(1, sizeof(struct bitmap));
 	if (gbitmap != NULL) {
 		if ((state & BITMAP_OPAQUE) != 0) {
-			gbitmap->surface = cairo_image_surface_create(CAIRO_FORMAT_RGB24, width, height);
+			gbitmap->surface = cairo_image_surface_create(
+				CAIRO_FORMAT_RGB24, width, height);
 		} else {
-			gbitmap->surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+			gbitmap->surface = cairo_image_surface_create(
+				CAIRO_FORMAT_ARGB32, width, height);
 		}
 
-		if (cairo_surface_status(gbitmap->surface) != CAIRO_STATUS_SUCCESS) {
+		if (cairo_surface_status(gbitmap->surface) !=
+		    CAIRO_STATUS_SUCCESS) {
 			cairo_surface_destroy(gbitmap->surface);
 			free(gbitmap);
 			gbitmap = NULL;
@@ -80,19 +83,21 @@ static void bitmap_set_opaque(void *vbitmap, bool opaque)
 	if (fmt == CAIRO_FORMAT_RGB24) {
 		if (opaque == false) {
 			/* opaque to transparent */
-			nsurface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
-					cairo_image_surface_get_width(gbitmap->surface),
-					cairo_image_surface_get_height(gbitmap->surface));
-
+			nsurface = cairo_image_surface_create(
+				CAIRO_FORMAT_ARGB32,
+				cairo_image_surface_get_width(gbitmap->surface),
+				cairo_image_surface_get_height(
+					gbitmap->surface));
 		}
 
 	} else {
 		if (opaque == true) {
 			/* transparent to opaque */
-			nsurface = cairo_image_surface_create(CAIRO_FORMAT_RGB24,
-					cairo_image_surface_get_width(gbitmap->surface),
-					cairo_image_surface_get_height(gbitmap->surface));
-
+			nsurface = cairo_image_surface_create(
+				CAIRO_FORMAT_RGB24,
+				cairo_image_surface_get_width(gbitmap->surface),
+				cairo_image_surface_get_height(
+					gbitmap->surface));
 		}
 	}
 
@@ -102,14 +107,15 @@ static void bitmap_set_opaque(void *vbitmap, bool opaque)
 		} else {
 			memcpy(cairo_image_surface_get_data(nsurface),
 			       cairo_image_surface_get_data(gbitmap->surface),
-			       cairo_image_surface_get_stride(gbitmap->surface) * cairo_image_surface_get_height(gbitmap->surface));
+			       cairo_image_surface_get_stride(
+				       gbitmap->surface) *
+				       cairo_image_surface_get_height(
+					       gbitmap->surface));
 			cairo_surface_destroy(gbitmap->surface);
 			gbitmap->surface = nsurface;
 
 			cairo_surface_mark_dirty(gbitmap->surface);
-
 		}
-
 	}
 }
 
@@ -193,13 +199,13 @@ static unsigned char *bitmap_get_buffer(void *vbitmap)
 
 	fmt = cairo_image_surface_get_format(gbitmap->surface);
 	pixel_count = cairo_image_surface_get_width(gbitmap->surface) *
-			cairo_image_surface_get_height(gbitmap->surface);
+		      cairo_image_surface_get_height(gbitmap->surface);
 
 	uint32_t sigil = 0x11223344;
 	bool little = *((char *)&sigil) == 0x44;
 	if (fmt == CAIRO_FORMAT_RGB24) {
 		/* Opaque image */
-		for (pixel_loop=0; pixel_loop < pixel_count; pixel_loop++) {
+		for (pixel_loop = 0; pixel_loop < pixel_count; pixel_loop++) {
 			/* Cairo surface is ARGB, written in native endian */
 			if (little) {
 				b = pixels[4 * pixel_loop + 0];
@@ -222,7 +228,7 @@ static unsigned char *bitmap_get_buffer(void *vbitmap)
 		}
 	} else {
 		/* Alpha image: de-multiply alpha */
-		for (pixel_loop=0; pixel_loop < pixel_count; pixel_loop++) {
+		for (pixel_loop = 0; pixel_loop < pixel_count; pixel_loop++) {
 			if (little) {
 				b = pixels[4 * pixel_loop + 0];
 				g = pixels[4 * pixel_loop + 1];
@@ -256,7 +262,7 @@ static unsigned char *bitmap_get_buffer(void *vbitmap)
 
 	gbitmap->converted = false;
 
-	return (unsigned char *) pixels;
+	return (unsigned char *)pixels;
 }
 
 
@@ -288,7 +294,6 @@ static size_t bitmap_get_rowstride(void *vbitmap)
 
 	return 4;
 }*/
-
 
 
 /**
@@ -347,7 +352,7 @@ static void bitmap_modified(void *vbitmap)
 	fmt = cairo_image_surface_get_format(gbitmap->surface);
 
 	pixel_count = cairo_image_surface_get_width(gbitmap->surface) *
-		cairo_image_surface_get_height(gbitmap->surface);
+		      cairo_image_surface_get_height(gbitmap->surface);
 	pixels = cairo_image_surface_get_data(gbitmap->surface);
 
 	if (gbitmap->converted) {
@@ -359,7 +364,7 @@ static void bitmap_modified(void *vbitmap)
 	bool little = *((char *)&sigil) == 0x44;
 	if (fmt == CAIRO_FORMAT_RGB24) {
 		/* Opaque image */
-		for (pixel_loop=0; pixel_loop < pixel_count; pixel_loop++) {
+		for (pixel_loop = 0; pixel_loop < pixel_count; pixel_loop++) {
 			/* Core bitmaps always have a component order of rgba,
 			 * regardless of system endianness */
 			r = pixels[4 * pixel_loop + 0];
@@ -382,7 +387,7 @@ static void bitmap_modified(void *vbitmap)
 		}
 	} else {
 		/* Alpha image: pre-multiply alpha */
-		for (pixel_loop=0; pixel_loop < pixel_count; pixel_loop++) {
+		for (pixel_loop = 0; pixel_loop < pixel_count; pixel_loop++) {
 			r = pixels[4 * pixel_loop + 0];
 			g = pixels[4 * pixel_loop + 1];
 			b = pixels[4 * pixel_loop + 2];
@@ -446,11 +451,9 @@ bitmap_render(struct bitmap *bitmap, struct hlcache_handle *content)
 	cairo_t *old_cr;
 	int dwidth, dheight;
 	int cwidth, cheight;
-	struct redraw_context ctx = {
-		.interactive = false,
-		.background_images = true,
-		.plot = &nsvi_plotters
-	};
+	struct redraw_context ctx = {.interactive = false,
+				     .background_images = true,
+				     .plot = &nsvi_plotters};
 
 	assert(content);
 	assert(bitmap);
@@ -470,12 +473,14 @@ bitmap_render(struct bitmap *bitmap, struct hlcache_handle *content)
 	 * aspect ratio of the required thumbnail. */
 	cheight = ((cwidth * dheight) + (dwidth / 2)) / dwidth;
 
-	/* At this point, we MUST have decided to render something non-zero sized */
+	/* At this point, we MUST have decided to render something non-zero
+	 * sized */
 	assert(cwidth > 0);
 	assert(cheight > 0);
 
 	/*  Create surface to render into */
-	surface = cairo_surface_create_similar(dsurface, CAIRO_CONTENT_COLOR_ALPHA, cwidth, cheight);
+	surface = cairo_surface_create_similar(
+		dsurface, CAIRO_CONTENT_COLOR_ALPHA, cwidth, cheight);
 
 	if (cairo_surface_status(surface) != CAIRO_STATUS_SUCCESS) {
 		cairo_surface_destroy(surface);
@@ -494,8 +499,8 @@ bitmap_render(struct bitmap *bitmap, struct hlcache_handle *content)
 	cairo_t *cr = cairo_create(dsurface);
 
 	/* Scale *before* setting the source surface (1) */
-	cairo_scale (cr, (double)dwidth / cwidth, (double)dheight / cheight);
-	cairo_set_source_surface (cr, surface, 0, 0);
+	cairo_scale(cr, (double)dwidth / cwidth, (double)dheight / cheight);
+	cairo_set_source_surface(cr, surface, 0, 0);
 
 	/* To avoid getting the edge pixels blended with 0 alpha,
 	 * which would occur with the default EXTEND_NONE. Use

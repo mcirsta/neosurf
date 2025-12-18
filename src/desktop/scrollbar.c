@@ -85,18 +85,16 @@ struct scrollbar {
 };
 
 
-
 /*
  * Exported interface.  Documented in desktop/scrollbar.h
  */
-nserror
-scrollbar_create(bool horizontal,
-		 int length,
-		 int full_size,
-		 int visible_size,
-		 void *client_data,
-		 scrollbar_client_callback client_callback,
-		 struct scrollbar **s)
+nserror scrollbar_create(bool horizontal,
+			 int length,
+			 int full_size,
+			 int visible_size,
+			 void *client_data,
+			 scrollbar_client_callback client_callback,
+			 struct scrollbar **s)
 {
 	struct scrollbar *scrollbar;
 	int well_length;
@@ -117,8 +115,9 @@ scrollbar_create(bool horizontal,
 	scrollbar->pair_drag = false;
 
 	well_length = length - 2 * SCROLLBAR_WIDTH;
-	scrollbar->bar_len = (full_size == 0) ? 0 :
-		((well_length * visible_size) / full_size);
+	scrollbar->bar_len = (full_size == 0) ? 0
+					      : ((well_length * visible_size) /
+						 full_size);
 
 	scrollbar->client_callback = client_callback;
 	scrollbar->client_data = client_data;
@@ -154,11 +153,10 @@ void scrollbar_destroy(struct scrollbar *s)
  * \param inset true for inset outline, false for an outset one
  * \return NSERROR_OK on success else error code
  */
-static inline nserror
-scrollbar_rectangle(const struct redraw_context *ctx,
-		    struct rect *area,
-		    colour c,
-		    bool inset)
+static inline nserror scrollbar_rectangle(const struct redraw_context *ctx,
+					  struct rect *area,
+					  colour c,
+					  bool inset)
 {
 	struct rect line;
 	nserror res;
@@ -189,43 +187,55 @@ scrollbar_rectangle(const struct redraw_context *ctx,
 
 	/* Plot the outline */
 
-	line.x0 = area->x0; line.y0 = area->y0;
-	line.x1 = area->x1; line.y1 = area->y0;
+	line.x0 = area->x0;
+	line.y0 = area->y0;
+	line.x1 = area->x1;
+	line.y1 = area->y0;
 	res = ctx->plot->line(ctx, &c0, &line);
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
-	line.x0 = area->x1; line.y0 = area->y0;
-	line.x1 = area->x1; line.y1 = area->y1 + 1;
+	line.x0 = area->x1;
+	line.y0 = area->y0;
+	line.x1 = area->x1;
+	line.y1 = area->y1 + 1;
 	res = ctx->plot->line(ctx, &c1, &line);
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
-	line.x0 = area->x1; line.y0 = area->y0;
-	line.x1 = area->x1; line.y1 = area->y0 + 1;
+	line.x0 = area->x1;
+	line.y0 = area->y0;
+	line.x1 = area->x1;
+	line.y1 = area->y0 + 1;
 	res = ctx->plot->line(ctx, &c2, &line);
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
-	line.x0 = area->x1; line.y0 = area->y1;
-	line.x1 = area->x0; line.y1 = area->y1;
+	line.x0 = area->x1;
+	line.y0 = area->y1;
+	line.x1 = area->x0;
+	line.y1 = area->y1;
 	res = ctx->plot->line(ctx, &c1, &line);
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
-	line.x0 = area->x0; line.y0 = area->y1;
-	line.x1 = area->x0; line.y1 = area->y0;
+	line.x0 = area->x0;
+	line.y0 = area->y1;
+	line.x1 = area->x0;
+	line.y1 = area->y0;
 	res = ctx->plot->line(ctx, &c0, &line);
 	if (res != NSERROR_OK) {
 		return res;
 	}
 
-	line.x0 = area->x0; line.y0 = area->y1;
-	line.x1 = area->x0; line.y1 = area->y1 + 1;
+	line.x0 = area->x0;
+	line.y0 = area->y1;
+	line.x1 = area->x0;
+	line.y1 = area->y1 + 1;
 	res = ctx->plot->line(ctx, &c2, &line);
 
 	return res;
@@ -235,12 +245,12 @@ scrollbar_rectangle(const struct redraw_context *ctx,
 /*
  * Exported interface.  Documented in scrollbar.h
  */
-nserror
-scrollbar_redraw(struct scrollbar *s,
-		 int x, int y,
-		 const struct rect *clip,
-		 float scale,
-		 const struct redraw_context *ctx)
+nserror scrollbar_redraw(struct scrollbar *s,
+			 int x,
+			 int y,
+			 const struct rect *clip,
+			 float scale,
+			 const struct redraw_context *ctx)
 {
 	int w = SCROLLBAR_WIDTH;
 	int bar_pos, bar_c0, bar_c1;
@@ -268,7 +278,7 @@ scrollbar_redraw(struct scrollbar *s,
 	area.y1 = y + (s->horizontal ? SCROLLBAR_WIDTH : s->length) - 1;
 	bar_pos = s->bar_pos;
 	bar_c1 = (s->horizontal ? area.x0 : area.y0) + SCROLLBAR_WIDTH +
-		s->bar_pos + s->bar_len - 1;
+		 s->bar_pos + s->bar_len - 1;
 
 	if (scale != 1.0) {
 		w *= scale;
@@ -283,10 +293,8 @@ scrollbar_redraw(struct scrollbar *s,
 	bar_c0 = (s->horizontal ? area.x0 : area.y0) + w + bar_pos;
 
 	/* if scrollbar is outside the clipping rectangle, nothing to render */
-	if ((area.x1 < clip->x0) ||
-	    (area.y1 < clip->y0) ||
-	    (clip->x1 < area.x0) ||
-	    (clip->y1 < area.y0)) {
+	if ((area.x1 < clip->x0) || (area.y1 < clip->y0) ||
+	    (clip->x1 < area.x0) || (clip->y1 < area.y0)) {
 		return NSERROR_OK;
 	}
 
@@ -294,8 +302,8 @@ scrollbar_redraw(struct scrollbar *s,
 		/* scrollbar is horizontal */
 
 		/* scrollbar outline */
-		res = scrollbar_rectangle(ctx, &area,
-					  bg_fill_style.fill_colour, true);
+		res = scrollbar_rectangle(
+			ctx, &area, bg_fill_style.fill_colour, true);
 		if (res != NSERROR_OK) {
 			return res;
 		}
@@ -305,8 +313,8 @@ scrollbar_redraw(struct scrollbar *s,
 		rect.y0 = area.y0 + 1;
 		rect.x1 = area.x0 + w - 2;
 		rect.y1 = area.y1 - 1;
-		res = scrollbar_rectangle(ctx, &rect,
-					  fg_fill_style.fill_colour, false);
+		res = scrollbar_rectangle(
+			ctx, &rect, fg_fill_style.fill_colour, false);
 		if (res != NSERROR_OK) {
 			return res;
 		}
@@ -348,8 +356,8 @@ scrollbar_redraw(struct scrollbar *s,
 		rect.y0 = area.y0 + 1;
 		rect.x1 = bar_c1;
 		rect.y1 = area.y1 - 1;
-		res = scrollbar_rectangle(ctx, &rect,
-					  fg_fill_style.fill_colour, false);
+		res = scrollbar_rectangle(
+			ctx, &rect, fg_fill_style.fill_colour, false);
 		if (res != NSERROR_OK) {
 			return res;
 		}
@@ -368,8 +376,8 @@ scrollbar_redraw(struct scrollbar *s,
 		rect.y0 = area.y0 + 1;
 		rect.x1 = area.x1 - 1;
 		rect.y1 = area.y1 - 1;
-		res = scrollbar_rectangle(ctx, &rect,
-					  fg_fill_style.fill_colour, false);
+		res = scrollbar_rectangle(
+			ctx, &rect, fg_fill_style.fill_colour, false);
 		if (res != NSERROR_OK) {
 			return res;
 		}
@@ -399,8 +407,8 @@ scrollbar_redraw(struct scrollbar *s,
 		/* scrollbar is vertical */
 
 		/* outline */
-		res = scrollbar_rectangle(ctx, &area,
-					  bg_fill_style.fill_colour, true);
+		res = scrollbar_rectangle(
+			ctx, &area, bg_fill_style.fill_colour, true);
 		if (res != NSERROR_OK) {
 			return res;
 		}
@@ -410,8 +418,8 @@ scrollbar_redraw(struct scrollbar *s,
 		rect.y0 = area.y0 + 1;
 		rect.x1 = area.x1 - 1;
 		rect.y1 = area.y0 + w - 2;
-		res = scrollbar_rectangle(ctx, &rect,
-					  fg_fill_style.fill_colour, false);
+		res = scrollbar_rectangle(
+			ctx, &rect, fg_fill_style.fill_colour, false);
 		if (res != NSERROR_OK) {
 			return res;
 		}
@@ -453,8 +461,8 @@ scrollbar_redraw(struct scrollbar *s,
 		rect.y0 = bar_c0;
 		rect.x1 = area.x1 - 1;
 		rect.y1 = bar_c1;
-		res = scrollbar_rectangle(ctx, &rect,
-					  fg_fill_style.fill_colour, false);
+		res = scrollbar_rectangle(
+			ctx, &rect, fg_fill_style.fill_colour, false);
 		if (res != NSERROR_OK) {
 			return res;
 		}
@@ -473,8 +481,8 @@ scrollbar_redraw(struct scrollbar *s,
 		rect.y0 = area.y1 - w + 2;
 		rect.x1 = area.x1 - 1;
 		rect.y1 = area.y1 - 1;
-		res = scrollbar_rectangle(ctx, &rect,
-					  fg_fill_style.fill_colour, false);
+		res = scrollbar_rectangle(
+			ctx, &rect, fg_fill_style.fill_colour, false);
 		if (res != NSERROR_OK) {
 			return res;
 		}
@@ -531,9 +539,11 @@ void scrollbar_set(struct scrollbar *s, int value, bool bar_pos)
 			s->bar_pos = value;
 		}
 
-		s->offset = ((well_length - s->bar_len) < 1) ? 0 :
-			(((s->full_size - s->visible_size) *
-			  s->bar_pos) / (well_length - s->bar_len));
+		s->offset = ((well_length - s->bar_len) < 1)
+				    ? 0
+				    : (((s->full_size - s->visible_size) *
+					s->bar_pos) /
+				       (well_length - s->bar_len));
 
 	} else {
 		if (value > s->full_size - s->visible_size) {
@@ -542,8 +552,9 @@ void scrollbar_set(struct scrollbar *s, int value, bool bar_pos)
 			s->offset = value;
 		}
 
-		s->bar_pos = (s->full_size < 1) ? 0 :
-			((well_length * s->offset) / s->full_size);
+		s->bar_pos = (s->full_size < 1) ? 0
+						: ((well_length * s->offset) /
+						   s->full_size);
 	}
 
 	if (s->offset != old_offset) {
@@ -610,8 +621,9 @@ bool scrollbar_scroll(struct scrollbar *s, int change)
 
 	/* Update scrollbar */
 	well_length = s->length - 2 * SCROLLBAR_WIDTH;
-	s->bar_pos = (s->full_size < 1) ? 0 :
-		((well_length * s->offset) / s->full_size);
+	s->bar_pos = (s->full_size < 1)
+			     ? 0
+			     : ((well_length * s->offset) / s->full_size);
 
 	msg.scrollbar = s;
 	msg.msg = SCROLLBAR_MSG_MOVED;
@@ -637,15 +649,16 @@ int scrollbar_get_offset(struct scrollbar *s)
 /*
  * Exported interface.  Documented in scrollbar.h
  */
-void scrollbar_set_extents(struct scrollbar *s, int length,
-			   int visible_size, int full_size)
+void scrollbar_set_extents(struct scrollbar *s,
+			   int length,
+			   int visible_size,
+			   int full_size)
 {
 	int cur_excess = s->full_size - s->visible_size;
 	int well_length;
 	struct scrollbar_msg_data msg;
 
-	if (length == s->length &&
-	    visible_size == s->visible_size &&
+	if (length == s->length && visible_size == s->visible_size &&
 	    full_size == s->full_size) {
 		/* Nothing's changed. */
 		return;
@@ -708,11 +721,11 @@ bool scrollbar_is_horizontal(struct scrollbar *s)
  *			user drags the content area, rather than the scrollbar)
  * \param pair		whether the drag is a '2D' scroll
  */
-static void
-scrollbar_drag_start_internal(struct scrollbar *s,
-			      int x, int y,
-			      bool content_drag,
-			      bool pair)
+static void scrollbar_drag_start_internal(struct scrollbar *s,
+					  int x,
+					  int y,
+					  bool content_drag,
+					  bool pair)
 {
 	struct scrollbar_msg_data msg;
 
@@ -740,11 +753,10 @@ scrollbar_drag_start_internal(struct scrollbar *s,
 	if (pair && s->pair != NULL) {
 		s->pair_drag = true;
 
-		s->pair->drag_start_coord =
-			s->pair->horizontal ? x : y;
+		s->pair->drag_start_coord = s->pair->horizontal ? x : y;
 
-		s->pair->drag_start_pos = (content_drag) ? s->pair->offset :
-			s->pair->bar_pos;
+		s->pair->drag_start_pos = (content_drag) ? s->pair->offset
+							 : s->pair->bar_pos;
 
 		s->pair->dragging = true;
 		s->pair->drag_content = content_drag;
@@ -765,10 +777,10 @@ scrollbar_drag_start_internal(struct scrollbar *s,
 /*
  * Exported interface.  Documented in scrollbar.h
  */
-scrollbar_mouse_status
-scrollbar_mouse_action(struct scrollbar *s,
-		       browser_mouse_state mouse,
-		       int x, int y)
+scrollbar_mouse_status scrollbar_mouse_action(struct scrollbar *s,
+					      browser_mouse_state mouse,
+					      int x,
+					      int y)
 {
 	int x0, y0, x1, y1;
 	int val;
@@ -780,12 +792,10 @@ scrollbar_mouse_action(struct scrollbar *s,
 	 */
 	bool but1 = ((mouse & BROWSER_MOUSE_PRESS_1) ||
 		     ((mouse & BROWSER_MOUSE_HOLDING_1) &&
-		      (mouse & BROWSER_MOUSE_DRAG_ON) &&
-		      !s->dragging));
+		      (mouse & BROWSER_MOUSE_DRAG_ON) && !s->dragging));
 	bool but2 = ((mouse & BROWSER_MOUSE_PRESS_2) ||
 		     ((mouse & BROWSER_MOUSE_HOLDING_2) &&
-		      (mouse & BROWSER_MOUSE_DRAG_ON) &&
-		      !s->dragging));
+		      (mouse & BROWSER_MOUSE_DRAG_ON) && !s->dragging));
 
 	h = s->horizontal;
 
@@ -812,7 +822,8 @@ scrollbar_mouse_action(struct scrollbar *s,
 			val = -val;
 		}
 		if (val != 0) {
-			scrollbar_set(s, s->drag_start_pos + val,
+			scrollbar_set(s,
+				      s->drag_start_pos + val,
 				      !(s->drag_content));
 		}
 		if (s->pair_drag) {
@@ -853,7 +864,7 @@ scrollbar_mouse_action(struct scrollbar *s,
 		} else if (but2) {
 			scrollbar_set(s, s->offset - SCROLLBAR_WIDTH, false);
 		}
-	} else if (val > SCROLLBAR_WIDTH + s->bar_pos +	s->bar_len) {
+	} else if (val > SCROLLBAR_WIDTH + s->bar_pos + s->bar_len) {
 		/* well between right/down arrow and bar */
 
 		status = h ? SCROLLBAR_MOUSE_PRGT : SCROLLBAR_MOUSE_PDWN;
@@ -870,13 +881,17 @@ scrollbar_mouse_action(struct scrollbar *s,
 
 
 	if (mouse & (BROWSER_MOUSE_DRAG_1 | BROWSER_MOUSE_DRAG_2) &&
-	    (val >= SCROLLBAR_WIDTH + s->bar_pos
-	     && val < SCROLLBAR_WIDTH + s->bar_pos +
-	     s->bar_len)) {
+	    (val >= SCROLLBAR_WIDTH + s->bar_pos &&
+	     val < SCROLLBAR_WIDTH + s->bar_pos + s->bar_len)) {
 		/* The mouse event is a drag start on the scrollbar position
 		 * indication bar. */
-		scrollbar_drag_start_internal(s, x, y, false,
-					      (mouse & BROWSER_MOUSE_DRAG_2) ? true : false);
+		scrollbar_drag_start_internal(s,
+					      x,
+					      y,
+					      false,
+					      (mouse & BROWSER_MOUSE_DRAG_2)
+						      ? true
+						      : false);
 	}
 
 	return status;
@@ -888,7 +903,7 @@ scrollbar_mouse_action(struct scrollbar *s,
  */
 const char *scrollbar_mouse_status_to_message(scrollbar_mouse_status status)
 {
-	switch ((unsigned int) status) {
+	switch ((unsigned int)status) {
 	case SCROLLBAR_MOUSE_UP:
 	case SCROLLBAR_MOUSE_UP | SCROLLBAR_MOUSE_USED:
 		return messages_get("ScrollUp");
@@ -931,7 +946,9 @@ const char *scrollbar_mouse_status_to_message(scrollbar_mouse_status status)
  * Exported interface.  Documented in scrollbar.h
  */
 void scrollbar_mouse_drag_end(struct scrollbar *s,
-			      browser_mouse_state mouse, int x, int y)
+			      browser_mouse_state mouse,
+			      int x,
+			      int y)
 {
 	struct scrollbar_msg_data msg;
 	int val, drag_start_pos;
@@ -961,7 +978,8 @@ void scrollbar_mouse_drag_end(struct scrollbar *s,
 			val = -val;
 		}
 		if (val != 0) {
-			scrollbar_set(s->pair, drag_start_pos + val,
+			scrollbar_set(s->pair,
+				      drag_start_pos + val,
 				      !(s->pair->drag_content));
 		}
 
@@ -990,8 +1008,7 @@ void scrollbar_start_content_drag(struct scrollbar *s, int x, int y)
 void scrollbar_make_pair(struct scrollbar *horizontal,
 			 struct scrollbar *vertical)
 {
-	assert(horizontal->horizontal &&
-	       !vertical->horizontal);
+	assert(horizontal->horizontal && !vertical->horizontal);
 
 	horizontal->pair = vertical;
 	vertical->pair = horizontal;

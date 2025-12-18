@@ -56,9 +56,9 @@ struct nsgtk_completion_ctx {
  * completion row matcher
  */
 static gboolean nsgtk_completion_match(GtkEntryCompletion *completion,
-				const gchar *key,
-				GtkTreeIter *iter,
-				gpointer user_data)
+				       const gchar *key,
+				       GtkTreeIter *iter,
+				       gpointer user_data)
 {
 	/* the completion list is modified to only contain valid
 	 * entries so this simply returns TRUE to indicate all rows
@@ -78,8 +78,8 @@ nsgtk_completion_udb_callback(nsurl *url, const struct url_data *data)
 
 	if (data->visits != 0) {
 		gtk_list_store_append(nsgtk_completion_list, &iter);
-		gtk_list_store_set(nsgtk_completion_list, &iter, 0,
-				nsurl_access(url), -1);
+		gtk_list_store_set(
+			nsgtk_completion_list, &iter, 0, nsurl_access(url), -1);
 	}
 	return true;
 }
@@ -87,11 +87,10 @@ nsgtk_completion_udb_callback(nsurl *url, const struct url_data *data)
 /**
  * event handler for when a completion suggestion is selected.
  */
-static gboolean
-nsgtk_completion_match_select(GtkEntryCompletion *widget,
-			      GtkTreeModel *model,
-			      GtkTreeIter *iter,
-			      gpointer data)
+static gboolean nsgtk_completion_match_select(GtkEntryCompletion *widget,
+					      GtkTreeModel *model,
+					      GtkTreeIter *iter,
+					      gpointer data)
 {
 	struct nsgtk_completion_ctx *cb_ctx;
 	GValue value = G_VALUE_INIT;
@@ -111,9 +110,8 @@ nsgtk_completion_match_select(GtkEntryCompletion *widget,
 	g_value_unset(&value);
 
 	if (ret == NSERROR_OK) {
-		ret = browser_window_navigate(bw,
-					      url, NULL, BW_NAVIGATE_HISTORY,
-					      NULL, NULL, NULL);
+		ret = browser_window_navigate(
+			bw, url, NULL, BW_NAVIGATE_HISTORY, NULL, NULL, NULL);
 		nsurl_unref(url);
 	}
 	if (ret != NSERROR_OK) {
@@ -127,7 +125,6 @@ nsgtk_completion_match_select(GtkEntryCompletion *widget,
 void nsgtk_completion_init(void)
 {
 	nsgtk_completion_list = gtk_list_store_new(1, G_TYPE_STRING);
-
 }
 
 /* exported interface documented in completion.h */
@@ -162,11 +159,11 @@ nsgtk_completion_connect_signals(GtkEntry *entry,
 
 	completion = gtk_entry_get_completion(entry);
 
-	gtk_entry_completion_set_match_func(completion,
-			nsgtk_completion_match, NULL, NULL);
+	gtk_entry_completion_set_match_func(
+		completion, nsgtk_completion_match, NULL, NULL);
 
 	gtk_entry_completion_set_model(completion,
-			GTK_TREE_MODEL(nsgtk_completion_list));
+				       GTK_TREE_MODEL(nsgtk_completion_list));
 
 	gtk_entry_completion_set_text_column(completion, 0);
 
@@ -182,8 +179,10 @@ nsgtk_completion_connect_signals(GtkEntry *entry,
 			 cb_ctx);
 
 	g_object_set(G_OBJECT(completion),
-		     "popup-set-width", TRUE,
-		     "popup-single-match", TRUE,
+		     "popup-set-width",
+		     TRUE,
+		     "popup-single-match",
+		     TRUE,
 		     NULL);
 
 	return NSERROR_OK;

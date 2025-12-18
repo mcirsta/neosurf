@@ -42,16 +42,16 @@
  * Direction to move in a box-tree walk
  */
 enum box_walk_dir {
-		   BOX_WALK_CHILDREN,
-		   BOX_WALK_PARENT,
-		   BOX_WALK_NEXT_SIBLING,
-		   BOX_WALK_FLOAT_CHILDREN,
-		   BOX_WALK_NEXT_FLOAT_SIBLING,
-		   BOX_WALK_FLOAT_CONTAINER
+	BOX_WALK_CHILDREN,
+	BOX_WALK_PARENT,
+	BOX_WALK_NEXT_SIBLING,
+	BOX_WALK_FLOAT_CHILDREN,
+	BOX_WALK_NEXT_FLOAT_SIBLING,
+	BOX_WALK_FLOAT_CONTAINER
 };
 
-#define box_is_float(box) (box->type == BOX_FLOAT_LEFT ||	\
-			   box->type == BOX_FLOAT_RIGHT)
+#define box_is_float(box)                                                      \
+	(box->type == BOX_FLOAT_LEFT || box->type == BOX_FLOAT_RIGHT)
 
 /**
  * Determine if a point lies within a box.
@@ -70,12 +70,11 @@ enum box_walk_dir {
  *
  * This is a helper function for box_at_point().
  */
-static bool
-box_contains_point(const css_unit_ctx *unit_len_ctx,
-		   const struct box *box,
-		   int x,
-		   int y,
-		   bool *physically)
+static bool box_contains_point(const css_unit_ctx *unit_len_ctx,
+			       const struct box *box,
+			       int x,
+			       int y,
+			       bool *physically)
 {
 	css_computed_clip_rect css_rect;
 
@@ -84,15 +83,12 @@ box_contains_point(const css_unit_ctx *unit_len_ctx,
 	    css_computed_clip(box->style, &css_rect) == CSS_CLIP_RECT) {
 		/* We have an absolutly positioned box with a clip rect */
 		struct rect r = {
-				 .x0 = box->border[LEFT].width,
-				 .y0 = box->border[TOP].width,
-				 .x1 = box->padding[LEFT] + box->width +
-				 box->border[RIGHT].width +
-				 box->padding[RIGHT],
-				 .y1 = box->padding[TOP] + box->height +
-				 box->border[BOTTOM].width +
-				 box->padding[BOTTOM]
-		};
+			.x0 = box->border[LEFT].width,
+			.y0 = box->border[TOP].width,
+			.x1 = box->padding[LEFT] + box->width +
+			      box->border[RIGHT].width + box->padding[RIGHT],
+			.y1 = box->padding[TOP] + box->height +
+			      box->border[BOTTOM].width + box->padding[BOTTOM]};
 		if (x >= r.x0 && x < r.x1 && y >= r.y0 && y < r.y1) {
 			*physically = true;
 		} else {
@@ -101,34 +97,32 @@ box_contains_point(const css_unit_ctx *unit_len_ctx,
 
 		/* Adjust rect to css clip region */
 		if (css_rect.left_auto == false) {
-			r.x0 += FIXTOINT(css_unit_len2device_px(
-						box->style,
-						unit_len_ctx,
-						css_rect.left,
-						css_rect.lunit));
+			r.x0 += FIXTOINT(
+				css_unit_len2device_px(box->style,
+						       unit_len_ctx,
+						       css_rect.left,
+						       css_rect.lunit));
 		}
 		if (css_rect.top_auto == false) {
-			r.y0 += FIXTOINT(css_unit_len2device_px(
-						box->style,
-						unit_len_ctx,
-						css_rect.top,
-						css_rect.tunit));
+			r.y0 += FIXTOINT(
+				css_unit_len2device_px(box->style,
+						       unit_len_ctx,
+						       css_rect.top,
+						       css_rect.tunit));
 		}
 		if (css_rect.right_auto == false) {
 			r.x1 = box->border[LEFT].width +
-				FIXTOINT(css_unit_len2device_px(
-						box->style,
-						unit_len_ctx,
-						css_rect.right,
-						css_rect.runit));
+			       FIXTOINT(css_unit_len2device_px(box->style,
+							       unit_len_ctx,
+							       css_rect.right,
+							       css_rect.runit));
 		}
 		if (css_rect.bottom_auto == false) {
 			r.y1 = box->border[TOP].width +
-				FIXTOINT(css_unit_len2device_px(
-						box->style,
-						unit_len_ctx,
-						css_rect.bottom,
-						css_rect.bunit));
+			       FIXTOINT(css_unit_len2device_px(box->style,
+							       unit_len_ctx,
+							       css_rect.bottom,
+							       css_rect.bunit));
 		}
 
 		/* Test if point is in clipped box */
@@ -141,43 +135,42 @@ box_contains_point(const css_unit_ctx *unit_len_ctx,
 		return false;
 	}
 	if (x >= -box->border[LEFT].width &&
-	    x < box->padding[LEFT] + box->width +
-	    box->padding[RIGHT] + box->border[RIGHT].width &&
+	    x < box->padding[LEFT] + box->width + box->padding[RIGHT] +
+			    box->border[RIGHT].width &&
 	    y >= -box->border[TOP].width &&
-	    y < box->padding[TOP] + box->height +
-	    box->padding[BOTTOM] + box->border[BOTTOM].width) {
+	    y < box->padding[TOP] + box->height + box->padding[BOTTOM] +
+			    box->border[BOTTOM].width) {
 		*physically = true;
 		return true;
 	}
-	if (box->list_marker && box->list_marker->x - box->x <= x +
-	    box->list_marker->border[LEFT].width &&
-	    x < box->list_marker->x - box->x +
-	    box->list_marker->padding[LEFT] +
-	    box->list_marker->width +
-	    box->list_marker->border[RIGHT].width +
-	    box->list_marker->padding[RIGHT] &&
-	    box->list_marker->y - box->y <= y +
-	    box->list_marker->border[TOP].width &&
-	    y < box->list_marker->y - box->y +
-	    box->list_marker->padding[TOP] +
-	    box->list_marker->height +
-	    box->list_marker->border[BOTTOM].width +
-	    box->list_marker->padding[BOTTOM]) {
+	if (box->list_marker &&
+	    box->list_marker->x - box->x <=
+		    x + box->list_marker->border[LEFT].width &&
+	    x < box->list_marker->x - box->x + box->list_marker->padding[LEFT] +
+			    box->list_marker->width +
+			    box->list_marker->border[RIGHT].width +
+			    box->list_marker->padding[RIGHT] &&
+	    box->list_marker->y - box->y <=
+		    y + box->list_marker->border[TOP].width &&
+	    y < box->list_marker->y - box->y + box->list_marker->padding[TOP] +
+			    box->list_marker->height +
+			    box->list_marker->border[BOTTOM].width +
+			    box->list_marker->padding[BOTTOM]) {
 		*physically = true;
 		return true;
 	}
-	if ((box->style && css_computed_overflow_x(box->style) ==
-	     CSS_OVERFLOW_VISIBLE) || !box->style) {
-		if (box->descendant_x0 <= x &&
-		    x < box->descendant_x1) {
+	if ((box->style &&
+	     css_computed_overflow_x(box->style) == CSS_OVERFLOW_VISIBLE) ||
+	    !box->style) {
+		if (box->descendant_x0 <= x && x < box->descendant_x1) {
 			*physically = false;
 			return true;
 		}
 	}
-	if ((box->style && css_computed_overflow_y(box->style) ==
-	     CSS_OVERFLOW_VISIBLE) || !box->style) {
-		if (box->descendant_y0 <= y &&
-		    y < box->descendant_y1) {
+	if ((box->style &&
+	     css_computed_overflow_y(box->style) == CSS_OVERFLOW_VISIBLE) ||
+	    !box->style) {
+		if (box->descendant_y0 <= y && y < box->descendant_y1) {
 			*physically = false;
 			return true;
 		}
@@ -291,7 +284,8 @@ box_next_xy(struct box *b, int *x, int *y, bool skip_children)
 		goto skip_children;
 	}
 
-	tx = *x; ty = *y;
+	tx = *x;
+	ty = *y;
 	n = box_move_xy(b, BOX_WALK_FLOAT_CHILDREN, &tx, &ty);
 	if (n) {
 		/* Next node is float child */
@@ -299,9 +293,10 @@ box_next_xy(struct box *b, int *x, int *y, bool skip_children)
 		*y = ty;
 		return n;
 	}
- done_float_children:
+done_float_children:
 
-	tx = *x; ty = *y;
+	tx = *x;
+	ty = *y;
 	n = box_move_xy(b, BOX_WALK_CHILDREN, &tx, &ty);
 	if (n) {
 		/* Next node is child */
@@ -310,8 +305,9 @@ box_next_xy(struct box *b, int *x, int *y, bool skip_children)
 		return n;
 	}
 
- skip_children:
-	tx = *x; ty = *y;
+skip_children:
+	tx = *x;
+	ty = *y;
 	n = box_move_xy(b, BOX_WALK_NEXT_FLOAT_SIBLING, &tx, &ty);
 	if (n) {
 		/* Go to next float sibling */
@@ -343,7 +339,8 @@ box_next_xy(struct box *b, int *x, int *y, bool skip_children)
 			return NULL;
 		}
 
-		tx = *x; ty = *y;
+		tx = *x;
+		ty = *y;
 		n = box_move_xy(b, BOX_WALK_NEXT_SIBLING, &tx, &ty);
 		if (n) {
 			/* Go to non-float (ancestor) sibling */
@@ -391,14 +388,17 @@ box_next_xy(struct box *b, int *x, int *y, bool skip_children)
  *		    updated if box is nearer than existing nearest
  * \return true if mouse point is inside box
  */
-static bool
-box_nearer_text_box(struct box *box,
-		    int bx, int by,
-		    int x, int y,
-		    int dir,
-		    struct box **nearest,
-		    int *tx, int *ty,
-		    int *nr_xd, int *nr_yd)
+static bool box_nearer_text_box(struct box *box,
+				int bx,
+				int by,
+				int x,
+				int y,
+				int dir,
+				struct box **nearest,
+				int *tx,
+				int *ty,
+				int *nr_xd,
+				int *nr_yd)
 {
 	int w = box->padding[LEFT] + box->width + box->padding[RIGHT];
 	int h = box->padding[TOP] + box->height + box->padding[BOTTOM];
@@ -467,15 +467,19 @@ box_nearer_text_box(struct box *box,
  *		    updated if a descendant of box is nearer than old nearest
  * \return true if mouse point is inside text_box
  */
-static bool
-box_nearest_text_box(struct box *box,
-		     int bx, int by,
-		     int fx, int fy,
-		     int x, int y,
-		     int dir,
-		     struct box **nearest,
-		     int *tx, int *ty,
-		     int *nr_xd, int *nr_yd)
+static bool box_nearest_text_box(struct box *box,
+				 int bx,
+				 int by,
+				 int fx,
+				 int fy,
+				 int x,
+				 int y,
+				 int dir,
+				 struct box **nearest,
+				 int *tx,
+				 int *ty,
+				 int *nr_xd,
+				 int *nr_yd)
 {
 	struct box *child = box->children;
 	int c_bx, c_by;
@@ -500,14 +504,14 @@ box_nearest_text_box(struct box *box,
 		if (child->type == BOX_FLOAT_LEFT ||
 		    child->type == BOX_FLOAT_RIGHT) {
 			c_bx = fx + child->x -
-				scrollbar_get_offset(child->scroll_x);
+			       scrollbar_get_offset(child->scroll_x);
 			c_by = fy + child->y -
-				scrollbar_get_offset(child->scroll_y);
+			       scrollbar_get_offset(child->scroll_y);
 		} else {
 			c_bx = bx + child->x -
-				scrollbar_get_offset(child->scroll_x);
+			       scrollbar_get_offset(child->scroll_x);
 			c_by = by + child->y -
-				scrollbar_get_offset(child->scroll_y);
+			       scrollbar_get_offset(child->scroll_y);
 		}
 		if (child->float_children) {
 			c_fx = c_bx;
@@ -518,23 +522,46 @@ box_nearest_text_box(struct box *box,
 		}
 		if (in_box && child->text && !child->object) {
 			if (box_nearer_text_box(child,
-						c_bx, c_by, x, y, dir, nearest,
-						tx, ty, nr_xd, nr_yd))
+						c_bx,
+						c_by,
+						x,
+						y,
+						dir,
+						nearest,
+						tx,
+						ty,
+						nr_xd,
+						nr_yd))
 				return true;
 		} else {
 			if (child->list_marker) {
 				if (box_nearer_text_box(
-						child->list_marker,
-						c_bx + child->list_marker->x,
-						c_by + child->list_marker->y,
-						x, y, dir, nearest,
-						tx, ty, nr_xd, nr_yd))
+					    child->list_marker,
+					    c_bx + child->list_marker->x,
+					    c_by + child->list_marker->y,
+					    x,
+					    y,
+					    dir,
+					    nearest,
+					    tx,
+					    ty,
+					    nr_xd,
+					    nr_yd))
 					return true;
 			}
-			if (box_nearest_text_box(child, c_bx, c_by,
-						 c_fx, c_fy,
-						 x, y, dir, nearest, tx, ty,
-						 nr_xd, nr_yd))
+			if (box_nearest_text_box(child,
+						 c_bx,
+						 c_by,
+						 c_fx,
+						 c_fy,
+						 x,
+						 y,
+						 dir,
+						 nearest,
+						 tx,
+						 ty,
+						 nr_xd,
+						 nr_yd))
 				return true;
 		}
 		child = child->next;
@@ -578,11 +605,12 @@ void box_bounds(struct box *box, struct rect *r)
 
 
 /* Exported function documented in html/box.h */
-struct box *
-box_at_point(const css_unit_ctx *unit_len_ctx,
-	     struct box *box,
-	     const int x, const int y,
-	     int *box_x, int *box_y)
+struct box *box_at_point(const css_unit_ctx *unit_len_ctx,
+			 struct box *box,
+			 const int x,
+			 const int y,
+			 int *box_x,
+			 int *box_y)
 {
 	bool skip_children;
 	bool physically;
@@ -591,7 +619,10 @@ box_at_point(const css_unit_ctx *unit_len_ctx,
 
 	skip_children = false;
 	while ((box = box_next_xy(box, box_x, box_y, skip_children))) {
-		if (box_contains_point(unit_len_ctx, box, x - *box_x, y - *box_y,
+		if (box_contains_point(unit_len_ctx,
+				       box,
+				       x - *box_x,
+				       y - *box_y,
 				       &physically)) {
 			*box_x -= scrollbar_get_offset(box->scroll_x);
 			*box_y -= scrollbar_get_offset(box->scroll_y);
@@ -616,8 +647,7 @@ struct box *box_find_by_id(struct box *box, lwc_string *id)
 	bool m;
 
 	if (box->id != NULL &&
-	    lwc_string_isequal(id, box->id, &m) == lwc_error_ok &&
-	    m == true) {
+	    lwc_string_isequal(id, box->id, &m) == lwc_error_ok && m == true) {
 		return box;
 	}
 
@@ -655,18 +685,28 @@ void box_dump(FILE *stream, struct box *box, unsigned int depth, bool style)
 	}
 
 	fprintf(stream, "%p ", box);
-	fprintf(stream, "x%i y%i w%i h%i ",
-		box->x, box->y, box->width, box->height);
+	fprintf(stream,
+		"x%i y%i w%i h%i ",
+		box->x,
+		box->y,
+		box->width,
+		box->height);
 	if (box->max_width != UNKNOWN_MAX_WIDTH) {
 		fprintf(stream, "min%i max%i ", box->min_width, box->max_width);
 	}
-	fprintf(stream, "desc(%i %i %i %i) ",
-		box->descendant_x0, box->descendant_y0,
-		box->descendant_x1, box->descendant_y1);
+	fprintf(stream,
+		"desc(%i %i %i %i) ",
+		box->descendant_x0,
+		box->descendant_y0,
+		box->descendant_x1,
+		box->descendant_y1);
 
-	fprintf(stream, "m(%i %i %i %i) ",
-		box->margin[TOP], box->margin[LEFT],
-		box->margin[BOTTOM], box->margin[RIGHT]);
+	fprintf(stream,
+		"m(%i %i %i %i) ",
+		box->margin[TOP],
+		box->margin[LEFT],
+		box->margin[BOTTOM],
+		box->margin[RIGHT]);
 
 	switch (box->type) {
 	case BOX_BLOCK:
@@ -698,7 +738,8 @@ void box_dump(FILE *stream, struct box *box, unsigned int depth, bool style)
 		break;
 
 	case BOX_TABLE_CELL:
-		fprintf(stream, "TABLE_CELL [columns %i, start %i, rows %i] ",
+		fprintf(stream,
+			"TABLE_CELL [columns %i, start %i, rows %i] ",
 			box->columns,
 			box->start_column,
 			box->rows);
@@ -737,12 +778,16 @@ void box_dump(FILE *stream, struct box *box, unsigned int depth, bool style)
 	}
 
 	if (box->text)
-		fprintf(stream, "%li '%.*s' ", (unsigned long) box->byte_offset,
-			(int) box->length, box->text);
+		fprintf(stream,
+			"%li '%.*s' ",
+			(unsigned long)box->byte_offset,
+			(int)box->length,
+			box->text);
 	if (box->space)
 		fprintf(stream, "space ");
 	if (box->object) {
-		fprintf(stream, "(object '%s') ",
+		fprintf(stream,
+			"(object '%s') ",
 			nsurl_access(hlcache_handle_get_url(box->object)));
 	}
 	if (box->iframe) {
@@ -771,21 +816,20 @@ void box_dump(FILE *stream, struct box *box, unsigned int depth, bool style)
 	if (box->col) {
 		fprintf(stream, " (columns");
 		for (i = 0; i != box->columns; i++) {
-			fprintf(stream, " (%s %s %i %i %i)",
-				((const char *[]) {
+			fprintf(stream,
+				" (%s %s %i %i %i)",
+				((const char *[]){
 					"UNKNOWN",
 					"FIXED",
 					"AUTO",
 					"PERCENT",
-					"RELATIVE"
-						})
-				[box->col[i].type],
-				((const char *[]) {
+					"RELATIVE"})[box->col[i].type],
+				((const char *[]){
 					"normal",
-					"positioned"})
-				[box->col[i].positioned],
+					"positioned"})[box->col[i].positioned],
 				box->col[i].width,
-				box->col[i].min, box->col[i].max);
+				box->col[i].min,
+				box->col[i].max);
 		}
 		fprintf(stream, ")");
 	}
@@ -808,48 +852,55 @@ void box_dump(FILE *stream, struct box *box, unsigned int depth, bool style)
 	for (c = box->children; c && c->next; c = c->next)
 		;
 	if (box->last != c)
-		fprintf(stream, "warning: box->last %p (should be %p) "
-			"(box %p)\n", box->last, c, box);
+		fprintf(stream,
+			"warning: box->last %p (should be %p) "
+			"(box %p)\n",
+			box->last,
+			c,
+			box);
 	for (prev = 0, c = box->children; c; prev = c, c = c->next) {
 		if (c->parent != box)
-			fprintf(stream, "warning: box->parent %p (should be "
+			fprintf(stream,
+				"warning: box->parent %p (should be "
 				"%p) (box on next line)\n",
-				c->parent, box);
+				c->parent,
+				box);
 		if (c->prev != prev)
-			fprintf(stream, "warning: box->prev %p (should be "
+			fprintf(stream,
+				"warning: box->prev %p (should be "
 				"%p) (box on next line)\n",
-				c->prev, prev);
+				c->prev,
+				prev);
 		box_dump(stream, c, depth + 1, style);
 	}
 }
 
 
 /* exported interface documented in html/box.h */
-bool box_vscrollbar_present(const struct box * const box)
+bool box_vscrollbar_present(const struct box *const box)
 {
-	return box->padding[TOP] +
-		box->height +
-		box->padding[BOTTOM] +
-		box->border[BOTTOM].width < box->descendant_y1;
+	return box->padding[TOP] + box->height + box->padding[BOTTOM] +
+		       box->border[BOTTOM].width <
+	       box->descendant_y1;
 }
 
 
 /* exported interface documented in html/box.h */
-bool box_hscrollbar_present(const struct box * const box)
+bool box_hscrollbar_present(const struct box *const box)
 {
-	return box->padding[LEFT] +
-		box->width +
-		box->padding[RIGHT] +
-		box->border[RIGHT].width < box->descendant_x1;
+	return box->padding[LEFT] + box->width + box->padding[RIGHT] +
+		       box->border[RIGHT].width <
+	       box->descendant_x1;
 }
 
 
 /* Exported function documented in html/box.h */
-struct box *
-box_pick_text_box(struct html_content *html,
-		  int x, int y,
-		  int dir,
-		  int *dx, int *dy)
+struct box *box_pick_text_box(struct html_content *html,
+			      int x,
+			      int y,
+			      int dir,
+			      int *dx,
+			      int *dy)
 {
 	struct box *text_box = NULL;
 	struct box *box;
@@ -867,14 +918,23 @@ box_pick_text_box(struct html_content *html,
 	fx = bx;
 	fy = by;
 
-	if (!box_nearest_text_box(box, bx, by, fx, fy, x, y,
-				  dir, &text_box, &tx, &ty, &nr_xd, &nr_yd)) {
+	if (!box_nearest_text_box(box,
+				  bx,
+				  by,
+				  fx,
+				  fy,
+				  x,
+				  y,
+				  dir,
+				  &text_box,
+				  &tx,
+				  &ty,
+				  &nr_xd,
+				  &nr_yd)) {
 		if (text_box && text_box->text && !text_box->object) {
-			int w = (text_box->padding[LEFT] +
-				 text_box->width +
+			int w = (text_box->padding[LEFT] + text_box->width +
 				 text_box->padding[RIGHT]);
-			int h = (text_box->padding[TOP] +
-				 text_box->height +
+			int h = (text_box->padding[TOP] + text_box->height +
 				 text_box->padding[BOTTOM]);
 			int x1, y1;
 
@@ -882,10 +942,14 @@ box_pick_text_box(struct html_content *html,
 			x1 = tx + w;
 
 			/* ensure point lies within the text box */
-			if (x < tx) x = tx;
-			if (y < ty) y = ty;
-			if (y > y1) y = y1;
-			if (x > x1) x = x1;
+			if (x < tx)
+				x = tx;
+			if (y < ty)
+				y = ty;
+			if (y > y1)
+				y = y1;
+			if (x > x1)
+				x = x1;
 		}
 	}
 

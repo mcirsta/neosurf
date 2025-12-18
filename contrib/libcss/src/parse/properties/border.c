@@ -28,8 +28,9 @@
  *		   If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_border(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+			    const parserutils_vector *vector,
+			    int32_t *ctx,
+			    css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	css_error error;
@@ -41,24 +42,26 @@ css_error css__parse_border(css_language *c,
 	}
 
 	*ctx = orig_ctx;
-	error = css__parse_border_side(c, vector, ctx, result, BORDER_SIDE_RIGHT);
+	error = css__parse_border_side(
+		c, vector, ctx, result, BORDER_SIDE_RIGHT);
 	if (error != CSS_OK) {
 		*ctx = orig_ctx;
 		return error;
 	}
 
 	*ctx = orig_ctx;
-	error = css__parse_border_side(c, vector, ctx, result, BORDER_SIDE_BOTTOM);
+	error = css__parse_border_side(
+		c, vector, ctx, result, BORDER_SIDE_BOTTOM);
 	if (error != CSS_OK) {
 		*ctx = orig_ctx;
 		return error;
 	}
 
 	*ctx = orig_ctx;
-	error = css__parse_border_side(c, vector, ctx, result, BORDER_SIDE_LEFT);
+	error = css__parse_border_side(
+		c, vector, ctx, result, BORDER_SIDE_LEFT);
 	if (error != CSS_OK)
 		*ctx = orig_ctx;
 
 	return error;
-
 }

@@ -81,8 +81,8 @@ static css_error node_name(void *pw, void *n, css_qname *qname)
 	return CSS_OK;
 }
 
-static css_error node_classes(void *pw, void *n,
-		lwc_string ***classes, uint32_t *n_classes)
+static css_error
+node_classes(void *pw, void *n, lwc_string ***classes, uint32_t *n_classes)
 {
 	unsigned int i;
 	node *node = n;
@@ -95,11 +95,9 @@ static css_error node_classes(void *pw, void *n,
 		(*classes)[i] = lwc_string_ref(node->classes[i]);
 
 	return CSS_OK;
-
 }
 
-static css_error node_id(void *pw, void *n,
-		lwc_string **id)
+static css_error node_id(void *pw, void *n, lwc_string **id)
 {
 	node *node = n;
 	uint32_t i;
@@ -107,9 +105,9 @@ static css_error node_id(void *pw, void *n,
 
 	for (i = 0; i < node->n_attrs; i++) {
 		bool amatch = false;
-		assert(lwc_string_caseless_isequal(
-				node->attrs[i].name, lc->attr_id, &amatch) ==
-				lwc_error_ok);
+		assert(lwc_string_caseless_isequal(node->attrs[i].name,
+						   lc->attr_id,
+						   &amatch) == lwc_error_ok);
 		if (amatch == true)
 			break;
 	}
@@ -122,30 +120,28 @@ static css_error node_id(void *pw, void *n,
 	return CSS_OK;
 }
 
-static css_error named_ancestor_node(void *pw, void *n,
-		const css_qname *qname,
-		void **ancestor)
+static css_error
+named_ancestor_node(void *pw, void *n, const css_qname *qname, void **ancestor)
 {
 	node *node = n;
 	UNUSED(pw);
 
 	for (node = node->parent; node != NULL; node = node->parent) {
 		bool match = false;
-		assert(lwc_string_caseless_isequal(
-				qname->name, node->name,
-				&match) == lwc_error_ok);
+		assert(lwc_string_caseless_isequal(qname->name,
+						   node->name,
+						   &match) == lwc_error_ok);
 		if (match == true)
 			break;
 	}
 
-	*ancestor = (void *) node;
+	*ancestor = (void *)node;
 
 	return CSS_OK;
 }
 
-static css_error named_parent_node(void *pw, void *n,
-		const css_qname *qname,
-		void **parent)
+static css_error
+named_parent_node(void *pw, void *n, const css_qname *qname, void **parent)
 {
 	node *node = n;
 	UNUSED(pw);
@@ -153,19 +149,18 @@ static css_error named_parent_node(void *pw, void *n,
 	*parent = NULL;
 	if (node->parent != NULL) {
 		bool match = false;
-		assert(lwc_string_caseless_isequal(
-				qname->name, node->parent->name, &match) ==
-				lwc_error_ok);
+		assert(lwc_string_caseless_isequal(qname->name,
+						   node->parent->name,
+						   &match) == lwc_error_ok);
 		if (match == true)
-			*parent = (void *) node->parent;
+			*parent = (void *)node->parent;
 	}
 
 	return CSS_OK;
 }
 
-static css_error named_sibling_node(void *pw, void *n,
-		const css_qname *qname,
-		void **sibling)
+static css_error
+named_sibling_node(void *pw, void *n, const css_qname *qname, void **sibling)
 {
 	node *node = n;
 	UNUSED(pw);
@@ -173,33 +168,34 @@ static css_error named_sibling_node(void *pw, void *n,
 	*sibling = NULL;
 	if (node->prev != NULL) {
 		bool match = false;
-		assert(lwc_string_caseless_isequal(
-				qname->name, node->prev->name, &match) ==
-				lwc_error_ok);
+		assert(lwc_string_caseless_isequal(qname->name,
+						   node->prev->name,
+						   &match) == lwc_error_ok);
 		if (match == true)
-			*sibling = (void *) node->prev;
+			*sibling = (void *)node->prev;
 	}
 
 	return CSS_OK;
 }
 
-static css_error named_generic_sibling_node(void *pw, void *n,
-		const css_qname *qname,
-		void **sibling)
+static css_error named_generic_sibling_node(void *pw,
+					    void *n,
+					    const css_qname *qname,
+					    void **sibling)
 {
 	node *node = n;
 	UNUSED(pw);
 
 	for (node = node->prev; node != NULL; node = node->prev) {
 		bool match = false;
-		assert(lwc_string_caseless_isequal(
-				qname->name, node->name,
-				&match) == lwc_error_ok);
+		assert(lwc_string_caseless_isequal(qname->name,
+						   node->name,
+						   &match) == lwc_error_ok);
 		if (match == true)
 			break;
 	}
 
-	*sibling = (void *) node;
+	*sibling = (void *)node;
 
 	return CSS_OK;
 }
@@ -210,7 +206,7 @@ static css_error parent_node(void *pw, void *n, void **parent)
 
 	UNUSED(pw);
 
-	*parent = (void *) node->parent;
+	*parent = (void *)node->parent;
 
 	return CSS_OK;
 }
@@ -221,31 +217,29 @@ static css_error sibling_node(void *pw, void *n, void **sibling)
 
 	UNUSED(pw);
 
-	*sibling = (void *) node->prev;
+	*sibling = (void *)node->prev;
 
 	return CSS_OK;
 }
 
-static css_error node_has_name(void *pw, void *n,
-		const css_qname *qname,
-		bool *match)
+static css_error
+node_has_name(void *pw, void *n, const css_qname *qname, bool *match)
 {
 	node *node = n;
 	UNUSED(pw);
 
 	if (lwc_string_length(qname->name) == 1 &&
-			lwc_string_data(qname->name)[0] == '*')
+	    lwc_string_data(qname->name)[0] == '*')
 		*match = true;
 	else
-		assert(lwc_string_caseless_isequal(node->name,
-			qname->name, match) == lwc_error_ok);
+		assert(lwc_string_caseless_isequal(
+			       node->name, qname->name, match) == lwc_error_ok);
 
 	return CSS_OK;
 }
 
-static css_error node_has_class(void *pw, void *n,
-		lwc_string *name,
-		bool *match)
+static css_error
+node_has_class(void *pw, void *n, lwc_string *name, bool *match)
 {
 	node *node = n;
 	uint32_t i;
@@ -253,9 +247,9 @@ static css_error node_has_class(void *pw, void *n,
 
 	for (i = 0; i < node->n_attrs; i++) {
 		bool amatch = false;
-		assert(lwc_string_caseless_isequal(
-				node->attrs[i].name, ctx->attr_class,
-				&amatch) == lwc_error_ok);
+		assert(lwc_string_caseless_isequal(node->attrs[i].name,
+						   ctx->attr_class,
+						   &amatch) == lwc_error_ok);
 		if (amatch == true)
 			break;
 	}
@@ -269,9 +263,7 @@ static css_error node_has_class(void *pw, void *n,
 	return CSS_OK;
 }
 
-static css_error node_has_id(void *pw, void *n,
-		lwc_string *name,
-		bool *match)
+static css_error node_has_id(void *pw, void *n, lwc_string *name, bool *match)
 {
 	node *node = n;
 	uint32_t i;
@@ -279,9 +271,9 @@ static css_error node_has_id(void *pw, void *n,
 
 	for (i = 0; i < node->n_attrs; i++) {
 		bool amatch = false;
-		assert(lwc_string_caseless_isequal(
-				node->attrs[i].name, ctx->attr_id, &amatch) ==
-				lwc_error_ok);
+		assert(lwc_string_caseless_isequal(node->attrs[i].name,
+						   ctx->attr_id,
+						   &amatch) == lwc_error_ok);
 		if (amatch == true)
 			break;
 	}
@@ -295,9 +287,8 @@ static css_error node_has_id(void *pw, void *n,
 	return CSS_OK;
 }
 
-static css_error node_has_attribute(void *pw, void *n,
-		const css_qname *qname,
-		bool *match)
+static css_error
+node_has_attribute(void *pw, void *n, const css_qname *qname, bool *match)
 {
 	node *node = n;
 	uint32_t i;
@@ -305,9 +296,9 @@ static css_error node_has_attribute(void *pw, void *n,
 
 	*match = false;
 	for (i = 0; i < node->n_attrs; i++) {
-		assert(lwc_string_caseless_isequal(
-				node->attrs[i].name, qname->name, match) ==
-				lwc_error_ok);
+		assert(lwc_string_caseless_isequal(node->attrs[i].name,
+						   qname->name,
+						   match) == lwc_error_ok);
 		if (*match == true)
 			break;
 	}
@@ -315,10 +306,11 @@ static css_error node_has_attribute(void *pw, void *n,
 	return CSS_OK;
 }
 
-static css_error node_has_attribute_equal(void *pw, void *n,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match)
+static css_error node_has_attribute_equal(void *pw,
+					  void *n,
+					  const css_qname *qname,
+					  lwc_string *value,
+					  bool *match)
 {
 	node *node = n;
 	uint32_t i;
@@ -327,26 +319,27 @@ static css_error node_has_attribute_equal(void *pw, void *n,
 	*match = false;
 
 	for (i = 0; i < node->n_attrs; i++) {
-		assert(lwc_string_caseless_isequal(
-				node->attrs[i].name, qname->name, match) ==
-				lwc_error_ok);
+		assert(lwc_string_caseless_isequal(node->attrs[i].name,
+						   qname->name,
+						   match) == lwc_error_ok);
 		if (*match == true)
 			break;
 	}
 
 	if (*match == true) {
-		assert(lwc_string_caseless_isequal(
-				node->attrs[i].name, value, match) ==
-				lwc_error_ok);
+		assert(lwc_string_caseless_isequal(node->attrs[i].name,
+						   value,
+						   match) == lwc_error_ok);
 	}
 
 	return CSS_OK;
 }
 
-static css_error node_has_attribute_includes(void *pw, void *n,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match)
+static css_error node_has_attribute_includes(void *pw,
+					     void *n,
+					     const css_qname *qname,
+					     lwc_string *value,
+					     bool *match)
 {
 	node *node = n;
 	uint32_t i;
@@ -356,9 +349,9 @@ static css_error node_has_attribute_includes(void *pw, void *n,
 	*match = false;
 
 	for (i = 0; i < node->n_attrs; i++) {
-		assert(lwc_string_caseless_isequal(
-				node->attrs[i].name, qname->name, match) ==
-				lwc_error_ok);
+		assert(lwc_string_caseless_isequal(node->attrs[i].name,
+						   qname->name,
+						   match) == lwc_error_ok);
 		if (*match == true)
 			break;
 	}
@@ -367,16 +360,16 @@ static css_error node_has_attribute_includes(void *pw, void *n,
 		const char *p;
 		const char *start = lwc_string_data(node->attrs[i].value);
 		const char *end = start +
-				lwc_string_length(node->attrs[i].value);
+				  lwc_string_length(node->attrs[i].value);
 
 		*match = false;
 
 		for (p = start; p < end; p++) {
 			if (*p == ' ') {
-				if ((size_t) (p - start) == vlen &&
-						strncasecmp(start,
-							lwc_string_data(value),
-							vlen) == 0) {
+				if ((size_t)(p - start) == vlen &&
+				    strncasecmp(start,
+						lwc_string_data(value),
+						vlen) == 0) {
 					*match = true;
 					break;
 				}
@@ -389,10 +382,11 @@ static css_error node_has_attribute_includes(void *pw, void *n,
 	return CSS_OK;
 }
 
-static css_error node_has_attribute_dashmatch(void *pw, void *n,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match)
+static css_error node_has_attribute_dashmatch(void *pw,
+					      void *n,
+					      const css_qname *qname,
+					      lwc_string *value,
+					      bool *match)
 {
 	node *node = n;
 	uint32_t i;
@@ -402,9 +396,9 @@ static css_error node_has_attribute_dashmatch(void *pw, void *n,
 	*match = false;
 
 	for (i = 0; i < node->n_attrs; i++) {
-		assert(lwc_string_caseless_isequal(
-				node->attrs[i].name, qname->name, match) ==
-				lwc_error_ok);
+		assert(lwc_string_caseless_isequal(node->attrs[i].name,
+						   qname->name,
+						   match) == lwc_error_ok);
 		if (*match == true)
 			break;
 	}
@@ -413,16 +407,16 @@ static css_error node_has_attribute_dashmatch(void *pw, void *n,
 		const char *p;
 		const char *start = lwc_string_data(node->attrs[i].value);
 		const char *end = start +
-				lwc_string_length(node->attrs[i].value);
+				  lwc_string_length(node->attrs[i].value);
 
 		*match = false;
 
 		for (p = start; p < end; p++) {
 			if (*p == '-') {
-				if ((size_t) (p - start) == vlen &&
-						strncasecmp(start,
-							lwc_string_data(value),
-							vlen) == 0) {
+				if ((size_t)(p - start) == vlen &&
+				    strncasecmp(start,
+						lwc_string_data(value),
+						vlen) == 0) {
 					*match = true;
 					break;
 				}
@@ -435,10 +429,11 @@ static css_error node_has_attribute_dashmatch(void *pw, void *n,
 	return CSS_OK;
 }
 
-static css_error node_has_attribute_prefix(void *pw, void *n,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match)
+static css_error node_has_attribute_prefix(void *pw,
+					   void *n,
+					   const css_qname *qname,
+					   lwc_string *value,
+					   bool *match)
 {
 	node *node = n;
 	uint32_t i;
@@ -447,9 +442,9 @@ static css_error node_has_attribute_prefix(void *pw, void *n,
 	*match = false;
 
 	for (i = 0; i < node->n_attrs; i++) {
-		assert(lwc_string_caseless_isequal(
-				node->attrs[i].name, qname->name, match) ==
-				lwc_error_ok);
+		assert(lwc_string_caseless_isequal(node->attrs[i].name,
+						   qname->name,
+						   match) == lwc_error_ok);
 		if (*match == true)
 			break;
 	}
@@ -470,10 +465,11 @@ static css_error node_has_attribute_prefix(void *pw, void *n,
 	return CSS_OK;
 }
 
-static css_error node_has_attribute_suffix(void *pw, void *n,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match)
+static css_error node_has_attribute_suffix(void *pw,
+					   void *n,
+					   const css_qname *qname,
+					   lwc_string *value,
+					   bool *match)
 {
 	node *node = n;
 	uint32_t i;
@@ -482,9 +478,9 @@ static css_error node_has_attribute_suffix(void *pw, void *n,
 	*match = false;
 
 	for (i = 0; i < node->n_attrs; i++) {
-		assert(lwc_string_caseless_isequal(
-				node->attrs[i].name, qname->name, match) ==
-				lwc_error_ok);
+		assert(lwc_string_caseless_isequal(node->attrs[i].name,
+						   qname->name,
+						   match) == lwc_error_ok);
 		if (*match == true)
 			break;
 	}
@@ -502,17 +498,19 @@ static css_error node_has_attribute_suffix(void *pw, void *n,
 			*match = false;
 		else {
 			*match = (strncasecmp(data + suffix_start,
-					vdata, vlen) == 0);
+					      vdata,
+					      vlen) == 0);
 		}
 	}
 
 	return CSS_OK;
 }
 
-static css_error node_has_attribute_substring(void *pw, void *n,
-		const css_qname *qname,
-		lwc_string *value,
-		bool *match)
+static css_error node_has_attribute_substring(void *pw,
+					      void *n,
+					      const css_qname *qname,
+					      lwc_string *value,
+					      bool *match)
 {
 	node *node = n;
 	uint32_t i;
@@ -521,9 +519,9 @@ static css_error node_has_attribute_substring(void *pw, void *n,
 	*match = false;
 
 	for (i = 0; i < node->n_attrs; i++) {
-		assert(lwc_string_caseless_isequal(
-				node->attrs[i].name, qname->name, match) ==
-				lwc_error_ok);
+		assert(lwc_string_caseless_isequal(node->attrs[i].name,
+						   qname->name,
+						   match) == lwc_error_ok);
 		if (*match == true)
 			break;
 	}
@@ -567,8 +565,11 @@ static css_error node_is_root(void *pw, void *n, bool *match)
 	return CSS_OK;
 }
 
-static css_error node_count_siblings(void *pw, void *n,
-		bool same_name, bool after, int32_t *count)
+static css_error node_count_siblings(void *pw,
+				     void *n,
+				     bool same_name,
+				     bool after,
+				     int32_t *count)
 {
 	int32_t cnt = 0;
 	bool match = false;
@@ -580,8 +581,9 @@ static css_error node_count_siblings(void *pw, void *n,
 		while (node->next != NULL) {
 			if (same_name) {
 				assert(lwc_string_caseless_isequal(
-					name, node->next->name, &match) ==
-					lwc_error_ok);
+					       name,
+					       node->next->name,
+					       &match) == lwc_error_ok);
 
 				if (match)
 					cnt++;
@@ -595,8 +597,9 @@ static css_error node_count_siblings(void *pw, void *n,
 		while (node->prev != NULL) {
 			if (same_name) {
 				assert(lwc_string_caseless_isequal(
-					name, node->prev->name, &match) ==
-					lwc_error_ok);
+					       name,
+					       node->prev->name,
+					       &match) == lwc_error_ok);
 
 				if (match)
 					cnt++;
@@ -731,9 +734,7 @@ static css_error node_is_target(void *pw, void *n, bool *match)
 	return CSS_OK;
 }
 
-static css_error node_is_lang(void *pw, void *n,
-		lwc_string *lang,
-		bool *match)
+static css_error node_is_lang(void *pw, void *n, lwc_string *lang, bool *match)
 {
 	node *node = n;
 
@@ -746,8 +747,10 @@ static css_error node_is_lang(void *pw, void *n,
 	return CSS_OK;
 }
 
-static css_error node_presentational_hint(void *pw, void *node,
-		uint32_t *nhints, css_hint **hints)
+static css_error node_presentational_hint(void *pw,
+					  void *node,
+					  uint32_t *nhints,
+					  css_hint **hints)
 {
 	UNUSED(pw);
 	UNUSED(node);
@@ -758,7 +761,8 @@ static css_error node_presentational_hint(void *pw, void *node,
 	return CSS_OK;
 }
 
-static css_error ua_default_for_property(void *pw, uint32_t property, css_hint *hint)
+static css_error
+ua_default_for_property(void *pw, uint32_t property, css_hint *hint)
 {
 	UNUSED(pw);
 
@@ -783,8 +787,7 @@ static css_error ua_default_for_property(void *pw, uint32_t property, css_hint *
 	return CSS_OK;
 }
 
-static css_error set_libcss_node_data(void *pw, void *n,
-		void *libcss_node_data)
+static css_error set_libcss_node_data(void *pw, void *n, void *libcss_node_data)
 {
 	node *node = n;
 	UNUSED(pw);
@@ -794,8 +797,8 @@ static css_error set_libcss_node_data(void *pw, void *n,
 	return CSS_OK;
 }
 
-static css_error get_libcss_node_data(void *pw, void *n,
-		void **libcss_node_data)
+static css_error
+get_libcss_node_data(void *pw, void *n, void **libcss_node_data)
 {
 	node *node = n;
 	UNUSED(pw);
@@ -853,8 +856,8 @@ static css_select_handler select_handler = {
 	get_libcss_node_data,
 };
 
-static css_error resolve_url(void *pw,
-		const char *base, lwc_string *rel, lwc_string **abs)
+static css_error
+resolve_url(void *pw, const char *base, lwc_string *rel, lwc_string **abs)
 {
 	UNUSED(pw);
 	UNUSED(base);
@@ -867,17 +870,19 @@ static css_error resolve_url(void *pw,
 
 static bool fail_because_lwc_leaked = false;
 
-static void
-printing_lwc_iterator(lwc_string *str, void *pw)
+static void printing_lwc_iterator(lwc_string *str, void *pw)
 {
 	UNUSED(pw);
 
-	printf(" DICT: %*s\n", (int)(lwc_string_length(str)), lwc_string_data(str));
+	printf(" DICT: %*s\n",
+	       (int)(lwc_string_length(str)),
+	       lwc_string_data(str));
 	fail_because_lwc_leaked = true;
 }
 
-static css_error css_font_resolution_func(void *pw, lwc_string *name,
-		css_system_font *system_font)
+static css_error css_font_resolution_func(void *pw,
+					  lwc_string *name,
+					  css_system_font *system_font)
 {
 	lwc_error err;
 
@@ -887,8 +892,9 @@ static css_error css_font_resolution_func(void *pw, lwc_string *name,
 
 	(void)(pw);
 
-	if (strncmp(lwc_string_data(name), "special-system-font",
-			lwc_string_length(name)) != 0) {
+	if (strncmp(lwc_string_data(name),
+		    "special-system-font",
+		    lwc_string_length(name)) != 0) {
 		return CSS_INVALID;
 	}
 
@@ -900,8 +906,8 @@ static css_error css_font_resolution_func(void *pw, lwc_string *name,
 	system_font->line_height.size = INTTOFIX(33);
 	system_font->line_height.unit = CSS_UNIT_EM;
 	err = lwc_intern_string("special-system-font",
-			strlen("special-system-font"),
-			&system_font->family);
+				strlen("special-system-font"),
+				&system_font->family);
 	if (err != lwc_error_ok) {
 		return CSS_NOMEM;
 	}
@@ -909,8 +915,10 @@ static css_error css_font_resolution_func(void *pw, lwc_string *name,
 	return CSS_OK;
 }
 
-static css_error test_error_handler(void *pw, css_stylesheet *sheet,
-		css_error error, const char *msg)
+static css_error test_error_handler(void *pw,
+				    css_stylesheet *sheet,
+				    css_error error,
+				    const char *msg)
 {
 	UNUSED(pw);
 	UNUSED(sheet);
@@ -977,8 +985,7 @@ static void css__parse_sheet(line_ctx *ctx, const char *data, size_t len)
 	assert(css_stylesheet_create(&params, &sheet) == CSS_OK);
 
 	/* Extend array of sheets and append new sheet to it */
-	temp = realloc(ctx->sheets,
-			(ctx->n_sheets + 1) * sizeof(sheet_ctx));
+	temp = realloc(ctx->sheets, (ctx->n_sheets + 1) * sizeof(sheet_ctx));
 	assert(temp != NULL);
 
 	ctx->sheets = temp;
@@ -990,7 +997,8 @@ static void css__parse_sheet(line_ctx *ctx, const char *data, size_t len)
 	ctx->n_sheets++;
 }
 
-static void css__parse_media_list(const char **data, size_t *len, css_media *media)
+static void
+css__parse_media_list(const char **data, size_t *len, css_media *media)
 {
 	const char *p = *data;
 	const char *end = p + *len;
@@ -1006,37 +1014,30 @@ static void css__parse_media_list(const char **data, size_t *len, css_media *med
 			p++;
 
 		if (p - start == 10 &&
-				strncasecmp(start, "projection", 10) == 0)
+		    strncasecmp(start, "projection", 10) == 0)
 			result |= CSS_MEDIA_PROJECTION;
 		else if (p - start == 8 &&
-				strncasecmp(start, "handheld", 8) == 0)
+			 strncasecmp(start, "handheld", 8) == 0)
 			result |= CSS_MEDIA_HANDHELD;
 		else if (p - start == 8 &&
-				strncasecmp(start, "embossed", 8) == 0)
+			 strncasecmp(start, "embossed", 8) == 0)
 			result |= CSS_MEDIA_EMBOSSED;
 		else if (p - start == 7 &&
-				strncasecmp(start, "braille", 7) == 0)
+			 strncasecmp(start, "braille", 7) == 0)
 			result |= CSS_MEDIA_BRAILLE;
-		else if (p - start == 6 &&
-				strncasecmp(start, "speech", 6) == 0)
+		else if (p - start == 6 && strncasecmp(start, "speech", 6) == 0)
 			result |= CSS_MEDIA_SPEECH;
-		else if (p - start == 6 &&
-				strncasecmp(start, "screen", 6) == 0)
+		else if (p - start == 6 && strncasecmp(start, "screen", 6) == 0)
 			result |= CSS_MEDIA_SCREEN;
-		else if (p - start == 5 &&
-				strncasecmp(start, "print", 5) == 0)
+		else if (p - start == 5 && strncasecmp(start, "print", 5) == 0)
 			result |= CSS_MEDIA_PRINT;
-		else if (p - start == 5 &&
-				strncasecmp(start, "aural", 5) == 0)
+		else if (p - start == 5 && strncasecmp(start, "aural", 5) == 0)
 			result |= CSS_MEDIA_AURAL;
-		else if (p - start == 3 &&
-				strncasecmp(start, "tty", 3) == 0)
+		else if (p - start == 3 && strncasecmp(start, "tty", 3) == 0)
 			result |= CSS_MEDIA_TTY;
-		else if (p - start == 3 &&
-				strncasecmp(start, "all", 3) == 0)
+		else if (p - start == 3 && strncasecmp(start, "all", 3) == 0)
 			result |= CSS_MEDIA_ALL;
-		else if (p - start == 2 &&
-				strncasecmp(start, "tv", 2) == 0)
+		else if (p - start == 2 && strncasecmp(start, "tv", 2) == 0)
 			result |= CSS_MEDIA_TV;
 		else
 			assert(0 && "Unknown media type");
@@ -1063,7 +1064,8 @@ static void css__parse_media_list(const char **data, size_t *len, css_media *med
 	*len = end - p;
 }
 
-static void css__parse_pseudo_list(const char **data, size_t *len, uint32_t *element)
+static void
+css__parse_pseudo_list(const char **data, size_t *len, uint32_t *element)
 {
 	const char *p = *data;
 	const char *end = p + *len;
@@ -1081,16 +1083,14 @@ static void css__parse_pseudo_list(const char **data, size_t *len, uint32_t *ele
 
 		/* Pseudo elements */
 		if (p - start == 12 &&
-				strncasecmp(start, "first-letter", 12) == 0)
+		    strncasecmp(start, "first-letter", 12) == 0)
 			*element = CSS_PSEUDO_ELEMENT_FIRST_LETTER;
 		else if (p - start == 10 &&
-				strncasecmp(start, "first-line", 10) == 0)
+			 strncasecmp(start, "first-line", 10) == 0)
 			*element = CSS_PSEUDO_ELEMENT_FIRST_LINE;
-		else if (p - start == 6 &&
-				strncasecmp(start, "before", 6) == 0)
+		else if (p - start == 6 && strncasecmp(start, "before", 6) == 0)
 			*element = CSS_PSEUDO_ELEMENT_BEFORE;
-		else if (p - start == 5 &&
-				strncasecmp(start, "after", 5) == 0)
+		else if (p - start == 5 && strncasecmp(start, "after", 5) == 0)
 			*element = CSS_PSEUDO_ELEMENT_AFTER;
 		else
 			assert(0 && "Unknown pseudo");
@@ -1260,7 +1260,7 @@ static void css__parse_tree_data(line_ctx *ctx, const char *data, size_t len)
 		node *n = ctx->current;
 
 		attribute *temp = realloc(n->attrs,
-				(n->n_attrs + 1) * sizeof(attribute));
+					  (n->n_attrs + 1) * sizeof(attribute));
 		assert(temp != NULL);
 
 		n->attrs = temp;
@@ -1270,16 +1270,15 @@ static void css__parse_tree_data(line_ctx *ctx, const char *data, size_t len)
 		lwc_intern_string(name, namelen, &attr->name);
 		lwc_intern_string(value, valuelen, &attr->value);
 
-		assert(lwc_string_caseless_isequal(
-				n->attrs[n->n_attrs].name,
-				ctx->attr_class, &amatch) == lwc_error_ok);
+		assert(lwc_string_caseless_isequal(n->attrs[n->n_attrs].name,
+						   ctx->attr_class,
+						   &amatch) == lwc_error_ok);
 		if (amatch == true) {
 			n->classes = realloc(NULL, sizeof(lwc_string **));
 			assert(n->classes != NULL);
 
 			n->classes[0] = lwc_string_ref(
-					n->attrs[n->n_attrs].
-					value);
+				n->attrs[n->n_attrs].value);
 			n->n_classes = 1;
 		}
 
@@ -1289,8 +1288,10 @@ static void css__parse_tree_data(line_ctx *ctx, const char *data, size_t len)
 
 
 static void run_test_select_tree(css_select_ctx *select,
-		node *node, line_ctx *ctx,
-		char *buf, size_t *buflen)
+				 node *node,
+				 line_ctx *ctx,
+				 char *buf,
+				 size_t *buflen)
 {
 	css_select_results *sr;
 	struct node *n = NULL;
@@ -1300,16 +1301,22 @@ static void run_test_select_tree(css_select_ctx *select,
 	}
 
 
-	assert(css_select_style(select, node, &unit_ctx, &ctx->media, NULL,
-			&select_handler, ctx, &sr) == CSS_OK);
+	assert(css_select_style(select,
+				node,
+				&unit_ctx,
+				&ctx->media,
+				NULL,
+				&select_handler,
+				ctx,
+				&sr) == CSS_OK);
 
 	if (node->parent != NULL) {
 		css_computed_style *composed;
 		assert(css_computed_style_compose(
-				node->parent->sr->styles[ctx->pseudo_element],
-				sr->styles[ctx->pseudo_element],
-				&unit_ctx,
-				&composed) == CSS_OK);
+			       node->parent->sr->styles[ctx->pseudo_element],
+			       sr->styles[ctx->pseudo_element],
+			       &unit_ctx,
+			       &composed) == CSS_OK);
 		css_computed_style_destroy(sr->styles[ctx->pseudo_element]);
 		sr->styles[ctx->pseudo_element] = composed;
 	}
@@ -1318,7 +1325,9 @@ static void run_test_select_tree(css_select_ctx *select,
 
 	if (node == ctx->target) {
 		dump_computed_style(sr->styles[ctx->pseudo_element],
-				buf, buflen, &unit_ctx);
+				    buf,
+				    buflen,
+				    &unit_ctx);
 	}
 
 	if (node->parent == NULL) {
@@ -1342,14 +1351,14 @@ static void show_differences(size_t len, const char *exp, const char *res)
 	while (pos_exp < exp + len && pos_res < res + len) {
 		if (*pos_exp == '\n' && *pos_res == '\n') {
 			if (pos_exp - opos_exp != pos_res - opos_res ||
-					memcmp(opos_exp, opos_res,
-					pos_exp - opos_exp) != 0) {
+			    memcmp(opos_exp, opos_res, pos_exp - opos_exp) !=
+				    0) {
 				printf("Expected:\t%.*s\n",
-						(int)(pos_exp - opos_exp),
-						opos_exp);
+				       (int)(pos_exp - opos_exp),
+				       opos_exp);
 				printf("  Result:\t%.*s\n",
-						(int)(pos_res - opos_res),
-						opos_res);
+				       (int)(pos_res - opos_res),
+				       opos_res);
 				printf("\n");
 			}
 			opos_exp = ++pos_exp;
@@ -1392,8 +1401,12 @@ static void destroy_tree(node *root)
 	}
 
 	if (root->libcss_node_data != NULL) {
-		css_libcss_node_data_handler(&select_handler, CSS_NODE_DELETED,
-				NULL, root, NULL, root->libcss_node_data);
+		css_libcss_node_data_handler(&select_handler,
+					     CSS_NODE_DELETED,
+					     NULL,
+					     root,
+					     NULL,
+					     root->libcss_node_data);
 	}
 
 	lwc_string_unref(root->name);
@@ -1421,8 +1434,10 @@ static void run_test(line_ctx *ctx, const char *exp, size_t explen)
 
 	for (i = 0; i < ctx->n_sheets; i++) {
 		assert(css_select_ctx_append_sheet(select,
-				ctx->sheets[i].sheet, ctx->sheets[i].origin,
-				ctx->sheets[i].media) == CSS_OK);
+						   ctx->sheets[i].sheet,
+						   ctx->sheets[i].origin,
+						   ctx->sheets[i].media) ==
+		       CSS_OK);
 	}
 
 	testnum++;
@@ -1434,10 +1449,11 @@ static void run_test(line_ctx *ctx, const char *exp, size_t explen)
 
 	if (8192 - buflen != explen || memcmp(buf, exp, explen) != 0) {
 		size_t len = 8192 - buflen < explen ? 8192 - buflen : explen;
-		printf("Expected (%u):\n%.*s\n",
-				(int) explen, (int) explen, exp);
-		printf("Result (%u):\n%.*s\n", (int) (8192 - buflen),
-			(int) (8192 - buflen), buf);
+		printf("Expected (%u):\n%.*s\n", (int)explen, (int)explen, exp);
+		printf("Result (%u):\n%.*s\n",
+		       (int)(8192 - buflen),
+		       (int)(8192 - buflen),
+		       buf);
 
 		show_differences(len, exp, buf);
 		assert(0 && "Result doesn't match expected");
@@ -1467,12 +1483,12 @@ static void run_test(line_ctx *ctx, const char *exp, size_t explen)
 
 static bool handle_line(const char *data, size_t datalen, void *pw)
 {
-	line_ctx *ctx = (line_ctx *) pw;
+	line_ctx *ctx = (line_ctx *)pw;
 	css_error error;
 
 	if (data[0] == '#') {
 		if (ctx->intree) {
-			if (strncasecmp(data+1, "errors", 6) == 0) {
+			if (strncasecmp(data + 1, "errors", 6) == 0) {
 				ctx->intree = false;
 				ctx->insheet = false;
 				ctx->inerrors = true;
@@ -1487,30 +1503,30 @@ static bool handle_line(const char *data, size_t datalen, void *pw)
 				ctx->inexp = false;
 			}
 		} else if (ctx->insheet) {
-			if (strncasecmp(data+1, "errors", 6) == 0) {
+			if (strncasecmp(data + 1, "errors", 6) == 0) {
 				assert(css_stylesheet_data_done(
-					ctx->sheets[ctx->n_sheets - 1].sheet)
-					== CSS_OK);
+					       ctx->sheets[ctx->n_sheets - 1]
+						       .sheet) == CSS_OK);
 
 				ctx->intree = false;
 				ctx->insheet = false;
 				ctx->inerrors = true;
 				ctx->inexp = false;
-			} else if (strncasecmp(data+1, "ua", 2) == 0 ||
-					strncasecmp(data+1, "user", 4) == 0 ||
-					strncasecmp(data+1, "author", 6) == 0) {
+			} else if (strncasecmp(data + 1, "ua", 2) == 0 ||
+				   strncasecmp(data + 1, "user", 4) == 0 ||
+				   strncasecmp(data + 1, "author", 6) == 0) {
 				assert(css_stylesheet_data_done(
-					ctx->sheets[ctx->n_sheets - 1].sheet)
-					== CSS_OK);
+					       ctx->sheets[ctx->n_sheets - 1]
+						       .sheet) == CSS_OK);
 
 				css__parse_sheet(ctx, data + 1, datalen - 1);
 			} else {
 				error = css_stylesheet_append_data(
 					ctx->sheets[ctx->n_sheets - 1].sheet,
-					(const uint8_t *) data,
+					(const uint8_t *)data,
 					datalen);
 				assert(error == CSS_OK ||
-						error == CSS_NEEDDATA);
+				       error == CSS_NEEDDATA);
 			}
 		} else if (ctx->inerrors) {
 			ctx->intree = false;
@@ -1529,7 +1545,7 @@ static bool handle_line(const char *data, size_t datalen, void *pw)
 			ctx->inexp = false;
 		} else {
 			/* Start state */
-			if (strncasecmp(data+1, "tree", 4) == 0) {
+			if (strncasecmp(data + 1, "tree", 4) == 0) {
 				css__parse_tree(ctx, data + 5, datalen - 5);
 
 				ctx->intree = true;
@@ -1544,8 +1560,9 @@ static bool handle_line(const char *data, size_t datalen, void *pw)
 			css__parse_tree_data(ctx, data + 1, datalen - 1);
 		} else if (ctx->insheet) {
 			error = css_stylesheet_append_data(
-					ctx->sheets[ctx->n_sheets - 1].sheet,
-					(const uint8_t *) data, datalen);
+				ctx->sheets[ctx->n_sheets - 1].sheet,
+				(const uint8_t *)data,
+				datalen);
 			assert(error == CSS_OK || error == CSS_NEEDDATA);
 		} else if (ctx->inexp) {
 			css__parse_expected(ctx, data, datalen);

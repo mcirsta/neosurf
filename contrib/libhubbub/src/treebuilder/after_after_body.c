@@ -24,28 +24,29 @@
  *         appropriate error otherwise
  */
 hubbub_error handle_after_after_body(hubbub_treebuilder *treebuilder,
-		const hubbub_token *token)
+				     const hubbub_token *token)
 {
 	hubbub_error err = HUBBUB_OK;
 
 	switch (token->type) {
 	case HUBBUB_TOKEN_CHARACTER:
 		err = process_characters_expect_whitespace(treebuilder,
-				token, true);
+							   token,
+							   true);
 		if (err == HUBBUB_REPROCESS)
 			treebuilder->context.mode = IN_BODY;
 		break;
 	case HUBBUB_TOKEN_COMMENT:
-		err = process_comment_append(treebuilder, token,
-				treebuilder->context.document);
+		err = process_comment_append(treebuilder,
+					     token,
+					     treebuilder->context.document);
 		break;
 	case HUBBUB_TOKEN_DOCTYPE:
 		err = handle_in_body(treebuilder, token);
 		break;
-	case HUBBUB_TOKEN_START_TAG:
-	{
-		element_type type = element_type_from_name(treebuilder,
-				&token->data.tag.name);
+	case HUBBUB_TOKEN_START_TAG: {
+		element_type type = element_type_from_name(
+			treebuilder, &token->data.tag.name);
 
 		if (type == HTML) {
 			/* Process as if "in body" */
@@ -55,8 +56,7 @@ hubbub_error handle_after_after_body(hubbub_treebuilder *treebuilder,
 			treebuilder->context.mode = IN_BODY;
 			err = HUBBUB_REPROCESS;
 		}
-	}
-		break;
+	} break;
 	case HUBBUB_TOKEN_END_TAG:
 		/** \todo parse error */
 		treebuilder->context.mode = IN_BODY;
@@ -68,4 +68,3 @@ hubbub_error handle_after_after_body(hubbub_treebuilder *treebuilder,
 
 	return err;
 }
-

@@ -43,8 +43,11 @@ struct html_scrollbar_data {
  * \param  x	  coordinate of mouse
  * \param  y	  coordinate of mouse
  */
-nserror html_mouse_track(struct content *c, struct browser_window *bw,
-			browser_mouse_state mouse, int x, int y);
+nserror html_mouse_track(struct content *c,
+			 struct browser_window *bw,
+			 browser_mouse_state mouse,
+			 int x,
+			 int y);
 
 
 /**
@@ -63,19 +66,24 @@ nserror html_mouse_track(struct content *c, struct browser_window *bw,
  * \param y y coordinate of mouse
  * \return NSERROR_OK or appropriate error code.
  */
-nserror html_mouse_action(struct content *c, struct browser_window *bw,
-			browser_mouse_state mouse, int x, int y);
+nserror html_mouse_action(struct content *c,
+			  struct browser_window *bw,
+			  browser_mouse_state mouse,
+			  int x,
+			  int y);
 
 
 bool html_keypress(struct content *c, uint32_t key);
 
 
 void html_overflow_scroll_callback(void *client_data,
-		struct scrollbar_msg_data *scrollbar_data);
+				   struct scrollbar_msg_data *scrollbar_data);
 
 
-void html_search(struct content *c, void *context,
-		search_flags_t flags, const char *string);
+void html_search(struct content *c,
+		 void *context,
+		 search_flags_t flags,
+		 const char *string);
 
 
 void html_search_clear(struct content *c);
@@ -89,8 +97,10 @@ void html_search_clear(struct content *c);
  * \param drag_owner	What owns the drag
  * \param rect		Pointer movement bounds
  */
-void html_set_drag_type(html_content *html, html_drag_type drag_type,
-		union html_drag_owner drag_owner, const struct rect *rect);
+void html_set_drag_type(html_content *html,
+			html_drag_type drag_type,
+			union html_drag_owner drag_owner,
+			const struct rect *rect);
 
 
 /**
@@ -101,8 +111,10 @@ void html_set_drag_type(html_content *html, html_drag_type drag_type,
  * \param selection_owner	What owns the selection
  * \param read_only		True iff selection is read only
  */
-void html_set_selection(html_content *html, html_selection_type selection_type,
-		union html_selection_owner selection_owner, bool read_only);
+void html_set_selection(html_content *html,
+			html_selection_type selection_type,
+			union html_selection_owner selection_owner,
+			bool read_only);
 
 
 /**
@@ -117,9 +129,14 @@ void html_set_selection(html_content *html, html_selection_type selection_type,
  * \param height		Carret height
  * \param clip			Carret clip rect
  */
-void html_set_focus(html_content *html, html_focus_type focus_type,
-		union html_focus_owner focus_owner, bool hide_caret,
-		int x, int y, int height, const struct rect *clip);
+void html_set_focus(html_content *html,
+		    html_focus_type focus_type,
+		    union html_focus_owner focus_owner,
+		    bool hide_caret,
+		    int x,
+		    int y,
+		    int height,
+		    const struct rect *clip);
 
 
 #endif

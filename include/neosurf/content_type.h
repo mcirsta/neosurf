@@ -37,7 +37,7 @@ enum content_debug {
 	/** Debug redraw operations. */
 	CONTENT_DEBUG_REDRAW,
 
-	//TODO, implement this in the UI
+	// TODO, implement this in the UI
 	/** Check for missing resources. */
 	CONTENT_DEBUG_MISSING
 };
@@ -56,34 +56,34 @@ enum content_encoding_type {
 /** The type of a content. */
 typedef enum {
 	/** no type for content */
-	CONTENT_NONE		= 0x00,
+	CONTENT_NONE = 0x00,
 
 	/** content is HTML */
-	CONTENT_HTML		= 0x01,
+	CONTENT_HTML = 0x01,
 
 	/** content is plain text */
-	CONTENT_TEXTPLAIN	= 0x02,
+	CONTENT_TEXTPLAIN = 0x02,
 
 	/** content is CSS */
-	CONTENT_CSS		= 0x04,
+	CONTENT_CSS = 0x04,
 
 	/** All images */
-	CONTENT_IMAGE		= 0x08,
+	CONTENT_IMAGE = 0x08,
 
 	/** Navigator API Plugins */
-	CONTENT_PLUGIN		= 0x10,
+	CONTENT_PLUGIN = 0x10,
 
 	/** RISC OS themes content */
-	CONTENT_THEME		= 0x20,
+	CONTENT_THEME = 0x20,
 
 	/** Javascript */
-	CONTENT_JS		= 0x40,
+	CONTENT_JS = 0x40,
 
 	/** All script types. */
-	CONTENT_SCRIPT		= 0x40,
+	CONTENT_SCRIPT = 0x40,
 
 	/** Any content matches */
-	CONTENT_ANY		= 0x7f
+	CONTENT_ANY = 0x7f
 } content_type;
 
 

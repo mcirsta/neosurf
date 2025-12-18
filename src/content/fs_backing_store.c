@@ -50,24 +50,24 @@
 #ifdef _WIN32
 static int open_file_binary(const char *fname, int flags, int mode)
 {
-    int fd;
-    if (flags & O_CREAT) {
-        fd = open(fname, flags, mode);
-    } else {
-        fd = open(fname, flags);
-    }
-    if (fd != -1) {
-        _setmode(fd, _O_BINARY);
-    }
-    return fd;
+	int fd;
+	if (flags & O_CREAT) {
+		fd = open(fname, flags, mode);
+	} else {
+		fd = open(fname, flags);
+	}
+	if (fd != -1) {
+		_setmode(fd, _O_BINARY);
+	}
+	return fd;
 }
 #else
 static int open_file_binary(const char *fname, int flags, int mode)
 {
-    if (flags & O_CREAT) {
-        return open(fname, flags, mode);
-    }
-    return open(fname, flags);
+	if (flags & O_CREAT) {
+		return open(fname, flags, mode);
+	}
+	return open(fname, flags);
 }
 #endif
 
@@ -140,7 +140,7 @@ typedef uint16_t block_index_t;
  */
 enum store_entry_elem_idx {
 	ENTRY_ELEM_DATA = 0, /**< entry element is data */
-	ENTRY_ELEM_META = 1,  /**< entry element is metadata */
+	ENTRY_ELEM_META = 1, /**< entry element is metadata */
 	ENTRY_ELEM_COUNT = 2, /**< count of elements on an entry */
 };
 
@@ -163,7 +163,8 @@ enum store_entry_elem_flags {
 enum store_entry_flags {
 	/** entry is normal */
 	ENTRY_FLAGS_NONE = 0,
-	/** entry has been invalidated but something still holding a reference */
+	/** entry has been invalidated but something still holding a reference
+	 */
 	ENTRY_FLAGS_INVALID = 1,
 };
 
@@ -179,7 +180,7 @@ enum store_entry_flags {
  * @note Order is important to avoid excessive structure packing overhead.
  */
 struct store_entry_element {
-	uint8_t* data; /**< data allocated */
+	uint8_t *data; /**< data allocated */
 	uint32_t size; /**< size of entry element on disc */
 	block_index_t block; /**< small object data block */
 	uint8_t ref; /**< element data reference count */
@@ -220,7 +221,7 @@ struct block_file {
  */
 static const unsigned int log2_block_size[ENTRY_ELEM_COUNT] = {
 	BLOCK_DATA_SIZE, /**< Data block size */
-	BLOCK_META_SIZE  /**< Metadata block size */
+	BLOCK_META_SIZE /**< Metadata block size */
 };
 
 /**
@@ -262,7 +263,6 @@ struct store_state {
 	size_t hit_count; /**< number of cache hits */
 	uint64_t hit_size; /**< size of storage served */
 	size_t miss_count; /**< number of cache misses */
-
 };
 
 /**
@@ -279,32 +279,27 @@ static bool entries_writing = false;
  * Our hashmap has nsurl keys and store_entry values
  */
 
-static bool
-entries_hashmap_key_eq(void *key1, void *key2)
+static bool entries_hashmap_key_eq(void *key1, void *key2)
 {
 	return nsurl_compare((nsurl *)key1, (nsurl *)key2, NSURL_COMPLETE);
 }
 
-static void *
-entries_hashmap_key_clone(void *key)
+static void *entries_hashmap_key_clone(void *key)
 {
 	return nsurl_ref((nsurl *)key);
 }
 
-static void
-entries_hashmap_key_destroy(void *key)
+static void entries_hashmap_key_destroy(void *key)
 {
 	nsurl_unref((nsurl *)key);
 }
 
-static uint32_t
-entries_hashmap_key_hash(void *key)
+static uint32_t entries_hashmap_key_hash(void *key)
 {
 	return nsurl_hash((nsurl *)key);
 }
 
-static void *
-entries_hashmap_value_alloc(void *key)
+static void *entries_hashmap_value_alloc(void *key)
 {
 	struct store_entry *ent = calloc(1, sizeof(struct store_entry));
 	if (ent != NULL) {
@@ -313,8 +308,7 @@ entries_hashmap_value_alloc(void *key)
 	return ent;
 }
 
-static void
-entries_hashmap_value_destroy(void *value)
+static void entries_hashmap_value_destroy(void *value)
 {
 	struct store_entry *ent = value;
 	/** \todo Do we need to do any disk cleanup here?  if so, meep! */
@@ -368,58 +362,54 @@ static hashmap_parameters_t entries_hashmap_parameters = {
  * @return The filename string or NULL on allocation error.
  */
 static char *
-store_fname(struct store_state *state,
-	    entry_ident_t ident,
-	    int elem_idx)
+store_fname(struct store_state *state, entry_ident_t ident, int elem_idx)
 {
 	char *fname = NULL;
 	uint8_t b32u_i[8]; /* base32 encoded ident */
 	const uint8_t *b32u_d[6]; /* base32 ident as separate components */
 
 	/* directories used to separate elements */
-	const char *base_dir_table[] = {
-		"d", "m", "dblk", "mblk"
-	};
+	const char *base_dir_table[] = {"d", "m", "dblk", "mblk"};
 
 	/* RFC4648 base32 encoding table (six bits) */
 	const uint8_t encoding_table[64][3] = {
-		{ 'A',   0, 0 }, { 'B',   0, 0 }, /*  0 */
-		{ 'C',   0, 0 }, { 'D',   0, 0 }, /*  2 */
-		{ 'E',   0, 0 }, { 'F',   0, 0 }, /*  4 */
-		{ 'G',   0, 0 }, { 'H',   0, 0 }, /*  6 */
-		{ 'I',   0, 0 }, { 'J',   0, 0 }, /*  8 */
-		{ 'K',   0, 0 }, { 'L',   0, 0 }, /* 10 */
-		{ 'M',   0, 0 }, { 'N',   0, 0 }, /* 12 */
-		{ 'O',   0, 0 }, { 'P',   0, 0 }, /* 14 */
-		{ 'Q',   0, 0 }, { 'R',   0, 0 }, /* 16 */
-		{ 'S',   0, 0 }, { 'T',   0, 0 }, /* 18 */
-		{ 'U',   0, 0 }, { 'V',   0, 0 }, /* 20 */
-		{ 'W',   0, 0 }, { 'X',   0, 0 }, /* 22 */
-		{ 'Y',   0, 0 }, { 'Z',   0, 0 }, /* 24 */
-		{ '2',   0, 0 }, { '3',   0, 0 }, /* 26 */
-		{ '4',   0, 0 }, { '5',   0, 0 }, /* 28 */
-		{ '6',   0, 0 }, { '7',   0, 0 }, /* 30 */
-		{ 'B', 'A', 0 }, { 'B', 'B', 0 }, /* 32 */
-		{ 'B', 'C', 0 }, { 'B', 'D', 0 }, /* 34 */
-		{ 'B', 'E', 0 }, { 'B', 'F', 0 }, /* 36 */
-		{ 'B', 'G', 0 }, { 'B', 'H', 0 }, /* 38 */
-		{ 'B', 'I', 0 }, { 'B', 'J', 0 }, /* 40 */
-		{ 'B', 'K', 0 }, { 'B', 'L', 0 }, /* 42 */
-		{ 'B', 'M', 0 }, { 'B', 'N', 0 }, /* 44 */
-		{ 'B', 'O', 0 }, { 'B', 'P', 0 }, /* 46 */
-		{ 'B', 'Q', 0 }, { 'B', 'R', 0 }, /* 48 */
-		{ 'B', 'S', 0 }, { 'B', 'T', 0 }, /* 50 */
-		{ 'B', 'U', 0 }, { 'B', 'V', 0 }, /* 52 */
-		{ 'B', 'W', 0 }, { 'B', 'X', 0 }, /* 54 */
-		{ 'B', 'Y', 0 }, { 'B', 'Z', 0 }, /* 56 */
-		{ 'B', '2', 0 }, { 'B', '3', 0 }, /* 58 */
-		{ 'B', '4', 0 }, { 'B', '5', 0 }, /* 60 */
-		{ 'B', '6', 0 }, { 'B', '7', 0 }  /* 62 */
+		{'A', 0, 0},   {'B', 0, 0}, /*  0 */
+		{'C', 0, 0},   {'D', 0, 0}, /*  2 */
+		{'E', 0, 0},   {'F', 0, 0}, /*  4 */
+		{'G', 0, 0},   {'H', 0, 0}, /*  6 */
+		{'I', 0, 0},   {'J', 0, 0}, /*  8 */
+		{'K', 0, 0},   {'L', 0, 0}, /* 10 */
+		{'M', 0, 0},   {'N', 0, 0}, /* 12 */
+		{'O', 0, 0},   {'P', 0, 0}, /* 14 */
+		{'Q', 0, 0},   {'R', 0, 0}, /* 16 */
+		{'S', 0, 0},   {'T', 0, 0}, /* 18 */
+		{'U', 0, 0},   {'V', 0, 0}, /* 20 */
+		{'W', 0, 0},   {'X', 0, 0}, /* 22 */
+		{'Y', 0, 0},   {'Z', 0, 0}, /* 24 */
+		{'2', 0, 0},   {'3', 0, 0}, /* 26 */
+		{'4', 0, 0},   {'5', 0, 0}, /* 28 */
+		{'6', 0, 0},   {'7', 0, 0}, /* 30 */
+		{'B', 'A', 0}, {'B', 'B', 0}, /* 32 */
+		{'B', 'C', 0}, {'B', 'D', 0}, /* 34 */
+		{'B', 'E', 0}, {'B', 'F', 0}, /* 36 */
+		{'B', 'G', 0}, {'B', 'H', 0}, /* 38 */
+		{'B', 'I', 0}, {'B', 'J', 0}, /* 40 */
+		{'B', 'K', 0}, {'B', 'L', 0}, /* 42 */
+		{'B', 'M', 0}, {'B', 'N', 0}, /* 44 */
+		{'B', 'O', 0}, {'B', 'P', 0}, /* 46 */
+		{'B', 'Q', 0}, {'B', 'R', 0}, /* 48 */
+		{'B', 'S', 0}, {'B', 'T', 0}, /* 50 */
+		{'B', 'U', 0}, {'B', 'V', 0}, /* 52 */
+		{'B', 'W', 0}, {'B', 'X', 0}, /* 54 */
+		{'B', 'Y', 0}, {'B', 'Z', 0}, /* 56 */
+		{'B', '2', 0}, {'B', '3', 0}, /* 58 */
+		{'B', '4', 0}, {'B', '5', 0}, /* 60 */
+		{'B', '6', 0}, {'B', '7', 0} /* 62 */
 	};
 
 	/* base32 encode ident */
-	b32u_i[0] = encoding_table[(ident      ) & 0x1f][0];
-	b32u_i[1] = encoding_table[(ident >>  5) & 0x1f][0];
+	b32u_i[0] = encoding_table[(ident) & 0x1f][0];
+	b32u_i[1] = encoding_table[(ident >> 5) & 0x1f][0];
 	b32u_i[2] = encoding_table[(ident >> 10) & 0x1f][0];
 	b32u_i[3] = encoding_table[(ident >> 15) & 0x1f][0];
 	b32u_i[4] = encoding_table[(ident >> 20) & 0x1f][0];
@@ -428,9 +418,9 @@ store_fname(struct store_state *state,
 	b32u_i[7] = 0; /* null terminate ident string */
 
 	/* base32 encode directory separators */
-	b32u_d[0] = (uint8_t*)base_dir_table[elem_idx];
-	b32u_d[1] = &encoding_table[(ident      ) & 0x3f][0];
-	b32u_d[2] = &encoding_table[(ident >>  6) & 0x3f][0];
+	b32u_d[0] = (uint8_t *)base_dir_table[elem_idx];
+	b32u_d[1] = &encoding_table[(ident) & 0x3f][0];
+	b32u_d[2] = &encoding_table[(ident >> 6) & 0x3f][0];
 	b32u_d[3] = &encoding_table[(ident >> 12) & 0x3f][0];
 	b32u_d[4] = &encoding_table[(ident >> 18) & 0x3f][0];
 	b32u_d[5] = &encoding_table[(ident >> 24) & 0x3f][0];
@@ -438,15 +428,23 @@ store_fname(struct store_state *state,
 	switch (elem_idx) {
 	case ENTRY_ELEM_DATA:
 	case ENTRY_ELEM_META:
-		neosurf_mkpath(&fname, NULL, 8,
-			       state->path, b32u_d[0], b32u_d[1], b32u_d[2],
-			       b32u_d[3], b32u_d[4], b32u_d[5], b32u_i);
+		neosurf_mkpath(&fname,
+			       NULL,
+			       8,
+			       state->path,
+			       b32u_d[0],
+			       b32u_d[1],
+			       b32u_d[2],
+			       b32u_d[3],
+			       b32u_d[4],
+			       b32u_d[5],
+			       b32u_i);
 		break;
 
 	case (ENTRY_ELEM_COUNT + ENTRY_ELEM_META):
 	case (ENTRY_ELEM_COUNT + ENTRY_ELEM_DATA):
-		neosurf_mkpath(&fname, NULL, 3,
-			       state->path, b32u_d[0], b32u_d[1]);
+		neosurf_mkpath(
+			&fname, NULL, 3, state->path, b32u_d[0], b32u_d[1]);
 		break;
 
 	default:
@@ -465,10 +463,9 @@ store_fname(struct store_state *state,
  * @param elem_idx The element index to invalidate.
  * @return NSERROR_OK on success or error code on failure.
  */
-static nserror
-invalidate_element(struct store_state *state,
-		   struct store_entry *bse,
-		   int elem_idx)
+static nserror invalidate_element(struct store_state *state,
+				  struct store_entry *bse,
+				  int elem_idx)
 {
 	if (bse->elem[elem_idx].block != 0) {
 		block_index_t bf;
@@ -476,13 +473,15 @@ invalidate_element(struct store_state *state,
 
 		/* block file block resides in */
 		bf = (bse->elem[elem_idx].block >> BLOCK_ENTRY_COUNT) &
-			((1 << BLOCK_FILE_COUNT) - 1);
+		     ((1 << BLOCK_FILE_COUNT) - 1);
 
 		/* block index in file */
-		bi = bse->elem[elem_idx].block & ((1U << BLOCK_ENTRY_COUNT) -1);
+		bi = bse->elem[elem_idx].block &
+		     ((1U << BLOCK_ENTRY_COUNT) - 1);
 
 		/* clear bit in use map */
-		state->blocks[elem_idx][bf].use_map[bi >> 3] &= ~(1U << (bi & 7));
+		state->blocks[elem_idx][bf].use_map[bi >> 3] &= ~(1U
+								  << (bi & 7));
 	} else {
 		char *fname;
 
@@ -517,19 +516,23 @@ invalidate_entry(struct store_state *state, struct store_entry *bse)
 
 	/* check if the entry has storage already allocated */
 	if (((bse->elem[ENTRY_ELEM_DATA].flags &
-	     (ENTRY_ELEM_FLAG_HEAP | ENTRY_ELEM_FLAG_MMAP)) != 0) ||
+	      (ENTRY_ELEM_FLAG_HEAP | ENTRY_ELEM_FLAG_MMAP)) != 0) ||
 	    ((bse->elem[ENTRY_ELEM_META].flags &
 	      (ENTRY_ELEM_FLAG_HEAP | ENTRY_ELEM_FLAG_MMAP)) != 0)) {
 		/*
 		 * This entry cannot be immediately removed as it has
 		 * associated allocation so wait for allocation release.
 		 */
-		NSLOG(neosurf, DEBUG,
+		NSLOG(neosurf,
+		      DEBUG,
 		      "invalidating entry with referenced allocation");
 		return NSERROR_OK;
 	}
 
-	NSLOG(neosurf, VERBOSE, "Removing entry for %s", nsurl_access(bse->url));
+	NSLOG(neosurf,
+	      VERBOSE,
+	      "Removing entry for %s",
+	      nsurl_access(bse->url));
 
 	ret = invalidate_element(state, bse, ENTRY_ELEM_META);
 	if (ret != NSERROR_OK) {
@@ -602,8 +605,7 @@ typedef struct {
 /**
  * Iterator for gathering entries to compute eviction order
  */
-static bool
-entry_eviction_iterator_cb(void *key, void *value, void *ctx)
+static bool entry_eviction_iterator_cb(void *key, void *value, void *ctx)
 {
 	eviction_state_t *estate = ctx;
 	struct store_entry *ent = value;
@@ -639,32 +641,41 @@ static nserror store_evict(struct store_state *state)
 		return NSERROR_OK;
 	}
 
-	NSLOG(neosurf, INFO,
-	      "Evicting entries to reduce %"PRIu64" by %"PRIsizet,
+	NSLOG(neosurf,
+	      INFO,
+	      "Evicting entries to reduce %" PRIu64 " by %" PRIsizet,
 	      state->total_alloc,
 	      state->hysteresis);
 
 	/* allocate storage for the list */
 	old_count = hashmap_count(state->entries);
 	estate.ent_count = 0;
-	estate.elist = malloc(sizeof(struct state_entry*) * old_count);
+	estate.elist = malloc(sizeof(struct state_entry *) * old_count);
 	if (estate.elist == NULL) {
 		return NSERROR_NOMEM;
 	}
 
-	if (hashmap_iterate(state->entries, entry_eviction_iterator_cb, &estate)) {
-		NSLOG(neosurf, WARNING, "Unexpected termination of eviction iterator");
+	if (hashmap_iterate(
+		    state->entries, entry_eviction_iterator_cb, &estate)) {
+		NSLOG(neosurf,
+		      WARNING,
+		      "Unexpected termination of eviction iterator");
 		free(estate.elist);
 		return NSERROR_UNKNOWN;
 	}
 
 	if (old_count != estate.ent_count) {
-		NSLOG(neosurf, WARNING, "Incorrect entry count after eviction iterator");
+		NSLOG(neosurf,
+		      WARNING,
+		      "Incorrect entry count after eviction iterator");
 		free(estate.elist);
 		return NSERROR_UNKNOWN;
 	}
 
-	qsort(estate.elist, estate.ent_count, sizeof(struct state_entry*), compar);
+	qsort(estate.elist,
+	      estate.ent_count,
+	      sizeof(struct state_entry *),
+	      compar);
 
 	/* evict entries in listed order */
 	removed = 0;
@@ -686,9 +697,14 @@ static nserror store_evict(struct store_state *state)
 
 	free(estate.elist);
 
-	NSLOG(neosurf, INFO,
-	      "removed %"PRIsizet" in %"PRIsizet" entries, %"PRIu64" remaining in %"PRIsizet" entries",
-	      removed, ent, state->total_alloc, old_count - ent);
+	NSLOG(neosurf,
+	      INFO,
+	      "removed %" PRIsizet " in %" PRIsizet " entries, %" PRIu64
+	      " remaining in %" PRIsizet " entries",
+	      removed,
+	      ent,
+	      state->total_alloc,
+	      old_count - ent);
 
 	return ret;
 }
@@ -701,214 +717,295 @@ static nserror store_evict(struct store_state *state)
  * Then we write out the full store entry struct as-is, which includes
  * a useless nsurl pointer.
  */
-static nserror
-write_entry(struct store_entry *ent, int fd)
+static nserror write_entry(struct store_entry *ent, int fd)
 {
-    uint32_t len = strlen(nsurl_access(ent->url));
-    if (write(fd, &len, sizeof(len)) != sizeof(len))
-        return NSERROR_SAVE_FAILED;
-    if (write(fd, nsurl_access(ent->url), len) != (ssize_t)len)
-        return NSERROR_SAVE_FAILED;
-    if (write(fd, &ent->last_used, sizeof(ent->last_used)) != sizeof(ent->last_used))
-        return NSERROR_SAVE_FAILED;
-    if (write(fd, &ent->use_count, sizeof(ent->use_count)) != sizeof(ent->use_count))
-        return NSERROR_SAVE_FAILED;
-    if (write(fd, &ent->flags, sizeof(ent->flags)) != sizeof(ent->flags))
-        return NSERROR_SAVE_FAILED;
-    for (int i = 0; i < ENTRY_ELEM_COUNT; i++) {
-        if (write(fd, &ent->elem[i].size, sizeof(ent->elem[i].size)) != sizeof(ent->elem[i].size))
-            return NSERROR_SAVE_FAILED;
-        if (write(fd, &ent->elem[i].block, sizeof(ent->elem[i].block)) != sizeof(ent->elem[i].block))
-            return NSERROR_SAVE_FAILED;
-        if (write(fd, &ent->elem[i].flags, sizeof(ent->elem[i].flags)) != sizeof(ent->elem[i].flags))
-            return NSERROR_SAVE_FAILED;
-    }
-    return NSERROR_OK;
+	uint32_t len = strlen(nsurl_access(ent->url));
+	if (write(fd, &len, sizeof(len)) != sizeof(len))
+		return NSERROR_SAVE_FAILED;
+	if (write(fd, nsurl_access(ent->url), len) != (ssize_t)len)
+		return NSERROR_SAVE_FAILED;
+	if (write(fd, &ent->last_used, sizeof(ent->last_used)) !=
+	    sizeof(ent->last_used))
+		return NSERROR_SAVE_FAILED;
+	if (write(fd, &ent->use_count, sizeof(ent->use_count)) !=
+	    sizeof(ent->use_count))
+		return NSERROR_SAVE_FAILED;
+	if (write(fd, &ent->flags, sizeof(ent->flags)) != sizeof(ent->flags))
+		return NSERROR_SAVE_FAILED;
+	for (int i = 0; i < ENTRY_ELEM_COUNT; i++) {
+		if (write(fd, &ent->elem[i].size, sizeof(ent->elem[i].size)) !=
+		    sizeof(ent->elem[i].size))
+			return NSERROR_SAVE_FAILED;
+		if (write(fd,
+			  &ent->elem[i].block,
+			  sizeof(ent->elem[i].block)) !=
+		    sizeof(ent->elem[i].block))
+			return NSERROR_SAVE_FAILED;
+		if (write(fd,
+			  &ent->elem[i].flags,
+			  sizeof(ent->elem[i].flags)) !=
+		    sizeof(ent->elem[i].flags))
+			return NSERROR_SAVE_FAILED;
+	}
+	return NSERROR_OK;
 }
 
 static void validate_entries_after_write(struct store_state *state)
 {
-    char *fname = NULL;
-    nserror ret = neosurf_mkpath(&fname, NULL, 2, state->path, ENTRIES_FNAME);
-    if (ret != NSERROR_OK) {
-        return;
-    }
-    int fd = open_file_binary(fname, O_RDONLY, 0);
-    if (fd == -1) {
-        free(fname);
-        return;
-    }
-    size_t count = 0;
-    bool truncated = false;
-    char magic[4];
-    uint32_t ver;
-    ssize_t hdr = read(fd, magic, 4);
-    if (hdr == 4 && memcmp(magic, "ENTR", 4) == 0) {
-        if (read(fd, &ver, sizeof(ver)) != sizeof(ver)) {
-            truncated = true;
-            goto vd_done;
-        }
-        if (ver == 2) {
-            uint32_t expected = 0;
-            if (read(fd, &expected, sizeof(expected)) != sizeof(expected)) {
-                truncated = true;
-                goto vd_done;
-            }
-            for (uint32_t i = 0; i < expected; i++) {
-                uint32_t urllen;
-                if (read(fd, &urllen, sizeof(urllen)) != sizeof(urllen)) {
-                    truncated = true;
-                    break;
-                }
-                char *url = calloc(1, urllen + 1);
-                if (url == NULL) { truncated = true; break; }
-                ssize_t got = read(fd, url, urllen);
-                if (got != (ssize_t)urllen) {
-                    struct stat st;
-                    off_t off = lseek(fd, 0, SEEK_CUR);
-                    fstat(fd, &st);
-                    NSLOG(neosurf, ERROR, "validate entries: short read for URL length %u (got %"PRIssizet") at off %lld of size %lld errno %d",
-                          urllen,
-                          got,
-                          (long long)off,
-                          (long long)st.st_size,
-                          errno);
-                    free(url);
-                    truncated = true;
-                    break;
-                }
-                nsurl *nsurl;
-                ret = nsurl_create(url, &nsurl);
-                free(url);
-                if (ret != NSERROR_OK) {
-                    struct stat st;
-                    off_t off = lseek(fd, 0, SEEK_CUR);
-                    fstat(fd, &st);
-                    NSLOG(neosurf, ERROR, "validate entries: invalid URL at off %lld of size %lld",
-                          (long long)off,
-                          (long long)st.st_size);
-                    truncated = true;
-                    break;
-                }
-                nsurl_unref(nsurl);
-                int64_t last_used;
-                uint16_t use_count;
-                uint8_t flags;
-                if (read(fd, &last_used, sizeof(last_used)) != sizeof(last_used)) { truncated = true; break; }
-                if (read(fd, &use_count, sizeof(use_count)) != sizeof(use_count)) { truncated = true; break; }
-                if (read(fd, &flags, sizeof(flags)) != sizeof(flags)) { truncated = true; break; }
-                for (int j = 0; j < ENTRY_ELEM_COUNT; j++) {
-                    uint32_t sz;
-                    block_index_t blk;
-                    uint8_t efl;
-                    if (read(fd, &sz, sizeof(sz)) != sizeof(sz)) { truncated = true; goto vd_done; }
-                    if (read(fd, &blk, sizeof(blk)) != sizeof(blk)) { truncated = true; goto vd_done; }
-                    if (read(fd, &efl, sizeof(efl)) != sizeof(efl)) { truncated = true; goto vd_done; }
-                }
-                count++;
-            }
-            if (count != expected) {
-                truncated = true;
-            }
-        } else if (ver == 1) {
-            for (;;) {
-                uint32_t urllen;
-                ssize_t r = read(fd, &urllen, sizeof(urllen));
-                if (r != sizeof(urllen)) {
-                    break;
-                }
-                char *url = calloc(1, urllen + 1);
-                if (url == NULL) { truncated = true; break; }
-                ssize_t got = read(fd, url, urllen);
-                if (got != (ssize_t)urllen) {
-                    struct stat st;
-                    off_t off = lseek(fd, 0, SEEK_CUR);
-                    fstat(fd, &st);
-                    NSLOG(neosurf, ERROR, "validate entries: short read for URL length %u (got %"PRIssizet") at off %lld of size %lld errno %d",
-                          urllen,
-                          got,
-                          (long long)off,
-                          (long long)st.st_size,
-                          errno);
-                    free(url);
-                    truncated = true;
-                    break;
-                }
-                nsurl *nsurl;
-                ret = nsurl_create(url, &nsurl);
-                free(url);
-                if (ret != NSERROR_OK) {
-                    struct stat st;
-                    off_t off = lseek(fd, 0, SEEK_CUR);
-                    fstat(fd, &st);
-                    NSLOG(neosurf, ERROR, "validate entries: invalid URL at off %lld of size %lld",
-                          (long long)off,
-                          (long long)st.st_size);
-                    truncated = true;
-                    break;
-                }
-                nsurl_unref(nsurl);
-                int64_t last_used;
-                uint16_t use_count;
-                uint8_t flags;
-                if (read(fd, &last_used, sizeof(last_used)) != sizeof(last_used)) { truncated = true; break; }
-                if (read(fd, &use_count, sizeof(use_count)) != sizeof(use_count)) { truncated = true; break; }
-                if (read(fd, &flags, sizeof(flags)) != sizeof(flags)) { truncated = true; break; }
-                for (int i = 0; i < ENTRY_ELEM_COUNT; i++) {
-                    uint32_t sz;
-                    block_index_t blk;
-                    uint8_t efl;
-                    if (read(fd, &sz, sizeof(sz)) != sizeof(sz)) { truncated = true; goto vd_done; }
-                    if (read(fd, &blk, sizeof(blk)) != sizeof(blk)) { truncated = true; goto vd_done; }
-                    if (read(fd, &efl, sizeof(efl)) != sizeof(efl)) { truncated = true; goto vd_done; }
-                }
-                count++;
-            }
-        } else {
-            truncated = true;
-        }
-    } else {
-        truncated = true;
-    }
+	char *fname = NULL;
+	nserror ret = neosurf_mkpath(
+		&fname, NULL, 2, state->path, ENTRIES_FNAME);
+	if (ret != NSERROR_OK) {
+		return;
+	}
+	int fd = open_file_binary(fname, O_RDONLY, 0);
+	if (fd == -1) {
+		free(fname);
+		return;
+	}
+	size_t count = 0;
+	bool truncated = false;
+	char magic[4];
+	uint32_t ver;
+	ssize_t hdr = read(fd, magic, 4);
+	if (hdr == 4 && memcmp(magic, "ENTR", 4) == 0) {
+		if (read(fd, &ver, sizeof(ver)) != sizeof(ver)) {
+			truncated = true;
+			goto vd_done;
+		}
+		if (ver == 2) {
+			uint32_t expected = 0;
+			if (read(fd, &expected, sizeof(expected)) !=
+			    sizeof(expected)) {
+				truncated = true;
+				goto vd_done;
+			}
+			for (uint32_t i = 0; i < expected; i++) {
+				uint32_t urllen;
+				if (read(fd, &urllen, sizeof(urllen)) !=
+				    sizeof(urllen)) {
+					truncated = true;
+					break;
+				}
+				char *url = calloc(1, urllen + 1);
+				if (url == NULL) {
+					truncated = true;
+					break;
+				}
+				ssize_t got = read(fd, url, urllen);
+				if (got != (ssize_t)urllen) {
+					struct stat st;
+					off_t off = lseek(fd, 0, SEEK_CUR);
+					fstat(fd, &st);
+					NSLOG(neosurf,
+					      ERROR,
+					      "validate entries: short read for URL length %u (got %" PRIssizet
+					      ") at off %lld of size %lld errno %d",
+					      urllen,
+					      got,
+					      (long long)off,
+					      (long long)st.st_size,
+					      errno);
+					free(url);
+					truncated = true;
+					break;
+				}
+				nsurl *nsurl;
+				ret = nsurl_create(url, &nsurl);
+				free(url);
+				if (ret != NSERROR_OK) {
+					struct stat st;
+					off_t off = lseek(fd, 0, SEEK_CUR);
+					fstat(fd, &st);
+					NSLOG(neosurf,
+					      ERROR,
+					      "validate entries: invalid URL at off %lld of size %lld",
+					      (long long)off,
+					      (long long)st.st_size);
+					truncated = true;
+					break;
+				}
+				nsurl_unref(nsurl);
+				int64_t last_used;
+				uint16_t use_count;
+				uint8_t flags;
+				if (read(fd, &last_used, sizeof(last_used)) !=
+				    sizeof(last_used)) {
+					truncated = true;
+					break;
+				}
+				if (read(fd, &use_count, sizeof(use_count)) !=
+				    sizeof(use_count)) {
+					truncated = true;
+					break;
+				}
+				if (read(fd, &flags, sizeof(flags)) !=
+				    sizeof(flags)) {
+					truncated = true;
+					break;
+				}
+				for (int j = 0; j < ENTRY_ELEM_COUNT; j++) {
+					uint32_t sz;
+					block_index_t blk;
+					uint8_t efl;
+					if (read(fd, &sz, sizeof(sz)) !=
+					    sizeof(sz)) {
+						truncated = true;
+						goto vd_done;
+					}
+					if (read(fd, &blk, sizeof(blk)) !=
+					    sizeof(blk)) {
+						truncated = true;
+						goto vd_done;
+					}
+					if (read(fd, &efl, sizeof(efl)) !=
+					    sizeof(efl)) {
+						truncated = true;
+						goto vd_done;
+					}
+				}
+				count++;
+			}
+			if (count != expected) {
+				truncated = true;
+			}
+		} else if (ver == 1) {
+			for (;;) {
+				uint32_t urllen;
+				ssize_t r = read(fd, &urllen, sizeof(urllen));
+				if (r != sizeof(urllen)) {
+					break;
+				}
+				char *url = calloc(1, urllen + 1);
+				if (url == NULL) {
+					truncated = true;
+					break;
+				}
+				ssize_t got = read(fd, url, urllen);
+				if (got != (ssize_t)urllen) {
+					struct stat st;
+					off_t off = lseek(fd, 0, SEEK_CUR);
+					fstat(fd, &st);
+					NSLOG(neosurf,
+					      ERROR,
+					      "validate entries: short read for URL length %u (got %" PRIssizet
+					      ") at off %lld of size %lld errno %d",
+					      urllen,
+					      got,
+					      (long long)off,
+					      (long long)st.st_size,
+					      errno);
+					free(url);
+					truncated = true;
+					break;
+				}
+				nsurl *nsurl;
+				ret = nsurl_create(url, &nsurl);
+				free(url);
+				if (ret != NSERROR_OK) {
+					struct stat st;
+					off_t off = lseek(fd, 0, SEEK_CUR);
+					fstat(fd, &st);
+					NSLOG(neosurf,
+					      ERROR,
+					      "validate entries: invalid URL at off %lld of size %lld",
+					      (long long)off,
+					      (long long)st.st_size);
+					truncated = true;
+					break;
+				}
+				nsurl_unref(nsurl);
+				int64_t last_used;
+				uint16_t use_count;
+				uint8_t flags;
+				if (read(fd, &last_used, sizeof(last_used)) !=
+				    sizeof(last_used)) {
+					truncated = true;
+					break;
+				}
+				if (read(fd, &use_count, sizeof(use_count)) !=
+				    sizeof(use_count)) {
+					truncated = true;
+					break;
+				}
+				if (read(fd, &flags, sizeof(flags)) !=
+				    sizeof(flags)) {
+					truncated = true;
+					break;
+				}
+				for (int i = 0; i < ENTRY_ELEM_COUNT; i++) {
+					uint32_t sz;
+					block_index_t blk;
+					uint8_t efl;
+					if (read(fd, &sz, sizeof(sz)) !=
+					    sizeof(sz)) {
+						truncated = true;
+						goto vd_done;
+					}
+					if (read(fd, &blk, sizeof(blk)) !=
+					    sizeof(blk)) {
+						truncated = true;
+						goto vd_done;
+					}
+					if (read(fd, &efl, sizeof(efl)) !=
+					    sizeof(efl)) {
+						truncated = true;
+						goto vd_done;
+					}
+				}
+				count++;
+			}
+		} else {
+			truncated = true;
+		}
+	} else {
+		truncated = true;
+	}
 vd_done:
-    close(fd);
-    NSLOG(neosurf, INFO, "validate entries: read %"PRIsizet" entries%s",
-          count,
-          truncated ? " (truncated)" : "");
-    if (truncated) {
-        state->entries_dirty = true;
-        guit->misc->schedule(CONTROL_MAINT_TIME, control_maintenance, state);
-    }
-    free(fname);
+	close(fd);
+	NSLOG(neosurf,
+	      INFO,
+	      "validate entries: read %" PRIsizet " entries%s",
+	      count,
+	      truncated ? " (truncated)" : "");
+	if (truncated) {
+		state->entries_dirty = true;
+		guit->misc->schedule(CONTROL_MAINT_TIME,
+				     control_maintenance,
+				     state);
+	}
+	free(fname);
 }
 
 typedef struct {
-    int fd;
-    size_t written;
-    size_t expected_bytes;
+	int fd;
+	size_t written;
+	size_t expected_bytes;
 } write_entry_iteration_state;
 
 /**
  * Callback for iterating the entries hashmap
  */
-static bool
-write_entry_iterator(void *key, void *value, void *ctx)
+static bool write_entry_iterator(void *key, void *value, void *ctx)
 {
-    /* We ignore the key */
-    struct store_entry *ent = value;
-    write_entry_iteration_state *state = ctx;
-    state->written++;
-    {
-        size_t url_len = strlen(nsurl_access(ent->url));
-        state->expected_bytes += sizeof(uint32_t);
-        state->expected_bytes += url_len;
-        state->expected_bytes += sizeof(int64_t);
-        state->expected_bytes += sizeof(uint16_t);
-        state->expected_bytes += sizeof(uint8_t);
-        state->expected_bytes += ENTRY_ELEM_COUNT * (sizeof(uint32_t) + sizeof(block_index_t) + sizeof(uint8_t));
-    }
-    /* We stop early if we fail to write this entry */
-    return write_entry(ent, state->fd) != NSERROR_OK;
+	/* We ignore the key */
+	struct store_entry *ent = value;
+	write_entry_iteration_state *state = ctx;
+	state->written++;
+	{
+		size_t url_len = strlen(nsurl_access(ent->url));
+		state->expected_bytes += sizeof(uint32_t);
+		state->expected_bytes += url_len;
+		state->expected_bytes += sizeof(int64_t);
+		state->expected_bytes += sizeof(uint16_t);
+		state->expected_bytes += sizeof(uint8_t);
+		state->expected_bytes += ENTRY_ELEM_COUNT *
+					 (sizeof(uint32_t) +
+					  sizeof(block_index_t) +
+					  sizeof(uint8_t));
+	}
+	/* We stop early if we fail to write this entry */
+	return write_entry(ent, state->fd) != NSERROR_OK;
 }
 
 /**
@@ -921,131 +1018,155 @@ write_entry_iterator(void *key, void *value, void *ctx)
  */
 static nserror write_entries(struct store_state *state)
 {
-    char *fname = NULL; /* target filename */
-    write_entry_iteration_state weistate;
-    nserror ret;
+	char *fname = NULL; /* target filename */
+	write_entry_iteration_state weistate;
+	nserror ret;
 
-    memset(&weistate, 0, sizeof(weistate));
+	memset(&weistate, 0, sizeof(weistate));
 
 	if (state->entries_dirty == false) {
 		/* entries have not been updated since last write */
 		return NSERROR_OK;
 	}
 
-    if (entries_writing) {
-        return NSERROR_OK;
-    }
+	if (entries_writing) {
+		return NSERROR_OK;
+	}
 
-    ret = neosurf_mkpath(&fname, NULL, 2, state->path, ENTRIES_FNAME);
-    if (ret != NSERROR_OK) {
-        return ret;
-    }
-    if (neosurf_mkdir_all(fname) != NSERROR_OK) {
-        free(fname);
-        return NSERROR_SAVE_FAILED;
-    }
+	ret = neosurf_mkpath(&fname, NULL, 2, state->path, ENTRIES_FNAME);
+	if (ret != NSERROR_OK) {
+		return ret;
+	}
+	if (neosurf_mkdir_all(fname) != NSERROR_OK) {
+		free(fname);
+		return NSERROR_SAVE_FAILED;
+	}
 
-    weistate.fd = open_file_binary(fname, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
-    if (weistate.fd == -1) {
-        free(fname);
-        return NSERROR_SAVE_FAILED;
-    }
-    entries_writing = true;
+	weistate.fd = open_file_binary(fname,
+				       O_RDWR | O_CREAT | O_TRUNC,
+				       S_IRUSR | S_IWUSR);
+	if (weistate.fd == -1) {
+		free(fname);
+		return NSERROR_SAVE_FAILED;
+	}
+	entries_writing = true;
 
-    {
-        char magic[4] = { 'E', 'N', 'T', 'R' };
-        uint32_t ver = 2;
-        if (write(weistate.fd, magic, 4) != 4) {
-            flush_fd(weistate.fd);
-            close(weistate.fd);
-            unlink(fname);
-            free(fname);
-            entries_writing = false;
-            return NSERROR_SAVE_FAILED;
-        }
-        if (write(weistate.fd, &ver, sizeof(ver)) != sizeof(ver)) {
-            close(weistate.fd);
-            unlink(fname);
-            free(fname);
-            entries_writing = false;
-            return NSERROR_SAVE_FAILED;
-        }
-        weistate.expected_bytes += sizeof(magic);
-        weistate.expected_bytes += sizeof(ver);
-        {
-            uint32_t count = hashmap_count(state->entries);
-            if (write(weistate.fd, &count, sizeof(count)) != sizeof(count)) {
-                close(weistate.fd);
-                unlink(fname);
-                free(fname);
-                entries_writing = false;
-                return NSERROR_SAVE_FAILED;
-            }
-            weistate.expected_bytes += sizeof(count);
-        }
-    }
+	{
+		char magic[4] = {'E', 'N', 'T', 'R'};
+		uint32_t ver = 2;
+		if (write(weistate.fd, magic, 4) != 4) {
+			flush_fd(weistate.fd);
+			close(weistate.fd);
+			unlink(fname);
+			free(fname);
+			entries_writing = false;
+			return NSERROR_SAVE_FAILED;
+		}
+		if (write(weistate.fd, &ver, sizeof(ver)) != sizeof(ver)) {
+			close(weistate.fd);
+			unlink(fname);
+			free(fname);
+			entries_writing = false;
+			return NSERROR_SAVE_FAILED;
+		}
+		weistate.expected_bytes += sizeof(magic);
+		weistate.expected_bytes += sizeof(ver);
+		{
+			uint32_t count = hashmap_count(state->entries);
+			if (write(weistate.fd, &count, sizeof(count)) !=
+			    sizeof(count)) {
+				close(weistate.fd);
+				unlink(fname);
+				free(fname);
+				entries_writing = false;
+				return NSERROR_SAVE_FAILED;
+			}
+			weistate.expected_bytes += sizeof(count);
+		}
+	}
 
 	if (hashmap_iterate(state->entries, write_entry_iterator, &weistate)) {
 		/* The iteration ended early, so we failed */
-    {
-        off_t bytes = lseek(weistate.fd, 0, SEEK_END);
-        flush_fd(weistate.fd);
-        close(weistate.fd);
-        NSLOG(neosurf, INFO, "write_entries: final size %lld bytes", (long long)bytes);
-    }
-        unlink(fname);
-        free(fname);
-        entries_writing = false;
-        return NSERROR_SAVE_FAILED;
-    }
+		{
+			off_t bytes = lseek(weistate.fd, 0, SEEK_END);
+			flush_fd(weistate.fd);
+			close(weistate.fd);
+			NSLOG(neosurf,
+			      INFO,
+			      "write_entries: final size %lld bytes",
+			      (long long)bytes);
+		}
+		unlink(fname);
+		free(fname);
+		entries_writing = false;
+		return NSERROR_SAVE_FAILED;
+	}
 
-    {
-        off_t bytes = lseek(weistate.fd, 0, SEEK_END);
-        flush_fd(weistate.fd);
-        close(weistate.fd);
-        NSLOG(neosurf, INFO, "write_entries: expected %"PRId64" bytes, final size %"PRId64" bytes",
-              (int64_t)weistate.expected_bytes,
-              (int64_t)bytes);
-    }
+	{
+		off_t bytes = lseek(weistate.fd, 0, SEEK_END);
+		flush_fd(weistate.fd);
+		close(weistate.fd);
+		NSLOG(neosurf,
+		      INFO,
+		      "write_entries: expected %" PRId64
+		      " bytes, final size %" PRId64 " bytes",
+		      (int64_t)weistate.expected_bytes,
+		      (int64_t)bytes);
+	}
 
-    NSLOG(neosurf, INFO, "Wrote out %"PRIsizet" entries (format v2)", weistate.written);
+	NSLOG(neosurf,
+	      INFO,
+	      "Wrote out %" PRIsizet " entries (format v2)",
+	      weistate.written);
 
-    /* entries successfully persisted */
-    state->entries_dirty = false;
+	/* entries successfully persisted */
+	state->entries_dirty = false;
 
-    validate_entries_after_write(state);
-    entries_writing = false;
+	validate_entries_after_write(state);
+	entries_writing = false;
 
-    free(fname);
-    return NSERROR_OK;
+	free(fname);
+	return NSERROR_OK;
 }
 
 #ifdef _WIN32
 static int durable_rename(const char *src, const char *dst)
 {
-    if (MoveFileExA(src, dst, MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH) == 0) {
-        return -1;
-    }
-    /* Flush destination directory metadata */
-    char *dir = _strdup(dst);
-    if (dir != NULL) {
-        for (size_t i = strlen(dir); i > 0; i--) {
-            if (dir[i-1] == '/' || dir[i-1] == '\\') { dir[i-1] = '\0'; break; }
-        }
-        HANDLE dh = CreateFileA(dir, GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
-                                NULL, OPEN_EXISTING, FILE_FLAG_BACKUP_SEMANTICS, NULL);
-        if (dh != INVALID_HANDLE_VALUE) {
-            (void)FlushFileBuffers(dh);
-            CloseHandle(dh);
-        }
-        free(dir);
-    }
-    return 0;
+	if (MoveFileExA(src,
+			dst,
+			MOVEFILE_REPLACE_EXISTING | MOVEFILE_WRITE_THROUGH) ==
+	    0) {
+		return -1;
+	}
+	/* Flush destination directory metadata */
+	char *dir = _strdup(dst);
+	if (dir != NULL) {
+		for (size_t i = strlen(dir); i > 0; i--) {
+			if (dir[i - 1] == '/' || dir[i - 1] == '\\') {
+				dir[i - 1] = '\0';
+				break;
+			}
+		}
+		HANDLE dh = CreateFileA(dir,
+					GENERIC_READ,
+					FILE_SHARE_READ | FILE_SHARE_WRITE |
+						FILE_SHARE_DELETE,
+					NULL,
+					OPEN_EXISTING,
+					FILE_FLAG_BACKUP_SEMANTICS,
+					NULL);
+		if (dh != INVALID_HANDLE_VALUE) {
+			(void)FlushFileBuffers(dh);
+			CloseHandle(dh);
+		}
+		free(dir);
+	}
+	return 0;
 }
 #else
 static int durable_rename(const char *src, const char *dst)
 {
-    return rename(src, dst);
+	return rename(src, dst);
 }
 #endif
 
@@ -1059,13 +1180,13 @@ static int durable_rename(const char *src, const char *dst)
  */
 static nserror write_blocks(struct store_state *state)
 {
-    int fd;
-    char *tname = NULL; /* temporary file name for atomic replace */
-    char *fname = NULL; /* target filename */
-    size_t blocks_size;
-    size_t written = 0;
-    size_t wr;
-    nserror ret;
+	int fd;
+	char *tname = NULL; /* temporary file name for atomic replace */
+	char *fname = NULL; /* target filename */
+	size_t blocks_size;
+	size_t written = 0;
+	size_t wr;
+	nserror ret;
 	int bfidx; /* block file index */
 	int elem_idx;
 
@@ -1074,20 +1195,23 @@ static nserror write_blocks(struct store_state *state)
 		return NSERROR_OK;
 	}
 
-    char tfile[32];
-    snprintf(tfile, sizeof(tfile), "t%s_%ld", BLOCKS_FNAME, (long)getpid());
-    ret = neosurf_mkpath(&tname, NULL, 2, state->path, tfile);
-    if (ret != NSERROR_OK) {
-        return ret;
-    }
+	char tfile[32];
+	snprintf(tfile, sizeof(tfile), "t%s_%ld", BLOCKS_FNAME, (long)getpid());
+	ret = neosurf_mkpath(&tname, NULL, 2, state->path, tfile);
+	if (ret != NSERROR_OK) {
+		return ret;
+	}
 
-    fd = open_file_binary(tname, O_RDWR | O_CREAT | O_TRUNC, S_IRUSR | S_IWUSR);
+	fd = open_file_binary(tname,
+			      O_RDWR | O_CREAT | O_TRUNC,
+			      S_IRUSR | S_IWUSR);
 	if (fd == -1) {
 		free(tname);
 		return NSERROR_SAVE_FAILED;
 	}
 
-	blocks_size = (BLOCK_FILE_COUNT * ENTRY_ELEM_COUNT) * BLOCK_USE_MAP_SIZE;
+	blocks_size = (BLOCK_FILE_COUNT * ENTRY_ELEM_COUNT) *
+		      BLOCK_USE_MAP_SIZE;
 
 	for (elem_idx = 0; elem_idx < ENTRY_ELEM_COUNT; elem_idx++) {
 		for (bfidx = 0; bfidx < BLOCK_FILE_COUNT; bfidx++) {
@@ -1095,7 +1219,8 @@ static nserror write_blocks(struct store_state *state)
 				   &state->blocks[elem_idx][bfidx].use_map[0],
 				   BLOCK_USE_MAP_SIZE);
 			if (wr != BLOCK_USE_MAP_SIZE) {
-				NSLOG(neosurf, DEBUG,
+				NSLOG(neosurf,
+				      DEBUG,
 				      "writing block file %d use index on file number %d failed",
 				      elem_idx,
 				      bfidx);
@@ -1105,8 +1230,8 @@ static nserror write_blocks(struct store_state *state)
 		}
 	}
 wr_err:
-    flush_fd(fd);
-    close(fd);
+	flush_fd(fd);
+	close(fd);
 
 	/* check all data was written */
 	if (written != blocks_size) {
@@ -1160,9 +1285,13 @@ static nserror set_block_extents(struct store_state *state)
 		for (bfidx = 0; bfidx < BLOCK_FILE_COUNT; bfidx++) {
 			if (state->blocks[elem_idx][bfidx].fd != -1) {
 				/* ensure block file is correct extent */
-				ftr = ftruncate(state->blocks[elem_idx][bfidx].fd, 1U << (log2_block_size[elem_idx] + BLOCK_ENTRY_COUNT));
+				ftr = ftruncate(
+					state->blocks[elem_idx][bfidx].fd,
+					1U << (log2_block_size[elem_idx] +
+					       BLOCK_ENTRY_COUNT));
 				if (ftr == -1) {
-					NSLOG(neosurf, ERROR,
+					NSLOG(neosurf,
+					      ERROR,
 					      "Truncate failed errno:%d",
 					      errno);
 				}
@@ -1247,12 +1376,17 @@ static block_index_t alloc_block(struct store_state *state, int elem_idx)
 		for (idx = 0; idx < BLOCK_USE_MAP_SIZE; idx++) {
 			if (*(map + idx) != 0xff) {
 				/* located an unused block */
-				for (bit = 0; bit < 8;bit++) {
-					if (((*(map + idx)) & (1U << bit)) == 0) {
+				for (bit = 0; bit < 8; bit++) {
+					if (((*(map + idx)) & (1U << bit)) ==
+					    0) {
 						/* mark block as used */
 						*(map + idx) |= 1U << bit;
 						state->blocks_dirty = true;
-						return (((bf * BLOCK_USE_MAP_SIZE) + idx) * 8) + bit;
+						return (((bf *
+							  BLOCK_USE_MAP_SIZE) +
+							 idx) *
+							8) +
+						       bit;
 					}
 				}
 			}
@@ -1276,13 +1410,12 @@ static block_index_t alloc_block(struct store_state *state, int elem_idx)
  * @return NSERROR_OK and \a bse updated on success or NSERROR_NOT_FOUND
  *         if no entry corresponds to the url.
  */
-static nserror
-set_store_entry(struct store_state *state,
-		nsurl *url,
-		int elem_idx,
-		uint8_t *data,
-		const size_t datalen,
-		struct store_entry **bse)
+static nserror set_store_entry(struct store_state *state,
+			       nsurl *url,
+			       int elem_idx,
+			       uint8_t *data,
+			       const size_t datalen,
+			       struct store_entry **bse)
 {
 	struct store_entry *se;
 	nserror ret;
@@ -1310,11 +1443,13 @@ set_store_entry(struct store_state *state,
 	elem = &se->elem[elem_idx];
 
 	/* check if the element has storage already allocated */
-	if ((elem->flags & (ENTRY_ELEM_FLAG_HEAP | ENTRY_ELEM_FLAG_MMAP)) != 0) {
+	if ((elem->flags & (ENTRY_ELEM_FLAG_HEAP | ENTRY_ELEM_FLAG_MMAP)) !=
+	    0) {
 		/* this entry cannot be removed as it has associated
 		 * allocation.
 		 */
-		NSLOG(neosurf, ERROR,
+		NSLOG(neosurf,
+		      ERROR,
 		      "attempt to overwrite entry with in use data");
 		return NSERROR_PERMISSION;
 	}
@@ -1361,11 +1496,10 @@ set_store_entry(struct store_state *state,
  * @param openflags The flags used with the open call.
  * @return An fd from the open call or -1 on error.
  */
-static int
-store_open(struct store_state *state,
-	   entry_ident_t ident,
-	   int elem_idx,
-	   int openflags)
+static int store_open(struct store_state *state,
+		      entry_ident_t ident,
+		      int elem_idx,
+		      int openflags)
 {
 	char *fname;
 	nserror ret;
@@ -1381,15 +1515,17 @@ store_open(struct store_state *state,
 	if (openflags & O_CREAT) {
 		ret = neosurf_mkdir_all(fname);
 		if (ret != NSERROR_OK) {
-			NSLOG(neosurf, WARNING,
-			      "file path \"%s\" could not be created", fname);
+			NSLOG(neosurf,
+			      WARNING,
+			      "file path \"%s\" could not be created",
+			      fname);
 			free(fname);
 			return -1;
 		}
 	}
 
 	NSLOG(neosurf, DEBUG, "opening %s", fname);
-    fd = open_file_binary(fname, openflags, S_IRUSR | S_IWUSR);
+	fd = open_file_binary(fname, openflags, S_IRUSR | S_IWUSR);
 
 	free(fname);
 
@@ -1403,8 +1539,7 @@ store_open(struct store_state *state,
  * @param state The backing store state.
  * @return NSERROR_OK on success or error code on failure.
  */
-static nserror
-unlink_entries(struct store_state *state)
+static nserror unlink_entries(struct store_state *state)
 {
 	char *fname = NULL;
 	nserror ret;
@@ -1426,18 +1561,17 @@ unlink_entries(struct store_state *state)
  * @param state The backing store state to put the loaded entries in.
  * @return NSERROR_OK on success or error code on faliure.
  */
-static nserror
-read_entries(struct store_state *state)
+static nserror read_entries(struct store_state *state)
 {
-    char *fname = NULL;
-    char *url;
-    nsurl *nsurl;
-    nserror ret;
-    size_t read_entries = 0;
-    struct store_entry *ent;
-    int fd;
-    bool truncated = false;
-    bool newfmt = false;
+	char *fname = NULL;
+	char *url;
+	nsurl *nsurl;
+	nserror ret;
+	size_t read_entries = 0;
+	struct store_entry *ent;
+	int fd;
+	bool truncated = false;
+	bool newfmt = false;
 
 	ret = neosurf_mkpath(&fname, NULL, 2, state->path, ENTRIES_FNAME);
 	if (ret != NSERROR_OK) {
@@ -1450,294 +1584,436 @@ read_entries(struct store_state *state)
 		return NSERROR_NOMEM;
 	}
 
-    fd = open_file_binary(fname, O_RDWR, 0);
-    if (fd != -1) {
-        uint32_t urllen;
-        char magic[4];
-        uint32_t ver;
-        ssize_t hdr = read(fd, magic, 4);
-        if (hdr == 4 && memcmp(magic, "ENTR", 4) == 0) {
-            if (read(fd, &ver, sizeof(ver)) != sizeof(ver)) {
-                truncated = true;
-                goto rd_done;
-            }
-            if (ver == 2) {
-                uint32_t expected = 0;
-                if (read(fd, &expected, sizeof(expected)) != sizeof(expected)) {
-                    truncated = true;
-                    goto rd_done;
-                }
-                newfmt = true;
-                NSLOG(neosurf, INFO, "Entries index format v%u detected", ver);
-                for (uint32_t i = 0; i < expected; i++) {
-                    if (read(fd, &urllen, sizeof(urllen)) != sizeof(urllen)) {
-                        truncated = true;
-                        break;
-                    }
-                    url = calloc(1, urllen+1);
-                    if (url == NULL) {
-                        close(fd);
-                        free(fname);
-                        return NSERROR_NOMEM;
-                    }
-                    {
-                        ssize_t got = read(fd, url, urllen);
-                        if (got != (ssize_t)urllen) {
-                            struct stat st;
-                            off_t off = lseek(fd, 0, SEEK_CUR);
-                            fstat(fd, &st);
-                            NSLOG(neosurf, ERROR, "read_entries: short read for URL length %u (got %"PRIssizet") at off %lld of size %lld errno %d",
-                                  urllen,
-                                  got,
-                                  (long long)off,
-                                  (long long)st.st_size,
-                                  errno);
-                            free(url);
-                            truncated = true;
-                            break;
-                        }
-                    }
-                    ret = nsurl_create(url, &nsurl);
-                    if (ret != NSERROR_OK) {
-                        NSLOG(neosurf, ERROR, "read_entries: invalid URL in index");
-                        free(url);
-                        truncated = true;
-                        break;
-                    }
-                    free(url);
-                    ent = hashmap_insert(state->entries, nsurl);
-                    if (ent == NULL) {
-                        nsurl_unref(nsurl);
-                        close(fd);
-                        free(fname);
-                        return NSERROR_NOMEM;
-                    }
-                    if (newfmt) {
-                        if (read(fd, &ent->last_used, sizeof(ent->last_used)) != sizeof(ent->last_used)) {
-                            ent->url = nsurl;
-                            nsurl_unref(nsurl);
-                            hashmap_remove(state->entries, ent->url);
-                            truncated = true;
-                            break;
-                        }
-                        if (read(fd, &ent->use_count, sizeof(ent->use_count)) != sizeof(ent->use_count)) {
-                            ent->url = nsurl;
-                            nsurl_unref(nsurl);
-                            hashmap_remove(state->entries, ent->url);
-                            truncated = true;
-                            break;
-                        }
-                        if (read(fd, &ent->flags, sizeof(ent->flags)) != sizeof(ent->flags)) {
-                            ent->url = nsurl;
-                            nsurl_unref(nsurl);
-                            hashmap_remove(state->entries, ent->url);
-                            truncated = true;
-                            break;
-                        }
-                        for (int i2 = 0; i2 < ENTRY_ELEM_COUNT; i2++) {
-                            if (read(fd, &ent->elem[i2].size, sizeof(ent->elem[i2].size)) != sizeof(ent->elem[i2].size)) {
-                                ent->url = nsurl;
-                                nsurl_unref(nsurl);
-                                hashmap_remove(state->entries, ent->url);
-                                truncated = true;
-                                goto rd_break_v2;
-                            }
-                            if (read(fd, &ent->elem[i2].block, sizeof(ent->elem[i2].block)) != sizeof(ent->elem[i2].block)) {
-                                ent->url = nsurl;
-                                nsurl_unref(nsurl);
-                                hashmap_remove(state->entries, ent->url);
-                                truncated = true;
-                                goto rd_break_v2;
-                            }
-                            if (read(fd, &ent->elem[i2].flags, sizeof(ent->elem[i2].flags)) != sizeof(ent->elem[i2].flags)) {
-                                ent->url = nsurl;
-                                nsurl_unref(nsurl);
-                                hashmap_remove(state->entries, ent->url);
-                                truncated = true;
-                                goto rd_break_v2;
-                            }
-                        }
-                    } else {
-                        ssize_t got = read(fd, ent, sizeof(*ent));
-                        if (got != sizeof(*ent)) {
-                            ent->url = nsurl;
-                            nsurl_unref(nsurl);
-                            {
-                                struct stat st;
-                                off_t off = lseek(fd, 0, SEEK_CUR);
-                                fstat(fd, &st);
-                                NSLOG(neosurf, ERROR, "read_entries: short read for entry struct size %"PRIsizet" (got %"PRIssizet") at off %lld of size %lld errno %d",
-                                      sizeof(*ent),
-                                      got,
-                                      (long long)off,
-                                      (long long)st.st_size,
-                                      errno);
-                            }
-                            hashmap_remove(state->entries, ent->url);
-                            truncated = true;
-                            break;
-                        }
-                    }
-                    ent->url = nsurl;
-                    nsurl_unref(nsurl);
-                    NSLOG(neosurf, DEBUG, "Successfully read entry for %s", nsurl_access(ent->url));
-                    read_entries++;
-                    state->total_alloc += ent->elem[ENTRY_ELEM_DATA].size;
-                    state->total_alloc += ent->elem[ENTRY_ELEM_META].size;
-                    ent->elem[ENTRY_ELEM_DATA].flags &= ~(ENTRY_ELEM_FLAG_HEAP | ENTRY_ELEM_FLAG_MMAP);
-                    ent->elem[ENTRY_ELEM_META].flags &= ~(ENTRY_ELEM_FLAG_HEAP | ENTRY_ELEM_FLAG_MMAP);
+	fd = open_file_binary(fname, O_RDWR, 0);
+	if (fd != -1) {
+		uint32_t urllen;
+		char magic[4];
+		uint32_t ver;
+		ssize_t hdr = read(fd, magic, 4);
+		if (hdr == 4 && memcmp(magic, "ENTR", 4) == 0) {
+			if (read(fd, &ver, sizeof(ver)) != sizeof(ver)) {
+				truncated = true;
+				goto rd_done;
+			}
+			if (ver == 2) {
+				uint32_t expected = 0;
+				if (read(fd, &expected, sizeof(expected)) !=
+				    sizeof(expected)) {
+					truncated = true;
+					goto rd_done;
+				}
+				newfmt = true;
+				NSLOG(neosurf,
+				      INFO,
+				      "Entries index format v%u detected",
+				      ver);
+				for (uint32_t i = 0; i < expected; i++) {
+					if (read(fd, &urllen, sizeof(urllen)) !=
+					    sizeof(urllen)) {
+						truncated = true;
+						break;
+					}
+					url = calloc(1, urllen + 1);
+					if (url == NULL) {
+						close(fd);
+						free(fname);
+						return NSERROR_NOMEM;
+					}
+					{
+						ssize_t got = read(fd,
+								   url,
+								   urllen);
+						if (got != (ssize_t)urllen) {
+							struct stat st;
+							off_t off = lseek(
+								fd,
+								0,
+								SEEK_CUR);
+							fstat(fd, &st);
+							NSLOG(neosurf,
+							      ERROR,
+							      "read_entries: short read for URL length %u (got %" PRIssizet
+							      ") at off %lld of size %lld errno %d",
+							      urllen,
+							      got,
+							      (long long)off,
+							      (long long)st
+								      .st_size,
+							      errno);
+							free(url);
+							truncated = true;
+							break;
+						}
+					}
+					ret = nsurl_create(url, &nsurl);
+					if (ret != NSERROR_OK) {
+						NSLOG(neosurf,
+						      ERROR,
+						      "read_entries: invalid URL in index");
+						free(url);
+						truncated = true;
+						break;
+					}
+					free(url);
+					ent = hashmap_insert(state->entries,
+							     nsurl);
+					if (ent == NULL) {
+						nsurl_unref(nsurl);
+						close(fd);
+						free(fname);
+						return NSERROR_NOMEM;
+					}
+					if (newfmt) {
+						if (read(fd,
+							 &ent->last_used,
+							 sizeof(ent->last_used)) !=
+						    sizeof(ent->last_used)) {
+							ent->url = nsurl;
+							nsurl_unref(nsurl);
+							hashmap_remove(
+								state->entries,
+								ent->url);
+							truncated = true;
+							break;
+						}
+						if (read(fd,
+							 &ent->use_count,
+							 sizeof(ent->use_count)) !=
+						    sizeof(ent->use_count)) {
+							ent->url = nsurl;
+							nsurl_unref(nsurl);
+							hashmap_remove(
+								state->entries,
+								ent->url);
+							truncated = true;
+							break;
+						}
+						if (read(fd,
+							 &ent->flags,
+							 sizeof(ent->flags)) !=
+						    sizeof(ent->flags)) {
+							ent->url = nsurl;
+							nsurl_unref(nsurl);
+							hashmap_remove(
+								state->entries,
+								ent->url);
+							truncated = true;
+							break;
+						}
+						for (int i2 = 0;
+						     i2 < ENTRY_ELEM_COUNT;
+						     i2++) {
+							if (read(fd,
+								 &ent->elem[i2]
+									  .size,
+								 sizeof(ent->elem[i2]
+										.size)) !=
+							    sizeof(ent->elem[i2]
+									   .size)) {
+								ent->url =
+									nsurl;
+								nsurl_unref(
+									nsurl);
+								hashmap_remove(
+									state->entries,
+									ent->url);
+								truncated =
+									true;
+								goto rd_break_v2;
+							}
+							if (read(fd,
+								 &ent->elem[i2]
+									  .block,
+								 sizeof(ent->elem[i2]
+										.block)) !=
+							    sizeof(ent->elem[i2]
+									   .block)) {
+								ent->url =
+									nsurl;
+								nsurl_unref(
+									nsurl);
+								hashmap_remove(
+									state->entries,
+									ent->url);
+								truncated =
+									true;
+								goto rd_break_v2;
+							}
+							if (read(fd,
+								 &ent->elem[i2]
+									  .flags,
+								 sizeof(ent->elem[i2]
+										.flags)) !=
+							    sizeof(ent->elem[i2]
+									   .flags)) {
+								ent->url =
+									nsurl;
+								nsurl_unref(
+									nsurl);
+								hashmap_remove(
+									state->entries,
+									ent->url);
+								truncated =
+									true;
+								goto rd_break_v2;
+							}
+						}
+					} else {
+						ssize_t got = read(
+							fd, ent, sizeof(*ent));
+						if (got != sizeof(*ent)) {
+							ent->url = nsurl;
+							nsurl_unref(nsurl);
+							{
+								struct stat st;
+								off_t off = lseek(
+									fd,
+									0,
+									SEEK_CUR);
+								fstat(fd, &st);
+								NSLOG(neosurf,
+								      ERROR,
+								      "read_entries: short read for entry struct size %" PRIsizet
+								      " (got %" PRIssizet
+								      ") at off %lld of size %lld errno %d",
+								      sizeof(*ent),
+								      got,
+								      (long long)
+									      off,
+								      (long long)st
+									      .st_size,
+								      errno);
+							}
+							hashmap_remove(
+								state->entries,
+								ent->url);
+							truncated = true;
+							break;
+						}
+					}
+					ent->url = nsurl;
+					nsurl_unref(nsurl);
+					NSLOG(neosurf,
+					      DEBUG,
+					      "Successfully read entry for %s",
+					      nsurl_access(ent->url));
+					read_entries++;
+					state->total_alloc +=
+						ent->elem[ENTRY_ELEM_DATA].size;
+					state->total_alloc +=
+						ent->elem[ENTRY_ELEM_META].size;
+					ent->elem[ENTRY_ELEM_DATA].flags &= ~(
+						ENTRY_ELEM_FLAG_HEAP |
+						ENTRY_ELEM_FLAG_MMAP);
+					ent->elem[ENTRY_ELEM_META].flags &= ~(
+						ENTRY_ELEM_FLAG_HEAP |
+						ENTRY_ELEM_FLAG_MMAP);
 
-                rd_break_v2:;
-                    if (truncated) goto rd_done;
-                }
-                if (read_entries != expected) {
-                    truncated = true;
-                }
-                goto rd_done;
-            } else if (ver == 1) {
-                newfmt = true;
-                NSLOG(neosurf, INFO, "Entries index format v%u detected", ver);
-            } else {
-                truncated = true;
-                goto rd_done;
-            }
-        } else {
-            NSLOG(neosurf, INFO, "Entries index old format detected; wiping cache");
-            close(fd);
-            free(fname);
-            hashmap_destroy(state->entries);
-            return NSERROR_INIT_FAILED;
-        }
-        while (read(fd, &urllen, sizeof(urllen)) == sizeof(urllen)) {
-            url = calloc(1, urllen+1);
-            if (url == NULL) {
-                close(fd);
-                free(fname);
-                return NSERROR_NOMEM;
-            }
-            {
-                ssize_t got = read(fd, url, urllen);
-                if (got != (ssize_t)urllen) {
-                    struct stat st;
-                    off_t off = lseek(fd, 0, SEEK_CUR);
-                    fstat(fd, &st);
-                    NSLOG(neosurf, ERROR, "read_entries: short read for URL length %u (got %"PRIssizet") at off %lld of size %lld errno %d",
-                          urllen,
-                          got,
-                          (long long)off,
-                          (long long)st.st_size,
-                          errno);
-                    free(url);
-                    truncated = true;
-                    break;
-                }
-            }
-            ret = nsurl_create(url, &nsurl);
-            if (ret != NSERROR_OK) {
-                NSLOG(neosurf, ERROR, "read_entries: invalid URL in index");
-                free(url);
-                truncated = true;
-                break;
-            }
-            free(url);
-            ent = hashmap_insert(state->entries, nsurl);
-            if (ent == NULL) {
-                nsurl_unref(nsurl);
-                close(fd);
-                free(fname);
-                return NSERROR_NOMEM;
-            }
-            if (newfmt) {
-                if (read(fd, &ent->last_used, sizeof(ent->last_used)) != sizeof(ent->last_used)) {
-                    ent->url = nsurl;
-                    nsurl_unref(nsurl);
-                    hashmap_remove(state->entries, ent->url);
-                    truncated = true;
-                    break;
-                }
-                if (read(fd, &ent->use_count, sizeof(ent->use_count)) != sizeof(ent->use_count)) {
-                    ent->url = nsurl;
-                    nsurl_unref(nsurl);
-                    hashmap_remove(state->entries, ent->url);
-                    truncated = true;
-                    break;
-                }
-                if (read(fd, &ent->flags, sizeof(ent->flags)) != sizeof(ent->flags)) {
-                    ent->url = nsurl;
-                    nsurl_unref(nsurl);
-                    hashmap_remove(state->entries, ent->url);
-                    truncated = true;
-                    break;
-                }
-                for (int i = 0; i < ENTRY_ELEM_COUNT; i++) {
-                    if (read(fd, &ent->elem[i].size, sizeof(ent->elem[i].size)) != sizeof(ent->elem[i].size)) {
-                        ent->url = nsurl;
-                        nsurl_unref(nsurl);
-                        hashmap_remove(state->entries, ent->url);
-                        truncated = true;
-                        goto rd_break;
-                    }
-                    if (read(fd, &ent->elem[i].block, sizeof(ent->elem[i].block)) != sizeof(ent->elem[i].block)) {
-                        ent->url = nsurl;
-                        nsurl_unref(nsurl);
-                        hashmap_remove(state->entries, ent->url);
-                        truncated = true;
-                        goto rd_break;
-                    }
-                    if (read(fd, &ent->elem[i].flags, sizeof(ent->elem[i].flags)) != sizeof(ent->elem[i].flags)) {
-                        ent->url = nsurl;
-                        nsurl_unref(nsurl);
-                        hashmap_remove(state->entries, ent->url);
-                        truncated = true;
-                        goto rd_break;
-                    }
-                }
-            } else {
-                ssize_t got = read(fd, ent, sizeof(*ent));
-                if (got != sizeof(*ent)) {
-                    ent->url = nsurl;
-                    nsurl_unref(nsurl);
-                    {
-                        struct stat st;
-                        off_t off = lseek(fd, 0, SEEK_CUR);
-                        fstat(fd, &st);
-                        NSLOG(neosurf, ERROR, "read_entries: short read for entry struct size %"PRIsizet" (got %"PRIssizet") at off %lld of size %lld errno %d",
-                              sizeof(*ent),
-                              got,
-                              (long long)off,
-                              (long long)st.st_size,
-                              errno);
-                    }
-                    hashmap_remove(state->entries, ent->url);
-                    truncated = true;
-                    break;
-                }
-            }
-            ent->url = nsurl; /* It already owns a ref */
-            nsurl_unref(nsurl);
-            NSLOG(neosurf, DEBUG, "Successfully read entry for %s", nsurl_access(ent->url));
-            read_entries++;
-            /* Note the size allocation */
-            state->total_alloc += ent->elem[ENTRY_ELEM_DATA].size;
-            state->total_alloc += ent->elem[ENTRY_ELEM_META].size;
-            /* And ensure we don't pretend to have this in memory yet */
-            ent->elem[ENTRY_ELEM_DATA].flags &= ~(ENTRY_ELEM_FLAG_HEAP | ENTRY_ELEM_FLAG_MMAP);
-            ent->elem[ENTRY_ELEM_META].flags &= ~(ENTRY_ELEM_FLAG_HEAP | ENTRY_ELEM_FLAG_MMAP);
+				rd_break_v2:;
+					if (truncated)
+						goto rd_done;
+				}
+				if (read_entries != expected) {
+					truncated = true;
+				}
+				goto rd_done;
+			} else if (ver == 1) {
+				newfmt = true;
+				NSLOG(neosurf,
+				      INFO,
+				      "Entries index format v%u detected",
+				      ver);
+			} else {
+				truncated = true;
+				goto rd_done;
+			}
+		} else {
+			NSLOG(neosurf,
+			      INFO,
+			      "Entries index old format detected; wiping cache");
+			close(fd);
+			free(fname);
+			hashmap_destroy(state->entries);
+			return NSERROR_INIT_FAILED;
+		}
+		while (read(fd, &urllen, sizeof(urllen)) == sizeof(urllen)) {
+			url = calloc(1, urllen + 1);
+			if (url == NULL) {
+				close(fd);
+				free(fname);
+				return NSERROR_NOMEM;
+			}
+			{
+				ssize_t got = read(fd, url, urllen);
+				if (got != (ssize_t)urllen) {
+					struct stat st;
+					off_t off = lseek(fd, 0, SEEK_CUR);
+					fstat(fd, &st);
+					NSLOG(neosurf,
+					      ERROR,
+					      "read_entries: short read for URL length %u (got %" PRIssizet
+					      ") at off %lld of size %lld errno %d",
+					      urllen,
+					      got,
+					      (long long)off,
+					      (long long)st.st_size,
+					      errno);
+					free(url);
+					truncated = true;
+					break;
+				}
+			}
+			ret = nsurl_create(url, &nsurl);
+			if (ret != NSERROR_OK) {
+				NSLOG(neosurf,
+				      ERROR,
+				      "read_entries: invalid URL in index");
+				free(url);
+				truncated = true;
+				break;
+			}
+			free(url);
+			ent = hashmap_insert(state->entries, nsurl);
+			if (ent == NULL) {
+				nsurl_unref(nsurl);
+				close(fd);
+				free(fname);
+				return NSERROR_NOMEM;
+			}
+			if (newfmt) {
+				if (read(fd,
+					 &ent->last_used,
+					 sizeof(ent->last_used)) !=
+				    sizeof(ent->last_used)) {
+					ent->url = nsurl;
+					nsurl_unref(nsurl);
+					hashmap_remove(state->entries,
+						       ent->url);
+					truncated = true;
+					break;
+				}
+				if (read(fd,
+					 &ent->use_count,
+					 sizeof(ent->use_count)) !=
+				    sizeof(ent->use_count)) {
+					ent->url = nsurl;
+					nsurl_unref(nsurl);
+					hashmap_remove(state->entries,
+						       ent->url);
+					truncated = true;
+					break;
+				}
+				if (read(fd, &ent->flags, sizeof(ent->flags)) !=
+				    sizeof(ent->flags)) {
+					ent->url = nsurl;
+					nsurl_unref(nsurl);
+					hashmap_remove(state->entries,
+						       ent->url);
+					truncated = true;
+					break;
+				}
+				for (int i = 0; i < ENTRY_ELEM_COUNT; i++) {
+					if (read(fd,
+						 &ent->elem[i].size,
+						 sizeof(ent->elem[i].size)) !=
+					    sizeof(ent->elem[i].size)) {
+						ent->url = nsurl;
+						nsurl_unref(nsurl);
+						hashmap_remove(state->entries,
+							       ent->url);
+						truncated = true;
+						goto rd_break;
+					}
+					if (read(fd,
+						 &ent->elem[i].block,
+						 sizeof(ent->elem[i].block)) !=
+					    sizeof(ent->elem[i].block)) {
+						ent->url = nsurl;
+						nsurl_unref(nsurl);
+						hashmap_remove(state->entries,
+							       ent->url);
+						truncated = true;
+						goto rd_break;
+					}
+					if (read(fd,
+						 &ent->elem[i].flags,
+						 sizeof(ent->elem[i].flags)) !=
+					    sizeof(ent->elem[i].flags)) {
+						ent->url = nsurl;
+						nsurl_unref(nsurl);
+						hashmap_remove(state->entries,
+							       ent->url);
+						truncated = true;
+						goto rd_break;
+					}
+				}
+			} else {
+				ssize_t got = read(fd, ent, sizeof(*ent));
+				if (got != sizeof(*ent)) {
+					ent->url = nsurl;
+					nsurl_unref(nsurl);
+					{
+						struct stat st;
+						off_t off = lseek(fd,
+								  0,
+								  SEEK_CUR);
+						fstat(fd, &st);
+						NSLOG(neosurf,
+						      ERROR,
+						      "read_entries: short read for entry struct size %" PRIsizet
+						      " (got %" PRIssizet
+						      ") at off %lld of size %lld errno %d",
+						      sizeof(*ent),
+						      got,
+						      (long long)off,
+						      (long long)st.st_size,
+						      errno);
+					}
+					hashmap_remove(state->entries,
+						       ent->url);
+					truncated = true;
+					break;
+				}
+			}
+			ent->url = nsurl; /* It already owns a ref */
+			nsurl_unref(nsurl);
+			NSLOG(neosurf,
+			      DEBUG,
+			      "Successfully read entry for %s",
+			      nsurl_access(ent->url));
+			read_entries++;
+			/* Note the size allocation */
+			state->total_alloc += ent->elem[ENTRY_ELEM_DATA].size;
+			state->total_alloc += ent->elem[ENTRY_ELEM_META].size;
+			/* And ensure we don't pretend to have this in memory
+			 * yet */
+			ent->elem[ENTRY_ELEM_DATA].flags &= ~(
+				ENTRY_ELEM_FLAG_HEAP | ENTRY_ELEM_FLAG_MMAP);
+			ent->elem[ENTRY_ELEM_META].flags &= ~(
+				ENTRY_ELEM_FLAG_HEAP | ENTRY_ELEM_FLAG_MMAP);
 
-        rd_break:;
-        if (truncated) goto rd_done;
-        }
-        rd_done:
-        close(fd);
-    }
+		rd_break:;
+			if (truncated)
+				goto rd_done;
+		}
+	rd_done:
+		close(fd);
+	}
 
-    NSLOG(neosurf, INFO, "Read %"PRIsizet" entries from cache", read_entries);
+	NSLOG(neosurf,
+	      INFO,
+	      "Read %" PRIsizet " entries from cache",
+	      read_entries);
 
-    if (truncated) {
-        NSLOG(neosurf, INFO, "Entries index truncated; scheduling rewrite");
-        state->entries_dirty = true;
-        guit->misc->schedule(CONTROL_MAINT_TIME, control_maintenance, state);
-    }
+	if (truncated) {
+		NSLOG(neosurf,
+		      INFO,
+		      "Entries index truncated; scheduling rewrite");
+		state->entries_dirty = true;
+		guit->misc->schedule(CONTROL_MAINT_TIME,
+				     control_maintenance,
+				     state);
+	}
 
 	free(fname);
 	return NSERROR_OK;
@@ -1750,8 +2026,7 @@ read_entries(struct store_state *state)
  * @param state The backing store state to put the loaded entries in.
  * @return NSERROR_OK on success or error code on failure.
  */
-static nserror
-read_blocks(struct store_state *state)
+static nserror read_blocks(struct store_state *state)
 {
 	int bfidx; /* block file index */
 	int elem_idx;
@@ -1774,10 +2049,12 @@ read_blocks(struct store_state *state)
 		for (elem_idx = 0; elem_idx < ENTRY_ELEM_COUNT; elem_idx++) {
 			for (bfidx = 0; bfidx < BLOCK_FILE_COUNT; bfidx++) {
 				rd = read(fd,
-					  &state->blocks[elem_idx][bfidx].use_map[0],
+					  &state->blocks[elem_idx][bfidx]
+						   .use_map[0],
 					  BLOCK_USE_MAP_SIZE);
 				if (rd <= 0) {
-					NSLOG(neosurf, ERROR,
+					NSLOG(neosurf,
+					      ERROR,
 					      "reading block file %d use index on file number %d failed",
 					      elem_idx,
 					      bfidx);
@@ -1810,8 +2087,7 @@ read_blocks(struct store_state *state)
  * @param state The cache state.
  * @return NSERROR_OK on success or error code on failure.
  */
-static nserror
-write_cache_tag(struct store_state *state)
+static nserror write_cache_tag(struct store_state *state)
 {
 	FILE *fcachetag;
 	nserror ret;
@@ -1847,8 +2123,7 @@ write_cache_tag(struct store_state *state)
  * @param state The state to write to the control file.
  * @return NSERROR_OK on success or error code on failure.
  */
-static nserror
-write_control(struct store_state *state)
+static nserror write_control(struct store_state *state)
 {
 	FILE *fcontrol;
 	nserror ret;
@@ -1889,8 +2164,7 @@ write_control(struct store_state *state)
  * @param state The state to read from the control file.
  * @return NSERROR_OK on success or error code on failure.
  */
-static nserror
-read_control(struct store_state *state)
+static nserror read_control(struct store_state *state)
 {
 	nserror ret;
 	FILE *fcontrol;
@@ -1944,8 +2218,6 @@ control_error: /* problem with the control file */
 }
 
 
-
-
 /* Functions exported in the backing store table */
 
 /**
@@ -1954,137 +2226,168 @@ control_error: /* problem with the control file */
  * @param parameters to configure backing store.
  * @return NSERROR_OK on success or error code on failure.
  */
-static nserror
-initialise(const struct llcache_store_parameters *parameters)
+static nserror initialise(const struct llcache_store_parameters *parameters)
 {
-    struct store_state *newstate;
-    nserror ret;
+	struct store_state *newstate;
+	nserror ret;
 
-    /* check backing store is not already initialised */
-    if (storestate != NULL) {
-        NSLOG(neosurf, ERROR, "FS backing store already initialised");
-        return NSERROR_INIT_FAILED;
-    }
+	/* check backing store is not already initialised */
+	if (storestate != NULL) {
+		NSLOG(neosurf, ERROR, "FS backing store already initialised");
+		return NSERROR_INIT_FAILED;
+	}
 
 	/* if we are not allowed any space simply give up on init */
-    if (parameters->limit == 0) {
-        NSLOG(neosurf, INFO, "FS backing store disabled: limit=0");
-        return NSERROR_OK;
-    }
+	if (parameters->limit == 0) {
+		NSLOG(neosurf, INFO, "FS backing store disabled: limit=0");
+		return NSERROR_OK;
+	}
 
 	/* if the path to the cache directory is not set do not init */
-    if (parameters->path == NULL) {
-        NSLOG(neosurf, INFO, "FS backing store disabled: path is NULL");
-        return NSERROR_OK;
-    }
+	if (parameters->path == NULL) {
+		NSLOG(neosurf, INFO, "FS backing store disabled: path is NULL");
+		return NSERROR_OK;
+	}
 
 	/* allocate new store state and set defaults */
-    newstate = calloc(1, sizeof(struct store_state));
-    if (newstate == NULL) {
-        return NSERROR_NOMEM;
-    }
+	newstate = calloc(1, sizeof(struct store_state));
+	if (newstate == NULL) {
+		return NSERROR_NOMEM;
+	}
 
 	newstate->path = strdup(parameters->path);
 	newstate->limit = parameters->limit;
 	newstate->hysteresis = parameters->hysteresis;
 
 	/* read store control and create new if required */
-    ret = read_control(newstate);
-    if (ret != NSERROR_OK) {
-        if (ret == NSERROR_NOT_FOUND) {
-            NSLOG(neosurf, INFO, "cache control file not found, making fresh");
-        } else {
-            NSLOG(neosurf, ERROR, "read control failed %s",
-                  messages_get_errorcode(ret));
-            ret = neosurf_recursive_rm(newstate->path);
-            if (ret != NSERROR_OK) {
-                NSLOG(neosurf, WARNING, "Error `%s` while removing `%s`",
-                      messages_get_errorcode(ret), newstate->path);
-                NSLOG(neosurf, WARNING, "Unable to clean up partial cache state.");
-                NSLOG(neosurf, WARNING, "Funky behaviour may ensue.");
-            } else {
-                NSLOG(neosurf, INFO, "Successfully removed old cache from `%s`",
-                      newstate->path);
-            }
-        }
-        ret = write_control(newstate);
-        if (ret == NSERROR_OK) {
-            unlink_entries(newstate);
-            write_cache_tag(newstate);
-        } else {
-            NSLOG(neosurf, ERROR, "write control failed %s",
-                  messages_get_errorcode(ret));
-        }
-    }
-    if (ret != NSERROR_OK) {
-        /* that went well obviously */
-        free(newstate->path);
-        free(newstate);
-        return ret;
-    }
+	ret = read_control(newstate);
+	if (ret != NSERROR_OK) {
+		if (ret == NSERROR_NOT_FOUND) {
+			NSLOG(neosurf,
+			      INFO,
+			      "cache control file not found, making fresh");
+		} else {
+			NSLOG(neosurf,
+			      ERROR,
+			      "read control failed %s",
+			      messages_get_errorcode(ret));
+			ret = neosurf_recursive_rm(newstate->path);
+			if (ret != NSERROR_OK) {
+				NSLOG(neosurf,
+				      WARNING,
+				      "Error `%s` while removing `%s`",
+				      messages_get_errorcode(ret),
+				      newstate->path);
+				NSLOG(neosurf,
+				      WARNING,
+				      "Unable to clean up partial cache state.");
+				NSLOG(neosurf,
+				      WARNING,
+				      "Funky behaviour may ensue.");
+			} else {
+				NSLOG(neosurf,
+				      INFO,
+				      "Successfully removed old cache from `%s`",
+				      newstate->path);
+			}
+		}
+		ret = write_control(newstate);
+		if (ret == NSERROR_OK) {
+			unlink_entries(newstate);
+			write_cache_tag(newstate);
+		} else {
+			NSLOG(neosurf,
+			      ERROR,
+			      "write control failed %s",
+			      messages_get_errorcode(ret));
+		}
+	}
+	if (ret != NSERROR_OK) {
+		/* that went well obviously */
+		free(newstate->path);
+		free(newstate);
+		return ret;
+	}
 
 	/* read filesystem entries */
-    ret = read_entries(newstate);
-    if (ret != NSERROR_OK) {
-        NSLOG(neosurf, ERROR, "read entries failed %s",
-              messages_get_errorcode(ret));
-        if (ret == NSERROR_INIT_FAILED) {
-            NSLOG(neosurf, INFO, "Clearing cache directory and recreating fresh state");
-            {
-                nserror rmr = neosurf_recursive_rm(newstate->path);
-                if (rmr != NSERROR_OK && rmr != NSERROR_NOT_FOUND) {
-                    NSLOG(neosurf, WARNING, "Failed to remove cache dir `%s`: %s",
-                          newstate->path, messages_get_errorcode(rmr));
-                }
-            }
-            {
-                nserror wr = write_control(newstate);
-                if (wr == NSERROR_OK) {
-                    unlink_entries(newstate);
-                    write_cache_tag(newstate);
-                } else {
-                    NSLOG(neosurf, ERROR, "write control failed %s",
-                          messages_get_errorcode(wr));
-                }
-            }
-            ret = read_entries(newstate);
-            if (ret != NSERROR_OK) {
-                free(newstate->path);
-                free(newstate);
-                return ret;
-            }
-        } else {
-            free(newstate->path);
-            free(newstate);
-            return ret;
-        }
-    }
+	ret = read_entries(newstate);
+	if (ret != NSERROR_OK) {
+		NSLOG(neosurf,
+		      ERROR,
+		      "read entries failed %s",
+		      messages_get_errorcode(ret));
+		if (ret == NSERROR_INIT_FAILED) {
+			NSLOG(neosurf,
+			      INFO,
+			      "Clearing cache directory and recreating fresh state");
+			{
+				nserror rmr = neosurf_recursive_rm(
+					newstate->path);
+				if (rmr != NSERROR_OK &&
+				    rmr != NSERROR_NOT_FOUND) {
+					NSLOG(neosurf,
+					      WARNING,
+					      "Failed to remove cache dir `%s`: %s",
+					      newstate->path,
+					      messages_get_errorcode(rmr));
+				}
+			}
+			{
+				nserror wr = write_control(newstate);
+				if (wr == NSERROR_OK) {
+					unlink_entries(newstate);
+					write_cache_tag(newstate);
+				} else {
+					NSLOG(neosurf,
+					      ERROR,
+					      "write control failed %s",
+					      messages_get_errorcode(wr));
+				}
+			}
+			ret = read_entries(newstate);
+			if (ret != NSERROR_OK) {
+				free(newstate->path);
+				free(newstate);
+				return ret;
+			}
+		} else {
+			free(newstate->path);
+			free(newstate);
+			return ret;
+		}
+	}
 
 	/* read blocks */
-    ret = read_blocks(newstate);
-    if (ret != NSERROR_OK) {
-        NSLOG(neosurf, ERROR, "read blocks failed %s",
-              messages_get_errorcode(ret));
-        /* oh dear */
-        hashmap_destroy(newstate->entries);
-        free(newstate->path);
-        free(newstate);
-        return ret;
-    }
+	ret = read_blocks(newstate);
+	if (ret != NSERROR_OK) {
+		NSLOG(neosurf,
+		      ERROR,
+		      "read blocks failed %s",
+		      messages_get_errorcode(ret));
+		/* oh dear */
+		hashmap_destroy(newstate->entries);
+		free(newstate->path);
+		free(newstate);
+		return ret;
+	}
 
 	storestate = newstate;
 
-    NSLOG(neosurf, INFO, "FS backing store init successful");
+	NSLOG(neosurf, INFO, "FS backing store init successful");
 
-    NSLOG(neosurf, INFO,
-          "path:%s limit:%"PRIsizet" hyst:%"PRIsizet,
-          newstate->path,
-          newstate->limit,
-          newstate->hysteresis);
-    NSLOG(neosurf, INFO, "Using %"PRIu64"/%"PRIsizet,
-          newstate->total_alloc, newstate->limit);
+	NSLOG(neosurf,
+	      INFO,
+	      "path:%s limit:%" PRIsizet " hyst:%" PRIsizet,
+	      newstate->path,
+	      newstate->limit,
+	      newstate->hysteresis);
+	NSLOG(neosurf,
+	      INFO,
+	      "Using %" PRIu64 "/%" PRIsizet,
+	      newstate->total_alloc,
+	      newstate->limit);
 
-    return NSERROR_OK;
+	return NSERROR_OK;
 }
 
 
@@ -2096,24 +2399,25 @@ initialise(const struct llcache_store_parameters *parameters)
  *
  * @return NSERROR_OK on success.
  */
-static nserror
-finalise(void)
+static nserror finalise(void)
 {
-    int bf; /* block file index */
-    unsigned int op_count;
+	int bf; /* block file index */
+	unsigned int op_count;
 
-    if (storestate != NULL) {
-        write_entries(storestate);
-        write_blocks(storestate);
-        validate_entries_after_write(storestate);
+	if (storestate != NULL) {
+		write_entries(storestate);
+		write_blocks(storestate);
+		validate_entries_after_write(storestate);
 
 		/* ensure all block files are closed */
 		for (bf = 0; bf < BLOCK_FILE_COUNT; bf++) {
 			if (storestate->blocks[ENTRY_ELEM_DATA][bf].fd != -1) {
-				close(storestate->blocks[ENTRY_ELEM_DATA][bf].fd);
+				close(storestate->blocks[ENTRY_ELEM_DATA][bf]
+					      .fd);
 			}
 			if (storestate->blocks[ENTRY_ELEM_META][bf].fd != -1) {
-				close(storestate->blocks[ENTRY_ELEM_META][bf].fd);
+				close(storestate->blocks[ENTRY_ELEM_META][bf]
+					      .fd);
 			}
 		}
 
@@ -2121,8 +2425,11 @@ finalise(void)
 
 		/* avoid division by zero */
 		if (op_count > 0) {
-			NSLOG(neosurf, INFO,
-			      "Cache total/hit/miss/fail (counts) %d/%"PRIsizet"/%"PRIsizet"/%d (100%%/%"PRIsizet"%%/%"PRIsizet"%%/%d%%)",
+			NSLOG(neosurf,
+			      INFO,
+			      "Cache total/hit/miss/fail (counts) %d/%" PRIsizet
+			      "/%" PRIsizet "/%d (100%%/%" PRIsizet
+			      "%%/%" PRIsizet "%%/%d%%)",
 			      op_count,
 			      storestate->hit_count,
 			      storestate->miss_count,
@@ -2150,19 +2457,25 @@ finalise(void)
  * \return NSERROR_OK on success or error code.
  */
 static nserror store_write_block(struct store_state *state,
-			 struct store_entry *bse,
-			 int elem_idx)
+				 struct store_entry *bse,
+				 int elem_idx)
 {
 	block_index_t bf = (bse->elem[elem_idx].block >> BLOCK_ENTRY_COUNT) &
-		((1 << BLOCK_FILE_COUNT) - 1); /* block file block resides in */
-	block_index_t bi = bse->elem[elem_idx].block & ((1U << BLOCK_ENTRY_COUNT) -1); /* block index in file */
+			   ((1 << BLOCK_FILE_COUNT) -
+			    1); /* block file block resides in */
+	block_index_t bi = bse->elem[elem_idx].block &
+			   ((1U << BLOCK_ENTRY_COUNT) -
+			    1); /* block index in file */
 	ssize_t wr;
 	off_t offst;
 
 	/* ensure the block file fd is good */
 	if (state->blocks[elem_idx][bf].fd == -1) {
-		state->blocks[elem_idx][bf].fd = store_open(state, bf,
-				elem_idx + ENTRY_ELEM_COUNT, O_CREAT | O_RDWR);
+		state->blocks[elem_idx][bf].fd = store_open(
+			state,
+			bf,
+			elem_idx + ENTRY_ELEM_COUNT,
+			O_CREAT | O_RDWR);
 		if (state->blocks[elem_idx][bf].fd == -1) {
 			NSLOG(neosurf, ERROR, "Open failed errno %d", errno);
 			return NSERROR_SAVE_FAILED;
@@ -2179,8 +2492,10 @@ static nserror store_write_block(struct store_state *state,
 			bse->elem[elem_idx].size,
 			offst);
 	if (wr != (ssize_t)bse->elem[elem_idx].size) {
-		NSLOG(neosurf, ERROR,
-		      "Write failed %"PRIssizet" of %d bytes from %p at %"PRIsizet" block %d errno %d",
+		NSLOG(neosurf,
+		      ERROR,
+		      "Write failed %" PRIssizet
+		      " of %d bytes from %p at %" PRIsizet " block %d errno %d",
 		      wr,
 		      bse->elem[elem_idx].size,
 		      bse->elem[elem_idx].data,
@@ -2190,9 +2505,12 @@ static nserror store_write_block(struct store_state *state,
 		return NSERROR_SAVE_FAILED;
 	}
 
-	NSLOG(neosurf, INFO,
-	      "Wrote %"PRIssizet" bytes from %p at %"PRIsizet" block %d", wr,
-	      bse->elem[elem_idx].data, (size_t)offst,
+	NSLOG(neosurf,
+	      INFO,
+	      "Wrote %" PRIssizet " bytes from %p at %" PRIsizet " block %d",
+	      wr,
+	      bse->elem[elem_idx].data,
+	      (size_t)offst,
 	      bse->elem[elem_idx].block);
 
 	return NSERROR_OK;
@@ -2207,14 +2525,15 @@ static nserror store_write_block(struct store_state *state,
  * \return NSERROR_OK on success or error code.
  */
 static nserror store_write_file(struct store_state *state,
-			 struct store_entry *bse,
-			 int elem_idx)
+				struct store_entry *bse,
+				int elem_idx)
 {
 	ssize_t wr;
 	int fd;
 	int err;
 
-	fd = store_open(state, nsurl_hash(bse->url), elem_idx, O_CREAT | O_WRONLY);
+	fd = store_open(
+		state, nsurl_hash(bse->url), elem_idx, O_CREAT | O_WRONLY);
 	if (fd < 0) {
 		perror("");
 		NSLOG(neosurf, ERROR, "Open failed %d errno %d", fd, errno);
@@ -2226,8 +2545,10 @@ static nserror store_write_file(struct store_state *state,
 
 	close(fd);
 	if (wr != (ssize_t)bse->elem[elem_idx].size) {
-		NSLOG(neosurf, ERROR,
-		      "Write failed %"PRIssizet" of %d bytes from %p errno %d",
+		NSLOG(neosurf,
+		      ERROR,
+		      "Write failed %" PRIssizet
+		      " of %d bytes from %p errno %d",
 		      wr,
 		      bse->elem[elem_idx].size,
 		      bse->elem[elem_idx].data,
@@ -2237,7 +2558,10 @@ static nserror store_write_file(struct store_state *state,
 		return NSERROR_SAVE_FAILED;
 	}
 
-	NSLOG(neosurf, VERBOSE, "Wrote %"PRIssizet" bytes from %p", wr,
+	NSLOG(neosurf,
+	      VERBOSE,
+	      "Wrote %" PRIssizet " bytes from %p",
+	      wr,
 	      bse->elem[elem_idx].data);
 
 	return NSERROR_OK;
@@ -2254,11 +2578,10 @@ static nserror store_write_file(struct store_state *state,
  * @param datalen The length of the \a data.
  * @return NSERROR_OK on success or error code on failure.
  */
-static nserror
-store(nsurl *url,
-      enum backing_store_flags bsflags,
-      uint8_t *data,
-      const size_t datalen)
+static nserror store(nsurl *url,
+		     enum backing_store_flags bsflags,
+		     uint8_t *data,
+		     const size_t datalen)
 {
 	nserror ret;
 	struct store_entry *bse;
@@ -2320,19 +2643,25 @@ static nserror entry_release_alloc(struct store_entry_element *elem)
  * \return NSERROR_OK on success or error code.
  */
 static nserror store_read_block(struct store_state *state,
-			 struct store_entry *bse,
-			 int elem_idx)
+				struct store_entry *bse,
+				int elem_idx)
 {
 	block_index_t bf = (bse->elem[elem_idx].block >> BLOCK_ENTRY_COUNT) &
-		((1 << BLOCK_FILE_COUNT) - 1); /* block file block resides in */
-	block_index_t bi = bse->elem[elem_idx].block & ((1 << BLOCK_ENTRY_COUNT) -1); /* block index in file */
+			   ((1 << BLOCK_FILE_COUNT) -
+			    1); /* block file block resides in */
+	block_index_t bi = bse->elem[elem_idx].block &
+			   ((1 << BLOCK_ENTRY_COUNT) -
+			    1); /* block index in file */
 	ssize_t rd;
 	off_t offst;
 
 	/* ensure the block file fd is good */
 	if (state->blocks[elem_idx][bf].fd == -1) {
-		state->blocks[elem_idx][bf].fd = store_open(state, bf,
-				elem_idx + ENTRY_ELEM_COUNT, O_CREAT | O_RDWR);
+		state->blocks[elem_idx][bf].fd = store_open(
+			state,
+			bf,
+			elem_idx + ENTRY_ELEM_COUNT,
+			O_CREAT | O_RDWR);
 		if (state->blocks[elem_idx][bf].fd == -1) {
 			NSLOG(neosurf, ERROR, "Open failed errno %d", errno);
 			return NSERROR_SAVE_FAILED;
@@ -2349,8 +2678,11 @@ static nserror store_read_block(struct store_state *state,
 		       bse->elem[elem_idx].size,
 		       offst);
 	if (rd != (ssize_t)bse->elem[elem_idx].size) {
-		NSLOG(neosurf, ERROR,
-		      "Failed reading %"PRIssizet" of %d bytes into %p from %"PRIsizet" block %d errno %d",
+		NSLOG(neosurf,
+		      ERROR,
+		      "Failed reading %" PRIssizet
+		      " of %d bytes into %p from %" PRIsizet
+		      " block %d errno %d",
 		      rd,
 		      bse->elem[elem_idx].size,
 		      bse->elem[elem_idx].data,
@@ -2360,9 +2692,12 @@ static nserror store_read_block(struct store_state *state,
 		return NSERROR_SAVE_FAILED;
 	}
 
-	NSLOG(neosurf, DEEPDEBUG,
-	      "Read %"PRIssizet" bytes into %p from %"PRIsizet" block %d", rd,
-	      bse->elem[elem_idx].data, (size_t)offst,
+	NSLOG(neosurf,
+	      DEEPDEBUG,
+	      "Read %" PRIssizet " bytes into %p from %" PRIsizet " block %d",
+	      rd,
+	      bse->elem[elem_idx].data,
+	      (size_t)offst,
 	      bse->elem[elem_idx].block);
 
 	return NSERROR_OK;
@@ -2377,8 +2712,8 @@ static nserror store_read_block(struct store_state *state,
  * \return NSERROR_OK on success or error code.
  */
 static nserror store_read_file(struct store_state *state,
-			 struct store_entry *bse,
-			 int elem_idx)
+			       struct store_entry *bse,
+			       int elem_idx)
 {
 	int fd;
 	ssize_t rd; /* return from read */
@@ -2398,8 +2733,9 @@ static nserror store_read_file(struct store_state *state,
 			  bse->elem[elem_idx].data + tot,
 			  bse->elem[elem_idx].size - tot);
 		if (rd <= 0) {
-			NSLOG(neosurf, ERROR,
-			      "read error returned %"PRIssizet" errno %d",
+			NSLOG(neosurf,
+			      ERROR,
+			      "read error returned %" PRIssizet " errno %d",
 			      rd,
 			      errno);
 			ret = NSERROR_NOT_FOUND;
@@ -2410,7 +2746,10 @@ static nserror store_read_file(struct store_state *state,
 
 	close(fd);
 
-	NSLOG(neosurf, DEEPDEBUG, "Read %"PRIsizet" bytes into %p", tot,
+	NSLOG(neosurf,
+	      DEEPDEBUG,
+	      "Read %" PRIsizet " bytes into %p",
+	      tot,
 	      bse->elem[elem_idx].data);
 
 	return ret;
@@ -2425,11 +2764,10 @@ static nserror store_read_file(struct store_state *state,
  * @param[out] datalen_out The length of the \a data retrieved.
  * @return NSERROR_OK on success or error code on failure.
  */
-static nserror
-fetch(nsurl *url,
-      enum backing_store_flags bsflags,
-      uint8_t **data_out,
-      size_t *datalen_out)
+static nserror fetch(nsurl *url,
+		     enum backing_store_flags bsflags,
+		     uint8_t **data_out,
+		     size_t *datalen_out)
 {
 	nserror ret;
 	struct store_entry *bse;
@@ -2444,13 +2782,18 @@ fetch(nsurl *url,
 	/* fetch store entry */
 	ret = get_store_entry(storestate, url, &bse);
 	if (ret != NSERROR_OK) {
-		NSLOG(neosurf, DEBUG, "Entry for %s not found", nsurl_access(url));
+		NSLOG(neosurf,
+		      DEBUG,
+		      "Entry for %s not found",
+		      nsurl_access(url));
 		storestate->miss_count++;
 		return ret;
 	}
 	storestate->hit_count++;
 
-	NSLOG(neosurf, DEBUG, "retrieving cache data for url:%s",
+	NSLOG(neosurf,
+	      DEBUG,
+	      "retrieving cache data for url:%s",
 	      nsurl_access(url));
 
 	/* calculate the entry element index */
@@ -2466,19 +2809,25 @@ fetch(nsurl *url,
 		/* use the existing allocation and bump the ref count. */
 		elem->ref++;
 
-		NSLOG(neosurf, DEEPDEBUG,
-		      "Using existing entry (%p) allocation %p refs:%d", bse,
-		      elem->data, elem->ref);
+		NSLOG(neosurf,
+		      DEEPDEBUG,
+		      "Using existing entry (%p) allocation %p refs:%d",
+		      bse,
+		      elem->data,
+		      elem->ref);
 
 	} else {
 		/* allocate from the heap */
 		elem->data = malloc(elem->size);
 		if (elem->data == NULL) {
-			NSLOG(neosurf, ERROR,
+			NSLOG(neosurf,
+			      ERROR,
 			      "Failed to create new heap allocation");
 			return NSERROR_NOMEM;
 		}
-		NSLOG(neosurf, DEEPDEBUG, "Created new heap allocation %p",
+		NSLOG(neosurf,
+		      DEEPDEBUG,
+		      "Created new heap allocation %p",
 		      elem->data);
 
 		/* mark the entry as having a valid heap allocation */
@@ -2545,8 +2894,7 @@ static nserror release(nsurl *url, enum backing_store_flags bsflags)
 	 * allocation it must be invalidated fully now the allocation
 	 * has been released.
 	 */
-	if ((ret == NSERROR_OK) &&
-	    ((bse->flags & ENTRY_FLAGS_INVALID) != 0)) {
+	if ((ret == NSERROR_OK) && ((bse->flags & ENTRY_FLAGS_INVALID) != 0)) {
 		ret = invalidate_entry(storestate, bse);
 	}
 
@@ -2563,8 +2911,7 @@ static nserror release(nsurl *url, enum backing_store_flags bsflags)
  * @param url The url is used as the unique primary key to invalidate.
  * @return NSERROR_OK on success or error code on failure.
  */
-static nserror
-invalidate(nsurl *url)
+static nserror invalidate(nsurl *url)
 {
 	nserror ret;
 	struct store_entry *bse;
@@ -2596,15 +2943,17 @@ struct gui_llcache_table *filesystem_llcache_table = &llcache_table;
 #ifdef _WIN32
 static int flush_fd(int fd)
 {
-    int rc = _commit(fd);
-    HANDLE h = (HANDLE)_get_osfhandle(fd);
-    if (h == INVALID_HANDLE_VALUE) return rc;
-    if (FlushFileBuffers(h) == 0) return -1;
-    return 0;
+	int rc = _commit(fd);
+	HANDLE h = (HANDLE)_get_osfhandle(fd);
+	if (h == INVALID_HANDLE_VALUE)
+		return rc;
+	if (FlushFileBuffers(h) == 0)
+		return -1;
+	return 0;
 }
 #else
 static int flush_fd(int fd)
 {
-    return fsync(fd);
+	return fsync(fd);
 }
 #endif

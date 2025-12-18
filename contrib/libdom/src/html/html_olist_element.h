@@ -15,18 +15,18 @@
 
 struct dom_html_olist_element {
 	struct dom_html_element base;
-			/**< The base class */
+	/**< The base class */
 };
 
 /* Create a dom_html_olist_element object */
-dom_exception _dom_html_olist_element_create(
-		struct dom_html_element_create_params *params,
-		struct dom_html_olist_element **ele);
+dom_exception
+_dom_html_olist_element_create(struct dom_html_element_create_params *params,
+			       struct dom_html_olist_element **ele);
 
 /* Initialise a dom_html_olist_element object */
 dom_exception _dom_html_olist_element_initialise(
-		struct dom_html_element_create_params *params,
-		struct dom_html_olist_element *ele);
+	struct dom_html_element_create_params *params,
+	struct dom_html_olist_element *ele);
 
 /* Finalise a dom_html_olist_element object */
 void _dom_html_olist_element_finalise(struct dom_html_olist_element *ele);
@@ -36,26 +36,25 @@ void _dom_html_olist_element_destroy(struct dom_html_olist_element *ele);
 
 /* The protected virtual functions */
 dom_exception _dom_html_olist_element_parse_attribute(dom_element *ele,
-		dom_string *name, dom_string *value,
-		dom_string **parsed);
+						      dom_string *name,
+						      dom_string *value,
+						      dom_string **parsed);
 void _dom_virtual_html_olist_element_destroy(dom_node_internal *node);
-dom_exception _dom_html_olist_element_copy(dom_node_internal *old,
-		                dom_node_internal **copy);
+dom_exception
+_dom_html_olist_element_copy(dom_node_internal *old, dom_node_internal **copy);
 
-#define DOM_HTML_OLIST_ELEMENT_PROTECT_VTABLE \
+#define DOM_HTML_OLIST_ELEMENT_PROTECT_VTABLE                                  \
 	_dom_html_olist_element_parse_attribute
 
-#define DOM_NODE_PROTECT_VTABLE_HTML_OLIST_ELEMENT \
-	_dom_virtual_html_olist_element_destroy, \
-	_dom_html_olist_element_copy
+#define DOM_NODE_PROTECT_VTABLE_HTML_OLIST_ELEMENT                             \
+	_dom_virtual_html_olist_element_destroy, _dom_html_olist_element_copy
 
 /* Helper functions*/
-dom_exception _dom_html_olist_element_copy_internal(
-		dom_html_olist_element *old,
-		dom_html_olist_element *new);
-#define dom_html_olist_element_copy_internal(o, n) \
-		_dom_html_olist_element_copy_internal( \
-				(dom_html_olist_element *) (o), \
-				(dom_html_olist_element *) (n))
+dom_exception
+_dom_html_olist_element_copy_internal(dom_html_olist_element *old,
+				      dom_html_olist_element *new);
+#define dom_html_olist_element_copy_internal(o, n)                             \
+	_dom_html_olist_element_copy_internal((dom_html_olist_element *)(o),   \
+					      (dom_html_olist_element *)(n))
 
 #endif

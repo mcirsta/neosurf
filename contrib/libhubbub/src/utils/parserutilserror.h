@@ -18,8 +18,8 @@
  * \param error  The ParserUtils error to convert
  * \return The corresponding Hubbub error
  */
-static inline hubbub_error hubbub_error_from_parserutils_error(
-		parserutils_error error)
+static inline hubbub_error
+hubbub_error_from_parserutils_error(parserutils_error error)
 {
 	if (error == PARSERUTILS_OK)
 		return HUBBUB_OK;
@@ -42,4 +42,3 @@ static inline hubbub_error hubbub_error_from_parserutils_error(
 }
 
 #endif
-

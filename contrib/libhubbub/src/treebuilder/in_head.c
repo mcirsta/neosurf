@@ -26,8 +26,8 @@
  * \param treebuilder  The treebuilder instance
  * \param token        The token to process
  */
-static hubbub_error process_meta_in_head(hubbub_treebuilder *treebuilder,
-		const hubbub_token *token)
+static hubbub_error
+process_meta_in_head(hubbub_treebuilder *treebuilder, const hubbub_token *token)
 {
 	static uint16_t utf16, utf16be, utf16le;
 	uint16_t charset_enc = 0;
@@ -46,31 +46,32 @@ static hubbub_error process_meta_in_head(hubbub_treebuilder *treebuilder,
 
 	/* Grab UTF-16 MIBenums */
 	if (utf16 == 0) {
-		utf16 = parserutils_charset_mibenum_from_name(
-				"utf-16", SLEN("utf-16"));
+		utf16 = parserutils_charset_mibenum_from_name("utf-16",
+							      SLEN("utf-16"));
 		utf16be = parserutils_charset_mibenum_from_name(
-				"utf-16be", SLEN("utf-16be"));
+			"utf-16be", SLEN("utf-16be"));
 		utf16le = parserutils_charset_mibenum_from_name(
-				"utf-16le", SLEN("utf-16le"));
+			"utf-16le", SLEN("utf-16le"));
 		assert(utf16 != 0 && utf16be != 0 && utf16le != 0);
 	}
 
 	for (i = 0; i < token->data.tag.n_attributes; i++) {
 		hubbub_attribute *attr = &token->data.tag.attributes[i];
 
-		if (hubbub_string_match(attr->name.ptr, attr->name.len,
-				(const uint8_t *) "charset",
-				SLEN("charset")) == true) {
+		if (hubbub_string_match(attr->name.ptr,
+					attr->name.len,
+					(const uint8_t *)"charset",
+					SLEN("charset")) == true) {
 			/* Extract charset */
 			charset_enc = parserutils_charset_mibenum_from_name(
-					(const char *) attr->value.ptr,
-					attr->value.len);
-		} else if (hubbub_string_match(attr->name.ptr, attr->name.len,
-				(const uint8_t *) "content",
-				SLEN("content")) == true) {
+				(const char *)attr->value.ptr, attr->value.len);
+		} else if (hubbub_string_match(attr->name.ptr,
+					       attr->name.len,
+					       (const uint8_t *)"content",
+					       SLEN("content")) == true) {
 			/* Extract charset from Content-Type */
 			content_type_enc = hubbub_charset_parse_content(
-					attr->value.ptr, attr->value.len);
+				attr->value.ptr, attr->value.len);
 		}
 	}
 
@@ -85,15 +86,15 @@ static hubbub_error process_meta_in_head(hubbub_treebuilder *treebuilder,
 
 		/* Change UTF-16 to UTF-8 */
 		if (charset_enc == utf16le || charset_enc == utf16be ||
-				charset_enc == utf16) {
+		    charset_enc == utf16) {
 			charset_enc = parserutils_charset_mibenum_from_name(
-					"UTF-8", SLEN("UTF-8"));
+				"UTF-8", SLEN("UTF-8"));
 		}
 
 		name = parserutils_charset_mibenum_to_name(charset_enc);
 
 		err = treebuilder->tree_handler->encoding_change(
-				treebuilder->tree_handler->ctx,	name);
+			treebuilder->tree_handler->ctx, name);
 	}
 
 	return err;
@@ -106,8 +107,8 @@ static hubbub_error process_meta_in_head(hubbub_treebuilder *treebuilder,
  * \param token        The token to handle
  * \return True to reprocess token, false otherwise
  */
-hubbub_error handle_in_head(hubbub_treebuilder *treebuilder, 
-		const hubbub_token *token)
+hubbub_error
+handle_in_head(hubbub_treebuilder *treebuilder, const hubbub_token *token)
 {
 	hubbub_error err = HUBBUB_OK;
 	bool handled = false;
@@ -115,27 +116,32 @@ hubbub_error handle_in_head(hubbub_treebuilder *treebuilder,
 	switch (token->type) {
 	case HUBBUB_TOKEN_CHARACTER:
 		err = process_characters_expect_whitespace(treebuilder,
-				token, true);
+							   token,
+							   true);
 		break;
 	case HUBBUB_TOKEN_COMMENT:
-		err = process_comment_append(treebuilder, token,
-				treebuilder->context.element_stack[
-				treebuilder->context.current_node].node);
+		err = process_comment_append(
+			treebuilder,
+			token,
+			treebuilder->context
+				.element_stack[treebuilder->context
+						       .current_node]
+				.node);
 		break;
 	case HUBBUB_TOKEN_DOCTYPE:
 		/** \todo parse error */
 		break;
-	case HUBBUB_TOKEN_START_TAG:
-	{
-		element_type type = element_type_from_name(treebuilder,
-				&token->data.tag.name);
+	case HUBBUB_TOKEN_START_TAG: {
+		element_type type = element_type_from_name(
+			treebuilder, &token->data.tag.name);
 
 		if (type == HTML) {
 			/* Process as if "in body" */
 			err = handle_in_body(treebuilder, token);
 		} else if (type == BASE || type == COMMAND || type == LINK) {
-			err = insert_element(treebuilder, &token->data.tag, 
-					false);
+			err = insert_element(treebuilder,
+					     &token->data.tag,
+					     false);
 
 			/** \todo ack sc flag */
 		} else if (type == META) {
@@ -146,11 +152,13 @@ hubbub_error handle_in_head(hubbub_treebuilder *treebuilder,
 			err = parse_generic_rcdata(treebuilder, token, false);
 		} else if (type == NOSCRIPT) {
 			if (treebuilder->context.enable_scripting) {
-				err = parse_generic_rcdata(treebuilder, token, 
-						false);
+				err = parse_generic_rcdata(treebuilder,
+							   token,
+							   false);
 			} else {
-				err = insert_element(treebuilder, 
-						&token->data.tag, true);
+				err = insert_element(treebuilder,
+						     &token->data.tag,
+						     true);
 				if (err != HUBBUB_OK)
 					return err;
 
@@ -158,7 +166,7 @@ hubbub_error handle_in_head(hubbub_treebuilder *treebuilder,
 			}
 		} else if (type == SCRIPT) {
 			/** \todo need to ensure that the client callback
-			 * sets the parser-inserted/already-executed script 
+			 * sets the parser-inserted/already-executed script
 			 * flags. */
 			err = parse_generic_rcdata(treebuilder, token, false);
 		} else if (type == HEAD) {
@@ -166,20 +174,17 @@ hubbub_error handle_in_head(hubbub_treebuilder *treebuilder,
 		} else {
 			err = HUBBUB_REPROCESS;
 		}
-	}
-		break;
-	case HUBBUB_TOKEN_END_TAG:
-	{
-		element_type type = element_type_from_name(treebuilder,
-				&token->data.tag.name);
+	} break;
+	case HUBBUB_TOKEN_END_TAG: {
+		element_type type = element_type_from_name(
+			treebuilder, &token->data.tag.name);
 
 		if (type == HEAD) {
 			handled = true;
 		} else if (type == HTML || type == BODY || type == BR) {
 			err = HUBBUB_REPROCESS;
 		} /** \todo parse error */
-	}
-		break;
+	} break;
 	case HUBBUB_TOKEN_EOF:
 		err = HUBBUB_REPROCESS;
 		break;
@@ -193,8 +198,7 @@ hubbub_error handle_in_head(hubbub_treebuilder *treebuilder,
 		element_stack_pop(treebuilder, &ns, &otype, &node);
 
 		treebuilder->tree_handler->unref_node(
-				treebuilder->tree_handler->ctx,
-				node);
+			treebuilder->tree_handler->ctx, node);
 
 		treebuilder->context.mode = AFTER_HEAD;
 	}

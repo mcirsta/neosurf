@@ -15,17 +15,19 @@
 
 typedef struct dom_html_canvas_element dom_html_canvas_element;
 
-dom_exception dom_html_canvas_element_get_width(
-	dom_html_canvas_element *object, dom_ulong *width);
+dom_exception dom_html_canvas_element_get_width(dom_html_canvas_element *object,
+						dom_ulong *width);
 
-dom_exception dom_html_canvas_element_set_width(
-	dom_html_canvas_element *object, dom_ulong width);
+dom_exception dom_html_canvas_element_set_width(dom_html_canvas_element *object,
+						dom_ulong width);
 
-dom_exception dom_html_canvas_element_get_height(
-	dom_html_canvas_element *object, dom_ulong *height);
+dom_exception
+dom_html_canvas_element_get_height(dom_html_canvas_element *object,
+				   dom_ulong *height);
 
-dom_exception dom_html_canvas_element_set_height(
-	dom_html_canvas_element *object, dom_ulong height);
+dom_exception
+dom_html_canvas_element_set_height(dom_html_canvas_element *object,
+				   dom_ulong height);
 
 
 #endif

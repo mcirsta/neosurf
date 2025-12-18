@@ -47,20 +47,20 @@
 struct nsoption_s *nsoptions = NULL;
 struct nsoption_s *nsoptions_default = NULL;
 
-#define NSOPTION_BOOL(NAME, DEFAULT) \
-	{ #NAME, sizeof(#NAME) - 1, OPTION_BOOL, { .b = DEFAULT } },
+#define NSOPTION_BOOL(NAME, DEFAULT)                                           \
+	{#NAME, sizeof(#NAME) - 1, OPTION_BOOL, {.b = DEFAULT}},
 
-#define NSOPTION_STRING(NAME, DEFAULT) \
-	{ #NAME, sizeof(#NAME) - 1, OPTION_STRING, { .cs = DEFAULT } },
+#define NSOPTION_STRING(NAME, DEFAULT)                                         \
+	{#NAME, sizeof(#NAME) - 1, OPTION_STRING, {.cs = DEFAULT}},
 
-#define NSOPTION_INTEGER(NAME, DEFAULT) \
-	{ #NAME, sizeof(#NAME) - 1, OPTION_INTEGER, { .i = DEFAULT } },
+#define NSOPTION_INTEGER(NAME, DEFAULT)                                        \
+	{#NAME, sizeof(#NAME) - 1, OPTION_INTEGER, {.i = DEFAULT}},
 
-#define NSOPTION_UINT(NAME, DEFAULT) \
-	{ #NAME, sizeof(#NAME) - 1, OPTION_UINT, { .u = DEFAULT } },
+#define NSOPTION_UINT(NAME, DEFAULT)                                           \
+	{#NAME, sizeof(#NAME) - 1, OPTION_UINT, {.u = DEFAULT}},
 
-#define NSOPTION_COLOUR(NAME, DEFAULT) \
-	{ #NAME, sizeof(#NAME) - 1, OPTION_COLOUR, { .c = DEFAULT } },
+#define NSOPTION_COLOUR(NAME, DEFAULT)                                         \
+	{#NAME, sizeof(#NAME) - 1, OPTION_COLOUR, {.c = DEFAULT}},
 
 /** The table of compiled in default options */
 static struct nsoption_s defaults[] = {
@@ -85,8 +85,7 @@ static struct nsoption_s defaults[] = {
 #elif defined(nsqt)
 #include "qt/options.h"
 #endif
-	{ NULL, 0, OPTION_INTEGER, { 0 } }
-};
+	{NULL, 0, OPTION_INTEGER, {0}}};
 
 #undef NSOPTION_BOOL
 #undef NSOPTION_STRING
@@ -97,8 +96,7 @@ static struct nsoption_s defaults[] = {
 /**
  * Set an option value based on a string
  */
-static bool
-strtooption(const char *value, struct nsoption_s *option)
+static bool strtooption(const char *value, struct nsoption_s *option)
 {
 	bool ret = true;
 	colour rgbcolour; /* RRGGBB */
@@ -116,16 +114,15 @@ strtooption(const char *value, struct nsoption_s *option)
 		option->value.u = strtoul(value, NULL, 0);
 		break;
 
-    case OPTION_COLOUR: {
-        unsigned int tmp;
-        if (sscanf(value, "%x", &tmp) == 1) {
-            rgbcolour = (colour)tmp;
-            option->value.c = (((0x000000FF & rgbcolour) << 16) |
-                       ((0x0000FF00 & rgbcolour) << 0) |
-                       ((0x00FF0000 & rgbcolour) >> 16));
-        }
-        }
-        break;
+	case OPTION_COLOUR: {
+		unsigned int tmp;
+		if (sscanf(value, "%x", &tmp) == 1) {
+			rgbcolour = (colour)tmp;
+			option->value.c = (((0x000000FF & rgbcolour) << 16) |
+					   ((0x0000FF00 & rgbcolour) << 0) |
+					   ((0x00FF0000 & rgbcolour) >> 16));
+		}
+	} break;
 
 	case OPTION_STRING:
 		if (option->value.s != NULL) {
@@ -154,7 +151,7 @@ static void nsoption_validate(struct nsoption_s *opts, struct nsoption_s *defs)
 	int cloop;
 	bool black = true;
 
-	if (opts[NSOPTION_treeview_font_size].value.i  < 50) {
+	if (opts[NSOPTION_treeview_font_size].value.i < 50) {
 		opts[NSOPTION_treeview_font_size].value.i = 50;
 	}
 
@@ -162,7 +159,7 @@ static void nsoption_validate(struct nsoption_s *opts, struct nsoption_s *defs)
 		opts[NSOPTION_treeview_font_size].value.i = 1000;
 	}
 
-	if (opts[NSOPTION_font_size].value.i  < 50) {
+	if (opts[NSOPTION_font_size].value.i < 50) {
 		opts[NSOPTION_font_size].value.i = 50;
 	}
 
@@ -230,10 +227,9 @@ static void nsoption_validate(struct nsoption_s *opts, struct nsoption_s *defs)
  * @param entry The option to compare.
  * @return true if the option differs false if not.
  */
-static bool
-nsoption_is_set(const struct nsoption_s *opts,
-		const struct nsoption_s *defs,
-		const enum nsoption_e entry)
+static bool nsoption_is_set(const struct nsoption_s *opts,
+			    const struct nsoption_s *defs,
+			    const enum nsoption_e entry)
 {
 	bool ret = false;
 
@@ -279,7 +275,6 @@ nsoption_is_set(const struct nsoption_s *opts,
 			ret = true;
 		}
 		break;
-
 	}
 	return ret;
 }
@@ -299,7 +294,10 @@ static size_t nsoption_output_value_file(struct nsoption_s *option, void *ctx)
 
 	switch (option->type) {
 	case OPTION_BOOL:
-		slen = fprintf(fp, "%s:%c\n", option->key, option->value.b ? '1' : '0');
+		slen = fprintf(fp,
+			       "%s:%c\n",
+			       option->key,
+			       option->value.b ? '1' : '0');
 		break;
 
 	case OPTION_INTEGER:
@@ -315,14 +313,18 @@ static size_t nsoption_output_value_file(struct nsoption_s *option, void *ctx)
 		rgbcolour = (((0x000000FF & option->value.c) << 16) |
 			     ((0x0000FF00 & option->value.c) << 0) |
 			     ((0x00FF0000 & option->value.c) >> 16));
-        slen = fprintf(fp, "%s:%06x\n", option->key, (unsigned int)rgbcolour);
+		slen = fprintf(
+			fp, "%s:%06x\n", option->key, (unsigned int)rgbcolour);
 		break;
 
 	case OPTION_STRING:
-		slen = fprintf(fp, "%s:%s\n",
+		slen = fprintf(fp,
+			       "%s:%s\n",
 			       option->key,
 			       ((option->value.s == NULL) ||
-				(*option->value.s == 0)) ? "" : option->value.s);
+				(*option->value.s == 0))
+				       ? ""
+				       : option->value.s);
 		break;
 	}
 
@@ -338,11 +340,10 @@ static size_t nsoption_output_value_file(struct nsoption_s *option, void *ctx)
  * @param string The string in which to output the value.
  * @return The number of bytes written to string or -1 on error
  */
-static size_t
-nsoption_output_value_html(struct nsoption_s *option,
-			   size_t size,
-			   size_t pos,
-			   char *string)
+static size_t nsoption_output_value_html(struct nsoption_s *option,
+					 size_t size,
+					 size_t pos,
+					 char *string)
 {
 	size_t slen = 0; /* length added to string */
 	colour rgbcolour; /* RRGGBB */
@@ -356,17 +357,13 @@ nsoption_output_value_html(struct nsoption_s *option,
 		break;
 
 	case OPTION_INTEGER:
-		slen = snprintf(string + pos,
-				size - pos,
-				"%i",
-				option->value.i);
+		slen = snprintf(
+			string + pos, size - pos, "%i", option->value.i);
 		break;
 
 	case OPTION_UINT:
-		slen = snprintf(string + pos,
-				size - pos,
-				"%u",
-				option->value.u);
+		slen = snprintf(
+			string + pos, size - pos, "%u", option->value.u);
 		break;
 
 	case OPTION_COLOUR:
@@ -374,24 +371,27 @@ nsoption_output_value_html(struct nsoption_s *option,
 		slen = snprintf(string + pos,
 				size - pos,
 				"<span style=\"font-family:Monospace;\">"
-                "#%06X"
+				"#%06X"
 				"</span> "
-                "<span style=\"background-color: #%06x; "
-                "border: 1px solid #%06x; "
+				"<span style=\"background-color: #%06x; "
+				"border: 1px solid #%06x; "
 				"display: inline-block; "
 				"width: 1em; height: 1em;\">"
 				"</span>",
-                (unsigned int)rgbcolour,
-                (unsigned int)rgbcolour,
-                colour_to_bw_furthest(rgbcolour));
+				(unsigned int)rgbcolour,
+				(unsigned int)rgbcolour,
+				colour_to_bw_furthest(rgbcolour));
 		break;
 
 	case OPTION_STRING:
 		if (option->value.s != NULL) {
-			slen = snprintf(string + pos, size - pos, "%s",
+			slen = snprintf(string + pos,
+					size - pos,
+					"%s",
 					option->value.s);
 		} else {
-			slen = snprintf(string + pos, size - pos,
+			slen = snprintf(string + pos,
+					size - pos,
 					"<span class=\"null-content\">NULL"
 					"</span>");
 		}
@@ -411,11 +411,10 @@ nsoption_output_value_html(struct nsoption_s *option,
  * @param string The string in which to output the value.
  * @return The number of bytes written to string or -1 on error
  */
-static size_t
-nsoption_output_value_text(struct nsoption_s *option,
-			   size_t size,
-			   size_t pos,
-			   char *string)
+static size_t nsoption_output_value_text(struct nsoption_s *option,
+					 size_t size,
+					 size_t pos,
+					 char *string)
 {
 	size_t slen = 0; /* length added to string */
 	colour rgbcolour; /* RRGGBB */
@@ -429,24 +428,23 @@ nsoption_output_value_text(struct nsoption_s *option,
 		break;
 
 	case OPTION_INTEGER:
-		slen = snprintf(string + pos,
-				size - pos,
-				"%i",
-				option->value.i);
+		slen = snprintf(
+			string + pos, size - pos, "%i", option->value.i);
 		break;
 
 	case OPTION_UINT:
-		slen = snprintf(string + pos,
-				size - pos,
-				"%u",
-				option->value.u);
+		slen = snprintf(
+			string + pos, size - pos, "%u", option->value.u);
 		break;
 
 	case OPTION_COLOUR:
 		rgbcolour = (((0x000000FF & option->value.c) << 16) |
 			     ((0x0000FF00 & option->value.c) << 0) |
 			     ((0x00FF0000 & option->value.c) >> 16));
-        slen = snprintf(string + pos, size - pos, "%06x", (unsigned int)rgbcolour);
+		slen = snprintf(string + pos,
+				size - pos,
+				"%06x",
+				(unsigned int)rgbcolour);
 		break;
 
 	case OPTION_STRING:
@@ -471,41 +469,39 @@ nsoption_output_value_text(struct nsoption_s *option,
  * \param[out] pdst The output table
  * \return NSERROR_OK on success or appropriate error code.
  */
-static nserror
-nsoption_dup(struct nsoption_s *src, struct nsoption_s **pdst)
+static nserror nsoption_dup(struct nsoption_s *src, struct nsoption_s **pdst)
 {
-    struct nsoption_s *dst;
-    size_t count = 0;
-    struct nsoption_s *scan = src;
+	struct nsoption_s *dst;
+	size_t count = 0;
+	struct nsoption_s *scan = src;
 
-    /* determine number of entries (excluding sentinel) */
-    while (scan->key != NULL) {
-        count++;
-        scan++;
-    }
+	/* determine number of entries (excluding sentinel) */
+	while (scan->key != NULL) {
+		count++;
+		scan++;
+	}
 
-    /* allocate space for entries plus sentinel */
-    dst = malloc((count + 1) * sizeof(*dst));
-    if (dst == NULL) {
-        return NSERROR_NOMEM;
-    }
-    *pdst = dst;
+	/* allocate space for entries plus sentinel */
+	dst = malloc((count + 1) * sizeof(*dst));
+	if (dst == NULL) {
+		return NSERROR_NOMEM;
+	}
+	*pdst = dst;
 
-    /* copy entries and sentinel */
-    memcpy(dst, src, (count + 1) * sizeof(*dst));
+	/* copy entries and sentinel */
+	memcpy(dst, src, (count + 1) * sizeof(*dst));
 
-    /* duplicate string contents for string-typed options */
-    scan = src;
-    while (scan->key != NULL) {
-        if ((scan->type == OPTION_STRING) &&
-            (scan->value.s != NULL)) {
-            dst->value.s = strdup(scan->value.s);
-        }
-        scan++;
-        dst++;
-    }
+	/* duplicate string contents for string-typed options */
+	scan = src;
+	while (scan->key != NULL) {
+		if ((scan->type == OPTION_STRING) && (scan->value.s != NULL)) {
+			dst->value.s = strdup(scan->value.s);
+		}
+		scan++;
+		dst++;
+	}
 
-    return NSERROR_OK;
+	return NSERROR_OK;
 }
 
 /**
@@ -516,8 +512,7 @@ nsoption_dup(struct nsoption_s *src, struct nsoption_s **pdst)
  *
  * @param opts The option table to free.
  */
-static nserror
-nsoption_free(struct nsoption_s *opts)
+static nserror nsoption_free(struct nsoption_s *opts)
 {
 	struct nsoption_s *cur; /* option being freed */
 
@@ -623,10 +618,9 @@ static nserror optionline(struct nsoption_s *opts, char *line, int linelen)
 
 
 /* exported interface documented in utils/nsoption.h */
-nserror
-nsoption_init(nsoption_set_default_t *set_defaults,
-	      struct nsoption_s **popts,
-	      struct nsoption_s **pdefs)
+nserror nsoption_init(nsoption_set_default_t *set_defaults,
+		      struct nsoption_s **popts,
+		      struct nsoption_s **pdefs)
 {
 	nserror ret;
 	struct nsoption_s *defs;
@@ -681,7 +675,7 @@ nsoption_init(nsoption_set_default_t *set_defaults,
 /* exported interface documented in utils/nsoption.h */
 nserror nsoption_finalise(struct nsoption_s *opts, struct nsoption_s *defs)
 {
-    nserror res;
+	nserror res;
 
 	/* check to see if global table selected */
 	if (opts == NULL) {
@@ -689,12 +683,12 @@ nserror nsoption_finalise(struct nsoption_s *opts, struct nsoption_s *defs)
 		if (res == NSERROR_OK) {
 			nsoptions = NULL;
 		}
-    } else {
-        res = nsoption_free(opts);
-        if (res == NSERROR_OK && opts == nsoptions) {
-            nsoptions = NULL;
-        }
-    }
+	} else {
+		res = nsoption_free(opts);
+		if (res == NSERROR_OK && opts == nsoptions) {
+			nsoptions = NULL;
+		}
+	}
 	if (res != NSERROR_OK) {
 		return res;
 	}
@@ -705,20 +699,19 @@ nserror nsoption_finalise(struct nsoption_s *opts, struct nsoption_s *defs)
 		if (res == NSERROR_OK) {
 			nsoptions_default = NULL;
 		}
-    } else {
-        res = nsoption_free(defs);
-        if (res == NSERROR_OK && defs == nsoptions_default) {
-            nsoptions_default = NULL;
-        }
-    }
+	} else {
+		res = nsoption_free(defs);
+		if (res == NSERROR_OK && defs == nsoptions_default) {
+			nsoptions_default = NULL;
+		}
+	}
 
-    return res;
+	return res;
 }
 
 
 /* exported interface documented in utils/nsoption.h */
-nserror
-nsoption_read(const char *path, struct nsoption_s *opts)
+nserror nsoption_read(const char *path, struct nsoption_s *opts)
 {
 	char s[NSOPTION_MAX_LINE_LEN];
 	FILE *fp;
@@ -767,12 +760,11 @@ nsoption_read(const char *path, struct nsoption_s *opts)
  *
  * exported interface documented in utils/nsoption.h
  */
-nserror
-nsoption_generate(nsoption_generate_cb *generate_cb,
-		  void *generate_ctx,
-		  enum nsoption_generate_flags flags,
-		  struct nsoption_s *opts,
-		  struct nsoption_s *defs)
+nserror nsoption_generate(nsoption_generate_cb *generate_cb,
+			  void *generate_ctx,
+			  enum nsoption_generate_flags flags,
+			  struct nsoption_s *opts,
+			  struct nsoption_s *defs)
 {
 	unsigned int entry; /* index to option being output */
 
@@ -807,10 +799,9 @@ nsoption_generate(nsoption_generate_cb *generate_cb,
  *
  * exported interface documented in utils/nsoption.h
  */
-nserror
-nsoption_write(const char *path,
-	       struct nsoption_s *opts,
-	       struct nsoption_s *defs)
+nserror nsoption_write(const char *path,
+		       struct nsoption_s *opts,
+		       struct nsoption_s *defs)
 {
 	FILE *fp;
 	nserror ret;
@@ -835,7 +826,9 @@ nsoption_write(const char *path,
 
 	fp = fopen(path, "w");
 	if (!fp) {
-		NSLOG(neosurf, INFO, "failed to open file '%s' for writing",
+		NSLOG(neosurf,
+		      INFO,
+		      "failed to open file '%s' for writing",
 		      path);
 		return NSERROR_NOT_FOUND;
 	}
@@ -853,8 +846,7 @@ nsoption_write(const char *path,
 
 
 /* exported interface documented in utils/nsoption.h */
-nserror
-nsoption_dump(FILE *outf, struct nsoption_s *opts)
+nserror nsoption_dump(FILE *outf, struct nsoption_s *opts)
 {
 	if (outf == NULL) {
 		return NSERROR_BAD_PARAMETER;
@@ -869,16 +861,15 @@ nsoption_dump(FILE *outf, struct nsoption_s *opts)
 	}
 
 	return nsoption_generate(nsoption_output_value_file,
-				outf,
-				NSOPTION_GENERATE_ALL,
-				opts,
-				nsoptions_default);
+				 outf,
+				 NSOPTION_GENERATE_ALL,
+				 opts,
+				 nsoptions_default);
 }
 
 
 /* exported interface documented in utils/nsoption.h */
-nserror
-nsoption_commandline(int *pargc, char **argv, struct nsoption_s *opts)
+nserror nsoption_commandline(int *pargc, char **argv, struct nsoption_s *opts)
 {
 	char *arg;
 	char *val;
@@ -905,7 +896,7 @@ nsoption_commandline(int *pargc, char **argv, struct nsoption_s *opts)
 
 		/* check we have an option */
 		/* option must start -- and be as long as the shortest option*/
-		if ((arglen < (2+5) ) || (arg[0] != '-') || (arg[1] != '-'))
+		if ((arglen < (2 + 5)) || (arg[0] != '-') || (arg[1] != '-'))
 			break;
 
 		arg += 2; /* skip -- */
@@ -919,7 +910,7 @@ nsoption_commandline(int *pargc, char **argv, struct nsoption_s *opts)
 			val = argv[idx];
 		} else {
 			/* equals sign */
-			arglen = val - arg ;
+			arglen = val - arg;
 			val++;
 		}
 
@@ -927,8 +918,7 @@ nsoption_commandline(int *pargc, char **argv, struct nsoption_s *opts)
 
 		NSLOG(neosurf, INFO, "%.*s = %s", arglen, arg, val);
 
-		for (entry_loop = 0;
-		     entry_loop < NSOPTION_LISTEND;
+		for (entry_loop = 0; entry_loop < NSOPTION_LISTEND;
 		     entry_loop++) {
 			if (strncmp(arg, opts[entry_loop].key, arglen) == 0) {
 				strtooption(val, opts + entry_loop);
@@ -940,7 +930,7 @@ nsoption_commandline(int *pargc, char **argv, struct nsoption_s *opts)
 	}
 
 	/* remove processed options from argv */
-	for (mv_loop=0; mv_loop < (*pargc - idx); mv_loop++) {
+	for (mv_loop = 0; mv_loop < (*pargc - idx); mv_loop++) {
 		argv[mv_loop + 1] = argv[mv_loop + idx];
 	}
 	*pargc -= (idx - 1);
@@ -951,15 +941,14 @@ nsoption_commandline(int *pargc, char **argv, struct nsoption_s *opts)
 }
 
 /* exported interface documented in options.h */
-int
-nsoption_snoptionf(char *string,
-                   size_t size,
-                   enum nsoption_e option_idx,
-                   const char *fmt)
+int nsoption_snoptionf(char *string,
+		       size_t size,
+		       enum nsoption_e option_idx,
+		       const char *fmt)
 {
-    size_t slen = 0; /* current output string length */
-    int fmtc = 0; /* current index into format string */
-    struct nsoption_s *option;
+	size_t slen = 0; /* current output string length */
+	int fmtc = 0; /* current index into format string */
+	struct nsoption_s *option;
 
 	if (fmt == NULL) {
 		return -1;
@@ -1034,22 +1023,17 @@ nsoption_snoptionf(char *string,
 							 size - slen,
 							 "string");
 					break;
-
 				}
 				break;
 
 
 			case 'V':
-				slen += nsoption_output_value_html(option,
-								   size,
-								   slen,
-								   string);
+				slen += nsoption_output_value_html(
+					option, size, slen, string);
 				break;
 			case 'v':
-				slen += nsoption_output_value_text(option,
-								   size,
-								   slen,
-								   string);
+				slen += nsoption_output_value_text(
+					option, size, slen, string);
 				break;
 			}
 			fmtc++;
@@ -1060,18 +1044,17 @@ nsoption_snoptionf(char *string,
 		}
 	}
 
-    if (string != NULL && size > 0) {
-        string[min(slen, size - 1)] = '\0';
-    }
+	if (string != NULL && size > 0) {
+		string[min(slen, size - 1)] = '\0';
+	}
 
-    return slen;
+	return slen;
 }
 
 /* exported interface documented in options.h */
-nserror
-nsoption_set_tbl_charp(struct nsoption_s *opts,
-		       enum nsoption_e option_idx,
-		       char *s)
+nserror nsoption_set_tbl_charp(struct nsoption_s *opts,
+			       enum nsoption_e option_idx,
+			       char *s)
 {
 	struct nsoption_s *option;
 

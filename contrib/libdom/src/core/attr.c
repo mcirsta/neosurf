@@ -29,40 +29,36 @@ struct dom_element;
  * DOM attribute node
  */
 struct dom_attr {
-	struct dom_node_internal base;	/**< Base node */
+	struct dom_node_internal base; /**< Base node */
 
-	struct dom_type_info *schema_type_info;	/**< Type information */
+	struct dom_type_info *schema_type_info; /**< Type information */
 
-	dom_attr_type type;	/**< The type of this attribute */
-	
+	dom_attr_type type; /**< The type of this attribute */
+
 	union {
 		uint32_t lvalue;
 		unsigned short svalue;
 		bool bvalue;
-	} value;	/**< The special type value of this attribute */
+	} value; /**< The special type value of this attribute */
 
-	bool specified;	/**< Whether the attribute is specified or default */
+	bool specified; /**< Whether the attribute is specified or default */
 
-	bool is_id;	/**< Whether this attribute is a ID attribute */
+	bool is_id; /**< Whether this attribute is a ID attribute */
 
-	bool read_only;	/**< Whether this attribute is readonly */
+	bool read_only; /**< Whether this attribute is readonly */
 };
 
 /* The vtable for dom_attr node */
 static const struct dom_attr_vtable attr_vtable = {
-	{
-		{
-			DOM_NODE_EVENT_TARGET_VTABLE,
-		},
-		DOM_NODE_VTABLE_ATTR
-	},
-	DOM_ATTR_VTABLE
-};
+	{{
+		 DOM_NODE_EVENT_TARGET_VTABLE,
+	 },
+	 DOM_NODE_VTABLE_ATTR},
+	DOM_ATTR_VTABLE};
 
 /* The protected vtable for dom_attr */
 static const struct dom_node_protect_vtable attr_protect_vtable = {
-	DOM_ATTR_PROTECT_VTABLE
-};
+	DOM_ATTR_PROTECT_VTABLE};
 
 
 /* -------------------------------------------------------------------- */
@@ -81,15 +77,17 @@ static const struct dom_node_protect_vtable attr_protect_vtable = {
  * \return DOM_NO_ERR     on success,
  *         DOM_NO_MEM_ERR on memory exhaustion.
  *
- * \p doc and \p name will have their reference counts increased. The 
+ * \p doc and \p name will have their reference counts increased. The
  * caller should make sure that \p name is a valid NCName here.
  *
  * The returned attribute will already be referenced.
  */
 dom_exception _dom_attr_create(struct dom_document *doc,
-		dom_string *name, dom_string *namespace,
-		dom_string *prefix, bool specified, 
-		struct dom_attr **result)
+			       dom_string *name,
+			       dom_string *namespace,
+			       dom_string *prefix,
+			       bool specified,
+			       struct dom_attr **result)
 {
 	struct dom_attr *a;
 	dom_exception err;
@@ -104,8 +102,8 @@ dom_exception _dom_attr_create(struct dom_document *doc,
 	a->base.vtable = &attr_protect_vtable;
 
 	/* Initialise the class */
-	err = _dom_attr_initialise(a, doc, name, namespace, prefix, specified, 
-			result);
+	err = _dom_attr_initialise(
+		a, doc, name, namespace, prefix, specified, result);
 	if (err != DOM_NO_ERR) {
 		free(a);
 		return err;
@@ -126,15 +124,23 @@ dom_exception _dom_attr_create(struct dom_document *doc,
  * \param result     The returned node
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_attr_initialise(dom_attr *a, 
-		struct dom_document *doc, dom_string *name,
-		dom_string *namespace, dom_string *prefix,
-		bool specified, struct dom_attr **result)
+dom_exception _dom_attr_initialise(dom_attr *a,
+				   struct dom_document *doc,
+				   dom_string *name,
+				   dom_string *namespace,
+				   dom_string *prefix,
+				   bool specified,
+				   struct dom_attr **result)
 {
 	dom_exception err;
 
-	err = _dom_node_initialise(&a->base, doc, DOM_ATTRIBUTE_NODE,
-			name, NULL, namespace, prefix);
+	err = _dom_node_initialise(&a->base,
+				   doc,
+				   DOM_ATTRIBUTE_NODE,
+				   name,
+				   NULL,
+				   namespace,
+				   prefix);
 	if (err != DOM_NO_ERR) {
 		return err;
 	}
@@ -208,7 +214,7 @@ dom_exception dom_attr_get_integer(dom_attr *a, uint32_t *value)
 {
 	if (a->type != DOM_ATTR_INTEGER)
 		return DOM_ATTR_WRONG_TYPE_ERR;
-	
+
 	*value = a->value.lvalue;
 
 	return DOM_NO_ERR;
@@ -242,23 +248,29 @@ dom_exception dom_attr_set_integer(dom_attr *a, uint32_t value)
 
 	if (a->type != DOM_ATTR_INTEGER)
 		return DOM_ATTR_WRONG_TYPE_ERR;
-	
+
 	if (a->value.lvalue == value)
 		return DOM_NO_ERR;
-	
+
 	a->value.lvalue = value;
 
 	doc = dom_node_get_owner(a);
 	ele = dom_node_get_parent(a);
-	err = _dom_dispatch_attr_modified_event(doc, ele, NULL, NULL,
-			(dom_event_target *) a, NULL,
-			DOM_MUTATION_MODIFICATION, &success);
+	err = _dom_dispatch_attr_modified_event(doc,
+						ele,
+						NULL,
+						NULL,
+						(dom_event_target *)a,
+						NULL,
+						DOM_MUTATION_MODIFICATION,
+						&success);
 	if (err != DOM_NO_ERR)
 		return err;
-	
+
 	success = true;
 	err = _dom_dispatch_subtree_modified_event(doc,
-			(dom_event_target *) a, &success);
+						   (dom_event_target *)a,
+						   &success);
 	return err;
 }
 
@@ -275,7 +287,7 @@ dom_exception dom_attr_get_short(dom_attr *a, unsigned short *value)
 {
 	if (a->type != DOM_ATTR_SHORT)
 		return DOM_ATTR_WRONG_TYPE_ERR;
-	
+
 	*value = a->value.svalue;
 
 	return DOM_NO_ERR;
@@ -309,23 +321,29 @@ dom_exception dom_attr_set_short(dom_attr *a, unsigned short value)
 
 	if (a->type != DOM_ATTR_SHORT)
 		return DOM_ATTR_WRONG_TYPE_ERR;
-	
+
 	if (a->value.svalue == value)
 		return DOM_NO_ERR;
-	
+
 	a->value.svalue = value;
 
 	doc = dom_node_get_owner(a);
 	ele = dom_node_get_parent(a);
-	err = _dom_dispatch_attr_modified_event(doc, ele, NULL, NULL,
-			(dom_event_target *) a, NULL,
-			DOM_MUTATION_MODIFICATION, &success);
+	err = _dom_dispatch_attr_modified_event(doc,
+						ele,
+						NULL,
+						NULL,
+						(dom_event_target *)a,
+						NULL,
+						DOM_MUTATION_MODIFICATION,
+						&success);
 	if (err != DOM_NO_ERR)
 		return err;
-	
+
 	success = true;
 	err = _dom_dispatch_subtree_modified_event(doc,
-			(dom_event_target *) a, &success);
+						   (dom_event_target *)a,
+						   &success);
 	return err;
 }
 
@@ -342,7 +360,7 @@ dom_exception dom_attr_get_bool(dom_attr *a, bool *value)
 {
 	if (a->type != DOM_ATTR_BOOL)
 		return DOM_ATTR_WRONG_TYPE_ERR;
-	
+
 	*value = a->value.bvalue;
 
 	return DOM_NO_ERR;
@@ -376,23 +394,29 @@ dom_exception dom_attr_set_bool(dom_attr *a, bool value)
 
 	if (a->type != DOM_ATTR_BOOL)
 		return DOM_ATTR_WRONG_TYPE_ERR;
-	
+
 	if (a->value.bvalue == value)
 		return DOM_NO_ERR;
-	
+
 	a->value.bvalue = value;
 
 	doc = dom_node_get_owner(a);
 	ele = dom_node_get_parent(a);
-	err = _dom_dispatch_attr_modified_event(doc, ele, NULL, NULL,
-			(dom_event_target *) a, NULL,
-			DOM_MUTATION_MODIFICATION, &success);
+	err = _dom_dispatch_attr_modified_event(doc,
+						ele,
+						NULL,
+						NULL,
+						(dom_event_target *)a,
+						NULL,
+						DOM_MUTATION_MODIFICATION,
+						&success);
 	if (err != DOM_NO_ERR)
 		return err;
-	
+
 	success = true;
 	err = _dom_dispatch_subtree_modified_event(doc,
-			(dom_event_target *) a, &success);
+						   (dom_event_target *)a,
+						   &success);
 	return err;
 }
 
@@ -421,8 +445,7 @@ void dom_attr_mark_readonly(dom_attr *a)
  * the responsibility of the caller to unref the string once it has
  * finished with it.
  */
-dom_exception _dom_attr_get_name(struct dom_attr *attr,
-		dom_string **result)
+dom_exception _dom_attr_get_name(struct dom_attr *attr, dom_string **result)
 {
 	/* This is the same as nodeName */
 	return dom_node_get_node_name(attr, result);
@@ -453,23 +476,21 @@ dom_exception _dom_attr_get_specified(struct dom_attr *attr, bool *result)
  * the responsibility of the caller to unref the string once it has
  * finished with it.
  */
-dom_exception _dom_attr_get_value(struct dom_attr *attr,
-		dom_string **result)
+dom_exception _dom_attr_get_value(struct dom_attr *attr, dom_string **result)
 {
-	struct dom_node_internal *a = (struct dom_node_internal *) attr;
+	struct dom_node_internal *a = (struct dom_node_internal *)attr;
 	struct dom_node_internal *c;
 	dom_string *value, *temp;
 	dom_exception err;
-        
+
 	/* Attempt to shortcut for a single text node child with value */
-	if ((a->first_child != NULL) && 
-	    (a->first_child == a->last_child) &&
+	if ((a->first_child != NULL) && (a->first_child == a->last_child) &&
 	    (a->first_child->type == DOM_TEXT_NODE) &&
 	    (a->first_child->value != NULL)) {
 		*result = dom_string_ref(a->first_child->value);
 		return DOM_NO_ERR;
 	}
-	
+
 	err = dom_string_create(NULL, 0, &value);
 	if (err != DOM_NO_ERR) {
 		return err;
@@ -507,8 +528,7 @@ dom_exception _dom_attr_get_value(struct dom_attr *attr,
 
 			/* Get textual representation of entity */
 			err = _dom_entity_reference_get_textual_representation(
-					(struct dom_entity_reference *) c,
-					&tr);
+				(struct dom_entity_reference *)c, &tr);
 			if (err != DOM_NO_ERR) {
 				dom_string_unref(value);
 				return err;
@@ -546,10 +566,9 @@ dom_exception _dom_attr_get_value(struct dom_attr *attr,
  * \return DOM_NO_ERR                      on success,
  *         DOM_NO_MODIFICATION_ALLOWED_ERR if attribute is readonly.
  */
-dom_exception _dom_attr_set_value(struct dom_attr *attr,
-		dom_string *value)
+dom_exception _dom_attr_set_value(struct dom_attr *attr, dom_string *value)
 {
-	struct dom_node_internal *a = (struct dom_node_internal *) attr;
+	struct dom_node_internal *a = (struct dom_node_internal *)attr;
 	struct dom_node_internal *c, *d;
 	struct dom_text *text;
 	dom_exception err;
@@ -564,14 +583,14 @@ dom_exception _dom_attr_set_value(struct dom_attr *attr,
 	 * type */
 	if (attr->type == DOM_ATTR_UNSET)
 		attr->type = DOM_ATTR_STRING;
-	
+
 	if (attr->type != DOM_ATTR_STRING)
 		return DOM_ATTR_WRONG_TYPE_ERR;
-	
+
 	err = _dom_attr_get_name(attr, &name);
 	if (err != DOM_NO_ERR)
 		return err;
-	
+
 	err = dom_element_parse_attribute(a->parent, name, value, &parsed);
 	dom_string_unref(name);
 	if (err != DOM_NO_ERR) {
@@ -583,7 +602,7 @@ dom_exception _dom_attr_set_value(struct dom_attr *attr,
 	dom_string_unref(parsed);
 	if (err != DOM_NO_ERR)
 		return err;
-	
+
 	/* Destroy children of this node */
 	for (c = a->first_child; c != NULL; c = d) {
 		d = c->next;
@@ -599,8 +618,8 @@ dom_exception _dom_attr_set_value(struct dom_attr *attr,
 	}
 
 	/* And insert the text node as the value */
-	((struct dom_node_internal *) text)->parent = a;
-	a->first_child = a->last_child = (struct dom_node_internal *) text;
+	((struct dom_node_internal *)text)->parent = a;
+	a->first_child = a->last_child = (struct dom_node_internal *)text;
 	dom_node_unref(text);
 	dom_node_remove_pending(text);
 
@@ -620,16 +639,16 @@ dom_exception _dom_attr_set_value(struct dom_attr *attr,
  * The returned node will have its reference count increased. The caller
  * should unref it once it has finished with it.
  */
-dom_exception _dom_attr_get_owner(struct dom_attr *attr,
-		struct dom_element **result)
+dom_exception
+_dom_attr_get_owner(struct dom_attr *attr, struct dom_element **result)
 {
-	struct dom_node_internal *a = (struct dom_node_internal *) attr;
+	struct dom_node_internal *a = (struct dom_node_internal *)attr;
 
 	/* If there is an owning element, increase its reference count */
 	if (a->parent != NULL)
 		dom_node_ref(a->parent);
 
-	*result = (struct dom_element *) a->parent;
+	*result = (struct dom_element *)a->parent;
 
 	return DOM_NO_ERR;
 }
@@ -645,7 +664,7 @@ dom_exception _dom_attr_get_owner(struct dom_attr *attr,
  * should unref it once it has finished with it.
  */
 dom_exception _dom_attr_get_schema_type_info(struct dom_attr *attr,
-		struct dom_type_info **result)
+					     struct dom_type_info **result)
 {
 	UNUSED(attr);
 	UNUSED(result);
@@ -669,20 +688,21 @@ dom_exception _dom_attr_is_id(struct dom_attr *attr, bool *result)
 
 /*------------- The overload virtual functions ------------------------*/
 
-/* Overload function of Node, please refer node.c for the detail of this 
+/* Overload function of Node, please refer node.c for the detail of this
  * function. */
-dom_exception _dom_attr_get_node_value(dom_node_internal *node,
-		dom_string **result)
+dom_exception
+_dom_attr_get_node_value(dom_node_internal *node, dom_string **result)
 {
-	dom_attr *attr = (dom_attr *) node;
+	dom_attr *attr = (dom_attr *)node;
 
 	return _dom_attr_get_value(attr, result);
 }
 
-/* Overload function of Node, please refer node.c for the detail of this 
+/* Overload function of Node, please refer node.c for the detail of this
  * function. */
-dom_exception _dom_attr_clone_node(dom_node_internal *node, bool deep,
-		dom_node_internal **result)
+dom_exception _dom_attr_clone_node(dom_node_internal *node,
+				   bool deep,
+				   dom_node_internal **result)
 {
 	dom_exception err;
 	dom_attr *attr;
@@ -694,29 +714,29 @@ dom_exception _dom_attr_clone_node(dom_node_internal *node, bool deep,
 	err = _dom_node_clone_node(node, true, result);
 	if (err != DOM_NO_ERR)
 		return err;
-	
-	attr = (dom_attr *) *result;
-	/* Clone an Attr always result a specified Attr, 
+
+	attr = (dom_attr *)*result;
+	/* Clone an Attr always result a specified Attr,
 	 * see DOM Level 3 Node.cloneNode */
 	attr->specified = true;
 
 	return DOM_NO_ERR;
 }
 
-/* Overload function of Node, please refer node.c for the detail of this 
+/* Overload function of Node, please refer node.c for the detail of this
  * function. */
-dom_exception _dom_attr_set_prefix(dom_node_internal *node,
-		dom_string *prefix)
+dom_exception _dom_attr_set_prefix(dom_node_internal *node, dom_string *prefix)
 {
 	/* Really I don't know whether there should something
 	 * special to do here */
 	return _dom_node_set_prefix(node, prefix);
 }
 
-/* Overload function of Node, please refer node.c for the detail of this 
+/* Overload function of Node, please refer node.c for the detail of this
  * function. */
 dom_exception _dom_attr_lookup_prefix(dom_node_internal *node,
-		dom_string *namespace, dom_string **result)
+				      dom_string *namespace,
+				      dom_string **result)
 {
 	struct dom_element *owner;
 	dom_exception err;
@@ -724,7 +744,7 @@ dom_exception _dom_attr_lookup_prefix(dom_node_internal *node,
 	err = dom_attr_get_owner_element(node, &owner);
 	if (err != DOM_NO_ERR)
 		return err;
-	
+
 	if (owner == NULL) {
 		*result = NULL;
 		return DOM_NO_ERR;
@@ -733,10 +753,11 @@ dom_exception _dom_attr_lookup_prefix(dom_node_internal *node,
 	return dom_node_lookup_prefix(owner, namespace, result);
 }
 
-/* Overload function of Node, please refer node.c for the detail of this 
+/* Overload function of Node, please refer node.c for the detail of this
  * function. */
 dom_exception _dom_attr_is_default_namespace(dom_node_internal *node,
-		dom_string *namespace, bool *result)
+					     dom_string *namespace,
+					     bool *result)
 {
 	struct dom_element *owner;
 	dom_exception err;
@@ -744,7 +765,7 @@ dom_exception _dom_attr_is_default_namespace(dom_node_internal *node,
 	err = dom_attr_get_owner_element(node, &owner);
 	if (err != DOM_NO_ERR)
 		return err;
-	
+
 	if (owner == NULL) {
 		*result = false;
 		return DOM_NO_ERR;
@@ -753,10 +774,11 @@ dom_exception _dom_attr_is_default_namespace(dom_node_internal *node,
 	return dom_node_is_default_namespace(owner, namespace, result);
 }
 
-/* Overload function of Node, please refer node.c for the detail of this 
+/* Overload function of Node, please refer node.c for the detail of this
  * function. */
 dom_exception _dom_attr_lookup_namespace(dom_node_internal *node,
-		dom_string *prefix, dom_string **result)
+					 dom_string *prefix,
+					 dom_string **result)
 {
 	struct dom_element *owner;
 	dom_exception err;
@@ -764,7 +786,7 @@ dom_exception _dom_attr_lookup_namespace(dom_node_internal *node,
 	err = dom_attr_get_owner_element(node, &owner);
 	if (err != DOM_NO_ERR)
 		return err;
-	
+
 	if (owner == NULL) {
 		*result = NULL;
 		return DOM_NO_ERR;
@@ -781,16 +803,16 @@ dom_exception _dom_attr_lookup_namespace(dom_node_internal *node,
 /* The virtual destroy function of this class */
 void __dom_attr_destroy(dom_node_internal *node)
 {
-	_dom_attr_destroy((dom_attr *) node);
+	_dom_attr_destroy((dom_attr *)node);
 }
 
 /* The memory allocator of this class */
 dom_exception _dom_attr_copy(dom_node_internal *n, dom_node_internal **copy)
 {
-	dom_attr *old = (dom_attr *) n;
+	dom_attr *old = (dom_attr *)n;
 	dom_attr *a;
 	dom_exception err;
-	
+
 	a = malloc(sizeof(struct dom_attr));
 	if (a == NULL)
 		return DOM_NO_MEM_ERR;
@@ -800,7 +822,7 @@ dom_exception _dom_attr_copy(dom_node_internal *n, dom_node_internal **copy)
 		free(a);
 		return err;
 	}
-	
+
 	a->specified = old->specified;
 
 	/* TODO: deal with dom_type_info, it get no definition ! */
@@ -815,14 +837,14 @@ dom_exception _dom_attr_copy(dom_node_internal *n, dom_node_internal **copy)
 	/* TODO: is this correct? */
 	a->read_only = false;
 
-	*copy = (dom_node_internal *) a;
+	*copy = (dom_node_internal *)a;
 
 	return DOM_NO_ERR;
 }
 
 
 /**
- * Set/Unset whether this attribute is a ID attribute 
+ * Set/Unset whether this attribute is a ID attribute
  *
  * \param attr   The attribute
  * \param is_id  Whether it is a ID attribute
@@ -853,4 +875,3 @@ bool _dom_attr_readonly(const dom_attr *a)
 {
 	return a->read_only;
 }
-

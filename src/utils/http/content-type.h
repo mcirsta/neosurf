@@ -36,8 +36,8 @@ typedef struct http_content_type {
  * \return NSERROR_OK on success,
  *         NSERROR_NOMEM on memory exhaustion
  */
-nserror http_parse_content_type(const char *header_value, 
-		http_content_type **result);
+nserror
+http_parse_content_type(const char *header_value, http_content_type **result);
 
 /**
  * Destroy a content type object

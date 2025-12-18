@@ -40,7 +40,8 @@ struct box;
  * The table->col array is allocated and type and width are filled in for each
  * column.
  */
-bool table_calculate_column_types(const css_unit_ctx *unit_len_ctx,	struct box *table);
+bool table_calculate_column_types(const css_unit_ctx *unit_len_ctx,
+				  struct box *table);
 
 
 /**
@@ -51,6 +52,7 @@ bool table_calculate_column_types(const css_unit_ctx *unit_len_ctx,	struct box *
  *
  * \post \a cell's border array is populated
  */
-void table_used_border_for_cell(const css_unit_ctx *unit_len_ctx, struct box *cell);
+void table_used_border_for_cell(const css_unit_ctx *unit_len_ctx,
+				struct box *cell);
 
 #endif

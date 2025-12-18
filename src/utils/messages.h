@@ -52,7 +52,8 @@
 nserror messages_add_from_file(const char *path);
 
 /**
- * Read keys and values from inline message data into the standard Messages hash.
+ * Read keys and values from inline message data into the standard Messages
+ * hash.
  *
  * The messages are merged with any previously loaded messages. Any
  * keys which are present already are replaced with the new value. The

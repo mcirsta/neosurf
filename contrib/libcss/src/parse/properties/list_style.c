@@ -28,8 +28,9 @@
  *		   If the input is invalid, then \a *ctx remains unchanged.
  */
 css_error css__parse_list_style(css_language *c,
-		const parserutils_vector *vector, int32_t *ctx,
-		css_style *result)
+				const parserutils_vector *vector,
+				int32_t *ctx,
+				css_style *result)
 {
 	int32_t orig_ctx = *ctx;
 	int prev_ctx;
@@ -51,18 +52,18 @@ css_error css__parse_list_style(css_language *c,
 	flag_value = get_css_flag_value(c, token);
 
 	if (flag_value != FLAG_VALUE__NONE) {
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_LIST_STYLE_IMAGE);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_LIST_STYLE_IMAGE);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_LIST_STYLE_POSITION);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_LIST_STYLE_POSITION);
 		if (error != CSS_OK)
 			return error;
 
-		error = css_stylesheet_style_flag_value(result, flag_value,
-				CSS_PROP_LIST_STYLE_TYPE);
+		error = css_stylesheet_style_flag_value(
+			result, flag_value, CSS_PROP_LIST_STYLE_TYPE);
 		if (error == CSS_OK)
 			parserutils_vector_iterate(vector, ctx);
 
@@ -99,17 +100,17 @@ css_error css__parse_list_style(css_language *c,
 			goto css__parse_list_style_cleanup;
 		}
 
-		if ((type) &&
-		    (error = css__parse_list_style_type(c, vector,
-				ctx, type_style)) == CSS_OK) {
+		if ((type) && (error = css__parse_list_style_type(
+				       c, vector, ctx, type_style)) == CSS_OK) {
 			type = false;
 		} else if ((position) &&
-			   (error = css__parse_list_style_position(c, vector,
-				ctx, position_style)) == CSS_OK) {
+			   (error = css__parse_list_style_position(
+				    c, vector, ctx, position_style)) ==
+				   CSS_OK) {
 			position = false;
 		} else if ((image) &&
-			   (error = css__parse_list_style_image(c, vector, ctx,
-				image_style)) == CSS_OK) {
+			   (error = css__parse_list_style_image(
+				    c, vector, ctx, image_style)) == CSS_OK) {
 			image = false;
 		}
 
@@ -126,27 +127,33 @@ css_error css__parse_list_style(css_language *c,
 
 	/* defaults */
 	if (image) {
-		error = css__stylesheet_style_appendOPV(image_style,
-				CSS_PROP_LIST_STYLE_IMAGE,
-				0, LIST_STYLE_IMAGE_NONE);
+		error = css__stylesheet_style_appendOPV(
+			image_style,
+			CSS_PROP_LIST_STYLE_IMAGE,
+			0,
+			LIST_STYLE_IMAGE_NONE);
 		if (error != CSS_OK) {
 			goto css__parse_list_style_cleanup;
 		}
 	}
 
 	if (position) {
-		error = css__stylesheet_style_appendOPV(position_style,
-				CSS_PROP_LIST_STYLE_POSITION,
-				0, LIST_STYLE_POSITION_OUTSIDE);
+		error = css__stylesheet_style_appendOPV(
+			position_style,
+			CSS_PROP_LIST_STYLE_POSITION,
+			0,
+			LIST_STYLE_POSITION_OUTSIDE);
 		if (error != CSS_OK) {
 			goto css__parse_list_style_cleanup;
 		}
 	}
 
 	if (type) {
-		error = css__stylesheet_style_appendOPV(type_style,
-				CSS_PROP_LIST_STYLE_TYPE,
-				0, LIST_STYLE_TYPE_DISC);
+		error = css__stylesheet_style_appendOPV(
+			type_style,
+			CSS_PROP_LIST_STYLE_TYPE,
+			0,
+			LIST_STYLE_TYPE_DISC);
 		if (error != CSS_OK) {
 			goto css__parse_list_style_cleanup;
 		}
@@ -174,5 +181,4 @@ css__parse_list_style_cleanup:
 		*ctx = orig_ctx;
 
 	return error;
-
 }

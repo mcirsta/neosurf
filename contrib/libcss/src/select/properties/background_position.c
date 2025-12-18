@@ -14,8 +14,9 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_background_position(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error css__cascade_background_position(uint32_t opv,
+					   css_style *style,
+					   css_select_state *state)
 {
 	uint16_t value = CSS_BACKGROUND_POSITION_INHERIT;
 	css_fixed hlength = 0;
@@ -28,9 +29,9 @@ css_error css__cascade_background_position(uint32_t opv, css_style *style,
 
 		switch (getValue(opv) & 0xf0) {
 		case BACKGROUND_POSITION_HORZ_SET:
-			hlength = *((css_fixed *) style->bytecode);
+			hlength = *((css_fixed *)style->bytecode);
 			advance_bytecode(style, sizeof(hlength));
-			hunit = *((uint32_t *) style->bytecode);
+			hunit = *((uint32_t *)style->bytecode);
 			advance_bytecode(style, sizeof(hunit));
 			break;
 		case BACKGROUND_POSITION_HORZ_CENTER:
@@ -49,9 +50,9 @@ css_error css__cascade_background_position(uint32_t opv, css_style *style,
 
 		switch (getValue(opv) & 0x0f) {
 		case BACKGROUND_POSITION_VERT_SET:
-			vlength = *((css_fixed *) style->bytecode);
+			vlength = *((css_fixed *)style->bytecode);
 			advance_bytecode(style, sizeof(vlength));
-			vunit = *((uint32_t *) style->bytecode);
+			vunit = *((uint32_t *)style->bytecode);
 			advance_bytecode(style, sizeof(vunit));
 			break;
 		case BACKGROUND_POSITION_VERT_CENTER:
@@ -72,57 +73,64 @@ css_error css__cascade_background_position(uint32_t opv, css_style *style,
 	hunit = css__to_css_unit(hunit);
 	vunit = css__to_css_unit(vunit);
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			getFlagValue(opv))) {
-		return set_background_position(state->computed, value,
-				hlength, hunit, vlength, vunit);
+	if (css__outranks_existing(getOpcode(opv),
+				   isImportant(opv),
+				   state,
+				   getFlagValue(opv))) {
+		return set_background_position(
+			state->computed, value, hlength, hunit, vlength, vunit);
 	}
 
 	return CSS_OK;
 }
 
 css_error css__set_background_position_from_hint(const css_hint *hint,
-		css_computed_style *style)
+						 css_computed_style *style)
 {
-	return set_background_position(style, hint->status,
-		hint->data.position.h.value, hint->data.position.h.unit,
-		hint->data.position.v.value, hint->data.position.v.unit);
+	return set_background_position(style,
+				       hint->status,
+				       hint->data.position.h.value,
+				       hint->data.position.h.unit,
+				       hint->data.position.v.value,
+				       hint->data.position.v.unit);
 }
 
 css_error css__initial_background_position(css_select_state *state)
 {
 	return set_background_position(state->computed,
-			CSS_BACKGROUND_POSITION_SET,
-			0, CSS_UNIT_PCT, 0, CSS_UNIT_PCT);
+				       CSS_BACKGROUND_POSITION_SET,
+				       0,
+				       CSS_UNIT_PCT,
+				       0,
+				       CSS_UNIT_PCT);
 }
 
-css_error css__copy_background_position(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error css__copy_background_position(const css_computed_style *from,
+					css_computed_style *to)
 {
 	css_fixed hlength = 0, vlength = 0;
 	css_unit hunit = CSS_UNIT_PX, vunit = CSS_UNIT_PX;
-	uint8_t type = get_background_position(from, &hlength, &hunit,
-			&vlength, &vunit);
+	uint8_t type = get_background_position(
+		from, &hlength, &hunit, &vlength, &vunit);
 
 	if (from == to) {
 		return CSS_OK;
 	}
 
-	return set_background_position(to, type, hlength, hunit, vlength, vunit);
+	return set_background_position(
+		to, type, hlength, hunit, vlength, vunit);
 }
 
 css_error css__compose_background_position(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+					   const css_computed_style *child,
+					   css_computed_style *result)
 {
 	css_fixed hlength = 0, vlength = 0;
 	css_unit hunit = CSS_UNIT_PX, vunit = CSS_UNIT_PX;
-	uint8_t type = get_background_position(child, &hlength, &hunit,
-			&vlength, &vunit);
+	uint8_t type = get_background_position(
+		child, &hlength, &hunit, &vlength, &vunit);
 
 	return css__copy_background_position(
-			type == CSS_BACKGROUND_POSITION_INHERIT ? parent : child,
-			result);
+		type == CSS_BACKGROUND_POSITION_INHERIT ? parent : child,
+		result);
 }
-

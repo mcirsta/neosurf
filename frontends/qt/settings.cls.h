@@ -26,10 +26,12 @@
 #include <QDialogButtonBox>
 #include <QLineEdit>
 
-class AbstractSettingsCategory: public QWidget
+class AbstractSettingsCategory : public QWidget
 {
-public:
-	AbstractSettingsCategory(QWidget *parent):QWidget(parent) { }
+      public:
+	AbstractSettingsCategory(QWidget *parent) : QWidget(parent)
+	{
+	}
 	virtual const char *categoryName() = 0;
 	virtual void categoryRealize() = 0;
 	virtual void categoryApply() = 0;
@@ -42,17 +44,17 @@ class NS_Settings : public QWidget
 {
 	Q_OBJECT
 
-public:
+      public:
 	NS_Settings(QWidget *parent);
 
-public slots:
+      public slots:
 	void categorychanged_slot(const QString &currentText);
 	void clicked_slot(QAbstractButton *button);
 
-protected:
+      protected:
 	void showEvent(QShowEvent *event);
 
-private:
+      private:
 	void addCategory(AbstractSettingsCategory *widget);
 
 	QLabel *m_headerlabel;

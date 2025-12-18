@@ -33,7 +33,7 @@
 #include <libdom/bindings/hubbub/errors.h>
 
 /**
- * Search children of a node for first named element 
+ * Search children of a node for first named element
  * \param  parent dom_node to search children of, or NULL
  * \param  element_name	name of element to find
  * \return  first child of node which is an element and matches name, or
@@ -44,10 +44,12 @@ dom_node *libdom_find_first_element(dom_node *parent, lwc_string *element_name);
 typedef nserror (*libdom_iterate_cb)(dom_node *node, void *ctx);
 
 nserror libdom_iterate_child_elements(dom_node *parent,
-		libdom_iterate_cb cb, void *ctx);
+				      libdom_iterate_cb cb,
+				      void *ctx);
 
-nserror libdom_parse_file(const char *filename, const char *encoding,
-		dom_document **doc);
+nserror libdom_parse_file(const char *filename,
+			  const char *encoding,
+			  dom_document **doc);
 
 /**
  * Convert libdom hubbub binding errors to nserrors.

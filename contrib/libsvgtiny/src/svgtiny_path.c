@@ -13,14 +13,14 @@
 #include "svgtiny_internal.h"
 #include "svgtiny_parse.h"
 
-#define TAU             6.28318530717958647692
+#define TAU 6.28318530717958647692
 
 #ifndef M_PI
-#define M_PI		3.14159265358979323846
+#define M_PI 3.14159265358979323846
 #endif
 
 #ifndef M_PI_2
-#define M_PI_2          1.57079632679489661923
+#define M_PI_2 1.57079632679489661923
 #endif
 
 #define degToRad(angleInDegrees) ((angleInDegrees) * M_PI / 180.0)
@@ -37,7 +37,7 @@ struct internal_points {
  * internal path representation
  */
 struct internal_path_state {
-	struct internal_points path;/* generated path */
+	struct internal_points path; /* generated path */
 	struct internal_points cmd; /* parameters to current command */
 	float prev_x; /* previous x coordinate */
 	float prev_y; /* previous y coordinate */
@@ -63,7 +63,8 @@ ensure_internal_points(struct internal_points *ipts, unsigned int count)
 	float *nalloc;
 
 	if ((ipts->used + count) > ipts->alloc) {
-		nalloc = realloc(ipts->p, sizeof ipts->p[0] * (ipts->alloc + 84));
+		nalloc = realloc(ipts->p,
+				 sizeof ipts->p[0] * (ipts->alloc + 84));
 		if (nalloc == NULL) {
 			return svgtiny_OUT_OF_MEMORY;
 		}
@@ -103,27 +104,22 @@ generate_path_move(struct internal_path_state *state, int relative)
 		if (cmdpc == 0) {
 			state->path.p[state->path.used++] = svgtiny_PATH_MOVE;
 			/* the move starts a subpath */
-			state->path.p[state->path.used++] =
-				state->subpath_x =
-				state->cubic_x =
-				state->prev_x = state->cmd.p[cmdpc];
-			state->path.p[state->path.used++] =
-				state->subpath_y =
-				state->cubic_y =
-				state->prev_y = state->cmd.p[cmdpc + 1];
+			state->path.p[state->path.used++] = state->subpath_x =
+				state->cubic_x = state->prev_x =
+					state->cmd.p[cmdpc];
+			state->path.p[state->path.used++] = state->subpath_y =
+				state->cubic_y = state->prev_y =
+					state->cmd.p[cmdpc + 1];
 		} else {
 			state->path.p[state->path.used++] = svgtiny_PATH_LINE;
 
-			state->path.p[state->path.used++] =
-				state->cubic_x =
-				state->quad_x =
-				state->prev_x = state->cmd.p[cmdpc];
-			state->path.p[state->path.used++] =
-				state->cubic_y =
-				state->quad_y =
-				state->prev_y = state->cmd.p[cmdpc + 1];
+			state->path.p[state->path.used++] = state->cubic_x =
+				state->quad_x = state->prev_x =
+					state->cmd.p[cmdpc];
+			state->path.p[state->path.used++] = state->cubic_y =
+				state->quad_y = state->prev_y =
+					state->cmd.p[cmdpc + 1];
 		}
-
 	}
 	return svgtiny_OK;
 }
@@ -184,14 +180,10 @@ generate_path_line(struct internal_path_state *state, int relative)
 			state->cmd.p[cmdpc + 1] += state->prev_y;
 		}
 		state->path.p[state->path.used++] = svgtiny_PATH_LINE;
-		state->path.p[state->path.used++] =
-			state->cubic_x =
-			state->quad_x =
-			state->prev_x = state->cmd.p[cmdpc];
-		state->path.p[state->path.used++] =
-			state->cubic_y =
-			state->quad_y =
-			state->prev_y = state->cmd.p[cmdpc + 1];
+		state->path.p[state->path.used++] = state->cubic_x =
+			state->quad_x = state->prev_x = state->cmd.p[cmdpc];
+		state->path.p[state->path.used++] = state->cubic_y =
+			state->quad_y = state->prev_y = state->cmd.p[cmdpc + 1];
 	}
 	return svgtiny_OK;
 }
@@ -223,12 +215,9 @@ generate_path_hline(struct internal_path_state *state, int relative)
 			state->cmd.p[cmdpc] += state->prev_x;
 		}
 		state->path.p[state->path.used++] = svgtiny_PATH_LINE;
-		state->path.p[state->path.used++] =
-			state->cubic_x =
-			state->quad_x =
-			state->prev_x = state->cmd.p[cmdpc];
-		state->path.p[state->path.used++] =
-			state->cubic_y =
+		state->path.p[state->path.used++] = state->cubic_x =
+			state->quad_x = state->prev_x = state->cmd.p[cmdpc];
+		state->path.p[state->path.used++] = state->cubic_y =
 			state->quad_x = state->prev_y;
 	}
 	return svgtiny_OK;
@@ -260,13 +249,10 @@ generate_path_vline(struct internal_path_state *state, int relative)
 			state->cmd.p[cmdpc] += state->prev_y;
 		}
 		state->path.p[state->path.used++] = svgtiny_PATH_LINE;
-		state->path.p[state->path.used++] =
-			state->cubic_x =
+		state->path.p[state->path.used++] = state->cubic_x =
 			state->quad_x = state->prev_x;
-		state->path.p[state->path.used++] =
-			state->cubic_y =
-			state->quad_y =
-			state->prev_y = state->cmd.p[cmdpc];
+		state->path.p[state->path.used++] = state->cubic_y =
+			state->quad_y = state->prev_y = state->cmd.p[cmdpc];
 	}
 	return svgtiny_OK;
 }
@@ -305,14 +291,14 @@ generate_path_curveto(struct internal_path_state *state, int relative)
 		state->path.p[state->path.used++] = svgtiny_PATH_BEZIER;
 		state->path.p[state->path.used++] = state->cmd.p[cmdpc + 0];
 		state->path.p[state->path.used++] = state->cmd.p[cmdpc + 1];
-		state->path.p[state->path.used++] =
-			state->cubic_x = state->cmd.p[cmdpc + 2];
-		state->path.p[state->path.used++] =
-			state->cubic_y = state->cmd.p[cmdpc + 3];
-		state->path.p[state->path.used++] =
-			state->quad_x = state->prev_x = state->cmd.p[cmdpc + 4];
-		state->path.p[state->path.used++] =
-			state->quad_y = state->prev_y = state->cmd.p[cmdpc + 5];
+		state->path.p[state->path.used++] = state->cubic_x =
+			state->cmd.p[cmdpc + 2];
+		state->path.p[state->path.used++] = state->cubic_y =
+			state->cmd.p[cmdpc + 3];
+		state->path.p[state->path.used++] = state->quad_x =
+			state->prev_x = state->cmd.p[cmdpc + 4];
+		state->path.p[state->path.used++] = state->quad_y =
+			state->prev_y = state->cmd.p[cmdpc + 5];
 	}
 	return svgtiny_OK;
 }
@@ -354,15 +340,13 @@ generate_path_scurveto(struct internal_path_state *state, int relative)
 		state->path.p[state->path.used++] = svgtiny_PATH_BEZIER;
 		state->path.p[state->path.used++] = x1;
 		state->path.p[state->path.used++] = y1;
-		state->path.p[state->path.used++] =
-			state->cubic_x = state->cmd.p[cmdpc + 0];
-		state->path.p[state->path.used++] =
-			state->cubic_x = state->cmd.p[cmdpc + 1];
-		state->path.p[state->path.used++] =
-			state->quad_x =
+		state->path.p[state->path.used++] = state->cubic_x =
+			state->cmd.p[cmdpc + 0];
+		state->path.p[state->path.used++] = state->cubic_x =
+			state->cmd.p[cmdpc + 1];
+		state->path.p[state->path.used++] = state->quad_x =
 			state->prev_x = state->cmd.p[cmdpc + 2];
-		state->path.p[state->path.used++] =
-			state->quad_y =
+		state->path.p[state->path.used++] = state->quad_y =
 			state->prev_y = state->cmd.p[cmdpc + 3];
 	}
 	return svgtiny_OK;
@@ -401,22 +385,20 @@ generate_path_bcurveto(struct internal_path_state *state, int relative)
 
 		state->path.p[state->path.used++] = svgtiny_PATH_BEZIER;
 		state->path.p[state->path.used++] =
-			1./3 * state->prev_x +
-			2./3 * state->cmd.p[cmdpc + 0];
+			1. / 3 * state->prev_x +
+			2. / 3 * state->cmd.p[cmdpc + 0];
 		state->path.p[state->path.used++] =
-			1./3 * state->prev_y +
-			2./3 * state->cmd.p[cmdpc + 1];
+			1. / 3 * state->prev_y +
+			2. / 3 * state->cmd.p[cmdpc + 1];
 		state->path.p[state->path.used++] =
-			2./3 * state->cmd.p[cmdpc + 0] +
-			1./3 * state->cmd.p[cmdpc + 2];
+			2. / 3 * state->cmd.p[cmdpc + 0] +
+			1. / 3 * state->cmd.p[cmdpc + 2];
 		state->path.p[state->path.used++] =
-			2./3 * state->cmd.p[cmdpc + 1] +
-			1./3 * state->cmd.p[cmdpc + 3];
-		state->path.p[state->path.used++] =
-			state->cubic_x =
+			2. / 3 * state->cmd.p[cmdpc + 1] +
+			1. / 3 * state->cmd.p[cmdpc + 3];
+		state->path.p[state->path.used++] = state->cubic_x =
 			state->prev_x = state->cmd.p[cmdpc + 2];
-		state->path.p[state->path.used++] =
-			state->cubic_y =
+		state->path.p[state->path.used++] = state->cubic_y =
 			state->prev_y = state->cmd.p[cmdpc + 3];
 	}
 	return svgtiny_OK;
@@ -460,23 +442,17 @@ generate_path_sbcurveto(struct internal_path_state *state, int relative)
 		}
 
 		state->path.p[state->path.used++] = svgtiny_PATH_BEZIER;
+		state->path.p[state->path.used++] = 1. / 3 * state->prev_x +
+						    2. / 3 * x1;
+		state->path.p[state->path.used++] = 1. / 3 * state->prev_y +
+						    2. / 3 * y1;
 		state->path.p[state->path.used++] =
-			1./3 * state->prev_x +
-			2./3 * x1;
+			2. / 3 * x1 + 1. / 3 * state->cmd.p[cmdpc + 0];
 		state->path.p[state->path.used++] =
-			1./3 * state->prev_y +
-			2./3 * y1;
-		state->path.p[state->path.used++] =
-			2./3 * x1 +
-			1./3 * state->cmd.p[cmdpc + 0];
-		state->path.p[state->path.used++] =
-			2./3 * y1 +
-			1./3 * state->cmd.p[cmdpc + 1];
-		state->path.p[state->path.used++] =
-			state->cubic_x =
+			2. / 3 * y1 + 1. / 3 * state->cmd.p[cmdpc + 1];
+		state->path.p[state->path.used++] = state->cubic_x =
 			state->prev_x = state->cmd.p[cmdpc + 0];
-		state->path.p[state->path.used++] =
-			state->cubic_y =
+		state->path.p[state->path.used++] = state->cubic_y =
 			state->prev_y = state->cmd.p[cmdpc + 1];
 	}
 	return svgtiny_OK;
@@ -486,11 +462,13 @@ generate_path_sbcurveto(struct internal_path_state *state, int relative)
 /**
  * rotate midpoint vector
  */
-static void
-rotate_midpoint_vector(float ax, float ay,
-		       float bx, float by,
-		       double radangle,
-		       double *x_out, double *y_out)
+static void rotate_midpoint_vector(float ax,
+				   float ay,
+				   float bx,
+				   float by,
+				   double radangle,
+				   double *x_out,
+				   double *y_out)
 {
 	double dx2; /* midpoint x coordinate */
 	double dy2; /* midpoint y coordinate */
@@ -518,10 +496,12 @@ rotate_midpoint_vector(float ax, float ay,
  *  adjusted. This allows for elimination of differences between
  *  implementations especialy with rounding.
  */
-static void
-ensure_radii_scale(double x1_sq, double y1_sq,
-		   float *rx, float *ry,
-		   double *rx_sq, double *ry_sq)
+static void ensure_radii_scale(double x1_sq,
+			       double y1_sq,
+			       float *rx,
+			       float *ry,
+			       double *rx_sq,
+			       double *ry_sq)
 {
 	double radiisum;
 	double radiiscale;
@@ -546,17 +526,22 @@ ensure_radii_scale(double x1_sq, double y1_sq,
 /**
  * compute the transformed centre point
  */
-static void
-compute_transformed_centre_point(double sign, float rx, float ry,
-				 double rx_sq, double ry_sq,
-				 double x1, double y1,
-				 double x1_sq, double y1_sq,
-				 double *cx1, double *cy1)
+static void compute_transformed_centre_point(double sign,
+					     float rx,
+					     float ry,
+					     double rx_sq,
+					     double ry_sq,
+					     double x1,
+					     double y1,
+					     double x1_sq,
+					     double y1_sq,
+					     double *cx1,
+					     double *cy1)
 {
 	double sq;
 	double coef;
 	sq = ((rx_sq * ry_sq) - (rx_sq * y1_sq) - (ry_sq * x1_sq)) /
-		((rx_sq * y1_sq) + (ry_sq * x1_sq));
+	     ((rx_sq * y1_sq) + (ry_sq * x1_sq));
 	sq = (sq < 0) ? 0 : sq;
 
 	coef = (sign * sqrt(sq));
@@ -574,12 +559,15 @@ compute_transformed_centre_point(double sign, float rx, float ry,
  * \param bx The second point x coordinate
  * \param ay The second point y coordinate
  */
-static void
-compute_centre_point(float ax, float ay,
-		     float bx, float by,
-		     double cx1, double cy1,
-		     double radangle,
-		     double *x_out, double *y_out)
+static void compute_centre_point(float ax,
+				 float ay,
+				 float bx,
+				 float by,
+				 double cx1,
+				 double cy1,
+				 double radangle,
+				 double *x_out,
+				 double *y_out)
 {
 	double sx2;
 	double sy2;
@@ -601,11 +589,14 @@ compute_centre_point(float ax, float ay,
 /**
  * compute the angle start and extent
  */
-static void
-compute_angle_start_extent(float rx, float ry,
-			   double x1, double y1,
-			   double cx1, double cy1,
-			   double *start, double *extent)
+static void compute_angle_start_extent(float rx,
+				       float ry,
+				       double x1,
+				       double y1,
+				       double cx1,
+				       double cy1,
+				       double *start,
+				       double *extent)
 {
 	double sign;
 	double ux;
@@ -668,8 +659,7 @@ compute_angle_start_extent(float rx, float ry,
  * \param bzpt The array to store the bezier values in
  * \return The number of bezier segments output (max 4)
  */
-static int
-circle_arc_to_bezier(double start, double extent, double *bzpt)
+static int circle_arc_to_bezier(double start, double extent, double *bzpt)
 {
 	int bzsegments;
 	double increment;
@@ -679,9 +669,10 @@ circle_arc_to_bezier(double start, double extent, double *bzpt)
 	double angle;
 	double dx, dy;
 
-	bzsegments = (int) ceil(fabs(extent) / M_PI_2);
+	bzsegments = (int)ceil(fabs(extent) / M_PI_2);
 	increment = extent / bzsegments;
-	controllen = 4.0 / 3.0 * sin(increment / 2.0) / (1.0 + cos(increment / 2.0));
+	controllen = 4.0 / 3.0 * sin(increment / 2.0) /
+		     (1.0 + cos(increment / 2.0));
 
 	for (segment = 0; segment < bzsegments; segment++) {
 		/* first control point */
@@ -691,7 +682,7 @@ circle_arc_to_bezier(double start, double extent, double *bzpt)
 		bzpt[pos++] = dx - controllen * dy;
 		bzpt[pos++] = dy + controllen * dx;
 		/* second control point */
-		angle+=increment;
+		angle += increment;
 		dx = cos(angle);
 		dy = sin(angle);
 		bzpt[pos++] = dx + controllen * dy;
@@ -699,7 +690,6 @@ circle_arc_to_bezier(double start, double extent, double *bzpt)
 		/* endpoint */
 		bzpt[pos++] = dx;
 		bzpt[pos++] = dy;
-
 	}
 	return bzsegments;
 }
@@ -744,7 +734,8 @@ circle_arc_to_bezier(double start, double extent, double *bzpt)
  * T.R.S = | rx * sin(an)  ry * cos(an)    cy  |
  *         | 0             0               1   |
  *
- * {{Cos[a], -Sin[a], c}, {Sin[a], Cos[a], d}, {0, 0, 1}} . {{r, 0, 0}, {0, s, 0}, {0, 0, 1}}
+ * {{Cos[a], -Sin[a], c}, {Sin[a], Cos[a], d}, {0, 0, 1}} . {{r, 0, 0}, {0, s,
+ * 0}, {0, 0, 1}}
  *
  * Each point
  *     | x1 |
@@ -768,18 +759,19 @@ circle_arc_to_bezier(double start, double extent, double *bzpt)
  * \param points The size of the bzpoints array
  * \param bzpoints an array of x,y values to apply the transform to
  */
-static void
-scale_rotate_translate_points(double rx, double ry,
-			      double radangle,
-			      double cx, double cy,
-			      int pntsize,
-			      double *points)
+static void scale_rotate_translate_points(double rx,
+					  double ry,
+					  double radangle,
+					  double cx,
+					  double cy,
+					  int pntsize,
+					  double *points)
 {
 	int pnt;
 	double cosangle; /* cosine of rotation angle */
 	double sinangle; /* sine of rotation angle */
 	double rxcosangle, rxsinangle, rycosangle, rynsinangle;
-	double x2,y2;
+	double x2, y2;
 
 	/* compute the sin and cos of the angle */
 	cosangle = cos(radangle);
@@ -790,9 +782,11 @@ scale_rotate_translate_points(double rx, double ry,
 	rycosangle = ry * cosangle;
 	rynsinangle = ry * -1 * sinangle;
 
-	for (pnt = 0; pnt < pntsize; pnt+=2) {
-		x2 = cx + (points[pnt] * rxcosangle) + (points[pnt + 1] * rynsinangle);
-		y2 = cy + (points[pnt + 1] * rycosangle) + (points[pnt] * rxsinangle);
+	for (pnt = 0; pnt < pntsize; pnt += 2) {
+		x2 = cx + (points[pnt] * rxcosangle) +
+		     (points[pnt + 1] * rynsinangle);
+		y2 = cy + (points[pnt + 1] * rycosangle) +
+		     (points[pnt] * rxsinangle);
 		points[pnt] = x2;
 		points[pnt + 1] = y2;
 	}
@@ -815,25 +809,24 @@ scale_rotate_translate_points(double rx, double ry,
  * \param bzpoints the array to fill with bezier curves
  * \return the number of bezier segments generated or -1 for a line
  */
-static int
-svgarc_to_bezier(float start_x,
-		 float start_y,
-		 float end_x,
-		 float end_y,
-		 float rx,
-		 float ry,
-		 float angle,
-		 bool largearc,
-		 bool sweep,
-		 double *bzpoints)
+static int svgarc_to_bezier(float start_x,
+			    float start_y,
+			    float end_x,
+			    float end_y,
+			    float rx,
+			    float ry,
+			    float angle,
+			    bool largearc,
+			    bool sweep,
+			    double *bzpoints)
 {
 	double radangle; /* normalised elipsis rotation angle in radians */
 	double rx_sq; /* x radius squared */
 	double ry_sq; /* y radius squared */
 	double x1, y1; /* rotated midpoint vector */
 	double x1_sq, y1_sq; /* x1 vector squared */
-	double cx1,cy1; /* transformed circle center */
-	double cx,cy; /* circle center */
+	double cx1, cy1; /* transformed circle center */
+	double cx, cy; /* circle center */
 	double start, extent;
 	int bzsegments;
 
@@ -862,7 +855,8 @@ svgarc_to_bezier(float start_x,
 
 	/* step 1 */
 	/* x1,x2 is the midpoint vector rotated to remove the arc angle */
-	rotate_midpoint_vector(start_x, start_y, end_x, end_y, radangle, &x1, &y1);
+	rotate_midpoint_vector(
+		start_x, start_y, end_x, end_y, radangle, &x1, &y1);
 
 	/* step 2 */
 	/* get squared x1 values */
@@ -873,27 +867,26 @@ svgarc_to_bezier(float start_x,
 	ensure_radii_scale(x1_sq, y1_sq, &rx, &ry, &rx_sq, &ry_sq);
 
 	/* compute the transformed centre point */
-	compute_transformed_centre_point(largearc == sweep?-1:1,
-					 rx, ry,
-					 rx_sq, ry_sq,
-					 x1, y1,
-					 x1_sq, y1_sq,
-					 &cx1, &cy1);
+	compute_transformed_centre_point(largearc == sweep ? -1 : 1,
+					 rx,
+					 ry,
+					 rx_sq,
+					 ry_sq,
+					 x1,
+					 y1,
+					 x1_sq,
+					 y1_sq,
+					 &cx1,
+					 &cy1);
 
 	/* step 3 */
 	/* get the untransformed centre point */
-	compute_centre_point(start_x, start_y,
-			     end_x, end_y,
-			     cx1, cy1,
-			     radangle,
-			     &cx, &cy);
+	compute_centre_point(
+		start_x, start_y, end_x, end_y, cx1, cy1, radangle, &cx, &cy);
 
 	/* step 4 */
 	/* compute anglestart and extent */
-	compute_angle_start_extent(rx,ry,
-				   x1,y1,
-				   cx1, cy1,
-				   &start, &extent);
+	compute_angle_start_extent(rx, ry, x1, y1, cx1, cy1, &start, &extent);
 
 	/* extent of 0 is a straight line */
 	if (extent == 0) {
@@ -915,11 +908,8 @@ svgarc_to_bezier(float start_x,
 	bzsegments = circle_arc_to_bezier(start, extent, bzpoints);
 
 	/* transform the bezier curves */
-	scale_rotate_translate_points(rx, ry,
-				      radangle,
-				      cx, cy,
-				      bzsegments * 6,
-				      bzpoints);
+	scale_rotate_translate_points(
+		rx, ry, radangle, cx, cy, bzsegments * 6, bzpoints);
 
 	return bzsegments;
 }
@@ -942,21 +932,24 @@ generate_path_ellipticalarc(struct internal_path_state *state, int relative)
 
 	for (cmdpc = 0; cmdpc < state->cmd.used; cmdpc += 7) {
 		int bzsegments;
-		double bzpoints[6*4]; /* allow for up to four bezier segments per arc */
+		double bzpoints[6 * 4]; /* allow for up to four bezier segments
+					   per arc */
 		if (relative != 0) {
 			state->cmd.p[cmdpc + 5] += state->prev_x; /* x */
 			state->cmd.p[cmdpc + 6] += state->prev_y; /* y */
 		}
 
-		bzsegments = svgarc_to_bezier(state->prev_x, state->prev_y,
-					      state->cmd.p[cmdpc + 5], /* x */
-					      state->cmd.p[cmdpc + 6], /* y */
-					      state->cmd.p[cmdpc + 0], /* rx */
-					      state->cmd.p[cmdpc + 1], /* ry */
-					      state->cmd.p[cmdpc + 2], /* rotation */
-					      state->cmd.p[cmdpc + 3], /* large_arc */
-					      state->cmd.p[cmdpc + 4], /* sweep */
-					      bzpoints);
+		bzsegments = svgarc_to_bezier(
+			state->prev_x,
+			state->prev_y,
+			state->cmd.p[cmdpc + 5], /* x */
+			state->cmd.p[cmdpc + 6], /* y */
+			state->cmd.p[cmdpc + 0], /* rx */
+			state->cmd.p[cmdpc + 1], /* ry */
+			state->cmd.p[cmdpc + 2], /* rotation */
+			state->cmd.p[cmdpc + 3], /* large_arc */
+			state->cmd.p[cmdpc + 4], /* sweep */
+			bzpoints);
 
 		if (bzsegments == -1) {
 			/* failed to convert arc to bezier replace with line */
@@ -965,34 +958,37 @@ generate_path_ellipticalarc(struct internal_path_state *state, int relative)
 				return res;
 			}
 			state->path.p[state->path.used++] = svgtiny_PATH_LINE;
-			state->path.p[state->path.used++] =
-				state->cubic_x =
-				state->quad_x =
-				state->prev_x = state->cmd.p[cmdpc + 5] /* x */;
-			state->path.p[state->path.used++] =
-				state->cubic_y =
-				state->quad_y =
-				state->prev_y = state->cmd.p[cmdpc + 6] /* y */;
-		} else if (bzsegments > 0){
+			state->path.p[state->path.used++] = state->cubic_x =
+				state->quad_x = state->prev_x =
+					state->cmd.p[cmdpc + 5] /* x */;
+			state->path.p[state->path.used++] = state->cubic_y =
+				state->quad_y = state->prev_y =
+					state->cmd.p[cmdpc + 6] /* y */;
+		} else if (bzsegments > 0) {
 			int bzpnt;
-			for (bzpnt = 0;bzpnt < (bzsegments * 6); bzpnt+=6) {
+			for (bzpnt = 0; bzpnt < (bzsegments * 6); bzpnt += 6) {
 				res = ensure_internal_points(&state->path, 7);
 				if (res != svgtiny_OK) {
 					return res;
 				}
-				state->path.p[state->path.used++] = svgtiny_PATH_BEZIER;
-				state->path.p[state->path.used++] = bzpoints[bzpnt];
-				state->path.p[state->path.used++] = bzpoints[bzpnt+1];
-				state->path.p[state->path.used++] = bzpoints[bzpnt+2];
-				state->path.p[state->path.used++] = bzpoints[bzpnt+3];
 				state->path.p[state->path.used++] =
-					state->cubic_y =
-					state->quad_x =
-					state->prev_x = bzpoints[bzpnt+4];
+					svgtiny_PATH_BEZIER;
 				state->path.p[state->path.used++] =
-					state->cubic_y =
-					state->quad_y =
-					state->prev_y = bzpoints[bzpnt+5];
+					bzpoints[bzpnt];
+				state->path.p[state->path.used++] =
+					bzpoints[bzpnt + 1];
+				state->path.p[state->path.used++] =
+					bzpoints[bzpnt + 2];
+				state->path.p[state->path.used++] =
+					bzpoints[bzpnt + 3];
+				state->path.p[state->path.used++] =
+					state->cubic_y = state->quad_x =
+						state->prev_x =
+							bzpoints[bzpnt + 4];
+				state->path.p[state->path.used++] =
+					state->cubic_y = state->quad_y =
+						state->prev_y =
+							bzpoints[bzpnt + 5];
 			}
 		}
 	}
@@ -1003,10 +999,9 @@ generate_path_ellipticalarc(struct internal_path_state *state, int relative)
 /**
  * parse parameters to a path command
  */
-static inline svgtiny_code
-parse_path_parameters(const char **cursor,
-		      const char *textend,
-		      struct internal_points *cmdp)
+static inline svgtiny_code parse_path_parameters(const char **cursor,
+						 const char *textend,
+						 struct internal_points *cmdp)
 {
 	const char *numend;
 	svgtiny_code res;
@@ -1040,23 +1035,19 @@ parse_path_parameters(const char **cursor,
 /**
  * parse a path command
  */
-static inline svgtiny_code
-parse_path_command(const char **cursor,
-		   const char *textend,
-		   char *pathcommand,
-		   int *relative)
+static inline svgtiny_code parse_path_command(const char **cursor,
+					      const char *textend,
+					      char *pathcommand,
+					      int *relative)
 {
 	advance_whitespace(cursor, textend);
 
-	if ((**cursor != 'M') && (**cursor != 'm') &&
-	    (**cursor != 'Z') && (**cursor != 'z') &&
-	    (**cursor != 'L') && (**cursor != 'l') &&
-	    (**cursor != 'H') && (**cursor != 'h') &&
-	    (**cursor != 'V') && (**cursor != 'v') &&
-	    (**cursor != 'C') && (**cursor != 'c') &&
-	    (**cursor != 'S') && (**cursor != 's') &&
-	    (**cursor != 'Q') && (**cursor != 'q') &&
-	    (**cursor != 'T') && (**cursor != 't') &&
+	if ((**cursor != 'M') && (**cursor != 'm') && (**cursor != 'Z') &&
+	    (**cursor != 'z') && (**cursor != 'L') && (**cursor != 'l') &&
+	    (**cursor != 'H') && (**cursor != 'h') && (**cursor != 'V') &&
+	    (**cursor != 'v') && (**cursor != 'C') && (**cursor != 'c') &&
+	    (**cursor != 'S') && (**cursor != 's') && (**cursor != 'Q') &&
+	    (**cursor != 'q') && (**cursor != 'T') && (**cursor != 't') &&
 	    (**cursor != 'A') && (**cursor != 'a')) {
 		return svgtiny_SVG_ERROR;
 	}
@@ -1079,25 +1070,26 @@ parse_path_command(const char **cursor,
 /**
  * parse path data attribute into a shape list
  */
-svgtiny_code
-svgtiny_parse_path_data(const char *text,
-			size_t textlen,
-			float **pointv,
-			unsigned int *pointc)
+svgtiny_code svgtiny_parse_path_data(const char *text,
+				     size_t textlen,
+				     float **pointv,
+				     unsigned int *pointc)
 {
 	const char *cursor = text; /* text cursor */
 	const char *textend = text + textlen;
 	svgtiny_code res;
 	char pathcmd = 0;
 	int relative = 0;
-	struct internal_path_state pathstate = {
-		{NULL, 0, 0},
-		{NULL, 0, 0},
-		0.0, 0.0,
-		0.0, 0.0,
-		0.0, 0.0,
-		0.0, 0.0
-	};
+	struct internal_path_state pathstate = {{NULL, 0, 0},
+						{NULL, 0, 0},
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						0.0,
+						0.0};
 
 	advance_whitespace(&cursor, textend);
 
@@ -1161,7 +1153,6 @@ svgtiny_parse_path_data(const char *text,
 		if (res != svgtiny_OK) {
 			goto parse_path_data_error;
 		}
-
 	}
 	*pointv = pathstate.path.p;
 	*pointc = pathstate.path.used;

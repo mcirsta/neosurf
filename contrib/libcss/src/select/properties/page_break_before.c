@@ -14,15 +14,16 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_page_break_before(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error css__cascade_page_break_before(uint32_t opv,
+					 css_style *style,
+					 css_select_state *state)
 {
-	return css__cascade_page_break_after_before_inside(opv, style, state,
-			set_page_break_before);
+	return css__cascade_page_break_after_before_inside(
+		opv, style, state, set_page_break_before);
 }
 
 css_error css__set_page_break_before_from_hint(const css_hint *hint,
-		css_computed_style *style)
+					       css_computed_style *style)
 {
 	return set_page_break_before(style, hint->status);
 }
@@ -30,12 +31,11 @@ css_error css__set_page_break_before_from_hint(const css_hint *hint,
 css_error css__initial_page_break_before(css_select_state *state)
 {
 	return set_page_break_before(state->computed,
-    			CSS_PAGE_BREAK_BEFORE_AUTO);
+				     CSS_PAGE_BREAK_BEFORE_AUTO);
 }
 
-css_error css__copy_page_break_before(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error css__copy_page_break_before(const css_computed_style *from,
+				      css_computed_style *to)
 {
 	if (from == to) {
 		return CSS_OK;
@@ -45,12 +45,11 @@ css_error css__copy_page_break_before(
 }
 
 css_error css__compose_page_break_before(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+					 const css_computed_style *child,
+					 css_computed_style *result)
 {
 	uint8_t type = get_page_break_before(child);
 
 	return css__copy_page_break_before(
-			type == CSS_PAGE_BREAK_BEFORE_INHERIT ? parent : child,
-			result);
+		type == CSS_PAGE_BREAK_BEFORE_INHERIT ? parent : child, result);
 }

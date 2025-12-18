@@ -18,8 +18,8 @@
  */
 
 /** \file
-  * Text export of HTML (interface).
-  */
+ * Text export of HTML (interface).
+ */
 
 #ifndef _NETSURF_DESKTOP_SAVE_TEXT_H_
 #define _NETSURF_DESKTOP_SAVE_TEXT_H_
@@ -42,8 +42,10 @@ typedef enum {
 } save_text_whitespace;
 
 void save_as_text(struct hlcache_handle *c, char *path);
-void save_text_solve_whitespace(struct box *box, bool *first,
-		save_text_whitespace *before, const char **whitespace_text,
-		size_t *whitespace_length);
+void save_text_solve_whitespace(struct box *box,
+				bool *first,
+				save_text_whitespace *before,
+				const char **whitespace_text,
+				size_t *whitespace_length);
 
 #endif

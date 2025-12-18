@@ -16,8 +16,7 @@
 #define UNUSED(x) ((x) = (x))
 #endif
 
-static inline lwc_hash
-lwc__calculate_hash(const char *str, size_t len)
+static inline lwc_hash lwc__calculate_hash(const char *str, size_t len)
 {
 	lwc_hash z = 0x811c9dc5;
 
@@ -33,11 +32,11 @@ lwc__calculate_hash(const char *str, size_t len)
 #define STR_OF(str) ((char *)(str + 1))
 #define CSTR_OF(str) ((const char *)(str + 1))
 
-#define NR_BUCKETS_DEFAULT	(4091)
+#define NR_BUCKETS_DEFAULT (4091)
 
 typedef struct lwc_context_s {
-	lwc_string **		buckets;
-	lwc_hash		bucketcount;
+	lwc_string **buckets;
+	lwc_hash bucketcount;
 } lwc_context;
 
 static lwc_context *ctx = NULL;
@@ -47,10 +46,9 @@ static lwc_context *ctx = NULL;
 
 typedef lwc_hash (*lwc_hasher)(const char *, size_t);
 typedef int (*lwc_strncmp)(const char *, const char *, size_t);
-typedef void * (*lwc_memcpy)(void * restrict, const void * restrict, size_t);
+typedef void *(*lwc_memcpy)(void *restrict, const void *restrict, size_t);
 
-static lwc_error
-lwc__initialise(void)
+static lwc_error lwc__initialise(void)
 {
 	if (ctx != NULL)
 		return lwc_error_ok;
@@ -76,12 +74,12 @@ lwc__initialise(void)
 	return lwc_error_ok;
 }
 
-static lwc_error
-lwc__intern(const char *s, size_t slen,
-	   lwc_string **ret,
-	   lwc_hasher hasher,
-	   lwc_strncmp compare,
-	   lwc_memcpy copy)
+static lwc_error lwc__intern(const char *s,
+			     size_t slen,
+			     lwc_string **ret,
+			     lwc_hasher hasher,
+			     lwc_strncmp compare,
+			     lwc_memcpy copy)
 {
 	lwc_hash h;
 	lwc_hash bucket;
@@ -139,19 +137,16 @@ lwc__intern(const char *s, size_t slen,
 	return lwc_error_ok;
 }
 
-lwc_error
-lwc_intern_string(const char *s, size_t slen,
-		  lwc_string **ret)
+lwc_error lwc_intern_string(const char *s, size_t slen, lwc_string **ret)
 {
-	return lwc__intern(s, slen, ret,
-			   lwc__calculate_hash,
-			   strncmp, (lwc_memcpy)memcpy);
+	return lwc__intern(
+		s, slen, ret, lwc__calculate_hash, strncmp, (lwc_memcpy)memcpy);
 }
 
-lwc_error
-lwc_intern_substring(lwc_string *str,
-		     size_t ssoffset, size_t sslen,
-		     lwc_string **ret)
+lwc_error lwc_intern_substring(lwc_string *str,
+			       size_t ssoffset,
+			       size_t sslen,
+			       lwc_string **ret)
 {
 	assert(str);
 	assert(ret);
@@ -164,8 +159,7 @@ lwc_intern_substring(lwc_string *str,
 	return lwc_intern_string(CSTR_OF(str) + ssoffset, sslen, ret);
 }
 
-lwc_error
-lwc_string_tolower(lwc_string *str, lwc_string **ret)
+lwc_error lwc_string_tolower(lwc_string *str, lwc_string **ret)
 {
 	assert(str);
 	assert(ret);
@@ -183,8 +177,7 @@ lwc_string_tolower(lwc_string *str, lwc_string **ret)
 	return lwc_error_ok;
 }
 
-void
-lwc_string_destroy(lwc_string *str)
+void lwc_string_destroy(lwc_string *str)
 {
 	assert(str);
 
@@ -205,16 +198,14 @@ lwc_string_destroy(lwc_string *str)
 
 /**** Shonky caseless bits ****/
 
-static inline char
-lwc__dolower(const char c)
+static inline char lwc__dolower(const char c)
 {
 	if (c >= 'A' && c <= 'Z')
 		return c + 'a' - 'A';
 	return c;
 }
 
-static inline lwc_hash
-lwc__calculate_lcase_hash(const char *str, size_t len)
+static inline lwc_hash lwc__calculate_lcase_hash(const char *str, size_t len)
 {
 	lwc_hash z = 0x811c9dc5;
 
@@ -227,8 +218,7 @@ lwc__calculate_lcase_hash(const char *str, size_t len)
 	return z;
 }
 
-static int
-lwc__lcase_strncmp(const char *s1, const char *s2, size_t n)
+static int lwc__lcase_strncmp(const char *s1, const char *s2, size_t n)
 {
 	while (n--) {
 		if (*s1++ != lwc__dolower(*s2++))
@@ -238,8 +228,9 @@ lwc__lcase_strncmp(const char *s1, const char *s2, size_t n)
 	return 0;
 }
 
-static void *
-lwc__lcase_memcpy(void *restrict _target, const void *restrict _source, size_t n)
+static void *lwc__lcase_memcpy(void *restrict _target,
+			       const void *restrict _source,
+			       size_t n)
 {
 	char *restrict target = _target;
 	const char *restrict source = _source;
@@ -251,14 +242,14 @@ lwc__lcase_memcpy(void *restrict _target, const void *restrict _source, size_t n
 	return _target;
 }
 
-lwc_error
-lwc__intern_caseless_string(lwc_string *str)
+lwc_error lwc__intern_caseless_string(lwc_string *str)
 {
 	assert(str);
 	assert(str->insensitive == NULL);
 
 	return lwc__intern(CSTR_OF(str),
-			   str->len, &(str->insensitive),
+			   str->len,
+			   &(str->insensitive),
 			   lwc__calculate_lcase_hash,
 			   lwc__lcase_strncmp,
 			   lwc__lcase_memcpy);
@@ -266,8 +257,7 @@ lwc__intern_caseless_string(lwc_string *str)
 
 /**** Iteration ****/
 
-void
-lwc_iterate_strings(lwc_iteration_callback_fn cb, void *pw)
+void lwc_iterate_strings(lwc_iteration_callback_fn cb, void *pw)
 {
 	lwc_hash n;
 	lwc_string *str;

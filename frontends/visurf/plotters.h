@@ -33,4 +33,3 @@ void nsvi_set_colour(colour c);
 void nsvi_plot_caret(int x, int y, int h);
 
 #endif /* NETSURF_GTK_PLOTTERS_H */
-

@@ -51,9 +51,9 @@ static plot_style_t pstyle_stroke_caret = {
 };
 
 struct line_info {
-	unsigned int b_start;		/**< Byte offset of line start */
-	unsigned int b_length;		/**< Byte length of line */
-	int width;			/**< Width in pixels of line */
+	unsigned int b_start; /**< Byte offset of line start */
+	unsigned int b_length; /**< Byte length of line */
+	int width; /**< Width in pixels of line */
 };
 struct textarea_drag {
 	textarea_drag_type type;
@@ -63,95 +63,94 @@ struct textarea_drag {
 };
 
 struct textarea_utf8 {
-	char *data;		/**< UTF-8 text */
-	unsigned int alloc;	/**< Size of allocated text */
-	unsigned int len;	/**< Length of text, in bytes */
-	unsigned int utf8_len;	/**< Length of text, in characters without
-				 *   trailing NULL */
+	char *data; /**< UTF-8 text */
+	unsigned int alloc; /**< Size of allocated text */
+	unsigned int len; /**< Length of text, in bytes */
+	unsigned int utf8_len; /**< Length of text, in characters without
+				*   trailing NULL */
 };
 
 struct textarea_undo_detail {
-	unsigned int b_start;	/**< Offset to detail's text in undo buffer */
-	unsigned int b_end;	/**< End of text (exclusive) */
-	unsigned int b_limit;	/**< End of detail space (exclusive) */
+	unsigned int b_start; /**< Offset to detail's text in undo buffer */
+	unsigned int b_end; /**< End of text (exclusive) */
+	unsigned int b_limit; /**< End of detail space (exclusive) */
 
-	unsigned int b_text_start;	/**< Start of textarea text. */
-	unsigned int b_text_end;	/**< End of textarea text (exclusive) */
+	unsigned int b_text_start; /**< Start of textarea text. */
+	unsigned int b_text_end; /**< End of textarea text (exclusive) */
 };
 
 struct textarea_undo {
-	unsigned int details_alloc;		/**< Details allocated for */
-	unsigned int next_detail;		/**< Next detail pos */
-	unsigned int last_detail;		/**< Last detail used */
-	struct textarea_undo_detail *details;	/**< Array of undo details */
+	unsigned int details_alloc; /**< Details allocated for */
+	unsigned int next_detail; /**< Next detail pos */
+	unsigned int last_detail; /**< Last detail used */
+	struct textarea_undo_detail *details; /**< Array of undo details */
 
 	struct textarea_utf8 text;
 };
 
 struct textarea {
 
-	int scroll_x, scroll_y;		/**< scroll offsets for the textarea */
+	int scroll_x, scroll_y; /**< scroll offsets for the textarea */
 
-	struct scrollbar *bar_x;	/**< Horizontal scroll. */
-	struct scrollbar *bar_y;	/**< Vertical scroll. */
+	struct scrollbar *bar_x; /**< Horizontal scroll. */
+	struct scrollbar *bar_y; /**< Vertical scroll. */
 
-	unsigned int flags;		/**< Textarea flags */
-	int vis_width;			/**< Visible width, in pixels */
-	int vis_height;			/**< Visible height, in pixels */
+	unsigned int flags; /**< Textarea flags */
+	int vis_width; /**< Visible width, in pixels */
+	int vis_height; /**< Visible height, in pixels */
 
-	int pad_top;		/**< Top padding, inside border, in pixels */
-	int pad_right;		/**< Right padding, inside border, in pixels */
-	int pad_bottom;		/**< Bottom padding, inside border, in pixels */
-	int pad_left;		/**< Left padding, inside border, in pixels */
+	int pad_top; /**< Top padding, inside border, in pixels */
+	int pad_right; /**< Right padding, inside border, in pixels */
+	int pad_bottom; /**< Bottom padding, inside border, in pixels */
+	int pad_left; /**< Left padding, inside border, in pixels */
 
-	int border_width;	/**< Border width, in pixels */
-	colour border_col;	/**< Border colour */
+	int border_width; /**< Border width, in pixels */
+	colour border_col; /**< Border colour */
 
-	int text_y_offset;		/**< Vertical dist to 1st line top */
-	int text_y_offset_baseline;	/**< Vertical dist to 1st baseline */
+	int text_y_offset; /**< Vertical dist to 1st line top */
+	int text_y_offset_baseline; /**< Vertical dist to 1st baseline */
 
-	plot_font_style_t fstyle;	/**< Text style, inc. textarea bg col */
-	plot_font_style_t sel_fstyle;	/**< Selected text style */
-	int line_height;		/**< Line height obtained from style */
+	plot_font_style_t fstyle; /**< Text style, inc. textarea bg col */
+	plot_font_style_t sel_fstyle; /**< Selected text style */
+	int line_height; /**< Line height obtained from style */
 
-	struct textarea_utf8 text;	/**< Textarea text content */
+	struct textarea_utf8 text; /**< Textarea text content */
 #define PASSWORD_REPLACEMENT "\xe2\x80\xa2"
 #define PASSWORD_REPLACEMENT_W (sizeof(PASSWORD_REPLACEMENT) - 1)
-	struct textarea_utf8 password;	/**< Text for obscured display */
+	struct textarea_utf8 password; /**< Text for obscured display */
 
-	struct textarea_utf8 *show;	/**< Points at .text or .password */
+	struct textarea_utf8 *show; /**< Points at .text or .password */
 
 	struct {
-		int line;		/**< Line caret is on */
-		int byte_off;		/**< Character index of caret on line */
+		int line; /**< Line caret is on */
+		int byte_off; /**< Character index of caret on line */
 	} caret_pos;
 
-	int caret_x;			/**< cached X coordinate of the caret */
-	int caret_y;			/**< cached Y coordinate of the caret */
+	int caret_x; /**< cached X coordinate of the caret */
+	int caret_y; /**< cached Y coordinate of the caret */
 
-	int sel_start;	/**< Character index of sel start (inclusive) */
-	int sel_end;	/**< Character index of sel end (exclusive) */
+	int sel_start; /**< Character index of sel start (inclusive) */
+	int sel_end; /**< Character index of sel end (exclusive) */
 
-	int h_extent;			/**< Width of content in px */
-	int v_extent;			/**< Height of content in px */
+	int h_extent; /**< Width of content in px */
+	int v_extent; /**< Height of content in px */
 
-	int line_count;			/**< Count of lines */
+	int line_count; /**< Count of lines */
 
 #define LINE_CHUNK_SIZE 32
-	struct line_info *lines;	/**< Line info array */
-	unsigned int lines_alloc_size;	/**< Number of LINE_CHUNK_SIZEs */
+	struct line_info *lines; /**< Line info array */
+	unsigned int lines_alloc_size; /**< Number of LINE_CHUNK_SIZEs */
 
 	/** Callback function for messages to client */
 	textarea_client_callback callback;
 
-	void *data;		/**< Client data for callback */
+	void *data; /**< Client data for callback */
 
-	int drag_start;		/**< Byte offset of drag start (in ta->show) */
-	struct textarea_drag drag_info;	/**< Drag information */
+	int drag_start; /**< Byte offset of drag start (in ta->show) */
+	struct textarea_drag drag_info; /**< Drag information */
 
 	struct textarea_undo undo; /**< Undo/redo information */
 };
-
 
 
 /**
@@ -164,7 +163,8 @@ struct textarea {
  * \param b_len		Byte length to check
  */
 static void textarea_normalise_text(struct textarea *ta,
-		unsigned int b_start, unsigned int b_len)
+				    unsigned int b_start,
+				    unsigned int b_len)
 {
 	bool multi = (ta->flags & TEXTAREA_MULTILINE) ? true : false;
 	struct textarea_msg msg;
@@ -176,16 +176,13 @@ static void textarea_normalise_text(struct textarea *ta,
 	for (index = 0; index < b_len; index++) {
 		if (ta->text.data[b_start + index] == '\r') {
 			if (b_start + index + 1 <= ta->text.len &&
-					ta->text.data[b_start + index + 1] ==
-							'\n') {
+			    ta->text.data[b_start + index + 1] == '\n') {
 				ta->text.len--;
 				ta->text.utf8_len--;
 				memmove(ta->text.data + b_start + index,
-						ta->text.data + b_start +
-								index + 1,
-						ta->text.len - b_start - index);
-			}
-			else
+					ta->text.data + b_start + index + 1,
+					ta->text.len - b_start - index);
+			} else
 				ta->text.data[b_start + index] = '\n';
 		}
 		/* Replace newlines with spaces if this is a single line
@@ -280,7 +277,7 @@ static bool textarea_scroll_visible(struct textarea *ta)
 		xs += (x - x1);
 
 	if (ta->bar_x == NULL && ta->scroll_x != 0 &&
-			ta->flags & TEXTAREA_MULTILINE) {
+	    ta->flags & TEXTAREA_MULTILINE) {
 		/* Scrollbar removed, set to zero */
 		ta->scroll_x = 0;
 		scrolled = true;
@@ -305,8 +302,8 @@ static bool textarea_scroll_visible(struct textarea *ta)
 	if (ta->flags & TEXTAREA_MULTILINE) {
 		scrollbar_width = (ta->bar_x == NULL) ? 0 : SCROLLBAR_WIDTH;
 		y0 = 0;
-		y1 = ta->vis_height - 2 * ta->border_width -
-				ta->pad_top - ta->pad_bottom;
+		y1 = ta->vis_height - 2 * ta->border_width - ta->pad_top -
+		     ta->pad_bottom;
 
 		/* Adjust scroll pos for reduced extents */
 		vis = ta->vis_height - 2 * ta->border_width - scrollbar_width;
@@ -365,7 +362,7 @@ static bool textarea_set_caret_internal(struct textarea *ta, int caret_b)
 
 	/* Delete the old caret */
 	if (ta->caret_pos.byte_off != -1 &&
-			ta->flags & TEXTAREA_INTERNAL_CARET) {
+	    ta->flags & TEXTAREA_INTERNAL_CARET) {
 		x0 = ta->caret_x - ta->scroll_x;
 		y0 = ta->caret_y - ta->scroll_y;
 		width = 2;
@@ -404,11 +401,11 @@ static bool textarea_set_caret_internal(struct textarea *ta, int caret_b)
 		/* find byte offset of caret position */
 		b_off = index;
 
-		guit->layout->width(&ta->fstyle,
-				ta->show->data +
-				ta->lines[ta->caret_pos.line].b_start,
-				b_off - ta->lines[ta->caret_pos.line].b_start,
-				&x);
+		guit->layout->width(
+			&ta->fstyle,
+			ta->show->data + ta->lines[ta->caret_pos.line].b_start,
+			b_off - ta->lines[ta->caret_pos.line].b_start,
+			&x);
 
 		x += ta->border_width + ta->pad_left;
 		ta->caret_x = x;
@@ -425,8 +422,7 @@ static bool textarea_set_caret_internal(struct textarea *ta, int caret_b)
 			x0 = max(x - 1, ta->border_width);
 			y0 = max(y, 0);
 			x1 = min(x + 1, ta->vis_width - ta->border_width);
-			y1 = min(y + ta->line_height,
-					ta->vis_height);
+			y1 = min(y + ta->line_height, ta->vis_height);
 
 			width = x1 - x0;
 			height = y1 - y0;
@@ -461,12 +457,11 @@ static bool textarea_set_caret_internal(struct textarea *ta, int caret_b)
 				.x0 = ta->border_width,
 				.y0 = ta->border_width,
 				.x1 = ta->vis_width - ta->border_width -
-						((ta->bar_y == NULL) ?
-						0 : SCROLLBAR_WIDTH),
+				      ((ta->bar_y == NULL) ? 0
+							   : SCROLLBAR_WIDTH),
 				.y1 = ta->vis_height - ta->border_width -
-						((ta->bar_x == NULL) ?
-						0 : SCROLLBAR_WIDTH)
-			};
+				      ((ta->bar_x == NULL) ? 0
+							   : SCROLLBAR_WIDTH)};
 			msg.ta = ta;
 			msg.type = TEXTAREA_MSG_CARET_UPDATE;
 			msg.data.caret.type = TEXTAREA_CARET_SET_POS;
@@ -500,8 +495,8 @@ static bool textarea_set_caret_internal(struct textarea *ta, int caret_b)
  * \param force_redraw  Redraw whether selection changed or not
  * \return 		true on success false otherwise
  */
-static bool textarea_select(struct textarea *ta, int b_start, int b_end,
-		bool force_redraw)
+static bool
+textarea_select(struct textarea *ta, int b_start, int b_end, bool force_redraw)
 {
 	int swap;
 	bool pre_existing_selection = (ta->sel_start != -1);
@@ -519,21 +514,21 @@ static bool textarea_select(struct textarea *ta, int b_start, int b_end,
 		b_end = swap;
 	}
 
-	if (ta->sel_start == b_start && ta->sel_end == b_end &&
-			!force_redraw)
+	if (ta->sel_start == b_start && ta->sel_end == b_end && !force_redraw)
 		return true;
 
 	msg.ta = ta;
 	msg.type = TEXTAREA_MSG_REDRAW_REQUEST;
 	msg.data.redraw.x0 = ta->border_width;
 	msg.data.redraw.x1 = ta->vis_width - ta->border_width -
-			((ta->bar_y == NULL) ? 0 : SCROLLBAR_WIDTH);
+			     ((ta->bar_y == NULL) ? 0 : SCROLLBAR_WIDTH);
 
 	if (force_redraw) {
 		/* Asked to redraw everything */
 		msg.data.redraw.y0 = ta->border_width;
 		msg.data.redraw.y1 = ta->vis_height - ta->border_width -
-				((ta->bar_x == NULL) ? 0 : SCROLLBAR_WIDTH);
+				     ((ta->bar_x == NULL) ? 0
+							  : SCROLLBAR_WIDTH);
 	} else {
 		/* Try to minimise redraw region */
 		unsigned int b_low, b_high;
@@ -546,10 +541,9 @@ static bool textarea_select(struct textarea *ta, int b_start, int b_end,
 
 		} else if (ta->sel_start != b_start && ta->sel_end != b_end) {
 			/* Both ends of the selection have moved */
-			b_low = (ta->sel_start < b_start) ?
-					ta->sel_start : b_start;
-			b_high = (ta->sel_end > b_end) ?
-					ta->sel_end : b_end;
+			b_low = (ta->sel_start < b_start) ? ta->sel_start
+							  : b_start;
+			b_high = (ta->sel_end > b_end) ? ta->sel_end : b_end;
 
 		} else if (ta->sel_start != b_start) {
 			/* Selection start changed */
@@ -584,11 +578,13 @@ static bool textarea_select(struct textarea *ta, int b_start, int b_end,
 
 		/* Set vertical redraw range */
 		msg.data.redraw.y0 = max(ta->border_width,
-				ta->line_height * line_start +
-				ta->text_y_offset - ta->scroll_y);
-		msg.data.redraw.y1 = min(ta->vis_height - ta->border_width -
+					 ta->line_height * line_start +
+						 ta->text_y_offset -
+						 ta->scroll_y);
+		msg.data.redraw.y1 = min(
+			ta->vis_height - ta->border_width -
 				((ta->bar_x == NULL) ? 0 : SCROLLBAR_WIDTH),
-				ta->line_height * line_end + ta->text_y_offset +
+			ta->line_height * line_end + ta->text_y_offset +
 				ta->line_height - ta->scroll_y);
 	}
 
@@ -644,7 +640,8 @@ static bool textarea_select_fragment(struct textarea *ta)
 
 	/* Compute byte offset of caret position */
 	for (sel_start = (caret_pos > 0 ? caret_pos - 1 : caret_pos);
-			sel_start > 0; sel_start--) {
+	     sel_start > 0;
+	     sel_start--) {
 		/* Cache the character offset of the last separator */
 		if (strchr(sep, ta->show->data[sel_start]) != NULL) {
 			/* Found start,
@@ -688,7 +685,8 @@ static bool textarea_select_paragraph(struct textarea *ta)
 
 	/* Work back from caret, looking for a place to start selection */
 	for (sel_start = (caret_pos > 0 ? caret_pos - 1 : caret_pos);
-			sel_start > 0; sel_start--) {
+	     sel_start > 0;
+	     sel_start--) {
 		/* Set selection start as character after any new line found */
 		if (ta->show->data[sel_start] == '\n') {
 			/* Add one to start to skip over separator */
@@ -716,13 +714,14 @@ static bool textarea_select_paragraph(struct textarea *ta)
 /**
  * Callback for scrollbar widget.
  */
-static void textarea_scrollbar_callback(void *client_data,
-		struct scrollbar_msg_data *scrollbar_data)
+static void
+textarea_scrollbar_callback(void *client_data,
+			    struct scrollbar_msg_data *scrollbar_data)
 {
 	struct textarea *ta = client_data;
 	struct textarea_msg msg;
 
-	switch(scrollbar_data->msg) {
+	switch (scrollbar_data->msg) {
 	case SCROLLBAR_MSG_MOVED:
 		/* Scrolled; redraw everything */
 		ta->scroll_x = scrollbar_get_offset(ta->bar_x);
@@ -738,8 +737,7 @@ static void textarea_scrollbar_callback(void *client_data,
 		ta->callback(ta->data, &msg);
 
 		if (!(ta->flags & TEXTAREA_INTERNAL_CARET) &&
-				ta->sel_start < 0 &&
-				ta->caret_pos.byte_off >= 0) {
+		    ta->sel_start < 0 && ta->caret_pos.byte_off >= 0) {
 			/* Tell client where caret should be placed */
 			int x = ta->caret_x - ta->scroll_x;
 			int y = ta->caret_y - ta->scroll_y;
@@ -748,18 +746,17 @@ static void textarea_scrollbar_callback(void *client_data,
 				.x0 = ta->border_width,
 				.y0 = ta->border_width,
 				.x1 = ta->vis_width - ta->border_width -
-						((ta->bar_y == NULL) ?
-						0 : SCROLLBAR_WIDTH),
+				      ((ta->bar_y == NULL) ? 0
+							   : SCROLLBAR_WIDTH),
 				.y1 = ta->vis_height - ta->border_width -
-						((ta->bar_x == NULL) ?
-						0 : SCROLLBAR_WIDTH)
-			};
+				      ((ta->bar_x == NULL) ? 0
+							   : SCROLLBAR_WIDTH)};
 
 			msg.ta = ta;
 			msg.type = TEXTAREA_MSG_CARET_UPDATE;
 
 			if ((x >= cr.x0 && x < cr.x1) &&
-					(y + h >= cr.y0 && y < cr.y1)) {
+			    (y + h >= cr.y0 && y < cr.y1)) {
 				/* Caret inside textarea */
 				msg.data.caret.type = TEXTAREA_CARET_SET_POS;
 				msg.data.caret.pos.x = x;
@@ -804,7 +801,6 @@ static void textarea_scrollbar_callback(void *client_data,
 }
 
 
-
 /**
  * Reflow a single line textarea
  *
@@ -813,20 +809,19 @@ static void textarea_scrollbar_callback(void *client_data,
  * \param r	Modified/reduced to area where redraw is required
  * \return true on success false otherwise
  */
-static bool textarea_reflow_singleline(struct textarea *ta, size_t b_off,
-		struct rect *r)
+static bool
+textarea_reflow_singleline(struct textarea *ta, size_t b_off, struct rect *r)
 {
 	int x;
 	int shift;
 	int retained_width = 0;
-	int w = ta->vis_width - 2 * ta->border_width -
-			ta->pad_left - ta->pad_right;
+	int w = ta->vis_width - 2 * ta->border_width - ta->pad_left -
+		ta->pad_right;
 
 	assert(!(ta->flags & TEXTAREA_MULTILINE));
 
 	if (ta->lines == NULL) {
-		ta->lines =
-			malloc(LINE_CHUNK_SIZE * sizeof(struct line_info));
+		ta->lines = malloc(LINE_CHUNK_SIZE * sizeof(struct line_info));
 		if (ta->lines == NULL) {
 			NSLOG(neosurf, INFO, "malloc failed");
 			return false;
@@ -839,7 +834,7 @@ static bool textarea_reflow_singleline(struct textarea *ta, size_t b_off,
 	}
 
 	if (ta->flags & TEXTAREA_PASSWORD &&
-			ta->text.utf8_len != ta->password.utf8_len) {
+	    ta->text.utf8_len != ta->password.utf8_len) {
 		/* Make password-obscured text have same number of
 		 * characters as underlying text */
 		unsigned int c, b;
@@ -850,7 +845,7 @@ static bool textarea_reflow_singleline(struct textarea *ta, size_t b_off,
 		if (diff > 0 && b_len > ta->password.alloc) {
 			/* Increase password alloaction */
 			char *temp = realloc(ta->password.data,
-					b_len + TA_ALLOC_STEP);
+					     b_len + TA_ALLOC_STEP);
 			if (temp == NULL) {
 				NSLOG(neosurf, INFO, "realloc failed");
 				return false;
@@ -864,7 +859,7 @@ static bool textarea_reflow_singleline(struct textarea *ta, size_t b_off,
 		for (c = 0; c < b_len; c += rep_len) {
 			for (b = 0; b < rep_len; b++) {
 				ta->password.data[c + b] =
-						PASSWORD_REPLACEMENT[b];
+					PASSWORD_REPLACEMENT[b];
 			}
 		}
 		ta->password.data[b_len] = '\0';
@@ -873,13 +868,12 @@ static bool textarea_reflow_singleline(struct textarea *ta, size_t b_off,
 	}
 
 	/* Measure new width */
-	guit->layout->width(&ta->fstyle, ta->show->data,
-			ta->show->len - 1, &x);
+	guit->layout->width(&ta->fstyle, ta->show->data, ta->show->len - 1, &x);
 
 	/* Get width of retained text */
 	if (b_off != ta->lines[0].b_length) {
-		guit->layout->width(&ta->fstyle, ta->show->data,
-				b_off, &retained_width);
+		guit->layout->width(
+			&ta->fstyle, ta->show->data, b_off, &retained_width);
 	} else {
 		retained_width = ta->lines[0].width;
 	}
@@ -903,7 +897,6 @@ static bool textarea_reflow_singleline(struct textarea *ta, size_t b_off,
 }
 
 
-
 /**
  * Reflow a multiline textarea from the given line onwards
  *
@@ -914,7 +907,9 @@ static bool textarea_reflow_singleline(struct textarea *ta, size_t b_off,
  * \return true on success false otherwise
  */
 static bool textarea_reflow_multiline(struct textarea *ta,
-		const size_t b_start, const int b_length, struct rect *r)
+				      const size_t b_start,
+				      const int b_length,
+				      struct rect *r)
 {
 	char *text;
 	unsigned int len;
@@ -936,7 +931,8 @@ static bool textarea_reflow_multiline(struct textarea *ta,
 	if (ta->lines == NULL) {
 		ta->lines = calloc(LINE_CHUNK_SIZE, sizeof(struct line_info));
 		if (ta->lines == NULL) {
-			NSLOG(neosurf, INFO,
+			NSLOG(neosurf,
+			      INFO,
 			      "Failed to allocate memory for textarea lines");
 			return false;
 		}
@@ -944,14 +940,14 @@ static bool textarea_reflow_multiline(struct textarea *ta,
 	}
 
 	/* Get line of start of changes */
-	for (start = 0; (signed) start < ta->line_count - 1; start++)
+	for (start = 0; (signed)start < ta->line_count - 1; start++)
 		if (ta->lines[start + 1].b_start > b_start)
 			break;
 
 	/* Find max number of lines before vertical scrollbar is required */
-	scroll_lines = (ta->vis_height - 2 * ta->border_width -
-				ta->pad_top - ta->pad_bottom) /
-				ta->line_height;
+	scroll_lines = (ta->vis_height - 2 * ta->border_width - ta->pad_top -
+			ta->pad_bottom) /
+		       ta->line_height;
 
 	/* Start on the line before the first change, in case the
 	 * modification on this line alters what fits on the line
@@ -976,7 +972,7 @@ static bool textarea_reflow_multiline(struct textarea *ta,
 
 		/* Find available width */
 		avail_width = ta->vis_width - 2 * ta->border_width -
-				ta->pad_left - ta->pad_right;
+			      ta->pad_left - ta->pad_right;
 		if (avail_width < 0)
 			avail_width = 0;
 		h_extent = avail_width;
@@ -1014,14 +1010,18 @@ static bool textarea_reflow_multiline(struct textarea *ta,
 		for (; len > 0; len -= b_off, text += b_off) {
 			/* Find end of paragraph */
 			for (para_end = text; para_end < text + len;
-					para_end++) {
+			     para_end++) {
 				if (*para_end == '\n')
 					break;
 			}
 
 			/* Wrap current line in paragraph */
-			guit->layout->split(&ta->fstyle, text, para_end - text,
-					avail_width, &b_off, &x);
+			guit->layout->split(&ta->fstyle,
+					    text,
+					    para_end - text,
+					    avail_width,
+					    &b_off,
+					    &x);
 			/* b_off now marks space, or end of paragraph */
 
 			if (x > h_extent) {
@@ -1030,28 +1030,34 @@ static bool textarea_reflow_multiline(struct textarea *ta,
 			if (x > avail_width && ta->bar_x == NULL) {
 				/* We need to insert a horizontal scrollbar */
 				int w = ta->vis_width - 2 * ta->border_width;
-				if (scrollbar_create(true, w, w, w,
-						ta, textarea_scrollbar_callback,
-						     &(ta->bar_x)) != NSERROR_OK) {
+				if (scrollbar_create(
+					    true,
+					    w,
+					    w,
+					    w,
+					    ta,
+					    textarea_scrollbar_callback,
+					    &(ta->bar_x)) != NSERROR_OK) {
 					return false;
 				}
 				if (ta->bar_y != NULL)
 					scrollbar_make_pair(ta->bar_x,
-							ta->bar_y);
+							    ta->bar_y);
 				ta->pad_bottom += SCROLLBAR_WIDTH;
 
 				/* Find new max visible lines */
 				scroll_lines = (ta->vis_height -
 						2 * ta->border_width -
 						ta->pad_top - ta->pad_bottom) /
-						ta->line_height;
+					       ta->line_height;
 			}
 
 			/* Ensure enough storage for lines data */
 			if (line > ta->lines_alloc_size - 2) {
 				/* Up to two lines my be added in a pass */
-				struct line_info *temp = realloc(ta->lines,
-						(line + 2 + LINE_CHUNK_SIZE) *
+				struct line_info *temp = realloc(
+					ta->lines,
+					(line + 2 + LINE_CHUNK_SIZE) *
 						sizeof(struct line_info));
 				if (temp == NULL) {
 					NSLOG(neosurf, INFO, "realloc failed");
@@ -1060,7 +1066,7 @@ static bool textarea_reflow_multiline(struct textarea *ta,
 
 				ta->lines = temp;
 				ta->lines_alloc_size = line + 2 +
-						LINE_CHUNK_SIZE;
+						       LINE_CHUNK_SIZE;
 			}
 
 			if (para_end == text + b_off && *para_end == '\n') {
@@ -1076,8 +1082,8 @@ static bool textarea_reflow_multiline(struct textarea *ta,
 				if (len - b_off == 0) {
 					/* reached end of input;
 					 * add last line */
-					ta->lines[line].b_start = text +
-							b_off - ta->text.data;
+					ta->lines[line].b_start = text + b_off -
+								  ta->text.data;
 					ta->lines[line].b_length = 0;
 					ta->lines[line++].width = x;
 				}
@@ -1090,7 +1096,7 @@ static bool textarea_reflow_multiline(struct textarea *ta,
 			} else if (b_off < len) {
 				/* soft wrapped, find last space (if any) */
 				for (space = text + b_off; space > text;
-						space--) {
+				     space--) {
 					if (*space == ' ')
 						break;
 				}
@@ -1116,20 +1122,23 @@ static bool textarea_reflow_multiline(struct textarea *ta,
 			/* Find new max visible lines */
 			scroll_lines = (ta->vis_height - 2 * ta->border_width -
 					ta->pad_top - ta->pad_bottom) /
-					ta->line_height;
+				       ta->line_height;
 		}
 
 		if (line > scroll_lines && ta->bar_y == NULL) {
 			/* Add vertical scrollbar */
 			int h = ta->vis_height - 2 * ta->border_width;
-			if (scrollbar_create(false, h, h, h,
-					     ta, textarea_scrollbar_callback,
+			if (scrollbar_create(false,
+					     h,
+					     h,
+					     h,
+					     ta,
+					     textarea_scrollbar_callback,
 					     &(ta->bar_y)) != NSERROR_OK) {
 				return false;
 			}
 			if (ta->bar_x != NULL)
-				scrollbar_make_pair(ta->bar_x,
-						ta->bar_y);
+				scrollbar_make_pair(ta->bar_x, ta->bar_y);
 			ta->pad_right += SCROLLBAR_WIDTH;
 			restart = true;
 
@@ -1143,24 +1152,25 @@ static bool textarea_reflow_multiline(struct textarea *ta,
 	} while (restart);
 
 	h_extent += ta->pad_left + ta->pad_right -
-			(ta->bar_y != NULL ? SCROLLBAR_WIDTH : 0);
-	v_extent = line * ta->line_height + ta->pad_top +
-				ta->pad_bottom -
-				(ta->bar_x != NULL ? SCROLLBAR_WIDTH : 0);
+		    (ta->bar_y != NULL ? SCROLLBAR_WIDTH : 0);
+	v_extent = line * ta->line_height + ta->pad_top + ta->pad_bottom -
+		   (ta->bar_x != NULL ? SCROLLBAR_WIDTH : 0);
 
 	if (ta->bar_x != NULL) {
 		/* Set horizontal scrollbar extents */
 		int w = ta->vis_width - 2 * ta->border_width -
-				(ta->bar_y != NULL ? SCROLLBAR_WIDTH : 0);
+			(ta->bar_y != NULL ? SCROLLBAR_WIDTH : 0);
 		scrollbar_set_extents(ta->bar_x, w, w, h_extent);
 	}
 
 	if (ta->bar_y != NULL) {
 		/* Set vertical scrollbar extents */
 		int h = ta->vis_height - 2 * ta->border_width;
-		scrollbar_set_extents(ta->bar_y, h,
-				h - (ta->bar_x != NULL ? SCROLLBAR_WIDTH : 0),
-				v_extent);
+		scrollbar_set_extents(ta->bar_y,
+				      h,
+				      h - (ta->bar_x != NULL ? SCROLLBAR_WIDTH
+							     : 0),
+				      v_extent);
 	}
 
 	ta->h_extent = h_extent;
@@ -1169,9 +1179,9 @@ static bool textarea_reflow_multiline(struct textarea *ta,
 
 	/* Update start line end byte pos, if it's increased */
 	if (ta->lines[start].b_start + ta->lines[start].b_length >
-			b_start_line_end) {
+	    b_start_line_end) {
 		b_start_line_end = ta->lines[start].b_start +
-				ta->lines[start].b_length;
+				   ta->lines[start].b_length;
 	}
 
 	/* Don't need to redraw above changes, so update redraw request rect */
@@ -1181,37 +1191,39 @@ static bool textarea_reflow_multiline(struct textarea *ta,
 		skip_line = true;
 	}
 
-	r->y0 = max(r->y0, (signed)(ta->line_height * start +
-			ta->text_y_offset - ta->scroll_y));
+	r->y0 = max(r->y0,
+		    (signed)(ta->line_height * start + ta->text_y_offset -
+			     ta->scroll_y));
 
 	/* Reduce redraw region to single line if possible */
 	if ((skip_line || start == 0) &&
-			ta->lines[start].b_start + ta->lines[start].b_length >=
-			b_start + b_length) {
+	    ta->lines[start].b_start + ta->lines[start].b_length >=
+		    b_start + b_length) {
 		size_t b_line_end = ta->lines[start].b_start +
-				ta->lines[start].b_length;
+				    ta->lines[start].b_length;
 		text = ta->text.data + b_line_end;
 		if (*text == '\0' || *text == '\n') {
-			r->y1 = min(r->y1, (signed)
-					(ta->line_height * (start + 1) +
-					ta->text_y_offset - ta->scroll_y));
+			r->y1 = min(r->y1,
+				    (signed)(ta->line_height * (start + 1) +
+					     ta->text_y_offset - ta->scroll_y));
 			if (b_start > ta->lines[start].b_start &&
-					b_start <= b_line_end) {
+			    b_start <= b_line_end) {
 				/* Remove unchanged text at start of line
 				 * from redraw region */
 				int retained_width = 0;
 				size_t retain_end = b_start -
-						ta->lines[start].b_start;
+						    ta->lines[start].b_start;
 				text = ta->text.data + ta->lines[start].b_start;
 
-				guit->layout->width(&ta->fstyle, text,
-						retain_end, &retained_width);
+				guit->layout->width(&ta->fstyle,
+						    text,
+						    retain_end,
+						    &retained_width);
 
 				r->x0 = max(r->x0,
-						retained_width +
-						ta->border_width +
-						ta->pad_left -
-						ta->scroll_x - 1);
+					    retained_width + ta->border_width +
+						    ta->pad_left -
+						    ta->scroll_x - 1);
 			}
 		}
 	}
@@ -1229,8 +1241,8 @@ static bool textarea_reflow_multiline(struct textarea *ta,
  * \param visible	true iff (x,y) is wrt visiable area, false for global
  * \return byte offset
  */
-static size_t textarea_get_b_off_xy(struct textarea *ta, int x, int y,
-		bool visible)
+static size_t
+textarea_get_b_off_xy(struct textarea *ta, int x, int y, bool visible)
 {
 	size_t bpos; /* Byte position in utf8 string */
 	int line;
@@ -1239,10 +1251,8 @@ static size_t textarea_get_b_off_xy(struct textarea *ta, int x, int y,
 		return 0;
 	}
 
-	x = x - ta->border_width - ta->pad_left +
-			(visible ? ta->scroll_x : 0);
-	y = y - ta->border_width - ta->pad_top +
-			(visible ? ta->scroll_y : 0);
+	x = x - ta->border_width - ta->pad_left + (visible ? ta->scroll_x : 0);
+	y = y - ta->border_width - ta->pad_top + (visible ? ta->scroll_y : 0);
 
 	if (x < 0)
 		x = 0;
@@ -1256,8 +1266,11 @@ static size_t textarea_get_b_off_xy(struct textarea *ta, int x, int y,
 
 	/* Get byte position */
 	guit->layout->position(&ta->fstyle,
-			ta->show->data + ta->lines[line].b_start,
-			ta->lines[line].b_length, x, &bpos, &x);
+			       ta->show->data + ta->lines[line].b_start,
+			       ta->lines[line].b_length,
+			       x,
+			       &bpos,
+			       &x);
 
 
 	/* If the calculated byte offset corresponds with the number of bytes
@@ -1267,9 +1280,9 @@ static size_t textarea_get_b_off_xy(struct textarea *ta, int x, int y,
 	 * following line, which is undesirable.
 	 */
 	if (ta->flags & TEXTAREA_MULTILINE && ta->lines[line].b_length > 1 &&
-			bpos == (unsigned)ta->lines[line].b_length &&
-			ta->show->data[ta->lines[line].b_start +
-					ta->lines[line].b_length - 1] == ' ')
+	    bpos == (unsigned)ta->lines[line].b_length &&
+	    ta->show->data[ta->lines[line].b_start + ta->lines[line].b_length -
+			   1] == ' ')
 		bpos--;
 
 	/* Set the return byte offset */
@@ -1286,8 +1299,8 @@ static size_t textarea_get_b_off_xy(struct textarea *ta, int x, int y,
  * \param visible	true iff (x,y) is wrt visiable area, false for global
  * \return true iff caret placement caused a scroll
  */
-static bool textarea_set_caret_xy(struct textarea *ta, int x, int y,
-		bool visible)
+static bool
+textarea_set_caret_xy(struct textarea *ta, int x, int y, bool visible)
 {
 	unsigned int b_off = textarea_get_b_off_xy(ta, x, y, visible);
 
@@ -1308,8 +1321,12 @@ static bool textarea_set_caret_xy(struct textarea *ta, int x, int y,
  *
  * Note: b_off must be for ta->show
  */
-static bool textarea_insert_text(struct textarea *ta, const char *text,
-		size_t b_off, size_t b_len, int *byte_delta, struct rect *r)
+static bool textarea_insert_text(struct textarea *ta,
+				 const char *text,
+				 size_t b_off,
+				 size_t b_len,
+				 int *byte_delta,
+				 struct rect *r)
 {
 	int char_delta;
 	const size_t show_b_off = b_off;
@@ -1324,7 +1341,8 @@ static bool textarea_insert_text(struct textarea *ta, const char *text,
 
 		c_off = utf8_bounded_length(ta->password.data, b_off);
 		b_off = utf8_bounded_byte_length(ta->text.data,
-				ta->text.len - 1, c_off);
+						 ta->text.len - 1,
+						 c_off);
 	}
 
 	/* Find insertion point */
@@ -1332,8 +1350,8 @@ static bool textarea_insert_text(struct textarea *ta, const char *text,
 		b_off = ta->text.len - 1;
 
 	if (b_len + ta->text.len >= ta->text.alloc) {
-		char *temp = realloc(ta->text.data, b_len + ta->text.len +
-				TA_ALLOC_STEP);
+		char *temp = realloc(ta->text.data,
+				     b_len + ta->text.len + TA_ALLOC_STEP);
 		if (temp == NULL) {
 			NSLOG(neosurf, INFO, "realloc failed");
 			return false;
@@ -1344,8 +1362,9 @@ static bool textarea_insert_text(struct textarea *ta, const char *text,
 	}
 
 	/* Shift text following up */
-	memmove(ta->text.data + b_off + b_len, ta->text.data + b_off,
-			ta->text.len - b_off);
+	memmove(ta->text.data + b_off + b_len,
+		ta->text.data + b_off,
+		ta->text.len - b_off);
 	/* Insert new text */
 	memcpy(ta->text.data + b_off, text, b_len);
 
@@ -1388,19 +1407,20 @@ static bool textarea_insert_text(struct textarea *ta, const char *text,
  * b_end	updated to byte offset of end in text
  */
 static inline void textarea_char_to_byte_offset(struct textarea_utf8 *text,
-		unsigned int start, unsigned int end,
-		size_t *b_start, size_t *b_end)
+						unsigned int start,
+						unsigned int end,
+						size_t *b_start,
+						size_t *b_end)
 {
 	size_t diff = end - start;
 	/* find byte offset of replace start */
 	for (*b_start = 0; start-- > 0;
-			*b_start = utf8_next(text->data, text->len - 1,
-					*b_start))
+	     *b_start = utf8_next(text->data, text->len - 1, *b_start))
 		; /* do nothing */
 
 	/* find byte length of replaced text */
 	for (*b_end = *b_start; diff-- > 0;
-			*b_end = utf8_next(text->data, text->len - 1, *b_end))
+	     *b_end = utf8_next(text->data, text->len - 1, *b_end))
 		; /* do nothing */
 }
 
@@ -1421,16 +1441,21 @@ static inline void textarea_char_to_byte_offset(struct textarea_utf8 *text,
  * Note, b_start and b_end must be the byte offsets in ta->show, so in the
  * password textarea case, they are for ta->password.
  */
-static bool textarea_replace_text_internal(struct textarea *ta, size_t b_start,
-		size_t b_end, const char *rep, size_t rep_len,
-		bool add_to_clipboard, int *byte_delta, struct rect *r)
+static bool textarea_replace_text_internal(struct textarea *ta,
+					   size_t b_start,
+					   size_t b_end,
+					   const char *rep,
+					   size_t rep_len,
+					   bool add_to_clipboard,
+					   int *byte_delta,
+					   struct rect *r)
 {
 	int char_delta;
 	const size_t show_b_off = b_start;
 	*byte_delta = 0;
 
 	if ((ta->flags & TEXTAREA_READONLY) &&
-			 !(rep == NULL && rep_len == 0 && add_to_clipboard))
+	    !(rep == NULL && rep_len == 0 && add_to_clipboard))
 		/* Can't edit if readonly, and we're not just copying */
 		return true;
 
@@ -1443,22 +1468,22 @@ static bool textarea_replace_text_internal(struct textarea *ta, size_t b_start,
 	r->x0 = ta->border_width;
 	r->y0 = ta->border_width;
 	r->x1 = ta->vis_width - ta->border_width -
-			((ta->bar_y == NULL) ? 0 : SCROLLBAR_WIDTH);
+		((ta->bar_y == NULL) ? 0 : SCROLLBAR_WIDTH);
 	r->y1 = ta->vis_height - ta->border_width -
-			((ta->bar_x == NULL) ? 0 : SCROLLBAR_WIDTH);
+		((ta->bar_x == NULL) ? 0 : SCROLLBAR_WIDTH);
 
 	/* Early exit if just inserting */
 	if (b_start == b_end && rep != NULL)
-		return textarea_insert_text(ta, rep, b_start, rep_len,
-				byte_delta, r);
+		return textarea_insert_text(
+			ta, rep, b_start, rep_len, byte_delta, r);
 
 	if (b_start > b_end)
 		return false;
 
 	/* Place CUTs on clipboard */
 	if (add_to_clipboard) {
-		guit->clipboard->set(ta->show->data + b_start, b_end - b_start,
-				NULL, 0);
+		guit->clipboard->set(
+			ta->show->data + b_start, b_end - b_start, NULL, 0);
 	}
 
 	if (rep == NULL) {
@@ -1474,16 +1499,16 @@ static bool textarea_replace_text_internal(struct textarea *ta, size_t b_start,
 		c_start = utf8_bounded_length(ta->password.data, b_start);
 		c_end = c_start;
 		c_end += utf8_bounded_length(ta->password.data + b_start,
-				b_end - b_start);
-		textarea_char_to_byte_offset(&ta->text, c_start, c_end,
-				&b_start, &b_end);
+					     b_end - b_start);
+		textarea_char_to_byte_offset(
+			&ta->text, c_start, c_end, &b_start, &b_end);
 	}
 
 	/* Ensure textarea's text buffer is large enough */
 	if (rep_len + ta->text.len - (b_end - b_start) >= ta->text.alloc) {
 		char *temp = realloc(ta->text.data,
-				rep_len + ta->text.len - (b_end - b_start) +
-					TA_ALLOC_STEP);
+				     rep_len + ta->text.len -
+					     (b_end - b_start) + TA_ALLOC_STEP);
 		if (temp == NULL) {
 			NSLOG(neosurf, INFO, "realloc failed");
 			return false;
@@ -1491,12 +1516,13 @@ static bool textarea_replace_text_internal(struct textarea *ta, size_t b_start,
 
 		ta->text.data = temp;
 		ta->text.alloc = rep_len + ta->text.len - (b_end - b_start) +
-				TA_ALLOC_STEP;
+				 TA_ALLOC_STEP;
 	}
 
 	/* Shift text following to new position */
-	memmove(ta->text.data + b_start + rep_len, ta->text.data + b_end,
-			ta->text.len - b_end);
+	memmove(ta->text.data + b_start + rep_len,
+		ta->text.data + b_end,
+		ta->text.len - b_end);
 
 	/* Insert new text */
 	memcpy(ta->text.data + b_start, rep, rep_len);
@@ -1541,7 +1567,9 @@ static bool textarea_replace_text_internal(struct textarea *ta, size_t b_start,
  * \return false on memory exhaustion, true otherwise
  */
 static bool textarea_copy_to_undo_buffer(struct textarea *ta,
-		size_t b_start, size_t b_end, size_t rep_len)
+					 size_t b_start,
+					 size_t b_end,
+					 size_t rep_len)
 {
 	struct textarea_undo *undo;
 	size_t b_offset;
@@ -1560,7 +1588,7 @@ static bool textarea_copy_to_undo_buffer(struct textarea *ta,
 	if (b_offset + len >= undo->text.alloc) {
 		/* Need more memory for undo buffer */
 		char *temp = realloc(undo->text.data,
-				b_offset + len + TA_ALLOC_STEP);
+				     b_offset + len + TA_ALLOC_STEP);
 		if (temp == NULL) {
 			NSLOG(neosurf, INFO, "realloc failed");
 			return false;
@@ -1572,8 +1600,9 @@ static bool textarea_copy_to_undo_buffer(struct textarea *ta,
 
 	if (undo->next_detail >= undo->details_alloc) {
 		/* Need more memory for undo details */
-		struct textarea_undo_detail *temp = realloc(undo->details,
-				(undo->next_detail + 128) *
+		struct textarea_undo_detail *temp = realloc(
+			undo->details,
+			(undo->next_detail + 128) *
 				sizeof(struct textarea_undo_detail));
 		if (temp == NULL) {
 			NSLOG(neosurf, INFO, "realloc failed");
@@ -1585,8 +1614,9 @@ static bool textarea_copy_to_undo_buffer(struct textarea *ta,
 	}
 
 	/* Put text into buffer */
-	memcpy(undo->text.data + b_offset, ta->text.data + b_start,
-			b_end - b_start);
+	memcpy(undo->text.data + b_offset,
+	       ta->text.data + b_start,
+	       b_end - b_start);
 
 	/* Update next_detail */
 	undo->details[undo->next_detail].b_start = b_offset;
@@ -1615,31 +1645,42 @@ static bool textarea_copy_to_undo_buffer(struct textarea *ta,
  * Note, b_start and b_end must be the byte offsets in ta->show, so in the
  * password textarea case, they are for ta->password.
  */
-static bool textarea_replace_text(struct textarea *ta, size_t b_start,
-		size_t b_end, const char *rep, size_t rep_len,
-		bool add_to_clipboard, int *byte_delta, struct rect *r)
+static bool textarea_replace_text(struct textarea *ta,
+				  size_t b_start,
+				  size_t b_end,
+				  const char *rep,
+				  size_t rep_len,
+				  bool add_to_clipboard,
+				  int *byte_delta,
+				  struct rect *r)
 {
 	if (!(b_start != b_end && rep == NULL && add_to_clipboard) &&
-			!(ta->flags & TEXTAREA_PASSWORD)) {
+	    !(ta->flags & TEXTAREA_PASSWORD)) {
 		/* Not just copying to clipboard, and not a password field;
 		 * Sort out undo buffer. */
-		if (textarea_copy_to_undo_buffer(ta, b_start, b_end,
-				rep_len) == false)
+		if (textarea_copy_to_undo_buffer(ta, b_start, b_end, rep_len) ==
+		    false)
 			return false;
 	}
 
 	/* Replace the text in the textarea, and reflow it */
-	if (textarea_replace_text_internal(ta, b_start, b_end, rep, rep_len,
-			add_to_clipboard, byte_delta, r) == false) {
+	if (textarea_replace_text_internal(ta,
+					   b_start,
+					   b_end,
+					   rep,
+					   rep_len,
+					   add_to_clipboard,
+					   byte_delta,
+					   r) == false) {
 		return false;
 	}
 
 	if (!(b_start != b_end && rep == NULL && add_to_clipboard) &&
-			!(ta->flags & TEXTAREA_PASSWORD)) {
+	    !(ta->flags & TEXTAREA_PASSWORD)) {
 		/* Not just copying to clipboard, and not a password field;
 		 * Update UNDO buffer */
-		ta->undo.details[ta->undo.next_detail].b_text_end =
-				b_end + *byte_delta;
+		ta->undo.details[ta->undo.next_detail].b_text_end = b_end +
+								    *byte_delta;
 		ta->undo.last_detail = ta->undo.next_detail;
 		ta->undo.next_detail++;
 	}
@@ -1657,8 +1698,10 @@ static bool textarea_replace_text(struct textarea *ta, size_t b_start,
  * \param r		Updated to area where redraw is required
  * \return false if nothing to undo/redo, true otherwise
  */
-static bool textarea_undo(struct textarea *ta, bool forward,
-		unsigned int *caret, struct rect *r)
+static bool textarea_undo(struct textarea *ta,
+			  bool forward,
+			  unsigned int *caret,
+			  struct rect *r)
 {
 	unsigned int detail_n;
 	struct textarea_undo_detail *detail;
@@ -1705,9 +1748,13 @@ static bool textarea_undo(struct textarea *ta, bool forward,
 
 	/* Replace textarea text with undo buffer text */
 	textarea_replace_text_internal(ta,
-			detail->b_text_start, detail->b_text_end,
-			ta->undo.text.data + detail->b_start, b_len,
-			false, &byte_delta, r);
+				       detail->b_text_start,
+				       detail->b_text_end,
+				       ta->undo.text.data + detail->b_start,
+				       b_len,
+				       false,
+				       &byte_delta,
+				       r);
 
 	/* Update undo buffer for redo */
 	if (temp != NULL)
@@ -1741,8 +1788,8 @@ static bool textarea_undo(struct textarea *ta, bool forward,
  * \param y	Y coordinate
  * \return true if drag end was handled false otherwise
  */
-static bool textarea_drag_end(struct textarea *ta, browser_mouse_state mouse,
-		int x, int y)
+static bool
+textarea_drag_end(struct textarea *ta, browser_mouse_state mouse, int x, int y)
 {
 	size_t b_end;
 	struct textarea_msg msg;
@@ -1754,14 +1801,13 @@ static bool textarea_drag_end(struct textarea *ta, browser_mouse_state mouse,
 		if (ta->drag_info.data.scrollbar == ta->bar_x) {
 			x -= ta->border_width;
 			y -= ta->vis_height - ta->border_width -
-					SCROLLBAR_WIDTH;
+			     SCROLLBAR_WIDTH;
 		} else {
-			x -= ta->vis_width - ta->border_width -
-					SCROLLBAR_WIDTH;
+			x -= ta->vis_width - ta->border_width - SCROLLBAR_WIDTH;
 			y -= ta->border_width;
 		}
-		scrollbar_mouse_drag_end(ta->drag_info.data.scrollbar,
-				mouse, x, y);
+		scrollbar_mouse_drag_end(
+			ta->drag_info.data.scrollbar, mouse, x, y);
 		assert(ta->drag_info.type == TEXTAREA_DRAG_NONE);
 
 		/* Return, since drag end already reported to textarea client */
@@ -1803,22 +1849,26 @@ static void textarea_setup_text_offsets(struct textarea *ta)
 {
 	int text_y_offset, text_y_offset_baseline;
 
-	ta->line_height = FIXTOINT(FMUL(FLTTOFIX(1.3), FDIV(FMUL(
-			nscss_screen_dpi, FDIV(INTTOFIX(ta->fstyle.size),
-			INTTOFIX(PLOT_STYLE_SCALE))), F_72)));
+	ta->line_height = FIXTOINT(
+		FMUL(FLTTOFIX(1.3),
+		     FDIV(FMUL(nscss_screen_dpi,
+			       FDIV(INTTOFIX(ta->fstyle.size),
+				    INTTOFIX(PLOT_STYLE_SCALE))),
+			  F_72)));
 
 	text_y_offset = text_y_offset_baseline = ta->border_width;
 	if (ta->flags & TEXTAREA_MULTILINE) {
 		/* Multiline textarea */
 		text_y_offset += ta->pad_top;
-		text_y_offset_baseline +=
-				(ta->line_height * 3 + 2) / 4 + ta->pad_top;
+		text_y_offset_baseline += (ta->line_height * 3 + 2) / 4 +
+					  ta->pad_top;
 	} else {
 		/* Single line text area; text is vertically centered */
 		int vis_height = ta->vis_height - 2 * ta->border_width;
 		text_y_offset += (vis_height - ta->line_height + 1) / 2;
-		text_y_offset_baseline +=
-				(2 * vis_height + ta->line_height + 2) / 4;
+		text_y_offset_baseline += (2 * vis_height + ta->line_height +
+					   2) /
+					  4;
 	}
 
 	ta->text_y_offset = text_y_offset;
@@ -1834,11 +1884,10 @@ static void textarea_setup_text_offsets(struct textarea *ta)
  * \param[in] selected_text  Textarea selected text colour.
  * \param[in] selected_bg    Textarea selection background colour.
  */
-static void textarea_set_text_style(
-		struct textarea *ta,
-		const plot_font_style_t *fstyle,
-		colour selected_text,
-		colour selected_bg)
+static void textarea_set_text_style(struct textarea *ta,
+				    const plot_font_style_t *fstyle,
+				    colour selected_text,
+				    colour selected_bg)
 {
 	ta->fstyle = *fstyle;
 
@@ -1850,15 +1899,15 @@ static void textarea_set_text_style(
 
 /* exported interface, documented in textarea.h */
 struct textarea *textarea_create(const textarea_flags flags,
-		const textarea_setup *setup,
-		textarea_client_callback callback, void *data)
+				 const textarea_setup *setup,
+				 textarea_client_callback callback,
+				 void *data)
 {
 	struct textarea *ret;
 	struct rect r = {0, 0, 0, 0};
 
 	/* Sanity check flags */
-	assert(!(flags & TEXTAREA_MULTILINE &&
-			flags & TEXTAREA_PASSWORD));
+	assert(!(flags & TEXTAREA_MULTILINE && flags & TEXTAREA_PASSWORD));
 
 	if (callback == NULL) {
 		NSLOG(neosurf, INFO, "no callback provided");
@@ -1886,10 +1935,8 @@ struct textarea *textarea_create(const textarea_flags flags,
 	ret->border_width = setup->border_width;
 	ret->border_col = setup->border_col;
 
-	textarea_set_text_style(ret,
-			&setup->text,
-			setup->selected_text,
-			setup->selected_bg);
+	textarea_set_text_style(
+		ret, &setup->text, setup->selected_text, setup->selected_bg);
 
 	ret->scroll_x = 0;
 	ret->scroll_y = 0;
@@ -1946,9 +1993,12 @@ struct textarea *textarea_create(const textarea_flags flags,
 		ret->show = &ret->text;
 	}
 
-	ret->line_height = FIXTOINT(FMUL(FLTTOFIX(1.3), FDIV(FMUL(
-			nscss_screen_dpi, FDIV(INTTOFIX(setup->text.size),
-			INTTOFIX(PLOT_STYLE_SCALE))), F_72)));
+	ret->line_height = FIXTOINT(
+		FMUL(FLTTOFIX(1.3),
+		     FDIV(FMUL(nscss_screen_dpi,
+			       FDIV(INTTOFIX(setup->text.size),
+				    INTTOFIX(PLOT_STYLE_SCALE))),
+			  F_72)));
 
 	ret->caret_pos.line = ret->caret_pos.byte_off = -1;
 	ret->caret_x = 0;
@@ -1963,9 +2013,9 @@ struct textarea *textarea_create(const textarea_flags flags,
 	textarea_setup_text_offsets(ret);
 
 	if (flags & TEXTAREA_MULTILINE)
-		 textarea_reflow_multiline(ret, 0, 0, &r);
+		textarea_reflow_multiline(ret, 0, 0, &r);
 	else
-		 textarea_reflow_singleline(ret, 0, &r);
+		textarea_reflow_singleline(ret, 0, &r);
 
 	return ret;
 }
@@ -2017,11 +2067,11 @@ bool textarea_set_text(struct textarea *ta, const char *text)
 	textarea_normalise_text(ta, 0, len);
 
 	if (ta->flags & TEXTAREA_MULTILINE) {
-		 if (!textarea_reflow_multiline(ta, 0, len - 1, &r))
-		 	return false;
+		if (!textarea_reflow_multiline(ta, 0, len - 1, &r))
+			return false;
 	} else {
-		 if (!textarea_reflow_singleline(ta, 0, &r))
-		 	return false;
+		if (!textarea_reflow_singleline(ta, 0, &r))
+			return false;
 	}
 
 	return true;
@@ -2029,11 +2079,12 @@ bool textarea_set_text(struct textarea *ta, const char *text)
 
 
 /* exported interface, documented in textarea.h */
-bool textarea_drop_text(struct textarea *ta, const char *text,
-		size_t text_length)
+bool textarea_drop_text(struct textarea *ta,
+			const char *text,
+			size_t text_length)
 {
 	struct textarea_msg msg;
-	struct rect r;	/**< Redraw rectangle */
+	struct rect r; /**< Redraw rectangle */
 	unsigned int caret_pos;
 	int byte_delta;
 
@@ -2046,15 +2097,27 @@ bool textarea_drop_text(struct textarea *ta, const char *text,
 	caret_pos = textarea_get_caret(ta);
 
 	if (ta->sel_start != -1) {
-		if (!textarea_replace_text(ta, ta->sel_start, ta->sel_end,
-				text, text_length, false, &byte_delta, &r))
+		if (!textarea_replace_text(ta,
+					   ta->sel_start,
+					   ta->sel_end,
+					   text,
+					   text_length,
+					   false,
+					   &byte_delta,
+					   &r))
 			return false;
 
 		caret_pos = ta->sel_end;
 		ta->sel_start = ta->sel_end = -1;
 	} else {
-		if (!textarea_replace_text(ta, caret_pos, caret_pos,
-				text, text_length, false, &byte_delta, &r))
+		if (!textarea_replace_text(ta,
+					   caret_pos,
+					   caret_pos,
+					   text,
+					   text_length,
+					   false,
+					   &byte_delta,
+					   &r))
 			return false;
 	}
 
@@ -2098,7 +2161,7 @@ int textarea_get_text(struct textarea *ta, char *buf, unsigned int len)
 
 
 /* exported interface, documented in textarea.h */
-const char * textarea_data(struct textarea *ta, unsigned int *len)
+const char *textarea_data(struct textarea *ta, unsigned int *len)
 {
 	if (len != NULL) {
 		*len = ta->text.len;
@@ -2119,7 +2182,8 @@ bool textarea_set_caret(struct textarea *ta, int caret)
 		textarea_set_caret_internal(ta, 0);
 	} else {
 		b_off = utf8_bounded_byte_length(ta->show->data,
-				ta->show->len - 1, caret);
+						 ta->show->len - 1,
+						 caret);
 		textarea_set_caret_internal(ta, b_off);
 	}
 
@@ -2128,8 +2192,13 @@ bool textarea_set_caret(struct textarea *ta, int caret)
 
 
 /* exported interface, documented in textarea.h */
-void textarea_redraw(struct textarea *ta, int x, int y, colour bg, float scale,
-		const struct rect *clip, const struct redraw_context *ctx)
+void textarea_redraw(struct textarea *ta,
+		     int x,
+		     int y,
+		     colour bg,
+		     float scale,
+		     const struct rect *clip,
+		     const struct redraw_context *ctx)
 {
 	int line0, line1, line, left, right, line_y;
 	int text_y_offset, text_y_offset_baseline;
@@ -2142,13 +2211,11 @@ void textarea_redraw(struct textarea *ta, int x, int y, colour bg, float scale,
 	plot_font_style_t fstyle;
 	int fsize = ta->fstyle.size;
 	int line_height = ta->line_height;
-	plot_style_t plot_style_fill_bg = {
-		.stroke_type = PLOT_OP_TYPE_NONE,
-		.stroke_width = 0,
-		.stroke_colour = NS_TRANSPARENT,
-		.fill_type = PLOT_OP_TYPE_SOLID,
-		.fill_colour = ta->border_col
-	};
+	plot_style_t plot_style_fill_bg = {.stroke_type = PLOT_OP_TYPE_NONE,
+					   .stroke_width = 0,
+					   .stroke_colour = NS_TRANSPARENT,
+					   .fill_type = PLOT_OP_TYPE_SOLID,
+					   .fill_colour = ta->border_col};
 
 	r = *clip;
 
@@ -2160,7 +2227,7 @@ void textarea_redraw(struct textarea *ta, int x, int y, colour bg, float scale,
 			return;
 	} else {
 		if (r.x0 > x + ta->vis_width * scale ||
-				r.y0 > y + ta->vis_height * scale)
+		    r.y0 > y + ta->vis_height * scale)
 			return;
 	}
 
@@ -2199,8 +2266,7 @@ void textarea_redraw(struct textarea *ta, int x, int y, colour bg, float scale,
 	}
 
 	ctx->plot->clip(ctx, &r);
-	if (ta->border_col != NS_TRANSPARENT &&
-			ta->border_width > 0) {
+	if (ta->border_col != NS_TRANSPARENT && ta->border_width > 0) {
 		/* Plot border */
 		rect.x0 = x;
 		rect.y0 = y;
@@ -2226,10 +2292,9 @@ void textarea_redraw(struct textarea *ta, int x, int y, colour bg, float scale,
 		if (r.y0 < y + ta->border_width)
 			r.y0 = y + ta->border_width;
 		if (r.y1 > y + ta->vis_height - ta->border_width -
-				(ta->bar_x != NULL ? SCROLLBAR_WIDTH : 0))
+				   (ta->bar_x != NULL ? SCROLLBAR_WIDTH : 0))
 			r.y1 = y + ta->vis_height - ta->border_width -
-					(ta->bar_x != NULL ? SCROLLBAR_WIDTH :
-							0);
+			       (ta->bar_x != NULL ? SCROLLBAR_WIDTH : 0);
 	} else {
 		if (r.x0 < x + ta->border_width * scale)
 			r.x0 = x + ta->border_width * scale;
@@ -2239,10 +2304,10 @@ void textarea_redraw(struct textarea *ta, int x, int y, colour bg, float scale,
 			r.y0 = y + ta->border_width * scale;
 		if (r.y1 > y + (ta->vis_height - ta->border_width -
 				(ta->bar_x != NULL ? SCROLLBAR_WIDTH : 0)) *
-				scale)
+					   scale)
 			r.y1 = y + (ta->vis_height - ta->border_width -
-					(ta->bar_x != NULL ? SCROLLBAR_WIDTH :
-							0)) * scale;
+				    (ta->bar_x != NULL ? SCROLLBAR_WIDTH : 0)) *
+					   scale;
 	}
 
 	if (line0 > 0)
@@ -2263,8 +2328,8 @@ void textarea_redraw(struct textarea *ta, int x, int y, colour bg, float scale,
 
 	plot_style_fill_bg.fill_colour = ta->sel_fstyle.background;
 
-	for (line = line0;
-	     (line <= line1) &&	(y + line * ta->line_height <= r.y1 + ta->scroll_y);
+	for (line = line0; (line <= line1) &&
+			   (y + line * ta->line_height <= r.y1 + ta->scroll_y);
 	     line++) {
 		if (ta->lines[line].b_length == 0) {
 			b_pos++;
@@ -2289,130 +2354,145 @@ void textarea_redraw(struct textarea *ta, int x, int y, colour bg, float scale,
 		sel_end = ta->sel_end;
 
 		if (ta->sel_end == -1 || ta->sel_end == ta->sel_start ||
-				sel_end < ta->lines[line].b_start ||
-				sel_start > ta->lines[line].b_start +
-						ta->lines[line].b_length) {
+		    sel_end < ta->lines[line].b_start ||
+		    sel_start > ta->lines[line].b_start +
+					ta->lines[line].b_length) {
 			/* Simple case; no selection on this line */
 			fstyle = ta->fstyle;
 			fstyle.size = fsize;
 
 			ctx->plot->text(ctx,
 					&fstyle,
-					x + ta->border_width + ta->pad_left - ta->scroll_x,
+					x + ta->border_width + ta->pad_left -
+						ta->scroll_x,
 					y + line_y + text_y_offset_baseline,
-					ta->show->data + ta->lines[line].b_start,
+					ta->show->data +
+						ta->lines[line].b_start,
 					ta->lines[line].b_length);
 
 			b_pos += b_len;
 
-		} else do {
-			/* get length of part of line */
-			if (sel_end <= b_pos || sel_start > b_pos + b_len) {
-				/* rest of line unselected */
-				selected = false;
-				b_len_part = b_len;
-				fstyle = ta->fstyle;
+		} else
+			do {
+				/* get length of part of line */
+				if (sel_end <= b_pos ||
+				    sel_start > b_pos + b_len) {
+					/* rest of line unselected */
+					selected = false;
+					b_len_part = b_len;
+					fstyle = ta->fstyle;
 
-			} else if (sel_start <= b_pos &&
-					sel_end > b_pos + b_len) {
-				/* rest of line selected */
-				selected = true;
-				b_len_part = b_len;
-				fstyle = ta->sel_fstyle;
+				} else if (sel_start <= b_pos &&
+					   sel_end > b_pos + b_len) {
+					/* rest of line selected */
+					selected = true;
+					b_len_part = b_len;
+					fstyle = ta->sel_fstyle;
 
-			} else if (sel_start > b_pos) {
-				/* next part of line unselected */
-				selected = false;
-				b_len_part = sel_start - b_pos;
-				fstyle = ta->fstyle;
+				} else if (sel_start > b_pos) {
+					/* next part of line unselected */
+					selected = false;
+					b_len_part = sel_start - b_pos;
+					fstyle = ta->fstyle;
 
-			} else if (sel_end > b_pos) {
-				/* next part of line selected */
-				selected = true;
-				b_len_part = sel_end - b_pos;
-				fstyle = ta->sel_fstyle;
+				} else if (sel_end > b_pos) {
+					/* next part of line selected */
+					selected = true;
+					b_len_part = sel_end - b_pos;
+					fstyle = ta->sel_fstyle;
 
-			} else {
-				assert(0);
-			}
-			fstyle.size = fsize;
+				} else {
+					assert(0);
+				}
+				fstyle.size = fsize;
 
-			line_text = &(ta->show->data[ta->lines[line].b_start]);
+				line_text = &(ta->show->data[ta->lines[line]
+								     .b_start]);
 
-			/* find b_end for this part of the line */
-			b_end += b_len_part;
+				/* find b_end for this part of the line */
+				b_end += b_len_part;
 
-			/* find clip left/right for this part of line */
-			left = right;
-			if (b_len_part != b_len) {
-				guit->layout->width(&fstyle, line_text, b_end,
-						&right);
-			} else {
-				right = ta->lines[line].width;
-				if (scale != 1.0)
-					right *= scale;
-			}
-			right += x + ta->border_width + ta->pad_left -
-					ta->scroll_x;
+				/* find clip left/right for this part of line */
+				left = right;
+				if (b_len_part != b_len) {
+					guit->layout->width(&fstyle,
+							    line_text,
+							    b_end,
+							    &right);
+				} else {
+					right = ta->lines[line].width;
+					if (scale != 1.0)
+						right *= scale;
+				}
+				right += x + ta->border_width + ta->pad_left -
+					 ta->scroll_x;
 
-			/* set clip rectangle for line part */
-			s = r;
+				/* set clip rectangle for line part */
+				s = r;
 
-			if (s.x1 <= left || s.x0 > right) {
-				/* Skip this span, it's outside the visible */
-				b_pos += b_len_part;
-				b_len -= b_len_part;
-				continue;
-			}
+				if (s.x1 <= left || s.x0 > right) {
+					/* Skip this span, it's outside the
+					 * visible */
+					b_pos += b_len_part;
+					b_len -= b_len_part;
+					continue;
+				}
 
-			/* Adjust clip rectangle to span limits */
-			if (s.x0 < left)
-				s.x0 = left;
-			if (s.x1 > right)
-				s.x1 = right;
+				/* Adjust clip rectangle to span limits */
+				if (s.x0 < left)
+					s.x0 = left;
+				if (s.x1 > right)
+					s.x1 = right;
 
-			if (right <= left) {
-				/* Skip this span, it's outside the visible */
-				b_pos += b_len_part;
-				b_len -= b_len_part;
-				continue;
-			}
+				if (right <= left) {
+					/* Skip this span, it's outside the
+					 * visible */
+					b_pos += b_len_part;
+					b_len -= b_len_part;
+					continue;
+				}
 
-			ctx->plot->clip(ctx, &s);
+				ctx->plot->clip(ctx, &s);
 
-			if (selected) {
-				/* draw selection fill */
-				rect.x0 = s.x0;
-				rect.y0 = y + line_y + text_y_offset;
-				rect.x1 = s.x1;
-				rect.y1 = y + line_y + line_height + text_y_offset;
-				ctx->plot->rectangle(ctx, &plot_style_fill_bg, &rect);
-			}
+				if (selected) {
+					/* draw selection fill */
+					rect.x0 = s.x0;
+					rect.y0 = y + line_y + text_y_offset;
+					rect.x1 = s.x1;
+					rect.y1 = y + line_y + line_height +
+						  text_y_offset;
+					ctx->plot->rectangle(
+						ctx,
+						&plot_style_fill_bg,
+						&rect);
+				}
 
-			/* draw text */
-			ctx->plot->text(ctx,
+				/* draw text */
+				ctx->plot->text(
+					ctx,
 					&fstyle,
-					x + ta->border_width + ta->pad_left - ta->scroll_x,
+					x + ta->border_width + ta->pad_left -
+						ta->scroll_x,
 					y + line_y + text_y_offset_baseline,
-					ta->show->data + ta->lines[line].b_start,
+					ta->show->data +
+						ta->lines[line].b_start,
 					ta->lines[line].b_length);
 
-			b_pos += b_len_part;
-			b_len -= b_len_part;
+				b_pos += b_len_part;
+				b_len -= b_len_part;
 
-		} while (b_pos < b_pos + b_len);
+			} while (b_pos < b_pos + b_len);
 
 		/* if there is a newline between the lines, skip it */
 		if (line < ta->line_count - 1 &&
-				ta->lines[line + 1].b_start !=
-						ta->lines[line].b_start +
-						ta->lines[line].b_length)
+		    ta->lines[line + 1].b_start !=
+			    ta->lines[line].b_start + ta->lines[line].b_length)
 			b_pos++;
 	}
 
 	if (ta->flags & TEXTAREA_INTERNAL_CARET &&
-			(ta->sel_end == -1 || ta->sel_start == ta->sel_end) &&
-			ta->caret_pos.byte_off >= 0) {
+	    (ta->sel_end == -1 || ta->sel_start == ta->sel_end) &&
+	    ta->caret_pos.byte_off >= 0) {
 		/* No native caret, there is no selection, and caret visible */
 		int caret_y = y - ta->scroll_y + ta->caret_y;
 
@@ -2430,18 +2510,22 @@ void textarea_redraw(struct textarea *ta, int x, int y, colour bg, float scale,
 
 	if (ta->bar_x != NULL) {
 		scrollbar_redraw(ta->bar_x,
-				x / scale + ta->border_width,
-				y / scale + ta->vis_height - ta->border_width -
-						SCROLLBAR_WIDTH,
-				clip, scale, ctx);
+				 x / scale + ta->border_width,
+				 y / scale + ta->vis_height - ta->border_width -
+					 SCROLLBAR_WIDTH,
+				 clip,
+				 scale,
+				 ctx);
 	}
 
 	if (ta->bar_y != NULL) {
 		scrollbar_redraw(ta->bar_y,
-				x / scale + ta->vis_width - ta->border_width -
-						SCROLLBAR_WIDTH,
-				y / scale + ta->border_width,
-				clip, scale, ctx);
+				 x / scale + ta->vis_width - ta->border_width -
+					 SCROLLBAR_WIDTH,
+				 y / scale + ta->border_width,
+				 clip,
+				 scale,
+				 ctx);
 	}
 }
 
@@ -2450,7 +2534,7 @@ void textarea_redraw(struct textarea *ta, int x, int y, colour bg, float scale,
 bool textarea_keypress(struct textarea *ta, uint32_t key)
 {
 	struct textarea_msg msg;
-	struct rect r;	/**< Redraw rectangle */
+	struct rect r; /**< Redraw rectangle */
 	char utf8[6];
 	unsigned int caret, caret_copy, length, b_off, b_len;
 	int h_extent = ta->h_extent;
@@ -2477,30 +2561,47 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 
 		if (ta->sel_start != -1) {
 			if (!textarea_replace_text(ta,
-					ta->sel_start, ta->sel_end, utf8,
-					length, false, &byte_delta, &r))
+						   ta->sel_start,
+						   ta->sel_end,
+						   utf8,
+						   length,
+						   false,
+						   &byte_delta,
+						   &r))
 				return false;
 
 			redraw = true;
 			caret = ta->sel_end;
 			textarea_reset_selection(ta);
 		} else {
-			if (!textarea_replace_text(ta, caret, caret,
-					utf8, length, false, &byte_delta, &r))
+			if (!textarea_replace_text(ta,
+						   caret,
+						   caret,
+						   utf8,
+						   length,
+						   false,
+						   &byte_delta,
+						   &r))
 				return false;
 			redraw = true;
 		}
 		caret += byte_delta;
 
-	} else switch (key) {
+	} else
+		switch (key) {
 		case NS_KEY_SELECT_ALL:
 			textarea_select(ta, 0, ta->show->len - 1, true);
 			return true;
 		case NS_KEY_COPY_SELECTION:
 			if (ta->sel_start != -1) {
 				if (!textarea_replace_text(ta,
-						ta->sel_start, ta->sel_end,
-						NULL, 0, true, &byte_delta, &r))
+							   ta->sel_start,
+							   ta->sel_end,
+							   NULL,
+							   0,
+							   true,
+							   &byte_delta,
+							   &r))
 					return false;
 			}
 			break;
@@ -2509,8 +2610,13 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 				break;
 			if (ta->sel_start != -1) {
 				if (!textarea_replace_text(ta,
-						ta->sel_start, ta->sel_end,
-						"", 0, false, &byte_delta, &r))
+							   ta->sel_start,
+							   ta->sel_end,
+							   "",
+							   0,
+							   false,
+							   &byte_delta,
+							   &r))
 					return false;
 
 				redraw = true;
@@ -2518,8 +2624,14 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 				textarea_reset_selection(ta);
 			} else if (caret > 0) {
 				b_off = utf8_prev(ta->show->data, caret);
-				if (!textarea_replace_text(ta, b_off, caret,
-						"", 0, false, &byte_delta, &r))
+				if (!textarea_replace_text(ta,
+							   b_off,
+							   caret,
+							   "",
+							   0,
+							   false,
+							   &byte_delta,
+							   &r))
 					return false;
 				redraw = true;
 			}
@@ -2530,8 +2642,13 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 				break;
 			if (ta->sel_start != -1) {
 				if (!textarea_replace_text(ta,
-						ta->sel_start, ta->sel_end,
-						"", 0, false, &byte_delta, &r))
+							   ta->sel_start,
+							   ta->sel_end,
+							   "",
+							   0,
+							   false,
+							   &byte_delta,
+							   &r))
 					return false;
 
 				redraw = true;
@@ -2539,9 +2656,16 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 				textarea_reset_selection(ta);
 			} else if (caret < ta->show->len - 1) {
 				b_off = utf8_next(ta->show->data,
-						ta->show->len - 1, caret);
-				if (!textarea_replace_text(ta, caret, b_off,
-						"", 0, false, &byte_delta, &r))
+						  ta->show->len - 1,
+						  caret);
+				if (!textarea_replace_text(ta,
+							   caret,
+							   b_off,
+							   "",
+							   0,
+							   false,
+							   &byte_delta,
+							   &r))
 					return false;
 				caret = b_off;
 				redraw = true;
@@ -2555,25 +2679,33 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 
 			if (ta->sel_start != -1) {
 				if (!textarea_replace_text(ta,
-						ta->sel_start, ta->sel_end,
-						"\n", 1, false,
-						&byte_delta, &r))
+							   ta->sel_start,
+							   ta->sel_end,
+							   "\n",
+							   1,
+							   false,
+							   &byte_delta,
+							   &r))
 					return false;
 
 				redraw = true;
 				caret = ta->sel_end;
 				textarea_reset_selection(ta);
 			} else {
-				if (!textarea_replace_text(ta, caret, caret,
-						"\n", 1, false,
-						&byte_delta, &r))
+				if (!textarea_replace_text(ta,
+							   caret,
+							   caret,
+							   "\n",
+							   1,
+							   false,
+							   &byte_delta,
+							   &r))
 					return false;
 				redraw = true;
 			}
 			caret += byte_delta;
 			break;
-		case NS_KEY_PASTE:
-		{
+		case NS_KEY_PASTE: {
 			char *clipboard = NULL;
 			size_t clipboard_length;
 
@@ -2586,9 +2718,13 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 
 			if (ta->sel_start != -1) {
 				if (!textarea_replace_text(ta,
-						ta->sel_start, ta->sel_end,
-						clipboard, clipboard_length,
-						false, &byte_delta, &r))
+							   ta->sel_start,
+							   ta->sel_end,
+							   clipboard,
+							   clipboard_length,
+							   false,
+							   &byte_delta,
+							   &r))
 					return false;
 
 				redraw = true;
@@ -2596,24 +2732,32 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 				textarea_reset_selection(ta);
 			} else {
 				if (!textarea_replace_text(ta,
-						caret, caret,
-						clipboard, clipboard_length,
-						false, &byte_delta, &r))
+							   caret,
+							   caret,
+							   clipboard,
+							   clipboard_length,
+							   false,
+							   &byte_delta,
+							   &r))
 					return false;
 				redraw = true;
 			}
 			caret += byte_delta;
 
 			free(clipboard);
-		}
-			break;
+		} break;
 		case NS_KEY_CUT_SELECTION:
 			if (readonly)
 				break;
 			if (ta->sel_start != -1) {
 				if (!textarea_replace_text(ta,
-						ta->sel_start, ta->sel_end,
-						"", 0, true, &byte_delta, &r))
+							   ta->sel_start,
+							   ta->sel_end,
+							   "",
+							   0,
+							   true,
+							   &byte_delta,
+							   &r))
 					return false;
 
 				redraw = true;
@@ -2640,7 +2784,8 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 				break;
 			if (caret < ta->show->len - 1)
 				caret = utf8_next(ta->show->data,
-						ta->show->len - 1, caret);
+						  ta->show->len - 1,
+						  caret);
 			if (ta->sel_start != -1) {
 				textarea_clear_selection(ta);
 			}
@@ -2689,16 +2834,14 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 			if (!(ta->flags & TEXTAREA_MULTILINE))
 				break;
 			y = ta->vis_height - 2 * ta->border_width -
-					ta->pad_top - ta->pad_bottom -
-					ta->line_height;
+			    ta->pad_top - ta->pad_bottom - ta->line_height;
 			textarea_scroll(ta, 0, -y);
 			return true;
 		case NS_KEY_PAGE_DOWN:
 			if (!(ta->flags & TEXTAREA_MULTILINE))
 				break;
 			y = ta->vis_height - 2 * ta->border_width -
-					ta->pad_top - ta->pad_bottom -
-					ta->line_height;
+			    ta->pad_top - ta->pad_bottom - ta->line_height;
 			textarea_scroll(ta, 0, y);
 			return true;
 		case NS_KEY_LINE_START:
@@ -2714,11 +2857,10 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 				break;
 
 			caret = ta->lines[line].b_start +
-					ta->lines[line].b_length;
+				ta->lines[line].b_length;
 
-			if (!(ta->flags & TEXTAREA_PASSWORD) &&
-					caret > 0 &&
-					ta->text.data[caret - 1] == ' ')
+			if (!(ta->flags & TEXTAREA_PASSWORD) && caret > 0 &&
+			    ta->text.data[caret - 1] == ' ')
 				caret--;
 			if (ta->sel_start != -1) {
 				textarea_clear_selection(ta);
@@ -2750,11 +2892,11 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 				break;
 			caret--;
 			while (strchr(sep, ta->show->data[caret]) != NULL &&
-					caret > 0)
+			       caret > 0)
 				caret--;
 			for (; caret > 0; caret--) {
-				if (strchr(sep, ta->show->data[caret])
-						!= NULL) {
+				if (strchr(sep, ta->show->data[caret]) !=
+				    NULL) {
 					caret++;
 					break;
 				}
@@ -2765,11 +2907,16 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 				break;
 
 			/* If there is a selection, remove the selected
-			* characters */
+			 * characters */
 			if (ta->sel_start != -1) {
-				if (!textarea_replace_text(ta, ta->sel_start,
-						ta->sel_end, "", 0, false,
-						&byte_delta, &r))
+				if (!textarea_replace_text(ta,
+							   ta->sel_start,
+							   ta->sel_end,
+							   "",
+							   0,
+							   false,
+							   &byte_delta,
+							   &r))
 					return false;
 				caret = ta->sel_start;
 				textarea_clear_selection(ta);
@@ -2781,25 +2928,31 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 				break;
 
 			/* caret goes left until a non-separator is
-			* encountered */
+			 * encountered */
 			caret--;
 			while (strchr(sep, ta->show->data[caret]) != NULL &&
-					caret > 0)
+			       caret > 0)
 				caret--;
 
 			/* caret goes left until a separator is encountered */
 			for (; caret > 0; caret--) {
 				if (strchr(sep, ta->show->data[caret]) !=
-						NULL) {
+				    NULL) {
 					caret++;
 					break;
 				}
 			}
 
 			/* Remove the characters from new caret position to
-			* original caret position */
-			if (!textarea_replace_text(ta, caret, caret_copy,
-					"", 0, false, &byte_delta, &r))
+			 * original caret position */
+			if (!textarea_replace_text(ta,
+						   caret,
+						   caret_copy,
+						   "",
+						   0,
+						   false,
+						   &byte_delta,
+						   &r))
 				return false;
 
 			redraw = true;
@@ -2813,10 +2966,10 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 			if (caret == ta->show->len - 1)
 				break;
 			if (strchr(sep, ta->show->data[caret]) != NULL &&
-					caret < ta->show->len - 1) {
+			    caret < ta->show->len - 1) {
 				while (strchr(sep, ta->show->data[caret]) !=
-						NULL &&
-						caret < ta->show->len - 1) {
+					       NULL &&
+				       caret < ta->show->len - 1) {
 					caret++;
 				}
 				break;
@@ -2826,7 +2979,7 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 					break;
 			}
 			while (strchr(sep, ta->show->data[caret]) != NULL &&
-					caret < ta->show->len - 1)
+			       caret < ta->show->len - 1)
 				caret++;
 			break;
 		case NS_KEY_DELETE_WORD_RIGHT:
@@ -2834,11 +2987,16 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 				break;
 
 			/* If there is a selection, remove the selected
-			* characters */
+			 * characters */
 			if (ta->sel_start != -1) {
-				if (!textarea_replace_text(ta, ta->sel_start,
-						ta->sel_end, "", 0, false,
-						&byte_delta, &r))
+				if (!textarea_replace_text(ta,
+							   ta->sel_start,
+							   ta->sel_end,
+							   "",
+							   0,
+							   false,
+							   &byte_delta,
+							   &r))
 					return false;
 				caret = ta->sel_start;
 				textarea_clear_selection(ta);
@@ -2850,24 +3008,31 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 				break;
 
 			/* caret_copy goes right until a non-separator is
-			* encountered */
-			while (strchr(sep, ta->show->data[caret_copy]) != NULL
-					&& caret_copy < ta->show->len - 1)
+			 * encountered */
+			while (strchr(sep, ta->show->data[caret_copy]) !=
+				       NULL &&
+			       caret_copy < ta->show->len - 1)
 				caret_copy++;
 
 			/* caret_copy goes right until a separator is
-			* encountered */
+			 * encountered */
 			for (; caret_copy < ta->show->len - 1; caret_copy++) {
 				if (strchr(sep, ta->show->data[caret_copy]) !=
-						NULL) {
+				    NULL) {
 					break;
 				}
 			}
 
 			/* Remove all the characters from original caret
-			* position to caret_copy */
-			if (!textarea_replace_text(ta, caret, caret_copy,
-					"", 0, false, &byte_delta, &r))
+			 * position to caret_copy */
+			if (!textarea_replace_text(ta,
+						   caret,
+						   caret_copy,
+						   "",
+						   0,
+						   false,
+						   &byte_delta,
+						   &r))
 				return false;
 
 			redraw = true;
@@ -2877,8 +3042,13 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 				break;
 			if (ta->sel_start != -1) {
 				if (!textarea_replace_text(ta,
-						ta->sel_start, ta->sel_end,
-						"", 0, false, &byte_delta, &r))
+							   ta->sel_start,
+							   ta->sel_end,
+							   "",
+							   0,
+							   false,
+							   &byte_delta,
+							   &r))
 					return false;
 				redraw = true;
 				caret = ta->sel_end;
@@ -2888,16 +3058,27 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 					/* Delete line */
 					caret = ta->lines[line].b_start;
 					b_len = ta->lines[line].b_length;
-					if (!textarea_replace_text(ta, caret,
-							caret + b_len, "", 0,
-							false, &byte_delta, &r))
+					if (!textarea_replace_text(
+						    ta,
+						    caret,
+						    caret + b_len,
+						    "",
+						    0,
+						    false,
+						    &byte_delta,
+						    &r))
 						return false;
 					caret = caret + b_len;
 				} else if (caret < ta->show->len - 1) {
 					/* Delete blank line */
 					if (!textarea_replace_text(ta,
-							caret, caret + 1, "", 0,
-							false, &byte_delta, &r))
+								   caret,
+								   caret + 1,
+								   "",
+								   0,
+								   false,
+								   &byte_delta,
+								   &r))
 						return false;
 					caret++;
 				}
@@ -2910,8 +3091,13 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 				break;
 			if (ta->sel_start != -1) {
 				if (!textarea_replace_text(ta,
-						ta->sel_start, ta->sel_end,
-						"", 0, false, &byte_delta, &r))
+							   ta->sel_start,
+							   ta->sel_end,
+							   "",
+							   0,
+							   false,
+							   &byte_delta,
+							   &r))
 					return false;
 				redraw = true;
 				caret = ta->sel_end;
@@ -2919,8 +3105,14 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 			} else {
 				b_len = ta->lines[line].b_length;
 				b_off = ta->lines[line].b_start + b_len;
-				if (!textarea_replace_text(ta, caret, b_off,
-						"", 0, false, &byte_delta, &r))
+				if (!textarea_replace_text(ta,
+							   caret,
+							   b_off,
+							   "",
+							   0,
+							   false,
+							   &byte_delta,
+							   &r))
 					return false;
 				caret = b_off;
 				redraw = true;
@@ -2932,17 +3124,27 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 				break;
 			if (ta->sel_start != -1) {
 				if (!textarea_replace_text(ta,
-						ta->sel_start, ta->sel_end,
-						"", 0, false, &byte_delta, &r))
+							   ta->sel_start,
+							   ta->sel_end,
+							   "",
+							   0,
+							   false,
+							   &byte_delta,
+							   &r))
 					return false;
 				redraw = true;
 				caret = ta->sel_end;
 				textarea_reset_selection(ta);
 			} else {
-				if (!textarea_replace_text(ta,
-						caret - ta->caret_pos.byte_off,
-						caret, "", 0, false,
-						&byte_delta, &r))
+				if (!textarea_replace_text(
+					    ta,
+					    caret - ta->caret_pos.byte_off,
+					    caret,
+					    "",
+					    0,
+					    false,
+					    &byte_delta,
+					    &r))
 					return false;
 				redraw = true;
 			}
@@ -2972,7 +3174,7 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 			break;
 		default:
 			return false;
-	}
+		}
 
 	redraw &= !textarea_set_caret_internal(ta, caret);
 
@@ -2981,7 +3183,7 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
 	msg.type = TEXTAREA_MSG_REDRAW_REQUEST;
 
 	if (bar_x != (ta->bar_x != NULL) || bar_y != (ta->bar_y != NULL) ||
-			h_extent != ta->h_extent || v_extent != ta->v_extent) {
+	    h_extent != ta->h_extent || v_extent != ta->v_extent) {
 		/* Must redraw since scrollbars have changed */
 		msg.data.redraw.x0 = ta->border_width;
 		msg.data.redraw.y0 = ta->border_width;
@@ -3007,8 +3209,11 @@ bool textarea_keypress(struct textarea *ta, uint32_t key)
  * \param y	Y coordinate
  * \return textarea mouse state
  */
-static textarea_mouse_status textarea_mouse_scrollbar_action(
-		struct textarea *ta, browser_mouse_state mouse, int x, int y)
+static textarea_mouse_status
+textarea_mouse_scrollbar_action(struct textarea *ta,
+				browser_mouse_state mouse,
+				int x,
+				int y)
 {
 	int sx, sy; /* xy coord offset for scrollbar */
 	int sl; /* scrollbar length */
@@ -3022,14 +3227,14 @@ static textarea_mouse_status textarea_mouse_scrollbar_action(
 		if (ta->drag_info.data.scrollbar == ta->bar_x) {
 			x -= ta->border_width;
 			y -= ta->vis_height - ta->border_width -
-					SCROLLBAR_WIDTH;
+			     SCROLLBAR_WIDTH;
 		} else {
-			x -= ta->vis_width - ta->border_width -
-					SCROLLBAR_WIDTH;
+			x -= ta->vis_width - ta->border_width - SCROLLBAR_WIDTH;
 			y -= ta->border_width;
 		}
-		return (scrollbar_mouse_action(ta->drag_info.data.scrollbar,
-				mouse, x, y) << 3);
+		return (scrollbar_mouse_action(
+				ta->drag_info.data.scrollbar, mouse, x, y)
+			<< 3);
 	}
 
 	/* Horizontal scrollbar */
@@ -3039,11 +3244,11 @@ static textarea_mouse_status textarea_mouse_scrollbar_action(
 		sx = x - ta->border_width;
 		sy = y - (ta->vis_height - ta->border_width - SCROLLBAR_WIDTH);
 		sl = ta->vis_width - 2 * ta->border_width -
-				(ta->bar_y != NULL ? SCROLLBAR_WIDTH : 0);
+		     (ta->bar_y != NULL ? SCROLLBAR_WIDTH : 0);
 
 		if (sx >= 0 && sy >= 0 && sx < sl && sy < SCROLLBAR_WIDTH) {
-			return (scrollbar_mouse_action(ta->bar_x, mouse,
-					sx, sy) << 3);
+			return (scrollbar_mouse_action(ta->bar_x, mouse, sx, sy)
+				<< 3);
 		}
 	}
 
@@ -3056,8 +3261,8 @@ static textarea_mouse_status textarea_mouse_scrollbar_action(
 		sl = ta->vis_height - 2 * ta->border_width;
 
 		if (sx >= 0 && sy >= 0 && sx < SCROLLBAR_WIDTH && sy < sl) {
-			return (scrollbar_mouse_action(ta->bar_y, mouse,
-					sx, sy) << 3);
+			return (scrollbar_mouse_action(ta->bar_y, mouse, sx, sy)
+				<< 3);
 		}
 	}
 
@@ -3067,7 +3272,9 @@ static textarea_mouse_status textarea_mouse_scrollbar_action(
 
 /* exported interface, documented in textarea.h */
 textarea_mouse_status textarea_mouse_action(struct textarea *ta,
-		browser_mouse_state mouse, int x, int y)
+					    browser_mouse_state mouse,
+					    int x,
+					    int y)
 {
 	int b_start, b_end;
 	unsigned int b_off;
@@ -3075,7 +3282,7 @@ textarea_mouse_status textarea_mouse_action(struct textarea *ta,
 	textarea_mouse_status status = TEXTAREA_MOUSE_NONE;
 
 	if (ta->drag_info.type != TEXTAREA_DRAG_NONE &&
-			mouse == BROWSER_MOUSE_HOVER) {
+	    mouse == BROWSER_MOUSE_HOVER) {
 		/* There is a drag that we must end */
 		textarea_drag_end(ta, mouse, x, y);
 	}
@@ -3089,8 +3296,8 @@ textarea_mouse_status textarea_mouse_action(struct textarea *ta,
 
 	/* Might be outside textarea, and not dragging */
 	if ((x >= ta->vis_width || y >= ta->vis_height) &&
-			ta->drag_info.type == TEXTAREA_DRAG_NONE &&
-			ta->flags & TEXTAREA_MULTILINE) {
+	    ta->drag_info.type == TEXTAREA_DRAG_NONE &&
+	    ta->flags & TEXTAREA_MULTILINE) {
 		return status;
 	}
 
@@ -3127,9 +3334,9 @@ textarea_mouse_status textarea_mouse_action(struct textarea *ta,
 		if (ta->sel_start != -1) {
 			/* Adjust selection */
 			b_start = (ta->sel_end - ta->sel_start) / 2 +
-					ta->sel_start;
-			b_start = ((unsigned)b_start > b_off) ?
-					ta->sel_end : ta->sel_start;
+				  ta->sel_start;
+			b_start = ((unsigned)b_start > b_off) ? ta->sel_end
+							      : ta->sel_start;
 			ta->drag_start = b_start;
 			textarea_select(ta, b_start, b_off, false);
 		} else {
@@ -3156,9 +3363,9 @@ textarea_mouse_status textarea_mouse_action(struct textarea *ta,
 		textarea_select(ta, b_start, b_end, false);
 		status |= TEXTAREA_MOUSE_USED;
 
-	} else if (mouse &
-			(BROWSER_MOUSE_HOLDING_1 | BROWSER_MOUSE_HOLDING_2) &&
-			ta->drag_info.type == TEXTAREA_DRAG_SELECTION) {
+	} else if (mouse & (BROWSER_MOUSE_HOLDING_1 |
+			    BROWSER_MOUSE_HOLDING_2) &&
+		   ta->drag_info.type == TEXTAREA_DRAG_SELECTION) {
 		/* Selection track */
 		int scrx = 0;
 		int scry = 0;
@@ -3170,9 +3377,9 @@ textarea_mouse_status textarea_mouse_action(struct textarea *ta,
 		b_end = b_off;
 
 		w = ta->vis_width - ta->border_width -
-				((ta->bar_y == NULL) ? 0 : SCROLLBAR_WIDTH);
+		    ((ta->bar_y == NULL) ? 0 : SCROLLBAR_WIDTH);
 		h = ta->vis_height - ta->border_width -
-				((ta->bar_x == NULL) ? 0 : SCROLLBAR_WIDTH);
+		    ((ta->bar_x == NULL) ? 0 : SCROLLBAR_WIDTH);
 
 		/* selection auto-scroll */
 		if (x < ta->border_width)
@@ -3228,13 +3435,14 @@ bool textarea_clear_selection(struct textarea *ta)
 	msg.type = TEXTAREA_MSG_REDRAW_REQUEST;
 	msg.data.redraw.x0 = ta->border_width;
 	msg.data.redraw.y0 = max(ta->border_width,
-			ta->line_height * line_start +
-			ta->text_y_offset - ta->scroll_y);
+				 ta->line_height * line_start +
+					 ta->text_y_offset - ta->scroll_y);
 	msg.data.redraw.x1 = ta->vis_width - ta->border_width -
-			((ta->bar_y == NULL) ? 0 : SCROLLBAR_WIDTH);
-	msg.data.redraw.y1 = min(ta->vis_height - ta->border_width -
+			     ((ta->bar_y == NULL) ? 0 : SCROLLBAR_WIDTH);
+	msg.data.redraw.y1 = min(
+		ta->vis_height - ta->border_width -
 			((ta->bar_x == NULL) ? 0 : SCROLLBAR_WIDTH),
-			ta->line_height * line_end + ta->text_y_offset +
+		ta->line_height * line_end + ta->text_y_offset +
 			ta->line_height - ta->scroll_y);
 
 	ta->callback(ta->data, &msg);
@@ -3253,12 +3461,9 @@ bool textarea_clear_selection(struct textarea *ta)
 			.x0 = ta->border_width,
 			.y0 = ta->border_width,
 			.x1 = ta->vis_width - ta->border_width -
-					((ta->bar_y == NULL) ?
-					0 : SCROLLBAR_WIDTH),
+			      ((ta->bar_y == NULL) ? 0 : SCROLLBAR_WIDTH),
 			.y1 = ta->vis_height - ta->border_width -
-					((ta->bar_x == NULL) ?
-					0 : SCROLLBAR_WIDTH)
-		};
+			      ((ta->bar_x == NULL) ? 0 : SCROLLBAR_WIDTH)};
 		msg.ta = ta;
 		msg.type = TEXTAREA_MSG_CARET_UPDATE;
 		msg.data.caret.type = TEXTAREA_CARET_SET_POS;
@@ -3325,20 +3530,22 @@ void textarea_set_dimensions(struct textarea *ta, int width, int height)
 	textarea_setup_text_offsets(ta);
 
 	if (ta->flags & TEXTAREA_MULTILINE) {
-		 textarea_reflow_multiline(ta, 0, ta->show->len -1, &r);
+		textarea_reflow_multiline(ta, 0, ta->show->len - 1, &r);
 	} else {
-		 textarea_reflow_singleline(ta, 0, &r);
+		textarea_reflow_singleline(ta, 0, &r);
 	}
 }
 
 
 /* exported interface, documented in textarea.h */
-void textarea_set_layout(
-		struct textarea *ta,
-		const plot_font_style_t *fstyle,
-		int width, int height,
-		int top, int right,
-		int bottom, int left)
+void textarea_set_layout(struct textarea *ta,
+			 const plot_font_style_t *fstyle,
+			 int width,
+			 int height,
+			 int top,
+			 int right,
+			 int bottom,
+			 int left)
 {
 	struct rect r = {0, 0, 0, 0};
 
@@ -3349,16 +3556,17 @@ void textarea_set_layout(
 	ta->pad_bottom = bottom + ((ta->bar_x == NULL) ? 0 : SCROLLBAR_WIDTH);
 	ta->pad_left = left;
 
-	textarea_set_text_style(ta, fstyle,
-			ta->sel_fstyle.foreground,
-			ta->sel_fstyle.background);
+	textarea_set_text_style(ta,
+				fstyle,
+				ta->sel_fstyle.foreground,
+				ta->sel_fstyle.background);
 
 	textarea_setup_text_offsets(ta);
 
 	if (ta->flags & TEXTAREA_MULTILINE) {
-		 textarea_reflow_multiline(ta, 0, ta->show->len -1, &r);
+		textarea_reflow_multiline(ta, 0, ta->show->len - 1, &r);
 	} else {
-		 textarea_reflow_singleline(ta, 0, &r);
+		textarea_reflow_singleline(ta, 0, &r);
 	}
 }
 
@@ -3371,10 +3579,10 @@ bool textarea_scroll(struct textarea *ta, int scrx, int scry)
 	if (ta->flags & TEXTAREA_MULTILINE) {
 		/* Multi line textareas have scrollbars to handle this */
 		if (ta->bar_x != NULL && scrx != 0 &&
-				scrollbar_scroll(ta->bar_x, scrx))
+		    scrollbar_scroll(ta->bar_x, scrx))
 			handled_scroll = true;
 		if (ta->bar_y != NULL && scry != 0 &&
-				scrollbar_scroll(ta->bar_y, scry))
+		    scrollbar_scroll(ta->bar_y, scry))
 			handled_scroll = true;
 
 	} else {

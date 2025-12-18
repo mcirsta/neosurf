@@ -41,9 +41,12 @@ typedef struct javascript_content {
 } javascript_content;
 
 static nserror javascript_create(const content_handler *handler,
-		lwc_string *imime_type, const struct http_parameter *params,
-		llcache_handle *llcache, const char *fallback_charset,
-		bool quirks, struct content **c)
+				 lwc_string *imime_type,
+				 const struct http_parameter *params,
+				 llcache_handle *llcache,
+				 const char *fallback_charset,
+				 bool quirks,
+				 struct content **c)
 {
 	javascript_content *script;
 	nserror error;
@@ -52,14 +55,19 @@ static nserror javascript_create(const content_handler *handler,
 	if (script == NULL)
 		return NSERROR_NOMEM;
 
-	error = content__init(&script->base, handler, imime_type, params,
-			llcache, fallback_charset, quirks);
+	error = content__init(&script->base,
+			      handler,
+			      imime_type,
+			      params,
+			      llcache,
+			      fallback_charset,
+			      quirks);
 	if (error != NSERROR_OK) {
 		free(script);
 		return error;
 	}
 
-	*c = (struct content *) script;
+	*c = (struct content *)script;
 
 	return NSERROR_OK;
 }
@@ -72,7 +80,7 @@ static bool javascript_convert(struct content *c)
 	return true;
 }
 
-static nserror 
+static nserror
 javascript_clone(const struct content *old, struct content **newc)
 {
 	javascript_content *script;
@@ -88,7 +96,7 @@ javascript_clone(const struct content *old, struct content **newc)
 		return error;
 	}
 
-	*newc = (struct content *) script;
+	*newc = (struct content *)script;
 
 	return NSERROR_OK;
 }
@@ -120,4 +128,6 @@ static const char *javascript_types[] = {
 	"text/ecmascript", /* common usage */
 };
 
-CONTENT_FACTORY_REGISTER_TYPES(javascript, javascript_types, javascript_content_handler);
+CONTENT_FACTORY_REGISTER_TYPES(javascript,
+			       javascript_types,
+			       javascript_content_handler);

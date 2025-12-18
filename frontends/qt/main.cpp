@@ -38,7 +38,7 @@ extern "C" {
 /**
  * Main entry point from OS.
  */
-int main(int argc, char** argv)
+int main(int argc, char **argv)
 {
 	int ret = 0;
 	struct neosurf_table nsqt_table = {
@@ -61,7 +61,7 @@ int main(int argc, char** argv)
 	/* qt application */
 	try {
 		nsapp = new NS_Application(argc, argv, &nsqt_table);
-	} catch(NS_Exception &exp) {
+	} catch (NS_Exception &exp) {
 		fprintf(stderr,
 			"NetSurf qt application initialisation failed. %s (%s)\n",
 			exp.m_str.c_str(),

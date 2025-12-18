@@ -17,10 +17,10 @@
 
 
 struct svgtiny_list {
-	unsigned int size;	/* number of slots used */
-	unsigned int allocated;	/* number of slots allocated (>= size) */
-	size_t item_size;	/* size of each slot / bytes */
-	char *items;		/* array of slots */
+	unsigned int size; /* number of slots used */
+	unsigned int allocated; /* number of slots allocated (>= size) */
+	size_t item_size; /* size of each slot / bytes */
+	char *items; /* array of slots */
 };
 
 
@@ -62,8 +62,8 @@ unsigned int svgtiny_list_size(struct svgtiny_list *list)
  * pointers.
  */
 
-svgtiny_code svgtiny_list_resize(struct svgtiny_list *list,
-		unsigned int new_size)
+svgtiny_code
+svgtiny_list_resize(struct svgtiny_list *list, unsigned int new_size)
 {
 	unsigned int new_allocated;
 	void *new_items;
@@ -92,11 +92,10 @@ svgtiny_code svgtiny_list_resize(struct svgtiny_list *list,
  * Return a pointer to an object in a list.
  */
 
-void *svgtiny_list_get(struct svgtiny_list *list,
-		unsigned int i)
+void *svgtiny_list_get(struct svgtiny_list *list, unsigned int i)
 {
 	assert(i < list->size);
-	return (void *) (list->items + i * list->item_size);
+	return (void *)(list->items + i * list->item_size);
 }
 
 
@@ -123,4 +122,3 @@ void svgtiny_list_free(struct svgtiny_list *list)
 	free(list->items);
 	free(list);
 }
-

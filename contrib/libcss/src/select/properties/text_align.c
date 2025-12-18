@@ -14,8 +14,8 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_text_align(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error
+css__cascade_text_align(uint32_t opv, css_style *style, css_select_state *state)
 {
 	uint16_t value = CSS_TEXT_ALIGN_INHERIT;
 
@@ -47,16 +47,18 @@ css_error css__cascade_text_align(uint32_t opv, css_style *style,
 		}
 	}
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			getFlagValue(opv))) {
+	if (css__outranks_existing(getOpcode(opv),
+				   isImportant(opv),
+				   state,
+				   getFlagValue(opv))) {
 		return set_text_align(state->computed, value);
 	}
 
 	return CSS_OK;
 }
 
-css_error css__set_text_align_from_hint(const css_hint *hint,
-		css_computed_style *style)
+css_error
+css__set_text_align_from_hint(const css_hint *hint, css_computed_style *style)
 {
 	return set_text_align(style, hint->status);
 }
@@ -66,9 +68,8 @@ css_error css__initial_text_align(css_select_state *state)
 	return set_text_align(state->computed, CSS_TEXT_ALIGN_DEFAULT);
 }
 
-css_error css__copy_text_align(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error
+css__copy_text_align(const css_computed_style *from, css_computed_style *to)
 {
 	if (from == to) {
 		return CSS_OK;
@@ -78,8 +79,8 @@ css_error css__copy_text_align(
 }
 
 css_error css__compose_text_align(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+				  const css_computed_style *child,
+				  css_computed_style *result)
 {
 	uint8_t type = get_text_align(child);
 
@@ -91,8 +92,8 @@ css_error css__compose_text_align(const css_computed_style *parent,
 		 * then reset to the default value. Otherwise,
 		 * inherit as normal. */
 		if (type == CSS_TEXT_ALIGN_LIBCSS_LEFT ||
-				type == CSS_TEXT_ALIGN_LIBCSS_CENTER ||
-				type == CSS_TEXT_ALIGN_LIBCSS_RIGHT) {
+		    type == CSS_TEXT_ALIGN_LIBCSS_CENTER ||
+		    type == CSS_TEXT_ALIGN_LIBCSS_RIGHT) {
 			type = CSS_TEXT_ALIGN_DEFAULT;
 		}
 
@@ -100,7 +101,5 @@ css_error css__compose_text_align(const css_computed_style *parent,
 	}
 
 	return css__copy_text_align(
-			type == CSS_TEXT_ALIGN_INHERIT ? parent : child,
-			result);
+		type == CSS_TEXT_ALIGN_INHERIT ? parent : child, result);
 }
-

@@ -135,7 +135,8 @@ bool image_bitmap_plot(struct bitmap *bitmap,
 			fill_style.fill_colour = bitmap_pixel_to_colour(pixel);
 
 			if (guit->bitmap->get_opaque(bitmap) ||
-			    ((fill_style.fill_colour & 0xff000000) == 0xff000000)) {
+			    ((fill_style.fill_colour & 0xff000000) ==
+			     0xff000000)) {
 
 				area = *clip;
 
@@ -152,9 +153,9 @@ bool image_bitmap_plot(struct bitmap *bitmap,
 				fill_style.stroke_type = PLOT_OP_TYPE_NONE;
 				fill_style.fill_type = PLOT_OP_TYPE_SOLID;
 
-				return (ctx->plot->rectangle(ctx,
-							     &fill_style,
-							     &area) == NSERROR_OK);
+				return (ctx->plot->rectangle(
+						ctx, &fill_style, &area) ==
+					NSERROR_OK);
 
 			} else if ((fill_style.fill_colour & 0xff000000) == 0) {
 				/* transparent pixel used as spacer, skip it */
@@ -171,8 +172,10 @@ bool image_bitmap_plot(struct bitmap *bitmap,
 
 	return (ctx->plot->bitmap(ctx,
 				  bitmap,
-				  data->x, data->y,
-				  data->width, data->height,
+				  data->x,
+				  data->y,
+				  data->width,
+				  data->height,
 				  data->background_colour,
 				  flags) == NSERROR_OK);
 }

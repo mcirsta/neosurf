@@ -31,9 +31,9 @@
  * \return NSUERROR_OK on success and \a output updated else error code.
  */
 nsuerror nsu_base64_encode_alloc(const uint8_t *input,
-                                 size_t input_length,
-                                 uint8_t **output,
-                                 size_t *output_length);
+				 size_t input_length,
+				 uint8_t **output,
+				 size_t *output_length);
 
 /**
  * Base 64 encode data.
@@ -43,13 +43,14 @@ nsuerror nsu_base64_encode_alloc(const uint8_t *input,
  * \param input The source data to encode.
  * \param input_length The length of the source data.
  * \param output The output buffer
- * \param output_length The size of the \a output buffer on entry updated with length written on exit.
+ * \param output_length The size of the \a output buffer on entry updated with
+ * length written on exit.
  * \return NSUERROR_OK on success and \a output_length updated else error code.
  */
 nsuerror nsu_base64_encode(const uint8_t *input,
-                           size_t input_length,
-                           uint8_t *output,
-                           size_t *output_length);
+			   size_t input_length,
+			   uint8_t *output,
+			   size_t *output_length);
 
 /**
  * Base 64 encode data.
@@ -64,9 +65,9 @@ nsuerror nsu_base64_encode(const uint8_t *input,
  * \return NSERROR_OK on success and \a output updated else error code.
  */
 nsuerror nsu_base64_encode_alloc_url(const uint8_t *input,
-                                     size_t input_length,
-                                     uint8_t **output,
-                                     size_t *output_length);
+				     size_t input_length,
+				     uint8_t **output,
+				     size_t *output_length);
 
 
 /**
@@ -77,13 +78,14 @@ nsuerror nsu_base64_encode_alloc_url(const uint8_t *input,
  * \param input The source data to encode.
  * \param input_length The length of the source data.
  * \param output The output buffer
- * \param output_length The size of the \a output buffer on entry updated with length written on exit.
+ * \param output_length The size of the \a output buffer on entry updated with
+ * length written on exit.
  * \return NSUERROR_OK on success and \a output_length updated else error code.
  */
 nsuerror nsu_base64_encode_url(const uint8_t *input,
-                           size_t input_length,
-                           uint8_t *output,
-                           size_t *output_length);
+			       size_t input_length,
+			       uint8_t *output,
+			       size_t *output_length);
 
 /**
  * Base 64 decode data.
@@ -97,9 +99,9 @@ nsuerror nsu_base64_encode_url(const uint8_t *input,
  * \return NSERROR_OK on success and \a output updated else error code.
  */
 nsuerror nsu_base64_decode_alloc(const uint8_t *input,
-                                 size_t input_length,
-                                 uint8_t **output,
-                                 size_t *output_length);
+				 size_t input_length,
+				 uint8_t **output,
+				 size_t *output_length);
 
 /**
  * Base 64 decode data.
@@ -114,8 +116,8 @@ nsuerror nsu_base64_decode_alloc(const uint8_t *input,
  * \return NSERROR_OK on success and \a output updated else error code.
  */
 nsuerror nsu_base64_decode_alloc_url(const uint8_t *input,
-                                     size_t input_length,
-                                     uint8_t **output,
-                                     size_t *output_length);
+				     size_t input_length,
+				     uint8_t **output,
+				     size_t *output_length);
 
 #endif

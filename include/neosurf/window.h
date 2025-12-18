@@ -67,8 +67,10 @@ typedef enum {
 	GW_CREATE_NONE = 0, /**< New window */
 	GW_CREATE_CLONE = (1 << 0), /**< Clone existing window */
 	GW_CREATE_TAB = (1 << 1), /**< Create tab in same window as existing */
-	GW_CREATE_FOREGROUND = (1 << 2), /**< Request this window/tab is foregrounded */
-	GW_CREATE_FOCUS_LOCATION = (1 << 3) , /** Request this window/tab focusses the URL input */
+	GW_CREATE_FOREGROUND =
+		(1 << 2), /**< Request this window/tab is foregrounded */
+	GW_CREATE_FOCUS_LOCATION =
+		(1 << 3), /** Request this window/tab focusses the URL input */
 } gui_window_create_flags;
 
 /**
@@ -162,8 +164,8 @@ struct gui_window_table {
 	 * \return gui window, or NULL on error.
 	 */
 	struct gui_window *(*create)(struct browser_window *bw,
-			struct gui_window *existing,
-			gui_window_create_flags flags);
+				     struct gui_window *existing,
+				     gui_window_create_flags flags);
 
 
 	/**
@@ -238,7 +240,9 @@ struct gui_window_table {
 	 * \return NSERROR_OK on success and width and height updated
 	 *          else error code.
 	 */
-	nserror (*get_dimensions)(struct gui_window *gw, int *width, int *height);
+	nserror (*get_dimensions)(struct gui_window *gw,
+				  int *width,
+				  int *height);
 
 
 	/**
@@ -304,7 +308,11 @@ struct gui_window_table {
 	 * \param  height  height of caret
 	 * \param  clip	   document relative clip rectangle, or NULL if none
 	 */
-	void (*place_caret)(struct gui_window *g, int x, int y, int height, const struct rect *clip);
+	void (*place_caret)(struct gui_window *g,
+			    int x,
+			    int y,
+			    int height,
+			    const struct rect *clip);
 
 	/**
 	 * start a drag operation within a window
@@ -314,7 +322,9 @@ struct gui_window_table {
 	 * \param rect Confining rectangle of drag operation.
 	 * \return true if drag started else false.
 	 */
-	bool (*drag_start)(struct gui_window *g, gui_drag_type type, const struct rect *rect);
+	bool (*drag_start)(struct gui_window *g,
+			   gui_drag_type type,
+			   const struct rect *rect);
 
 	/**
 	 * save link operation
@@ -324,7 +334,9 @@ struct gui_window_table {
 	 * \param title The title of the link.
 	 * \return NSERROR_OK on success else appropriate error code.
 	 */
-	nserror (*save_link)(struct gui_window *g, struct nsurl *url, const char *title);
+	nserror (*save_link)(struct gui_window *g,
+			     struct nsurl *url,
+			     const char *title);
 
 	/**
 	 * create a form select menu
@@ -332,7 +344,8 @@ struct gui_window_table {
 	 * \param gw The gui window to open select menu form gadget in.
 	 * \param control The form control gadget handle.
 	 */
-	void (*create_form_select_menu)(struct gui_window *gw, struct form_control *control);
+	void (*create_form_select_menu)(struct gui_window *gw,
+					struct form_control *control);
 
 	/**
 	 * Called when file chooser gadget is activated
@@ -341,7 +354,9 @@ struct gui_window_table {
 	 * \param hl The content of the object.
 	 * \param gadget The form control gadget handle.
 	 */
-	void (*file_gadget_open)(struct gui_window *gw, struct hlcache_handle *hl, struct form_control *gadget);
+	void (*file_gadget_open)(struct gui_window *gw,
+				 struct hlcache_handle *hl,
+				 struct form_control *gadget);
 
 	/**
 	 * object dragged to window
@@ -350,7 +365,9 @@ struct gui_window_table {
 	 * \param c The content of the object.
 	 * \param type the type of save.
 	 */
-	void (*drag_save_object)(struct gui_window *gw, struct hlcache_handle *c, gui_save_type type);
+	void (*drag_save_object)(struct gui_window *gw,
+				 struct hlcache_handle *c,
+				 gui_save_type type);
 
 	/**
 	 * drag selection save
@@ -358,7 +375,8 @@ struct gui_window_table {
 	 * \param gw The gui window to save dragged selection of.
 	 * \param selection The selection to save.
 	 */
-	void (*drag_save_selection)(struct gui_window *gw, const char *selection);
+	void (*drag_save_selection)(struct gui_window *gw,
+				    const char *selection);
 
 	/**
 	 * console logging happening.

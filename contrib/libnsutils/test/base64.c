@@ -20,66 +20,69 @@
 
 #include <nsutils/base64.h>
 
-int main(int argc, char**argv)
+int main(int argc, char **argv)
 {
-        uint8_t *buffer;
-        size_t buffer_len=0;
-        uint8_t *output;
-        size_t output_len;
-        int opt;
-        int decode = 0;
-        int url = 0;
+	uint8_t *buffer;
+	size_t buffer_len = 0;
+	uint8_t *output;
+	size_t output_len;
+	int opt;
+	int decode = 0;
+	int url = 0;
 
 
-        while ((opt = getopt(argc, argv, "du")) != -1) {
-                switch (opt) {
-                case 'd':
-                        decode = 1;
-                        break;
-                case 'u':
-                        url = 1;
-                        break;
+	while ((opt = getopt(argc, argv, "du")) != -1) {
+		switch (opt) {
+		case 'd':
+			decode = 1;
+			break;
+		case 'u':
+			url = 1;
+			break;
 
-                default: /* '?' */
-                        fprintf(stderr, "Usage: %s [-d] [-u]\n", argv[0]);
-                        exit(EXIT_FAILURE);
+		default: /* '?' */
+			fprintf(stderr, "Usage: %s [-d] [-u]\n", argv[0]);
+			exit(EXIT_FAILURE);
+		}
+	}
 
-                }
-        }
+	buffer = calloc(1, 2048);
+	if (buffer == NULL) {
+		return 1;
+	}
 
-        buffer = calloc(1, 2048);
-        if (buffer == NULL) {
-                return 1;
-        }
+	if (scanf("%1024c%n", buffer, (int *)&buffer_len) != 1) {
+		free(buffer);
+		return 1;
+	}
 
-        if (scanf("%1024c%n", buffer, (int *)&buffer_len) != 1) {
-                free(buffer);
-                return 1;
-        }
+	if (decode) {
+		/* decode */
+		if (url) {
+			nsu_base64_decode_alloc_url(
+				buffer, buffer_len, &output, &output_len);
+		} else {
 
-        if (decode) {
-                /* decode */
-                if (url) {
-                        nsu_base64_decode_alloc_url(buffer, buffer_len, &output, &output_len);
-                } else {
+			nsu_base64_decode_alloc(
+				buffer, buffer_len, &output, &output_len);
+		}
+	} else {
+		/* encode */
+		if (url) {
+			nsu_base64_encode_alloc_url(
+				buffer, buffer_len, &output, &output_len);
+		} else {
+			nsu_base64_encode_alloc(
+				buffer, buffer_len, &output, &output_len);
+		}
+	}
 
-                        nsu_base64_decode_alloc(buffer, buffer_len, &output, &output_len);
-                }
-        } else {
-                /* encode */
-                if (url) {
-                        nsu_base64_encode_alloc_url(buffer, buffer_len, &output, &output_len);
-                } else {
-                        nsu_base64_encode_alloc(buffer, buffer_len, &output, &output_len);
-                }
-        }
+	if (output != NULL) {
+		printf("%.*s", (int)output_len, output);
+		free(output);
+	}
 
-        if (output != NULL) {
-                printf("%.*s", (int)output_len, output);
-                free(output);
-        }
+	free(buffer);
 
-        free(buffer);
-
-        return 0;
+	return 0;
 }

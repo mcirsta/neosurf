@@ -1,20 +1,20 @@
 /*
-* Copyright 2009 Mark Benjamin <netsurf-browser.org.MarkBenjamin@dfgh.net>
-*
-* This file is part of NetSurf, http://www.netsurf-browser.org/
-*
-* NetSurf is free software; you can redistribute it and/or modify
-* it under the terms of the GNU General Public License as published by
-* the Free Software Foundation; version 2 of the License.
-*
-* NetSurf is distributed in the hope that it will be useful,
-* but WITHOUT ANY WARRANTY; without even the implied warranty of
-* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-* GNU General Public License for more details.
-*
-* You should have received a copy of the GNU General Public License
-* along with this program.  If not, see <http://www.gnu.org/licenses/>.
-*/
+ * Copyright 2009 Mark Benjamin <netsurf-browser.org.MarkBenjamin@dfgh.net>
+ *
+ * This file is part of NetSurf, http://www.netsurf-browser.org/
+ *
+ * NetSurf is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License.
+ *
+ * NetSurf is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 /**
  * \file
@@ -50,23 +50,42 @@ static BOOL init_about_dialog(HWND hwnd)
 	dlg_itm = GetDlgItem(hwnd, IDC_ABOUT_VERSION);
 	if (dlg_itm != NULL) {
 
-		hFont=CreateFont (26, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, "Arial");
+		hFont = CreateFont(26,
+				   0,
+				   0,
+				   0,
+				   FW_BOLD,
+				   FALSE,
+				   FALSE,
+				   FALSE,
+				   ANSI_CHARSET,
+				   OUT_DEFAULT_PRECIS,
+				   CLIP_DEFAULT_PRECIS,
+				   DEFAULT_QUALITY,
+				   DEFAULT_PITCH | FF_SWISS,
+				   "Arial");
 		if (hFont != NULL) {
 			NSLOG(neosurf, INFO, "Setting font object");
 			SendMessage(dlg_itm, WM_SETFONT, (WPARAM)hFont, 0);
 		}
 
-		snprintf(ver_str, sizeof(ver_str), "%s %d.%d", 
-			 messages_get("NeoSurf"), neosurf_version_major, neosurf_version_minor); 
-		
+		snprintf(ver_str,
+			 sizeof(ver_str),
+			 "%s %d.%d",
+			 messages_get("NeoSurf"),
+			 neosurf_version_major,
+			 neosurf_version_minor);
+
 		SendMessage(dlg_itm, WM_SETTEXT, 0, (LPARAM)ver_str);
 	}
 
 	dlg_itm = GetDlgItem(hwnd, IDC_ABOUT_COPYRIGHT);
 	if (dlg_itm != NULL) {
-		snprintf(ver_str, sizeof(ver_str), "%s", 
-			 messages_get("NeoSurfCopyright")); 
-		
+		snprintf(ver_str,
+			 sizeof(ver_str),
+			 "%s",
+			 messages_get("NeoSurfCopyright"));
+
 		SendMessage(dlg_itm, WM_SETTEXT, 0, (LPARAM)ver_str);
 	}
 
@@ -86,26 +105,27 @@ static BOOL destroy_about_dialog(HWND hwnd)
 		hFont = (HFONT)SendMessage(dlg_itm, WM_GETFONT, 0, 0);
 		if (hFont != NULL) {
 			NSLOG(neosurf, INFO, "Destroyed font object");
-			DeleteObject(hFont); 	
+			DeleteObject(hFont);
 		}
 	}
-		
-	return TRUE;
 
+	return TRUE;
 }
 
-static INT_PTR CALLBACK 
-nsws_about_event_callback(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+static INT_PTR CALLBACK nsws_about_event_callback(HWND hwnd,
+						  UINT msg,
+						  WPARAM wparam,
+						  LPARAM lparam)
 {
 
 	LOG_WIN_MSG(hwnd, msg, wparam, lparam);
 
-	switch(msg) {
-	case WM_INITDIALOG: 
+	switch (msg) {
+	case WM_INITDIALOG:
 		return init_about_dialog(hwnd);
 
 	case WM_COMMAND:
-		switch(LOWORD(wparam)) {
+		switch (LOWORD(wparam)) {
 		case IDOK:
 			NSLOG(neosurf, INFO, "OK clicked");
 			EndDialog(hwnd, IDOK);
@@ -116,7 +136,7 @@ nsws_about_event_callback(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 			EndDialog(hwnd, IDOK);
 			break;
 
-		case IDC_BTN_CREDITS: 
+		case IDC_BTN_CREDITS:
 			nsws_window_go(hwnd, "about:credits");
 			EndDialog(hwnd, IDOK);
 			break;
@@ -125,7 +145,6 @@ nsws_about_event_callback(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 			nsws_window_go(hwnd, "about:licence");
 			EndDialog(hwnd, IDOK);
 			break;
-
 		}
 		break;
 
@@ -134,15 +153,16 @@ nsws_about_event_callback(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 
 	case WM_DESTROY:
 		return destroy_about_dialog(hwnd);
-
 	}
 	return FALSE;
 }
 
 void nsw32_about_dialog_init(HINSTANCE hinst, HWND parent)
 {
-	int ret = DialogBox(hinst, MAKEINTRESOURCE(IDD_ABOUT), parent,
-			nsws_about_event_callback);
+	int ret = DialogBox(hinst,
+			    MAKEINTRESOURCE(IDD_ABOUT),
+			    parent,
+			    nsws_about_event_callback);
 	if (ret == -1) {
 		win32_warning(messages_get("NoMemory"), 0);
 		return;

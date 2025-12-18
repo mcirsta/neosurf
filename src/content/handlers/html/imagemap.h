@@ -34,9 +34,12 @@ void imagemap_destroy(struct html_content *c);
 void imagemap_dump(struct html_content *c);
 nserror imagemap_extract(struct html_content *c);
 
-struct nsurl *imagemap_get(struct html_content *c, const char *key,
-		unsigned long x, unsigned long y,
-		unsigned long click_x, unsigned long click_y,
-		const char **target);
+struct nsurl *imagemap_get(struct html_content *c,
+			   const char *key,
+			   unsigned long x,
+			   unsigned long y,
+			   unsigned long click_x,
+			   unsigned long click_y,
+			   const char **target);
 
 #endif

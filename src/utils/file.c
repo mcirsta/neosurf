@@ -124,9 +124,8 @@ static nserror posix_nsurl_to_path(struct nsurl *url, char **path_out)
 
 	scheme = nsurl_get_component(url, NSURL_SCHEME);
 
-	if (lwc_string_caseless_isequal(scheme, corestring_lwc_file,
-					&match) != lwc_error_ok)
-	{
+	if (lwc_string_caseless_isequal(scheme, corestring_lwc_file, &match) !=
+	    lwc_error_ok) {
 		return NSERROR_BAD_PARAMETER;
 	}
 	lwc_string_unref(scheme);
@@ -250,7 +249,7 @@ static nserror posix_mkdir_all(const char *fname)
 				return NSERROR_NOT_FOUND;
 			}
 		} else {
-			if (! S_ISDIR(sb.st_mode)) {
+			if (!S_ISDIR(sb.st_mode)) {
 				/* path element not a directory */
 				free(dname);
 				return NSERROR_NOT_DIRECTORY;
@@ -312,8 +311,7 @@ nserror neosurf_mkdir_all(const char *fname)
 }
 
 /* exported interface documented in utils/file.h */
-nserror
-neosurf_recursive_rm(const char *path)
+nserror neosurf_recursive_rm(const char *path)
 {
 	DIR *parent;
 	struct dirent *entry;
@@ -342,8 +340,10 @@ neosurf_recursive_rm(const char *path)
 			goto out;
 
 #if (defined(HAVE_DIRFD) && defined(HAVE_FSTATAT))
-		if (fstatat(dirfd(parent), entry->d_name, &ent_stat,
-				AT_SYMLINK_NOFOLLOW) != 0) {
+		if (fstatat(dirfd(parent),
+			    entry->d_name,
+			    &ent_stat,
+			    AT_SYMLINK_NOFOLLOW) != 0) {
 #else
 		if (stat(leafpath, &ent_stat) != 0) {
 #endif

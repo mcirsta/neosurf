@@ -40,7 +40,6 @@ extern "C" {
 #include "neosurf/mouse.h"
 
 #include "desktop/browser_history.h"
-
 }
 
 #include "qt/window.cls.h"
@@ -65,9 +64,7 @@ struct gui_window {
  * netsurf window class constructor
  */
 NS_Window::NS_Window(QWidget *parent, struct browser_window *bw)
-	: QWidget(parent),
-	  m_bw(bw),
-	  m_throbber_frame(0),
+	: QWidget(parent), m_bw(bw), m_throbber_frame(0),
 	  m_favicon(new QIcon(":favicon.png"))
 {
 	setFocusPolicy(Qt::StrongFocus);
@@ -86,37 +83,41 @@ NS_Window::NS_Window(QWidget *parent, struct browser_window *bw)
 	m_hscrollbar->setMinimum(0);
 	m_hscrollbar->setMaximum(1);
 	m_hscrollbar->setPageStep(1);
-	connect(m_hscrollbar, &QScrollBar::valueChanged,
-		m_nswidget, &NS_Widget::setHorizontalScroll);
+	connect(m_hscrollbar,
+		&QScrollBar::valueChanged,
+		m_nswidget,
+		&NS_Widget::setHorizontalScroll);
 
 	// vertical scrollbar
 	m_vscrollbar = new QScrollBar(Qt::Vertical);
 	m_vscrollbar->setMinimum(0);
 	m_vscrollbar->setMaximum(1);
 	m_vscrollbar->setPageStep(1);
-	connect(m_vscrollbar, &QScrollBar::valueChanged,
-		m_nswidget, &NS_Widget::setVerticalScroll);
+	connect(m_vscrollbar,
+		&QScrollBar::valueChanged,
+		m_nswidget,
+		&NS_Widget::setVerticalScroll);
 
 	/* status */
 	m_status = new QLabel();
-	NS_StatusSplitter *splitter = new NS_StatusSplitter(m_status, m_hscrollbar);
+	NS_StatusSplitter *splitter = new NS_StatusSplitter(m_status,
+							    m_hscrollbar);
 
 	// Build browser window grid layout
 	QGridLayout *layout = new QGridLayout(this);
-	layout->setContentsMargins(0,0,0,0);
+	layout->setContentsMargins(0, 0, 0, 0);
 	layout->setHorizontalSpacing(0);
 	layout->setVerticalSpacing(0);
 	layout->addWidget(m_nsurlbar, 0, 0, 1, 2);
-	layout->addWidget(m_nswidget,1,0);
-	layout->addWidget(m_vscrollbar, 1,1);
-	layout->setRowStretch(1,1);
-	layout->addWidget(splitter, 2,0);
+	layout->addWidget(m_nswidget, 1, 0);
+	layout->addWidget(m_vscrollbar, 1, 1);
+	layout->setRowStretch(1, 1);
+	layout->addWidget(splitter, 2, 0);
 
 	/* actions */
 	addAction(m_actions->m_quit);
 	addAction(m_actions->m_newtab);
 	addAction(m_actions->m_newwindow);
-
 }
 
 NS_Window::~NS_Window()
@@ -140,16 +141,19 @@ void NS_Window::wheelEvent(QWheelEvent *event)
 		QPoint angle = event->angleDelta() / 8;
 		if (!angle.isNull()) {
 			if (angle.x() >= 15) {
-				m_hscrollbar->triggerAction(QAbstractSlider::SliderSingleStepAdd);
+				m_hscrollbar->triggerAction(
+					QAbstractSlider::SliderSingleStepAdd);
 			} else if (angle.x() <= -15) {
-				m_hscrollbar->triggerAction(QAbstractSlider::SliderSingleStepSub);
+				m_hscrollbar->triggerAction(
+					QAbstractSlider::SliderSingleStepSub);
 			}
 			if (angle.y() >= 15) {
-				m_vscrollbar->triggerAction(QAbstractSlider::SliderSingleStepSub);
+				m_vscrollbar->triggerAction(
+					QAbstractSlider::SliderSingleStepSub);
 			} else if (angle.y() <= -15) {
-				m_vscrollbar->triggerAction(QAbstractSlider::SliderSingleStepAdd);
+				m_vscrollbar->triggerAction(
+					QAbstractSlider::SliderSingleStepAdd);
 			}
-
 		}
 	}
 	event->accept();
@@ -159,19 +163,23 @@ void NS_Window::keyPressEvent(QKeyEvent *event)
 {
 	switch (event->key()) {
 	case Qt::Key_Left:
-		m_hscrollbar->triggerAction(QAbstractSlider::SliderSingleStepSub);
+		m_hscrollbar->triggerAction(
+			QAbstractSlider::SliderSingleStepSub);
 		break;
 
 	case Qt::Key_Right:
-		m_hscrollbar->triggerAction(QAbstractSlider::SliderSingleStepAdd);
+		m_hscrollbar->triggerAction(
+			QAbstractSlider::SliderSingleStepAdd);
 		break;
 
 	case Qt::Key_Up:
-		m_vscrollbar->triggerAction(QAbstractSlider::SliderSingleStepSub);
+		m_vscrollbar->triggerAction(
+			QAbstractSlider::SliderSingleStepSub);
 		break;
 
 	case Qt::Key_Down:
-		m_vscrollbar->triggerAction(QAbstractSlider::SliderSingleStepAdd);
+		m_vscrollbar->triggerAction(
+			QAbstractSlider::SliderSingleStepAdd);
 		break;
 
 	case Qt::Key_Home:
@@ -234,7 +242,8 @@ nserror NS_Window::update_extent()
 	m_hscrollbar->setPageStep(width);
 	m_hscrollbar->setSingleStep(width / 16);
 	int height = m_nswidget->size().height();
-	m_vscrollbar->setMaximum(std::max(eh - height,m_vscrollbar->minimum()));
+	m_vscrollbar->setMaximum(
+		std::max(eh - height, m_vscrollbar->minimum()));
 	m_vscrollbar->setPageStep(height);
 	m_vscrollbar->setSingleStep(height / 16);
 
@@ -324,7 +333,8 @@ void NS_Window::static_set_icon(struct gui_window *gw,
 		icon_bitmap = content_get_bitmap(icon_handle);
 		if (icon_bitmap != NULL) {
 			const QImage img = *(QImage *)icon_bitmap;
-			icon = new QIcon(QPixmap::fromImage(img, Qt::AutoColor));
+			icon = new QIcon(
+				QPixmap::fromImage(img, Qt::AutoColor));
 		}
 	}
 
@@ -481,8 +491,8 @@ NS_Window::static_get_dimensions(struct gui_window *gw, int *width, int *height)
  * \param gw The gui window to set pointer for.
  * \param shape The new shape to change to.
  */
-void
-NS_Window::static_set_pointer(struct gui_window *gw, enum gui_pointer_shape shape)
+void NS_Window::static_set_pointer(struct gui_window *gw,
+				   enum gui_pointer_shape shape)
 {
 	gw->window->m_nswidget->set_pointer(shape);
 }
@@ -496,10 +506,11 @@ NS_Window::static_set_pointer(struct gui_window *gw, enum gui_pointer_shape shap
  * \param  height  height of caret
  * \param  clip	   document relative clip rectangle, or NULL if none
  */
-void
-NS_Window::static_place_caret(struct gui_window *gw,
-		       int x, int y, int height,
-		       const struct rect *clip)
+void NS_Window::static_place_caret(struct gui_window *gw,
+				   int x,
+				   int y,
+				   int height,
+				   const struct rect *clip)
 {
 	gw->window->m_nswidget->setCaret(true, x, y, height);
 }
@@ -527,14 +538,13 @@ NS_Window::static_place_caret(struct gui_window *gw,
  * \param flags flags to control the gui window creation.
  * \return gui window, or NULL on error.
  */
-struct gui_window *
-NS_Window::static_create(struct browser_window *bw,
-		     struct gui_window *existing,
-		     gui_window_create_flags flags)
+struct gui_window *NS_Window::static_create(struct browser_window *bw,
+					    struct gui_window *existing,
+					    gui_window_create_flags flags)
 {
 	struct gui_window *gw;
 	NS_Scaffold *scaffold;
-	QWidget *existingpage=nullptr;
+	QWidget *existingpage = nullptr;
 	int tabidx;
 
 	gw = (struct gui_window *)calloc(1, sizeof(struct gui_window));
@@ -560,10 +570,14 @@ NS_Window::static_create(struct browser_window *bw,
 	}
 
 	tabidx = scaffold->addTab(gw->window, messages_get("NewTab"));
-	connect(gw->window, &NS_Window::titleChanged,
-		scaffold, &NS_Scaffold::changeTabTitle);
-	connect(gw->window, &NS_Window::iconChanged,
-		scaffold, &NS_Scaffold::changeTabIcon);
+	connect(gw->window,
+		&NS_Window::titleChanged,
+		scaffold,
+		&NS_Scaffold::changeTabTitle);
+	connect(gw->window,
+		&NS_Window::iconChanged,
+		scaffold,
+		&NS_Scaffold::changeTabIcon);
 	if (flags & GW_CREATE_FOREGROUND) {
 		scaffold->setCurrentIndex(tabidx);
 	}

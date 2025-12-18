@@ -12,10 +12,11 @@
 
 typedef struct dom_html_head_element dom_html_head_element;
 
-dom_exception dom_html_head_element_get_profile(
-		struct dom_html_head_element *element, dom_string **profile);
-dom_exception dom_html_head_element_set_profile(
-		struct dom_html_head_element *element, dom_string *profile);
+dom_exception
+dom_html_head_element_get_profile(struct dom_html_head_element *element,
+				  dom_string **profile);
+dom_exception
+dom_html_head_element_set_profile(struct dom_html_head_element *element,
+				  dom_string *profile);
 
 #endif
-

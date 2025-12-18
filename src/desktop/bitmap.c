@@ -47,14 +47,14 @@ struct bitmap_colour_layout bitmap_layout = {
  * \param[in] fmt  Pixel format to get channel layout for,
  * \return channel layout structure.
  */
-static struct bitmap_colour_layout bitmap__get_colour_layout(
-		const bitmap_fmt_t *fmt)
+static struct bitmap_colour_layout
+bitmap__get_colour_layout(const bitmap_fmt_t *fmt)
 {
 	switch (fmt->layout) {
 	default:
 		/* Fall through. */
 	case BITMAP_LAYOUT_R8G8B8A8:
-		return (struct bitmap_colour_layout) {
+		return (struct bitmap_colour_layout){
 			.r = 0,
 			.g = 1,
 			.b = 2,
@@ -62,7 +62,7 @@ static struct bitmap_colour_layout bitmap__get_colour_layout(
 		};
 
 	case BITMAP_LAYOUT_B8G8R8A8:
-		return (struct bitmap_colour_layout) {
+		return (struct bitmap_colour_layout){
 			.b = 0,
 			.g = 1,
 			.r = 2,
@@ -70,7 +70,7 @@ static struct bitmap_colour_layout bitmap__get_colour_layout(
 		};
 
 	case BITMAP_LAYOUT_A8R8G8B8:
-		return (struct bitmap_colour_layout) {
+		return (struct bitmap_colour_layout){
 			.a = 0,
 			.r = 1,
 			.g = 2,
@@ -78,7 +78,7 @@ static struct bitmap_colour_layout bitmap__get_colour_layout(
 		};
 
 	case BITMAP_LAYOUT_A8B8G8R8:
-		return (struct bitmap_colour_layout) {
+		return (struct bitmap_colour_layout){
 			.a = 0,
 			.b = 1,
 			.g = 2,
@@ -119,15 +119,19 @@ void bitmap_set_format(const bitmap_fmt_t *bitmap_format)
 {
 	bitmap_fmt = *bitmap_format;
 
-	NSLOG(netsurf, INFO, "Setting core bitmap format to: %s%s",
-			bitmap__layout_to_str(bitmap_format->layout),
-			bitmap_format->pma ? " pre multiplied alpha" : "");
+	NSLOG(netsurf,
+	      INFO,
+	      "Setting core bitmap format to: %s%s",
+	      bitmap__layout_to_str(bitmap_format->layout),
+	      bitmap_format->pma ? " pre multiplied alpha" : "");
 
 	bitmap_fmt.layout = bitmap_sanitise_bitmap_layout(bitmap_fmt.layout);
 
 	if (bitmap_format->layout != bitmap_fmt.layout) {
-		NSLOG(netsurf, INFO, "Sanitised layout to: %s",
-				bitmap__layout_to_str(bitmap_fmt.layout));
+		NSLOG(netsurf,
+		      INFO,
+		      "Sanitised layout to: %s",
+		      bitmap__layout_to_str(bitmap_fmt.layout));
 	}
 
 	bitmap_layout = bitmap__get_colour_layout(&bitmap_fmt);
@@ -143,25 +147,24 @@ void bitmap_set_format(const bitmap_fmt_t *bitmap_format)
  * \param[in] to         Pixel layout to convert to.
  * \param[in] from       Pixel layout to convert from.
  */
-static inline void bitmap__format_convert(
-		int width,
-		int height,
-		uint8_t *buffer,
-		size_t rowstride,
-		struct bitmap_colour_layout to,
-		struct bitmap_colour_layout from)
+static inline void bitmap__format_convert(int width,
+					  int height,
+					  uint8_t *buffer,
+					  size_t rowstride,
+					  struct bitmap_colour_layout to,
+					  struct bitmap_colour_layout from)
 {
 	/* Just swapping the components around */
 	for (int y = 0; y < height; y++) {
 		uint8_t *row = buffer;
 
 		for (int x = 0; x < width; x++) {
-			const uint32_t px = *((uint32_t *)(void *) row);
+			const uint32_t px = *((uint32_t *)(void *)row);
 
-			row[to.r] = ((const uint8_t *) &px)[from.r];
-			row[to.g] = ((const uint8_t *) &px)[from.g];
-			row[to.b] = ((const uint8_t *) &px)[from.b];
-			row[to.a] = ((const uint8_t *) &px)[from.a];
+			row[to.r] = ((const uint8_t *)&px)[from.r];
+			row[to.g] = ((const uint8_t *)&px)[from.g];
+			row[to.b] = ((const uint8_t *)&px)[from.b];
+			row[to.a] = ((const uint8_t *)&px)[from.a];
 
 			row += sizeof(uint32_t);
 		}
@@ -180,25 +183,25 @@ static inline void bitmap__format_convert(
  * \param[in] to         Pixel layout to convert to.
  * \param[in] from       Pixel layout to convert from.
  */
-static inline void bitmap__format_convert_to_pma(
-		int width,
-		int height,
-		uint8_t *buffer,
-		size_t rowstride,
-		struct bitmap_colour_layout to,
-		struct bitmap_colour_layout from)
+static inline void
+bitmap__format_convert_to_pma(int width,
+			      int height,
+			      uint8_t *buffer,
+			      size_t rowstride,
+			      struct bitmap_colour_layout to,
+			      struct bitmap_colour_layout from)
 {
 	for (int y = 0; y < height; y++) {
 		uint8_t *row = buffer;
 
 		for (int x = 0; x < width; x++) {
-			const uint32_t px = *((uint32_t *)(void *) row);
+			const uint32_t px = *((uint32_t *)(void *)row);
 			uint32_t a, r, g, b;
 
-			r = ((const uint8_t *) &px)[from.r];
-			g = ((const uint8_t *) &px)[from.g];
-			b = ((const uint8_t *) &px)[from.b];
-			a = ((const uint8_t *) &px)[from.a];
+			r = ((const uint8_t *)&px)[from.r];
+			g = ((const uint8_t *)&px)[from.g];
+			b = ((const uint8_t *)&px)[from.b];
+			a = ((const uint8_t *)&px)[from.a];
 
 			if (a != 0) {
 				r = ((r * (a + 1)) >> 8) & 0xff;
@@ -230,25 +233,25 @@ static inline void bitmap__format_convert_to_pma(
  * \param[in] to         Pixel layout to convert to.
  * \param[in] from       Pixel layout to convert from.
  */
-static inline void bitmap__format_convert_from_pma(
-		int width,
-		int height,
-		uint8_t *buffer,
-		size_t rowstride,
-		struct bitmap_colour_layout to,
-		struct bitmap_colour_layout from)
+static inline void
+bitmap__format_convert_from_pma(int width,
+				int height,
+				uint8_t *buffer,
+				size_t rowstride,
+				struct bitmap_colour_layout to,
+				struct bitmap_colour_layout from)
 {
 	for (int y = 0; y < height; y++) {
 		uint8_t *row = buffer;
 
 		for (int x = 0; x < width; x++) {
-			const uint32_t px = *((uint32_t *)(void *) row);
+			const uint32_t px = *((uint32_t *)(void *)row);
 			uint32_t a, r, g, b;
 
-			r = ((const uint8_t *) &px)[from.r];
-			g = ((const uint8_t *) &px)[from.g];
-			b = ((const uint8_t *) &px)[from.b];
-			a = ((const uint8_t *) &px)[from.a];
+			r = ((const uint8_t *)&px)[from.r];
+			g = ((const uint8_t *)&px)[from.g];
+			b = ((const uint8_t *)&px)[from.b];
+			a = ((const uint8_t *)&px)[from.a];
 
 			if (a != 0) {
 				r = (r << 8) / a;
@@ -276,8 +279,8 @@ static inline void bitmap__format_convert_from_pma(
 
 /* Exported function, documented in desktop/bitmap.h */
 void bitmap_format_convert(void *bitmap,
-		const bitmap_fmt_t *fmt_from,
-		const bitmap_fmt_t *fmt_to)
+			   const bitmap_fmt_t *fmt_from,
+			   const bitmap_fmt_t *fmt_to)
 {
 	int width = guit->bitmap->get_width(bitmap);
 	int height = guit->bitmap->get_height(bitmap);
@@ -287,27 +290,28 @@ void bitmap_format_convert(void *bitmap,
 	struct bitmap_colour_layout to = bitmap__get_colour_layout(fmt_to);
 	struct bitmap_colour_layout from = bitmap__get_colour_layout(fmt_from);
 
-	NSLOG(netsurf, DEEPDEBUG, "%p: format conversion (%u%s --> %u%s)",
-			bitmap,
-			fmt_from->layout, fmt_from->pma ? " pma" : "",
-			fmt_to->layout, fmt_to->pma ? " pma" : "");
+	NSLOG(netsurf,
+	      DEEPDEBUG,
+	      "%p: format conversion (%u%s --> %u%s)",
+	      bitmap,
+	      fmt_from->layout,
+	      fmt_from->pma ? " pma" : "",
+	      fmt_to->layout,
+	      fmt_to->pma ? " pma" : "");
 
 	if (fmt_from->pma == fmt_to->pma) {
 		/* Just component order to switch. */
 		bitmap__format_convert(
-				width, height, buffer,
-				rowstride, to, from);
+			width, height, buffer, rowstride, to, from);
 
 	} else if (opaque == false) {
 		/* Need to do conversion to/from premultiplied alpha. */
 		if (fmt_to->pma) {
 			bitmap__format_convert_to_pma(
-					width, height, buffer,
-					rowstride, to, from);
+				width, height, buffer, rowstride, to, from);
 		} else {
 			bitmap__format_convert_from_pma(
-					width, height, buffer,
-					rowstride, to, from);
+				width, height, buffer, rowstride, to, from);
 		}
 	}
 }

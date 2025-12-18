@@ -35,15 +35,14 @@ extern "C" {
 #include "neosurf/types.h"
 #include "neosurf/content_type.h"
 #include "neosurf/browser_window.h"
-
 }
 
-class NS_Actions :public QObject
+class NS_Actions : public QObject
 {
 	Q_OBJECT
 
-public:
-	NS_Actions(QWidget* parent, struct browser_window *bw);
+      public:
+	NS_Actions(QWidget *parent, struct browser_window *bw);
 	~NS_Actions();
 
 	/**
@@ -61,17 +60,19 @@ public:
 	 * Change action state appropriate for flag
 	 */
 	void update(NS_Actions::Update update = UpdateUnchanged);
-        /**
+	/**
 	 * change action states associated with menu context
 	 */
-	void update(struct nsurl *link, struct hlcache_handle *object, char *selection);
+	void update(struct nsurl *link,
+		    struct hlcache_handle *object,
+		    char *selection);
 
 	/**
 	 * create instance of widget action for use for a page scale menu entry
 	 *
 	 * \return instance of a new widget action
 	 */
-	QWidgetAction *page_scale_widget_action(QWidget* parent);
+	QWidgetAction *page_scale_widget_action(QWidget *parent);
 
 	QAction *m_back; /**< Navigate to previous page */
 	QAction *m_forward; /**< Navigate to subsequent page */
@@ -109,7 +110,7 @@ public:
 	QAction *m_sel_copy; /**< copy selection to clipboard */
 	QAction *m_sel_search; /**< search selection */
 
-private slots:
+      private slots:
 	void back_slot(bool checked);
 	void forward_slot(bool checked);
 	void stop_reload_slot(bool checked);
@@ -144,7 +145,7 @@ private slots:
 	void sel_copy_slot(bool checked);
 	void sel_search_slot(bool checked);
 
-private:
+      private:
 	/**
 	 * obtain the bottom left corner global location of an action attached
 	 * widget.

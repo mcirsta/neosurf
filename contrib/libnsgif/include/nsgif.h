@@ -181,7 +181,7 @@ typedef struct nsgif_bitmap_cb_vt {
 	 * \param[in]  height  Required bitmap height in pixels.
 	 * \return pointer to client's bitmap structure or NULL on error.
 	 */
-	nsgif_bitmap_t* (*create)(int width, int height);
+	nsgif_bitmap_t *(*create)(int width, int height);
 
 	/**
 	 * Callback to free a bitmap.
@@ -200,7 +200,7 @@ typedef struct nsgif_bitmap_cb_vt {
 	 * \param[in]  bitmap  The bitmap.
 	 * \return pointer to bitmap's pixel buffer.
 	 */
-	uint8_t* (*get_buffer)(nsgif_bitmap_t *bitmap);
+	uint8_t *(*get_buffer)(nsgif_bitmap_t *bitmap);
 
 	/* The following functions are optional. */
 
@@ -256,10 +256,9 @@ const char *nsgif_strerror(nsgif_error err);
  *
  * \return NSGIF_OK on success, or appropriate error otherwise.
  */
-nsgif_error nsgif_create(
-		const nsgif_bitmap_cb_vt *bitmap_vt,
-		nsgif_bitmap_fmt_t bitmap_fmt,
-		nsgif_t **gif_out);
+nsgif_error nsgif_create(const nsgif_bitmap_cb_vt *bitmap_vt,
+			 nsgif_bitmap_fmt_t bitmap_fmt,
+			 nsgif_t **gif_out);
 
 /**
  * Free a NSGIF object.
@@ -297,10 +296,7 @@ void nsgif_destroy(nsgif_t *gif);
  *
  * \return NSGIF_OK on success, or appropriate error otherwise.
  */
-nsgif_error nsgif_data_scan(
-		nsgif_t *gif,
-		size_t size,
-		const uint8_t *data);
+nsgif_error nsgif_data_scan(nsgif_t *gif, size_t size, const uint8_t *data);
 
 /**
  * Tell libnsgif that all the gif data has been provided.
@@ -317,8 +313,7 @@ nsgif_error nsgif_data_scan(
  *
  * \param[in]  gif     The \ref nsgif_t object.
  */
-void nsgif_data_complete(
-		nsgif_t *gif);
+void nsgif_data_complete(nsgif_t *gif);
 
 /**
  * Prepare to show a frame.
@@ -338,11 +333,10 @@ void nsgif_data_complete(
  *
  * \return NSGIF_OK on success, or appropriate error otherwise.
  */
-nsgif_error nsgif_frame_prepare(
-		nsgif_t *gif,
-		nsgif_rect_t *area,
-		uint32_t *delay_cs,
-		uint32_t *frame_new);
+nsgif_error nsgif_frame_prepare(nsgif_t *gif,
+				nsgif_rect_t *area,
+				uint32_t *delay_cs,
+				uint32_t *frame_new);
 
 /**
  * Decodes a GIF frame.
@@ -354,10 +348,8 @@ nsgif_error nsgif_frame_prepare(
  *
  * \return NSGIF_OK on success, or appropriate error otherwise.
  */
-nsgif_error nsgif_frame_decode(
-		nsgif_t *gif,
-		uint32_t frame,
-		nsgif_bitmap_t **bitmap);
+nsgif_error
+nsgif_frame_decode(nsgif_t *gif, uint32_t frame, nsgif_bitmap_t **bitmap);
 
 /**
  * Reset a GIF animation.
@@ -371,8 +363,7 @@ nsgif_error nsgif_frame_decode(
  *
  * \return NSGIF_OK on success, or appropriate error otherwise.
  */
-nsgif_error nsgif_reset(
-		nsgif_t *gif);
+nsgif_error nsgif_reset(nsgif_t *gif);
 
 /**
  * Information about a GIF.
@@ -399,11 +390,12 @@ typedef struct nsgif_info {
  * raw information about GIF frames.
  */
 enum nsgif_disposal {
-	NSGIF_DISPOSAL_UNSPECIFIED,   /**< No disposal method specified. */
-	NSGIF_DISPOSAL_NONE,          /**< Frame remains. */
-	NSGIF_DISPOSAL_RESTORE_BG,    /**< Clear frame to background colour. */
-	NSGIF_DISPOSAL_RESTORE_PREV,  /**< Restore previous frame. */
-	NSGIF_DISPOSAL_RESTORE_QUIRK, /**< Alias for NSGIF_DISPOSAL_RESTORE_PREV. */
+	NSGIF_DISPOSAL_UNSPECIFIED, /**< No disposal method specified. */
+	NSGIF_DISPOSAL_NONE, /**< Frame remains. */
+	NSGIF_DISPOSAL_RESTORE_BG, /**< Clear frame to background colour. */
+	NSGIF_DISPOSAL_RESTORE_PREV, /**< Restore previous frame. */
+	NSGIF_DISPOSAL_RESTORE_QUIRK, /**< Alias for
+					 NSGIF_DISPOSAL_RESTORE_PREV. */
 };
 
 /**
@@ -452,9 +444,8 @@ const nsgif_info_t *nsgif_get_info(const nsgif_t *gif);
  *
  * \return The gif frame info, or NULL on error.
  */
-const nsgif_frame_info_t *nsgif_get_frame_info(
-		const nsgif_t *gif,
-		uint32_t frame);
+const nsgif_frame_info_t *
+nsgif_get_frame_info(const nsgif_t *gif, uint32_t frame);
 
 /**
  * Get the global colour palette.
@@ -468,10 +459,9 @@ const nsgif_frame_info_t *nsgif_get_frame_info(
  * \param[out] table    Client buffer to hold the colour table.
  * \param[out] entries  The number of used entries in the colour table.
  */
-void nsgif_global_palette(
-		const nsgif_t *gif,
-		uint32_t table[NSGIF_MAX_COLOURS],
-		size_t *entries);
+void nsgif_global_palette(const nsgif_t *gif,
+			  uint32_t table[NSGIF_MAX_COLOURS],
+			  size_t *entries);
 
 /**
  * Get the local colour palette for a frame.
@@ -487,11 +477,10 @@ void nsgif_global_palette(
  * \param[out] entries  The number of used entries in the colour table.
  * \return true if a palette is returned, false otherwise.
  */
-bool nsgif_local_palette(
-		const nsgif_t *gif,
-		uint32_t frame,
-		uint32_t table[NSGIF_MAX_COLOURS],
-		size_t *entries);
+bool nsgif_local_palette(const nsgif_t *gif,
+			 uint32_t frame,
+			 uint32_t table[NSGIF_MAX_COLOURS],
+			 size_t *entries);
 
 /**
  * Configure handling of small frame delays.
@@ -519,9 +508,8 @@ bool nsgif_local_palette(
  * \param[in]  delay_default  The delay to use if a frame delay is less than
  *                            `delay_min`.
  */
-void nsgif_set_frame_delay_behaviour(
-		nsgif_t *gif,
-		uint16_t delay_min,
-		uint16_t delay_default);
+void nsgif_set_frame_delay_behaviour(nsgif_t *gif,
+				     uint16_t delay_min,
+				     uint16_t delay_default);
 
 #endif

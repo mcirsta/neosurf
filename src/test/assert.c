@@ -25,10 +25,11 @@
 #include <assert.h>
 
 /* This is what everyone else calls */
-extern void
-__ns_assert_fail(const char *__assertion, const char *__file,
-		 unsigned int __line, const char *__function)
-	__THROW __attribute__ ((__noreturn__));
+extern void __ns_assert_fail(const char *__assertion,
+			     const char *__file,
+			     unsigned int __line,
+			     const char *__function) __THROW
+	__attribute__((__noreturn__));
 
 #if __GNUC__ > 10
 
@@ -36,9 +37,10 @@ __ns_assert_fail(const char *__assertion, const char *__file,
 extern void __gcov_dump(void);
 
 /* And here's our entry point */
-void
-__ns_assert_fail(const char *__assertion, const char *__file,
-		 unsigned int __line, const char *__function)
+void __ns_assert_fail(const char *__assertion,
+		      const char *__file,
+		      unsigned int __line,
+		      const char *__function)
 {
 	__gcov_dump();
 	__assert_fail(__assertion, __file, __line, __function);
@@ -50,9 +52,10 @@ __ns_assert_fail(const char *__assertion, const char *__file,
 extern void __gcov_flush(void);
 
 /* And here's our entry point */
-void
-__ns_assert_fail(const char *__assertion, const char *__file,
-		 unsigned int __line, const char *__function)
+void __ns_assert_fail(const char *__assertion,
+		      const char *__file,
+		      unsigned int __line,
+		      const char *__function)
 {
 	__gcov_flush();
 	__assert_fail(__assertion, __file, __line, __function);

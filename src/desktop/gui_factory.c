@@ -50,11 +50,13 @@
 struct neosurf_table *guit = NULL;
 
 
-static void gui_default_window_set_title(struct gui_window *g, const char *title)
+static void
+gui_default_window_set_title(struct gui_window *g, const char *title)
 {
 }
 
-static nserror gui_default_window_set_url(struct gui_window *g, struct nsurl *url)
+static nserror
+gui_default_window_set_url(struct gui_window *g, struct nsurl *url)
 {
 	return NSERROR_OK;
 }
@@ -67,35 +69,38 @@ static bool gui_default_window_drag_start(struct gui_window *g,
 }
 
 static nserror gui_default_window_save_link(struct gui_window *g,
-					 nsurl *url,
-					 const char *title)
+					    nsurl *url,
+					    const char *title)
 {
 	return NSERROR_OK;
 }
 
-static void gui_default_window_set_icon(struct gui_window *g,
-					hlcache_handle *icon)
+static void
+gui_default_window_set_icon(struct gui_window *g, hlcache_handle *icon)
 {
 }
 
-static void gui_default_window_set_pointer(struct gui_window *g,
-					   gui_pointer_shape shape)
+static void
+gui_default_window_set_pointer(struct gui_window *g, gui_pointer_shape shape)
 {
 }
 
-static void gui_default_window_set_status(struct gui_window *g,
-					  const char *text)
+static void
+gui_default_window_set_status(struct gui_window *g, const char *text)
 {
 }
 
 static void gui_default_window_place_caret(struct gui_window *g,
-					   int x, int y, int height,
+					   int x,
+					   int y,
+					   int height,
 					   const struct rect *clip)
 {
 }
 
-static void gui_default_window_create_form_select_menu(struct gui_window *g,
-						struct form_control *control)
+static void
+gui_default_window_create_form_select_menu(struct gui_window *g,
+					   struct form_control *control)
 {
 }
 
@@ -117,12 +122,11 @@ static void gui_default_window_drag_save_selection(struct gui_window *g,
 }
 
 
-static void
-gui_default_console_log(struct gui_window *gw,
-			browser_window_console_source src,
-			const char *msg,
-			size_t msglen,
-			browser_window_console_flags flags)
+static void gui_default_console_log(struct gui_window *gw,
+				    browser_window_console_source src,
+				    const char *msg,
+				    size_t msglen,
+				    browser_window_console_flags flags)
 {
 }
 
@@ -186,7 +190,7 @@ static nserror verify_window_register(struct gui_window_table *gwt)
 	}
 	if (gwt->create_form_select_menu == NULL) {
 		gwt->create_form_select_menu =
-				gui_default_window_create_form_select_menu;
+			gui_default_window_create_form_select_menu;
 	}
 	if (gwt->file_gadget_open == NULL) {
 		gwt->file_gadget_open = gui_default_window_file_gadget_open;
@@ -195,7 +199,8 @@ static nserror verify_window_register(struct gui_window_table *gwt)
 		gwt->drag_save_object = gui_default_window_drag_save_object;
 	}
 	if (gwt->drag_save_selection == NULL) {
-		gwt->drag_save_selection = gui_default_window_drag_save_selection;
+		gwt->drag_save_selection =
+			gui_default_window_drag_save_selection;
 	}
 	if (gwt->console_log == NULL) {
 		gwt->console_log = gui_default_console_log;
@@ -205,32 +210,40 @@ static nserror verify_window_register(struct gui_window_table *gwt)
 }
 
 
-static nserror gui_default_corewindow_invalidate(struct core_window *cw, const struct rect *rect)
+static nserror gui_default_corewindow_invalidate(struct core_window *cw,
+						 const struct rect *rect)
 {
 	return NSERROR_OK;
 }
 
-static nserror gui_default_corewindow_set_extent(struct core_window *cw, int width, int height)
+static nserror
+gui_default_corewindow_set_extent(struct core_window *cw, int width, int height)
 {
 	return NSERROR_OK;
 }
 
-static nserror gui_default_corewindow_set_scroll(struct core_window *cw, int x, int y)
+static nserror
+gui_default_corewindow_set_scroll(struct core_window *cw, int x, int y)
 {
 	return NSERROR_OK;
 }
 
-static nserror gui_default_corewindow_get_scroll(const struct core_window *cw, int *x, int *y)
+static nserror
+gui_default_corewindow_get_scroll(const struct core_window *cw, int *x, int *y)
 {
 	return NSERROR_OK;
 }
 
-static nserror gui_default_corewindow_get_dimensions(const struct core_window *cw, int *width, int *height)
+static nserror
+gui_default_corewindow_get_dimensions(const struct core_window *cw,
+				      int *width,
+				      int *height)
 {
 	return NSERROR_OK;
 }
 
-static nserror gui_default_corewindow_dragstatus(struct core_window *cw, core_window_drag_status ds)
+static nserror gui_default_corewindow_dragstatus(struct core_window *cw,
+						 core_window_drag_status ds)
 {
 	return NSERROR_OK;
 }
@@ -282,13 +295,14 @@ gui_default_download_create(download_context *ctx, struct gui_window *parent)
 }
 
 static nserror gui_default_download_data(struct gui_download_window *dw,
-				  const char *data, unsigned int size)
+					 const char *data,
+					 unsigned int size)
 {
 	return NSERROR_OK;
 }
 
 static void gui_default_download_error(struct gui_download_window *dw,
-				const char *error_msg)
+				       const char *error_msg)
 {
 }
 
@@ -334,8 +348,10 @@ static void gui_default_get_clipboard(char **buffer, size_t *length)
 	*length = 0;
 }
 
-static void gui_default_set_clipboard(const char *buffer, size_t length,
-		nsclipboard_styles styles[], int n_styles)
+static void gui_default_set_clipboard(const char *buffer,
+				      size_t length,
+				      nsclipboard_styles styles[],
+				      int n_styles)
 {
 }
 
@@ -466,9 +482,8 @@ static nserror verify_search_register(struct gui_search_table *gst)
 	return NSERROR_OK;
 }
 
-static nserror
-gui_default_provider_update(const char *provider_name,
-			    struct bitmap *provider_bitmap)
+static nserror gui_default_provider_update(const char *provider_name,
+					   struct bitmap *provider_bitmap)
 {
 	return NSERROR_OK;
 }
@@ -529,7 +544,9 @@ static nsurl *gui_default_get_resource_url(const char *path)
 	return NULL;
 }
 
-static nserror gui_default_get_resource_data(const char *path, const uint8_t **data, size_t *data_len)
+static nserror gui_default_get_resource_data(const char *path,
+					     const uint8_t **data,
+					     size_t *data_len)
 {
 	return NSERROR_NOT_FOUND;
 }
@@ -546,12 +563,12 @@ static char *gui_default_mimetype(const char *path)
 
 static int gui_default_socket_open(int domain, int type, int protocol)
 {
-	return (int) socket(domain, type, protocol);
+	return (int)socket(domain, type, protocol);
 }
 
 static int gui_default_socket_close(int fd)
 {
-	return (int) ns_close_socket(fd);
+	return (int)ns_close_socket(fd);
 }
 
 /** verify fetch table is valid */
@@ -715,14 +732,16 @@ static nserror gui_default_launch_url(struct nsurl *url)
 }
 
 
-static nserror gui_default_401login_open(
-	nsurl *url, const char *realm,
-	const char *username, const char *password,
-	nserror (*cb)(nsurl *url, const char * realm,
-		      const char *username,
-		      const char *password,
-		      void *pw),
-	void *cbpw)
+static nserror gui_default_401login_open(nsurl *url,
+					 const char *realm,
+					 const char *username,
+					 const char *password,
+					 nserror (*cb)(nsurl *url,
+						       const char *realm,
+						       const char *username,
+						       const char *password,
+						       void *pw),
+					 void *cbpw)
 {
 	return NSERROR_NOT_IMPLEMENTED;
 }
@@ -734,8 +753,7 @@ gui_default_pdf_password(char **owner_pass, char **user_pass, char *path)
 	save_pdf(path);
 }
 
-static nserror
-gui_default_present_cookies(const char *search_term)
+static nserror gui_default_present_cookies(const char *search_term)
 {
 	return NSERROR_NOT_IMPLEMENTED;
 }

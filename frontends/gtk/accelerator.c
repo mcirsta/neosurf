@@ -71,8 +71,7 @@ nserror nsgtk_accelerator_init(char **respaths)
 
 const char *nsgtk_accelerator_get_desc(const char *key)
 {
-	if ((key == NULL) ||
-	    (accelerators_hash == NULL)) {
+	if ((key == NULL) || (accelerators_hash == NULL)) {
 		return NULL;
 	}
 	return hash_get(accelerators_hash, key);

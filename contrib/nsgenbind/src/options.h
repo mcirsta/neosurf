@@ -18,7 +18,7 @@ struct options {
 	bool verbose; /**< verbose processing */
 	bool debug; /**< debug enabled */
 	bool dbglog; /**< embed debug logging in output */
-        bool dryrun; /**< output is not generated */
+	bool dryrun; /**< output is not generated */
 
 	unsigned int warnings; /**< warning flags */
 };
@@ -32,12 +32,17 @@ enum opt_warnings {
 	WARNING_GENERATED = 8,
 };
 
-#define WARNING_ALL (WARNING_UNIMPLEMENTED | WARNING_DUPLICATED | WARNING_WEBIDL)
+#define WARNING_ALL                                                            \
+	(WARNING_UNIMPLEMENTED | WARNING_DUPLICATED | WARNING_WEBIDL)
 
-#define WARN(flags, msg, args...) do {			\
-		if ((options->warnings & flags) != 0) {			\
-			fprintf(stderr, "%s: warning: "msg"\n", __func__, ## args); \
-		}							\
-	} while(0)
+#define WARN(flags, msg, args...)                                              \
+	do {                                                                   \
+		if ((options->warnings & flags) != 0) {                        \
+			fprintf(stderr,                                        \
+				"%s: warning: " msg "\n",                      \
+				__func__,                                      \
+				##args);                                       \
+		}                                                              \
+	} while (0)
 
 #endif

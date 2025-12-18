@@ -40,8 +40,8 @@ static bool handle_line(const char *data, size_t datalen, void *pw);
 static void css__parse_expected(line_ctx *ctx, const char *data, size_t len);
 static const char *string_from_type(css_token_type type);
 static css_token_type string_to_type(const char *data, size_t len);
-static void run_test(const uint8_t *data, size_t len,
-		exp_entry *exp, size_t explen);
+static void
+run_test(const uint8_t *data, size_t len, exp_entry *exp, size_t explen);
 
 int main(int argc, char **argv)
 {
@@ -59,7 +59,7 @@ int main(int argc, char **argv)
 	ctx.buf = malloc(ctx.buflen);
 	if (ctx.buf == NULL) {
 		printf("Failed allocating %u bytes\n",
-				(unsigned int) ctx.buflen);
+		       (unsigned int)ctx.buflen);
 		return 1;
 	}
 
@@ -88,14 +88,14 @@ int main(int argc, char **argv)
 
 bool handle_line(const char *data, size_t datalen, void *pw)
 {
-	line_ctx *ctx = (line_ctx *) pw;
+	line_ctx *ctx = (line_ctx *)pw;
 
 	if (data[0] == '#') {
 		if (ctx->inexp) {
 			/* This marks end of testcase, so run it */
 
-			run_test(ctx->buf, ctx->bufused,
-					ctx->exp, ctx->expused);
+			run_test(
+				ctx->buf, ctx->bufused, ctx->exp, ctx->expused);
 
 			ctx->buf[0] = '\0';
 			ctx->bufused = 0;
@@ -103,28 +103,30 @@ bool handle_line(const char *data, size_t datalen, void *pw)
 			ctx->expused = 0;
 		}
 
-        if (ctx->indata && strncasecmp(data+1, "expected", 8) == 0) {
-            ctx->indata = false;
-            ctx->inexp = true;
-        } else if (!ctx->indata) {
-			ctx->truncate_input = (strncasecmp(data+1, "data:trunc", 10) == 0);
-			ctx->indata = (strncasecmp(data+1, "data", 4) == 0);
-			ctx->inexp  = (strncasecmp(data+1, "expected", 8) == 0);
+		if (ctx->indata && strncasecmp(data + 1, "expected", 8) == 0) {
+			ctx->indata = false;
+			ctx->inexp = true;
+		} else if (!ctx->indata) {
+			ctx->truncate_input =
+				(strncasecmp(data + 1, "data:trunc", 10) == 0);
+			ctx->indata = (strncasecmp(data + 1, "data", 4) == 0);
+			ctx->inexp = (strncasecmp(data + 1, "expected", 8) ==
+				      0);
 		} else {
-            memcpy(ctx->buf + ctx->bufused, data, datalen);
-            ctx->bufused += datalen;
-            if (ctx->truncate_input) {
-                ctx->bufused--;
-            }
+			memcpy(ctx->buf + ctx->bufused, data, datalen);
+			ctx->bufused += datalen;
+			if (ctx->truncate_input) {
+				ctx->bufused--;
+			}
 		}
 	} else {
-        if (ctx->indata) {
-            memcpy(ctx->buf + ctx->bufused, data, datalen);
-            ctx->bufused += datalen;
-            if (ctx->truncate_input) {
-                ctx->bufused--;
-            }
-        }
+		if (ctx->indata) {
+			memcpy(ctx->buf + ctx->bufused, data, datalen);
+			ctx->bufused += datalen;
+			if (ctx->truncate_input) {
+				ctx->bufused--;
+			}
+		}
 		if (ctx->inexp) {
 			if (data[datalen - 1] == '\n')
 				datalen -= 1;
@@ -151,7 +153,7 @@ void css__parse_expected(line_ctx *ctx, const char *data, size_t len)
 		size_t num = ctx->explen == 0 ? 4 : ctx->explen;
 
 		exp_entry *temp = realloc(ctx->exp,
-				num * 2 * sizeof(exp_entry));
+					  num * 2 * sizeof(exp_entry));
 		if (temp == NULL) {
 			assert(0 && "No memory for expected tokens");
 		}
@@ -176,36 +178,36 @@ void css__parse_expected(line_ctx *ctx, const char *data, size_t len)
 				continue;
 			}
 
-            if (escape) {
-                if (ctx->truncate_input && *p == 'n') {
-                    escape = false;
-                    continue;
-                }
-                switch (*p) {
-                case 'f':
-                    c = 0xc;
-                    break;
-                case 'n':
-                    c = 0xa;
-                    break;
-                case 't':
-                    c = 0x9;
-                    break;
-                default:
-                    c = *p;
-                    break;
-                }
-                escape = false;
-            } else {
+			if (escape) {
+				if (ctx->truncate_input && *p == 'n') {
+					escape = false;
+					continue;
+				}
+				switch (*p) {
+				case 'f':
+					c = 0xc;
+					break;
+				case 'n':
+					c = 0xa;
+					break;
+				case 't':
+					c = 0x9;
+					break;
+				default:
+					c = *p;
+					break;
+				}
+				escape = false;
+			} else {
 				c = *p;
 			}
 
-			ctx->exp[ctx->expused].text[
-					ctx->exp[ctx->expused].textLen] = c;
+			ctx->exp[ctx->expused]
+				.text[ctx->exp[ctx->expused].textLen] = c;
 			ctx->exp[ctx->expused].textLen++;
 
 			assert(ctx->exp[ctx->expused].textLen <
-					EXP_ENTRY_TEXT_LEN);
+			       EXP_ENTRY_TEXT_LEN);
 		}
 	}
 	ctx->expused++;
@@ -213,14 +215,18 @@ void css__parse_expected(line_ctx *ctx, const char *data, size_t len)
 
 const char *string_from_type(css_token_type type)
 {
-	const char *names[] =
-	{
-		"IDENT", "ATKEYWORD", "HASH", "FUNCTION", "STRING", "INVALID",
-		"URI", "UNICODE-RANGE", "CHAR", "NUMBER", "PERCENTAGE",
-		"DIMENSION", "last_intern", "CDO", "CDC", "S", "COMMENT",
-		"INCLUDES", "DASHMATCH", "PREFIXMATCH", "SUFFIXMATCH",
-		"SUBSTRINGMATCH", "EOF"
-	};
+	const char *names[] = {"IDENT",	      "ATKEYWORD",
+			       "HASH",	      "FUNCTION",
+			       "STRING",      "INVALID",
+			       "URI",	      "UNICODE-RANGE",
+			       "CHAR",	      "NUMBER",
+			       "PERCENTAGE",  "DIMENSION",
+			       "last_intern", "CDO",
+			       "CDC",	      "S",
+			       "COMMENT",     "INCLUDES",
+			       "DASHMATCH",   "PREFIXMATCH",
+			       "SUFFIXMATCH", "SUBSTRINGMATCH",
+			       "EOF"};
 
 	return names[type];
 }
@@ -282,16 +288,18 @@ void run_test(const uint8_t *data, size_t len, exp_entry *exp, size_t explen)
 	size_t e;
 	static int testnum;
 
-	assert(parserutils_inputstream_create("UTF-8", CSS_CHARSET_DICTATED,
-			css__charset_extract, &input) == PARSERUTILS_OK);
+	assert(parserutils_inputstream_create("UTF-8",
+					      CSS_CHARSET_DICTATED,
+					      css__charset_extract,
+					      &input) == PARSERUTILS_OK);
 
 	assert(css__lexer_create(input, &lexer) == CSS_OK);
 
 	assert(parserutils_inputstream_append(input, data, len) ==
-			PARSERUTILS_OK);
+	       PARSERUTILS_OK);
 
 	assert(parserutils_inputstream_append(input, NULL, 0) ==
-			PARSERUTILS_OK);
+	       PARSERUTILS_OK);
 
 	e = 0;
 	testnum++;
@@ -299,26 +307,32 @@ void run_test(const uint8_t *data, size_t len, exp_entry *exp, size_t explen)
 	while ((error = css__lexer_get_token(lexer, &tok)) == CSS_OK) {
 		if (tok->type != exp[e].type) {
 			printf("%d: Got token %s, Expected %s [%d, %d]\n",
-				testnum, string_from_type(tok->type),
-				string_from_type(exp[e].type),
-				tok->line, tok->col);
+			       testnum,
+			       string_from_type(tok->type),
+			       string_from_type(exp[e].type),
+			       tok->line,
+			       tok->col);
 			assert(0 && "Types differ");
 		}
 
 		if (exp[e].hasText) {
 			if (tok->data.len != exp[e].textLen) {
 				printf("%d: Got length %d, Expected %d\n",
-					testnum, (int) tok->data.len,
-					(int) exp[e].textLen);
+				       testnum,
+				       (int)tok->data.len,
+				       (int)exp[e].textLen);
 				assert(0 && "Text lengths differ");
 			}
 
-			if (strncmp((char *) tok->data.data, exp[e].text,
-					tok->data.len) != 0) {
+			if (strncmp((char *)tok->data.data,
+				    exp[e].text,
+				    tok->data.len) != 0) {
 				printf("%d: Got data '%.*s', Expected '%.*s'\n",
-					testnum,
-					(int) tok->data.len, tok->data.data,
-					(int) exp[e].textLen, exp[e].text);
+				       testnum,
+				       (int)tok->data.len,
+				       tok->data.data,
+				       (int)exp[e].textLen,
+				       exp[e].text);
 				assert(0 && "Text differs");
 			}
 		}

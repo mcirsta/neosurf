@@ -14,8 +14,8 @@
 #include "select/properties/properties.h"
 #include "select/properties/helpers.h"
 
-css_error css__cascade_cursor(uint32_t opv, css_style *style,
-		css_select_state *state)
+css_error
+css__cascade_cursor(uint32_t opv, css_style *style, css_select_state *state)
 {
 	uint16_t value = CSS_CURSOR_INHERIT;
 	lwc_string **uris = NULL;
@@ -28,13 +28,14 @@ css_error css__cascade_cursor(uint32_t opv, css_style *style,
 			lwc_string *uri;
 			lwc_string **temp;
 
-			css__stylesheet_string_get(style->sheet,
-					*((css_code_t *) style->bytecode),
-					&uri);
+			css__stylesheet_string_get(
+				style->sheet,
+				*((css_code_t *)style->bytecode),
+				&uri);
 			advance_bytecode(style, sizeof(css_code_t));
 
 			temp = realloc(uris,
-					(n_uris + 1) * sizeof(lwc_string *));
+				       (n_uris + 1) * sizeof(lwc_string *));
 			if (temp == NULL) {
 				if (uris != NULL) {
 					free(uris);
@@ -48,7 +49,7 @@ css_error css__cascade_cursor(uint32_t opv, css_style *style,
 
 			n_uris++;
 
-			v = *((uint32_t *) style->bytecode);
+			v = *((uint32_t *)style->bytecode);
 			advance_bytecode(style, sizeof(v));
 		}
 
@@ -111,8 +112,7 @@ css_error css__cascade_cursor(uint32_t opv, css_style *style,
 	if (n_uris > 0) {
 		lwc_string **temp;
 
-		temp = realloc(uris,
-				(n_uris + 1) * sizeof(lwc_string *));
+		temp = realloc(uris, (n_uris + 1) * sizeof(lwc_string *));
 		if (temp == NULL) {
 			free(uris);
 			return CSS_NOMEM;
@@ -123,8 +123,10 @@ css_error css__cascade_cursor(uint32_t opv, css_style *style,
 		uris[n_uris] = NULL;
 	}
 
-	if (css__outranks_existing(getOpcode(opv), isImportant(opv), state,
-			getFlagValue(opv))) {
+	if (css__outranks_existing(getOpcode(opv),
+				   isImportant(opv),
+				   state,
+				   getFlagValue(opv))) {
 		css_error error;
 
 		error = set_cursor(state->computed, value, uris);
@@ -140,16 +142,16 @@ css_error css__cascade_cursor(uint32_t opv, css_style *style,
 	return CSS_OK;
 }
 
-css_error css__set_cursor_from_hint(const css_hint *hint,
-		css_computed_style *style)
+css_error
+css__set_cursor_from_hint(const css_hint *hint, css_computed_style *style)
 {
 	lwc_string **item;
 	css_error error;
 
 	error = set_cursor(style, hint->status, hint->data.strings);
 
-	for (item = hint->data.strings;
-			item != NULL && (*item) != NULL; item++) {
+	for (item = hint->data.strings; item != NULL && (*item) != NULL;
+	     item++) {
 		lwc_string_unref(*item);
 	}
 
@@ -164,9 +166,8 @@ css_error css__initial_cursor(css_select_state *state)
 	return set_cursor(state->computed, CSS_CURSOR_AUTO, NULL);
 }
 
-css_error css__copy_cursor(
-		const css_computed_style *from,
-		css_computed_style *to)
+css_error
+css__copy_cursor(const css_computed_style *from, css_computed_style *to)
 {
 	css_error error;
 	lwc_string **copy = NULL;
@@ -191,13 +192,12 @@ css_error css__copy_cursor(
 }
 
 css_error css__compose_cursor(const css_computed_style *parent,
-		const css_computed_style *child,
-		css_computed_style *result)
+			      const css_computed_style *child,
+			      css_computed_style *result)
 {
 	lwc_string **cursor = NULL;
 	uint8_t type = get_cursor(child, &cursor);
 
-	return css__copy_cursor(
-			type == CSS_CURSOR_INHERIT ? parent : child,
-			result);
+	return css__copy_cursor(type == CSS_CURSOR_INHERIT ? parent : child,
+				result);
 }

@@ -14,11 +14,15 @@
 /* Redefine assert, so we can simply use the standard assert mechanism
  * within testcases and exit with the right output for the testrunner
  * to do the right thing. */
-void __assert2(const char *expr, const char *function,
-		const char *file, int line);
+void __assert2(const char *expr,
+	       const char *function,
+	       const char *file,
+	       int line);
 
-void __assert2(const char *expr, const char *function,
-		const char *file, int line)
+void __assert2(const char *expr,
+	       const char *function,
+	       const char *file,
+	       int line)
 {
 	UNUSED(function);
 	UNUSED(file);
@@ -29,8 +33,8 @@ void __assert2(const char *expr, const char *function,
 }
 
 #undef assert
-#define assert(expr) \
-  ((void) ((expr) || (__assert2 (#expr, __func__, __FILE__, __LINE__), 0)))
+#define assert(expr)                                                           \
+	((void)((expr) || (__assert2(#expr, __func__, __FILE__, __LINE__), 0)))
 
 
 typedef bool (*line_func)(const char *data, size_t datalen, void *pw);
@@ -50,32 +54,34 @@ size_t css__parse_filesize(const char *filename);
  */
 bool css__parse_testfile(const char *filename, line_func callback, void *pw)
 {
-    FILE *fp;
-    char buf[300];
+	FILE *fp;
+	char buf[300];
 
-    fp = fopen(filename, "rb");
-    if (fp == NULL) {
-        printf("Failed opening %s\n", filename);
-        return false;
-    }
+	fp = fopen(filename, "rb");
+	if (fp == NULL) {
+		printf("Failed opening %s\n", filename);
+		return false;
+	}
 
-    while (fgets(buf, sizeof buf, fp)) {
-        if (buf[0] == '\n')
-            continue;
-        {
-            size_t l = strlen(buf);
-            if (l >= 2 && buf[l - 2] == '\r' && buf[l - 1] == '\n') {
-                buf[l - 2] = '\n';
-                buf[l - 1] = '\0';
-            }
-        }
-        if (!callback(buf, css__parse_strlen(buf, sizeof buf - 1), pw)) {
-            fclose(fp);
-            return false;
-        }
-    }
+	while (fgets(buf, sizeof buf, fp)) {
+		if (buf[0] == '\n')
+			continue;
+		{
+			size_t l = strlen(buf);
+			if (l >= 2 && buf[l - 2] == '\r' &&
+			    buf[l - 1] == '\n') {
+				buf[l - 2] = '\n';
+				buf[l - 1] = '\0';
+			}
+		}
+		if (!callback(
+			    buf, css__parse_strlen(buf, sizeof buf - 1), pw)) {
+			fclose(fp);
+			return false;
+		}
+	}
 
-    fclose(fp);
+	fclose(fp);
 
 	return true;
 }
@@ -127,7 +133,7 @@ char *css__parse_strnchr(const char *str, size_t len, int chr)
 	if (i == len)
 		return NULL;
 
-	return (char *) str + i;
+	return (char *)str + i;
 }
 
 /**

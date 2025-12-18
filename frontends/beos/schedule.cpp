@@ -16,7 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define __STDBOOL_H__	1
+#define __STDBOOL_H__ 1
 #include <stdlib.h>
 #include <stdbool.h>
 #include <OS.h>
@@ -34,10 +34,10 @@ extern "C" {
 
 /** Killable callback closure embodiment. */
 typedef struct {
-	void (*callback)(void *);	/**< The callback function. */
-	void *context;			/**< The context for the callback. */
-	bool callback_killed;		/**< Whether or not this was killed. */
-	bool callback_fired;		/**< Whether or not this has fired yet. */
+	void (*callback)(void *); /**< The callback function. */
+	void *context; /**< The context for the callback. */
+	bool callback_killed; /**< Whether or not this was killed. */
+	bool callback_fired; /**< Whether or not this has fired yet. */
 	bigtime_t timeout;
 } _nsbeos_callback_t;
 
@@ -48,14 +48,14 @@ static BList *callbacks = NULL;
 bigtime_t earliest_callback_timeout = B_INFINITE_TIMEOUT;
 
 
-static bool
-nsbeos_schedule_kill_callback(void *_target, void *_match)
+static bool nsbeos_schedule_kill_callback(void *_target, void *_match)
 {
 	_nsbeos_callback_t *target = (_nsbeos_callback_t *)_target;
 	_nsbeos_callback_t *match = (_nsbeos_callback_t *)_match;
 	if ((target->callback == match->callback) &&
 	    (target->context == match->context)) {
-		NSLOG(schedule, DEBUG,
+		NSLOG(schedule,
+		      DEBUG,
 		      "Found match for %p(%p), killing.",
 		      target->callback,
 		      target->context);
@@ -66,12 +66,9 @@ nsbeos_schedule_kill_callback(void *_target, void *_match)
 	return false;
 }
 
-static void
-schedule_remove(void (*callback)(void *p), void *p)
+static void schedule_remove(void (*callback)(void *p), void *p)
 {
-	NSLOG(schedule, DEBUG,
-	      "schedule_remove() for %p(%p)",
-	      callback, p);
+	NSLOG(schedule, DEBUG, "schedule_remove() for %p(%p)", callback, p);
 	if (callbacks == NULL)
 		return;
 	_nsbeos_callback_t cb_match;
@@ -87,17 +84,18 @@ nserror beos_schedule(int t, void (*callback)(void *p), void *p)
 
 	if (callbacks == NULL) {
 		callbacks = new BList;
-        }
+	}
 
 	/* Kill any pending schedule of this kind. */
 	schedule_remove(callback, p);
 
-        if (t < 0) {
-          return NSERROR_OK;
-        }
+	if (t < 0) {
+		return NSERROR_OK;
+	}
 
 	bigtime_t timeout = system_time() + t * 1000LL;
-	_nsbeos_callback_t *cb = (_nsbeos_callback_t *)malloc(sizeof(_nsbeos_callback_t));
+	_nsbeos_callback_t *cb = (_nsbeos_callback_t *)malloc(
+		sizeof(_nsbeos_callback_t));
 	cb->callback = callback;
 	cb->context = p;
 	cb->callback_killed = cb->callback_fired = false;
@@ -107,11 +105,10 @@ nserror beos_schedule(int t, void (*callback)(void *p), void *p)
 	}
 	callbacks->AddItem(cb);
 
-        return NSERROR_OK;
+	return NSERROR_OK;
 }
 
-bool
-schedule_run(void)
+bool schedule_run(void)
 {
 	NSLOG(schedule, DEBUG, "schedule_run()");
 
@@ -122,13 +119,15 @@ schedule_run(void)
 	bigtime_t now = system_time();
 	int32 i;
 
-	NSLOG(schedule, DEBUG,
+	NSLOG(schedule,
+	      DEBUG,
 	      "Checking %" PRId32 " callbacks to for deadline.",
 	      callbacks->CountItems());
 
 	/* Run all the callbacks which made it this far. */
-	for (i = 0; i < callbacks->CountItems(); ) {
-		_nsbeos_callback_t *cb = (_nsbeos_callback_t *)(callbacks->ItemAt(i));
+	for (i = 0; i < callbacks->CountItems();) {
+		_nsbeos_callback_t *cb =
+			(_nsbeos_callback_t *)(callbacks->ItemAt(i));
 		if (cb->timeout > now) {
 			// update next deadline
 			if (earliest_callback_timeout > cb->timeout)
@@ -136,7 +135,8 @@ schedule_run(void)
 			i++;
 			continue;
 		}
-		NSLOG(schedule, DEBUG,
+		NSLOG(schedule,
+		      DEBUG,
 		      "Running callbacks %p(%p).",
 		      cb->callback,
 		      cb->context);

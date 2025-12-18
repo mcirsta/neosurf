@@ -81,7 +81,10 @@
  * \param box_conversion_context pointer that recives the conversion context
  * \return netsurf error code indicating status of call
  */
-nserror dom_to_box(struct dom_node *n, struct html_content *c, box_construct_complete_cb cb, void **box_conversion_context);
+nserror dom_to_box(struct dom_node *n,
+		   struct html_content *c,
+		   box_construct_complete_cb cb,
+		   void **box_conversion_context);
 
 
 /**
@@ -108,6 +111,9 @@ struct box *box_for_node(struct dom_node *node);
  * \param result updated to target URL on heap, unchanged if extract failed
  * \return true on success, false on memory exhaustion
  */
-bool box_extract_link(const struct html_content *content, const struct dom_string *dsrel, struct nsurl *base, struct nsurl **result);
+bool box_extract_link(const struct html_content *content,
+		      const struct dom_string *dsrel,
+		      struct nsurl *base,
+		      struct nsurl **result);
 
 #endif

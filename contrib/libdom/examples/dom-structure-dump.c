@@ -92,8 +92,9 @@ dom_document *create_doc_dom_from_file(char *file)
 	chunk_length = buffer_size;
 	while (chunk_length == buffer_size) {
 		chunk_length = fread(buffer, 1, buffer_size, handle);
-		error = dom_hubbub_parser_parse_chunk(parser, buffer,
-				chunk_length);
+		error = dom_hubbub_parser_parse_chunk(parser,
+						      buffer,
+						      chunk_length);
 		if (error != DOM_HUBBUB_OK) {
 			dom_hubbub_parser_destroy(parser);
 			printf("Parsing errors occur\n");
@@ -148,7 +149,8 @@ bool dump_dom_element_attribute(dom_node *node, char *attribute)
 
 	/* Create a dom_string containing required attribute name. */
 	exc = dom_string_create_interned((uint8_t *)attribute,
-			strlen(attribute), &attr);
+					 strlen(attribute),
+					 &attr);
 	if (exc != DOM_NO_ERR) {
 		printf(" Exception raised for dom_string_create\n");
 		return false;
@@ -233,8 +235,8 @@ bool dump_dom_element(dom_node *node, int depth, bool close)
 			exc = dom_node_get_text_content(node, &s);
 			if (exc == DOM_NO_ERR && s != NULL) {
 				printf(" $%.*s$",
-						(int)dom_string_byte_length(s),
-						dom_string_data(s));
+				       (int)dom_string_byte_length(s),
+				       dom_string_data(s));
 				dom_string_unref(s);
 			}
 		}
@@ -255,11 +257,10 @@ bool dump_dom_element(dom_node *node, int depth, bool close)
 /**
  * Structure dump callback for DOM walker.
  */
-enum dom_walk_cmd dump_dom_structure__cb(
-		enum dom_walk_stage stage,
-		dom_node_type type,
-		dom_node *node,
-		void *pw)
+enum dom_walk_cmd dump_dom_structure__cb(enum dom_walk_stage stage,
+					 dom_node_type type,
+					 dom_node *node,
+					 void *pw)
 {
 	int *depth = pw;
 
@@ -303,9 +304,8 @@ bool dump_dom_structure(dom_node *node, int depth)
 		return false;
 	}
 
-	exc = libdom_treewalk(DOM_WALK_ENABLE_ALL,
-			dump_dom_structure__cb,
-			node, &depth);
+	exc = libdom_treewalk(
+		DOM_WALK_ENABLE_ALL, dump_dom_structure__cb, node, &depth);
 	if (exc != DOM_NO_ERR) {
 		return false;
 	}
@@ -322,9 +322,10 @@ void sd__fini_lwc_callback(lwc_string *str, void *pw)
 {
 	(void)(pw);
 
-	fprintf(stderr, "Leaked string: %.*s\n",
-			(int)lwc_string_length(str),
-			lwc_string_data(str));
+	fprintf(stderr,
+		"Leaked string: %.*s\n",
+		(int)lwc_string_length(str),
+		lwc_string_data(str));
 }
 
 /**
@@ -337,7 +338,8 @@ int main(int argc, char **argv)
 	dom_node *root = NULL; /* root element of document */
 
 	/* Load up the input HTML file */
-	doc = create_doc_dom_from_file((argc > 1) ? (argv[1]) : "files/test.html");
+	doc = create_doc_dom_from_file((argc > 1) ? (argv[1])
+						  : "files/test.html");
 	if (doc == NULL) {
 		printf("Failed to load document.\n");
 		return EXIT_FAILURE;
@@ -348,11 +350,11 @@ int main(int argc, char **argv)
 	if (exc != DOM_NO_ERR) {
 		printf("Exception raised for get_document_element\n");
 		dom_node_unref(doc);
- 		return EXIT_FAILURE;
+		return EXIT_FAILURE;
 	} else if (root == NULL) {
 		printf("Broken: root == NULL\n");
 		dom_node_unref(doc);
- 		return EXIT_FAILURE;
+		return EXIT_FAILURE;
 	}
 
 	/* Dump DOM structure */
@@ -372,4 +374,3 @@ int main(int argc, char **argv)
 	lwc_iterate_strings(sd__fini_lwc_callback, NULL);
 	return EXIT_SUCCESS;
 }
-

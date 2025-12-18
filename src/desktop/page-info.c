@@ -45,48 +45,55 @@
  * Plot style for heading font.
  */
 static plot_font_style_t pi__heading[PAGE_STATE__COUNT] = {
-	[PAGE_STATE_UNKNOWN] = {
-		.family = PLOT_FONT_FAMILY_SANS_SERIF,
-		.size = 14 * PLOT_STYLE_SCALE,
-		.flags = FONTF_NONE,
-		.weight = 400,
-	},
-	[PAGE_STATE_INTERNAL] = {
-		.family = PLOT_FONT_FAMILY_SANS_SERIF,
-		.size = 14 * PLOT_STYLE_SCALE,
-		.flags = FONTF_NONE,
-		.weight = 400,
-	},
-	[PAGE_STATE_LOCAL] = {
-		.family = PLOT_FONT_FAMILY_SANS_SERIF,
-		.size = 14 * PLOT_STYLE_SCALE,
-		.flags = FONTF_NONE,
-		.weight = 400,
-	},
-	[PAGE_STATE_INSECURE] = {
-		.family = PLOT_FONT_FAMILY_SANS_SERIF,
-		.size = 14 * PLOT_STYLE_SCALE,
-		.flags = FONTF_NONE,
-		.weight = 400,
-	},
-	[PAGE_STATE_SECURE_OVERRIDE] = {
-		.family = PLOT_FONT_FAMILY_SANS_SERIF,
-		.size = 14 * PLOT_STYLE_SCALE,
-		.flags = FONTF_NONE,
-		.weight = 400,
-	},
-	[PAGE_STATE_SECURE_ISSUES] = {
-		.family = PLOT_FONT_FAMILY_SANS_SERIF,
-		.size = 14 * PLOT_STYLE_SCALE,
-		.flags = FONTF_NONE,
-		.weight = 400,
-	},
-	[PAGE_STATE_SECURE] = {
-		.family = PLOT_FONT_FAMILY_SANS_SERIF,
-		.size = 14 * PLOT_STYLE_SCALE,
-		.flags = FONTF_NONE,
-		.weight = 400,
-	},
+	[PAGE_STATE_UNKNOWN] =
+		{
+			.family = PLOT_FONT_FAMILY_SANS_SERIF,
+			.size = 14 * PLOT_STYLE_SCALE,
+			.flags = FONTF_NONE,
+			.weight = 400,
+		},
+	[PAGE_STATE_INTERNAL] =
+		{
+			.family = PLOT_FONT_FAMILY_SANS_SERIF,
+			.size = 14 * PLOT_STYLE_SCALE,
+			.flags = FONTF_NONE,
+			.weight = 400,
+		},
+	[PAGE_STATE_LOCAL] =
+		{
+			.family = PLOT_FONT_FAMILY_SANS_SERIF,
+			.size = 14 * PLOT_STYLE_SCALE,
+			.flags = FONTF_NONE,
+			.weight = 400,
+		},
+	[PAGE_STATE_INSECURE] =
+		{
+			.family = PLOT_FONT_FAMILY_SANS_SERIF,
+			.size = 14 * PLOT_STYLE_SCALE,
+			.flags = FONTF_NONE,
+			.weight = 400,
+		},
+	[PAGE_STATE_SECURE_OVERRIDE] =
+		{
+			.family = PLOT_FONT_FAMILY_SANS_SERIF,
+			.size = 14 * PLOT_STYLE_SCALE,
+			.flags = FONTF_NONE,
+			.weight = 400,
+		},
+	[PAGE_STATE_SECURE_ISSUES] =
+		{
+			.family = PLOT_FONT_FAMILY_SANS_SERIF,
+			.size = 14 * PLOT_STYLE_SCALE,
+			.flags = FONTF_NONE,
+			.weight = 400,
+		},
+	[PAGE_STATE_SECURE] =
+		{
+			.family = PLOT_FONT_FAMILY_SANS_SERIF,
+			.size = 14 * PLOT_STYLE_SCALE,
+			.flags = FONTF_NONE,
+			.weight = 400,
+		},
 };
 
 /**
@@ -191,45 +198,63 @@ struct page_info_entry {
  * The default page info window data.
  */
 struct page_info_entry pi__entries[PI_ENTRY__COUNT] = {
-	[PI_ENTRY_HEADER] = {
-		.type = PAGE_INFO_ENTRY_TYPE_TEXT,
-	},
-	[PI_ENTRY_DOMAIN] = {
-		.type = PAGE_INFO_ENTRY_TYPE_TEXT,
-		.u = {
-			.text = {
-				.style = &pi__domain,
-			},
+	[PI_ENTRY_HEADER] =
+		{
+			.type = PAGE_INFO_ENTRY_TYPE_TEXT,
 		},
-	},
-	[PI_ENTRY_CERT] = {
-		.type = PAGE_INFO_ENTRY_TYPE_ITEM,
-		.u = {
-			.item = {
-				.item = {
-					.style = &pi__item,
+	[PI_ENTRY_DOMAIN] =
+		{
+			.type = PAGE_INFO_ENTRY_TYPE_TEXT,
+			.u =
+				{
+					.text =
+						{
+							.style = &pi__domain,
+						},
 				},
-				.detail = {
-					.style = &pi__item_detail,
-				},
-				.hover_bg = &pi__hover,
-			},
 		},
-	},
-	[PI_ENTRY_COOKIES] = {
-		.type = PAGE_INFO_ENTRY_TYPE_ITEM,
-		.u = {
-			.item = {
-				.item = {
-					.style = &pi__item,
+	[PI_ENTRY_CERT] =
+		{
+			.type = PAGE_INFO_ENTRY_TYPE_ITEM,
+			.u =
+				{
+					.item =
+						{
+							.item =
+								{
+									.style =
+										&pi__item,
+								},
+							.detail =
+								{
+									.style =
+										&pi__item_detail,
+								},
+							.hover_bg = &pi__hover,
+						},
 				},
-				.detail = {
-					.style = &pi__item_detail,
-				},
-				.hover_bg = &pi__hover,
-			},
 		},
-	},
+	[PI_ENTRY_COOKIES] =
+		{
+			.type = PAGE_INFO_ENTRY_TYPE_ITEM,
+			.u =
+				{
+					.item =
+						{
+							.item =
+								{
+									.style =
+										&pi__item,
+								},
+							.detail =
+								{
+									.style =
+										&pi__item_detail,
+								},
+							.hover_bg = &pi__hover,
+						},
+				},
+		},
 };
 
 /**
@@ -269,20 +294,34 @@ nserror page_info_init(void)
 	pi__item_detail.background = nscolours[NSCOLOUR_WIN_EVEN_BG];
 	pi__item_detail.foreground = nscolours[NSCOLOUR_WIN_EVEN_FG_FADED];
 
-	pi__heading[PAGE_STATE_UNKNOWN].background = nscolours[NSCOLOUR_WIN_EVEN_BG];
-	pi__heading[PAGE_STATE_UNKNOWN].foreground = nscolours[NSCOLOUR_WIN_EVEN_FG_BAD];
-	pi__heading[PAGE_STATE_INTERNAL].background = nscolours[NSCOLOUR_WIN_EVEN_BG];
-	pi__heading[PAGE_STATE_INTERNAL].foreground = nscolours[NSCOLOUR_WIN_EVEN_FG];
-	pi__heading[PAGE_STATE_LOCAL].background = nscolours[NSCOLOUR_WIN_EVEN_BG];
-	pi__heading[PAGE_STATE_LOCAL].foreground = nscolours[NSCOLOUR_WIN_EVEN_FG];
-	pi__heading[PAGE_STATE_INSECURE].background = nscolours[NSCOLOUR_WIN_EVEN_BG];
-	pi__heading[PAGE_STATE_INSECURE].foreground = nscolours[NSCOLOUR_WIN_EVEN_FG_BAD];
-	pi__heading[PAGE_STATE_SECURE_OVERRIDE].background = nscolours[NSCOLOUR_WIN_EVEN_BG];
-	pi__heading[PAGE_STATE_SECURE_OVERRIDE].foreground = nscolours[NSCOLOUR_WIN_EVEN_FG_BAD];
-	pi__heading[PAGE_STATE_SECURE_ISSUES].background = nscolours[NSCOLOUR_WIN_EVEN_BG];
-	pi__heading[PAGE_STATE_SECURE_ISSUES].foreground = nscolours[NSCOLOUR_WIN_EVEN_FG_BAD];
-	pi__heading[PAGE_STATE_SECURE].background = nscolours[NSCOLOUR_WIN_EVEN_BG];
-	pi__heading[PAGE_STATE_SECURE].foreground = nscolours[NSCOLOUR_WIN_EVEN_FG_GOOD];
+	pi__heading[PAGE_STATE_UNKNOWN].background =
+		nscolours[NSCOLOUR_WIN_EVEN_BG];
+	pi__heading[PAGE_STATE_UNKNOWN].foreground =
+		nscolours[NSCOLOUR_WIN_EVEN_FG_BAD];
+	pi__heading[PAGE_STATE_INTERNAL].background =
+		nscolours[NSCOLOUR_WIN_EVEN_BG];
+	pi__heading[PAGE_STATE_INTERNAL].foreground =
+		nscolours[NSCOLOUR_WIN_EVEN_FG];
+	pi__heading[PAGE_STATE_LOCAL].background =
+		nscolours[NSCOLOUR_WIN_EVEN_BG];
+	pi__heading[PAGE_STATE_LOCAL].foreground =
+		nscolours[NSCOLOUR_WIN_EVEN_FG];
+	pi__heading[PAGE_STATE_INSECURE].background =
+		nscolours[NSCOLOUR_WIN_EVEN_BG];
+	pi__heading[PAGE_STATE_INSECURE].foreground =
+		nscolours[NSCOLOUR_WIN_EVEN_FG_BAD];
+	pi__heading[PAGE_STATE_SECURE_OVERRIDE].background =
+		nscolours[NSCOLOUR_WIN_EVEN_BG];
+	pi__heading[PAGE_STATE_SECURE_OVERRIDE].foreground =
+		nscolours[NSCOLOUR_WIN_EVEN_FG_BAD];
+	pi__heading[PAGE_STATE_SECURE_ISSUES].background =
+		nscolours[NSCOLOUR_WIN_EVEN_BG];
+	pi__heading[PAGE_STATE_SECURE_ISSUES].foreground =
+		nscolours[NSCOLOUR_WIN_EVEN_FG_BAD];
+	pi__heading[PAGE_STATE_SECURE].background =
+		nscolours[NSCOLOUR_WIN_EVEN_BG];
+	pi__heading[PAGE_STATE_SECURE].foreground =
+		nscolours[NSCOLOUR_WIN_EVEN_FG_GOOD];
 
 	return NSERROR_OK;
 }
@@ -299,22 +338,22 @@ nserror page_info_fini(void)
  * \param[in] pi  The page info window handle.
  * \return NSERROR_OK on success, appropriate error code otherwise.
  */
-static nserror page_info__measure_text_entry(
-		struct page_info_text *pit)
+static nserror page_info__measure_text_entry(struct page_info_text *pit)
 {
 	nserror err;
 	int height_px;
 
-	err = guit->layout->width(pit->style,
-			pit->text, strlen(pit->text),
-			&pit->width);
+	err = guit->layout->width(
+		pit->style, pit->text, strlen(pit->text), &pit->width);
 	if (err != NSERROR_OK) {
 		return err;
 	}
 
 	/* \todo: This needs to be a helper in plot style or in nscss. */
 	height_px = ((pit->style->size / PLOT_STYLE_SCALE) *
-			FIXTOINT(nscss_screen_dpi) + 36) / 72;
+			     FIXTOINT(nscss_screen_dpi) +
+		     36) /
+		    72;
 
 	pit->height = (height_px * 8 + 3) / 6;
 
@@ -327,8 +366,7 @@ static nserror page_info__measure_text_entry(
  * \param[in] pi  The page info window handle.
  * \return NSERROR_OK on success, appropriate error code otherwise.
  */
-static nserror page_info__measure_text(
-		struct page_info *pi)
+static nserror page_info__measure_text(struct page_info *pi)
 {
 	nserror err;
 
@@ -338,25 +376,24 @@ static nserror page_info__measure_text(
 
 		switch (entry->type) {
 		case PAGE_INFO_ENTRY_TYPE_TEXT:
-			err = page_info__measure_text_entry(
-					&entry->u.text);
+			err = page_info__measure_text_entry(&entry->u.text);
 			if (err != NSERROR_OK) {
 				return err;
 			}
 			if (i == PI_ENTRY_DOMAIN) {
 				entry->u.text.padding_bottom =
-						entry->u.text.height * 3 / 2;
+					entry->u.text.height * 3 / 2;
 			}
 			break;
 
 		case PAGE_INFO_ENTRY_TYPE_ITEM:
 			err = page_info__measure_text_entry(
-					&entry->u.item.item);
+				&entry->u.item.item);
 			if (err != NSERROR_OK) {
 				return err;
 			}
 			err = page_info__measure_text_entry(
-					&entry->u.item.detail);
+				&entry->u.item.detail);
 			if (err != NSERROR_OK) {
 				return err;
 			}
@@ -368,8 +405,8 @@ static nserror page_info__measure_text(
 		}
 	}
 
-	pi->window_padding = pi->entries[PI_ENTRY_DOMAIN]
-			.u.item.item.height / 2;
+	pi->window_padding = pi->entries[PI_ENTRY_DOMAIN].u.item.item.height /
+			     2;
 
 	return NSERROR_OK;
 }
@@ -382,27 +419,26 @@ static nserror page_info__measure_text(
  * \param[in] pi  The page info window handle.
  * \return NSERROR_OK on success, appropriate error code otherwise.
  */
-static nserror page_info__set_text(
-		struct page_info *pi)
+static nserror page_info__set_text(struct page_info *pi)
 {
 	int printed;
 	static const char *header[PAGE_STATE__COUNT] = {
-		[PAGE_STATE_UNKNOWN]         = "Provenance unknown",
-		[PAGE_STATE_INTERNAL]        = "NeoSurf data",
-		[PAGE_STATE_LOCAL]           = "Local data",
-		[PAGE_STATE_INSECURE]        = "Connection not secure",
+		[PAGE_STATE_UNKNOWN] = "Provenance unknown",
+		[PAGE_STATE_INTERNAL] = "NeoSurf data",
+		[PAGE_STATE_LOCAL] = "Local data",
+		[PAGE_STATE_INSECURE] = "Connection not secure",
 		[PAGE_STATE_SECURE_OVERRIDE] = "Connection not secure",
-		[PAGE_STATE_SECURE_ISSUES]   = "Connection not secure",
-		[PAGE_STATE_SECURE]          = "Connection is secure",
+		[PAGE_STATE_SECURE_ISSUES] = "Connection not secure",
+		[PAGE_STATE_SECURE] = "Connection is secure",
 	};
 	static const char *certificate[PAGE_STATE__COUNT] = {
-		[PAGE_STATE_UNKNOWN]         = "Missing",
-		[PAGE_STATE_INTERNAL]        = "None",
-		[PAGE_STATE_LOCAL]           = "None",
-		[PAGE_STATE_INSECURE]        = "Not valid",
+		[PAGE_STATE_UNKNOWN] = "Missing",
+		[PAGE_STATE_INTERNAL] = "None",
+		[PAGE_STATE_LOCAL] = "None",
+		[PAGE_STATE_INSECURE] = "Not valid",
 		[PAGE_STATE_SECURE_OVERRIDE] = "Not valid",
-		[PAGE_STATE_SECURE_ISSUES]   = "Not valid",
-		[PAGE_STATE_SECURE]          = "Valid",
+		[PAGE_STATE_SECURE_ISSUES] = "Not valid",
+		[PAGE_STATE_SECURE] = "Valid",
 	};
 
 	assert(pi != NULL);
@@ -410,18 +446,22 @@ static nserror page_info__set_text(
 
 	pi->entries[PI_ENTRY_HEADER].u.text.style = &pi__heading[pi->state];
 	pi->entries[PI_ENTRY_HEADER].u.text.text = header[pi->state];
-	pi->entries[PI_ENTRY_DOMAIN].u.text.text = (pi->domain) ?
-			lwc_string_data(pi->domain) : "<No domain>";
+	pi->entries[PI_ENTRY_DOMAIN].u.text.text = (pi->domain)
+							   ? lwc_string_data(
+								     pi->domain)
+							   : "<No domain>";
 
 	pi->entries[PI_ENTRY_CERT].u.item.item.text = "Certificate: ";
 	pi->entries[PI_ENTRY_CERT].u.item.detail.text = certificate[pi->state];
 
-	printed = snprintf(pi->cookie_text, sizeof(pi->cookie_text),
-			"(%u in use)", pi->cookies);
+	printed = snprintf(pi->cookie_text,
+			   sizeof(pi->cookie_text),
+			   "(%u in use)",
+			   pi->cookies);
 	if (printed < 0) {
 		return NSERROR_UNKNOWN;
 
-	} else if ((unsigned) printed >= sizeof(pi->cookie_text)) {
+	} else if ((unsigned)printed >= sizeof(pi->cookie_text)) {
 		return NSERROR_NOSPACE;
 	}
 	pi->entries[PI_ENTRY_COOKIES].u.item.item.text = "Cookies: ";
@@ -437,9 +477,8 @@ static nserror page_info__set_text(
  * \param[in] bw  Browser window to show page info for.
  * \return NSERROR_OK on success, appropriate error code otherwise.
  */
-static nserror page_info__create_from_bw(
-		struct page_info *pi,
-		struct browser_window *bw)
+static nserror
+page_info__create_from_bw(struct page_info *pi, struct browser_window *bw)
 {
 	nsurl *url = browser_window_access_url(bw);
 
@@ -459,9 +498,8 @@ static nserror page_info__create_from_bw(
  * \param[in] scheme  URL scheme that the page info is for.
  * \return true if the entry should be hidden, otherwise false.
  */
-static inline bool page_info__hide_entry(
-		enum pi_entry entry,
-		enum nsurl_scheme_type scheme)
+static inline bool
+page_info__hide_entry(enum pi_entry entry, enum nsurl_scheme_type scheme)
 {
 	switch (entry) {
 	case PI_ENTRY_CERT:
@@ -488,8 +526,7 @@ static inline bool page_info__hide_entry(
  * \param[in] pi  The page info window handle.
  * \return NSERROR_OK on success, appropriate error code otherwise.
  */
-static nserror page_info__layout(
-		struct page_info *pi)
+static nserror page_info__layout(struct page_info *pi)
 {
 	int cur_y = 0;
 	int max_x = 0;
@@ -511,18 +548,16 @@ static nserror page_info__layout(
 			cur_y += entry->u.text.padding_bottom;
 			break;
 
-		case PAGE_INFO_ENTRY_TYPE_ITEM:
-		{
+		case PAGE_INFO_ENTRY_TYPE_ITEM: {
 			int full_width = entry->u.item.item.width +
-					entry->u.item.detail.width;
+					 entry->u.item.detail.width;
 			cur_y += entry->u.item.padding_top;
 			cur_y += entry->u.item.item.height;
 			if (max_x < full_width) {
 				max_x = full_width;
 			}
 			cur_y += entry->u.item.padding_bottom;
-		}
-			break;
+		} break;
 		}
 	}
 	cur_y += pi->window_padding;
@@ -598,27 +633,25 @@ nserror page_info_set(struct page_info *pgi, struct browser_window *bw)
  * \param[in] ctx  Current redraw context.
  * \return NSERROR_OK on success, appropriate error code otherwise.
  */
-static nserror page_info__redraw_text_entry(
-		const struct page_info_text *pit,
-		int x,
-		int y,
-		const struct redraw_context *ctx)
+static nserror page_info__redraw_text_entry(const struct page_info_text *pit,
+					    int x,
+					    int y,
+					    const struct redraw_context *ctx)
 {
 	int baseline = (pit->height * 3 + 2) / 4;
 
-	ctx->plot->text(ctx, pit->style, x, y + baseline,
-			pit->text, strlen(pit->text));
+	ctx->plot->text(
+		ctx, pit->style, x, y + baseline, pit->text, strlen(pit->text));
 
 	return NSERROR_OK;
 }
 
 /* Exported interface documented in desktop/page_info.h */
-nserror page_info_redraw(
-		const struct page_info *pi,
-		int x,
-		int y,
-		const struct rect *clip,
-		const struct redraw_context *ctx)
+nserror page_info_redraw(const struct page_info *pi,
+			 int x,
+			 int y,
+			 const struct rect *clip,
+			 const struct redraw_context *ctx)
 {
 	struct redraw_context new_ctx = *ctx;
 	struct rect r = {
@@ -654,9 +687,7 @@ nserror page_info_redraw(
 		switch (entry->type) {
 		case PAGE_INFO_ENTRY_TYPE_TEXT:
 			err = page_info__redraw_text_entry(
-					&entry->u.text,
-					cur_x, cur_y,
-					&new_ctx);
+				&entry->u.text, cur_x, cur_y, &new_ctx);
 			if (err != NSERROR_OK) {
 				goto cleanup;
 			}
@@ -668,24 +699,21 @@ nserror page_info_redraw(
 			if (entry->u.item.hover) {
 				r.y0 = cur_y;
 				r.y1 = cur_y + entry->u.item.padding_top +
-						entry->u.item.item.height +
-						entry->u.item.padding_bottom;
+				       entry->u.item.item.height +
+				       entry->u.item.padding_bottom;
 				new_ctx.plot->rectangle(&new_ctx,
-						&pi__hover, &r);
+							&pi__hover,
+							&r);
 			}
 			cur_y += entry->u.item.padding_top;
 			err = page_info__redraw_text_entry(
-					&entry->u.item.item,
-					cur_x, cur_y,
-					&new_ctx);
+				&entry->u.item.item, cur_x, cur_y, &new_ctx);
 			if (err != NSERROR_OK) {
 				goto cleanup;
 			}
 			cur_x += entry->u.item.item.width;
 			err = page_info__redraw_text_entry(
-					&entry->u.item.detail,
-					cur_x, cur_y,
-					&new_ctx);
+				&entry->u.item.detail, cur_x, cur_y, &new_ctx);
 			if (err != NSERROR_OK) {
 				goto cleanup;
 			}
@@ -716,11 +744,10 @@ cleanup:
  * \param[out] did_something Set to true if this click did something
  * \return NSERROR_OK on success, appropriate error code otherwise.
  */
-static nserror page_info__handle_item_click(
-		struct page_info *pi,
-		enum browser_mouse_state mouse,
-		enum pi_entry clicked,
-		bool *did_something)
+static nserror page_info__handle_item_click(struct page_info *pi,
+					    enum browser_mouse_state mouse,
+					    enum pi_entry clicked,
+					    bool *did_something)
 {
 	nserror err;
 
@@ -746,12 +773,11 @@ static nserror page_info__handle_item_click(
 }
 
 /* Exported interface documented in desktop/page_info.h */
-nserror page_info_mouse_action(
-		struct page_info *pi,
-		enum browser_mouse_state mouse,
-		int x,
-		int y,
-		bool *did_something)
+nserror page_info_mouse_action(struct page_info *pi,
+			       enum browser_mouse_state mouse,
+			       int x,
+			       int y,
+			       bool *did_something)
 {
 	int cur_y = 0;
 	nserror err;
@@ -774,13 +800,13 @@ nserror page_info_mouse_action(
 
 		case PAGE_INFO_ENTRY_TYPE_ITEM:
 			height = entry->u.item.padding_top +
-			         entry->u.item.item.height +
-			         entry->u.item.padding_bottom;
+				 entry->u.item.item.height +
+				 entry->u.item.padding_bottom;
 
 			if (y >= cur_y && y < cur_y + height) {
 				hovering = true;
 				err = page_info__handle_item_click(
-						pi, mouse, i, did_something);
+					pi, mouse, i, did_something);
 				if (err != NSERROR_OK) {
 					return err;
 				}
@@ -792,7 +818,9 @@ nserror page_info_mouse_action(
 					.y0 = cur_y,
 					.y1 = cur_y + height,
 				};
-				guit->corewindow->get_dimensions(pi->cw_h, &w, &h);
+				guit->corewindow->get_dimensions(pi->cw_h,
+								 &w,
+								 &h);
 				r.x1 = (pi->width > w) ? pi->width : w;
 
 				guit->corewindow->invalidate(pi->cw_h, &r);
@@ -807,18 +835,13 @@ nserror page_info_mouse_action(
 }
 
 /* Exported interface documented in desktop/page_info.h */
-bool page_info_keypress(
-		struct page_info *pi,
-		int32_t key)
+bool page_info_keypress(struct page_info *pi, int32_t key)
 {
 	return NSERROR_OK;
 }
 
 /* Exported interface documented in desktop/page_info.h */
-nserror page_info_get_size(
-		struct page_info *pi,
-		int *width,
-		int *height)
+nserror page_info_get_size(struct page_info *pi, int *width, int *height)
 {
 	*width = pi->width;
 	*height = pi->height;

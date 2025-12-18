@@ -71,10 +71,10 @@ nsw32_hotlist_key(struct nsw32_corewindow *nsw32_cw, uint32_t nskey)
  * \param y location of event
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror
-nsw32_hotlist_mouse(struct nsw32_corewindow *nsw32_cw,
-		    browser_mouse_state mouse_state,
-		    int x, int y)
+static nserror nsw32_hotlist_mouse(struct nsw32_corewindow *nsw32_cw,
+				   browser_mouse_state mouse_state,
+				   int x,
+				   int y)
 {
 	hotlist_mouse_action(mouse_state, x, y);
 
@@ -90,17 +90,14 @@ nsw32_hotlist_mouse(struct nsw32_corewindow *nsw32_cw,
  * \param r The rectangle of the window that needs updating.
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror
-nsw32_hotlist_draw(struct nsw32_corewindow *nsw32_cw,
-		   int scrollx,
-		   int scrolly,
-		   struct rect *r)
+static nserror nsw32_hotlist_draw(struct nsw32_corewindow *nsw32_cw,
+				  int scrollx,
+				  int scrolly,
+				  struct rect *r)
 {
-	struct redraw_context ctx = {
-		.interactive = true,
-		.background_images = true,
-		.plot = &win_plotters
-	};
+	struct redraw_context ctx = {.interactive = true,
+				     .background_images = true,
+				     .plot = &win_plotters};
 
 	hotlist_redraw(-scrollx, -scrolly, r, &ctx);
 
@@ -108,8 +105,7 @@ nsw32_hotlist_draw(struct nsw32_corewindow *nsw32_cw,
 }
 
 
-static nserror
-nsw32_hotlist_close(struct nsw32_corewindow *nsw32_cw)
+static nserror nsw32_hotlist_close(struct nsw32_corewindow *nsw32_cw)
 {
 	ShowWindow(nsw32_cw->hWnd, SW_HIDE);
 
@@ -140,7 +136,7 @@ static nserror nsw32_hotlist_init(HINSTANCE hInstance)
 	ncwin->core.key = nsw32_hotlist_key;
 	ncwin->core.mouse = nsw32_hotlist_mouse;
 	ncwin->core.close = nsw32_hotlist_close;
-	
+
 	res = nsw32_corewindow_init(hInstance, NULL, &ncwin->core);
 	if (res != NSERROR_OK) {
 		free(ncwin);
@@ -157,7 +153,7 @@ static nserror nsw32_hotlist_init(HINSTANCE hInstance)
 	 * instead of recreating every time.
 	 */
 	hotlist_window = ncwin;
-	
+
 	return NSERROR_OK;
 }
 

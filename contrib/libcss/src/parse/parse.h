@@ -36,7 +36,8 @@ typedef enum css_parser_event {
 } css_parser_event;
 
 typedef css_error (*css_parser_event_handler)(css_parser_event type,
-		const parserutils_vector *tokens, void *pw);
+					      const parserutils_vector *tokens,
+					      void *pw);
 
 /**
  * Parser option types
@@ -58,24 +59,27 @@ typedef union css_parser_optparams {
 	} event_handler;
 } css_parser_optparams;
 
-css_error css__parser_create(const char *charset, css_charset_source cs_source,
-		css_parser **parser);
+css_error css__parser_create(const char *charset,
+			     css_charset_source cs_source,
+			     css_parser **parser);
 css_error css__parser_create_for_inline_style(const char *charset,
-		css_charset_source cs_source, css_parser **parser);
+					      css_charset_source cs_source,
+					      css_parser **parser);
 css_error css__parser_create_for_media_query(const char *charset,
-		css_charset_source cs_source, css_parser **parser);
+					     css_charset_source cs_source,
+					     css_parser **parser);
 css_error css__parser_destroy(css_parser *parser);
 
-css_error css__parser_setopt(css_parser *parser, css_parser_opttype type,
-		css_parser_optparams *params);
+css_error css__parser_setopt(css_parser *parser,
+			     css_parser_opttype type,
+			     css_parser_optparams *params);
 
-css_error css__parser_parse_chunk(css_parser *parser, const uint8_t *data,
-		size_t len);
+css_error
+css__parser_parse_chunk(css_parser *parser, const uint8_t *data, size_t len);
 css_error css__parser_completed(css_parser *parser);
 
-const char *css__parser_read_charset(css_parser *parser,
-		css_charset_source *source);
+const char *
+css__parser_read_charset(css_parser *parser, css_charset_source *source);
 bool css__parser_quirks_permitted(css_parser *parser);
 
 #endif
-

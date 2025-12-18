@@ -32,8 +32,9 @@ typedef struct http_strict_transport_security http_strict_transport_security;
  *         NSERROR_NOMEM on memory exhaustion,
  *         appropriate error otherwise
  */
-nserror http_parse_strict_transport_security(const char *header_value,
-		http_strict_transport_security **result);
+nserror
+http_parse_strict_transport_security(const char *header_value,
+				     http_strict_transport_security **result);
 
 /**
  * Destroy a strict transport security object
@@ -41,7 +42,7 @@ nserror http_parse_strict_transport_security(const char *header_value,
  * \param victim  Object to destroy
  */
 void http_strict_transport_security_destroy(
-		http_strict_transport_security *victim);
+	http_strict_transport_security *victim);
 
 /**
  * Get the value of a strict transport security's max-age
@@ -49,8 +50,8 @@ void http_strict_transport_security_destroy(
  * \param sts Object to inspect
  * \return Max age, in delta-seconds
  */
-uint32_t http_strict_transport_security_max_age(
-		http_strict_transport_security *sts);
+uint32_t
+http_strict_transport_security_max_age(http_strict_transport_security *sts);
 
 /**
  * Get the value of a strict transport security's includeSubDomains flag
@@ -59,6 +60,6 @@ uint32_t http_strict_transport_security_max_age(
  * \return Whether subdomains should be included
  */
 bool http_strict_transport_security_include_subdomains(
-		http_strict_transport_security *sts);
+	http_strict_transport_security *sts);
 
 #endif

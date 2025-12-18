@@ -96,12 +96,11 @@ nserror page_info_set(struct page_info *pgi, struct browser_window *bw);
  * \param[in] ctx   Current redraw context.
  * \return NSERROR_OK on success, appropriate error code otherwise.
  */
-nserror page_info_redraw(
-		const struct page_info *pi,
-		int x,
-		int y,
-		const struct rect *clip,
-		const struct redraw_context *ctx);
+nserror page_info_redraw(const struct page_info *pi,
+			 int x,
+			 int y,
+			 const struct rect *clip,
+			 const struct redraw_context *ctx);
 
 /**
  * Mouse action handling.
@@ -113,12 +112,11 @@ nserror page_info_redraw(
  * \param[out] did_something Set to true if this resulted in some action
  * \return NSERROR_OK on success, appropriate error code otherwise.
  */
-nserror page_info_mouse_action(
-		struct page_info *pi,
-		enum browser_mouse_state mouse,
-		int x,
-		int y,
-		bool *did_something);
+nserror page_info_mouse_action(struct page_info *pi,
+			       enum browser_mouse_state mouse,
+			       int x,
+			       int y,
+			       bool *did_something);
 
 /**
  * Key press handling.
@@ -127,9 +125,7 @@ nserror page_info_mouse_action(
  * \param[in] key  The ucs4 character codepoint.
  * \return true if the keypress is dealt with, false otherwise.
  */
-bool page_info_keypress(
-		struct page_info *pi,
-		int32_t key);
+bool page_info_keypress(struct page_info *pi, int32_t key);
 
 /**
  * Get size of page info content area.
@@ -139,9 +135,6 @@ bool page_info_keypress(
  * \param[out] height  On success, return the page info content height.
  * \return NSERROR_OK on success, appropriate error code otherwise.
  */
-nserror page_info_get_size(
-		struct page_info *pi,
-		int *width,
-		int *height);
+nserror page_info_get_size(struct page_info *pi, int *width, int *height);
 
 #endif

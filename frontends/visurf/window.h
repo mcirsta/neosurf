@@ -163,11 +163,12 @@ struct window_output {
 };
 
 void nsvi_window_pointer_event(struct nsvi_window *win,
-		struct pointer_event *event);
+			       struct pointer_event *event);
 void nsvi_window_touch_event(struct nsvi_window *win,
-		struct touch_event *event);
+			     struct touch_event *event);
 void nsvi_window_key_event(struct nsvi_window *win,
-		xkb_keycode_t keycode, bool pressed);
+			   xkb_keycode_t keycode,
+			   bool pressed);
 void request_frame(struct nsvi_window *win);
 
 void gui_window_constrain_scroll(struct gui_window *win);

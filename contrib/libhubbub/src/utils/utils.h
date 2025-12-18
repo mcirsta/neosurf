@@ -9,11 +9,11 @@
 #define hubbub_utils_h_
 
 #ifndef max
-#define max(a,b) ((a)>(b)?(a):(b))
+#define max(a, b) ((a) > (b) ? (a) : (b))
 #endif
 
 #ifndef min
-#define min(a,b) ((a)<(b)?(a):(b))
+#define min(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
 #ifndef SLEN
@@ -26,6 +26,6 @@
 #endif
 
 /* Useful for iterating over arrays */
-#define N_ELEMENTS(x)   sizeof((x)) / sizeof((x)[0])
+#define N_ELEMENTS(x) sizeof((x)) / sizeof((x)[0])
 
 #endif

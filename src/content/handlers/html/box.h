@@ -76,19 +76,19 @@ typedef enum {
  * Flags for a struct box.
  */
 typedef enum {
-	NEW_LINE    = 1 << 0,	/* first inline on a new line */
-	STYLE_OWNED = 1 << 1,	/* style is owned by this box */
-	PRINTED     = 1 << 2,	/* box has already been printed */
-	PRE_STRIP   = 1 << 3,	/* PRE tag needing leading newline stripped */
-	CLONE       = 1 << 4,	/* continuation of previous box from wrapping */
-	MEASURED    = 1 << 5,	/* text box width has been measured */
-	HAS_HEIGHT  = 1 << 6,	/* box has height (perhaps due to children) */
-	MAKE_HEIGHT = 1 << 7,	/* box causes its own height */
-	NEED_MIN    = 1 << 8,	/* minimum width is required for layout */
-	REPLACE_DIM = 1 << 9,	/* replaced element has given dimensions */
-	IFRAME      = 1 << 10,	/* box contains an iframe */
-	CONVERT_CHILDREN = 1 << 11,  /* wanted children converting */
-	IS_REPLACED = 1 << 12	/* box is a replaced element */
+	NEW_LINE = 1 << 0, /* first inline on a new line */
+	STYLE_OWNED = 1 << 1, /* style is owned by this box */
+	PRINTED = 1 << 2, /* box has already been printed */
+	PRE_STRIP = 1 << 3, /* PRE tag needing leading newline stripped */
+	CLONE = 1 << 4, /* continuation of previous box from wrapping */
+	MEASURED = 1 << 5, /* text box width has been measured */
+	HAS_HEIGHT = 1 << 6, /* box has height (perhaps due to children) */
+	MAKE_HEIGHT = 1 << 7, /* box causes its own height */
+	NEED_MIN = 1 << 8, /* minimum width is required for layout */
+	REPLACE_DIM = 1 << 9, /* replaced element has given dimensions */
+	IFRAME = 1 << 10, /* box contains an iframe */
+	CONVERT_CHILDREN = 1 << 11, /* wanted children converting */
+	IS_REPLACED = 1 << 12 /* box is a replaced element */
 } box_flags;
 
 
@@ -102,9 +102,9 @@ enum box_side { TOP, RIGHT, BOTTOM, LEFT };
  * Container for box border details
  */
 struct box_border {
-	enum css_border_style_e style;	/**< border-style */
-	css_color c;			/**< border-color value */
-	int width;			/**< border-width (pixels) */
+	enum css_border_style_e style; /**< border-style */
+	css_color c; /**< border-color value */
+	int width; /**< border-width (pixels) */
 };
 
 
@@ -116,11 +116,11 @@ struct column {
 	 * Type of column.
 	 */
 	enum {
-	      COLUMN_WIDTH_UNKNOWN,
-	      COLUMN_WIDTH_FIXED,
-	      COLUMN_WIDTH_AUTO,
-	      COLUMN_WIDTH_PERCENT,
-	      COLUMN_WIDTH_RELATIVE
+		COLUMN_WIDTH_UNKNOWN,
+		COLUMN_WIDTH_FIXED,
+		COLUMN_WIDTH_AUTO,
+		COLUMN_WIDTH_PERCENT,
+		COLUMN_WIDTH_RELATIVE
 	} type;
 
 	/**
@@ -306,10 +306,10 @@ struct box {
 	 *		scrollable area.
 	 * auto		As "scroll".
 	 */
-	int descendant_x0;  /**< left edge of descendants */
-	int descendant_y0;  /**< top edge of descendants */
-	int descendant_x1;  /**< right edge of descendants */
-	int descendant_y1;  /**< bottom edge of descendants */
+	int descendant_x0; /**< left edge of descendants */
+	int descendant_y0; /**< top edge of descendants */
+	int descendant_x1; /**< right edge of descendants */
+	int descendant_y1; /**< bottom edge of descendants */
 
 	/**
 	 * Margin: TOP, RIGHT, BOTTOM, LEFT.
@@ -420,7 +420,7 @@ struct box {
 	/**
 	 * Form control data, or NULL if not a form control.
 	 */
-	struct form_control* gadget;
+	struct form_control *gadget;
 
 
 	/**
@@ -438,7 +438,7 @@ struct box {
 	/**
 	 * Object in this box (usually an image), or NULL if none.
 	 */
-	struct hlcache_handle* object;
+	struct hlcache_handle *object;
 
 	/**
 	 * Parameters for the object, or NULL.
@@ -450,7 +450,6 @@ struct box {
 	 * Iframe's browser_window, or NULL if none
 	 */
 	struct browser_window *iframe;
-
 };
 
 

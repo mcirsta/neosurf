@@ -44,8 +44,8 @@ uint32_t utf8_to_ucs4(const char *s_in, size_t l)
 	size_t len;
 	parserutils_error perror;
 
-	perror = parserutils_charset_utf8_to_ucs4((const uint8_t *) s_in, l,
-						  &ucs4, &len);
+	perror = parserutils_charset_utf8_to_ucs4(
+		(const uint8_t *)s_in, l, &ucs4, &len);
 	if (perror != PARSERUTILS_OK)
 		ucs4 = 0xfffd;
 
@@ -55,7 +55,7 @@ uint32_t utf8_to_ucs4(const char *s_in, size_t l)
 /* exported interface documented in utils/utf8.h */
 size_t utf8_from_ucs4(uint32_t c, char *s)
 {
-	uint8_t *in = (uint8_t *) s;
+	uint8_t *in = (uint8_t *)s;
 	size_t len = 6;
 	parserutils_error perror;
 
@@ -82,7 +82,7 @@ size_t utf8_bounded_length(const char *s, size_t l)
 	size_t len;
 	parserutils_error perror;
 
-	perror = parserutils_charset_utf8_length((const uint8_t *) s, l, &len);
+	perror = parserutils_charset_utf8_length((const uint8_t *)s, l, &len);
 	if (perror != PARSERUTILS_OK)
 		return 0;
 
@@ -106,7 +106,7 @@ size_t utf8_char_byte_length(const char *s)
 	size_t len;
 	parserutils_error perror;
 
-	perror = parserutils_charset_utf8_char_byte_length((const uint8_t *) s,
+	perror = parserutils_charset_utf8_char_byte_length((const uint8_t *)s,
 							   &len);
 	assert(perror == PARSERUTILS_OK);
 
@@ -119,7 +119,7 @@ size_t utf8_prev(const char *s, size_t o)
 	uint32_t prev;
 	parserutils_error perror;
 
-	perror = parserutils_charset_utf8_prev((const uint8_t *) s, o, &prev);
+	perror = parserutils_charset_utf8_prev((const uint8_t *)s, o, &prev);
 	assert(perror == PARSERUTILS_OK);
 
 	return prev;
@@ -131,8 +131,7 @@ size_t utf8_next(const char *s, size_t l, size_t o)
 	uint32_t next;
 	parserutils_error perror;
 
-	perror = parserutils_charset_utf8_next((const uint8_t *) s, l, o,
-					       &next);
+	perror = parserutils_charset_utf8_next((const uint8_t *)s, l, o, &next);
 	assert(perror == PARSERUTILS_OK);
 
 	return next;
@@ -140,9 +139,9 @@ size_t utf8_next(const char *s, size_t l, size_t o)
 
 /* Cache of previous iconv conversion descriptor used by utf8_convert */
 static struct {
-	char from[32];	/**< Encoding name to convert from */
-	char to[32];	/**< Encoding name to convert to */
-	iconv_t cd;	/**< Iconv conversion descriptor */
+	char from[32]; /**< Encoding name to convert from */
+	char to[32]; /**< Encoding name to convert to */
+	iconv_t cd; /**< Iconv conversion descriptor */
 } last_cd;
 
 static inline void utf8_clear_cd_cache(void)
@@ -172,7 +171,7 @@ get_cached_cd(const char *enc_from, const char *enc_to, iconv_t *cd_out)
 
 	/* no match, so create a new cd */
 	cd = iconv_open(enc_to, enc_from);
-	if (cd == (iconv_t) -1) {
+	if (cd == (iconv_t)-1) {
 		if (errno == EINVAL) {
 			return NSERROR_BAD_ENCODING;
 		}
@@ -218,13 +217,12 @@ nserror utf8_finalise(void)
  * \return NSERROR_OK for no error, NSERROR_NOMEM on allocation error,
  *         NSERROR_BAD_ENCODING for a bad character encoding
  */
-static nserror
-utf8_convert(const char *string,
-	     size_t slen,
-	     const char *from,
-	     const char *to,
-	     char **result_out,
-	     size_t *result_len_out)
+static nserror utf8_convert(const char *string,
+			    size_t slen,
+			    const char *from,
+			    const char *to,
+			    char **result_out,
+			    size_t *result_len_out)
 {
 	iconv_t cd;
 	char *temp, *out, *in, *result;
@@ -234,7 +232,7 @@ utf8_convert(const char *string,
 	assert(string && from && to && result_out);
 
 	/* calculate the source length if not given */
-	if (slen==0) {
+	if (slen == 0) {
 		slen = strlen(string);
 	}
 
@@ -275,7 +273,7 @@ utf8_convert(const char *string,
 	}
 
 	/* perform conversion */
-	if (iconv(cd, (void *) &in, &slen, &out, &result_len) == (size_t)-1) {
+	if (iconv(cd, (void *)&in, &slen, &out, &result_len) == (size_t)-1) {
 		free(temp);
 		/* clear the cached conversion descriptor as it's invalid */
 		if (last_cd.cd)
@@ -311,15 +309,18 @@ utf8_convert(const char *string,
 }
 
 /* exported interface documented in utils/utf8.h */
-nserror utf8_to_enc(const char *string, const char *encname,
-		    size_t len, char **result)
+nserror
+utf8_to_enc(const char *string, const char *encname, size_t len, char **result)
 {
 	return utf8_convert(string, len, "UTF-8", encname, result, NULL);
 }
 
 /* exported interface documented in utils/utf8.h */
-nserror utf8_from_enc(const char *string, const char *encname,
-		      size_t len, char **result, size_t *result_len)
+nserror utf8_from_enc(const char *string,
+		      const char *encname,
+		      size_t len,
+		      char **result,
+		      size_t *result_len)
 {
 	return utf8_convert(string, len, encname, "UTF-8", result, result_len);
 }
@@ -327,31 +328,30 @@ nserror utf8_from_enc(const char *string, const char *encname,
 /**
  * convert a chunk of html data
  */
-static nserror
-utf8_convert_html_chunk(iconv_t cd,
-			const char *chunk,
-			size_t inlen,
-			char **out,
-			size_t *outlen)
+static nserror utf8_convert_html_chunk(iconv_t cd,
+				       const char *chunk,
+				       size_t inlen,
+				       char **out,
+				       size_t *outlen)
 {
 	size_t ret, esclen;
 	uint32_t ucs4;
 	char *pescape, escape[11];
 
 	while (inlen > 0) {
-		ret = iconv(cd, (void *) &chunk, &inlen, (void *) out, outlen);
-		if (ret != (size_t) -1)
+		ret = iconv(cd, (void *)&chunk, &inlen, (void *)out, outlen);
+		if (ret != (size_t)-1)
 			break;
 
 		if (errno != EILSEQ)
 			return NSERROR_NOMEM;
 
 		ucs4 = utf8_to_ucs4(chunk, inlen);
-		esclen = snprintf(escape, sizeof(escape), "&#x%06"PRIx32";", ucs4);
+		esclen = snprintf(
+			escape, sizeof(escape), "&#x%06" PRIx32 ";", ucs4);
 		pescape = escape;
-		ret = iconv(cd, (void *) &pescape, &esclen,
-			    (void *) out, outlen);
-		if (ret == (size_t) -1)
+		ret = iconv(cd, (void *)&pescape, &esclen, (void *)out, outlen);
+		if (ret == (size_t)-1)
 			return NSERROR_NOMEM;
 
 		esclen = utf8_next(chunk, inlen, 0);
@@ -363,10 +363,11 @@ utf8_convert_html_chunk(iconv_t cd,
 }
 
 
-
 /* exported interface documented in utils/utf8.h */
-nserror
-utf8_to_html(const char *string, const char *encname, size_t len, char **result_out)
+nserror utf8_to_html(const char *string,
+		     const char *encname,
+		     size_t len,
+		     char **result_out)
 {
 	iconv_t cd;
 	const char *in;
@@ -406,8 +407,8 @@ utf8_to_html(const char *string, const char *encname, size_t len, char **result_
 				/* Emit chunk */
 				in = string + prev_off;
 				inlen = off - prev_off;
-				ret = utf8_convert_html_chunk(cd, in, inlen,
-							      &out, &outlen);
+				ret = utf8_convert_html_chunk(
+					cd, in, inlen, &out, &outlen);
 				if (ret != NSERROR_OK) {
 					free(origout);
 					iconv_close(cd);
@@ -417,11 +418,13 @@ utf8_to_html(const char *string, const char *encname, size_t len, char **result_
 			}
 
 			/* Emit mandatory escape */
-			esclen = snprintf(escape, sizeof(escape),
-					  "&#x%06x;", string[off]);
+			esclen = snprintf(escape,
+					  sizeof(escape),
+					  "&#x%06x;",
+					  string[off]);
 			pescape = escape;
-			ret = utf8_convert_html_chunk(cd, pescape, esclen,
-						      &out, &outlen);
+			ret = utf8_convert_html_chunk(
+				cd, pescape, esclen, &out, &outlen);
 			if (ret != NSERROR_OK) {
 				free(origout);
 				iconv_close(cd);
@@ -472,8 +475,10 @@ bool utf8_save_text(const char *utf8_text, const char *path)
 
 	ret = guit->utf8->utf8_to_local(utf8_text, strlen(utf8_text), &conv);
 	if (ret != NSERROR_OK) {
-		NSLOG(neosurf, INFO,
-		      "failed to convert to local encoding, return %d", ret);
+		NSLOG(neosurf,
+		      INFO,
+		      "failed to convert to local encoding, return %d",
+		      ret);
 		return false;
 	}
 

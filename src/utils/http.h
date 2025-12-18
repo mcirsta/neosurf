@@ -34,4 +34,3 @@
 #include "utils/http/www-authenticate.h"
 
 #endif
-

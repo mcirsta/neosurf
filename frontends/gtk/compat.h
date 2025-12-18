@@ -29,7 +29,7 @@
 #include <gtk/gtk.h>
 
 /* gtk 3.10 depricated the use of stock names */
-#if GTK_CHECK_VERSION(3,10,0)
+#if GTK_CHECK_VERSION(3, 10, 0)
 #define NSGTK_USE_ICON_NAME
 #else
 #undef NSGTK_USE_ICON_NAME
@@ -67,19 +67,23 @@
 #endif
 
 /* widget alignment only available since 3.0 */
-#if !GTK_CHECK_VERSION(3,0,0)
-typedef enum  {
-  GTK_ALIGN_FILL,
-  GTK_ALIGN_START,
-  GTK_ALIGN_END,
-  GTK_ALIGN_CENTER,
-  GTK_ALIGN_BASELINE
+#if !GTK_CHECK_VERSION(3, 0, 0)
+typedef enum {
+	GTK_ALIGN_FILL,
+	GTK_ALIGN_START,
+	GTK_ALIGN_END,
+	GTK_ALIGN_CENTER,
+	GTK_ALIGN_BASELINE
 } GtkAlign;
 #endif
 
 /* value init since gtk 2.30 */
 #ifndef G_VALUE_INIT
-#define G_VALUE_INIT  { 0, { { 0 } } }
+#define G_VALUE_INIT                                                           \
+	{                                                                      \
+		0,                                                             \
+		{ { 0 } }                                           \
+	}
 #endif
 
 
@@ -95,7 +99,9 @@ typedef enum  {
  * \param halign The horizontal alignment to set.
  * \param valign The vertical alignment to set
  */
-void nsgtk_widget_set_alignment(GtkWidget *widget, GtkAlign halign, GtkAlign valign);
+void nsgtk_widget_set_alignment(GtkWidget *widget,
+				GtkAlign halign,
+				GtkAlign valign);
 
 /**
  * Set the margins of a widget
@@ -129,44 +135,45 @@ gchar *nsgtk_combo_box_text_get_active_text(GtkWidget *combo_box);
  * \param size The size of icon to create
  * \return An image widget.
  */
-GtkWidget *nsgtk_image_new_from_pixbuf_icon(GdkPixbuf *pixbuf, GtkIconSize size);
+GtkWidget *
+nsgtk_image_new_from_pixbuf_icon(GdkPixbuf *pixbuf, GtkIconSize size);
 
 /* GTK prior to 2.16 needs the sexy interface for icons */
-#if !GTK_CHECK_VERSION(2,16,0)
+#if !GTK_CHECK_VERSION(2, 16, 0)
 
 #include "gtk/sexy_icon_entry.h"
 
 typedef enum {
-  GTK_ENTRY_ICON_PRIMARY = SEXY_ICON_ENTRY_PRIMARY,
-  GTK_ENTRY_ICON_SECONDARY = SEXY_ICON_ENTRY_SECONDARY
+	GTK_ENTRY_ICON_PRIMARY = SEXY_ICON_ENTRY_PRIMARY,
+	GTK_ENTRY_ICON_SECONDARY = SEXY_ICON_ENTRY_SECONDARY
 } GtkEntryIconPosition;
 
 GtkStateType nsgtk_widget_get_state(GtkWidget *widget);
 
 #endif
 
-#if GTK_CHECK_VERSION (2, 90, 7)
+#if GTK_CHECK_VERSION(2, 90, 7)
 #define GDK_KEY(symbol) GDK_KEY_##symbol
 #else
-#include <gdk/gdkkeysyms.h> 
+#include <gdk/gdkkeysyms.h>
 #define GDK_KEY(symbol) GDK_##symbol
 #endif
 
-#if !GTK_CHECK_VERSION(3,0,0)
+#if !GTK_CHECK_VERSION(3, 0, 0)
 typedef GtkStateType GtkStateFlags;
 typedef GtkStyle GtkStyleContext;
 
 /* gtk 3 changed the enum name for the state flags */
 #define GTK_STATE_FLAG_NORMAL GTK_STATE_NORMAL
 
-#if GTK_CHECK_VERSION(2,22,0)
+#if GTK_CHECK_VERSION(2, 22, 0)
 enum {
 	GTK_IN_DESTRUCTION = 1 << 0,
 };
-#define GTK_OBJECT_FLAGS(obj)		  (GTK_OBJECT (obj)->flags)
+#define GTK_OBJECT_FLAGS(obj) (GTK_OBJECT(obj)->flags)
 #endif
 
-#define gtk_widget_in_destruction(widget) \
+#define gtk_widget_in_destruction(widget)                                      \
 	(GTK_OBJECT_FLAGS(GTK_OBJECT(widget)) & GTK_IN_DESTRUCTION)
 
 #endif
@@ -182,7 +189,9 @@ enum {
  * \param icon_pos The position of the icon.
  * \param stock_id the name of the stock item.
  */
-void nsgtk_entry_set_icon_from_icon_name(GtkWidget *entry, GtkEntryIconPosition icon_pos, const gchar *stock_id);
+void nsgtk_entry_set_icon_from_icon_name(GtkWidget *entry,
+					 GtkEntryIconPosition icon_pos,
+					 const gchar *stock_id);
 
 /**
  * Creates a GtkImage displaying a stock icon.
@@ -221,38 +230,57 @@ gboolean nsgtk_stock_lookup(const gchar *stock_id, GtkStockItem *item);
  * Compatability interface for original deprecated in GTK 3.20
  *
  * \param button The button alter
- * \param focus_on_click whether the button grabs focus when clicked with the mouse
+ * \param focus_on_click whether the button grabs focus when clicked with the
+ * mouse
  */
-void nsgtk_button_set_focus_on_click(GtkButton *button, gboolean focus_on_click);
+void nsgtk_button_set_focus_on_click(GtkButton *button,
+				     gboolean focus_on_click);
 
 void nsgtk_window_set_opacity(GtkWindow *window, gdouble opacity);
 
-void nsgtk_scrolled_window_add_with_viewport(GtkScrolledWindow *window, GtkWidget *child);
+void nsgtk_scrolled_window_add_with_viewport(GtkScrolledWindow *window,
+					     GtkWidget *child);
 
 GtkWidget *nsgtk_entry_new(void);
 
-void nsgtk_entry_set_icon_from_pixbuf(GtkWidget *entry, GtkEntryIconPosition icon_pos, GdkPixbuf *pixbuf);
+void nsgtk_entry_set_icon_from_pixbuf(GtkWidget *entry,
+				      GtkEntryIconPosition icon_pos,
+				      GdkPixbuf *pixbuf);
 
-void nsgtk_widget_override_background_color(GtkWidget *widget, GtkStateFlags state, uint16_t a, uint16_t r, uint16_t g, uint16_t b);
-GtkWidget* nsgtk_hbox_new(gboolean homogeneous, gint spacing);
-GtkWidget* nsgtk_vbox_new(gboolean homogeneous, gint spacing);
+void nsgtk_widget_override_background_color(GtkWidget *widget,
+					    GtkStateFlags state,
+					    uint16_t a,
+					    uint16_t r,
+					    uint16_t g,
+					    uint16_t b);
+GtkWidget *nsgtk_hbox_new(gboolean homogeneous, gint spacing);
+GtkWidget *nsgtk_vbox_new(gboolean homogeneous, gint spacing);
 GtkStateFlags nsgtk_widget_get_state_flags(GtkWidget *widget);
-GtkStyleContext* nsgtk_widget_get_style_context(GtkWidget *widget);
-const PangoFontDescription* nsgtk_style_context_get_font(GtkStyleContext *style, GtkStateFlags state);
-gulong nsgtk_connect_draw_event(GtkWidget *widget, GCallback callback, gpointer g);
+GtkStyleContext *nsgtk_widget_get_style_context(GtkWidget *widget);
+const PangoFontDescription *
+nsgtk_style_context_get_font(GtkStyleContext *style, GtkStateFlags state);
+gulong
+nsgtk_connect_draw_event(GtkWidget *widget, GCallback callback, gpointer g);
 void nsgdk_cursor_unref(GdkCursor *cursor);
-void nsgtk_widget_modify_font(GtkWidget *widget, PangoFontDescription *font_desc);
+void nsgtk_widget_modify_font(GtkWidget *widget,
+			      PangoFontDescription *font_desc);
 GdkWindow *nsgtk_widget_get_window(GtkWidget *widget);
 GtkWidget *nsgtk_dialog_get_content_area(GtkDialog *dialog);
-gboolean nsgtk_show_uri(GdkScreen *screen, const gchar *uri, guint32 timestamp, GError **error);
+gboolean nsgtk_show_uri(GdkScreen *screen,
+			const gchar *uri,
+			guint32 timestamp,
+			GError **error);
 GdkWindow *nsgtk_layout_get_bin_window(GtkLayout *layout);
 void nsgtk_widget_get_allocation(GtkWidget *widget, GtkAllocation *allocation);
 
-gboolean nsgtk_icon_size_lookup_for_settings (GtkSettings *settings, GtkIconSize size, gint *width, gint *height);
+gboolean nsgtk_icon_size_lookup_for_settings(GtkSettings *settings,
+					     GtkIconSize size,
+					     gint *width,
+					     gint *height);
 
 GtkAdjustment *nsgtk_layout_get_vadjustment(GtkLayout *layout);
 GtkAdjustment *nsgtk_layout_get_hadjustment(GtkLayout *layout);
-void nsgtk_layout_set_hadjustment(GtkLayout *layout, GtkAdjustment *adj); 
+void nsgtk_layout_set_hadjustment(GtkLayout *layout, GtkAdjustment *adj);
 void nsgtk_layout_set_vadjustment(GtkLayout *layout, GtkAdjustment *adj);
 gdouble nsgtk_adjustment_get_step_increment(GtkAdjustment *adjustment);
 gdouble nsgtk_adjustment_get_upper(GtkAdjustment *adjustment);
@@ -282,7 +310,8 @@ GtkWidget *nsgtk_image_menu_item_new_with_mnemonic(const gchar *label);
  * \param image_menu_item The image menu entry item.
  * \param image The image to set.
  */
-void nsgtk_image_menu_item_set_image(GtkWidget *image_menu_item, GtkWidget *image);
+void nsgtk_image_menu_item_set_image(GtkWidget *image_menu_item,
+				     GtkWidget *image);
 
 /**
  * Displays menu and makes it available for selection
@@ -290,7 +319,8 @@ void nsgtk_image_menu_item_set_image(GtkWidget *image_menu_item, GtkWidget *imag
  * Compatability interface for gtk_menu_popup deprecated in GTK 3.22.
  *
  * \param image_menu_item The image menu entry item.
- * \param trigger_event the GdkEvent that initiated this request or NULL if it's the current event.
+ * \param trigger_event the GdkEvent that initiated this request or NULL if it's
+ * the current event.
  */
 void nsgtk_menu_popup_at_pointer(GtkMenu *menu, const GdkEvent *trigger_event);
 
@@ -316,6 +346,8 @@ void nsgtk_menu_popup_at_pointer(GtkMenu *menu, const GdkEvent *trigger_event);
  * \param error return location for an error, or NULL.
  * \return A positive value on success, 0 if an error occurred.
  */
-guint nsgtk_builder_add_from_resource(GtkBuilder *builder, const gchar *resource_path, GError **error);
+guint nsgtk_builder_add_from_resource(GtkBuilder *builder,
+				      const gchar *resource_path,
+				      GError **error);
 
 #endif /* NETSURF_GTK_COMPAT_H */

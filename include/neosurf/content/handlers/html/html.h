@@ -68,14 +68,16 @@ struct html_stylesheet {
  */
 struct html_script {
 	/** Type of script */
-	enum html_script_type { HTML_SCRIPT_INLINE,
-				HTML_SCRIPT_SYNC,
-				HTML_SCRIPT_DEFER,
-				HTML_SCRIPT_ASYNC } type;
+	enum html_script_type {
+		HTML_SCRIPT_INLINE,
+		HTML_SCRIPT_SYNC,
+		HTML_SCRIPT_DEFER,
+		HTML_SCRIPT_ASYNC
+	} type;
 	union {
 		struct hlcache_handle *handle;
 		struct dom_string *string;
-	} data;	/**< Script data */
+	} data; /**< Script data */
 	struct dom_string *mimetype;
 	struct dom_string *encoding;
 	bool already_started;
@@ -91,14 +93,14 @@ struct html_script {
  * An object (img, object, etc. tag) in a CONTENT_HTML document.
  */
 struct content_html_object {
-	struct content *parent;		/**< Parent document */
+	struct content *parent; /**< Parent document */
 	struct content_html_object *next; /**< Next in chain */
 
-	struct hlcache_handle *content;  /**< Content, or 0. */
-	struct box *box;  /**< Node in box tree containing it. */
+	struct hlcache_handle *content; /**< Content, or 0. */
+	struct box *box; /**< Node in box tree containing it. */
 	/** Bitmap of acceptable content types */
 	content_type permitted_types;
-	bool background;  /**< This object is a background image. */
+	bool background; /**< This object is a background image. */
 };
 
 
@@ -106,21 +108,21 @@ struct content_html_object {
  * Frame tree (frameset or frame tag)
  */
 struct content_html_frames {
-	int cols;	/** number of columns in frameset */
-	int rows;	/** number of rows in frameset */
+	int cols; /** number of columns in frameset */
+	int rows; /** number of rows in frameset */
 
-	struct frame_dimension width;	/** frame width */
-	struct frame_dimension height;	/** frame width */
-	int margin_width;	/** frame margin width */
-	int margin_height;	/** frame margin height */
+	struct frame_dimension width; /** frame width */
+	struct frame_dimension height; /** frame width */
+	int margin_width; /** frame margin width */
+	int margin_height; /** frame margin height */
 
-	char *name;	/** frame name (for targetting) */
-	struct nsurl *url;	/** frame url */
+	char *name; /** frame name (for targetting) */
+	struct nsurl *url; /** frame url */
 
-	bool no_resize;	/** frame is not resizable */
-	browser_scrolling scrolling;	/** scrolling characteristics */
-	bool border;	/** frame has a border */
-	colour border_colour;	/** frame border colour */
+	bool no_resize; /** frame is not resizable */
+	browser_scrolling scrolling; /** scrolling characteristics */
+	bool border; /** frame has a border */
+	colour border_colour; /** frame border colour */
 
 	struct content_html_frames *children; /** [cols * rows] children */
 };
@@ -131,25 +133,25 @@ struct content_html_frames {
 struct content_html_iframe {
 	struct box *box;
 
-	int margin_width;	/** frame margin width */
-	int margin_height;	/** frame margin height */
+	int margin_width; /** frame margin width */
+	int margin_height; /** frame margin height */
 
-	char *name;	/** frame name (for targetting) */
-	struct nsurl *url;	/** frame url */
+	char *name; /** frame name (for targetting) */
+	struct nsurl *url; /** frame url */
 
-	browser_scrolling scrolling;	/** scrolling characteristics */
-	bool border;	/** frame has a border */
-	colour border_colour;	/** frame border colour */
+	browser_scrolling scrolling; /** scrolling characteristics */
+	bool border; /** frame has a border */
+	colour border_colour; /** frame border colour */
 
 	struct content_html_iframe *next;
 };
 
 /* entries in stylesheet_content */
-#define STYLESHEET_BASE		0	/* base style sheet */
-#define STYLESHEET_QUIRKS	1	/* quirks mode stylesheet */
-#define STYLESHEET_ADBLOCK	2	/* adblocking stylesheet */
-#define STYLESHEET_USER		3	/* user stylesheet */
-#define STYLESHEET_START	4	/* start of document stylesheets */
+#define STYLESHEET_BASE 0 /* base style sheet */
+#define STYLESHEET_QUIRKS 1 /* quirks mode stylesheet */
+#define STYLESHEET_ADBLOCK 2 /* adblocking stylesheet */
+#define STYLESHEET_USER 3 /* user stylesheet */
+#define STYLESHEET_START 4 /* start of document stylesheets */
 
 /**
  * initialise content handler
@@ -192,7 +194,8 @@ const char *html_get_base_target(struct hlcache_handle *h);
  * used by core browser
  */
 void html_set_file_gadget_filename(struct hlcache_handle *hl,
-	struct form_control *gadget, const char *fn);
+				   struct form_control *gadget,
+				   const char *fn);
 
 /**
  * Retrieve stylesheets used by HTML document
@@ -201,8 +204,8 @@ void html_set_file_gadget_filename(struct hlcache_handle *hl,
  * \param n Pointer to location to receive number of sheets
  * \return Pointer to array of stylesheets
  */
-struct html_stylesheet *html_get_stylesheets(struct hlcache_handle *h,
-		unsigned int *n);
+struct html_stylesheet *
+html_get_stylesheets(struct hlcache_handle *h, unsigned int *n);
 
 /**
  * Retrieve objects used by HTML document
@@ -211,13 +214,15 @@ struct html_stylesheet *html_get_stylesheets(struct hlcache_handle *h,
  * \param n Pointer to location to receive number of objects
  * \return Pointer to array of objects
  */
-struct content_html_object *html_get_objects(struct hlcache_handle *h,
-		unsigned int *n);
+struct content_html_object *
+html_get_objects(struct hlcache_handle *h, unsigned int *n);
 
 /**
  * get the offset within the docuemnt of a fragment id
  */
-bool html_get_id_offset(struct hlcache_handle *h, lwc_string *frag_id,
-		int *x, int *y);
+bool html_get_id_offset(struct hlcache_handle *h,
+			lwc_string *frag_id,
+			int *x,
+			int *y);
 
 #endif

@@ -24,10 +24,12 @@
  * \param clen  Pointer to location to receive byte length of UTF-16 sequence
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error parserutils_charset_utf16_to_ucs4(const uint8_t *s, 
-		size_t len, uint32_t *ucs4, size_t *clen)
+parserutils_error parserutils_charset_utf16_to_ucs4(const uint8_t *s,
+						    size_t len,
+						    uint32_t *ucs4,
+						    size_t *clen)
 {
-	const uint16_t *ss = (const uint16_t *) (const void *) s;
+	const uint16_t *ss = (const uint16_t *)(const void *)s;
 
 	if (s == NULL || ucs4 == NULL || clen == NULL)
 		return PARSERUTILS_BADPARM;
@@ -45,8 +47,8 @@ parserutils_error parserutils_charset_utf16_to_ucs4(const uint8_t *s,
 
 		if (0xDC00 <= ss[1] && ss[1] <= 0xDFFF) {
 			/* We have a valid surrogate pair.  */
-			*ucs4 = (((ss[0] & 0x3FF) << 10) | (ss[1] & 0x3FF))
-				+ (1<<16);
+			*ucs4 = (((ss[0] & 0x3FF) << 10) | (ss[1] & 0x3FF)) +
+				(1 << 16);
 			*clen = 4;
 		} else {
 			return PARSERUTILS_INVALID;
@@ -67,16 +69,16 @@ parserutils_error parserutils_charset_utf16_to_ucs4(const uint8_t *s,
  * \param len   Pointer to location to receive length of multibyte sequence
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error parserutils_charset_utf16_from_ucs4(uint32_t ucs4, uint8_t *s,
-		size_t *len)
+parserutils_error
+parserutils_charset_utf16_from_ucs4(uint32_t ucs4, uint8_t *s, size_t *len)
 {
-	uint16_t *ss = (uint16_t *) (void *) s;
+	uint16_t *ss = (uint16_t *)(void *)s;
 	uint32_t l = 0;
 
 	if (s == NULL || len == NULL)
 		return PARSERUTILS_BADPARM;
 	else if (ucs4 < 0x10000) {
-		*ss = (uint16_t) ucs4;
+		*ss = (uint16_t)ucs4;
 		l = 2;
 	} else if (ucs4 < 0x110000) {
 		ss[0] = 0xD800 | (((ucs4 >> 16) & 0x1f) - 1) | (ucs4 >> 10);
@@ -99,11 +101,11 @@ parserutils_error parserutils_charset_utf16_from_ucs4(uint32_t ucs4, uint8_t *s,
  * \param len  Pointer to location to receive length of string
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error parserutils_charset_utf16_length(const uint8_t *s, size_t max,
-		size_t *len)
+parserutils_error
+parserutils_charset_utf16_length(const uint8_t *s, size_t max, size_t *len)
 {
-	const uint16_t *ss = (const uint16_t *) (const void *) s;
-	const uint16_t *end = (const uint16_t *) (const void *) (s + max);
+	const uint16_t *ss = (const uint16_t *)(const void *)s;
+	const uint16_t *end = (const uint16_t *)(const void *)(s + max);
 	int l = 0;
 
 	if (s == NULL || len == NULL)
@@ -130,10 +132,10 @@ parserutils_error parserutils_charset_utf16_length(const uint8_t *s, size_t max,
  * \param len  Pointer to location to receive length
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error parserutils_charset_utf16_char_byte_length(const uint8_t *s,
-		size_t *len)
+parserutils_error
+parserutils_charset_utf16_char_byte_length(const uint8_t *s, size_t *len)
 {
-	const uint16_t *ss = (const uint16_t *) (const void *) s;
+	const uint16_t *ss = (const uint16_t *)(const void *)s;
 
 	if (s == NULL || len == NULL)
 		return PARSERUTILS_BADPARM;
@@ -155,10 +157,11 @@ parserutils_error parserutils_charset_utf16_char_byte_length(const uint8_t *s,
  *                 previous legal character
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error parserutils_charset_utf16_prev(const uint8_t *s, uint32_t off,
-		uint32_t *prevoff)
+parserutils_error parserutils_charset_utf16_prev(const uint8_t *s,
+						 uint32_t off,
+						 uint32_t *prevoff)
 {
-	const uint16_t *ss = (const uint16_t *) (const void *) s;
+	const uint16_t *ss = (const uint16_t *)(const void *)s;
 
 	if (s == NULL || prevoff == NULL)
 		return PARSERUTILS_BADPARM;
@@ -183,10 +186,12 @@ parserutils_error parserutils_charset_utf16_prev(const uint8_t *s, uint32_t off,
  *                 next legal character
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error parserutils_charset_utf16_next(const uint8_t *s, uint32_t len,
-		uint32_t off, uint32_t *nextoff)
+parserutils_error parserutils_charset_utf16_next(const uint8_t *s,
+						 uint32_t len,
+						 uint32_t off,
+						 uint32_t *nextoff)
 {
-	const uint16_t *ss = (const uint16_t *) (const void *) s;
+	const uint16_t *ss = (const uint16_t *)(const void *)s;
 
 	if (s == NULL || off >= len || nextoff == NULL)
 		return PARSERUTILS_BADPARM;
@@ -212,9 +217,11 @@ parserutils_error parserutils_charset_utf16_next(const uint8_t *s, uint32_t len,
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
 parserutils_error parserutils_charset_utf16_next_paranoid(const uint8_t *s,
-		uint32_t len, uint32_t off, uint32_t *nextoff)
+							  uint32_t len,
+							  uint32_t off,
+							  uint32_t *nextoff)
 {
-	const uint16_t *ss = (const uint16_t *) (const void *) s;
+	const uint16_t *ss = (const uint16_t *)(const void *)s;
 
 	if (s == NULL || off >= len || nextoff == NULL)
 		return PARSERUTILS_BADPARM;
@@ -241,4 +248,3 @@ parserutils_error parserutils_charset_utf16_next_paranoid(const uint8_t *s,
 
 	return PARSERUTILS_OK;
 }
-

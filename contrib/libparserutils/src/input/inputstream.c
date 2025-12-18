@@ -20,25 +20,26 @@
  * Private input stream definition
  */
 typedef struct parserutils_inputstream_private {
-	parserutils_inputstream public;	/**< Public part. Must be first */
+	parserutils_inputstream public; /**< Public part. Must be first */
 
-	parserutils_buffer *raw;	/**< Buffer containing raw data */
+	parserutils_buffer *raw; /**< Buffer containing raw data */
 
-	bool done_first_chunk;		/**< Whether the first chunk has 
-					 * been processed */
+	bool done_first_chunk; /**< Whether the first chunk has
+				* been processed */
 
-	uint16_t mibenum;		/**< MIB enum for charset, or 0 */
-	uint32_t encsrc;		/**< Charset source */
+	uint16_t mibenum; /**< MIB enum for charset, or 0 */
+	uint32_t encsrc; /**< Charset source */
 
-	parserutils_filter *input;	/**< Charset conversion filter */
+	parserutils_filter *input; /**< Charset conversion filter */
 
 	parserutils_charset_detect_func csdetect; /**< Charset detection func.*/
 } parserutils_inputstream_private;
 
-static inline parserutils_error parserutils_inputstream_refill_buffer(
-		parserutils_inputstream_private *stream);
-static inline parserutils_error parserutils_inputstream_strip_bom(
-		uint16_t *mibenum, parserutils_buffer *buffer);
+static inline parserutils_error
+parserutils_inputstream_refill_buffer(parserutils_inputstream_private *stream);
+static inline parserutils_error
+parserutils_inputstream_strip_bom(uint16_t *mibenum,
+				  parserutils_buffer *buffer);
 
 /**
  * Create an input stream
@@ -52,13 +53,15 @@ static inline parserutils_error parserutils_inputstream_strip_bom(
  *         PARSERUTILS_NOMEM on memory exhaustion,
  *         PARSERUTILS_BADENCODING on unsupported encoding
  *
- * The value 0 is defined as being the lowest priority encoding source 
- * (i.e. the default fallback encoding). Beyond this, no further 
+ * The value 0 is defined as being the lowest priority encoding source
+ * (i.e. the default fallback encoding). Beyond this, no further
  * interpretation is made upon the encoding source.
  */
-parserutils_error parserutils_inputstream_create(const char *enc,
-		uint32_t encsrc, parserutils_charset_detect_func csdetect,
-		parserutils_inputstream **stream)
+parserutils_error
+parserutils_inputstream_create(const char *enc,
+			       uint32_t encsrc,
+			       parserutils_charset_detect_func csdetect,
+			       parserutils_inputstream **stream)
 {
 	parserutils_inputstream_private *s;
 	parserutils_error error;
@@ -98,8 +101,8 @@ parserutils_error parserutils_inputstream_create(const char *enc,
 	if (enc != NULL) {
 		parserutils_filter_optparams params;
 
-		s->mibenum = 
-			parserutils_charset_mibenum_from_name(enc, strlen(enc));
+		s->mibenum = parserutils_charset_mibenum_from_name(enc,
+								   strlen(enc));
 
 		if (s->mibenum == 0) {
 			parserutils__filter_destroy(s->input);
@@ -111,9 +114,8 @@ parserutils_error parserutils_inputstream_create(const char *enc,
 
 		params.encoding.name = enc;
 
-		error = parserutils__filter_setopt(s->input,
-				PARSERUTILS_FILTER_SET_ENCODING, 
-				&params);
+		error = parserutils__filter_setopt(
+			s->input, PARSERUTILS_FILTER_SET_ENCODING, &params);
 		if (error != PARSERUTILS_OK) {
 			parserutils__filter_destroy(s->input);
 			parserutils_buffer_destroy(s->public.utf8);
@@ -130,7 +132,7 @@ parserutils_error parserutils_inputstream_create(const char *enc,
 
 	s->csdetect = csdetect;
 
-	*stream = (parserutils_inputstream *) s;
+	*stream = (parserutils_inputstream *)s;
 
 	return PARSERUTILS_OK;
 }
@@ -141,11 +143,11 @@ parserutils_error parserutils_inputstream_create(const char *enc,
  * \param stream  Input stream to destroy
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error parserutils_inputstream_destroy(
-		parserutils_inputstream *stream)
+parserutils_error
+parserutils_inputstream_destroy(parserutils_inputstream *stream)
 {
-	parserutils_inputstream_private *s = 
-			(parserutils_inputstream_private *) stream;
+	parserutils_inputstream_private *s = (parserutils_inputstream_private *)
+		stream;
 
 	if (stream == NULL)
 		return PARSERUTILS_BADPARM;
@@ -166,12 +168,13 @@ parserutils_error parserutils_inputstream_destroy(
  * \param len     Length, in bytes, of data
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error parserutils_inputstream_append(
-		parserutils_inputstream *stream, 
-		const uint8_t *data, size_t len)
+parserutils_error
+parserutils_inputstream_append(parserutils_inputstream *stream,
+			       const uint8_t *data,
+			       size_t len)
 {
-	parserutils_inputstream_private *s = 
-			(parserutils_inputstream_private *) stream;
+	parserutils_inputstream_private *s = (parserutils_inputstream_private *)
+		stream;
 
 	if (stream == NULL)
 		return PARSERUTILS_BADPARM;
@@ -192,31 +195,32 @@ parserutils_error parserutils_inputstream_append(
  * \param len     Length, in bytes, of data
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error parserutils_inputstream_insert(
-		parserutils_inputstream *stream,
-		const uint8_t *data, size_t len)
+parserutils_error
+parserutils_inputstream_insert(parserutils_inputstream *stream,
+			       const uint8_t *data,
+			       size_t len)
 {
-	parserutils_inputstream_private *s = 
-			(parserutils_inputstream_private *) stream;
+	parserutils_inputstream_private *s = (parserutils_inputstream_private *)
+		stream;
 
 	if (stream == NULL || data == NULL)
 		return PARSERUTILS_BADPARM;
 
-	return parserutils_buffer_insert(s->public.utf8, s->public.cursor, 
-			data, len);
+	return parserutils_buffer_insert(
+		s->public.utf8, s->public.cursor, data, len);
 }
 
 #define IS_ASCII(x) (((x) & 0x80) == 0)
 
 /**
- * Look at the character in the stream that starts at 
+ * Look at the character in the stream that starts at
  * offset bytes from the cursor (slow version)
  *
  * \param stream  Stream to look in
  * \param offset  Byte offset of start of character
  * \param ptr     Pointer to location to receive pointer to character data
  * \param length  Pointer to location to receive character length (in bytes)
- * \return PARSERUTILS_OK on success, 
+ * \return PARSERUTILS_OK on success,
  *                    _NEEDDATA on reaching the end of available input,
  *                    _EOF on reaching the end of all input,
  *                    _BADENCODING if the input cannot be decoded,
@@ -224,17 +228,19 @@ parserutils_error parserutils_inputstream_insert(
  *                    _BADPARM if bad parameters are passed.
  *
  * Once the character pointed to by the result of this call has been advanced
- * past (i.e. parserutils_inputstream_advance has caused the stream cursor to 
- * pass over the character), then no guarantee is made as to the validity of 
- * the data pointed to. Thus, any attempt to dereference the pointer after 
+ * past (i.e. parserutils_inputstream_advance has caused the stream cursor to
+ * pass over the character), then no guarantee is made as to the validity of
+ * the data pointed to. Thus, any attempt to dereference the pointer after
  * advancing past the data it points to is a bug.
  */
-parserutils_error parserutils_inputstream_peek_slow(
-		parserutils_inputstream *stream, 
-		size_t offset, const uint8_t **ptr, size_t *length)
+parserutils_error
+parserutils_inputstream_peek_slow(parserutils_inputstream *stream,
+				  size_t offset,
+				  const uint8_t **ptr,
+				  size_t *length)
 {
-	parserutils_inputstream_private *s = 
-			(parserutils_inputstream_private *) stream;
+	parserutils_inputstream_private *s = (parserutils_inputstream_private *)
+		stream;
 	parserutils_error error = PARSERUTILS_OK;
 	size_t len;
 
@@ -262,8 +268,7 @@ parserutils_error parserutils_inputstream_peek_slow(
 		len = 1;
 	} else {
 		error = parserutils_charset_utf8_char_byte_length(
-			s->public.utf8->data + s->public.cursor + offset,
-			&len);
+			s->public.utf8->data + s->public.cursor + offset, &len);
 
 		if (error != PARSERUTILS_OK && error != PARSERUTILS_NEEDDATA)
 			return error;
@@ -289,11 +294,12 @@ parserutils_error parserutils_inputstream_peek_slow(
  * \param source  Pointer to location to receive charset source identifier
  * \return Pointer to charset name (constant; do not free)
  */
-const char *parserutils_inputstream_read_charset(
-		parserutils_inputstream *stream, uint32_t *source)
+const char *
+parserutils_inputstream_read_charset(parserutils_inputstream *stream,
+				     uint32_t *source)
 {
-	parserutils_inputstream_private *s = 
-			(parserutils_inputstream_private *) stream;
+	parserutils_inputstream_private *s = (parserutils_inputstream_private *)
+		stream;
 
 	if (stream == NULL || source == NULL)
 		return NULL;
@@ -318,12 +324,13 @@ const char *parserutils_inputstream_read_charset(
  *         PARSERUTILS_BADENCODING if the encoding is unsupported,
  *         PARSERUTILS_NOMEM on memory exhaustion.
  */
-parserutils_error parserutils_inputstream_change_charset(
-		parserutils_inputstream *stream, 
-		const char *enc, uint32_t source)
+parserutils_error
+parserutils_inputstream_change_charset(parserutils_inputstream *stream,
+				       const char *enc,
+				       uint32_t source)
 {
-	parserutils_inputstream_private *s =
-			(parserutils_inputstream_private *) stream;
+	parserutils_inputstream_private *s = (parserutils_inputstream_private *)
+		stream;
 	parserutils_filter_optparams params;
 	uint16_t temp;
 	parserutils_error error;
@@ -341,8 +348,8 @@ parserutils_error parserutils_inputstream_change_charset(
 	/* Ensure filter is using the correct encoding */
 	params.encoding.name = enc;
 	error = parserutils__filter_setopt(s->input,
-			PARSERUTILS_FILTER_SET_ENCODING, 
-			&params);
+					   PARSERUTILS_FILTER_SET_ENCODING,
+					   &params);
 	if (error != PARSERUTILS_OK)
 		return error;
 
@@ -362,8 +369,8 @@ parserutils_error parserutils_inputstream_change_charset(
  * \param stream  The inputstream to operate on
  * \return PARSERUTILS_OK on success
  */
-parserutils_error parserutils_inputstream_refill_buffer(
-		parserutils_inputstream_private *stream)
+parserutils_error
+parserutils_inputstream_refill_buffer(parserutils_inputstream_private *stream)
 {
 	const uint8_t *raw;
 	uint8_t *utf8;
@@ -375,21 +382,22 @@ parserutils_error parserutils_inputstream_refill_buffer(
 	if (stream->done_first_chunk == false) {
 		parserutils_filter_optparams params;
 
-		/* If there is a charset detection routine, give it an 
+		/* If there is a charset detection routine, give it an
 		 * opportunity to override any charset specified when the
 		 * inputstream was created */
 		if (stream->csdetect != NULL) {
-			error = stream->csdetect(stream->raw->data, 
-				stream->raw->length,
-				&stream->mibenum, &stream->encsrc);
+			error = stream->csdetect(stream->raw->data,
+						 stream->raw->length,
+						 &stream->mibenum,
+						 &stream->encsrc);
 			if (error != PARSERUTILS_OK) {
 				if (error != PARSERUTILS_NEEDDATA ||
-						stream->public.had_eof == false)
+				    stream->public.had_eof == false)
 					return error;
 
-				/* We don't have enough data to detect the 
-				 * input encoding, but we're not going to get 
-				 * any more as we've been notified of EOF. 
+				/* We don't have enough data to detect the
+				 * input encoding, but we're not going to get
+				 * any more as we've been notified of EOF.
 				 * Therefore, leave the encoding alone
 				 * so that any charset specified when the
 				 * inputstream was created will be preserved.
@@ -398,35 +406,35 @@ parserutils_error parserutils_inputstream_refill_buffer(
 			}
 		}
 
-		/* Default to UTF-8 if there is still no encoding information 
+		/* Default to UTF-8 if there is still no encoding information
 		 * We'll do this if there was no encoding specified up-front
 		 * and:
 		 *    1) there was no charset detection routine
-		 * or 2) there was insufficient data for the charset 
+		 * or 2) there was insufficient data for the charset
 		 *       detection routine to detect an encoding
 		 */
 		if (stream->mibenum == 0) {
-			stream->mibenum = 
-				parserutils_charset_mibenum_from_name("UTF-8", 
-					SLEN("UTF-8"));
+			stream->mibenum = parserutils_charset_mibenum_from_name(
+				"UTF-8", SLEN("UTF-8"));
 			stream->encsrc = 0;
 		}
 
 		assert(stream->mibenum != 0);
 
 		/* Strip any BOM, and update encoding as appropriate */
-		error = parserutils_inputstream_strip_bom(&stream->mibenum, 
-				stream->raw);
+		error = parserutils_inputstream_strip_bom(&stream->mibenum,
+							  stream->raw);
 		if (error != PARSERUTILS_OK)
 			return error;
 
 		/* Ensure filter is using the correct encoding */
-		params.encoding.name = 
-			parserutils_charset_mibenum_to_name(stream->mibenum);
+		params.encoding.name = parserutils_charset_mibenum_to_name(
+			stream->mibenum);
 
-		error = parserutils__filter_setopt(stream->input,
-				PARSERUTILS_FILTER_SET_ENCODING, 
-				&params);
+		error = parserutils__filter_setopt(
+			stream->input,
+			PARSERUTILS_FILTER_SET_ENCODING,
+			&params);
 		if (error != PARSERUTILS_OK)
 			return error;
 
@@ -440,7 +448,7 @@ parserutils_error parserutils_inputstream_refill_buffer(
 		utf8_space = stream->public.utf8->allocated;
 	} else {
 		/* Cursor's not at the end, so shift data after cursor to the
-		 * bottom of the buffer. If the buffer's still over half full, 
+		 * bottom of the buffer. If the buffer's still over half full,
 		 * extend it. */
 		memmove(stream->public.utf8->data,
 			stream->public.utf8->data + stream->public.cursor,
@@ -448,38 +456,39 @@ parserutils_error parserutils_inputstream_refill_buffer(
 
 		stream->public.utf8->length -= stream->public.cursor;
 
-		if (stream->public.utf8->length > 
-				stream->public.utf8->allocated / 2) {
+		if (stream->public.utf8->length >
+		    stream->public.utf8->allocated / 2) {
 			error = parserutils_buffer_grow(stream->public.utf8);
 			if (error != PARSERUTILS_OK)
 				return error;
 		}
 
 		utf8 = stream->public.utf8->data + stream->public.utf8->length;
-		utf8_space = stream->public.utf8->allocated - 
-				stream->public.utf8->length;
+		utf8_space = stream->public.utf8->allocated -
+			     stream->public.utf8->length;
 	}
 
 	raw = stream->raw->data;
 	raw_length = stream->raw->length;
 
 	/* Try to fill utf8 buffer from the raw data */
-	error = parserutils__filter_process_chunk(stream->input, 
-			&raw, &raw_length, &utf8, &utf8_space);
+	error = parserutils__filter_process_chunk(
+		stream->input, &raw, &raw_length, &utf8, &utf8_space);
 	/* _NOMEM implies that there's more input to read than available space
 	 * in the utf8 buffer. That's fine, so we'll ignore that error. */
 	if (error != PARSERUTILS_OK && error != PARSERUTILS_NOMEM)
 		return error;
 
 	/* Remove the raw data we've processed from the raw buffer */
-	error = parserutils_buffer_discard(stream->raw, 0, 
-			stream->raw->length - raw_length);
+	error = parserutils_buffer_discard(stream->raw,
+					   0,
+					   stream->raw->length - raw_length);
 	if (error != PARSERUTILS_OK)
 		return error;
 
 	/* Fix up the utf8 buffer information */
-	stream->public.utf8->length = 
-			stream->public.utf8->allocated - utf8_space;
+	stream->public.utf8->length = stream->public.utf8->allocated -
+				      utf8_space;
 
 	/* Finally, fix up the cursor */
 	stream->public.cursor = 0;
@@ -493,8 +502,8 @@ parserutils_error parserutils_inputstream_refill_buffer(
  * \param mibenum  Pointer to the character set of the buffer, updated on exit
  * \param buffer   The buffer to process
  */
-parserutils_error parserutils_inputstream_strip_bom(uint16_t *mibenum, 
-		parserutils_buffer *buffer)
+parserutils_error
+parserutils_inputstream_strip_bom(uint16_t *mibenum, parserutils_buffer *buffer)
 {
 	static uint16_t utf8;
 	static uint16_t utf16;
@@ -505,98 +514,95 @@ parserutils_error parserutils_inputstream_strip_bom(uint16_t *mibenum,
 	static uint16_t utf32le;
 
 	if (utf8 == 0) {
-		utf8 = parserutils_charset_mibenum_from_name("UTF-8", 
-				SLEN("UTF-8"));
-		utf16 = parserutils_charset_mibenum_from_name("UTF-16", 
-				SLEN("UTF-16"));
-		utf16be = parserutils_charset_mibenum_from_name("UTF-16BE",
-				SLEN("UTF-16BE"));
-		utf16le = parserutils_charset_mibenum_from_name("UTF-16LE",
-				SLEN("UTF-16LE"));
-		utf32 = parserutils_charset_mibenum_from_name("UTF-32", 
-				SLEN("UTF-32"));
-		utf32be = parserutils_charset_mibenum_from_name("UTF-32BE",
-				SLEN("UTF-32BE"));
-		utf32le = parserutils_charset_mibenum_from_name("UTF-32LE",
-				SLEN("UTF-32LE"));
+		utf8 = parserutils_charset_mibenum_from_name("UTF-8",
+							     SLEN("UTF-8"));
+		utf16 = parserutils_charset_mibenum_from_name("UTF-16",
+							      SLEN("UTF-16"));
+		utf16be = parserutils_charset_mibenum_from_name(
+			"UTF-16BE", SLEN("UTF-16BE"));
+		utf16le = parserutils_charset_mibenum_from_name(
+			"UTF-16LE", SLEN("UTF-16LE"));
+		utf32 = parserutils_charset_mibenum_from_name("UTF-32",
+							      SLEN("UTF-32"));
+		utf32be = parserutils_charset_mibenum_from_name(
+			"UTF-32BE", SLEN("UTF-32BE"));
+		utf32le = parserutils_charset_mibenum_from_name(
+			"UTF-32LE", SLEN("UTF-32LE"));
 	}
 
 #define UTF32_BOM_LEN (4)
 #define UTF16_BOM_LEN (2)
-#define UTF8_BOM_LEN  (3)
+#define UTF8_BOM_LEN (3)
 
 	if (*mibenum == utf8) {
-		if (buffer->length >= UTF8_BOM_LEN && 
-				buffer->data[0] == 0xEF &&
-				buffer->data[1] == 0xBB && 
-				buffer->data[2] == 0xBF) {
-			return parserutils_buffer_discard(
-					buffer, 0, UTF8_BOM_LEN);
+		if (buffer->length >= UTF8_BOM_LEN && buffer->data[0] == 0xEF &&
+		    buffer->data[1] == 0xBB && buffer->data[2] == 0xBF) {
+			return parserutils_buffer_discard(buffer,
+							  0,
+							  UTF8_BOM_LEN);
 		}
 	} else if (*mibenum == utf16be) {
 		if (buffer->length >= UTF16_BOM_LEN &&
-				buffer->data[0] == 0xFE &&
-				buffer->data[1] == 0xFF) {
-			return parserutils_buffer_discard(
-					buffer, 0, UTF16_BOM_LEN);
+		    buffer->data[0] == 0xFE && buffer->data[1] == 0xFF) {
+			return parserutils_buffer_discard(buffer,
+							  0,
+							  UTF16_BOM_LEN);
 		}
 	} else if (*mibenum == utf16le) {
 		if (buffer->length >= UTF16_BOM_LEN &&
-				buffer->data[0] == 0xFF &&
-				buffer->data[1] == 0xFE) {
-			return parserutils_buffer_discard(
-					buffer, 0, UTF16_BOM_LEN);
+		    buffer->data[0] == 0xFF && buffer->data[1] == 0xFE) {
+			return parserutils_buffer_discard(buffer,
+							  0,
+							  UTF16_BOM_LEN);
 		}
 	} else if (*mibenum == utf16) {
 		*mibenum = utf16be;
 
 		if (buffer->length >= UTF16_BOM_LEN) {
-			if (buffer->data[0] == 0xFE && 
-					buffer->data[1] == 0xFF) {
+			if (buffer->data[0] == 0xFE &&
+			    buffer->data[1] == 0xFF) {
 				return parserutils_buffer_discard(
-						buffer, 0, UTF16_BOM_LEN);
-			} else if (buffer->data[0] == 0xFF && 
-					buffer->data[1] == 0xFE) {
+					buffer, 0, UTF16_BOM_LEN);
+			} else if (buffer->data[0] == 0xFF &&
+				   buffer->data[1] == 0xFE) {
 				*mibenum = utf16le;
 				return parserutils_buffer_discard(
-						buffer, 0, UTF16_BOM_LEN);
+					buffer, 0, UTF16_BOM_LEN);
 			}
 		}
 	} else if (*mibenum == utf32be) {
 		if (buffer->length >= UTF32_BOM_LEN &&
-				buffer->data[0] == 0x00 &&
-				buffer->data[1] == 0x00 &&
-				buffer->data[2] == 0xFE &&
-				buffer->data[3] == 0xFF) {
-			return parserutils_buffer_discard(
-					buffer, 0, UTF32_BOM_LEN);
+		    buffer->data[0] == 0x00 && buffer->data[1] == 0x00 &&
+		    buffer->data[2] == 0xFE && buffer->data[3] == 0xFF) {
+			return parserutils_buffer_discard(buffer,
+							  0,
+							  UTF32_BOM_LEN);
 		}
 	} else if (*mibenum == utf32le) {
 		if (buffer->length >= UTF32_BOM_LEN &&
-				buffer->data[0] == 0xFF &&
-				buffer->data[1] == 0xFE &&
-				buffer->data[2] == 0x00 &&
-				buffer->data[3] == 0x00) {
-			return parserutils_buffer_discard(
-					buffer, 0, UTF32_BOM_LEN);
+		    buffer->data[0] == 0xFF && buffer->data[1] == 0xFE &&
+		    buffer->data[2] == 0x00 && buffer->data[3] == 0x00) {
+			return parserutils_buffer_discard(buffer,
+							  0,
+							  UTF32_BOM_LEN);
 		}
 	} else if (*mibenum == utf32) {
 		*mibenum = utf32be;
 
 		if (buffer->length >= UTF32_BOM_LEN) {
-			if (buffer->data[0] == 0x00 && 
-					buffer->data[1] == 0x00 &&
-					buffer->data[2] == 0xFE &&
-					buffer->data[3] == 0xFF) {
+			if (buffer->data[0] == 0x00 &&
+			    buffer->data[1] == 0x00 &&
+			    buffer->data[2] == 0xFE &&
+			    buffer->data[3] == 0xFF) {
 				return parserutils_buffer_discard(
-						buffer, 0, UTF32_BOM_LEN);
-			} else if (buffer->data[0] == 0xFF && 
-					buffer->data[1] == 0xFE &&
-					buffer->data[2] == 0x00 &&
-					buffer->data[3] == 0x00) {
+					buffer, 0, UTF32_BOM_LEN);
+			} else if (buffer->data[0] == 0xFF &&
+				   buffer->data[1] == 0xFE &&
+				   buffer->data[2] == 0x00 &&
+				   buffer->data[3] == 0x00) {
 				*mibenum = utf32le;
 				return parserutils_buffer_discard(
-						buffer, 0, UTF32_BOM_LEN);
+					buffer, 0, UTF32_BOM_LEN);
 			}
 		}
 	}
@@ -607,4 +613,3 @@ parserutils_error parserutils_inputstream_strip_bom(uint16_t *mibenum,
 
 	return PARSERUTILS_OK;
 }
-

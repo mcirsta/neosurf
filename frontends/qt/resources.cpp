@@ -23,7 +23,6 @@ extern "C" {
 
 #include "utils/errors.h"
 #include "utils/filepath.h"
-
 }
 
 #include "qt/resources.h"
@@ -85,7 +84,7 @@ static const char *get_language(void)
  * If the environment variables have more than LANGV_SIZE languages or
  * LANGS_SIZE bytes of data the results list will be curtailed.
  */
-static const char * const *get_languagev(void)
+static const char *const *get_languagev(void)
 {
 	static const char *langv[LANGV_SIZE];
 	int langidx = 0; /* index of next entry in vector */
@@ -108,9 +107,9 @@ static const char * const *get_languagev(void)
 		lang_len = strlen(lange) + 1;
 		if (lang_len < (LANGS_SIZE - 2)) {
 			memcpy(curp, lange, lang_len);
-			while ((curp[0] != 0) &&
-			       (langidx < (LANGV_SIZE - 2))) {
-				/* avoid using strchrnul as it is not portable */
+			while ((curp[0] != 0) && (langidx < (LANGV_SIZE - 2))) {
+				/* avoid using strchrnul as it is not portable
+				 */
 				cln = strchr(curp, ':');
 				if (cln == NULL) {
 					langv[langidx++] = curp;
@@ -118,7 +117,8 @@ static const char * const *get_languagev(void)
 					break;
 				} else {
 					if ((cln - curp) > 1) {
-						/* only place non empty entries in vector */
+						/* only place non empty entries
+						 * in vector */
 						langv[langidx++] = curp;
 					}
 					*cln++ = 0; /* null terminate */
@@ -142,7 +142,7 @@ static const char * const *get_languagev(void)
 /* exported interface documented in qt/resources.h */
 nserror nsqt_init_resource_path(const char *resource_path)
 {
-	const char * const *langv;
+	const char *const *langv;
 	char **pathv; /* resource path string vector */
 
 	pathv = filepath_path_to_strvec(resource_path);

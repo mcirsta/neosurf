@@ -17,7 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#define __STDBOOL_H__	1
+#define __STDBOOL_H__ 1
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,16 +35,19 @@ extern "C" {
 
 BWindow *wndPreferences;
 
-void nsbeos_options_init(void) {
+void nsbeos_options_init(void)
+{
 	/* set the widgets to reflect the current options */
 	nsbeos_options_load();
 }
 
-void nsbeos_options_load(void) {
+void nsbeos_options_load(void)
+{
 #warning WRITEME
 }
 
 
-void nsbeos_options_save(void) {
+void nsbeos_options_save(void)
+{
 #warning WRITEME
 }
