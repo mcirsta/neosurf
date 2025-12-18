@@ -1408,6 +1408,10 @@ static void html_destroy(struct content *c)
 		html->jsthread = NULL;
 	}
 
+	/* Free layout FIRST - while DOM is still valid - so box destructor
+	 * can properly unref DOM nodes */
+	html_free_layout(html);
+
 	if (html->parser != NULL) {
 		NSLOG(neosurf,
 		      DEBUG,
@@ -1422,9 +1426,6 @@ static void html_destroy(struct content *c)
 		      "html_destroy: parser was already NULL for content %p",
 		      c);
 	}
-
-	/* Free layout before destroying document to avoid UAF */
-	html_free_layout(html);
 
 	/* Unref title before document - title is part of document tree
 	 * and will be destroyed when document is destroyed */

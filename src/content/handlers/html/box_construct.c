@@ -1394,7 +1394,7 @@ static void convert_xml_to_box(void *p)
 			next = next_node(next, ctx->content, true);
 		}
 
-		dom_node_unref(ctx->n);
+		// dom_node_unref(ctx->n);
 		ctx->n = next;
 
 		if (next == NULL) {

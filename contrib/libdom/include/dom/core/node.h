@@ -209,20 +209,25 @@ static inline dom_exception dom_node_try_destroy(dom_node *node)
 }
 #define dom_node_try_destroy(n) dom_node_try_destroy((dom_node *)(n))
 
+/*
 static inline void dom_node_unref(dom_node *node)
 {
 	if (node != NULL) {
 		if (node->refcnt == 0) {
 			fprintf(stderr,
-				"dom_node_unref: refcount already 0 for node %p\n",
-				(void *)node);
-			return;
+				"dom_node_unref: refcount already 0 for node
+%p\n", (void *)node); return;
 		}
 		if (--node->refcnt == 0)
 			dom_node_try_destroy(node);
 	}
 }
 #define dom_node_unref(n) dom_node_unref((dom_node *)(n))
+*/
+
+void _dom_node_unref_debug(dom_node *node, const char *file, int line);
+#define dom_node_unref(n)                                                      \
+	_dom_node_unref_debug((dom_node *)(n), __FILE__, __LINE__)
 
 /* Contains is non-virtual since it doesn't need to be */
 

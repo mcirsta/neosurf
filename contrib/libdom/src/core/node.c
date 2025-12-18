@@ -123,6 +123,85 @@ void _dom_node_destroy(struct dom_node_internal *node)
 	free(node);
 }
 
+void _dom_node_unref_debug(dom_node *node, const char *file, int line)
+{
+	if (node != NULL) {
+		if (node->refcnt == 0) {
+			const char *type_name = "UNKNOWN";
+			dom_string *name = NULL;
+			const char *node_name_str = NULL;
+			dom_node_type type = DOM_ELEMENT_NODE; // Default
+
+			// Try to get type
+			_dom_node_get_node_type((dom_node_internal *)node,
+						&type);
+			switch (type) {
+			case DOM_ELEMENT_NODE:
+				type_name = "ELEMENT";
+				break;
+			case DOM_ATTRIBUTE_NODE:
+				type_name = "ATTRIBUTE";
+				break;
+			case DOM_TEXT_NODE:
+				type_name = "TEXT";
+				break;
+			case DOM_CDATA_SECTION_NODE:
+				type_name = "CDATA";
+				break;
+			case DOM_ENTITY_REFERENCE_NODE:
+				type_name = "ENTITY_REF";
+				break;
+			case DOM_ENTITY_NODE:
+				type_name = "ENTITY";
+				break;
+			case DOM_PROCESSING_INSTRUCTION_NODE:
+				type_name = "PI";
+				break;
+			case DOM_COMMENT_NODE:
+				type_name = "COMMENT";
+				break;
+			case DOM_DOCUMENT_NODE:
+				type_name = "DOCUMENT";
+				break;
+			case DOM_DOCUMENT_TYPE_NODE:
+				type_name = "DOCTYPE";
+				break;
+			case DOM_DOCUMENT_FRAGMENT_NODE:
+				type_name = "FRAGMENT";
+				break;
+			case DOM_NOTATION_NODE:
+				type_name = "NOTATION";
+				break;
+			default:
+				type_name = "UNKNOWN";
+				break;
+			}
+
+			// Try to get name
+			_dom_node_get_node_name((dom_node_internal *)node,
+						&name);
+			if (name) {
+				node_name_str = dom_string_data(name);
+			}
+
+			fprintf(stderr,
+				"dom_node_unref: double-unref at %s:%d for node %p (Type: %s, Name: %s)\n",
+				file,
+				line,
+				(void *)node,
+				type_name,
+				node_name_str ? node_name_str : "(null)");
+
+			if (name) {
+				dom_string_unref(name);
+			}
+			return;
+		}
+		if (--node->refcnt == 0)
+			dom_node_try_destroy(node);
+	}
+}
+
 /**
  * Initialise a DOM node
  *
