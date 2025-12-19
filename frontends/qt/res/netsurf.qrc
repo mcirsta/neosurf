@@ -33,6 +33,8 @@
 	<file alias="credits.html">../../../src/resources/en/credits.html</file>
 	<file alias="licence.html">../../../src/resources/en/licence.html</file>
 	<file alias="welcome.html">../../../src/resources/en/welcome.html</file>
+	<file alias="license.html">../../../src/resources/license.html</file>
+	<file alias="favicon.ico">../../../src/resources/favicon.ico</file>
     </qresource>
     <qresource prefix="/" lang="nl">
 	<file alias="credits.html">../../../src/resources/nl/credits.html</file>
