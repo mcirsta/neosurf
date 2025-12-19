@@ -71,3 +71,6 @@ add_custom_target(quickjs_bindings
 
 # Include directories for generated files
 include_directories(${QUICKJS_GEN_DIR})
+
+# Include QuickJS-ng headers (quickjs.h)
+include_directories(${CMAKE_SOURCE_DIR}/contrib/quickjs-ng)
