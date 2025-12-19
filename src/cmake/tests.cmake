@@ -178,6 +178,9 @@ include(CTest)
     ${CMAKE_SOURCE_DIR}/src/content/handlers/javascript/quickjs/navigator.c
     ${CMAKE_SOURCE_DIR}/src/content/handlers/javascript/quickjs/location.c
     ${CMAKE_SOURCE_DIR}/src/content/handlers/javascript/quickjs/document.c
+    ${CMAKE_SOURCE_DIR}/src/content/handlers/javascript/quickjs/storage.c
+    ${CMAKE_SOURCE_DIR}/src/content/handlers/javascript/quickjs/event_target.c
+    ${CMAKE_SOURCE_DIR}/src/content/handlers/javascript/quickjs/xhr.c
     ${CMAKE_BINARY_DIR}/quickjs/console.c
     ${CMAKE_BINARY_DIR}/quickjs/window.c
 

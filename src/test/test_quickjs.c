@@ -723,6 +723,160 @@ START_TEST(test_quickjs_document)
 }
 END_TEST
 
+/**
+ * Test Storage (localStorage, sessionStorage).
+ */
+START_TEST(test_quickjs_storage)
+{
+	jsheap *heap = NULL;
+	jsthread *thread = NULL;
+	nserror err;
+	bool result;
+
+	js_initialise();
+
+	err = js_newheap(5, &heap);
+	ck_assert_int_eq(err, NSERROR_OK);
+
+	err = js_newthread(heap, NULL, NULL, &thread);
+	ck_assert_int_eq(err, NSERROR_OK);
+
+	/* Test localStorage exists */
+	const char *code1 =
+		"typeof localStorage === 'object' && typeof localStorage.getItem === 'function'";
+	result = js_exec(thread,
+			 (const uint8_t *)code1,
+			 strlen(code1),
+			 "test_localStorage");
+	ck_assert(result == true);
+
+	/* Test sessionStorage exists */
+	const char *code2 =
+		"typeof sessionStorage === 'object' && typeof sessionStorage.setItem === 'function'";
+	result = js_exec(thread,
+			 (const uint8_t *)code2,
+			 strlen(code2),
+			 "test_sessionStorage");
+	ck_assert(result == true);
+
+	/* Test storage.length */
+	const char *code3 = "localStorage.length === 0";
+	result = js_exec(thread,
+			 (const uint8_t *)code3,
+			 strlen(code3),
+			 "test_storage_length");
+	ck_assert(result == true);
+
+	js_closethread(thread);
+	js_destroythread(thread);
+	js_destroyheap(heap);
+	js_finalise();
+}
+END_TEST
+
+/**
+ * Test EventTarget (addEventListener, removeEventListener).
+ */
+START_TEST(test_quickjs_event_target)
+{
+	jsheap *heap = NULL;
+	jsthread *thread = NULL;
+	nserror err;
+	bool result;
+
+	js_initialise();
+
+	err = js_newheap(5, &heap);
+	ck_assert_int_eq(err, NSERROR_OK);
+
+	err = js_newthread(heap, NULL, NULL, &thread);
+	ck_assert_int_eq(err, NSERROR_OK);
+
+	/* Test addEventListener exists on window */
+	const char *code1 = "typeof window.addEventListener === 'function'";
+	result = js_exec(thread,
+			 (const uint8_t *)code1,
+			 strlen(code1),
+			 "test_addEventListener");
+	ck_assert(result == true);
+
+	/* Test removeEventListener exists */
+	const char *code2 = "typeof removeEventListener === 'function'";
+	result = js_exec(thread,
+			 (const uint8_t *)code2,
+			 strlen(code2),
+			 "test_removeEventListener");
+	ck_assert(result == true);
+
+	/* Test dispatchEvent exists */
+	const char *code3 = "typeof dispatchEvent === 'function'";
+	result = js_exec(thread,
+			 (const uint8_t *)code3,
+			 strlen(code3),
+			 "test_dispatchEvent");
+	ck_assert(result == true);
+
+	js_closethread(thread);
+	js_destroythread(thread);
+	js_destroyheap(heap);
+	js_finalise();
+}
+END_TEST
+
+/**
+ * Test XMLHttpRequest.
+ */
+START_TEST(test_quickjs_xhr)
+{
+	jsheap *heap = NULL;
+	jsthread *thread = NULL;
+	nserror err;
+	bool result;
+
+	js_initialise();
+
+	err = js_newheap(5, &heap);
+	ck_assert_int_eq(err, NSERROR_OK);
+
+	err = js_newthread(heap, NULL, NULL, &thread);
+	ck_assert_int_eq(err, NSERROR_OK);
+
+	/* Test XMLHttpRequest constructor exists */
+	const char *code1 = "typeof XMLHttpRequest === 'function'";
+	result = js_exec(
+		thread, (const uint8_t *)code1, strlen(code1), "test_xhr_ctor");
+	ck_assert(result == true);
+
+	/* Test creating XHR instance - just check it's an object */
+	const char *code2 = "typeof (new XMLHttpRequest()) === 'object'";
+	result = js_exec(thread,
+			 (const uint8_t *)code2,
+			 strlen(code2),
+			 "test_xhr_instance");
+	ck_assert(result == true);
+
+	/* Test open method */
+	const char *code3 =
+		"var xhr = new XMLHttpRequest(); xhr.open('GET', '/test'); xhr.readyState === 1";
+	result = js_exec(
+		thread, (const uint8_t *)code3, strlen(code3), "test_xhr_open");
+	ck_assert(result == true);
+
+	/* Test DONE constant */
+	const char *code4 = "XMLHttpRequest.DONE === 4";
+	result = js_exec(thread,
+			 (const uint8_t *)code4,
+			 strlen(code4),
+			 "test_xhr_const");
+	ck_assert(result == true);
+
+	js_closethread(thread);
+	js_destroythread(thread);
+	js_destroyheap(heap);
+	js_finalise();
+}
+END_TEST
+
 Suite *quickjs_suite(void)
 {
 
@@ -769,6 +923,9 @@ Suite *quickjs_suite(void)
 	tcase_add_test(tc_window, test_quickjs_navigator);
 	tcase_add_test(tc_window, test_quickjs_location);
 	tcase_add_test(tc_window, test_quickjs_document);
+	tcase_add_test(tc_window, test_quickjs_storage);
+	tcase_add_test(tc_window, test_quickjs_event_target);
+	tcase_add_test(tc_window, test_quickjs_xhr);
 	suite_add_tcase(s, tc_window);
 
 	return s;
