@@ -65,7 +65,9 @@ if(LIBSSL_VERSION_MAJOR EQUAL 1)
 message(FATAL_ERROR "NeoSurf does not support OpenSSL 1.x.x")
 endif()
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/duktape_bindings.cmake)
+# Duktape bindings commented out - using QuickJS-ng instead
+# Files kept for reference on implementing new JS bindings
+# include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/duktape_bindings.cmake)
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/quickjs_bindings.cmake)
 
  
@@ -148,8 +150,17 @@ add_library(neosurf ${NEOSURF_LIB_TYPE}
 	${WEBP_SRC}
 	content/handlers/javascript/fetcher.c
 	content/handlers/javascript/content.c
-	content/handlers/javascript/duktape/dukky.c
-	content/handlers/javascript/duktape/duktape.c
+	# Duktape sources replaced with QuickJS-ng - files kept for reference
+	# content/handlers/javascript/duktape/dukky.c
+	# content/handlers/javascript/duktape/duktape.c
+	content/handlers/javascript/quickjs/qjs.c
+	content/handlers/javascript/quickjs/timers.c
+	content/handlers/javascript/quickjs/navigator.c
+	content/handlers/javascript/quickjs/location.c
+	content/handlers/javascript/quickjs/document.c
+	content/handlers/javascript/quickjs/storage.c
+	content/handlers/javascript/quickjs/event_target.c
+	content/handlers/javascript/quickjs/xhr.c
 	content/handlers/text/textplain.c
 	desktop/cookie_manager.c
 	desktop/knockout.c
@@ -209,10 +220,15 @@ add_library(neosurf ${NEOSURF_LIB_TYPE}
 	utils/http/strict-transport-security.c
 	utils/nsurl/nsurl.c
 	utils/nsurl/parse.c
-	${CMAKE_BINARY_DIR}/duktape/binding.c
-	${DUKTAPE_GEN_SOURCES}
+	# Duktape generated bindings replaced with QuickJS-ng - files kept for reference
+	# ${CMAKE_BINARY_DIR}/duktape/binding.c
+	# ${DUKTAPE_GEN_SOURCES}
+	${CMAKE_BINARY_DIR}/quickjs/console.c
+	${CMAKE_BINARY_DIR}/quickjs/window.c
 )
-add_dependencies(neosurf duktape_bindings duktape_js_inc)
+# Duktape dependencies replaced with QuickJS-ng
+# add_dependencies(neosurf duktape_bindings duktape_js_inc)
+add_dependencies(neosurf quickjs_bindings)
 set_target_properties(neosurf PROPERTIES SOVERSION ${NEOSURF_ABI})
 
 if(NEOSURF_ENABLE_GPROF)
@@ -242,6 +258,10 @@ endif()
 if(WIN32)
 	list(APPEND NEOSURF_COMMON_LIBS ws2_32)
 endif()
+
+# Add QuickJS-ng library
+list(APPEND NEOSURF_COMMON_LIBS qjs)
+
 target_link_libraries(neosurf ${NEOSURF_COMMON_LIBS})
 
 target_include_directories(neosurf PRIVATE ${CMAKE_SOURCE_DIR}/contrib ${CMAKE_BINARY_DIR})
