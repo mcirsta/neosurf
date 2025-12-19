@@ -39,6 +39,9 @@
 #include "content/handlers/javascript/quickjs/navigator.h"
 #include "content/handlers/javascript/quickjs/location.h"
 #include "content/handlers/javascript/quickjs/document.h"
+#include "content/handlers/javascript/quickjs/storage.h"
+#include "content/handlers/javascript/quickjs/event_target.h"
+#include "content/handlers/javascript/quickjs/xhr.h"
 
 /**
  * JavaScript heap structure.
@@ -188,6 +191,25 @@ js_newthread(jsheap *heap, void *win_priv, void *doc_priv, jsthread **thread)
 	/* Initialize Document */
 	if (qjs_init_document(t->ctx) < 0) {
 		NSLOG(neosurf, ERROR, "Failed to initialize QuickJS document");
+	}
+
+	/* Initialize Storage (localStorage, sessionStorage) */
+	if (qjs_init_storage(t->ctx) < 0) {
+		NSLOG(neosurf, ERROR, "Failed to initialize QuickJS storage");
+	}
+
+	/* Initialize EventTarget (addEventListener, etc.) */
+	if (qjs_init_event_target(t->ctx) < 0) {
+		NSLOG(neosurf,
+		      ERROR,
+		      "Failed to initialize QuickJS event target");
+	}
+
+	/* Initialize XMLHttpRequest */
+	if (qjs_init_xhr(t->ctx) < 0) {
+		NSLOG(neosurf,
+		      ERROR,
+		      "Failed to initialize QuickJS XMLHttpRequest");
 	}
 
 	NSLOG(neosurf, DEBUG, "Created QuickJS thread %p in heap %p", t, heap);
