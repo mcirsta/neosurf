@@ -57,7 +57,27 @@ struct loaded_font {
 
 static struct loaded_font *loaded_fonts = NULL;
 
+/** Count of pending font downloads */
+static int pending_font_count = 0;
+
+/** Callback to invoke when all fonts finish downloading */
+static html_font_face_done_cb font_done_callback = NULL;
+
 /**
+ * Check if all fonts have finished and invoke callback if set.
+ */
+static void check_fonts_done(void)
+{
+	if (pending_font_count == 0 && font_done_callback != NULL) {
+		NSLOG(netsurf,
+		      INFO,
+		      "All font downloads complete, invoking callback");
+		font_done_callback();
+	}
+}
+
+/**
+
  * Mark a font family as loaded
  */
 static void mark_font_loaded(const char *family_name)
@@ -132,6 +152,10 @@ static nserror font_fetch_callback(llcache_handle *handle,
 		dl->family_name = NULL;
 		dl->handle = NULL;
 		dl->in_use = false;
+
+		/* Decrement pending count and check if all done */
+		pending_font_count--;
+		check_fonts_done();
 		break;
 	}
 
@@ -146,6 +170,10 @@ static nserror font_fetch_callback(llcache_handle *handle,
 		dl->family_name = NULL;
 		dl->handle = NULL;
 		dl->in_use = false;
+
+		/* Decrement pending count and check if all done */
+		pending_font_count--;
+		check_fonts_done();
 		break;
 
 	default:
@@ -203,6 +231,9 @@ fetch_font_url(const char *family_name, nsurl *font_url, nsurl *base_url)
 		dl->in_use = false;
 		return err;
 	}
+
+	/* Increment pending download count */
+	pending_font_count++;
 
 	return NSERROR_OK;
 }
@@ -360,4 +391,16 @@ __attribute__((weak)) nserror html_font_face_load_data(const char *family_name,
 	      WARNING,
 	      "html_font_face_load_data not implemented by frontend");
 	return NSERROR_NOT_IMPLEMENTED;
+}
+
+/* Exported function documented in font_face.h */
+void html_font_face_set_done_callback(html_font_face_done_cb cb)
+{
+	font_done_callback = cb;
+}
+
+/* Exported function documented in font_face.h */
+bool html_font_face_has_pending(void)
+{
+	return pending_font_count > 0;
 }

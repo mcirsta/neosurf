@@ -24,6 +24,8 @@
 #include <stddef.h>
 #include <QPainter>
 #include <QFontDatabase>
+#include <QApplication>
+#include <QWidget>
 
 extern "C" {
 
@@ -37,6 +39,7 @@ extern "C" {
 }
 
 #include "qt/layout.h"
+#include "qt/misc.h"
 
 /* without this the text appears with large line spacing due to
  * content/handlers/html/redraw.c:253 having a 0.75 scaling on the line
@@ -71,8 +74,8 @@ static QFont *new_qfont_fstyle(const struct plot_font_style *fstyle)
 			if (!subs.isEmpty()) {
 				family = family_name;
 				NSLOG(netsurf,
-				      DEBUG,
-				      "Using web font: %s (substitutes to %s)",
+				      INFO,
+				      "Rendering text: web font '%s' -> '%s' (AVAILABLE)",
 				      family_name,
 				      subs.first().toUtf8().constData());
 				break;
@@ -90,6 +93,17 @@ static QFont *new_qfont_fstyle(const struct plot_font_style *fstyle)
 				      family_name);
 				break;
 			}
+
+			/* Font not found - log at INFO for web font debugging
+			 */
+			NSLOG(netsurf,
+			      INFO,
+			      "Rendering text: font '%s' NOT FOUND, trying next",
+			      family_name);
+			/* Mark that we had a font miss - repaint needed when
+			 * font loads */
+			extern bool font_miss_occurred;
+			font_miss_occurred = true;
 			families++;
 		}
 	}
@@ -503,6 +517,32 @@ nserror nsqt_layout_plot(QPainter *painter,
 
 
 /**
+ * Flag to track if a font repaint is already scheduled.
+ * This coalesces multiple font loads into a single repaint.
+ */
+static bool font_repaint_pending = false;
+
+/**
+ * Flag to track if any font lookup failed (text rendered with fallback).
+ * Repaint is only needed if this is true.
+ */
+bool font_miss_occurred = false;
+
+/**
+ * Callback triggered after font loads to repaint all windows (FOUT strategy).
+ */
+static void font_repaint_callback(void *p)
+{
+	(void)p;
+	font_repaint_pending = false;
+	font_miss_occurred = false;
+	NSLOG(netsurf, INFO, "Font loaded, triggering global repaint");
+	for (QWidget *w : QApplication::topLevelWidgets()) {
+		w->update();
+	}
+}
+
+/**
  * Load font data into Qt's font database.
  *
  * This function is called from the core when a web font is downloaded.
@@ -543,6 +583,21 @@ extern "C" nserror html_font_face_load_data(const char *family_name,
 		      "Registered font substitution: '%s' -> '%s'",
 		      family_name,
 		      qtName.toUtf8().constData());
+
+		/* FOUT: Schedule a global repaint so text re-renders with new
+		 * font. Only schedule if:
+		 * 1. A font miss occurred (text was rendered with fallback)
+		 * 2. Not already pending (to coalesce multiple font loads)
+		 */
+		if (font_miss_occurred && !font_repaint_pending) {
+			font_repaint_pending = true;
+			nsqt_schedule(100, font_repaint_callback, NULL);
+			NSLOG(netsurf,
+			      INFO,
+			      "Font miss detected, scheduling repaint");
+		} else if (!font_miss_occurred) {
+			NSLOG(netsurf, INFO, "No font miss - skipping repaint");
+		}
 	}
 
 	return NSERROR_OK;

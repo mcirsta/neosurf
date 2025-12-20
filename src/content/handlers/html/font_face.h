@@ -80,4 +80,24 @@ nserror html_font_face_load_data(const char *family_name,
 				 const uint8_t *data,
 				 size_t size);
 
+/**
+ * Callback invoked when all pending font downloads have completed.
+ * This can be used to trigger a page redraw (FOUT strategy).
+ */
+typedef void (*html_font_face_done_cb)(void);
+
+/**
+ * Set the callback to invoke when all pending font downloads complete.
+ *
+ * \param cb Callback function (or NULL to unset)
+ */
+void html_font_face_set_done_callback(html_font_face_done_cb cb);
+
+/**
+ * Check if there are any pending font downloads.
+ *
+ * \return true if fonts are still downloading, false otherwise
+ */
+bool html_font_face_has_pending(void);
+
 #endif /* NETSURF_HTML_FONT_FACE_H */
