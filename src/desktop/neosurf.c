@@ -48,6 +48,7 @@
 #include "content/handlers/javascript/js.h"
 #include <neosurf/content/handlers/html/html.h>
 #include "content/handlers/text/textplain.h"
+#include "content/handlers/javascript/content.h"
 
 #include <neosurf/browser_window.h>
 #include "desktop/system_colour.h"
@@ -318,6 +319,14 @@ nserror neosurf_init(const char *store_path)
 	}
 
 	js_initialise();
+	ret = javascript_init();
+	if (ret != NSERROR_OK) {
+		NSLOG(neosurf,
+		      ERROR,
+		      "javascript_init failed (%s)",
+		      messages_get_errorcode(ret));
+		return ret;
+	}
 
 	NSLOG(neosurf, INFO, "init page-info");
 	ret = page_info_init();
