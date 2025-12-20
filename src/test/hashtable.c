@@ -48,7 +48,8 @@ static void test_lwc_iterator(lwc_string *str, void *pw)
 		lwc_string_data(str));
 }
 
-/* Limit for hash table tests which use /usr/share/dict/words */
+/* Limit for hash table tests which use
+ * src/test/data/words */
 #define DICT_TEST_WORD_COUNT 100000
 
 #define NELEMS(x) (sizeof(x) / sizeof((x)[0]))
@@ -110,9 +111,11 @@ static void dict_hashtable_create(int dict_hash_size)
 {
 	FILE *dictf;
 	char keybuf[BUFSIZ], valbuf[BUFSIZ];
+	char buf[BUFSIZ];
 	uint32_t counter = 0;
 
-	dictf = fopen("/usr/share/dict/words", "r");
+	snprintf(buf, sizeof(buf), "%s/words", NEOSURF_TEST_DATA_DIR);
+	dictf = fopen(buf, "r");
 	ck_assert(dictf != NULL);
 
 	dict_hash = hash_create(dict_hash_size);
@@ -249,9 +252,11 @@ START_TEST(hashtable_dict_test)
 	FILE *dictf;
 	char keybuf[BUFSIZ], valbuf[BUFSIZ];
 	const char *res;
+	char buf[BUFSIZ];
 	uint32_t counter = 0;
 
-	dictf = fopen("/usr/share/dict/words", "r");
+	snprintf(buf, sizeof(buf), "%s/words", NEOSURF_TEST_DATA_DIR);
+	dictf = fopen(buf, "r");
 	ck_assert(dictf != NULL);
 
 	while (!feof(dictf)) {

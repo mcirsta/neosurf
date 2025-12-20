@@ -367,9 +367,14 @@ START_TEST(nsoption_dump_test)
 
 	ck_assert_int_eq(res, NSERROR_OK);
 
-	ck_assert_int_eq(cmp(outnam, test_choices_all_path), 0);
+	int cmp_res = cmp(outnam, test_choices_all_path);
+	if (cmp_res != 0) {
+		fprintf(stderr, "Output file: %s\n", outnam);
+	}
+	ck_assert_int_eq(cmp_res, 0);
 
-	unlink(outnam);
+	/* unlink(outnam); */
+	fprintf(stderr, "Output file: %s\n", outnam);
 }
 END_TEST
 

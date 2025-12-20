@@ -66,7 +66,8 @@ static void dict_bloom_create(void)
 	char buf[BUFSIZ];
 	int i;
 
-	dictf = fopen("/usr/share/dict/words", "r");
+	snprintf(buf, sizeof(buf), "%s/words", NEOSURF_TEST_DATA_DIR);
+	dictf = fopen(buf, "r");
 	ck_assert(dictf != NULL);
 
 	dict_bloom = bloom_create(BLOOM_SIZE);
@@ -150,7 +151,8 @@ START_TEST(bloom_match_test)
 	char buf[BUFSIZ];
 	int i;
 
-	dictf = fopen("/usr/share/dict/words", "r");
+	snprintf(buf, sizeof(buf), "%s/words", NEOSURF_TEST_DATA_DIR);
+	dictf = fopen(buf, "r");
 	ck_assert(dictf != NULL);
 
 	for (i = 0; i < BLOOM_SIZE; i++) {
@@ -186,7 +188,8 @@ START_TEST(bloom_falsepositive_test)
 	int i;
 	int false_positives = 0;
 
-	dictf = fopen("/usr/share/dict/words", "r");
+	snprintf(buf, sizeof(buf), "%s/words", NEOSURF_TEST_DATA_DIR);
+	dictf = fopen(buf, "r");
 	ck_assert(dictf != NULL);
 
 	/* skip elements known presnent */

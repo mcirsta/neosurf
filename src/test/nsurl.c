@@ -1338,6 +1338,16 @@ static Suite *nsurl_suite(void)
 	s = suite_create("nsurl");
 
 #ifndef _WIN32
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#define NSURL_ASAN_ENABLED 1
+#endif
+#endif
+#if defined(__SANITIZE_ADDRESS__)
+#define NSURL_ASAN_ENABLED 1
+#endif
+
+#ifndef NSURL_ASAN_ENABLED
 	tc_api_assert = tcase_create("API asserts");
 
 	tcase_add_unchecked_fixture(tc_api_assert,
@@ -1418,6 +1428,7 @@ static Suite *nsurl_suite(void)
 				    6);
 
 	suite_add_tcase(s, tc_api_assert);
+#endif
 #endif
 
 	/* url creation */

@@ -40,7 +40,9 @@ char *squash_whitespace(const char *s)
 	char *c;
 	int i = 0, j = 0;
 
-	assert(s != NULL);
+	/* assert(s != NULL); */
+	if (s == NULL)
+		abort();
 
 	c = malloc(strlen(s) + 1);
 	if (c != NULL) {

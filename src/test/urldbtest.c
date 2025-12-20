@@ -208,6 +208,25 @@ static char *test_urldb_get_cookie(const char *url)
 	return ret;
 }
 
+static void verify_cookie(const char *url, const char *expected)
+{
+	char *res = test_urldb_get_cookie(url);
+	if (expected) {
+		ck_assert(res != NULL);
+		ck_assert_str_eq(res, expected);
+	} else {
+		ck_assert(res == NULL);
+	}
+	free(res);
+}
+
+static void verify_cookie_present(const char *url)
+{
+	char *res = test_urldb_get_cookie(url);
+	ck_assert(res != NULL);
+	free(res);
+}
+
 
 /*************************************************/
 
@@ -348,7 +367,7 @@ START_TEST(urldb_original_test)
 	nsurl_unref(url);
 
 	//	urldb_set_cookie("a=b; path=/; domain=.a.com", "http://a.com/",
-	//NULL);
+	// NULL);
 
 	url = make_url("https://www.foo.com/blah/moose");
 	urlr = make_url("https://www.foo.com/blah/moose");
@@ -357,7 +376,7 @@ START_TEST(urldb_original_test)
 	nsurl_unref(urlr);
 
 	url = make_url("https://www.foo.com/blah/wxyzabc");
-	urldb_get_cookie(url, true);
+	free(urldb_get_cookie(url, true));
 	nsurl_unref(url);
 
 
@@ -375,35 +394,29 @@ START_TEST(urldb_original_test)
 		"name=value\r\n",
 		"http://www.example.org/foo/bar/baz/bat.html",
 		NULL));
-	ck_assert(test_urldb_get_cookie(
-			  "http://www.example.org/foo/bar/baz/quux.htm") !=
-		  NULL);
+	verify_cookie_present("http://www.example.org/foo/bar/baz/quux.htm");
 
 	/* Defaulted path with no non-leaf path segments */
 	ck_assert(test_urldb_set_cookie(
 		"name=value\r\n",
 		"http://no-non-leaf.example.org/index.html",
 		NULL));
-	ck_assert(test_urldb_get_cookie(
-			  "http://no-non-leaf.example.org/page2.html") != NULL);
-	ck_assert(test_urldb_get_cookie("http://no-non-leaf.example.org/") !=
-		  NULL);
+	verify_cookie_present("http://no-non-leaf.example.org/page2.html");
+	verify_cookie_present("http://no-non-leaf.example.org/");
 
 	/* Valid path (includes leafname) */
 	ck_assert(test_urldb_set_cookie(
 		"name=value;Version=1;Path=/index.cgi\r\n",
 		"http://example.org/index.cgi",
 		NULL));
-	ck_assert(test_urldb_get_cookie("http://example.org/index.cgi") !=
-		  NULL);
+	verify_cookie_present("http://example.org/index.cgi");
 
 	/* Valid path (includes leafname in non-root directory) */
 	ck_assert(test_urldb_set_cookie("name=value;Path=/foo/index.html\r\n",
 					"http://www.example.org/foo/index.html",
 					NULL));
 	/* Should _not_ match the above, as the leafnames differ */
-	ck_assert(test_urldb_get_cookie(
-			  "http://www.example.org/foo/bar.html") == NULL);
+	verify_cookie("http://www.example.org/foo/bar.html", NULL);
 
 	/* Invalid path (contains different leafname) */
 	ck_assert(test_urldb_set_cookie("name=value;Path=/index.html\r\n",
@@ -425,70 +438,63 @@ START_TEST(urldb_original_test)
 	ck_assert(test_urldb_set_cookie("foo=value;Domain=blah.com\r\n",
 					"http://www.example.com/",
 					NULL));
-	ck_assert(strcmp(test_urldb_get_cookie("http://www.example.com/"),
-			 "foo=value") == 0);
+	verify_cookie("http://www.example.com/", "foo=value");
 
 	/* Test handling of domain cookie from wrong host (strictly invalid but
 	 * required to support the real world) */
 	ck_assert(test_urldb_set_cookie("name=value;Domain=.example.com\r\n",
 					"http://foo.bar.example.com/",
 					NULL));
-	ck_assert(strcmp(test_urldb_get_cookie("http://www.example.com/"),
-			 "foo=value; name=value") == 0);
+	verify_cookie("http://www.example.com/", "foo=value; name=value");
 
 	/* Test presence of separators in cookie value */
 	ck_assert(test_urldb_set_cookie(
 		"name=\"value=foo\\\\bar\\\\\\\";\\\\baz=quux\";Version=1\r\n",
 		"http://www.example.org/",
 		NULL));
-	ck_assert(
-		strcmp(test_urldb_get_cookie("http://www.example.org/"),
-		       "$Version=1; name=\"value=foo\\\\bar\\\\\\\";\\\\baz=quux\"") ==
-		0);
+	verify_cookie(
+		"http://www.example.org/",
+		"$Version=1; name=\"value=foo\\\\bar\\\\\\\";\\\\baz=quux\"");
 
 	/* Test cookie with blank value */
 	ck_assert(test_urldb_set_cookie(
 		"a=\r\n", "http://www.example.net/", NULL));
-	ck_assert(strcmp(test_urldb_get_cookie("http://www.example.net/"),
-			 "a=") == 0);
+	verify_cookie("http://www.example.net/", "a=");
 
 	/* Test specification of multiple cookies in one header */
 	ck_assert(test_urldb_set_cookie(
 		"a=b, foo=bar; Path=/\r\n", "http://www.example.net/", NULL));
-	ck_assert(strcmp(test_urldb_get_cookie("http://www.example.net/"),
-			 "a=b; foo=bar") == 0);
+	verify_cookie("http://www.example.net/", "a=b; foo=bar");
 
 	/* Test use of separators in unquoted cookie value */
 	ck_assert(test_urldb_set_cookie("foo=moo@foo:blah?moar\\ text\r\n",
 					"http://example.com/",
 					NULL));
-	ck_assert(strcmp(test_urldb_get_cookie("http://example.com/"),
-			 "foo=moo@foo:blah?moar\\ text; name=value") == 0);
+	verify_cookie("http://example.com/",
+		      "foo=moo@foo:blah?moar\\ text; name=value");
 
 	/* Test use of unnecessary quotes */
 	ck_assert(test_urldb_set_cookie("foo=\"hello\";Version=1,bar=bat\r\n",
 					"http://example.com/",
 					NULL));
-	ck_assert(strcmp(test_urldb_get_cookie("http://example.com/"),
-			 "foo=\"hello\"; bar=bat; name=value") == 0);
+	verify_cookie("http://example.com/",
+		      "foo=\"hello\"; bar=bat; name=value");
 
 	/* Test domain matching in unverifiable transactions */
 	ck_assert(test_urldb_set_cookie("foo=bar; domain=.example.tld\r\n",
 					"http://www.foo.example.tld/",
 					"http://bar.example.tld/"));
-	ck_assert(strcmp(test_urldb_get_cookie("http://www.foo.example.tld/"),
-			 "foo=bar") == 0);
+	verify_cookie("http://www.foo.example.tld/", "foo=bar");
 
 	/* Test expiry */
 	ck_assert(
 		test_urldb_set_cookie("foo=bar", "http://expires.com/", NULL));
-	ck_assert(strcmp(test_urldb_get_cookie("http://expires.com/"),
-			 "foo=bar") == 0);
+	verify_cookie("http://expires.com/", "foo=bar");
 	ck_assert(test_urldb_set_cookie(
 		"foo=bar; expires=Thu, 01-Jan-1970 00:00:01 GMT\r\n",
 		"http://expires.com/",
 		NULL));
-	ck_assert(test_urldb_get_cookie("http://expires.com/") == NULL);
+	verify_cookie("http://expires.com/", NULL);
 
 	urldb_dump();
 }
@@ -1054,6 +1060,7 @@ START_TEST(urldb_cookie_create_test)
 		cookie_hdr, "http://example.org/index.cgi", NULL));
 	cdata = test_urldb_get_cookie("http://example.org/index.cgi");
 	ck_assert_str_eq(cdata, cookie);
+	free(cdata);
 }
 END_TEST
 
@@ -1068,6 +1075,7 @@ START_TEST(urldb_cookie_delete_test)
 		cookie_hdr, "http://example.org/index.cgi", NULL));
 	cdata = test_urldb_get_cookie("http://example.org/index.cgi");
 	ck_assert_str_eq(cdata, cookie);
+	free(cdata);
 
 	urldb_delete_cookie("example.org", "/index.cgi", "name");
 
@@ -1166,8 +1174,19 @@ static TCase *urldb_api_case_create(void)
 
 	tcase_add_checked_fixture(tc, urldb_create, urldb_teardown);
 
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#define URLDB_ASAN_ENABLED
+#endif
+#endif
+#if defined(__SANITIZE_ADDRESS__)
+#define URLDB_ASAN_ENABLED
+#endif
+
 #ifndef _WIN32
+#ifndef URLDB_ASAN_ENABLED
 	tcase_add_test_raise_signal(tc, urldb_api_add_url_assert_test, 6);
+#endif
 #endif
 
 	tcase_add_test(tc, urldb_api_url_find_test);
