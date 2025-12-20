@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Z-Index Test</title>
+<style>
+body {
+    font-family: sans-serif;
+    margin: 20px;
+}
+.container {
+    position: relative;
+    width: 300px;
+    height: 200px;
+    background: #eee;
+    border: 1px solid #999;
+    margin-bottom: 20px;
+}
+.box {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+}
+.red {
+    background: rgba(220, 50, 50, 0.9);
+    z-index: 1;
+    top: 0;
+    left: 0;
+}
+.green {
+    background: rgba(50, 180, 50, 0.9);
+    z-index: 3;
+    top: 30px;
+    left: 30px;
+}
+.blue {
+    background: rgba(50, 100, 220, 0.9);
+    z-index: 2;
+    top: 60px;
+    left: 60px;
+}
+.yellow {
+    background: rgba(220, 180, 50, 0.9);
+    z-index: -1;
+    top: 90px;
+    left: 90px;
+    color: black;
+}
+.result {
+    background: #f0f0f0;
+    padding: 10px;
+    border-radius: 4px;
+}
+</style>
+</head>
+<body>
+<h1>Z-Index Test</h1>
+
+<div class="container">
+    <div class="box red">z:1</div>
+    <div class="box green">z:3</div>
+    <div class="box blue">z:2</div>
+    <div class="box yellow">z:-1</div>
+</div>
+
+<div class="result">
+    <p><strong>Expected order (back to front):</strong> yellow (-1), red (1), blue (2), green (3)</p>
+    <p><strong>Visual check:</strong></p>
+    <ul>
+        <li>Green box should be fully visible on top</li>
+        <li>Blue box should be partially behind green</li>
+        <li>Red box should be partially behind blue</li>
+        <li>Yellow box should be behind the gray container background</li>
+    </ul>
+</div>
+
+<h2>Test 2: Same Z-Index (Document Order)</h2>
+<div class="container">
+    <div class="box" style="background: red; z-index: 1; top: 0; left: 0;">First z:1</div>
+    <div class="box" style="background: green; z-index: 1; top: 30px; left: 30px;">Second z:1</div>
+    <div class="box" style="background: blue; z-index: 1; top: 60px; left: 60px;">Third z:1</div>
+</div>
+
+<div class="result">
+    <p><strong>Expected:</strong> Third (blue) on top, then second (green), then first (red)</p>
+    <p>When z-index is equal, later elements in document order should appear on top.</p>
+</div>
+
+</body>
+</html>

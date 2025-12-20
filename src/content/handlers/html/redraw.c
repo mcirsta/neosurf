@@ -66,6 +66,7 @@
 #include <neosurf/content/handlers/html/form_internal.h>
 #include <neosurf/content/handlers/html/private.h>
 #include "content/handlers/html/layout.h"
+#include "content/handlers/html/stacking.h"
 
 
 bool html_redraw_debug = false;
@@ -1238,6 +1239,92 @@ bool html_redraw_box(const html_content *html,
 		     const struct redraw_context *ctx);
 
 /**
+ * Render children with negative z-index before parent's background.
+ *
+ * This function collects children with negative z-index and renders them
+ * BEFORE the parent's background is drawn, per CSS stacking order spec.
+ *
+ * \param  html      html content
+ * \param  box       box to render negative z-index children of
+ * \param  x_parent  coordinate of parent box
+ * \param  y_parent  coordinate of parent box
+ * \param  clip      clip rectangle
+ * \param  scale     scale for redraw
+ * \param  current_background_color  background colour
+ * \param  data      redraw data
+ * \param  ctx       redraw context
+ * \return true if successful, false otherwise
+ */
+static bool
+html_redraw_negative_zindex_children(const html_content *html,
+				     struct box *box,
+				     int x_parent,
+				     int y_parent,
+				     const struct rect *clip,
+				     float scale,
+				     colour current_background_color,
+				     const struct content_redraw_data *data,
+				     const struct redraw_context *ctx)
+{
+	struct box *c;
+	int x_offset, y_offset;
+	struct stacking_context negative_zindex;
+	size_t i;
+
+	/* Only process if this box doesn't create a stacking context itself */
+	if (box_creates_stacking_context(box)) {
+		return true; /* Stacking context isolates children */
+	}
+
+	x_offset = x_parent + box->x - scrollbar_get_offset(box->scroll_x);
+	y_offset = y_parent + box->y - scrollbar_get_offset(box->scroll_y);
+
+	stacking_context_init(&negative_zindex);
+
+	/* Collect only negative z-index children */
+	for (c = box->children; c; c = c->next) {
+		if (c->type == BOX_FLOAT_LEFT || c->type == BOX_FLOAT_RIGHT) {
+			continue;
+		}
+		int32_t z = box_get_z_index(c);
+		if (z != Z_INDEX_AUTO && z < 0) {
+			if (!stacking_context_add(&negative_zindex,
+						  c,
+						  z,
+						  x_offset,
+						  y_offset)) {
+				stacking_context_fini(&negative_zindex);
+				return true; /* Fallback: let normal path handle
+					      */
+			}
+		}
+	}
+
+	/* Render negative z-index children sorted */
+	if (negative_zindex.count > 0) {
+		stacking_context_sort(&negative_zindex);
+		for (i = 0; i < negative_zindex.count; i++) {
+			if (!html_redraw_box(
+				    html,
+				    negative_zindex.entries[i].box,
+				    negative_zindex.entries[i].x_parent,
+				    negative_zindex.entries[i].y_parent,
+				    clip,
+				    scale,
+				    current_background_color,
+				    data,
+				    ctx)) {
+				stacking_context_fini(&negative_zindex);
+				return false;
+			}
+		}
+	}
+
+	stacking_context_fini(&negative_zindex);
+	return true;
+}
+
+/**
  * Draw the various children of a box.
  *
  * \param  html	     html content
@@ -1262,40 +1349,184 @@ static bool html_redraw_box_children(const html_content *html,
 				     const struct redraw_context *ctx)
 {
 	struct box *c;
+	int x_offset, y_offset;
+	struct stacking_context negative_zindex; /* z-index < 0 */
+	struct stacking_context positive_zindex; /* z-index >= 0 */
+	size_t i;
+	bool render_ok = true;
 
+	x_offset = x_parent + box->x - scrollbar_get_offset(box->scroll_x);
+	y_offset = y_parent + box->y - scrollbar_get_offset(box->scroll_y);
+
+	/* Initialize separate stacking contexts for negative and positive */
+	stacking_context_init(&negative_zindex);
+	stacking_context_init(&positive_zindex);
+
+	/*
+	 * CSS 2.1 Stacking Order:
+	 * 1. Background and borders of the stacking context root
+	 * 2. Negative z-index stacking contexts (sorted)
+	 * 3. In-flow, non-positioned block descendants
+	 * 4. Non-positioned floats
+	 * 5. In-flow, non-positioned inline descendants
+	 * 6. z-index: 0 stacking contexts and positioned descendants
+	 * 7. Positive z-index stacking contexts (sorted)
+	 */
+
+	/* Pass 1: Collect positioned descendants, split by z-index sign */
 	for (c = box->children; c; c = c->next) {
+		if (c->type == BOX_FLOAT_LEFT || c->type == BOX_FLOAT_RIGHT) {
+			continue;
+		}
+		int32_t z = box_get_z_index(c);
+		if (z != Z_INDEX_AUTO) {
+			/* Collect into appropriate list based on z-index sign
+			 */
+			struct stacking_context *ctx_ptr =
+				(z < 0) ? &negative_zindex : &positive_zindex;
+			if (!stacking_context_add(
+				    ctx_ptr, c, z, x_offset, y_offset)) {
+				goto fallback;
+			}
+		} else {
+			/* Recurse into children to find positioned descendants
+			 */
+			if (!stacking_context_collect_subtree(&negative_zindex,
+							      &positive_zindex,
+							      c,
+							      x_offset,
+							      y_offset)) {
+				goto fallback;
+			}
+		}
+	}
+	for (c = box->float_children; c; c = c->next_float) {
+		int32_t z = box_get_z_index(c);
+		if (z != Z_INDEX_AUTO) {
+			struct stacking_context *ctx_ptr =
+				(z < 0) ? &negative_zindex : &positive_zindex;
+			if (!stacking_context_add(
+				    ctx_ptr, c, z, x_offset, y_offset)) {
+				goto fallback;
+			}
+		} else {
+			if (!stacking_context_collect_subtree(&negative_zindex,
+							      &positive_zindex,
+							      c,
+							      x_offset,
+							      y_offset)) {
+				goto fallback;
+			}
+		}
+	}
 
-		if (c->type != BOX_FLOAT_LEFT && c->type != BOX_FLOAT_RIGHT)
+	/* NOTE: Pass 2 (negative z-index) removed - negative z-index elements
+	 * are now rendered by html_redraw_negative_zindex_children() before
+	 * the parent's background is drawn, per CSS 2.1 stacking order. */
+
+	/* Pass 2: Render in-flow children (z-index: auto) */
+	for (c = box->children; c; c = c->next) {
+		if (c->type == BOX_FLOAT_LEFT || c->type == BOX_FLOAT_RIGHT) {
+			continue;
+		}
+		int32_t z = box_get_z_index(c);
+		if (z != Z_INDEX_AUTO) {
+			continue; /* Already in deferred list */
+		}
+		if (!html_redraw_box(html,
+				     c,
+				     x_offset,
+				     y_offset,
+				     clip,
+				     scale,
+				     current_background_color,
+				     data,
+				     ctx)) {
+			render_ok = false;
+			goto cleanup;
+		}
+	}
+
+	/* Pass 3: Render floats */
+	for (c = box->float_children; c; c = c->next_float) {
+		int32_t z = box_get_z_index(c);
+		if (z != Z_INDEX_AUTO) {
+			continue; /* Already in deferred list */
+		}
+		if (!html_redraw_box(html,
+				     c,
+				     x_offset,
+				     y_offset,
+				     clip,
+				     scale,
+				     current_background_color,
+				     data,
+				     ctx)) {
+			render_ok = false;
+			goto cleanup;
+		}
+	}
+
+	/* Pass 4: Render positive z-index elements (on top of in-flow content)
+	 */
+	if (positive_zindex.count > 0) {
+		stacking_context_sort(&positive_zindex);
+		for (i = 0; i < positive_zindex.count; i++) {
 			if (!html_redraw_box(
 				    html,
-				    c,
-				    x_parent + box->x -
-					    scrollbar_get_offset(box->scroll_x),
-				    y_parent + box->y -
-					    scrollbar_get_offset(box->scroll_y),
+				    positive_zindex.entries[i].box,
+				    positive_zindex.entries[i].x_parent,
+				    positive_zindex.entries[i].y_parent,
 				    clip,
 				    scale,
 				    current_background_color,
 				    data,
-				    ctx))
-				return false;
+				    ctx)) {
+				render_ok = false;
+				goto cleanup;
+			}
+		}
 	}
-	for (c = box->float_children; c; c = c->next_float)
-		if (!html_redraw_box(
-			    html,
-			    c,
-			    x_parent + box->x -
-				    scrollbar_get_offset(box->scroll_x),
-			    y_parent + box->y -
-				    scrollbar_get_offset(box->scroll_y),
-			    clip,
-			    scale,
-			    current_background_color,
-			    data,
-			    ctx))
-			return false;
+	goto cleanup;
 
+fallback:
+	/* Allocation failed - render in document order as fallback */
+	stacking_context_fini(&negative_zindex);
+	stacking_context_fini(&positive_zindex);
+	for (c = box->children; c; c = c->next) {
+		if (c->type != BOX_FLOAT_LEFT && c->type != BOX_FLOAT_RIGHT) {
+			if (!html_redraw_box(html,
+					     c,
+					     x_offset,
+					     y_offset,
+					     clip,
+					     scale,
+					     current_background_color,
+					     data,
+					     ctx)) {
+				return false;
+			}
+		}
+	}
+	for (c = box->float_children; c; c = c->next_float) {
+		if (!html_redraw_box(html,
+				     c,
+				     x_offset,
+				     y_offset,
+				     clip,
+				     scale,
+				     current_background_color,
+				     data,
+				     ctx)) {
+			return false;
+		}
+	}
 	return true;
+
+cleanup:
+	stacking_context_fini(&negative_zindex);
+	stacking_context_fini(&positive_zindex);
+	return render_ok;
 }
 
 /**
@@ -1637,6 +1868,21 @@ bool html_redraw_box(const html_content *html,
 		r = *clip;
 		if (ctx->plot->clip(ctx, &r) != NSERROR_OK)
 			return false;
+	}
+
+	/* CSS 2.1: Render children with negative z-index BEFORE parent's
+	 * background. This only applies if this box doesn't create its own
+	 * stacking context. */
+	if (!html_redraw_negative_zindex_children(html,
+						  box,
+						  x_parent,
+						  y_parent,
+						  &r,
+						  scale,
+						  current_background_color,
+						  data,
+						  ctx)) {
+		return false;
 	}
 
 	/* background colour and image for block level content and replaced

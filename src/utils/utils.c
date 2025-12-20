@@ -87,6 +87,35 @@ char *cnv_space2nbsp(const char *s)
 
 
 /* exported interface documented in utils/utils.h */
+void stable_sort(void *base,
+		 size_t nmemb,
+		 size_t size,
+		 int (*compar)(const void *, const void *))
+{
+	unsigned char *arr = (unsigned char *)base;
+	unsigned char *key = malloc(size);
+
+	if (key == NULL || nmemb <= 1) {
+		free(key);
+		return;
+	}
+
+	for (size_t i = 1; i < nmemb; i++) {
+		memcpy(key, arr + i * size, size);
+
+		size_t j = i;
+		while (j > 0 && compar(arr + (j - 1) * size, key) > 0) {
+			memcpy(arr + j * size, arr + (j - 1) * size, size);
+			j--;
+		}
+		memcpy(arr + j * size, key, size);
+	}
+
+	free(key);
+}
+
+
+/* exported interface documented in utils/utils.h */
 bool is_dir(const char *path)
 {
 	struct stat s;
