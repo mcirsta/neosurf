@@ -2574,11 +2574,12 @@ void dump_bytecode(css_style *style, char **ptr, uint32_t depth)
 								he),
 							lwc_string_data(he));
 
+						snum = *((uint32_t *)bytecode);
 						css__stylesheet_string_get(
 							style->sheet,
 							snum,
 							&he);
-						ADVANCE(sizeof(he));
+						ADVANCE(sizeof(snum));
 						*ptr += sprintf(
 							*ptr,
 							" '%.*s' ",

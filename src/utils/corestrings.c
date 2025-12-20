@@ -81,6 +81,10 @@ nserror corestrings_init(void)
 	nserror error;
 	dom_exception exc;
 
+	if (corestring_lwc_a != NULL) {
+		return NSERROR_OK;
+	}
+
 #define CORESTRING_LWC_VALUE(NAME, VALUE)                                      \
 	do {                                                                   \
 		lerror = lwc_intern_string((const char *)VALUE,                \

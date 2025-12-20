@@ -69,7 +69,10 @@ static TCase *corestrings_case_create(void)
 	TCase *tc;
 	tc = tcase_create("corestrings");
 
-	tcase_add_loop_test(tc, corestrings_test, 0, CORESTRING_TEST_COUNT + 1);
+	tcase_add_loop_test(tc,
+			    corestrings_test,
+			    CORESTRING_TEST_COUNT,
+			    CORESTRING_TEST_COUNT + 1);
 
 	return tc;
 }

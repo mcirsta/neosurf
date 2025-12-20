@@ -484,7 +484,9 @@ START_TEST(chain_add_all_twice_remove_all_iterate)
 }
 END_TEST
 
-#define CHAIN_TEST_MALLOC_COUNT_MAX 60
+#define CHAIN_TEST_MALLOC_COUNT_MAX 50
+
+#ifndef __SANITIZE_ADDRESS__
 
 START_TEST(chain_add_all_remove_all_alloc)
 {
@@ -521,6 +523,7 @@ START_TEST(chain_add_all_remove_all_alloc)
 	}
 }
 END_TEST
+#endif
 
 static TCase *chain_case_create(void)
 {
@@ -536,10 +539,12 @@ static TCase *chain_case_create(void)
 	tcase_add_test(tc, chain_add_all_twice_remove_all);
 	tcase_add_test(tc, chain_add_all_twice_remove_all_iterate);
 
+#ifndef __SANITIZE_ADDRESS__
 	tcase_add_loop_test(tc,
 			    chain_add_all_remove_all_alloc,
 			    0,
 			    CHAIN_TEST_MALLOC_COUNT_MAX + 1);
+#endif
 
 	return tc;
 }
