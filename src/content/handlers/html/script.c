@@ -580,18 +580,42 @@ exec_inline_script(html_content *c, dom_node *node, dom_string *mimetype)
 	/* ensure script handler for content type */
 	exc = dom_string_intern(mimetype, &lwcmimetype);
 	if (exc != DOM_NO_ERR) {
+		NSLOG(neosurf,
+		      WARNING,
+		      "exec_inline_script: dom_string_intern failed");
 		return DOM_HUBBUB_DOM;
 	}
 
-	script_handler = select_script_handler(
-		content_factory_type_from_mime_type(lwcmimetype));
+	content_type ctype = content_factory_type_from_mime_type(lwcmimetype);
+	NSLOG(neosurf,
+	      INFO,
+	      "exec_inline_script: lwcmimetype='%s' -> content_type=%d (CONTENT_JS=%d)",
+	      lwc_string_data(lwcmimetype),
+	      ctype,
+	      CONTENT_JS);
+
+	script_handler = select_script_handler(ctype);
 	lwc_string_unref(lwcmimetype);
 
+	NSLOG(neosurf,
+	      INFO,
+	      "exec_inline_script: script_handler=%p, jsthread=%p",
+	      script_handler,
+	      c->jsthread);
+
 	if (script_handler != NULL) {
+		NSLOG(neosurf,
+		      INFO,
+		      "exec_inline_script: calling script_handler with %zu bytes",
+		      dom_string_byte_length(script));
 		script_handler(c->jsthread,
 			       (const uint8_t *)dom_string_data(script),
 			       dom_string_byte_length(script),
 			       "?inline script?");
+	} else {
+		NSLOG(neosurf,
+		      WARNING,
+		      "exec_inline_script: script_handler is NULL, skipping execution");
 	}
 	return DOM_HUBBUB_OK;
 }
@@ -627,7 +651,7 @@ dom_hubbub_error html_process_script(void *ctx, dom_node *node)
 
 	NSLOG(neosurf,
 	      INFO,
-	      "content %p parser %p node %p",
+	      "html_process_script: content %p parser %p node %p",
 	      c,
 	      c->parser,
 	      node);
@@ -637,11 +661,22 @@ dom_hubbub_error html_process_script(void *ctx, dom_node *node)
 	if (exc != DOM_NO_ERR || mimetype == NULL) {
 		mimetype = dom_string_ref(corestring_dom_text_javascript);
 	}
+	NSLOG(neosurf,
+	      INFO,
+	      "html_process_script: mimetype='%s'",
+	      dom_string_data(mimetype));
 
 	exc = dom_element_get_attribute(node, corestring_dom_src, &src);
 	if (exc != DOM_NO_ERR || src == NULL) {
+		NSLOG(neosurf,
+		      INFO,
+		      "html_process_script: executing INLINE script");
 		err = exec_inline_script(c, node, mimetype);
 	} else {
+		NSLOG(neosurf,
+		      INFO,
+		      "html_process_script: fetching EXTERNAL script: %s",
+		      dom_string_data(src));
 		err = exec_src_script(c, node, mimetype, src);
 		dom_string_unref(src);
 	}

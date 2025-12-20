@@ -272,7 +272,7 @@ bool js_exec(jsthread *thread,
 	}
 
 	NSLOG(neosurf,
-	      DEBUG,
+	      INFO,
 	      "Executing JS: %s (length %zu)",
 	      name ? name : "<anonymous>",
 	      txtlen);
