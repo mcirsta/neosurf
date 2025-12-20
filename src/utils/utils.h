@@ -27,6 +27,7 @@
 #define NETSURF_UTILS_UTILS_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
 #ifndef NOF_ELEMENTS
 #define NOF_ELEMENTS(array) (sizeof(array) / sizeof(*(array)))
@@ -87,6 +88,21 @@
  */
 #define SLEN(x) (sizeof((x)) - 1)
 
+
+/**
+ * Stable sort using insertion sort algorithm.
+ *
+ * Unlike qsort, this maintains relative order of elements with equal keys.
+ *
+ * \param base   Pointer to the array to sort
+ * \param nmemb  Number of elements in the array
+ * \param size   Size of each element in bytes
+ * \param compar Comparison function (same signature as qsort)
+ */
+void stable_sort(void *base,
+		 size_t nmemb,
+		 size_t size,
+		 int (*compar)(const void *, const void *));
 
 /**
  * Check if a directory exists.

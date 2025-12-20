@@ -225,3 +225,14 @@ include(CTest)
     )
     target_link_libraries(corestrings PRIVATE malloc_fig)
   endif()
+
+  # Stacking context (z-index) unit test
+  add_neosurf_test(stacking_test
+    ${CMAKE_SOURCE_DIR}/src/content/handlers/html/stacking.c
+    ${CMAKE_SOURCE_DIR}/src/utils/utils.c
+    ${CMAKE_SOURCE_DIR}/src/utils/messages.c
+    ${CMAKE_SOURCE_DIR}/src/utils/hashtable.c
+    ${CMAKE_SOURCE_DIR}/src/test/log.c
+    ${CMAKE_SOURCE_DIR}/src/test/stacking_test.c
+  )
+
