@@ -1,36 +1,54 @@
 {
-  "version": 6,
-  "cmakeMinimumRequired": { "major": 3, "minor": 20, "patch": 0 },
-  "configurePresets": [
-    {
-      "name": "mingw-ninja",
-      "displayName": "MinGW Ninja",
-      "generator": "Ninja",
-      "binaryDir": "${sourceDir}/build-ninja",
-      "cacheVariables": {
-        "NEOSURF_WERROR": "OFF",
-        "CMAKE_C_COMPILER": "gcc",
-        "PKG_CONFIG_EXECUTABLE": "C:/msys64/mingw64/bin/pkgconf.exe",
-        "GPERF": "C:/msys64/mingw64/bin/gperf.exe",
-        "FLEX": "C:/msys64/usr/bin/flex.exe",
-        "BISON": "C:/msys64/usr/bin/bison.exe",
-        "FLEX_EXECUTABLE": "C:/msys64/usr/bin/flex.exe",
-        "BISON_EXECUTABLE": "C:/msys64/usr/bin/bison.exe",
-        "M4": "C:/msys64/usr/bin/m4.exe"
-      }
-    }
-  ],
-  "buildPresets": [
-    {
-      "name": "mingw-ninja",
-      "configurePreset": "mingw-ninja"
-    }
-  ],
-  "testPresets": [
-    {
-      "name": "mingw-ninja",
-      "configurePreset": "mingw-ninja",
-      "execution": { "noTestsAction": "error" }
-    }
-  ]
+    "version": 6,
+    "cmakeMinimumRequired": {
+        "major": 3,
+        "minor": 20,
+        "patch": 0
+    },
+    "configurePresets": [
+        {
+            "name": "mingw-ninja",
+            "displayName": "MinGW Ninja",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build-ninja",
+            "cacheVariables": {
+                "NEOSURF_WERROR": "OFF",
+                "CMAKE_C_COMPILER": "gcc",
+                "PKG_CONFIG_EXECUTABLE": "C:/msys64/mingw64/bin/pkgconf.exe",
+                "GPERF": "C:/msys64/mingw64/bin/gperf.exe",
+                "FLEX": "C:/msys64/usr/bin/flex.exe",
+                "BISON": "C:/msys64/usr/bin/bison.exe",
+                "FLEX_EXECUTABLE": "C:/msys64/usr/bin/flex.exe",
+                "BISON_EXECUTABLE": "C:/msys64/usr/bin/bison.exe",
+                "M4": "C:/msys64/usr/bin/m4.exe"
+            }
+        },
+        {
+            "name": "gcc",
+            "displayName": "GCC 15.2.1 x86_64-pc-linux-gnu",
+            "description": "Using compilers: C = /usr/bin/gcc, CXX = /usr/bin/g++",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_C_COMPILER": "/usr/bin/gcc",
+                "CMAKE_CXX_COMPILER": "/usr/bin/g++",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "mingw-ninja",
+            "configurePreset": "mingw-ninja"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "mingw-ninja",
+            "configurePreset": "mingw-ninja",
+            "execution": {
+                "noTestsAction": "error"
+            }
+        }
+    ]
 }
