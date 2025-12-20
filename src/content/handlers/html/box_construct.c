@@ -307,8 +307,9 @@ static css_select_results *box_get_style(html_content *c,
  * \param box      Box which may have generated content
  * \param style    Complete computed style for pseudo element, or NULL
  *
- * \todo This is currently incomplete. It just does enough to support
- * the clearfix hack. (http://www.positioniseverything.net/easyclearing.html )
+ * This function handles ::before and ::after pseudo-elements by:
+ * 1. Creating a box for the pseudo-element itself
+ * 2. Processing the 'content' property to create child text boxes
  */
 static void box_construct_generate(dom_node *n,
 				   html_content *content,
@@ -316,8 +317,10 @@ static void box_construct_generate(dom_node *n,
 				   const css_computed_style *style)
 {
 	struct box *gen = NULL;
+	struct box *inline_container = NULL;
 	enum css_display_e computed_display;
 	const css_computed_content_item *c_item;
+	uint8_t content_type;
 
 	/* Nothing to generate if the parent box is not a block */
 	if (box->type != BOX_BLOCK)
@@ -326,35 +329,157 @@ static void box_construct_generate(dom_node *n,
 	/* To determine if an element has a pseudo element, we select
 	 * for it and test to see if the returned style's content
 	 * property is set to normal. */
-	if (style == NULL ||
-	    css_computed_content(style, &c_item) == CSS_CONTENT_NORMAL) {
-		/* No pseudo element */
+	if (style == NULL)
 		return;
-	}
+
+	content_type = css_computed_content(style, &c_item);
+	if (content_type == CSS_CONTENT_NORMAL ||
+	    content_type == CSS_CONTENT_NONE)
+		return;
 
 	/* create box for this element */
 	computed_display = ns_computed_display(style, box_is_root(n));
-	if (computed_display == CSS_DISPLAY_BLOCK ||
-	    computed_display == CSS_DISPLAY_TABLE) {
-		/* currently only support block level boxes */
 
-		/** \todo Not wise to drop const from the computed style */
-		gen = box_create(NULL,
-				 (css_computed_style *)style,
-				 false,
-				 NULL,
-				 NULL,
-				 NULL,
-				 NULL,
-				 content->bctx);
-		if (gen == NULL) {
-			return;
+	/** \todo Not wise to drop const from the computed style */
+	gen = box_create(NULL,
+			 (css_computed_style *)style,
+			 false,
+			 NULL,
+			 NULL,
+			 NULL,
+			 NULL,
+			 content->bctx);
+	if (gen == NULL) {
+		return;
+	}
+
+	/* set box type from computed display */
+	gen->type = box_map[computed_display];
+
+	/* For inline pseudo-elements, we need an inline container */
+	if (gen->type == BOX_INLINE) {
+		/* Check if parent already has an inline container as last child
+		 */
+		if (box->last != NULL &&
+		    box->last->type == BOX_INLINE_CONTAINER) {
+			inline_container = box->last;
+		} else {
+			/* Create a new inline container */
+			inline_container = box_create(NULL,
+						      NULL,
+						      false,
+						      NULL,
+						      NULL,
+						      NULL,
+						      NULL,
+						      content->bctx);
+			if (inline_container == NULL) {
+				return;
+			}
+			inline_container->type = BOX_INLINE_CONTAINER;
+			box_add_child(box, inline_container);
 		}
-
-		/* set box type from computed display */
-		gen->type = box_map[ns_computed_display(style, box_is_root(n))];
-
+		box_add_child(inline_container, gen);
+	} else {
 		box_add_child(box, gen);
+	}
+
+	/* Now process the content property items */
+	if (c_item != NULL) {
+		while (c_item->type != CSS_COMPUTED_CONTENT_NONE) {
+			if (c_item->type == CSS_COMPUTED_CONTENT_STRING) {
+				/* Create a text box for the string content */
+				const char *text_data = lwc_string_data(
+					c_item->data.string);
+				size_t text_len = lwc_string_length(
+					c_item->data.string);
+
+				if (text_len > 0) {
+					if (gen->type == BOX_INLINE) {
+						/* For inline boxes, text goes
+						 * directly on the box */
+						char *text_copy =
+							talloc_strndup(
+								content->bctx,
+								text_data,
+								text_len);
+						if (text_copy == NULL) {
+							break;
+						}
+						gen->text = text_copy;
+						gen->length = text_len;
+					} else {
+						/* For block boxes, create
+						 * inline container + text box
+						 */
+						struct box *text_container;
+						struct box *text_box;
+						char *text_copy;
+
+						/* Create inline container if
+						 * needed */
+						if (gen->last != NULL &&
+						    gen->last->type ==
+							    BOX_INLINE_CONTAINER) {
+							text_container =
+								gen->last;
+						} else {
+							text_container = box_create(
+								NULL,
+								NULL,
+								false,
+								NULL,
+								NULL,
+								NULL,
+								NULL,
+								content->bctx);
+							if (text_container ==
+							    NULL) {
+								break;
+							}
+							text_container->type =
+								BOX_INLINE_CONTAINER;
+							box_add_child(
+								gen,
+								text_container);
+						}
+
+						/* Create text box */
+						text_box = box_create(
+							NULL,
+							(css_computed_style *)
+								style,
+							false,
+							NULL,
+							NULL,
+							NULL,
+							NULL,
+							content->bctx);
+						if (text_box == NULL) {
+							break;
+						}
+
+						text_box->type = BOX_TEXT;
+
+						text_copy = talloc_strndup(
+							content->bctx,
+							text_data,
+							text_len);
+						if (text_copy == NULL) {
+							break;
+						}
+
+						text_box->text = text_copy;
+						text_box->length = text_len;
+
+						box_add_child(text_container,
+							      text_box);
+					}
+				}
+			}
+			/* TODO: Handle CSS_COMPUTED_CONTENT_URI for images */
+			c_item++;
+		}
 	}
 }
 

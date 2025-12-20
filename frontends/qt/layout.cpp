@@ -23,6 +23,7 @@
 
 #include <stddef.h>
 #include <QPainter>
+#include <QFontDatabase>
 
 extern "C" {
 
@@ -46,35 +47,77 @@ extern "C" {
 /**
  * constructs a qfont from a nsfont
  *
- * \todo should this subclass QFont to provide a constructor?
+ * First checks if any of the CSS font-family names are available,
+ * then falls back to generic families if none match.
  */
 static QFont *new_qfont_fstyle(const struct plot_font_style *fstyle)
 {
 	QFont *nfont;
-	const char *family;
+	const char *family = NULL;
 	bool italic = false;
+	QFontDatabase fontdb;
 
-	switch (fstyle->family) {
-	case PLOT_FONT_FAMILY_SERIF:
-		family = nsoption_charp(font_serif);
-		break;
+	/* First, try to find a matching font from the CSS font-family list */
+	if (fstyle->families != NULL) {
+		lwc_string *const *families = fstyle->families;
+		while (*families != NULL) {
+			const char *family_name = lwc_string_data(*families);
+			QString qfamily = QString::fromUtf8(family_name);
 
-	case PLOT_FONT_FAMILY_MONOSPACE:
-		family = nsoption_charp(font_mono);
-		break;
+			/* Check if this font has a substitution registered
+			 * (for web fonts loaded via @font-face)
+			 */
+			QStringList subs = QFont::substitutes(qfamily);
+			if (!subs.isEmpty()) {
+				family = family_name;
+				NSLOG(netsurf,
+				      DEBUG,
+				      "Using web font: %s (substitutes to %s)",
+				      family_name,
+				      subs.first().toUtf8().constData());
+				break;
+			}
 
-	case PLOT_FONT_FAMILY_CURSIVE:
-		family = nsoption_charp(font_cursive);
-		break;
+			/* Check if this font family is available in the system
+			 */
+			if (QFontDatabase::hasFamily(qfamily) ||
+			    QFontDatabase::families().contains(
+				    qfamily, Qt::CaseInsensitive)) {
+				family = family_name;
+				NSLOG(netsurf,
+				      DEBUG,
+				      "Using CSS font-family: %s",
+				      family_name);
+				break;
+			}
+			families++;
+		}
+	}
 
-	case PLOT_FONT_FAMILY_FANTASY:
-		family = nsoption_charp(font_fantasy);
-		break;
+	/* Fall back to generic families if no specific font was found */
+	if (family == NULL) {
+		switch (fstyle->family) {
+		case PLOT_FONT_FAMILY_SERIF:
+			family = nsoption_charp(font_serif);
+			break;
 
-	case PLOT_FONT_FAMILY_SANS_SERIF:
-	default:
-		family = nsoption_charp(font_sans);
-		break;
+		case PLOT_FONT_FAMILY_MONOSPACE:
+			family = nsoption_charp(font_mono);
+			break;
+
+		case PLOT_FONT_FAMILY_CURSIVE:
+			family = nsoption_charp(font_cursive);
+			break;
+
+		case PLOT_FONT_FAMILY_FANTASY:
+			family = nsoption_charp(font_fantasy);
+			break;
+
+		case PLOT_FONT_FAMILY_SANS_SERIF:
+		default:
+			family = nsoption_charp(font_sans);
+			break;
+		}
 	}
 
 	if (fstyle->flags & FONTF_ITALIC) {
@@ -455,6 +498,53 @@ nserror nsqt_layout_plot(QPainter *painter,
 	painter->drawText(x, y, QString::fromUtf8(text, length));
 
 	delete font;
+	return NSERROR_OK;
+}
+
+
+/**
+ * Load font data into Qt's font database.
+ *
+ * This function is called from the core when a web font is downloaded.
+ * It overrides the weak symbol in font_face.c.
+ */
+extern "C" nserror html_font_face_load_data(const char *family_name,
+					    const uint8_t *data,
+					    size_t size)
+{
+	QByteArray fontData(reinterpret_cast<const char *>(data), size);
+
+	int fontId = QFontDatabase::addApplicationFontFromData(fontData);
+	if (fontId == -1) {
+		NSLOG(netsurf,
+		      WARNING,
+		      "Failed to load font '%s' into Qt",
+		      family_name);
+		return NSERROR_INVALID;
+	}
+
+	QStringList families = QFontDatabase::applicationFontFamilies(fontId);
+	NSLOG(netsurf,
+	      INFO,
+	      "Loaded font '%s' into Qt as font ID %d (families: %s)",
+	      family_name,
+	      fontId,
+	      families.join(", ").toUtf8().constData());
+
+	/* Register CSS→Qt font name substitution using Qt's built-in system */
+	if (!families.isEmpty()) {
+		QString cssName = QString::fromUtf8(family_name);
+		QString qtName = families.first();
+
+		/* Tell Qt: when asked for CSS name, use Qt name instead */
+		QFont::insertSubstitution(cssName, qtName);
+		NSLOG(netsurf,
+		      INFO,
+		      "Registered font substitution: '%s' -> '%s'",
+		      family_name,
+		      qtName.toUtf8().constData());
+	}
+
 	return NSERROR_OK;
 }
 

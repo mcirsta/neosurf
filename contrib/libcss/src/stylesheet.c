@@ -240,6 +240,9 @@ css_error css_stylesheet_create(const css_stylesheet_params *params,
 	sheet->import = params->import;
 	sheet->import_pw = params->import_pw;
 
+	sheet->font_face = params->font_face;
+	sheet->font_face_pw = params->font_face_pw;
+
 	sheet->color = params->color;
 	sheet->color_pw = params->color_pw;
 

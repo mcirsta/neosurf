@@ -50,6 +50,21 @@ typedef css_error (*css_import_notification_fn)(void *pw,
 						lwc_string *url);
 
 /**
+ * Callback to be notified of a font-face rule
+ *
+ * \param pw      Client data
+ * \param parent  Stylesheet containing the font-face
+ * \param face    The parsed font-face rule
+ * \return CSS_OK on success, appropriate error otherwise
+ *
+ * \note This function will be invoked when an @font-face rule is parsed.
+ *       The client may use this to trigger a fetch of the font file.
+ */
+typedef css_error (*css_font_face_notification_fn)(void *pw,
+						   css_stylesheet *parent,
+						   const css_font_face *face);
+
+/**
  * Callback use to resolve system colour names to RGB values
  *
  * \param pw     Client data
@@ -145,6 +160,11 @@ typedef struct css_stylesheet_params {
 	css_import_notification_fn import;
 	/** Client private data for import */
 	void *import_pw;
+
+	/** Font-face notification function */
+	css_font_face_notification_fn font_face;
+	/** Client private data for font_face */
+	void *font_face_pw;
 
 	/** Colour resolution function */
 	css_color_resolution_fn color;

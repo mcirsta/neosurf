@@ -36,6 +36,7 @@
 #include <neosurf/content/handlers/css/css.h>
 #include "content/handlers/css/hints.h"
 #include "content/handlers/css/internal.h"
+#include "content/handlers/html/font_face.h"
 
 /* Define to trace import fetches */
 #undef NSCSS_IMPORT_TRACE
@@ -117,6 +118,10 @@ static css_error nscss_error_handler(void *pw,
 				     css_stylesheet *sheet,
 				     css_error error,
 				     const char *msg);
+
+static css_error nscss_handle_font_face(void *pw,
+					css_stylesheet *parent,
+					const css_font_face *font_face);
 
 
 static css_stylesheet *blank_import;
@@ -252,6 +257,8 @@ static nserror nscss_create_css_data(struct content_css_data *c,
 	params.font_pw = NULL;
 	params.error = nscss_error_handler;
 	params.error_pw = NULL;
+	params.font_face = nscss_handle_font_face;
+	params.font_face_pw = c;
 
 	error = css_stylesheet_create(&params, &c->sheet);
 	if (error != CSS_OK) {
@@ -587,6 +594,50 @@ static css_error nscss_error_handler(void *pw,
 		      msg,
 		      error);
 	}
+	return CSS_OK;
+}
+
+/**
+ * Handle notification of a font-face rule
+ *
+ * \param pw         CSS object containing the font-face
+ * \param parent     Stylesheet containing the font-face
+ * \param font_face  The parsed font-face rule
+ * \return CSS_OK on success, appropriate error otherwise
+ */
+static css_error nscss_handle_font_face(void *pw,
+					css_stylesheet *parent,
+					const css_font_face *font_face)
+{
+	lwc_string *font_family = NULL;
+	css_error error;
+	const char *sheet_url = NULL;
+
+	(void)pw;
+
+	/* Get font family name for logging */
+	error = css_font_face_get_font_family(font_face, &font_family);
+	if (error != CSS_OK || font_family == NULL) {
+		return CSS_OK; /* Ignore font-face without family name */
+	}
+
+	NSLOG(netsurf,
+	      INFO,
+	      "Parsed @font-face for family '%s'",
+	      lwc_string_data(font_family));
+
+	/* Get stylesheet URL to use as base for relative font URLs */
+	error = css_stylesheet_get_url(parent, &sheet_url);
+	if (error != CSS_OK || sheet_url == NULL) {
+		NSLOG(netsurf,
+		      WARNING,
+		      "Could not get stylesheet URL for font-face");
+		return CSS_OK;
+	}
+
+	/* Process the font-face and start downloading */
+	html_font_face_process(font_face, sheet_url);
+
 	return CSS_OK;
 }
 

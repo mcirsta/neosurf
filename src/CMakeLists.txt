@@ -124,6 +124,7 @@ add_library(neosurf ${NEOSURF_LIB_TYPE}
 	content/handlers/html/css_fetcher.c
 	content/handlers/html/dom_event.c
 	content/handlers/html/font.c
+	content/handlers/html/font_face.c
 	content/handlers/html/form.c
 	content/handlers/html/forms.c
 	content/handlers/html/html.c
@@ -267,7 +268,8 @@ target_link_libraries(neosurf ${NEOSURF_COMMON_LIBS})
 
 target_include_directories(neosurf PRIVATE ${CMAKE_SOURCE_DIR}/contrib ${CMAKE_BINARY_DIR})
 
-include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/tests.cmake)
+# Include tests subdirectory (tests only enabled for Debug builds or when NEOSURF_ENABLE_TESTS=ON)
+add_subdirectory(test)
 
 install(TARGETS neosurf
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
@@ -388,4 +390,3 @@ if(WIN32)
 		install_dlls_for_package("${CAIRO_PREFIX}" "${CAIRO_LIBRARIES}")
 	endif()
 endif()
-

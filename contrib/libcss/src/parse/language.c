@@ -755,6 +755,19 @@ css_error handleEndBlock(css_language *c, const parserutils_vector *vector)
 			return handleEndRuleset(c, vector);
 	}
 
+	/* If this is a font-face rule, notify the client */
+	if (rule != NULL && rule->type == CSS_RULE_FONT_FACE) {
+		css_rule_font_face *ff_rule = (css_rule_font_face *)rule;
+		if (c->sheet->font_face != NULL && ff_rule->font_face != NULL) {
+			css_error error = c->sheet->font_face(
+				c->sheet->font_face_pw,
+				c->sheet,
+				ff_rule->font_face);
+			if (error != CSS_OK)
+				return error;
+		}
+	}
+
 	return CSS_OK;
 }
 
