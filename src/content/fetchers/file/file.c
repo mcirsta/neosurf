@@ -150,9 +150,18 @@ static void *fetch_file_setup(struct fetch *fetchh,
 
 	ret = guit->file->nsurl_to_path(url, &ctx->path);
 	if (ret != NSERROR_OK) {
+		NSLOG(neosurf,
+		      ERROR,
+		      "Failed to convert URL to path: %s",
+		      nsurl_access(url));
 		free(ctx);
 		return NULL;
 	}
+	NSLOG(neosurf,
+	      INFO,
+	      "fetch_file_setup: url '%s' -> path '%s'",
+	      nsurl_access(url),
+	      ctx->path);
 
 	ctx->url = nsurl_ref(url);
 
@@ -235,50 +244,20 @@ static int fetch_file_errno_to_http_code(int error_no)
 static void fetch_file_process_error(struct fetch_file_context *ctx, int code)
 {
 	fetch_msg msg;
-	char buffer[1024];
-	const char *title;
-	char key[8];
 
 	/* content is going to return error code */
 	fetch_set_http_code(ctx->fetchh, code);
 
-	/* content type */
-	if (fetch_file_send_header(ctx,
-				   "Content-Type: text/html; charset=utf-8"))
-		goto fetch_file_process_error_aborted;
+	NSLOG(neosurf,
+	      WARNING,
+	      "File fetch error: code %d for %s",
+	      code,
+	      ctx->path);
 
-	snprintf(key, sizeof key, "HTTP%03d", code);
-	title = messages_get(key);
+	msg.type = FETCH_ERROR;
+	msg.data.error = messages_get("FetchFile");
+	fetch_send_callback(&msg, ctx->fetchh);
 
-	snprintf(buffer,
-		 sizeof buffer,
-		 "<html><head>"
-		 "<title>%s</title>"
-		 "<link rel=\"stylesheet\" type=\"text/css\" "
-		 "href=\"resource:internal.css\">\n"
-		 "</head>"
-		 "<body class=\"ns-even-bg ns-even-fg ns-border\" "
-		 "id =\"fetcherror\">\n"
-		 "<h1 class=\"ns-border ns-odd-fg-bad\">%s</h1>\n"
-		 "<p>%s %d %s %s</p>\n"
-		 "</body>\n</html>\n",
-		 title,
-		 title,
-		 messages_get("FetchErrorCode"),
-		 code,
-		 messages_get("FetchFile"),
-		 nsurl_access(ctx->url));
-
-	msg.type = FETCH_DATA;
-	msg.data.header_or_data.buf = (const uint8_t *)buffer;
-	msg.data.header_or_data.len = strlen(buffer);
-	if (fetch_file_send_callback(&msg, ctx))
-		goto fetch_file_process_error_aborted;
-
-	msg.type = FETCH_FINISHED;
-	fetch_file_send_callback(&msg, ctx);
-
-fetch_file_process_error_aborted:
 	return;
 }
 
@@ -305,6 +284,12 @@ fetch_file_process_plain(struct fetch_file_context *ctx, struct stat *fdstat)
 	fd = open(ctx->path, O_RDONLY);
 	if (fd < 0) {
 		/* process errors as appropriate */
+		NSLOG(neosurf,
+		      ERROR,
+		      "Failed to open file: '%s' error: %d (%s)",
+		      ctx->path,
+		      errno,
+		      strerror(errno));
 		fetch_file_process_error(ctx,
 					 fetch_file_errno_to_http_code(errno));
 		return;
@@ -795,6 +780,12 @@ static void fetch_file_process(struct fetch_file_context *ctx)
 
 	if (stat(ctx->path, &fdstat) != 0) {
 		/* process errors as appropriate */
+		NSLOG(neosurf,
+		      ERROR,
+		      "Failed to stat file: '%s' error: %d (%s)",
+		      ctx->path,
+		      errno,
+		      strerror(errno));
 		fetch_file_process_error(ctx,
 					 fetch_file_errno_to_http_code(errno));
 		return;

@@ -290,6 +290,7 @@ static nserror nsqt_plot_path(const struct redraw_context *ctx,
 			return NSERROR_INVALID;
 		}
 	}
+	qtpath.setFillRule(Qt::WindingFill);
 
 	nsqt_set_style(painter, pstyle);
 	const QTransform orig_transform = painter->transform();

@@ -58,23 +58,23 @@ static const char *nsqt_fetch_filetype(const char *unix_path)
 	NSLOG(netsurf, INFO, "unix path: %s", unix_path);
 
 
-	if (2 < l && strcasecmp(unix_path + l - 3, "f79") == 0)
+	if (l > 3 && strcasecmp(unix_path + l - 4, ".f79") == 0)
 		res = (char *)"text/css";
-	else if (2 < l && strcasecmp(unix_path + l - 3, "css") == 0)
+	else if (l > 3 && strcasecmp(unix_path + l - 4, ".css") == 0)
 		res = (char *)"text/css";
-	else if (2 < l && strcasecmp(unix_path + l - 3, "jpg") == 0)
+	else if (l > 3 && strcasecmp(unix_path + l - 4, ".jpg") == 0)
 		res = (char *)"image/jpeg";
-	else if (3 < l && strcasecmp(unix_path + l - 4, "jpeg") == 0)
+	else if (l > 4 && strcasecmp(unix_path + l - 5, ".jpeg") == 0)
 		res = (char *)"image/jpeg";
-	else if (2 < l && strcasecmp(unix_path + l - 3, "gif") == 0)
+	else if (l > 3 && strcasecmp(unix_path + l - 4, ".gif") == 0)
 		res = (char *)"image/gif";
-	else if (2 < l && strcasecmp(unix_path + l - 3, "png") == 0)
+	else if (l > 3 && strcasecmp(unix_path + l - 4, ".png") == 0)
 		res = (char *)"image/png";
-	else if (2 < l && strcasecmp(unix_path + l - 3, "jng") == 0)
+	else if (l > 3 && strcasecmp(unix_path + l - 4, ".jng") == 0)
 		res = (char *)"image/jng";
-	else if (2 < l && strcasecmp(unix_path + l - 3, "svg") == 0)
-		res = (char *)"image/svg";
-	else if (2 < l && strcasecmp(unix_path + l - 3, "txt") == 0)
+	else if (l > 3 && strcasecmp(unix_path + l - 4, ".svg") == 0)
+		res = (char *)"image/svg+xml";
+	else if (l > 3 && strcasecmp(unix_path + l - 4, ".txt") == 0)
 		res = (char *)"text/plain";
 
 	NSLOG(netsurf, INFO, "mime type: %s", res);

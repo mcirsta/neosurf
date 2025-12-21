@@ -1228,6 +1228,98 @@ static svgtiny_code initialise_parse_state(struct svgtiny_parse_state *state,
 	state->viewport_width = viewport_width;
 	state->viewport_height = viewport_height;
 	svgtiny_parse_position_attributes(svg, *state, &x, &y, &width, &height);
+
+	/* Fallback if width or height are missing/invalid */
+	if (width <= 0 || height <= 0) {
+		dom_string *view_box;
+		dom_exception exc;
+
+		exc = dom_element_get_attribute(svg,
+						state->interned_viewBox,
+						&view_box);
+		if (exc == DOM_NO_ERR && view_box != NULL) {
+			struct svgtiny_transformation_matrix tm;
+			float viewbox_width = state->viewport_width;
+			float viewbox_height = state->viewport_height;
+
+			/* Use temporary viewport dimensions to simulate parsing
+			 */
+			if (viewbox_width <= 0)
+				viewbox_width = 100;
+			if (viewbox_height <= 0)
+				viewbox_height = 100;
+
+			/* We only need the dimensions, so we parse with dummy
+			 * viewport args merely to extract the width/height
+			 * scaling behavior if needed, but actually
+			 * svgtiny_parse_viewbox doesn't return the raw wh
+			 * values easily. Wait, svgtiny_parse_viewbox calculates
+			 * a matrix (tm). We actually need to parse the string
+			 * manually here or reuse the parsing logic to get the
+			 * raw numbers.
+			 */
+
+			/* Direct parsing of viewBox string for fallback
+			 * dimensions */
+			const char *text = dom_string_data(view_box);
+			size_t textlen = dom_string_byte_length(view_box);
+			const char *cursor = text;
+			const char *textend = text + textlen;
+			const char *paramend;
+			float paramv[4];
+			int paramidx;
+			svgtiny_code res;
+
+			/* advance cursor past optional whitespace */
+			while (cursor < textend &&
+			       (*cursor == ' ' || *cursor == '\t' ||
+				*cursor == '\n' || *cursor == '\r'))
+				cursor++;
+
+			bool parse_success = true;
+			for (paramidx = 0; paramidx < 4; paramidx++) {
+				paramend = textend;
+				res = svgtiny_parse_number(cursor,
+							   &paramend,
+							   &paramv[paramidx]);
+				if (res != svgtiny_OK) {
+					parse_success = false;
+					break;
+				}
+				cursor = paramend;
+				/* advance past comma/whitespace */
+				while (cursor < textend &&
+				       (*cursor == ' ' || *cursor == '\t' ||
+					*cursor == '\n' || *cursor == '\r' ||
+					*cursor == ','))
+					cursor++;
+			}
+
+			if (parse_success) {
+				if (width <= 0)
+					width = paramv[2];
+				if (height <= 0)
+					height = paramv[3];
+			}
+
+			dom_string_unref(view_box);
+		}
+	}
+
+	/* Final safety fallback */
+	if (width <= 0 && height <= 0) {
+		fprintf(stderr,
+			"svgtiny: missing width/height/viewBox, using defaults 300x150\n");
+		width = 300;
+		height = 150;
+	} else if (width <= 0) {
+		/* Only width missing - fallback to 300 if height gives no clue,
+		   or maybe keep aspect ratio? For now, simple fallback. */
+		width = 300;
+	} else if (height <= 0) {
+		height = 150;
+	}
+
 	diagram->width = width;
 	diagram->height = height;
 
