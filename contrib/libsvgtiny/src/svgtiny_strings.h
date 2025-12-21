@@ -50,10 +50,26 @@ SVGTINY_STRING_ACTION(gradientUnits)
 SVGTINY_STRING_ACTION(gradientTransform)
 SVGTINY_STRING_ACTION(userSpaceOnUse)
 SVGTINY_STRING_ACTION(use)
+/* Hyphenated attribute names - use SVGTINY_STRING_ACTION3 with quoted strings
+ */
+#ifdef SVGTINY_STRING_ACTION3
+SVGTINY_STRING_ACTION3(stroke_width, "stroke-width")
+SVGTINY_STRING_ACTION3(stop_color, "stop-color")
+SVGTINY_STRING_ACTION3(fill_opacity, "fill-opacity")
+SVGTINY_STRING_ACTION3(stroke_opacity, "stroke-opacity")
+SVGTINY_STRING_ACTION3(fill_rule, "fill-rule")
+SVGTINY_STRING_ACTION3(stroke_linecap, "stroke-linecap")
+SVGTINY_STRING_ACTION3(stroke_linejoin, "stroke-linejoin")
+SVGTINY_STRING_ACTION3(stroke_miterlimit, "stroke-miterlimit")
+SVGTINY_STRING_ACTION3(stroke_dasharray, "stroke-dasharray")
+SVGTINY_STRING_ACTION3(stroke_dashoffset, "stroke-dashoffset")
+SVGTINY_STRING_ACTION3(font_size, "font-size")
+SVGTINY_STRING_ACTION3(text_anchor, "text-anchor")
+SVGTINY_STRING_ACTION3(font_weight, "font-weight")
+#else
+/* Fallback for contexts that don't define SVGTINY_STRING_ACTION3 */
 SVGTINY_STRING_ACTION2(stroke_width, stroke - width)
 SVGTINY_STRING_ACTION2(stop_color, stop - color)
-SVGTINY_STRING_ACTION2(zero_percent, 0 %)
-SVGTINY_STRING_ACTION2(hundred_percent, 100 %)
 SVGTINY_STRING_ACTION2(fill_opacity, fill - opacity)
 SVGTINY_STRING_ACTION2(stroke_opacity, stroke - opacity)
 SVGTINY_STRING_ACTION2(fill_rule, fill - rule)
@@ -62,5 +78,13 @@ SVGTINY_STRING_ACTION2(stroke_linejoin, stroke - linejoin)
 SVGTINY_STRING_ACTION2(stroke_miterlimit, stroke - miterlimit)
 SVGTINY_STRING_ACTION2(stroke_dasharray, stroke - dasharray)
 SVGTINY_STRING_ACTION2(stroke_dashoffset, stroke - dashoffset)
+SVGTINY_STRING_ACTION2(font_size, font - size)
+SVGTINY_STRING_ACTION2(text_anchor, text - anchor)
+SVGTINY_STRING_ACTION2(font_weight, font - weight)
+#endif
+SVGTINY_STRING_ACTION2(zero_percent, 0 %)
+SVGTINY_STRING_ACTION2(hundred_percent, 100 %)
+SVGTINY_STRING_ACTION(dx)
+SVGTINY_STRING_ACTION(dy)
 
 #undef SVGTINY_STRING_ACTION

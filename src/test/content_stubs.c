@@ -6,8 +6,13 @@
 #include <neosurf/content/content_protected.h>
 #include "utils/nsurl/private.h"
 #include <neosurf/utils/nsurl.h>
+#include <neosurf/desktop/gui_internal.h>
 
 static struct nsurl *stub_url;
+
+/* Stub guit for tests - layout is NULL so svg.c will use approximation */
+static struct neosurf_table stub_gui_table = {0};
+struct neosurf_table *guit = &stub_gui_table;
 
 nserror content__init(struct content *c,
 		      const struct content_handler *handler,

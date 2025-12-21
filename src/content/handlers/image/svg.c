@@ -36,6 +36,8 @@
 #include <neosurf/plotters.h>
 #include <neosurf/content.h>
 #include <neosurf/content/content_protected.h>
+#include <neosurf/layout.h>
+#include <neosurf/desktop/gui_internal.h>
 #include "content/content_factory.h"
 
 #include "content/handlers/image/svg.h"
@@ -937,8 +939,59 @@ static bool svg_redraw_internal(svg_content *svg,
 			     transform[5];
 
 			fstyle.background = 0xffffff;
-			fstyle.foreground = 0x000000;
-			fstyle.size = (8 * PLOT_STYLE_SCALE) * scale;
+			/* Use SVG fill color for text, default to black if
+			 * transparent */
+			if (diagram->shape[i].fill == svgtiny_TRANSPARENT) {
+				fstyle.foreground = 0x000000;
+			} else {
+				fstyle.foreground = BGR(diagram->shape[i].fill);
+			}
+			/* Use SVG font-size, scale with diagram, fallback to
+			 * 12pt */
+			float fsize = diagram->shape[i].font_size;
+			if (fsize <= 0.0f) {
+				fsize = 12.0f;
+			}
+			/* SVG font size is in SVG units, just apply plot scale
+			 */
+			fstyle.size = (int)(fsize * PLOT_STYLE_SCALE * scale);
+
+			/* Apply font-weight bold if specified */
+			if (diagram->shape[i].font_weight_bold) {
+				fstyle.weight = 700;
+			}
+
+			/* Adjust position for text-anchor */
+			if (diagram->shape[i].text_anchor !=
+			    svgtiny_TEXT_ANCHOR_START) {
+				int text_width = 0;
+				size_t text_len = strlen(
+					diagram->shape[i].text);
+				/* Use layout API if available, otherwise
+				 * approximate */
+				if (guit != NULL && guit->layout != NULL &&
+				    guit->layout->width != NULL) {
+					guit->layout->width(
+						&fstyle,
+						diagram->shape[i].text,
+						text_len,
+						&text_width);
+				} else {
+					/* Approximate: 0.6 * font_height per
+					 * char */
+					int cw = (fstyle.size /
+						  PLOT_STYLE_SCALE) *
+						 6 / 10;
+					text_width = (int)text_len * cw;
+				}
+				if (diagram->shape[i].text_anchor ==
+				    svgtiny_TEXT_ANCHOR_MIDDLE) {
+					px -= text_width / 2;
+				} else if (diagram->shape[i].text_anchor ==
+					   svgtiny_TEXT_ANCHOR_END) {
+					px -= text_width;
+				}
+			}
 
 			res = ctx->plot->text(ctx,
 					      &fstyle,
@@ -1067,8 +1120,8 @@ static bool svg_redraw(struct content *c,
 	svg_content *svg = (svg_content *)c;
 
 	if ((data->width <= 0) && (data->height <= 0)) {
-		/* No point trying to plot SVG if it does not occupy a valid
-		 * area */
+		/* No point trying to plot SVG if it does not occupy a
+		 * valid area */
 		return true;
 	}
 
