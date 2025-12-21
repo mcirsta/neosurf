@@ -307,26 +307,52 @@ static void svgtiny_parse_paint_attributes(dom_element *node,
 static void svgtiny_parse_font_attributes(dom_element *node,
 					  struct svgtiny_parse_state *state)
 {
-	/* TODO: Implement this, it never used to be */
-	UNUSED(node);
-	UNUSED(state);
-#ifdef WRITTEN_THIS_PROPERLY
-	const xmlAttr *attr;
+	struct svgtiny_parse_internal_operation ops[] = {
+		{/* font-size */
+		 state->interned_font_size,
+		 SVGTIOP_LENGTH,
+		 &state->viewport_height, /* use viewport height as reference */
+		 &state->font_size},
+		{NULL, SVGTIOP_NONE, NULL, NULL},
+	};
+	dom_string *attr;
+	dom_exception exc;
 
-	UNUSED(state);
+	svgtiny_parse_attributes(node, state, ops);
+	svgtiny_parse_inline_style(node, state, ops);
 
-	for (attr = node->properties; attr; attr = attr->next) {
-		if (strcmp((const char *)attr->name, "font-size") == 0) {
-			/*if (css_parse_length(
-			  (const char *) attr->children->content,
-			  &state->style.font_size.value.length,
-			  true, true)) {
-			  state->style.font_size.size =
-			  CSS_FONT_SIZE_LENGTH;
-			  }*/
+	/* Parse text-anchor (start, middle, end) */
+	exc = dom_element_get_attribute(node,
+					state->interned_text_anchor,
+					&attr);
+	if (exc == DOM_NO_ERR && attr != NULL) {
+		const char *data = dom_string_data(attr);
+		if (strncmp(data, "middle", 6) == 0) {
+			state->text_anchor = svgtiny_TEXT_ANCHOR_MIDDLE;
+		} else if (strncmp(data, "end", 3) == 0) {
+			state->text_anchor = svgtiny_TEXT_ANCHOR_END;
+		} else {
+			state->text_anchor = svgtiny_TEXT_ANCHOR_START;
 		}
+		dom_string_unref(attr);
 	}
-#endif
+
+	/* Parse font-weight (bold, normal) */
+	exc = dom_element_get_attribute(node,
+					state->interned_font_weight,
+					&attr);
+	if (exc == DOM_NO_ERR && attr != NULL) {
+		const char *data = dom_string_data(attr);
+		if (strncmp(data, "bold", 4) == 0 ||
+		    strncmp(data, "700", 3) == 0 ||
+		    strncmp(data, "800", 3) == 0 ||
+		    strncmp(data, "900", 3) == 0) {
+			state->font_weight_bold = true;
+		} else {
+			state->font_weight_bold = false;
+		}
+		dom_string_unref(attr);
+	}
 }
 
 
@@ -850,23 +876,83 @@ static svgtiny_code
 svgtiny_parse_text(dom_element *text, struct svgtiny_parse_state state)
 {
 	float x, y, width, height;
+	float dx = 0, dy = 0;
 	float px, py;
 	dom_node *child;
 	dom_exception exc;
+	dom_string *attr;
+	bool x_set = false, y_set = false;
 
 	svgtiny_setup_state_local(&state);
 
+	/* Check if x attribute is explicitly set */
+	exc = dom_element_get_attribute(text, state.interned_x, &attr);
+	if (exc == DOM_NO_ERR && attr != NULL) {
+		x_set = true;
+		dom_string_unref(attr);
+	}
+	/* Check if y attribute is explicitly set */
+	exc = dom_element_get_attribute(text, state.interned_y, &attr);
+	if (exc == DOM_NO_ERR && attr != NULL) {
+		y_set = true;
+		dom_string_unref(attr);
+	}
+
+	/* Parse dx attribute (relative x offset) */
+	exc = dom_element_get_attribute(text, state.interned_dx, &attr);
+	if (exc == DOM_NO_ERR && attr != NULL) {
+		svgtiny_parse_length(dom_string_data(attr),
+				     dom_string_byte_length(attr),
+				     (int)state.viewport_width,
+				     &dx);
+		dom_string_unref(attr);
+	}
+	/* Parse dy attribute (relative y offset) */
+	exc = dom_element_get_attribute(text, state.interned_dy, &attr);
+	if (exc == DOM_NO_ERR && attr != NULL) {
+		svgtiny_parse_length(dom_string_data(attr),
+				     dom_string_byte_length(attr),
+				     (int)state.viewport_height,
+				     &dy);
+		dom_string_unref(attr);
+	}
+
+	/* Parse position attributes (fills with defaults if not present) */
 	svgtiny_parse_position_attributes(text, state, &x, &y, &width, &height);
 	svgtiny_parse_font_attributes(text, &state);
 	svgtiny_parse_transform_attributes(text, &state);
 
-	px = state.ctm.a * x + state.ctm.c * y + state.ctm.e;
-	py = state.ctm.b * x + state.ctm.d * y + state.ctm.f;
-	/*	state.ctm.e = px - state.origin_x; */
-	/*	state.ctm.f = py - state.origin_y; */
+	/* If x or y were explicitly set, use them; otherwise inherit from
+	 * parent's text position */
+	if (x_set) {
+		px = state.ctm.a * x + state.ctm.c * y + state.ctm.e;
+		state.text_x = px;
+		state.text_x_set = true;
+	} else if (state.text_x_set) {
+		/* Inherit from parent */
+		px = state.text_x;
+	} else {
+		/* First text element, use default (0,0 transformed) */
+		px = state.ctm.a * x + state.ctm.c * y + state.ctm.e;
+		state.text_x = px;
+	}
 
-	/*struct css_style style = state.style;
-	  style.font_size.value.length.value *= state.ctm.a;*/
+	if (y_set) {
+		py = state.ctm.b * x + state.ctm.d * y + state.ctm.f;
+		state.text_y = py;
+		state.text_y_set = true;
+	} else if (state.text_y_set) {
+		/* Inherit from parent */
+		py = state.text_y;
+	} else {
+		/* First text element, use default (0,0 transformed) */
+		py = state.ctm.b * x + state.ctm.d * y + state.ctm.f;
+		state.text_y = py;
+	}
+
+	/* Apply dx/dy offsets (scale by CTM) */
+	px += state.ctm.a * dx;
+	py += state.ctm.d * dy;
 
 	exc = dom_node_get_first_child(text, &child);
 	if (exc != DOM_NO_ERR) {
@@ -1127,8 +1213,16 @@ static svgtiny_code initialise_parse_state(struct svgtiny_parse_state *state,
 				       &state->interned_##s) != DOM_NO_ERR) {  \
 		return svgtiny_LIBDOM_ERROR;                                   \
 	}
+/* SVGTINY_STRING_ACTION3 takes quoted string literal directly */
+#define SVGTINY_STRING_ACTION3(s, n)                                           \
+	if (dom_string_create_interned((const uint8_t *)n,                     \
+				       sizeof(n) - 1,                          \
+				       &state->interned_##s) != DOM_NO_ERR) {  \
+		return svgtiny_LIBDOM_ERROR;                                   \
+	}
 #include "svgtiny_strings.h"
 #undef SVGTINY_STRING_ACTION2
+#undef SVGTINY_STRING_ACTION3
 
 	/* get graphic dimensions */
 	state->viewport_width = viewport_width;
@@ -1168,6 +1262,13 @@ static svgtiny_code initialise_parse_state(struct svgtiny_parse_state *state,
 	state->stroke_dasharray_set = false;
 	state->stroke_dashoffset = 0.0f;
 	state->stroke_dashoffset_set = false;
+	state->font_size = 12.0f; /* default font size in px */
+	state->text_anchor = svgtiny_TEXT_ANCHOR_START; /* default left align */
+	state->font_weight_bold = false;
+	state->text_x = 0.0f;
+	state->text_y = 0.0f;
+	state->text_x_set = false;
+	state->text_y_set = false;
 	return svgtiny_OK;
 }
 
@@ -1280,6 +1381,10 @@ struct svgtiny_shape *svgtiny_add_shape(struct svgtiny_parse_state *state)
 		shape->path = 0;
 		shape->path_length = 0;
 		shape->text = 0;
+		shape->font_size = state->font_size;
+		shape->text_anchor = state->text_anchor;
+		shape->font_weight_bold = state->font_weight_bold;
+
 		shape->fill = state->fill;
 		shape->stroke = state->stroke;
 		shape->stroke_width = lroundf((float)state->stroke_width *

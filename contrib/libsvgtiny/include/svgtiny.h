@@ -38,11 +38,20 @@ typedef enum {
 	svgtiny_JOIN_BEVEL
 } svgtiny_line_join;
 
+typedef enum {
+	svgtiny_TEXT_ANCHOR_START,
+	svgtiny_TEXT_ANCHOR_MIDDLE,
+	svgtiny_TEXT_ANCHOR_END
+} svgtiny_text_anchor;
+
 struct svgtiny_shape {
 	float *path;
 	unsigned int path_length;
 	char *text;
 	float text_x, text_y;
+	float font_size;
+	svgtiny_text_anchor text_anchor;
+	bool font_weight_bold;
 	svgtiny_colour fill;
 	svgtiny_colour stroke;
 	int stroke_width;

@@ -77,6 +77,17 @@ struct svgtiny_parse_state {
 	float stroke_dashoffset;
 	bool stroke_dashoffset_set;
 
+	/* font attributes */
+	float font_size;
+	svgtiny_text_anchor text_anchor;
+	bool font_weight_bold;
+
+	/* current text position (for tspan inheritance) */
+	float text_x;
+	float text_y;
+	bool text_x_set;
+	bool text_y_set;
+
 	/* gradients */
 	struct svgtiny_parse_state_gradient fill_grad;
 	struct svgtiny_parse_state_gradient stroke_grad;
