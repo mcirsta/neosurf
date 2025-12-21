@@ -49,6 +49,7 @@ class NS_Widget : public QWidget
 	nserror invalidate(const struct rect *rect);
 	void set_pointer(enum gui_pointer_shape shape);
 	void setCaret(bool visible, int x, int y, int height);
+	void invalidateBrowserWindow(); /**< Nullify m_bw before destruction */
 
       public slots:
 	void setHorizontalScroll(int value);

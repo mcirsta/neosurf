@@ -142,7 +142,19 @@ void NS_Widget::focusOutEvent(QFocusEvent *event)
  */
 void NS_Widget::resizeEvent(QResizeEvent *event)
 {
+	if (m_bw == nullptr) {
+		return;
+	}
 	browser_window_schedule_reformat(m_bw);
+}
+
+
+/**
+ * Invalidate the browser window pointer before destruction
+ */
+void NS_Widget::invalidateBrowserWindow()
+{
+	m_bw = nullptr;
 }
 
 
@@ -151,6 +163,9 @@ void NS_Widget::resizeEvent(QResizeEvent *event)
  */
 void NS_Widget::paintEvent(QPaintEvent *event)
 {
+	if (m_bw == nullptr) {
+		return;
+	}
 	QPainter *painter = new QPainter(this);
 	struct redraw_context ctx = {
 		.interactive = true,
@@ -176,6 +191,9 @@ void NS_Widget::paintEvent(QPaintEvent *event)
 
 void NS_Widget::mousePressEvent(QMouseEvent *event)
 {
+	if (m_bw == nullptr) {
+		return;
+	}
 	QPointF pos = event->position();
 	/** the mouse button the event was generated for */
 	Qt::MouseButton button = event->button();
@@ -215,6 +233,9 @@ void NS_Widget::mousePressEvent(QMouseEvent *event)
 
 void NS_Widget::mouseMoveEvent(QMouseEvent *event)
 {
+	if (m_bw == nullptr) {
+		return;
+	}
 	const QPointF pos = event->position();
 	Qt::MouseButtons buttons = event->buttons();
 	unsigned int bms = BROWSER_MOUSE_HOVER;
@@ -270,6 +291,9 @@ void NS_Widget::mouseMoveEvent(QMouseEvent *event)
 
 void NS_Widget::mouseReleaseEvent(QMouseEvent *event)
 {
+	if (m_bw == nullptr) {
+		return;
+	}
 	/** the position the event was generated for */
 	const QPointF pos = event->position();
 	/** the mouse button the event was generated for */
@@ -326,6 +350,10 @@ void NS_Widget::mouseReleaseEvent(QMouseEvent *event)
 
 void NS_Widget::keyPressEvent(QKeyEvent *event)
 {
+	if (m_bw == nullptr) {
+		QWidget::keyPressEvent(event);
+		return;
+	}
 	uint32_t nskey;
 	nskey = qkeyevent_to_nskey(event);
 	if (browser_window_key_press(m_bw, nskey) == false) {
@@ -352,6 +380,9 @@ void NS_Widget::keyPressEvent(QKeyEvent *event)
  */
 void NS_Widget::contextMenuEvent(QContextMenuEvent *event)
 {
+	if (m_bw == nullptr) {
+		return;
+	}
 	struct browser_window_features features;
 	char *selected_text;
 

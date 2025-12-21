@@ -130,6 +130,7 @@ NS_Window::~NS_Window()
 
 void NS_Window::closeEvent(QCloseEvent *event)
 {
+	m_nswidget->invalidateBrowserWindow();
 	browser_window_destroy(m_bw);
 }
 
@@ -211,6 +212,7 @@ void NS_Window::keyPressEvent(QKeyEvent *event)
  */
 void NS_Window::destroy(void)
 {
+	m_nswidget->invalidateBrowserWindow();
 	browser_window_destroy(m_bw);
 }
 
