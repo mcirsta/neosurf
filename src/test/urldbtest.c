@@ -1184,7 +1184,7 @@ static TCase *urldb_api_case_create(void)
 #endif
 
 #ifndef _WIN32
-#ifndef URLDB_ASAN_ENABLED
+#if !defined(NDEBUG) && !defined(URLDB_ASAN_ENABLED)
 	tcase_add_test_raise_signal(tc, urldb_api_add_url_assert_test, 6);
 #endif
 #endif

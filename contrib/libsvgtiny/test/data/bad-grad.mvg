@@ -1,2 +1,4 @@
 viewbox 0 0 1000 1000
+fill #6699ff stroke none stroke-width 10 path 'M 100 100 L 900 100 L 100 900 Z '
+fill #6699ff stroke none stroke-width 10 path 'M 100 900 L 900 100 L 900 900 Z '
 fill none stroke #000000 stroke-width 10 path 'M 100 100 L 900 100 L 900 900 L 100 900 Z '
