@@ -1347,7 +1347,7 @@ static Suite *nsurl_suite(void)
 #define NSURL_ASAN_ENABLED 1
 #endif
 
-#ifndef NSURL_ASAN_ENABLED
+#if !defined(NDEBUG) && !defined(NSURL_ASAN_ENABLED)
 	tc_api_assert = tcase_create("API asserts");
 
 	tcase_add_unchecked_fixture(tc_api_assert,

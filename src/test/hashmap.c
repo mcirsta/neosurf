@@ -484,7 +484,7 @@ START_TEST(chain_add_all_twice_remove_all_iterate)
 }
 END_TEST
 
-#define CHAIN_TEST_MALLOC_COUNT_MAX 50
+#define CHAIN_TEST_MALLOC_COUNT_MAX 60
 
 #ifndef __SANITIZE_ADDRESS__
 
