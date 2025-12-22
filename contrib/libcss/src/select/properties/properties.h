@@ -155,6 +155,12 @@ PROPERTY_FUNCS(word_spacing);
 PROPERTY_FUNCS(writing_mode);
 PROPERTY_FUNCS(z_index);
 
+/* CSS Grid properties */
+PROPERTY_FUNCS(grid_template_columns);
+PROPERTY_FUNCS(grid_template_rows);
+PROPERTY_FUNCS(grid_auto_flow);
+PROPERTY_FUNCS(row_gap);
+
 #undef PROPERTY_FUNCS
 
 #endif

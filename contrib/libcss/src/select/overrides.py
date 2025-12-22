@@ -61,7 +61,7 @@ static inline css_error set_clip(
 	opcodes: top | right | bottom | left | type
 	*/
 	*bits = (*bits & ~CLIP_MASK) |
-			((type & 0x3) << CLIP_SHIFT);
+			(((uint32_t)type & 0x3) << CLIP_SHIFT);
 
 	if (type == CSS_CLIP_RECT) {
 		*bits |= (((rect->top_auto ? 0x20 : 0) |
@@ -120,7 +120,7 @@ static inline css_error set_content(
 	oldcontent = style->content;
 
 	*bits = (*bits & ~CONTENT_MASK) |
-			((type & 0x3) << CONTENT_SHIFT);
+			(((uint32_t)type & 0x3) << CONTENT_SHIFT);
 
 	for (c = content; c != NULL &&
 			c->type != CSS_COMPUTED_CONTENT_NONE; c++) {

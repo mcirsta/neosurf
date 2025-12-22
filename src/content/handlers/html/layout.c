@@ -991,7 +991,7 @@ static void layout_minmax_block(struct box *block,
 	bool child_has_height = false;
 
 	assert(block->type == BOX_BLOCK || block->type == BOX_FLEX ||
-	       block->type == BOX_INLINE_FLEX ||
+	       block->type == BOX_GRID || block->type == BOX_INLINE_FLEX ||
 	       block->type == BOX_INLINE_BLOCK ||
 	       block->type == BOX_TABLE_CELL);
 
@@ -1019,7 +1019,8 @@ static void layout_minmax_block(struct box *block,
 		   wtype != CSS_WIDTH_SET) {
 		/* box inside shrink-to-fit context; need minimum width */
 		block->flags |= NEED_MIN;
-	} else if (block->parent && (block->parent->type == BOX_FLEX)) {
+	} else if (block->parent && (block->parent->type == BOX_FLEX ||
+				     block->parent->type == BOX_GRID)) {
 		/* box is flex item */
 		block->flags |= NEED_MIN;
 	}
@@ -1077,6 +1078,7 @@ static void layout_minmax_block(struct box *block,
 		for (child = block->children; child; child = child->next) {
 			switch (child->type) {
 			case BOX_FLEX:
+			case BOX_GRID:
 			case BOX_BLOCK:
 				layout_minmax_block(child, font_func, content);
 				if (child->flags & HAS_HEIGHT)
@@ -2510,7 +2512,7 @@ static bool layout_block_object(struct box *block)
 {
 	assert(block);
 	assert(block->type == BOX_BLOCK || block->type == BOX_FLEX ||
-	       block->type == BOX_INLINE_BLOCK ||
+	       block->type == BOX_GRID || block->type == BOX_INLINE_BLOCK ||
 	       block->type == BOX_INLINE_FLEX || block->type == BOX_TABLE ||
 	       block->type == BOX_TABLE_CELL);
 	assert(block->object);
@@ -2836,7 +2838,7 @@ static bool layout_float(struct box *b, int width, html_content *content)
 {
 	assert(b->type == BOX_TABLE || b->type == BOX_BLOCK ||
 	       b->type == BOX_INLINE_BLOCK || b->type == BOX_FLEX ||
-	       b->type == BOX_INLINE_FLEX);
+	       b->type == BOX_GRID || b->type == BOX_INLINE_FLEX);
 	layout_float_find_dimensions(
 		&content->unit_len_ctx, width, b->style, b);
 	if (b->type == BOX_TABLE || b->type == BOX_INLINE_FLEX) {
@@ -3844,7 +3846,7 @@ bool layout_block_context(struct box *block,
 
 	assert(block->type == BOX_BLOCK || block->type == BOX_INLINE_BLOCK ||
 	       block->type == BOX_TABLE_CELL || block->type == BOX_FLEX ||
-	       block->type == BOX_INLINE_FLEX);
+	       block->type == BOX_GRID || block->type == BOX_INLINE_FLEX);
 	assert(block->width != UNKNOWN_WIDTH);
 	assert(block->width != AUTO);
 
@@ -3920,7 +3922,7 @@ bool layout_block_context(struct box *block,
 		enum css_overflow_e overflow_y = CSS_OVERFLOW_VISIBLE;
 
 		assert(box->type == BOX_BLOCK || box->type == BOX_FLEX ||
-		       box->type == BOX_TABLE ||
+		       box->type == BOX_GRID || box->type == BOX_TABLE ||
 		       box->type == BOX_INLINE_CONTAINER);
 
 		{
@@ -4007,8 +4009,8 @@ bool layout_block_context(struct box *block,
 		 * left and right margins to avoid any floats. */
 		lm = rm = 0;
 
-		if (box->type == BOX_FLEX || box->type == BOX_BLOCK ||
-		    box->flags & IFRAME) {
+		if (box->type == BOX_FLEX || box->type == BOX_GRID ||
+		    box->type == BOX_BLOCK || box->flags & IFRAME) {
 			if (lh__box_is_object(box) == false && box->style &&
 			    (overflow_x != CSS_OVERFLOW_VISIBLE ||
 			     overflow_y != CSS_OVERFLOW_VISIBLE)) {
@@ -4167,7 +4169,8 @@ bool layout_block_context(struct box *block,
 
 		/* Vertical margin */
 		if (((box->type == BOX_BLOCK && (box->flags & HAS_HEIGHT)) ||
-		     box->type == BOX_FLEX || box->type == BOX_TABLE ||
+		     box->type == BOX_FLEX || box->type == BOX_GRID ||
+		     box->type == BOX_TABLE ||
 		     (box->type == BOX_INLINE_CONTAINER &&
 		      !box_is_first_child(box)) ||
 		     margin_collapse == box) &&
@@ -4190,12 +4193,12 @@ bool layout_block_context(struct box *block,
 
 		/* Unless the box has an overflow style of visible, the box
 		 * establishes a new block context. */
-		if (box->type == BOX_FLEX ||
+		if (box->type == BOX_FLEX || box->type == BOX_GRID ||
 		    (box->type == BOX_BLOCK && box->style &&
 		     (overflow_x != CSS_OVERFLOW_VISIBLE ||
 		      overflow_y != CSS_OVERFLOW_VISIBLE))) {
 
-			if (box->type == BOX_FLEX) {
+			if (box->type == BOX_FLEX || box->type == BOX_GRID) {
 				const char *tag = "";
 				const char *cls = "";
 				dom_string *name = NULL;
@@ -5053,7 +5056,7 @@ static bool layout_absolute(struct box *box,
 
 	assert(box->type == BOX_BLOCK || box->type == BOX_TABLE ||
 	       box->type == BOX_INLINE_BLOCK || box->type == BOX_FLEX ||
-	       box->type == BOX_INLINE_FLEX);
+	       box->type == BOX_GRID || box->type == BOX_INLINE_FLEX);
 
 	/* The static position is where the box would be if it was not
 	 * absolutely positioned. The x and y are filled in by
@@ -5389,7 +5392,8 @@ static bool layout_absolute(struct box *box,
 		box->float_container = NULL;
 		layout_solve_width(
 			box, box->parent->width, box->width, 0, 0, -1, -1);
-	} else if (box->type == BOX_FLEX || box->type == BOX_INLINE_FLEX) {
+	} else if (box->type == BOX_FLEX || box->type == BOX_INLINE_FLEX ||
+		   box->type == BOX_GRID || box->type == BOX_INLINE_GRID) {
 		/* layout_table also expects the containing block to be
 		 * stored in the float_container field */
 		box->float_container = containing_block;
@@ -5548,7 +5552,7 @@ static bool layout_position_absolute(struct box *box,
 	for (c = box->children; c; c = c->next) {
 		if ((c->type == BOX_BLOCK || c->type == BOX_TABLE ||
 		     c->type == BOX_INLINE_BLOCK || c->type == BOX_FLEX ||
-		     c->type == BOX_INLINE_FLEX) &&
+		     c->type == BOX_GRID || c->type == BOX_INLINE_FLEX) &&
 		    (css_computed_position(c->style) == CSS_POSITION_ABSOLUTE ||
 		     css_computed_position(c->style) == CSS_POSITION_FIXED)) {
 			const char *cb_tag = "";

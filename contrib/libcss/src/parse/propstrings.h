@@ -492,6 +492,14 @@ enum {
 	LCH,
 	OKLAB,
 	OKLCH,
+	/* CSS Grid keywords */
+	DENSE,
+	ROW_DENSE,
+	COLUMN_DENSE,
+	GRID_TEMPLATE_COLUMNS,
+	GRID_TEMPLATE_ROWS,
+	GRID_AUTO_FLOW,
+	ROW_GAP,
 
 	/* Named colours */
 	FIRST_COLOUR,

@@ -727,4 +727,10 @@ extern const uint32_t property_unit_mask[CSS_N_PROPERTIES];
 #define UNIT_MASK_JUSTIFY_CONTENT (0)
 #define UNIT_MASK_ORDER (0)
 
+/* CSS Grid properties */
+#define UNIT_MASK_GRID_TEMPLATE_COLUMNS (UNIT_LENGTH | UNIT_PCT)
+#define UNIT_MASK_GRID_TEMPLATE_ROWS (UNIT_LENGTH | UNIT_PCT)
+#define UNIT_MASK_GRID_AUTO_FLOW (0)
+#define UNIT_MASK_ROW_GAP (UNIT_LENGTH)
+
 #endif
