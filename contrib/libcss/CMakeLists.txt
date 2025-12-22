@@ -211,6 +211,10 @@ add_library(css SHARED
 	src/select/properties/word_spacing.c
 	src/select/properties/writing_mode.c
 	src/select/properties/z_index.c
+	src/select/properties/grid_template_columns.c
+	src/select/properties/grid_template_rows.c
+	src/select/properties/grid_auto_flow.c
+	src/select/properties/row_gap.c
 	src/select/arena.c
 	src/select/calc.c
 	src/select/computed.c

@@ -519,4 +519,21 @@ struct prop_table prop_dispatch[CSS_N_PROPERTIES] = {
 	{
 		PROPERTY_FUNCS(stroke_opacity),
 		1,
+	},
+	/* CSS Grid properties */
+	{
+		PROPERTY_FUNCS(grid_template_columns),
+		0,
+	},
+	{
+		PROPERTY_FUNCS(grid_template_rows),
+		0,
+	},
+	{
+		PROPERTY_FUNCS(grid_auto_flow),
+		0,
+	},
+	{
+		PROPERTY_FUNCS(row_gap),
+		0,
 	}};

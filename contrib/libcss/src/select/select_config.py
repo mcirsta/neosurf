@@ -162,7 +162,12 @@ style = {
         'with a blank entry'),
     ('content', 2, 'content_item', 'CSS_CONTENT_SET', 'CSS_CONTENT_NORMAL',
         'Encode content as an array of content items, terminated with '
-        'a blank entry.', 'set')
+        'a blank entry.', 'set'),
+    # CSS Grid properties
+    ('grid_template_columns', 2),
+    ('grid_template_rows', 2),
+    ('grid_auto_flow', 3),
+    ('row_gap', 2, 'length', 'CSS_ROW_GAP_SET', 'CSS_ROW_GAP_NORMAL')
 }
 
 groups = [

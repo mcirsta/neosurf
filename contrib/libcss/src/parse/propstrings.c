@@ -497,6 +497,14 @@ const stringmap_entry stringmap[LAST_KNOWN] = {
 	SMAP("lch"),
 	SMAP("oklab"),
 	SMAP("oklch"),
+	/* CSS Grid keywords */
+	SMAP("dense"),
+	SMAP("row dense"),
+	SMAP("column dense"),
+	SMAP("grid-template-columns"),
+	SMAP("grid-template-rows"),
+	SMAP("grid-auto-flow"),
+	SMAP("row-gap"),
 
 	/* Named colours */
 	SMAP("aliceblue"),
