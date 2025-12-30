@@ -233,6 +233,17 @@ const stringmap_entry stringmap[LAST_KNOWN] = {
 	SMAP("word-spacing"),
 	SMAP("writing-mode"),
 	SMAP("z-index"),
+	SMAP("grid-template-columns"),
+	SMAP("grid-template-rows"),
+	SMAP("grid-auto-flow"),
+	SMAP("gap"),
+	SMAP("row-gap"),
+	/* Legacy grid gap aliases */
+	SMAP("grid-gap"),
+	SMAP("grid-row-gap"),
+	SMAP("grid-column-gap"),
+	/* Place shorthands */
+	SMAP("place-content"),
 
 	SMAP("inherit"),
 	SMAP("unset"),
@@ -501,10 +512,6 @@ const stringmap_entry stringmap[LAST_KNOWN] = {
 	SMAP("dense"),
 	SMAP("row dense"),
 	SMAP("column dense"),
-	SMAP("grid-template-columns"),
-	SMAP("grid-template-rows"),
-	SMAP("grid-auto-flow"),
-	SMAP("row-gap"),
 
 	/* Named colours */
 	SMAP("aliceblue"),

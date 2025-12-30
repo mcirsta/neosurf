@@ -65,6 +65,8 @@ add_library(css SHARED
 	src/parse/properties/fill_opacity.c
 	src/parse/properties/flex.c
 	src/parse/properties/flex_flow.c
+	src/parse/properties/gap.c
+	src/parse/properties/place_content.c
 	src/parse/properties/font.c
 	src/parse/properties/font_family.c
 	src/parse/properties/font_weight.c
@@ -83,6 +85,8 @@ add_library(css SHARED
 	src/parse/properties/text_decoration.c
 	src/parse/properties/utils.c
 	src/parse/properties/voice_family.c
+	src/parse/properties/grid_template_columns.c
+	src/parse/properties/grid_template_rows.c
 	${PROPSRC}
 	src/select/properties/helpers.c
 	src/select/properties/align_content.c

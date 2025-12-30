@@ -1201,14 +1201,19 @@ static bool box_normalise_grid(struct box *grid_container,
 		case BOX_INLINE_END:
 		case BOX_INLINE_FLEX:
 		case BOX_INLINE_GRID:
-		case BOX_INLINE_BLOCK:
-		case BOX_FLOAT_LEFT:
-		case BOX_FLOAT_RIGHT:
 		case BOX_BR:
 		case BOX_TEXT:
 			/* should have been wrapped in inline
 			   container by convert_xml_to_box() */
 			assert(0);
+			break;
+		case BOX_INLINE_BLOCK:
+		case BOX_FLOAT_LEFT:
+		case BOX_FLOAT_RIGHT:
+			/* Blockify / De-float */
+			child->type = BOX_BLOCK;
+			if (box_normalise_block(child, root, c) == false)
+				return false;
 			break;
 		case BOX_TABLE_ROW_GROUP:
 		case BOX_TABLE_ROW:

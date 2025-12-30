@@ -1,0 +1,344 @@
+/*
+ * Copyright 2025 Marius
+ *
+ * This file is part of NetSurf, http://www.netsurf-browser.org/
+ *
+ * NetSurf is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; version 2 of the License.
+ *
+ * NetSurf is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+/**
+ * \file
+ * \brief HTML grid layout implementation
+ */
+
+#include <assert.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <stdint.h>
+#include <limits.h>
+#include <string.h>
+
+#include <libcss/libcss.h>
+#include <libcss/computed.h>
+
+#include <neosurf/utils/log.h>
+#include <neosurf/utils/utils.h>
+#include <neosurf/content/handlers/html/private.h>
+#include "content/handlers/html/layout_grid.h"
+#include "content/handlers/html/layout_internal.h"
+#include <neosurf/content/handlers/html/box.h>
+#include <dom/dom.h>
+#include <neosurf/utils/corestrings.h>
+
+
+/**
+ * Determine logical column count from CSS grid-template-columns.
+ *
+ * Uses the CSS computed style to get the actual track list values.
+ */
+static int layout_grid_get_column_count(struct box *grid)
+{
+	int32_t n_tracks = 0;
+	css_computed_grid_track *tracks = NULL;
+	uint8_t grid_template_type;
+
+	/* Get column count from CSS computed style */
+	if (grid->style != NULL) {
+		grid_template_type = css_computed_grid_template_columns(
+			grid->style, &n_tracks, &tracks);
+
+		if (grid_template_type == CSS_GRID_TEMPLATE_SET &&
+		    n_tracks > 0) {
+			NSLOG(layout,
+			      DEBUG,
+			      "CSS grid-template-columns: %d tracks",
+			      n_tracks);
+			return n_tracks;
+		} else if (grid_template_type == CSS_GRID_TEMPLATE_NONE) {
+			/* Explicit 'none' value means no explicit grid */
+			return 1;
+		}
+		/* CSS_GRID_TEMPLATE_INHERIT or no tracks falls through to
+		 * default */
+	}
+
+	return 1; /* Default to 1 column */
+}
+
+static void layout_grid_compute_tracks(struct box *grid,
+				       int available_width,
+				       int *col_widths,
+				       int num_cols,
+				       const css_computed_style *style,
+				       const css_unit_ctx *unit_len_ctx)
+{
+	int32_t n_tracks = 0;
+	css_computed_grid_track *tracks = NULL;
+	css_fixed gap_len = 0;
+	css_unit gap_unit = CSS_UNIT_PX;
+	int gap_px = 0;
+	int total_gap_width = 0;
+	int i;
+	int used_width = 0;
+	int fr_tracks = 0;
+	int fr_total = 0;
+
+	/* Get column gap */
+	if (css_computed_column_gap(style, &gap_len, &gap_unit) ==
+	    CSS_COLUMN_GAP_SET) {
+		gap_px = FIXTOINT(css_unit_len2device_px(
+			style, unit_len_ctx, gap_len, gap_unit));
+	}
+	NSLOG(netsurf,
+	      INFO,
+	      "Column Gap: %d px (from val %d unit %d)",
+	      gap_px,
+	      gap_len,
+	      gap_unit);
+
+	/* Calculate total gap width consumed */
+	if (num_cols > 1) {
+		/* Parameters:
+		 * box->width is the available width for the grid container
+		 */
+		NSLOG(netsurf,
+		      INFO,
+		      "Grid Layout Compute Tracks: Available Width %d, Num Cols %d",
+		      available_width,
+		      num_cols);
+		total_gap_width = (num_cols - 1) * gap_px;
+	}
+
+	/* Get explicit track definitions */
+	if (css_computed_grid_template_columns(style, &n_tracks, &tracks) ==
+		    CSS_GRID_TEMPLATE_SET &&
+	    n_tracks > 0) {
+		/* Use parsed tracks */
+		for (i = 0; i < num_cols; i++) {
+			/* Cycle through tracks if num_cols > n_tracks (implicit
+			 * grid) */
+			css_computed_grid_track *t = &tracks[i % n_tracks];
+
+			if (t->unit == CSS_UNIT_FR) {
+				fr_tracks++;
+				fr_total += FIXTOINT(t->value);
+				NSLOG(netsurf,
+				      INFO,
+				      "Track %d is FR: val %d (fixed %d)",
+				      i,
+				      FIXTOINT(t->value),
+				      t->value);
+				col_widths[i] = 0; /* Will be assigned later */
+			} else {
+				/* Handle fixed units (px, etc) */
+				/* For now assuming PX for simplicity or
+				 * converting */
+				/* TODO: Handle other units properly using
+				 * css_unit_len2device_px */
+				if (t->unit == CSS_UNIT_PX) {
+					int w = FIXTOINT(css_unit_len2device_px(
+						style,
+						unit_len_ctx,
+						t->value,
+						t->unit));
+					col_widths[i] = w;
+					used_width += w;
+					NSLOG(netsurf,
+					      INFO,
+					      "Track %d is PX: %d",
+					      i,
+					      w);
+				} else {
+					col_widths[i] =
+						0; /* Auto/Other fallback */
+				}
+			}
+		}
+	} else {
+		/* Fallback: treat as 1fr for all columns */
+		fr_tracks = num_cols;
+		fr_total = num_cols;
+		for (i = 0; i < num_cols; i++)
+			col_widths[i] = 0;
+	}
+
+	/* Distributed remaining space to FR tracks */
+	int remaining_width = available_width - used_width - total_gap_width;
+	if (remaining_width < 0)
+		remaining_width = 0;
+
+	if (fr_tracks > 0 && fr_total > 0) {
+		NSLOG(netsurf,
+		      INFO,
+		      "Distributing FR: Remaining %d, FR Total %d",
+		      remaining_width,
+		      fr_total);
+		int px_per_fr = remaining_width / fr_total;
+		NSLOG(netsurf, INFO, "PX per FR: %d", px_per_fr);
+		for (i = 0; i < num_cols; i++) {
+			/* Check if this column was an FR track.
+			   We need to re-check the track definition or use a
+			   flag. Re-checking logic for simplicity.
+			*/
+			bool is_fr = false;
+			int fr_val = 0;
+
+			if (n_tracks > 0) {
+				css_computed_grid_track *t =
+					&tracks[i % n_tracks];
+				if (t->unit == CSS_UNIT_FR) {
+					is_fr = true;
+					fr_val = FIXTOINT(t->value);
+				}
+			} else {
+				is_fr = true; /* Fallback all fr */
+				fr_val = 1;
+			}
+
+			if (is_fr) {
+				col_widths[i] = px_per_fr * fr_val;
+			}
+		}
+	}
+}
+
+bool layout_grid(struct box *grid, int available_width, html_content *content)
+{
+	struct box *child;
+	int grid_width = available_width;
+	int grid_height = 0;
+	int x, y;
+	int col_idx = 0;
+	int row_idx = 0;
+	int num_cols = layout_grid_get_column_count(grid);
+	int *col_widths; /* Array allocated locally */
+
+	/* Just use stack for small col counts or VLA/malloc */
+	/* VLA is risky for stack size. Malloc is safer. */
+	col_widths = malloc(sizeof(int) * num_cols);
+	if (!col_widths)
+		return false;
+
+	/* Get Gap for layout positioning */
+	int gap_px = 0;
+	css_fixed gap_len = 0;
+	css_unit gap_unit = CSS_UNIT_PX;
+	if (grid->style != NULL &&
+	    css_computed_column_gap(grid->style, &gap_len, &gap_unit) ==
+		    CSS_COLUMN_GAP_SET) {
+		gap_px = FIXTOINT(css_unit_len2device_px(grid->style,
+							 &content->unit_len_ctx,
+							 gap_len,
+							 gap_unit));
+	}
+
+	layout_grid_compute_tracks(grid,
+				   available_width,
+				   col_widths,
+				   num_cols,
+				   grid->style,
+				   &content->unit_len_ctx);
+
+	int row_height = 0;
+
+	/* Reset grid position */
+	x = 0;
+	y = 0;
+
+	for (child = grid->children; child; child = child->next) {
+		int child_width = col_widths[col_idx];
+
+		/* Resolve CSS dimensions (height, borders, padding, etc.) */
+		layout_find_dimensions(&content->unit_len_ctx,
+				       child_width,
+				       -1, /* viewport_height unknown here */
+				       child,
+				       child->style,
+				       &child->width,
+				       &child->height,
+				       &child->max_width,
+				       &child->min_width,
+				       NULL,
+				       NULL,
+				       child->margin,
+				       child->padding,
+				       child->border);
+
+		/* Force child width to track width (stretch) */
+		child->width = child_width;
+
+		/* Recursively layout the child */
+		/* Note: We might need layout_minmax first if not done?
+		   layout_block_context usually expects minmax to be done.
+		   But layout_block_context does the layout. */
+
+
+		/* We'll use layout_block_context if it's a block-like thing. */
+		if (child->type == BOX_BLOCK ||
+		    child->type == BOX_INLINE_BLOCK ||
+		    child->type == BOX_FLEX || child->type == BOX_GRID) {
+			if (!layout_block_context(child, -1, content)) {
+				free(col_widths);
+				return false;
+			}
+			NSLOG(layout,
+			      INFO,
+			      "Grid child %p type %d layout done. w %d h %d",
+			      child,
+			      child->type,
+			      child->width,
+			      child->height);
+		} else {
+			/* What if it is a text node? Anonymous block wrapper
+			 * should have been created by box_normalise? */
+			/* Assuming block level children for now as per HTML
+			 * structure */
+			NSLOG(layout,
+			      INFO,
+			      "Grid child %p type %d SKIPPED layout (not block-like)",
+			      child,
+			      child->type);
+		}
+
+		/* Position child */
+		child->x = x;
+		child->y = y;
+
+		/* Track row height */
+		if (child->height > row_height) {
+			row_height = child->height;
+		}
+
+		/* Advance column */
+		x += child_width + gap_px;
+		col_idx++;
+		if (col_idx >= num_cols) {
+			/* New Row */
+			col_idx = 0;
+			x = 0;
+			y += row_height + gap_px;
+			grid_height += row_height + gap_px;
+			row_height = 0;
+		}
+	}
+
+	/* Add last row height if not empty */
+	if (col_idx > 0) {
+		grid_height += row_height;
+	}
+
+	grid->height = grid_height;
+
+	free(col_widths);
+	return true;
+}

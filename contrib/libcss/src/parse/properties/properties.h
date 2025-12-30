@@ -303,6 +303,14 @@ css_error css__parse_flex_wrap(css_language *c,
 			       const parserutils_vector *vector,
 			       int32_t *ctx,
 			       css_style *result);
+css_error css__parse_gap(css_language *c,
+			 const parserutils_vector *vector,
+			 int32_t *ctx,
+			 css_style *result);
+css_error css__parse_place_content(css_language *c,
+				   const parserutils_vector *vector,
+				   int32_t *ctx,
+				   css_style *result);
 css_error css__parse_float(css_language *c,
 			   const parserutils_vector *vector,
 			   int32_t *ctx,
@@ -608,6 +616,22 @@ css_error css__parse_writing_mode(css_language *c,
 				  int32_t *ctx,
 				  css_style *result);
 css_error css__parse_z_index(css_language *c,
+			     const parserutils_vector *vector,
+			     int32_t *ctx,
+			     css_style *result);
+css_error css__parse_grid_template_columns(css_language *c,
+					   const parserutils_vector *vector,
+					   int32_t *ctx,
+					   css_style *result);
+css_error css__parse_grid_template_rows(css_language *c,
+					const parserutils_vector *vector,
+					int32_t *ctx,
+					css_style *result);
+css_error css__parse_grid_auto_flow(css_language *c,
+				    const parserutils_vector *vector,
+				    int32_t *ctx,
+				    css_style *result);
+css_error css__parse_row_gap(css_language *c,
 			     const parserutils_vector *vector,
 			     int32_t *ctx,
 			     css_style *result);

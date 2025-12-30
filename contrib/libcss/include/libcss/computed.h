@@ -28,6 +28,14 @@ typedef struct css_computed_counter {
 	css_fixed value;
 } css_computed_counter;
 
+/**
+ * Grid track size for grid-template-columns/rows
+ */
+typedef struct css_computed_grid_track {
+	css_fixed value; /**< Track size value */
+	css_unit unit; /**< CSS_UNIT_FR, CSS_UNIT_PX, CSS_UNIT_PCT, etc. */
+} css_computed_grid_track;
+
 typedef struct css_computed_clip_rect {
 	css_fixed top;
 	css_fixed right;
@@ -443,6 +451,14 @@ uint8_t css_computed_flex_wrap(const css_computed_style *style);
 uint8_t css_computed_justify_content(const css_computed_style *style);
 
 uint8_t css_computed_order(const css_computed_style *style, int32_t *order);
+
+uint8_t css_computed_grid_template_columns(const css_computed_style *style,
+					   int32_t *n_tracks,
+					   css_computed_grid_track **tracks);
+
+uint8_t css_computed_grid_template_rows(const css_computed_style *style,
+					int32_t *n_tracks,
+					css_computed_grid_track **tracks);
 
 #ifdef __cplusplus
 }

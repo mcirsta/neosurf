@@ -1996,3 +1996,53 @@ compute_absolute_length_pair(css_computed_style *style,
 
 	return set(style, type, length1, unit1, length2, unit2);
 }
+
+uint8_t css_computed_grid_template_columns(const css_computed_style *style,
+					   int32_t *n_tracks,
+					   css_computed_grid_track **tracks)
+{
+	css_computed_grid_track *t = NULL;
+	uint8_t type = get_grid_template_columns(style, &t);
+
+	if (tracks != NULL) {
+		*tracks = t;
+	}
+
+	/* Count tracks if requested */
+	if (n_tracks != NULL && t != NULL) {
+		int32_t count = 0;
+		while (t[count].value != 0 || t[count].unit != 0) {
+			count++;
+		}
+		*n_tracks = count;
+	} else if (n_tracks != NULL) {
+		*n_tracks = 0;
+	}
+
+	return type;
+}
+
+uint8_t css_computed_grid_template_rows(const css_computed_style *style,
+					int32_t *n_tracks,
+					css_computed_grid_track **tracks)
+{
+	css_computed_grid_track *t = NULL;
+	uint8_t type = get_grid_template_rows(style, &t);
+
+	if (tracks != NULL) {
+		*tracks = t;
+	}
+
+	/* Count tracks if requested */
+	if (n_tracks != NULL && t != NULL) {
+		int32_t count = 0;
+		while (t[count].value != 0 || t[count].unit != 0) {
+			count++;
+		}
+		*n_tracks = count;
+	} else if (n_tracks != NULL) {
+		*n_tracks = 0;
+	}
+
+	return type;
+}

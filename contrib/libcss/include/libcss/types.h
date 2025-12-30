@@ -103,6 +103,8 @@ typedef enum css_unit {
 	CSS_UNIT_CQI = 0x15,
 	CSS_UNIT_CQB = 0x16,
 
+	CSS_UNIT_FR = 0x17, /* CSS Grid fraction unit */
+
 	CSS_UNIT_PCT = 0x1b, /* Percentage */
 
 	CSS_UNIT_DEG = 0x1c,

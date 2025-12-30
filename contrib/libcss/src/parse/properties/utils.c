@@ -2003,6 +2003,8 @@ css_error css__parse_unit_keyword(const char *ptr, size_t len, uint32_t *unit)
 			*unit = UNIT_VI;
 		else if (strncasecmp(ptr, "vb", 2) == 0)
 			*unit = UNIT_VB;
+		else if (strncasecmp(ptr, "fr", 2) == 0)
+			*unit = UNIT_FR;
 		else
 			return CSS_INVALID;
 	} else if (len == 1) {
