@@ -909,7 +909,7 @@ struct box *box_pick_text_box(struct html_content *html,
 	int fx, fy;
 	int tx, ty;
 
-	if (html == NULL)
+	if (html == NULL || html->layout == NULL)
 		return NULL;
 
 	box = html->layout;

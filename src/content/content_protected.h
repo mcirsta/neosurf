@@ -75,6 +75,18 @@ typedef struct content_handler content_handler;
 
 #define CONTENT_ACTIVE_DEC(c, reason)                                          \
 	do {                                                                   \
+		if ((c)->base.active == 0) {                                   \
+			NSLOG(neosurf,                                         \
+			      CRITICAL,                                        \
+			      "ACTIVE UNDERFLOW! Decrement when already 0 "    \
+			      "(%s) [content=%p url=%s]",                      \
+			      (reason),                                        \
+			      (void *)(c),                                     \
+			      (c)->base.llcache                                \
+				      ? nsurl_access(llcache_handle_get_url(   \
+						(c)->base.llcache))            \
+				      : "(no url)");                           \
+		}                                                              \
 		(c)->base.active--;                                            \
 		NSLOG(neosurf,                                                 \
 		      DEBUG,                                                   \

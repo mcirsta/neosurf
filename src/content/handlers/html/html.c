@@ -305,6 +305,18 @@ static void html_box_convert_done(html_content *c, bool success)
 	html_proceed_to_done(c);
 
 	dom_node_unref(html);
+
+	/* If a restart was requested during the conversion (e.g. by a late
+	 * CSS callback), trigger it now.
+	 */
+	if (c->conversion_restart_pending) {
+		NSLOG(neosurf,
+		      INFO,
+		      "Processing pending box conversion restart (content %p)",
+		      c);
+		c->conversion_restart_pending = false;
+		guit->misc->schedule(0, html_resume_conversion_cb, c);
+	}
 }
 
 /* Documented in html_internal.h */
@@ -688,6 +700,8 @@ static nserror html_create(const content_handler *handler,
 	if (html == NULL)
 		return NSERROR_NOMEM;
 
+	html->conversion_restart_pending = false;
+
 	error = content__init(&html->base,
 			      handler,
 			      imime_type,
@@ -948,13 +962,12 @@ bool html_can_begin_conversion(html_content *htmlc)
 	return true;
 }
 
-static void html_resume_conversion_cb(void *p);
 void script_resume_conversion_cb(void *p);
 static void html_free_layout(html_content *htmlc);
 
 bool html_begin_conversion(html_content *htmlc);
 
-static void html_resume_conversion_cb(void *p)
+void html_resume_conversion_cb(void *p)
 {
 	html_content *htmlc = p;
 	html_begin_conversion(htmlc);
@@ -1085,16 +1098,19 @@ bool html_begin_conversion(html_content *htmlc)
 	}
 	dom_string_unref(node_name);
 
-	/* Cancel any ongoing box conversion before freeing the layout */
+	/* If box conversion is already in progress, we have a late CSS
+	 * callback trying to restart conversion. We should NOT cancel
+	 * the ongoing conversion - just return success and let it complete.
+	 * This prevents race conditions where CSS loading finishes AFTER
+	 * dom_to_box() has already been called and started box construction.
+	 */
 	if (htmlc->box_conversion_context != NULL) {
-		if (cancel_dom_to_box(htmlc->box_conversion_context) !=
-		    NSERROR_OK) {
-			NSLOG(neosurf,
-			      WARNING,
-			      "Failed to cancel box conversion - aborting reformat to prevent crash");
-			return false;
-		}
-		htmlc->box_conversion_context = NULL;
+		NSLOG(neosurf,
+		      INFO,
+		      "Late callback for content %p - box conversion already in progress, queuing restart",
+		      htmlc);
+		htmlc->conversion_restart_pending = true;
+		return true;
 	}
 
 	/* Clear any existing layout */
@@ -1225,6 +1241,14 @@ static void html_reformat(struct content *c, int width, int height)
 	uint64_t ms_before;
 	uint64_t ms_after;
 	uint64_t ms_interval;
+
+	/* If the layout is NULL (e.g. during conversion restart), we cannot
+	 * reflow. Just return OK and wait for the conversion to complete.
+	 */
+	if (htmlc->layout == NULL) {
+		NSLOG(neosurf, INFO, "Reflow skipped: layout is NULL");
+		return;
+	}
 
 	nsu_getmonotonic_ms(&ms_before);
 

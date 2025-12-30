@@ -199,6 +199,14 @@ static nserror convert_script_async_cb(hlcache_handle *script,
 		      "script %d done '%s'",
 		      i,
 		      nsurl_access(hlcache_handle_get_url(script)));
+		if (parent->base.active == 0) {
+			NSLOG(neosurf,
+			      CRITICAL,
+			      "ACTIVE UNDERFLOW! async_cb DONE decrement when 0 "
+			      "[content=%p script=%s]",
+			      parent,
+			      nsurl_access(hlcache_handle_get_url(script)));
+		}
 		parent->base.active--;
 		NSLOG(neosurf, INFO, "%d fetches active", parent->base.active);
 
@@ -213,6 +221,14 @@ static nserror convert_script_async_cb(hlcache_handle *script,
 
 		hlcache_handle_release(script);
 		s->data.handle = NULL;
+		if (parent->base.active == 0) {
+			NSLOG(neosurf,
+			      CRITICAL,
+			      "ACTIVE UNDERFLOW! async_cb ERROR decrement when 0 "
+			      "[content=%p script=%s]",
+			      parent,
+			      nsurl_access(hlcache_handle_get_url(script)));
+		}
 		parent->base.active--;
 		NSLOG(neosurf, INFO, "%d fetches active", parent->base.active);
 
@@ -266,6 +282,14 @@ static nserror convert_script_defer_cb(hlcache_handle *script,
 		      "script %d done '%s'",
 		      i,
 		      nsurl_access(hlcache_handle_get_url(script)));
+		if (parent->base.active == 0) {
+			NSLOG(neosurf,
+			      CRITICAL,
+			      "ACTIVE UNDERFLOW! defer_cb DONE decrement when 0 "
+			      "[content=%p script=%s]",
+			      parent,
+			      nsurl_access(hlcache_handle_get_url(script)));
+		}
 		parent->base.active--;
 		NSLOG(neosurf, INFO, "%d fetches active", parent->base.active);
 
@@ -280,6 +304,14 @@ static nserror convert_script_defer_cb(hlcache_handle *script,
 
 		hlcache_handle_release(script);
 		s->data.handle = NULL;
+		if (parent->base.active == 0) {
+			NSLOG(neosurf,
+			      CRITICAL,
+			      "ACTIVE UNDERFLOW! defer_cb ERROR decrement when 0 "
+			      "[content=%p script=%s]",
+			      parent,
+			      nsurl_access(hlcache_handle_get_url(script)));
+		}
 		parent->base.active--;
 		NSLOG(neosurf, INFO, "%d fetches active", parent->base.active);
 
@@ -336,6 +368,20 @@ static nserror convert_script_sync_cb(hlcache_handle *script,
 		      "script %d done '%s'",
 		      i,
 		      nsurl_access(hlcache_handle_get_url(script)));
+		NSLOG(neosurf,
+		      INFO,
+		      "DIAG: sync_cb DONE: parent=%p active=%d->%d",
+		      parent,
+		      parent->base.active,
+		      parent->base.active - 1);
+		if (parent->base.active == 0) {
+			NSLOG(neosurf,
+			      CRITICAL,
+			      "ACTIVE UNDERFLOW! sync_cb DONE decrement when 0 "
+			      "[content=%p script=%s]",
+			      parent,
+			      nsurl_access(hlcache_handle_get_url(script)));
+		}
 		parent->base.active--;
 		NSLOG(neosurf, INFO, "%d fetches active", parent->base.active);
 
@@ -378,6 +424,14 @@ static nserror convert_script_sync_cb(hlcache_handle *script,
 
 		hlcache_handle_release(script);
 		s->data.handle = NULL;
+		if (parent->base.active == 0) {
+			NSLOG(neosurf,
+			      CRITICAL,
+			      "ACTIVE UNDERFLOW! sync_cb ERROR decrement when 0 "
+			      "[content=%p script=%s]",
+			      parent,
+			      nsurl_access(hlcache_handle_get_url(script)));
+		}
 		parent->base.active--;
 
 		NSLOG(neosurf, INFO, "%d fetches active", parent->base.active);
@@ -507,6 +561,18 @@ static dom_hubbub_error exec_src_script(html_content *c,
 	child.charset = c->encoding;
 	child.quirks = c->base.quirks;
 
+	/* Increment active fetch count BEFORE hlcache_handle_retrieve.
+	 * This is critical because the callback can be called synchronously
+	 * for cached content, which would decrement active before we get
+	 * a chance to increment it, causing an underflow.
+	 */
+	c->base.active++;
+	NSLOG(neosurf,
+	      INFO,
+	      "DIAG: exec_src_script: content=%p active=%d (pre-retrieve)",
+	      c,
+	      c->base.active);
+
 	ns_error = hlcache_handle_retrieve(joined,
 					   0,
 					   content_get_url(&c->base),
@@ -521,15 +587,16 @@ static dom_hubbub_error exec_src_script(html_content *c,
 	nsurl_unref(joined);
 
 	if (ns_error != NSERROR_OK) {
-		/* @todo Deal with fetch error better. currently assume
-		 * fetch never became active
-		 */
+		/* Fetch failed - decrement the counter we just incremented */
+		c->base.active--;
 		/* mark duff script fetch as already started */
 		nscript->already_started = true;
-		NSLOG(neosurf, INFO, "Fetch failed with error %d", ns_error);
+		NSLOG(neosurf,
+		      INFO,
+		      "Fetch failed with error %d, active=%d",
+		      ns_error,
+		      c->base.active);
 	} else {
-		/* update base content active fetch count */
-		c->base.active++;
 		NSLOG(neosurf, INFO, "%d fetches active", c->base.active);
 
 		switch (script_type) {

@@ -42,7 +42,7 @@ bool verbose_log = false;
 static FILE *logfile;
 
 /** Split logging files */
-static FILE *split_log_files[6] = {NULL};
+static FILE *split_log_files[7] = {NULL};
 static bool split_logging = false;
 
 #ifdef _WIN32
@@ -74,7 +74,7 @@ static void log_enqueue(char *text, int level)
 #endif
 		if (split_logging) {
 			int i;
-			for (i = 0; i < 6; i++) {
+			for (i = 0; i < 7; i++) {
 				if (split_log_files[i] && level >= i) {
 					fprintf(split_log_files[i], "%s", text);
 					fflush(split_log_files[i]);
@@ -319,7 +319,7 @@ static void neosurf_render_log(void *_ctx,
 #endif
 	if (split_logging) {
 		int i;
-		for (i = 0; i < 6; i++) {
+		for (i = 0; i < 7; i++) {
 			if (split_log_files[i] && (int)ctx->level >= i) {
 				va_list ap;
 				va_copy(ap, args);
@@ -433,7 +433,7 @@ void nslog_log(enum nslog_level level,
 	if (split_logging) {
 		const char *time_str = nslog_gettime();
 		/* Iterate over split files. */
-		for (i = 0; i < 6; i++) {
+		for (i = 0; i < 7; i++) {
 			/* Check if file is open and level is sufficient for
 			 * this file */
 			if (split_log_files[i] && (int)level >= i) {
@@ -594,6 +594,7 @@ nserror nslog_init(nslog_ensure_t *ensure, int *pargc, char **argv)
 		split_log_files[3] = fopen("neosurf-logs/ns-info.txt", "w");
 		split_log_files[4] = fopen("neosurf-logs/ns-warning.txt", "w");
 		split_log_files[5] = fopen("neosurf-logs/ns-error.txt", "w");
+		split_log_files[6] = fopen("neosurf-logs/ns-critical.txt", "w");
 	}
 
 	return ret;
@@ -625,7 +626,7 @@ void nslog_finalise(void)
 
 	if (split_logging) {
 		int i;
-		for (i = 0; i < 6; i++) {
+		for (i = 0; i < 7; i++) {
 			if (split_log_files[i]) {
 				fclose(split_log_files[i]);
 				split_log_files[i] = NULL;

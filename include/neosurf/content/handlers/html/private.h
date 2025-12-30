@@ -98,6 +98,7 @@ typedef struct html_content {
 	dom_hubbub_parser *parser; /**< Parser object handle */
 	bool parse_completed; /**< Whether the parse has been completed */
 	bool conversion_begun; /**< Whether or not the conversion has begun */
+	bool conversion_restart_pending; /**< Whether a restart is pending */
 
 	/** Document tree */
 	dom_document *document;
@@ -257,6 +258,13 @@ bool html_can_begin_conversion(html_content *htmlc);
  * \param htmlc Content to convert
  */
 bool html_begin_conversion(html_content *htmlc);
+
+/**
+ * Resume conversion of an html content
+ *
+ * \param p html content
+ */
+void html_resume_conversion_cb(void *p);
 
 
 /**
