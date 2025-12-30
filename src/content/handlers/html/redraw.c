@@ -2691,6 +2691,10 @@ bool html_redraw(struct content *c,
 	struct box *box;
 	bool result = true;
 	bool select, select_only;
+	/* The layout can be NULL if we are in the process of rebuilding it */
+	if (html->layout == NULL)
+		return true;
+
 	plot_style_t pstyle_fill_bg = {
 		.fill_type = PLOT_OP_TYPE_SOLID,
 		.fill_colour = data->background_colour,
@@ -2699,7 +2703,6 @@ bool html_redraw(struct content *c,
 	NSLOG(neosurf, DEBUG, "PROFILER: START HTML redraw %p", c);
 
 	box = html->layout;
-	assert(box);
 
 	/* The select menu needs special treating because, when opened, it
 	 * reaches beyond its layout box.

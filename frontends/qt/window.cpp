@@ -212,8 +212,13 @@ void NS_Window::keyPressEvent(QKeyEvent *event)
  */
 void NS_Window::destroy(void)
 {
+	if (m_bw == nullptr) {
+		/* Already destroyed, nothing to do */
+		return;
+	}
 	m_nswidget->invalidateBrowserWindow();
 	browser_window_destroy(m_bw);
+	m_bw = nullptr;
 }
 
 
@@ -258,30 +263,10 @@ nserror NS_Window::update_extent()
 	return NSERROR_OK;
 }
 
-static void next_throbber_frame(void *p)
-{
-	NS_Window *window = (NS_Window *)p;
-	window->advance_throbber(true);
-}
+// Throbber functionality removed to prevent repaint loop hangs
 
 nserror NS_Window::advance_throbber(bool cont)
 {
-	if (cont == false) {
-		nsqt_schedule(-1, next_throbber_frame, this);
-		m_throbber_frame = 0;
-		iconChanged(*m_favicon);
-		return NSERROR_OK;
-	}
-
-	m_throbber_frame++;
-	if (m_throbber_frame > THROBBER_FRAME_COUNT) {
-		m_throbber_frame = 1;
-	}
-
-	QIcon frame(":throbber" + QString().setNum(m_throbber_frame) + ".png");
-	iconChanged(frame);
-
-	nsqt_schedule(THROBBER_FRAME_TIME, next_throbber_frame, this);
 	return NSERROR_OK;
 }
 

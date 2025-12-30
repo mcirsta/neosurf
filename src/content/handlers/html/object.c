@@ -230,6 +230,14 @@ static nserror html_object_callback(hlcache_handle *object,
 		break;
 
 	case CONTENT_MSG_DONE:
+		if (c->base.active == 0) {
+			NSLOG(neosurf,
+			      CRITICAL,
+			      "ACTIVE UNDERFLOW! object_cb DONE decrement when 0 "
+			      "[content=%p object=%p]",
+			      c,
+			      object);
+		}
 		c->base.active--;
 		NSLOG(neosurf, INFO, "%d fetches active", c->base.active);
 
@@ -288,6 +296,14 @@ static nserror html_object_callback(hlcache_handle *object,
 
 		o->content = NULL;
 
+		if (c->base.active == 0) {
+			NSLOG(neosurf,
+			      CRITICAL,
+			      "ACTIVE UNDERFLOW! object_cb ERROR decrement when 0 "
+			      "[content=%p object=%p]",
+			      c,
+			      object);
+		}
 		c->base.active--;
 		NSLOG(neosurf, INFO, "%d fetches active", c->base.active);
 
@@ -627,6 +643,20 @@ static bool html_replace_object(struct content_html_object *object, nsurl *url)
 		object->box->object = NULL;
 	}
 
+	/* Pre-increment active for all pages in the chain BEFORE retrieve.
+	 * Callbacks can fire synchronously for cached content,
+	 * so we must have the counter incremented before the callback
+	 * tries to decrement it.
+	 */
+	for (page = c; page != NULL; page = page->page) {
+		page->base.active++;
+		NSLOG(neosurf,
+		      INFO,
+		      "%d fetches active (pre-retrieve)",
+		      page->base.active);
+		page->base.status = CONTENT_STATUS_READY;
+	}
+
 	/* initialise fetch */
 	error = hlcache_handle_retrieve(url,
 					HLCACHE_RETRIEVE_SNIFF_TYPE,
@@ -638,14 +668,16 @@ static bool html_replace_object(struct content_html_object *object, nsurl *url)
 					object->permitted_types,
 					&object->content);
 
-	if (error != NSERROR_OK)
+	if (error != NSERROR_OK) {
+		/* Decrement the counters we just incremented */
+		for (page = c; page != NULL; page = page->page) {
+			page->base.active--;
+			NSLOG(neosurf,
+			      INFO,
+			      "%d fetches active (retrieve failed)",
+			      page->base.active);
+		}
 		return false;
-
-	for (page = c; page != NULL; page = page->page) {
-		page->base.active++;
-		NSLOG(neosurf, INFO, "%d fetches active", c->base.active);
-
-		page->base.status = CONTENT_STATUS_READY;
 	}
 
 	return true;
@@ -827,6 +859,19 @@ bool html_fetch_object(html_content *c,
 	object->permitted_types = permitted_types;
 	object->background = background;
 
+	/* Increment active BEFORE hlcache_handle_retrieve.
+	 * Callbacks can fire synchronously for cached content,
+	 * so we must have the counter incremented before the callback
+	 * tries to decrement it.
+	 */
+	if (box != NULL) {
+		c->base.active++;
+		NSLOG(neosurf,
+		      INFO,
+		      "%d fetches active (pre-retrieve)",
+		      c->base.active);
+	}
+
 	error = hlcache_handle_retrieve(url,
 					HLCACHE_RETRIEVE_SNIFF_TYPE,
 					content_get_url(&c->base),
@@ -837,6 +882,13 @@ bool html_fetch_object(html_content *c,
 					object->permitted_types,
 					&object->content);
 	if (error != NSERROR_OK) {
+		if (box != NULL) {
+			c->base.active--;
+			NSLOG(neosurf,
+			      INFO,
+			      "%d fetches active (retrieve failed)",
+			      c->base.active);
+		}
 		free(object);
 		return error != NSERROR_NOMEM;
 	}
@@ -846,10 +898,6 @@ bool html_fetch_object(html_content *c,
 	c->object_list = object;
 
 	c->num_objects++;
-	if (box != NULL) {
-		c->base.active++;
-		NSLOG(neosurf, INFO, "%d fetches active", c->base.active);
-	}
 
 	return true;
 }

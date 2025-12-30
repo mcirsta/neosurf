@@ -1478,6 +1478,9 @@ nserror html_mouse_action(struct content *c,
 	html_content *html = (html_content *)c;
 	nserror res = NSERROR_OK;
 
+	if (html->layout == NULL)
+		return NSERROR_OK;
+
 	/* handle open select menu */
 	if (html->visible_select_menu != NULL) {
 		return mouse_action_select_menu(html, bw, mouse, x, y);

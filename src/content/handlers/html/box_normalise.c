@@ -1078,6 +1078,210 @@ static bool box_normalise_flex(struct box *flex_container,
 	return true;
 }
 
+static bool box_normalise_grid(struct box *grid_container,
+			       const struct box *root,
+			       html_content *c)
+{
+	struct box *child;
+	struct box *next_child;
+	struct box *implied_grid_item;
+	css_computed_style *style;
+	nscss_select_ctx ctx;
+
+	assert(grid_container != NULL);
+	assert(root != NULL);
+
+	ctx.root_style = root->style;
+
+#ifdef BOX_NORMALISE_DEBUG
+	NSLOG(netsurf,
+	      INFO,
+	      "grid_container %p, grid_container->type %u",
+	      grid_container,
+	      grid_container->type);
+#endif
+
+	assert(grid_container->type == BOX_GRID ||
+	       grid_container->type == BOX_INLINE_GRID);
+
+	for (child = grid_container->children; child != NULL;
+	     child = next_child) {
+#ifdef BOX_NORMALISE_DEBUG
+		NSLOG(netsurf,
+		      INFO,
+		      "child %p, child->type = %d",
+		      child,
+		      child->type);
+#endif
+
+		next_child = child->next; /* child may be destroyed */
+
+		switch (child->type) {
+		case BOX_GRID:
+			/* ok */
+			if (box_normalise_grid(child, root, c) == false)
+				return false;
+			break;
+		case BOX_FLEX:
+			/* ok */
+			if (box_normalise_flex(child, root, c) == false)
+				return false;
+			break;
+		case BOX_BLOCK:
+			/* ok */
+			if (box_normalise_block(child, root, c) == false)
+				return false;
+			break;
+		case BOX_INLINE_CONTAINER:
+			/* insert implied grid item */
+			assert(grid_container->style != NULL);
+
+			ctx.ctx = c->select_ctx;
+			ctx.quirks = (c->quirks ==
+				      DOM_DOCUMENT_QUIRKS_MODE_FULL);
+			ctx.base_url = c->base_url;
+			ctx.universal = c->universal;
+
+			style = nscss_get_blank_style(&ctx,
+						      &c->unit_len_ctx,
+						      grid_container->style);
+			if (style == NULL)
+				return false;
+
+			implied_grid_item = box_create(NULL,
+						       style,
+						       true,
+						       grid_container->href,
+						       grid_container->target,
+						       NULL,
+						       NULL,
+						       c->bctx);
+			if (implied_grid_item == NULL) {
+				css_computed_style_destroy(style);
+				return false;
+			}
+			implied_grid_item->type = BOX_BLOCK;
+
+			if (child->prev == NULL)
+				grid_container->children = implied_grid_item;
+			else
+				child->prev->next = implied_grid_item;
+
+			implied_grid_item->prev = child->prev;
+
+			while (child != NULL &&
+			       child->type == BOX_INLINE_CONTAINER) {
+
+				box_add_child(implied_grid_item, child);
+
+				next_child = child->next;
+				child->next = NULL;
+				child = next_child;
+			}
+
+			implied_grid_item->last->next = NULL;
+			implied_grid_item->next = next_child = child;
+			if (implied_grid_item->next != NULL)
+				implied_grid_item->next->prev =
+					implied_grid_item;
+			else
+				grid_container->last = implied_grid_item;
+			implied_grid_item->parent = grid_container;
+
+			if (box_normalise_block(implied_grid_item, root, c) ==
+			    false)
+				return false;
+			break;
+
+		case BOX_TABLE:
+			if (box_normalise_table(child, root, c) == false)
+				return false;
+			break;
+		case BOX_INLINE:
+		case BOX_INLINE_END:
+		case BOX_INLINE_FLEX:
+		case BOX_INLINE_GRID:
+		case BOX_INLINE_BLOCK:
+		case BOX_FLOAT_LEFT:
+		case BOX_FLOAT_RIGHT:
+		case BOX_BR:
+		case BOX_TEXT:
+			/* should have been wrapped in inline
+			   container by convert_xml_to_box() */
+			assert(0);
+			break;
+		case BOX_TABLE_ROW_GROUP:
+		case BOX_TABLE_ROW:
+		case BOX_TABLE_CELL:
+			/* insert implied table */
+			assert(grid_container->style != NULL);
+
+			ctx.ctx = c->select_ctx;
+			ctx.quirks = (c->quirks ==
+				      DOM_DOCUMENT_QUIRKS_MODE_FULL);
+			ctx.base_url = c->base_url;
+			ctx.universal = c->universal;
+
+			style = nscss_get_blank_style(&ctx,
+						      &c->unit_len_ctx,
+						      grid_container->style);
+			if (style == NULL)
+				return false;
+
+			implied_grid_item = box_create(NULL,
+						       style,
+						       true,
+						       grid_container->href,
+						       grid_container->target,
+						       NULL,
+						       NULL,
+						       c->bctx);
+			if (implied_grid_item == NULL) {
+				css_computed_style_destroy(style);
+				return false;
+			}
+			implied_grid_item->type = BOX_TABLE;
+
+			if (child->prev == NULL)
+				grid_container->children = implied_grid_item;
+			else
+				child->prev->next = implied_grid_item;
+
+			implied_grid_item->prev = child->prev;
+
+			while (child != NULL &&
+			       (child->type == BOX_TABLE_ROW_GROUP ||
+				child->type == BOX_TABLE_ROW ||
+				child->type == BOX_TABLE_CELL)) {
+
+				box_add_child(implied_grid_item, child);
+
+				next_child = child->next;
+				child->next = NULL;
+				child = next_child;
+			}
+
+			implied_grid_item->last->next = NULL;
+			implied_grid_item->next = next_child = child;
+			if (implied_grid_item->next != NULL)
+				implied_grid_item->next->prev =
+					implied_grid_item;
+			else
+				grid_container->last = implied_grid_item;
+			implied_grid_item->parent = grid_container;
+
+			if (box_normalise_table(implied_grid_item, root, c) ==
+			    false)
+				return false;
+			break;
+		default:
+			assert(0);
+		}
+	}
+
+	return true;
+}
+
 static bool box_normalise_inline_container(struct box *cont,
 					   const struct box *root,
 					   html_content *c)
@@ -1111,6 +1315,11 @@ static bool box_normalise_inline_container(struct box *cont,
 			if (box_normalise_flex(child, root, c) == false)
 				return false;
 			break;
+		case BOX_INLINE_GRID:
+			/* ok */
+			if (box_normalise_grid(child, root, c) == false)
+				return false;
+			break;
 		case BOX_FLOAT_LEFT:
 		case BOX_FLOAT_RIGHT:
 			/* ok */
@@ -1129,6 +1338,11 @@ static bool box_normalise_inline_container(struct box *cont,
 				break;
 			case BOX_FLEX:
 				if (box_normalise_flex(
+					    child->children, root, c) == false)
+					return false;
+				break;
+			case BOX_GRID:
+				if (box_normalise_grid(
 					    child->children, root, c) == false)
 					return false;
 				break;
@@ -1205,6 +1419,11 @@ bool box_normalise_block(struct box *block,
 		next_child = child->next; /* child may be destroyed */
 
 		switch (child->type) {
+		case BOX_GRID:
+			/* ok - treat grid containers similarly to flex */
+			if (box_normalise_grid(child, root, c) == false)
+				return false;
+			break;
 		case BOX_FLEX:
 			/* ok */
 			if (box_normalise_flex(child, root, c) == false)
