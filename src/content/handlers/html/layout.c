@@ -67,6 +67,7 @@
 #include "content/handlers/html/font.h"
 #include <neosurf/content/handlers/html/form_internal.h>
 #include "content/handlers/html/layout.h"
+#include "content/handlers/html/layout_grid.h"
 #include "content/handlers/html/layout_internal.h"
 #include "content/handlers/html/table.h"
 
@@ -3947,11 +3948,12 @@ bool layout_block_context(struct box *block,
 			if (class_attr != NULL) {
 				NSLOG(layout,
 				      INFO,
-				      "processing: tag %s class %s box %p width %i",
+				      "processing: tag %s class %s box %p width %i type %d",
 				      tag,
 				      cls,
 				      box,
-				      box->width);
+				      box->width,
+				      box->type);
 			}
 			if (class_attr != NULL)
 				dom_string_unref(class_attr);
@@ -4198,7 +4200,7 @@ bool layout_block_context(struct box *block,
 		     (overflow_x != CSS_OVERFLOW_VISIBLE ||
 		      overflow_y != CSS_OVERFLOW_VISIBLE))) {
 
-			if (box->type == BOX_FLEX || box->type == BOX_GRID) {
+			if (box->type == BOX_FLEX) {
 				const char *tag = "";
 				const char *cls = "";
 				dom_string *name = NULL;
@@ -4249,6 +4251,15 @@ bool layout_block_context(struct box *block,
 					dom_string_unref(class_attr);
 				if (name != NULL)
 					dom_string_unref(name);
+			} else if (box->type == BOX_GRID) {
+				NSLOG(layout,
+				      INFO,
+				      "calling layout_grid for grid container %p width %i",
+				      box,
+				      box->width);
+				if (!layout_grid(box, box->width, content)) {
+					return false;
+				}
 			} else {
 				layout_block_context(box,
 						     viewport_height,
@@ -5392,8 +5403,7 @@ static bool layout_absolute(struct box *box,
 		box->float_container = NULL;
 		layout_solve_width(
 			box, box->parent->width, box->width, 0, 0, -1, -1);
-	} else if (box->type == BOX_FLEX || box->type == BOX_INLINE_FLEX ||
-		   box->type == BOX_GRID || box->type == BOX_INLINE_GRID) {
+	} else if (box->type == BOX_FLEX || box->type == BOX_INLINE_FLEX) {
 		/* layout_table also expects the containing block to be
 		 * stored in the float_container field */
 		box->float_container = containing_block;
@@ -5403,6 +5413,16 @@ static bool layout_absolute(struct box *box,
 		      box,
 		      width);
 		if (!layout_flex(box, width, content))
+			return false;
+		box->float_container = NULL;
+	} else if (box->type == BOX_GRID || box->type == BOX_INLINE_GRID) {
+		box->float_container = containing_block;
+		NSLOG(layout,
+		      INFO,
+		      "calling layout_grid for positioned grid %p width %i",
+		      box,
+		      width);
+		if (!layout_grid(box, width, content))
 			return false;
 		box->float_container = NULL;
 	}

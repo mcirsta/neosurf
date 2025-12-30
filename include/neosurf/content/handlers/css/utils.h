@@ -35,17 +35,6 @@ ns_computed_display(const css_computed_style *style, bool root)
 {
 	uint8_t value = css_computed_display(style, root);
 
-	switch (value) {
-	case CSS_DISPLAY_GRID:
-		return CSS_DISPLAY_BLOCK;
-
-	case CSS_DISPLAY_INLINE_GRID:
-		return CSS_DISPLAY_INLINE_BLOCK;
-
-	default:
-		break;
-	}
-
 	return value;
 }
 
@@ -57,17 +46,6 @@ static inline uint8_t
 ns_computed_display_static(const css_computed_style *style)
 {
 	uint8_t value = css_computed_display_static(style);
-
-	switch (value) {
-	case CSS_DISPLAY_GRID:
-		return CSS_DISPLAY_BLOCK;
-
-	case CSS_DISPLAY_INLINE_GRID:
-		return CSS_DISPLAY_INLINE_BLOCK;
-
-	default:
-		break;
-	}
 
 	return value;
 }

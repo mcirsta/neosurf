@@ -157,7 +157,18 @@ const css_prop_handler property_handlers[LAST_PROP + 1 - FIRST_PROP] = {
 	css__parse_width,
 	css__parse_word_spacing,
 	css__parse_writing_mode,
-	css__parse_z_index};
+	css__parse_z_index,
+	css__parse_grid_template_columns,
+	css__parse_grid_template_rows,
+	css__parse_grid_auto_flow,
+	css__parse_gap,
+	css__parse_row_gap,
+	/* Legacy grid gap aliases - reuse existing parsers */
+	css__parse_gap, /* grid-gap -> gap */
+	css__parse_row_gap, /* grid-row-gap -> row-gap */
+	css__parse_column_gap, /* grid-column-gap -> column-gap */
+	/* Place shorthands */
+	css__parse_place_content};
 
 /** Mapping from property bytecode index to bytecode unit class mask. */
 const uint32_t property_unit_mask[CSS_N_PROPERTIES] = {

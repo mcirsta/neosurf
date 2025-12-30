@@ -16,7 +16,8 @@ values = {
     ('string', 'lwc_string*'),
     ('string_arr', 'lwc_string**'),
     ('counter_arr', 'css_computed_counter*'),
-    ('content_item', 'css_computed_content_item*')
+    ('content_item', 'css_computed_content_item*'),
+    ('grid_track_arr', 'css_computed_grid_track*')
 }
 
 # Configuration of property groups.
@@ -164,8 +165,12 @@ style = {
         'Encode content as an array of content items, terminated with '
         'a blank entry.', 'set'),
     # CSS Grid properties
-    ('grid_template_columns', 2),
-    ('grid_template_rows', 2),
+    ('grid_template_columns', 2, 'grid_track_arr', None, 'CSS_GRID_TEMPLATE_NONE',
+        'Encode grid tracks as an array of track items, terminated with '
+        'a zero-value entry.'),
+    ('grid_template_rows', 2, 'grid_track_arr', None, 'CSS_GRID_TEMPLATE_NONE',
+        'Encode grid tracks as an array of track items, terminated with '
+        'a zero-value entry.'),
     ('grid_auto_flow', 3),
     ('row_gap', 2, 'length', 'CSS_ROW_GAP_SET', 'CSS_ROW_GAP_NORMAL')
 }

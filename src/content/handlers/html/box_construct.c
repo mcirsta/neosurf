@@ -734,12 +734,24 @@ box_construct_element(struct box_construct_ctx *ctx, bool *convert_children)
 		box->type = box_map[ns_computed_display(box->style,
 							props.node_is_root)];
 
+		NSLOG(neosurf,
+		      INFO,
+		      "box_construct: display %d map_type %d mapped from %d",
+		      ns_computed_display(box->style, props.node_is_root),
+		      box->type,
+		      ns_computed_display(box->style, props.node_is_root));
+
 		if (props.containing_block->type == BOX_FLEX ||
-		    props.containing_block->type == BOX_INLINE_FLEX) {
+		    props.containing_block->type == BOX_INLINE_FLEX ||
+		    props.containing_block->type == BOX_GRID ||
+		    props.containing_block->type == BOX_INLINE_GRID) {
 			/* Blockification */
 			switch (box->type) {
 			case BOX_INLINE_FLEX:
 				box->type = BOX_FLEX;
+				break;
+			case BOX_INLINE_GRID:
+				box->type = BOX_GRID;
 				break;
 			case BOX_INLINE_BLOCK:
 				box->type = BOX_BLOCK;

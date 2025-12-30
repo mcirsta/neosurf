@@ -8,6 +8,8 @@
 #ifndef css_select_helpers_h_
 #define css_select_helpers_h_
 
+#include <assert.h>
+
 /**
  * Convert unit bytecode to a css_unit.
  */
@@ -66,8 +68,12 @@ static inline css_unit css__to_css_unit(uint32_t u)
 		return CSS_UNIT_HZ;
 	case UNIT_KHZ:
 		return CSS_UNIT_KHZ;
+	case UNIT_FR:
+		return CSS_UNIT_FR;
 	}
 
+	/* Unhandled unit type - fail in debug to catch missing conversions */
+	assert(0 && "Unhandled bytecode unit in css__to_css_unit");
 	return 0;
 }
 

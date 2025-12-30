@@ -210,6 +210,21 @@ add_neosurf_test(box_construct_race_test
   ${CMAKE_SOURCE_DIR}/src/test/box_construct_race_test.c
 )
 
+add_neosurf_test(grid_layout_test
+  ${CMAKE_SOURCE_DIR}/src/content/handlers/html/layout_grid.c
+  ${CMAKE_SOURCE_DIR}/src/test/log.c
+  ${CMAKE_SOURCE_DIR}/src/test/grid_layout_test.c
+)
+
+add_neosurf_test(grid_construct_test
+  ${CMAKE_SOURCE_DIR}/src/content/handlers/html/box_normalise.c
+  ${CMAKE_SOURCE_DIR}/src/utils/libdom.c
+  ${CMAKE_SOURCE_DIR}/src/test/log.c
+  ${CMAKE_SOURCE_DIR}/src/test/grid_construct_test.c
+)
+# Disable leak detection for grid_construct_test since libdom parsing has internal leaks
+set_property(TEST grid_construct_test PROPERTY ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
+
 # ============================================================================
 # JavaScript Tests
 # ============================================================================

@@ -631,6 +631,24 @@ class CSSGroup:
                     t.indent(-2)
                     t.append('}')
 
+                elif v.name == 'grid_track_arr':
+                    # Grid track arrays don't need lwc_string ref/unref
+                    # Just copy the pointer and free the old one
+                    t.append('{} {} = style->{};'.format(
+                        old_t, old_n_shift,
+                        p.name + v.suffix))
+                    t.append()
+                    t.append('style->{} = {};'.format(
+                        p.name + v.suffix, v.name + v.suffix))
+                    t.append()
+                    t.append('/* Free existing array */')
+                    t.append('if ({} != NULL && {} != {}) {{'.format(
+                        old_n, old_n, v.name + v.suffix))
+                    t.indent(1)
+                    t.append('free({});'.format(old_n))
+                    t.indent(-1)
+                    t.append('}')
+
                 elif not v.is_ptr:
                     if p.has_calc:
                         t.append('if (unit == CSS_UNIT_CALC) {')

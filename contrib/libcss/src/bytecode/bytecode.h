@@ -71,6 +71,7 @@ typedef enum unit {
 	UNIT_CQH = (1u << 8) + 20,
 	UNIT_CQI = (1u << 8) + 21,
 	UNIT_CQB = (1u << 8) + 22,
+	UNIT_FR = (1u << 8) + 23, /* CSS Grid fraction unit */
 
 	UNIT_PCT = (1 << 9),
 
