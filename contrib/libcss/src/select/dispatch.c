@@ -5,6 +5,30 @@
  * Copyright 2009 John-Mark Bell <jmb@netsurf-browser.org>
  */
 
+/**
+ * HOW TO ADD NEW CSS PROPERTIES:
+ *
+ * This file defines the CANONICAL ORDER of CSS properties for libcss.
+ * Property enum values and dispatch table indices are auto-generated from this
+ * order.
+ *
+ * To add a new property:
+ * 1. Add PROPERTY_FUNCS(property_name) entry to prop_dispatch[] below
+ *    - Insert in ALPHABETICAL order (approximately)
+ *    - Set inherited flag: 0 for most properties, 1 for inherited ones
+ *      (Inherited properties: color, font-*, text-*, direction, line-height,
+ * etc.)
+ * 2. Add property definition to properties.gen with same property_name
+ *    - Format: property_name:CSS_PROP_ENUM_NAME PARSE_SPEC
+ *    - Order in properties.gen doesn't matter (used as lookup table)
+ * 3. For CSS keywords (pseudo-classes, at-rules, etc.), add to keywords.gen
+ * 4. Re-run build - property_generator.py will update all registration files
+ *
+ * DO NOT modify enum values in properties.h or propstrings.h manually!
+ * They are auto-generated from the order in this file and
+ * properties.gen/keywords.gen.
+ */
+
 #include "select/dispatch.h"
 #include "select/properties/properties.h"
 
