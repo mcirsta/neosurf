@@ -2144,7 +2144,8 @@ static void dump_computed_style(const css_computed_style *style,
 		wrote = snprintf(ptr, *len, "grid-column-end: auto\n");
 		break;
 	case CSS_GRID_LINE_SET:
-		wrote = snprintf(ptr, *len, "grid-column-end: %d\n", integer);
+		wrote = snprintf(
+			ptr, *len, "grid-column-end: %d\n", FIXTOINT(integer));
 		break;
 	default:
 		wrote = 0;
@@ -2160,7 +2161,10 @@ static void dump_computed_style(const css_computed_style *style,
 		wrote = snprintf(ptr, *len, "grid-column-start: auto\n");
 		break;
 	case CSS_GRID_LINE_SET:
-		wrote = snprintf(ptr, *len, "grid-column-start: %d\n", integer);
+		wrote = snprintf(ptr,
+				 *len,
+				 "grid-column-start: %d\n",
+				 FIXTOINT(integer));
 		break;
 	default:
 		wrote = 0;
@@ -2176,7 +2180,8 @@ static void dump_computed_style(const css_computed_style *style,
 		wrote = snprintf(ptr, *len, "grid-row-end: auto\n");
 		break;
 	case CSS_GRID_LINE_SET:
-		wrote = snprintf(ptr, *len, "grid-row-end: %d\n", integer);
+		wrote = snprintf(
+			ptr, *len, "grid-row-end: %d\n", FIXTOINT(integer));
 		break;
 	default:
 		wrote = 0;
@@ -2192,7 +2197,8 @@ static void dump_computed_style(const css_computed_style *style,
 		wrote = snprintf(ptr, *len, "grid-row-start: auto\n");
 		break;
 	case CSS_GRID_LINE_SET:
-		wrote = snprintf(ptr, *len, "grid-row-start: %d\n", integer);
+		wrote = snprintf(
+			ptr, *len, "grid-row-start: %d\n", FIXTOINT(integer));
 		break;
 	default:
 		wrote = 0;

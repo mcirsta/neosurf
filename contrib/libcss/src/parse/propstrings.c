@@ -249,6 +249,10 @@ const stringmap_entry stringmap[LAST_KNOWN] = {
 	SMAP("grid-column-end"),
 	SMAP("grid-row-start"),
 	SMAP("grid-row-end"),
+	/* Grid shorthand properties */
+	SMAP("grid-column"),
+	SMAP("grid-row"),
+	SMAP("grid-area"),
 
 	SMAP("inherit"),
 	SMAP("unset"),

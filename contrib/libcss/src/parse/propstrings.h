@@ -241,8 +241,12 @@ enum {
 	GRID_COLUMN_END,
 	GRID_ROW_START,
 	GRID_ROW_END,
+	/* Grid shorthand properties */
+	GRID_COLUMN,
+	GRID_ROW,
+	GRID_AREA,
 
-	LAST_PROP = GRID_ROW_END,
+	LAST_PROP = GRID_AREA,
 
 	/* Other keywords */
 	INHERIT,
