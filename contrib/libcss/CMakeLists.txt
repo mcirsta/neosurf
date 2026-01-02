@@ -87,6 +87,9 @@ add_library(css SHARED
 	src/parse/properties/voice_family.c
 	src/parse/properties/grid_template_columns.c
 	src/parse/properties/grid_template_rows.c
+	src/parse/properties/grid_column.c
+	src/parse/properties/grid_row.c
+	src/parse/properties/grid_area.c
 	${PROPSRC}
 	src/select/properties/helpers.c
 	src/select/properties/align_content.c
