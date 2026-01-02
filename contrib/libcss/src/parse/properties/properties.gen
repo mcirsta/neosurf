@@ -257,3 +257,55 @@ grid_column_end:CSS_PROP_GRID_COLUMN_END IDENT:( INHERIT: INITIAL: REVERT: UNSET
 grid_row_start:CSS_PROP_GRID_ROW_START IDENT:( INHERIT: INITIAL: REVERT: UNSET: AUTO:0,CSS_GRID_LINE_AUTO IDENT:) NUMBER:( true:CSS_GRID_LINE_SET NUMBER:)
 
 grid_row_end:CSS_PROP_GRID_ROW_END IDENT:( INHERIT: INITIAL: REVERT: UNSET: AUTO:0,CSS_GRID_LINE_AUTO IDENT:) NUMBER:( true:CSS_GRID_LINE_SET NUMBER:)
+
+#==============================================================================
+# SHORTHAND Properties (manual implementation, NOT in dispatch.c)
+# These have css__parse_NAME in their own .c file
+# gen_parser skips, generator adds to propstrings and parse_handlers
+#==============================================================================
+background:CSS_PROP_BACKGROUND SHORTHAND
+border:CSS_PROP_BORDER SHORTHAND
+border_color:CSS_PROP_BORDER_COLOR SHORTHAND
+border_style:CSS_PROP_BORDER_STYLE SHORTHAND
+border_width:CSS_PROP_BORDER_WIDTH SHORTHAND
+column_rule:CSS_PROP_COLUMN_RULE SHORTHAND
+columns:CSS_PROP_COLUMNS SHORTHAND
+cue:CSS_PROP_CUE SHORTHAND
+flex:CSS_PROP_FLEX SHORTHAND
+flex_flow:CSS_PROP_FLEX_FLOW SHORTHAND
+font:CSS_PROP_FONT SHORTHAND
+gap:CSS_PROP_GAP SHORTHAND
+grid_area:CSS_PROP_GRID_AREA SHORTHAND
+grid_column:CSS_PROP_GRID_COLUMN SHORTHAND
+grid_row:CSS_PROP_GRID_ROW SHORTHAND
+list_style:CSS_PROP_LIST_STYLE SHORTHAND
+margin:CSS_PROP_MARGIN SHORTHAND
+outline:CSS_PROP_OUTLINE SHORTHAND
+overflow:CSS_PROP_OVERFLOW SHORTHAND
+padding:CSS_PROP_PADDING SHORTHAND
+pause:CSS_PROP_PAUSE SHORTHAND
+place_content:CSS_PROP_PLACE_CONTENT SHORTHAND
+
+#==============================================================================
+# MANUAL Properties (manual implementation, IS in dispatch.c)
+# These have css__parse_NAME in their own .c file (complex parsing)
+# gen_parser skips, already in propstrings via dispatch.c
+#==============================================================================
+azimuth:CSS_PROP_AZIMUTH MANUAL
+background_position:CSS_PROP_BACKGROUND_POSITION MANUAL
+border_spacing:CSS_PROP_BORDER_SPACING MANUAL
+clip:CSS_PROP_CLIP MANUAL
+content:CSS_PROP_CONTENT MANUAL
+cursor:CSS_PROP_CURSOR MANUAL
+elevation:CSS_PROP_ELEVATION MANUAL
+fill_opacity:CSS_PROP_FILL_OPACITY MANUAL
+font_family:CSS_PROP_FONT_FAMILY MANUAL
+font_weight:CSS_PROP_FONT_WEIGHT MANUAL
+list_style_type:CSS_PROP_LIST_STYLE_TYPE MANUAL
+opacity:CSS_PROP_OPACITY MANUAL
+play_during:CSS_PROP_PLAY_DURING MANUAL
+quotes:CSS_PROP_QUOTES MANUAL
+stroke_opacity:CSS_PROP_STROKE_OPACITY MANUAL
+text_decoration:CSS_PROP_TEXT_DECORATION MANUAL
+voice_family:CSS_PROP_VOICE_FAMILY MANUAL
+

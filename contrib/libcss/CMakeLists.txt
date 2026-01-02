@@ -31,11 +31,43 @@ add_custom_command(
 )
 add_custom_target(libcss_select_gen DEPENDS ${LIBCSS_SELECT_GEN_FILES})
 
+# Property registration generator output files
+set(LIBCSS_PROPREG_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/src/generated)
+set(LIBCSS_PROPREG_GEN_FILES
+    ${LIBCSS_PROPREG_OUT_DIR}/properties_enum.inc
+    ${LIBCSS_PROPREG_OUT_DIR}/dispatch_table.inc
+    ${LIBCSS_PROPREG_OUT_DIR}/propstrings_enum.inc
+    ${LIBCSS_PROPREG_OUT_DIR}/propstrings_strings.inc
+    ${LIBCSS_PROPREG_OUT_DIR}/parse_handlers.inc
+)
+add_custom_command(
+    OUTPUT ${LIBCSS_PROPREG_GEN_FILES}
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${LIBCSS_PROPREG_OUT_DIR}
+    COMMAND ${PYTHON3} ${CMAKE_SOURCE_DIR}/contrib/libcss/build-aux/property_generator.py
+        ${CMAKE_SOURCE_DIR}/contrib/libcss/src/select/dispatch.c
+        ${CMAKE_SOURCE_DIR}/contrib/libcss/src/parse/properties/properties.gen
+        ${CMAKE_SOURCE_DIR}/contrib/libcss/src/parse/keywords.gen
+        ${LIBCSS_PROPREG_OUT_DIR}/properties_enum.inc
+        ${LIBCSS_PROPREG_OUT_DIR}/dispatch_table.inc
+        ${LIBCSS_PROPREG_OUT_DIR}/propstrings_enum.inc
+        ${LIBCSS_PROPREG_OUT_DIR}/propstrings_strings.inc
+        ${LIBCSS_PROPREG_OUT_DIR}/parse_handlers.inc
+    DEPENDS 
+        ${CMAKE_SOURCE_DIR}/contrib/libcss/build-aux/property_generator.py
+        ${CMAKE_SOURCE_DIR}/contrib/libcss/src/select/dispatch.c
+        ${CMAKE_SOURCE_DIR}/contrib/libcss/src/parse/properties/properties.gen
+        ${CMAKE_SOURCE_DIR}/contrib/libcss/src/parse/keywords.gen
+    COMMENT "Generating property registration files"
+)
+add_custom_target(libcss_propreg_gen DEPENDS ${LIBCSS_PROPREG_GEN_FILES})
+
 set(PROPSRC ${LIBCSS_GEN_PROPERTIES})
 
 include_directories("${CMAKE_SOURCE_DIR}/contrib/libcss/src")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/src/select")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/src")
+include_directories("${CMAKE_CURRENT_BINARY_DIR}/src/generated")  # For property registration includes
+
 
 add_library(css SHARED
 	src/stylesheet.c
@@ -236,14 +268,212 @@ add_library(css SHARED
 	src/select/font_face.c
 	src/select/format_list_style.c
 	src/select/unit.c
-	src/utils/utils.c
-	src/utils/errors.c
+src/parse/parse.c
+src/parse/language.c
+src/parse/important.c
+src/parse/propstrings.c
+src/parse/font_face.c
+src/parse/mq.c
+src/parse/properties/azimuth.c
+src/parse/properties/background.c
+src/parse/properties/background_position.c
+src/parse/properties/border.c
+src/parse/properties/border_color.c
+src/parse/properties/border_spacing.c
+src/parse/properties/border_style.c
+src/parse/properties/border_width.c
+src/parse/properties/clip.c
+src/parse/properties/columns.c
+src/parse/properties/column_rule.c
+src/parse/properties/content.c
+src/parse/properties/cue.c
+src/parse/properties/cursor.c
+src/parse/properties/elevation.c
+src/parse/properties/fill_opacity.c
+src/parse/properties/flex.c
+src/parse/properties/flex_flow.c
+src/parse/properties/gap.c
+src/parse/properties/place_content.c
+src/parse/properties/font.c
+src/parse/properties/font_family.c
+src/parse/properties/font_weight.c
+src/parse/properties/list_style.c
+src/parse/properties/list_style_type.c
+src/parse/properties/margin.c
+src/parse/properties/opacity.c
+src/parse/properties/outline.c
+src/parse/properties/overflow.c
+src/parse/properties/padding.c
+src/parse/properties/pause.c
+src/parse/properties/play_during.c
+src/parse/properties/properties.c
+src/parse/properties/quotes.c
+src/parse/properties/stroke_opacity.c
+src/parse/properties/text_decoration.c
+src/parse/properties/utils.c
+src/parse/properties/voice_family.c
+src/parse/properties/grid_template_columns.c
+src/parse/properties/grid_template_rows.c
+src/parse/properties/grid_column.c
+src/parse/properties/grid_row.c
+src/parse/properties/grid_area.c
+${PROPSRC}
+src/select/properties/helpers.c
+src/select/properties/align_content.c
+src/select/properties/align_items.c
+src/select/properties/align_self.c
+src/select/properties/azimuth.c
+src/select/properties/background_attachment.c
+src/select/properties/background_color.c
+src/select/properties/background_image.c
+src/select/properties/background_position.c
+src/select/properties/background_repeat.c
+src/select/properties/border_bottom_color.c
+src/select/properties/border_bottom_style.c
+src/select/properties/border_bottom_width.c
+src/select/properties/border_collapse.c
+src/select/properties/border_left_color.c
+src/select/properties/border_left_style.c
+src/select/properties/border_left_width.c
+src/select/properties/border_right_color.c
+src/select/properties/border_right_style.c
+src/select/properties/border_right_width.c
+src/select/properties/border_spacing.c
+src/select/properties/border_top_color.c
+src/select/properties/border_top_style.c
+src/select/properties/border_top_width.c
+src/select/properties/bottom.c
+src/select/properties/box_sizing.c
+src/select/properties/break_after.c
+src/select/properties/break_before.c
+src/select/properties/break_inside.c
+src/select/properties/caption_side.c
+src/select/properties/clear.c
+src/select/properties/clip.c
+src/select/properties/color.c
+src/select/properties/column_count.c
+src/select/properties/column_fill.c
+src/select/properties/column_gap.c
+src/select/properties/column_rule_color.c
+src/select/properties/column_rule_style.c
+src/select/properties/column_rule_width.c
+src/select/properties/column_span.c
+src/select/properties/column_width.c
+src/select/properties/content.c
+src/select/properties/counter_increment.c
+src/select/properties/counter_reset.c
+src/select/properties/cue_after.c
+src/select/properties/cue_before.c
+src/select/properties/cursor.c
+src/select/properties/direction.c
+src/select/properties/display.c
+src/select/properties/elevation.c
+src/select/properties/empty_cells.c
+src/select/properties/fill_opacity.c
+src/select/properties/flex_basis.c
+src/select/properties/flex_direction.c
+src/select/properties/flex_grow.c
+src/select/properties/flex_shrink.c
+src/select/properties/flex_wrap.c
+src/select/properties/float.c
+src/select/properties/font_family.c
+src/select/properties/font_size.c
+src/select/properties/font_style.c
+src/select/properties/font_variant.c
+src/select/properties/font_weight.c
+src/select/properties/height.c
+src/select/properties/justify_content.c
+src/select/properties/left.c
+src/select/properties/letter_spacing.c
+src/select/properties/line_height.c
+src/select/properties/list_style_image.c
+src/select/properties/list_style_position.c
+src/select/properties/list_style_type.c
+src/select/properties/margin_bottom.c
+src/select/properties/margin_left.c
+src/select/properties/margin_right.c
+src/select/properties/margin_top.c
+src/select/properties/max_height.c
+src/select/properties/max_width.c
+src/select/properties/min_height.c
+src/select/properties/min_width.c
+src/select/properties/opacity.c
+src/select/properties/order.c
+src/select/properties/orphans.c
+src/select/properties/outline_color.c
+src/select/properties/outline_style.c
+src/select/properties/outline_width.c
+src/select/properties/overflow_x.c
+src/select/properties/overflow_y.c
+src/select/properties/padding_bottom.c
+src/select/properties/padding_left.c
+src/select/properties/padding_right.c
+src/select/properties/padding_top.c
+src/select/properties/page_break_after.c
+src/select/properties/page_break_before.c
+src/select/properties/page_break_inside.c
+src/select/properties/pause_after.c
+src/select/properties/pause_before.c
+src/select/properties/pitch.c
+src/select/properties/pitch_range.c
+src/select/properties/play_during.c
+src/select/properties/position.c
+src/select/properties/quotes.c
+src/select/properties/richness.c
+src/select/properties/right.c
+src/select/properties/speech_rate.c
+src/select/properties/speak.c
+src/select/properties/speak_header.c
+src/select/properties/speak_numeral.c
+src/select/properties/speak_punctuation.c
+src/select/properties/stress.c
+src/select/properties/stroke_opacity.c
+src/select/properties/table_layout.c
+src/select/properties/text_align.c
+src/select/properties/text_decoration.c
+src/select/properties/text_indent.c
+src/select/properties/text_transform.c
+src/select/properties/top.c
+src/select/properties/unicode_bidi.c
+src/select/properties/vertical_align.c
+src/select/properties/visibility.c
+src/select/properties/voice_family.c
+src/select/properties/volume.c
+src/select/properties/white_space.c
+src/select/properties/widows.c
+src/select/properties/width.c
+src/select/properties/word_spacing.c
+src/select/properties/writing_mode.c
+src/select/properties/z_index.c
+src/select/properties/grid_template_columns.c
+src/select/properties/grid_template_rows.c
+src/select/properties/grid_auto_flow.c
+src/select/properties/row_gap.c
+src/select/properties/grid_column_start.c
+src/select/properties/grid_column_end.c
+src/select/properties/grid_row_start.c
+src/select/properties/grid_row_end.c
+src/select/arena.c
+src/select/calc.c
+src/select/computed.c
+src/select/dispatch.c
+src/select/hash.c
+src/select/select.c
+src/select/strings.c
+src/select/font_face.c
+src/select/format_list_style.c
+src/select/unit.c
+src/utils/utils.c
+src/utils/errors.c
 )
 set_target_properties(css PROPERTIES SOVERSION ${NEOSURF_ABI})
 
-add_dependencies(css libcss_properties libcss_select_gen gen_parser)
+add_dependencies(css libcss_properties libcss_select_gen libcss_propreg_gen gen_parser)
 
 target_link_libraries(css nsutils parserutils)
+
+# Export generated files include path to consumers
+target_include_directories(css PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/src/generated")
 
 install(TARGETS css
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

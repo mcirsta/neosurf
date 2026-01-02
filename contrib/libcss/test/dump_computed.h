@@ -3379,7 +3379,7 @@ static void dump_computed_style(const css_computed_style *style,
 		ptr += wrote;
 		*len -= wrote;
 
-		wrote = snprintf(ptr, *len, " pixels");
+		wrote = snprintf(ptr, *len, "px");
 		ptr += wrote;
 		*len -= wrote;
 #else

@@ -40,6 +40,58 @@
 #include <dom/dom.h>
 #include <neosurf/utils/corestrings.h>
 
+/** Indicates grid placement is auto (not explicitly set) */
+#define GRID_PLACEMENT_AUTO (-1)
+
+/**
+ * Get grid item placement from CSS computed style.
+ *
+ * \param style     The computed style of the grid item
+ * \param col_start Output: column start (0-indexed), or GRID_PLACEMENT_AUTO
+ * \param col_end   Output: column end (0-indexed), or GRID_PLACEMENT_AUTO
+ * \param row_start Output: row start (0-indexed), or GRID_PLACEMENT_AUTO
+ * \param row_end   Output: row end (0-indexed), or GRID_PLACEMENT_AUTO
+ */
+static void get_grid_item_placement(const css_computed_style *style,
+				    int *col_start,
+				    int *col_end,
+				    int *row_start,
+				    int *row_end)
+{
+	int32_t val;
+
+	/* grid-column-start */
+	if (style != NULL &&
+	    css_computed_grid_column_start(style, &val) == CSS_GRID_LINE_SET) {
+		*col_start = FIXTOINT(val) - 1; /* CSS is 1-indexed */
+	} else {
+		*col_start = GRID_PLACEMENT_AUTO;
+	}
+
+	/* grid-column-end */
+	if (style != NULL &&
+	    css_computed_grid_column_end(style, &val) == CSS_GRID_LINE_SET) {
+		*col_end = FIXTOINT(val) - 1;
+	} else {
+		*col_end = GRID_PLACEMENT_AUTO;
+	}
+
+	/* grid-row-start */
+	if (style != NULL &&
+	    css_computed_grid_row_start(style, &val) == CSS_GRID_LINE_SET) {
+		*row_start = FIXTOINT(val) - 1;
+	} else {
+		*row_start = GRID_PLACEMENT_AUTO;
+	}
+
+	/* grid-row-end */
+	if (style != NULL &&
+	    css_computed_grid_row_end(style, &val) == CSS_GRID_LINE_SET) {
+		*row_end = FIXTOINT(val) - 1;
+	} else {
+		*row_end = GRID_PLACEMENT_AUTO;
+	}
+}
 
 /**
  * Determine logical column count from CSS grid-template-columns.
@@ -538,18 +590,100 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
 	}
 
 	int row_height = 0;
+	int max_row = 0; /* Track highest row used */
 
-	/* Reset grid position */
-	x = 0;
-	y = 0;
+	/* Need to track row heights for multi-row grids */
+	int *row_heights = calloc(100, sizeof(int)); /* Max 100 rows for now */
+	if (!row_heights) {
+		free(col_widths);
+		return false;
+	}
+
+	/* Auto-placement cursor for items without explicit placement */
+	int auto_col = 0;
+	int auto_row = 0;
 
 	for (child = grid->children; child; child = child->next) {
-		int child_width = col_widths[col_idx];
+		int col_start, col_end, row_start, row_end;
+		int item_col, item_row, col_span, row_span;
+		int child_width, child_x, child_y;
 
-		/* Resolve CSS dimensions (height, borders, padding, etc.) */
+		/* Get explicit placement from CSS */
+		get_grid_item_placement(child->style,
+					&col_start,
+					&col_end,
+					&row_start,
+					&row_end);
+
+		NSLOG(layout,
+		      WARNING,
+		      "GRID PLACEMENT CSS: col_start=%d col_end=%d row_start=%d row_end=%d",
+		      col_start,
+		      col_end,
+		      row_start,
+		      row_end);
+
+		/* Determine column position */
+		if (col_start != GRID_PLACEMENT_AUTO) {
+			item_col = col_start;
+		} else {
+			/* Auto-placement: use next available column */
+			item_col = auto_col;
+		}
+
+		/* Determine row position */
+		if (row_start != GRID_PLACEMENT_AUTO) {
+			item_row = row_start;
+		} else {
+			/* Auto-placement: use current auto row */
+			item_row = auto_row;
+		}
+
+		/* Clamp to valid range */
+		if (item_col < 0)
+			item_col = 0;
+		if (item_col >= num_cols)
+			item_col = num_cols - 1;
+		if (item_row < 0)
+			item_row = 0;
+
+		/* Determine span */
+		if (col_end != GRID_PLACEMENT_AUTO && col_end > item_col) {
+			col_span = col_end - item_col;
+		} else {
+			col_span = 1;
+		}
+		if (row_end != GRID_PLACEMENT_AUTO && row_end > item_row) {
+			row_span = row_end - item_row;
+		} else {
+			row_span = 1;
+		}
+
+		/* Clamp span to grid bounds */
+		if (item_col + col_span > num_cols) {
+			col_span = num_cols - item_col;
+		}
+
+		/* Calculate child width (sum of spanned columns + gaps) */
+		child_width = 0;
+		for (int c = item_col; c < item_col + col_span; c++) {
+			child_width += col_widths[c];
+			if (c > item_col) {
+				child_width +=
+					gap_px; /* Add gap between columns */
+			}
+		}
+
+		/* Calculate x position (sum of columns before item_col) */
+		child_x = 0;
+		for (int c = 0; c < item_col; c++) {
+			child_x += col_widths[c] + gap_px;
+		}
+
+		/* Resolve CSS dimensions */
 		layout_find_dimensions(&content->unit_len_ctx,
 				       child_width,
-				       -1, /* viewport_height unknown here */
+				       -1,
 				       child,
 				       child->style,
 				       &child->width,
@@ -562,71 +696,78 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
 				       child->padding,
 				       child->border);
 
-		/* Force child width to track width (stretch) */
+		/* Force child width to calculated width */
 		child->width = child_width;
 
 		/* Recursively layout the child */
-		/* Note: We might need layout_minmax first if not done?
-		   layout_block_context usually expects minmax to be done.
-		   But layout_block_context does the layout. */
-
-
-		/* We'll use layout_block_context if it's a block-like thing. */
 		if (child->type == BOX_BLOCK ||
 		    child->type == BOX_INLINE_BLOCK ||
 		    child->type == BOX_FLEX || child->type == BOX_GRID) {
 			if (!layout_block_context(child, -1, content)) {
 				free(col_widths);
+				free(row_heights);
 				return false;
 			}
-			NSLOG(layout,
-			      INFO,
-			      "Grid child %p type %d layout done. w %d h %d",
-			      child,
-			      child->type,
-			      child->width,
-			      child->height);
-		} else {
-			/* What if it is a text node? Anonymous block wrapper
-			 * should have been created by box_normalise? */
-			/* Assuming block level children for now as per HTML
-			 * structure */
-			NSLOG(layout,
-			      INFO,
-			      "Grid child %p type %d SKIPPED layout (not block-like)",
-			      child,
-			      child->type);
+		}
+
+		/* Track row heights for all spanned rows */
+		int height_per_row = child->height / row_span;
+		for (int r = item_row; r < item_row + row_span && r < 100;
+		     r++) {
+			if (height_per_row > row_heights[r]) {
+				row_heights[r] = height_per_row;
+			}
+		}
+
+		/* Track max row for grid height calculation */
+		if (item_row + row_span > max_row) {
+			max_row = item_row + row_span;
+		}
+
+		/* Calculate y position (sum of row heights before item_row) */
+		child_y = 0;
+		for (int r = 0; r < item_row; r++) {
+			child_y += row_heights[r] + gap_px;
 		}
 
 		/* Position child */
-		child->x = x;
-		child->y = y;
+		child->x = child_x;
+		child->y = child_y;
 
-		/* Track row height */
-		if (child->height > row_height) {
-			row_height = child->height;
-		}
+		NSLOG(layout,
+		      INFO,
+		      "Grid item placed: col=%d-%d row=%d-%d x=%d y=%d w=%d h=%d",
+		      item_col,
+		      item_col + col_span,
+		      item_row,
+		      item_row + row_span,
+		      child_x,
+		      child_y,
+		      child->width,
+		      child->height);
 
-		/* Advance column */
-		x += child_width + gap_px;
-		col_idx++;
-		if (col_idx >= num_cols) {
-			/* New Row */
-			col_idx = 0;
-			x = 0;
-			y += row_height + gap_px;
-			grid_height += row_height + gap_px;
-			row_height = 0;
+		/* Advance auto-placement cursor */
+		if (col_start == GRID_PLACEMENT_AUTO) {
+			auto_col++;
+			if (auto_col >= num_cols) {
+				auto_col = 0;
+				auto_row++;
+			}
 		}
 	}
 
-	/* Add last row height if not empty */
-	if (col_idx > 0) {
-		grid_height += row_height;
+	/* Calculate total grid height */
+	grid_height = 0;
+	for (int r = 0; r < max_row; r++) {
+		grid_height += row_heights[r];
+		if (r > 0) {
+			grid_height += gap_px;
+		}
 	}
 
 	grid->height = grid_height;
 
+	free(row_heights);
 	free(col_widths);
 	return true;
 }
