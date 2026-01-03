@@ -160,6 +160,13 @@ static uint8_t column_dense_grid_style[4096];
 static uint8_t column_dense_child_style[4096]; /* Regular child */
 static uint8_t column_dense_tall_style[4096]; /* Tall child (span 2 rows) */
 
+/* Style markers for explicit placement test */
+static uint8_t explicit_grid_style[4096];
+static uint8_t explicit_auto_style[4096]; /* Auto-placed child */
+static uint8_t explicit_fixed_style[4096]; /* Explicitly placed at col 0, row 0 */
+static uint8_t explicit_col_only_style[4096]; /* Explicit column 4, auto row */
+static uint8_t explicit_grid_4col_style[4096]; /* 4-column grid */
+
 
 /* Mock css_computed_grid_template_columns */
 uint8_t
@@ -186,6 +193,22 @@ css_computed_grid_template_columns(const css_computed_style *style, int32_t *n_t
             *n_tracks = 2;
         if (tracks)
             *tracks = mock_grid_tracks_2col;
+        return CSS_GRID_TEMPLATE_SET;
+    }
+    /* For explicit placement test, return 3 columns */
+    if (style == (const css_computed_style *)explicit_grid_style) {
+        if (n_tracks)
+            *n_tracks = 3;
+        if (tracks)
+            *tracks = mock_grid_tracks;
+        return CSS_GRID_TEMPLATE_SET;
+    }
+    /* For 4-column grid test */
+    if (style == (const css_computed_style *)explicit_grid_4col_style) {
+        if (n_tracks)
+            *n_tracks = 4;
+        if (tracks)
+            *tracks = mock_grid_tracks_4col;
         return CSS_GRID_TEMPLATE_SET;
     }
     if (n_tracks)
@@ -463,6 +486,18 @@ uint8_t css_computed_grid_column_start(const css_computed_style *style, int32_t 
             *val = (2 << 10); /* css_fixed for 2 */
         return CSS_GRID_LINE_SPAN;
     }
+    /* For explicit fixed item, return column 1 (CSS 1-indexed -> col 0) */
+    if (style == (const css_computed_style *)explicit_fixed_style) {
+        if (val)
+            *val = (1 << 10); /* css_fixed for 1 */
+        return CSS_GRID_LINE_SET;
+    }
+    /* For explicit column only, return column 4 (CSS 1-indexed -> col 3) */
+    if (style == (const css_computed_style *)explicit_col_only_style) {
+        if (val)
+            *val = (4 << 10); /* css_fixed for 4 */
+        return CSS_GRID_LINE_SET;
+    }
     /* Default: auto */
     if (val)
         *val = 0;
@@ -485,6 +520,12 @@ uint8_t css_computed_grid_row_start(const css_computed_style *style, int32_t *va
         if (val)
             *val = (2 << 10); /* css_fixed for 2 */
         return CSS_GRID_LINE_SPAN;
+    }
+    /* For explicit fixed item, return row 1 (CSS 1-indexed -> row 0) */
+    if (style == (const css_computed_style *)explicit_fixed_style) {
+        if (val)
+            *val = (1 << 10); /* css_fixed for 1 */
+        return CSS_GRID_LINE_SET;
     }
     if (val)
         *val = 0;
@@ -748,6 +789,200 @@ START_TEST(test_grid_column_dense)
 }
 END_TEST
 
+/**
+ * Test: Explicit placement takes precedence over auto-placement
+ *
+ * Per CSS Grid spec §8, items with explicit positions should be placed
+ * BEFORE auto-placed items to avoid conflicts.
+ *
+ * Scenario:
+ *   - 3-column grid (100px each)
+ *   - Item 1 (DOM order first): auto placement
+ *   - Item 2 (DOM order second): explicit grid-column: 1; grid-row: 1 (-> col 0, row 0)
+ *   - Item 3: auto placement
+ *
+ * Expected with 3-phase algorithm:
+ *   - Item 2 placed first at (0,0) because it has explicit position
+ *   - Item 1 auto-places at (1,0) - next available
+ *   - Item 3 auto-places at (2,0)
+ *
+ * With current DOM-order placement:
+ *   - Item 1 would auto-place at (0,0) first
+ *   - Item 2 would then be placed at (0,0) (conflicting!) or pushed elsewhere
+ */
+START_TEST(test_grid_explicit_placement)
+{
+    printf("\n=== test_grid_explicit_placement ===\n");
+
+    /* Grid container: 3 columns of 100px */
+    struct box *grid = calloc(1, sizeof(struct box));
+    grid->type = BOX_BLOCK;
+    grid->width = 300;
+    grid->height = AUTO;
+    grid->style = (css_computed_style *)explicit_grid_style;
+
+    /* 3 children: auto, explicit(0,0), auto */
+    struct box *items[3];
+    for (int i = 0; i < 3; i++) {
+        items[i] = calloc(1, sizeof(struct box));
+        items[i]->type = BOX_BLOCK;
+        items[i]->width = AUTO;
+        items[i]->height = 50;
+        items[i]->parent = grid;
+
+        if (i == 1) {
+            /* Item 2: explicit position at col 0, row 0 */
+            items[i]->style = (css_computed_style *)explicit_fixed_style;
+        } else {
+            /* Items 1, 3: auto placement */
+            items[i]->style = (css_computed_style *)explicit_auto_style;
+        }
+    }
+
+    /* Link children */
+    grid->children = items[0];
+    for (int i = 0; i < 3; i++) {
+        if (i > 0)
+            items[i]->prev = items[i - 1];
+        if (i < 2)
+            items[i]->next = items[i + 1];
+    }
+    grid->last = items[2];
+
+    /* Initialize mock content context */
+    memset(&mock_content, 0, sizeof(mock_content));
+    mock_content.unit_len_ctx.device_dpi = (96 << 10);
+    mock_content.unit_len_ctx.font_size_default = (16 << 10);
+    mock_content.unit_len_ctx.viewport_width = (1000 << 10);
+    mock_content.unit_len_ctx.viewport_height = (1000 << 10);
+
+    /* Run layout */
+    printf("Running layout_grid for explicit placement test...\n");
+    layout_grid(grid, 300, &mock_content);
+
+    /* Print results */
+    for (int i = 0; i < 3; i++) {
+        printf("Item %d: x=%d y=%d w=%d h=%d\n", i + 1, items[i]->x, items[i]->y, items[i]->width, items[i]->height);
+    }
+
+    /* Verify: Item 2 (explicit) should be at x=0 (col 0)
+     * With 3-phase: Item 2 at (0,0), Item 1 at (100,0), Item 3 at (200,0)
+     */
+    ck_assert_msg(items[1]->x == 0, "Item 2 (explicit) should be at x=0, got x=%d", items[1]->x);
+    ck_assert_msg(items[1]->y == 0, "Item 2 (explicit) should be at y=0, got y=%d", items[1]->y);
+
+    /* Item 1 should be at x=100 (col 1) - it should have been pushed to make room */
+    ck_assert_msg(items[0]->x == 100, "Item 1 (auto) should be at x=100, got x=%d", items[0]->x);
+    ck_assert_msg(items[0]->y == 0, "Item 1 (auto) should be at y=0, got y=%d", items[0]->y);
+
+    /* Item 3 should be at x=200 (col 2) */
+    ck_assert_msg(items[2]->x == 200, "Item 3 (auto) should be at x=200, got x=%d", items[2]->x);
+    ck_assert_msg(items[2]->y == 0, "Item 3 (auto) should be at y=0, got y=%d", items[2]->y);
+
+    /* Verify all items are visible (distinct x positions) */
+    ck_assert_msg(items[0]->x != items[1]->x, "Item 1 and Item 2 overlap! Both at x=%d", items[0]->x);
+    ck_assert_msg(items[0]->x != items[2]->x, "Item 1 and Item 3 overlap! Both at x=%d", items[0]->x);
+    ck_assert_msg(items[1]->x != items[2]->x, "Item 2 and Item 3 overlap! Both at x=%d", items[1]->x);
+
+    /* Cleanup */
+    for (int i = 0; i < 3; i++) {
+        free(items[i]);
+    }
+    free(grid);
+
+    printf("=== test_grid_explicit_placement PASSED ===\n");
+}
+END_TEST
+
+/* Test: Explicit column but auto row (Phase 2 placement) */
+START_TEST(test_grid_explicit_column_only)
+{
+    printf("\n=== test_grid_explicit_column_only ===\n");
+
+    /* Grid container: 4 columns of 60px */
+    struct box *grid = calloc(1, sizeof(struct box));
+    grid->type = BOX_BLOCK;
+    grid->width = 240;
+    grid->height = AUTO;
+    grid->style = (css_computed_style *)explicit_grid_4col_style;
+
+    /* 5 children: A (auto), B (auto), X (col 4, auto row), C (auto), D (auto) */
+    struct box *items[5];
+    const char *names[] = {"A", "B", "X", "C", "D"};
+    for (int i = 0; i < 5; i++) {
+        items[i] = calloc(1, sizeof(struct box));
+        items[i]->type = BOX_BLOCK;
+        items[i]->width = AUTO;
+        items[i]->height = 50;
+        items[i]->parent = grid;
+
+        if (i == 2) {
+            /* X: explicit column 4, auto row */
+            items[i]->style = (css_computed_style *)explicit_col_only_style;
+        } else {
+            items[i]->style = (css_computed_style *)explicit_auto_style;
+        }
+    }
+
+    /* Link children */
+    grid->children = items[0];
+    for (int i = 0; i < 5; i++) {
+        if (i > 0)
+            items[i]->prev = items[i - 1];
+        if (i < 4)
+            items[i]->next = items[i + 1];
+    }
+    grid->last = items[4];
+
+    /* Initialize mock content context */
+    memset(&mock_content, 0, sizeof(mock_content));
+    mock_content.unit_len_ctx.device_dpi = (96 << 10);
+    mock_content.unit_len_ctx.font_size_default = (16 << 10);
+    mock_content.unit_len_ctx.viewport_width = (1000 << 10);
+    mock_content.unit_len_ctx.viewport_height = (1000 << 10);
+
+    /* Run layout */
+    printf("Running layout_grid for explicit column only test...\n");
+    layout_grid(grid, 240, &mock_content);
+
+    /* Print results */
+    for (int i = 0; i < 5; i++) {
+        printf("%s: x=%d y=%d w=%d h=%d\n", names[i], items[i]->x, items[i]->y, items[i]->width, items[i]->height);
+    }
+
+    /* Verify: X (explicit col 4 -> index 3) should be at x=180
+     * With 3-phase algorithm (Phase 2 places X first):
+     * X should be at col 3, row 0
+     * After Phase 2 places X, cursor advances past X (to col 4 which wraps to row 1)
+     * Then A,B go to row 0, C,D wrap to row 1
+     */
+    ck_assert_msg(items[2]->x == 180, "X (explicit col 4) should be at x=180 (col 3 * 60px), got x=%d", items[2]->x);
+    ck_assert_msg(items[2]->y == 0, "X should be at y=0 (first free row), got y=%d", items[2]->y);
+
+    /* A,B should fill cols 0,1 of row 0 (before X in DOM) */
+    ck_assert_msg(items[0]->x == 0, "A should be at x=0, got x=%d", items[0]->x);
+    ck_assert_msg(items[0]->y == 0, "A should be at y=0, got y=%d", items[0]->y);
+    ck_assert_msg(items[1]->x == 60, "B should be at x=60, got x=%d", items[1]->x);
+    ck_assert_msg(items[1]->y == 0, "B should be at y=0, got y=%d", items[1]->y);
+
+    /* C should be in row 1, col 0 (after cursor wrapped past X) */
+    ck_assert_msg(items[3]->x == 0, "C should be at x=0, got x=%d", items[3]->x);
+    ck_assert_msg(items[3]->y == 50, "C should be at y=50 (row 1), got y=%d", items[3]->y);
+
+    /* D should be in row 1, col 1 */
+    ck_assert_msg(items[4]->x == 60, "D should be at x=60, got x=%d", items[4]->x);
+    ck_assert_msg(items[4]->y == 50, "D should be at y=50 (row 1), got y=%d", items[4]->y);
+
+    /* Cleanup */
+    for (int i = 0; i < 5; i++) {
+        free(items[i]);
+    }
+    free(grid);
+
+    printf("=== test_grid_explicit_column_only PASSED ===\n");
+}
+END_TEST
+
 Suite *grid_test_suite(void)
 {
     Suite *s = suite_create("grid_layout");
@@ -755,6 +990,8 @@ Suite *grid_test_suite(void)
     tcase_add_test(tc, test_grid_layout_3_columns);
     tcase_add_test(tc, test_grid_span_placement);
     tcase_add_test(tc, test_grid_column_dense);
+    tcase_add_test(tc, test_grid_explicit_placement);
+    tcase_add_test(tc, test_grid_explicit_column_only);
     suite_add_tcase(s, tc);
     return s;
 }
