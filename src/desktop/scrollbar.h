@@ -26,6 +26,8 @@
 #ifndef NETSURF_DESKTOP_SCROLLBAR_H
 #define NETSURF_DESKTOP_SCROLLBAR_H
 
+#include <neosurf/mouse.h>
+#include <neosurf/utils/errors.h>
 #include <limits.h>
 #include <stdbool.h>
 
@@ -39,6 +41,7 @@
 
 struct scrollbar;
 struct redraw_context;
+struct rect;
 
 /**
  * scrollbar message types

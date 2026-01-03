@@ -25,6 +25,10 @@
 #ifndef NETSURF_SSL_CERTS_H_
 #define NETSURF_SSL_CERTS_H_
 
+#include <neosurf/utils/errors.h>
+#include <stddef.h>
+#include <stdint.h>
+
 struct nsurl;
 
 /**

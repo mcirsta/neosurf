@@ -25,6 +25,7 @@
 
 #include <neosurf/utils/errors.h>
 
+struct bitmap;
 struct content_redraw_data;
 
 /** Initialise the content handlers for image types.

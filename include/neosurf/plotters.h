@@ -24,6 +24,7 @@
 #ifndef _NETSURF_PLOTTERS_H_
 #define _NETSURF_PLOTTERS_H_
 
+#include <neosurf/utils/errors.h>
 #include <stdbool.h>
 #include <stdio.h>
 

@@ -22,6 +22,8 @@
  */
 
 #ifndef NETSURF_CONTENT_FETCHERS_ABOUT_TESTAMENT_H
+
+struct fetch_about_context;
 #define NETSURF_CONTENT_FETCHERS_ABOUT_TESTAMENT_H
 
 /**

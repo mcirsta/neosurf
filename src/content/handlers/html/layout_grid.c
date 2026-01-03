@@ -459,6 +459,8 @@ static void layout_grid_compute_tracks(struct box *grid, int available_width, in
              * grid) */
             css_computed_grid_track *t = &tracks[i % n_tracks];
 
+            NSLOG(netsurf, INFO, "Track %d: unit=%d value=%d (FR=%d PX=%d)", i, t->unit, FIXTOINT(t->value),
+                CSS_UNIT_FR, CSS_UNIT_PX);
             if (t->unit == CSS_UNIT_FR) {
                 fr_tracks++;
                 fr_total += FIXTOINT(t->value);

@@ -8,7 +8,11 @@
 #ifndef hubbub_treebuilder_internal_h_
 #define hubbub_treebuilder_internal_h_
 
+#include <stdbool.h>
+#include <stdint.h>
+
 #include "treebuilder/element-type.h"
+#include "treebuilder/modes.h"
 #include "treebuilder/treebuilder.h"
 
 /**

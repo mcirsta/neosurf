@@ -32,6 +32,10 @@
 #ifndef _NETSURF_BITMAP_H_
 #define _NETSURF_BITMAP_H_
 
+#include <neosurf/utils/errors.h>
+#include <stdbool.h>
+#include <stddef.h>
+
 /** Bitmap creation flags. */
 enum gui_bitmap_flags {
     BITMAP_NONE = 0,

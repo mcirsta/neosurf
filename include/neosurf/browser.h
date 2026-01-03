@@ -25,6 +25,8 @@
 #ifndef NETSURF_BROWSER_H_
 #define NETSURF_BROWSER_H_
 
+#include <neosurf/utils/errors.h>
+
 /**
  * Set the DPI of the browser.
  *

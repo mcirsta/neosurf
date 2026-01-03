@@ -24,6 +24,9 @@
 #ifndef NETSURF_HTML_BOX_INSPECT_H
 #define NETSURF_HTML_BOX_INSPECT_H
 
+#include <stdbool.h>
+#include <stdio.h>
+
 /**
  * Find the absolute coordinates of a box.
  *

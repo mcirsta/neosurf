@@ -3,7 +3,7 @@
 # http://www.opensource.org/licenses/mit-license.php
 # Copyright 2017 Lucas Neves <lcneves@gmail.com>
 
-copyright = '''\
+COPYRIGHT = '''\
 /*
  * This file is part of LibCSS
  * Licensed under the MIT License,
@@ -13,43 +13,57 @@ copyright = '''\
 
 '''
 
-def ifndef(name):
-	name = name.upper()
-	name = f"CSS_COMPUTED_{name}_H_"
-	return f"#ifndef {name}\n#define {name}\n"
+# Include statements for generated headers
+INCLUDE_LIBCSS_COMPUTED = '#include <libcss/computed.h>\n'
+INCLUDE_PROPGET = '#include "select/propget.h"\n'
+INCLUDE_CALC = '#include "select/calc.h"\n'
+INCLUDE_COMPUTED = '#include "computed.h"\n'
 
-include_propget = '''\
+# Union type definition with include guard to prevent redefinition
+CSS_FIXED_OR_CALC_UNION = '''\
 
-#include "select/propget.h"
-'''
-
-include_calc = '''\
-
-#include "select/calc.h"
-'''
-
-calc_unions = '''\
-
+#ifndef css_fixed_or_calc_typedef
+#define css_fixed_or_calc_typedef
 typedef union {
 	css_fixed value;
 	lwc_string *calc;
 } css_fixed_or_calc;
+#endif
 '''
 
+
+def ifndef(name):
+    """Generate include guard for a header file."""
+    guard = f"CSS_COMPUTED_{name.upper()}_H_"
+    return f"#ifndef {guard}\n#define {guard}\n"
+
+
+# Asset definitions for generated headers
 assets = {}
 
-assets['computed.h'] = {}
-assets['computed.h']['header'] = copyright + ifndef("computed") + include_calc + calc_unions
-assets['computed.h']['footer'] = '\n#endif\n'
+assets['computed.h'] = {
+    'header': (COPYRIGHT + ifndef("computed") +
+               INCLUDE_LIBCSS_COMPUTED +
+               INCLUDE_CALC +
+               CSS_FIXED_OR_CALC_UNION),
+    'footer': '\n#endif\n'
+}
 
-assets['propset.h'] = {}
-assets['propset.h']['header'] = copyright + ifndef("propset") + include_propget
-assets['propset.h']['footer'] = '\n#endif\n'
+assets['propset.h'] = {
+    'header': (COPYRIGHT + ifndef("propset") +
+               '\n' + INCLUDE_PROPGET),
+    'footer': '\n#endif\n'
+}
 
-assets['propget.h'] = {}
-assets['propget.h']['header'] = copyright + ifndef("propget")
-assets['propget.h']['footer'] = '\n#endif\n'
+assets['propget.h'] = {
+    'header': (COPYRIGHT + ifndef("propget") +
+               INCLUDE_LIBCSS_COMPUTED +
+               INCLUDE_COMPUTED +
+               CSS_FIXED_OR_CALC_UNION),
+    'footer': '\n#endif\n'
+}
 
-assets['destroy.inc'] = {}
-assets['destroy.inc']['header'] = copyright
-assets['destroy.inc']['footer'] = ''
+assets['destroy.inc'] = {
+    'header': COPYRIGHT,
+    'footer': ''
+}

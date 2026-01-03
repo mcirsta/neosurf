@@ -24,7 +24,10 @@
 #ifndef _NETSURF_UTILS_HASHTABLE_H_
 #define _NETSURF_UTILS_HASHTABLE_H_
 
+#include <neosurf/utils/errors.h>
 #include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
 
 struct hash_table;
 

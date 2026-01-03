@@ -13,13 +13,17 @@
 
 #ifndef CSS_COMPUTED_COMPUTED_H_
 #define CSS_COMPUTED_COMPUTED_H_
+#include <libcss/computed.h>
 
 #include "select/calc.h"
 
+#ifndef css_fixed_or_calc_typedef
+#define css_fixed_or_calc_typedef
 typedef union {
     css_fixed value;
     lwc_string *calc;
 } css_fixed_or_calc;
+#endif
 
 
 struct css_computed_style_i {

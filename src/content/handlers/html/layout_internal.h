@@ -24,6 +24,15 @@
 #ifndef NETSURF_HTML_LAYOUT_INTERNAL_H
 #define NETSURF_HTML_LAYOUT_INTERNAL_H
 
+#include <limits.h>
+#include <stdbool.h>
+#include <stdint.h>
+
+#include <neosurf/content/handlers/html/box.h>
+
+struct html_content;
+struct gui_layout_table;
+
 #define AUTO INT_MIN
 
 /**
@@ -37,7 +46,7 @@
  * This function carries out layout of a block and its children, as described
  * in CSS 2.1 9.4.1.
  */
-bool layout_block_context(struct box *block, int viewport_height, html_content *content);
+bool layout_block_context(struct box *block, int viewport_height, struct html_content *content);
 
 /**
  * Layout a table.
@@ -47,7 +56,7 @@ bool layout_block_context(struct box *block, int viewport_height, html_content *
  * \param  content          memory pool for any new boxes
  * \return  true on success, false on memory exhaustion
  */
-bool layout_table(struct box *table, int available_width, html_content *content);
+bool layout_table(struct box *table, int available_width, struct html_content *content);
 
 /**
  * Layout a flex container.
@@ -57,7 +66,7 @@ bool layout_table(struct box *table, int available_width, html_content *content)
  * \param[in] content          memory pool for any new boxes
  * \return  true on success, false on memory exhaustion
  */
-bool layout_flex(struct box *flex, int available_width, html_content *content);
+bool layout_flex(struct box *flex, int available_width, struct html_content *content);
 
 /**
  * Calculate minimum and maximum width of any box type.
@@ -66,7 +75,7 @@ bool layout_flex(struct box *flex, int available_width, html_content *content);
  * \param font_func font functions
  * \param content   The HTML content being laid out
  */
-void layout_minmax_box(struct box *box, const struct gui_layout_table *font_func, const html_content *content);
+void layout_minmax_box(struct box *box, const struct gui_layout_table *font_func, const struct html_content *content);
 
 /**
  * Perform grid layout on a grid container.
@@ -76,7 +85,7 @@ void layout_minmax_box(struct box *box, const struct gui_layout_table *font_func
  * \param content         html content
  * \return true on success, false on failure
  */
-bool layout_grid(struct box *grid, int available_width, html_content *content);
+bool layout_grid(struct box *grid, int available_width, struct html_content *content);
 
 typedef uint8_t (*css_len_func)(const css_computed_style *style, css_fixed *length, css_unit *unit);
 typedef uint8_t (*css_border_style_func)(const css_computed_style *style);

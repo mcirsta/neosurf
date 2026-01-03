@@ -9,6 +9,7 @@
 #define SVGTINY_H
 
 #include <stdbool.h>
+#include <stddef.h>
 
 typedef int svgtiny_colour;
 #define svgtiny_TRANSPARENT 0x1000000

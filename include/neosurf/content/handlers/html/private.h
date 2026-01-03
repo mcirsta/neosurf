@@ -89,6 +89,7 @@ union html_focus_owner {
     struct box *content;
 };
 
+
 /**
  * Data specific to CONTENT_HTML.
  */
@@ -217,6 +218,43 @@ typedef struct html_content {
     struct form_control *visible_select_menu;
 
 } html_content;
+
+/**
+ * Set our drag status, and inform whatever owns the content
+ *
+ * \param html		HTML content
+ * \param drag_type	Type of drag
+ * \param drag_owner	What owns the drag
+ * \param rect		Pointer movement bounds
+ */
+void html_set_drag_type(
+    html_content *html, html_drag_type drag_type, union html_drag_owner drag_owner, const struct rect *rect);
+
+/**
+ * Set our selection status, and inform whatever owns the content
+ *
+ * \param html			HTML content
+ * \param selection_type	Type of selection
+ * \param selection_owner	What owns the selection
+ * \param read_only		True iff selection is read only
+ */
+void html_set_selection(
+    html_content *html, html_selection_type selection_type, union html_selection_owner selection_owner, bool read_only);
+
+/**
+ * Set our input focus, and inform whatever owns the content
+ *
+ * \param html			HTML content
+ * \param focus_type		Type of input focus
+ * \param focus_owner		What owns the focus
+ * \param hide_caret		True iff caret to be hidden
+ * \param x			Carret x-coord rel to owner
+ * \param y			Carret y-coord rel to owner
+ * \param height		Carret height
+ * \param clip			Carret clip rect
+ */
+void html_set_focus(html_content *html, html_focus_type focus_type, union html_focus_owner focus_owner, bool hide_caret,
+    int x, int y, int height, const struct rect *clip);
 
 /**
  * Render padding and margin box outlines in html_redraw().

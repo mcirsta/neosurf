@@ -24,6 +24,9 @@
 #ifndef _NETSURF_DESKTOP_SAVE_TEXT_H_
 #define _NETSURF_DESKTOP_SAVE_TEXT_H_
 
+#include <stdbool.h>
+#include <stddef.h>
+
 struct box;
 struct hlcache_handle;
 

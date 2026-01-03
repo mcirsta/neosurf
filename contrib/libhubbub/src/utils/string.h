@@ -8,6 +8,10 @@
 #ifndef hubbub_string_h_
 #define hubbub_string_h_
 
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
 /** Match two strings case-sensitively */
 bool hubbub_string_match(const uint8_t *a, size_t a_len, const uint8_t *b, size_t b_len);
 

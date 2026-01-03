@@ -35,7 +35,9 @@
 #ifndef NETSURF_UTILS_FILE_H
 #define NETSURF_UTILS_FILE_H
 
+#include <neosurf/utils/errors.h>
 #include <stdarg.h>
+#include <stddef.h>
 
 struct nsurl;
 

@@ -9,9 +9,12 @@
 #ifndef css_select_mq_h_
 #define css_select_mq_h_
 
+#include <libcss/computed.h>
+#include "parse/mq.h"
 #include "select/helpers.h"
 #include "select/strings.h"
 #include "select/unit.h"
+#include "stylesheet.h"
 
 static inline bool mq_match_feature_range_length_op1(
     css_mq_feature_op op, const css_mq_value *value, const css_fixed client_len, const css_unit_ctx *unit_ctx)
