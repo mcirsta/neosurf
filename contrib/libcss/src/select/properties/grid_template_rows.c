@@ -73,8 +73,8 @@ css_error css__cascade_grid_template_rows(uint32_t opv,
 
 						/* Read min unit */
 						tracks[i].min_unit =
-							(css_unit)*style
-								->bytecode;
+							css__to_css_unit(
+								*style->bytecode);
 						advance_bytecode(
 							style,
 							sizeof(css_code_t));
@@ -88,8 +88,8 @@ css_error css__cascade_grid_template_rows(uint32_t opv,
 
 						/* Read max unit */
 						tracks[i].max_unit =
-							(css_unit)*style
-								->bytecode;
+							css__to_css_unit(
+								*style->bytecode);
 						advance_bytecode(
 							style,
 							sizeof(css_code_t));
@@ -97,8 +97,9 @@ css_error css__cascade_grid_template_rows(uint32_t opv,
 						/* Simple track: we already read
 						 * value and unit */
 						tracks[i].value = track_value;
-						tracks[i].unit = (css_unit)
-							raw_unit;
+						tracks[i].unit =
+							css__to_css_unit(
+								raw_unit);
 						/* min_unit, max_value, max_unit
 						 * are unused */
 						tracks[i].min_unit = 0;

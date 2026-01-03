@@ -65,7 +65,7 @@ static css_error parse_track_size(css_language *c,
 			parserutils_vector_iterate(vector, ctx);
 			track->type = TRACK_SIMPLE;
 			track->value = INTTOFIX(1);
-			track->unit = CSS_UNIT_FR;
+			track->unit = UNIT_FR;
 			return CSS_OK;
 		} else if ((lwc_string_caseless_isequal(token->idata,
 							c->strings[MIN_CONTENT],
@@ -135,7 +135,7 @@ static css_error parse_track_size(css_language *c,
 						    &match) == lwc_error_ok &&
 					    match)) {
 					parserutils_vector_iterate(vector, ctx);
-					min_unit = CSS_UNIT_FR;
+					min_unit = UNIT_FR;
 					min_value = INTTOFIX(1);
 				} else {
 					*ctx = orig_ctx;
@@ -192,7 +192,7 @@ static css_error parse_track_size(css_language *c,
 						    &match) == lwc_error_ok &&
 					    match)) {
 					parserutils_vector_iterate(vector, ctx);
-					max_unit = CSS_UNIT_FR;
+					max_unit = UNIT_FR;
 					max_value = INTTOFIX(1);
 				} else {
 					*ctx = orig_ctx;

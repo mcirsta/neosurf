@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Grid Auto-Flow Test (neosurf)</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background: #1a1a2e;
+            color: #eee;
+        }
+
+        h1 {
+            color: #00d9ff;
+            margin-bottom: 5px;
+        }
+
+        h2 {
+            color: #ff6b6b;
+            margin: 20px 0 10px;
+        }
+
+        p {
+            color: #888;
+            margin: 5px 0 15px;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 5px;
+            background: #16213e;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .item {
+            background: #667eea;
+            padding: 15px;
+            border-radius: 4px;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .item.pink {
+            background: #f5576c;
+        }
+
+        .item.green {
+            background: #38ef7d;
+        }
+
+        .item.wide {
+            grid-column: span 2;
+            background: #11998e;
+        }
+
+        .item.tall {
+            grid-row: span 2;
+            background: #f093fb;
+        }
+
+        /* Test 1: Row flow (default) - 3 columns */
+        .grid-row {
+            grid-template-columns: 1fr 1fr 1fr;
+            /* grid-auto-flow: row; is default */
+        }
+
+        /* Test 2: Column flow - 3 rows */
+        .grid-column {
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 60px 60px 60px;
+            grid-auto-flow: column;
+        }
+
+        /* Test 3: Row Dense - backfills holes */
+        .grid-row-dense {
+            grid-template-columns: repeat(4, 60px);
+            grid-auto-flow: row dense;
+        }
+
+        /* Test 4: Column Dense - backfills holes */
+        .grid-column-dense {
+            grid-template-columns: repeat(3, 60px);
+            grid-template-rows: repeat(4, 40px);
+            grid-auto-flow: column dense;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>CSS Grid Auto-Flow Test</h1>
+    <p>Testing grid-auto-flow: row, column, row dense, column dense in neosurf</p>
+
+    <h2>Test 1: grid-auto-flow: row (default)</h2>
+    <p>Items fill: Row1 [1][2][3], Row2 [4][5][6]</p>
+    <div class="grid grid-row">
+        <div class="item">1</div>
+        <div class="item pink">2</div>
+        <div class="item">3</div>
+        <div class="item pink">4</div>
+        <div class="item">5</div>
+        <div class="item pink">6</div>
+    </div>
+
+    <h2>Test 2: grid-auto-flow: column</h2>
+    <p>Items fill: Col1 vertically [1,2,3], then Col2 [4,5,6], Col3 [7,8,9]</p>
+    <div class="grid grid-column">
+        <div class="item">1</div>
+        <div class="item pink">2</div>
+        <div class="item">3</div>
+        <div class="item pink">4</div>
+        <div class="item">5</div>
+        <div class="item pink">6</div>
+        <div class="item">7</div>
+        <div class="item pink">8</div>
+        <div class="item">9</div>
+    </div>
+
+    <h2>Test 3: grid-auto-flow: row dense</h2>
+    <p>Wide item (2-span) creates hole, dense mode fills it with item 3</p>
+    <div class="grid grid-row-dense">
+        <div class="item">1</div>
+        <div class="item wide">2 (span 2)</div>
+        <div class="item pink">3</div>
+        <div class="item">4</div>
+        <div class="item pink">5</div>
+    </div>
+
+    <h2>Test 4: grid-auto-flow: column dense</h2>
+    <p>Tall item creates hole, dense mode backfills</p>
+    <div class="grid grid-column-dense">
+        <div class="item">1</div>
+        <div class="item tall">2 (tall)</div>
+        <div class="item pink">3</div>
+        <div class="item">4</div>
+        <div class="item pink">5</div>
+        <div class="item">6</div>
+    </div>
+</body>
+
+</html>

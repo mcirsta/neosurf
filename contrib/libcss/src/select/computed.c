@@ -2078,3 +2078,8 @@ css_computed_grid_row_end(const css_computed_style *style, int32_t *integer)
 {
 	return get_grid_row_end(style, integer);
 }
+
+uint8_t css_computed_grid_auto_flow(const css_computed_style *style)
+{
+	return get_grid_auto_flow(style);
+}

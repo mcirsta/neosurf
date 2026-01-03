@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Grid FR Test</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            margin: 20px;
+            background: #1a1a2e;
+            color: #eee;
+        }
+
+        h2 {
+            color: #ff6b6b;
+            margin: 20px 0 10px;
+        }
+
+        p {
+            color: #888;
+            margin: 5px 0 15px;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            gap: 5px;
+            background: #16213e;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        .item {
+            background: #667eea;
+            padding: 15px;
+            color: white;
+            font-weight: bold;
+            text-align: center;
+        }
+
+        .item.pink {
+            background: #f5576c;
+        }
+
+        /* Test with 1fr 1fr 1fr - should fill container */
+        .grid-fr {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        /* Test with fixed 100px for comparison */
+        .grid-fixed {
+            grid-template-columns: 100px 100px 100px;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>Test A: 1fr 1fr 1fr (should fill container)</h2>
+    <p>Each column should be 1/3 of container width</p>
+    <div class="grid grid-fr">
+        <div class="item">1</div>
+        <div class="item pink">2</div>
+        <div class="item">3</div>
+        <div class="item pink">4</div>
+        <div class="item">5</div>
+        <div class="item pink">6</div>
+    </div>
+
+    <h2>Test B: 100px 100px 100px (fixed width)</h2>
+    <p>Each column is exactly 100px</p>
+    <div class="grid grid-fixed">
+        <div class="item">1</div>
+        <div class="item pink">2</div>
+        <div class="item">3</div>
+        <div class="item pink">4</div>
+        <div class="item">5</div>
+        <div class="item pink">6</div>
+    </div>
+</body>
+
+</html>
