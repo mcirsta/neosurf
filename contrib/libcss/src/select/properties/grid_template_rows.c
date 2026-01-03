@@ -44,8 +44,14 @@ css_error css__cascade_grid_template_rows(uint32_t opv,
 
 				/* Read each track's data */
 				for (int32_t i = 0; i < n_tracks; i++) {
-					css_unit unit;
-					/* Read unit */
+					/* Parse order is: value, unit */
+					/* First read value */
+					css_fixed track_value =
+						*style->bytecode;
+					advance_bytecode(style,
+							 sizeof(css_code_t));
+
+					/* Then read unit */
 					uint32_t raw_unit = *style->bytecode;
 					advance_bytecode(style,
 							 sizeof(css_code_t));
@@ -53,6 +59,10 @@ css_error css__cascade_grid_template_rows(uint32_t opv,
 					if (raw_unit == CSS_UNIT_MINMAX) {
 						tracks[i].unit =
 							CSS_UNIT_MINMAX;
+						/* For minmax, the value we read
+						 * was marker (0), now read:
+						 * min_value, min_unit,
+						 * max_value, max_unit */
 
 						/* Read min value */
 						tracks[i].value =
@@ -84,6 +94,9 @@ css_error css__cascade_grid_template_rows(uint32_t opv,
 							style,
 							sizeof(css_code_t));
 					} else {
+						/* Simple track: we already read
+						 * value and unit */
+						tracks[i].value = track_value;
 						tracks[i].unit = (css_unit)
 							raw_unit;
 						/* min_unit, max_value, max_unit
