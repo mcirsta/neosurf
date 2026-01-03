@@ -24,12 +24,13 @@
         .flex-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 10px;
+            gap: 50px;
             background: #888;
             padding: 5px;
         }
 
         .item {
+            flex-grow: 1;
             background: #4a90d9;
             color: white;
             padding: 20px;
@@ -39,26 +40,31 @@
 
         /* Test 1: Simple calc() - 3 columns */
         .test1 .item {
+            flex-grow: 1;
             flex-basis: calc(33.33% - 10px);
         }
 
         /* Test 2: calc() like hotnews.ro */
         .test2 .item {
+            flex-grow: 1;
             flex-basis: calc(33.33% - 6.667px);
         }
 
         /* Test 3: calc() with px only */
         .test3 .item {
+            flex-grow: 1;
             flex-basis: calc(200px - 50px);
         }
 
         /* Test 4: 2 columns with calc() */
         .test4 .item {
+            flex-grow: 1;
             flex-basis: calc(50% - 5px);
         }
 
         /* Test 5: 4 columns with calc() */
         .test5 .item {
+            flex-grow: 1;
             flex-basis: calc(25% - 7.5px);
         }
 
