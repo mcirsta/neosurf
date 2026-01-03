@@ -3,3 +3,5 @@
 
 # Style: format all source files with clang-format
 ad0e3349fa3c7728884bce4baeeb1d1c6b6c2c86
+# Reformat to 4-space indent
+42cf909d2fbd84192443ab815f4d63fb3cbde87e
