@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Grid Phase 1 Feature Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        h2 {
+            margin-top: 30px;
+        }
+        .test-section {
+            margin-bottom: 40px;
+        }
+        .grid {
+            display: grid;
+            gap: 5px;
+            border: 2px solid black;
+            margin-bottom: 10px;
+        }
+        .item {
+            padding: 10px;
+            font-weight: bold;
+        }
+
+        /* Fr Unit Weighting Tests */
+        #fr-test-1 {
+            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-rows: 80px;
+        }
+        #fr-test-2 {
+            grid-template-columns: 1fr 2fr 1fr;
+            grid-template-rows: 80px;
+        }
+        #fr-test-3 {
+            grid-template-columns: 1fr 2fr 3fr;
+            grid-template-rows: 80px;
+        }
+
+        /* Align-Items Tests */
+        #align-stretch {
+            grid-template-columns: 100px 100px 100px;
+            grid-template-rows: 120px 120px;
+            align-items: stretch;
+        }
+        #align-start {
+            grid-template-columns: 100px 100px 100px;
+            grid-template-rows: 120px 120px;
+            align-items: start;
+        }
+        #align-center {
+            grid-template-columns: 100px 100px 100px;
+            grid-template-rows: 120px 120px;
+            align-items: center;
+        }
+        #align-end {
+            grid-template-columns: 100px 100px 100px;
+            grid-template-rows: 120px 120px;
+            align-items: end;
+        }
+
+        /* Align-Self Override Test */
+        #align-self-test {
+            grid-template-columns: 100px 100px 100px;
+            grid-template-rows: 120px;
+            align-items: stretch;
+        }
+        #align-self-test .item:nth-child(1) { align-self: start; }
+        #align-self-test .item:nth-child(2) { align-self: center; }
+        #align-self-test .item:nth-child(3) { align-self: end; }
+
+        /* Color scheme */
+        .item:nth-child(1) { background: #ff6b6b; }
+        .item:nth-child(2) { background: #4ecdc4; }
+        .item:nth-child(3) { background: #45b7d1; }
+        .item:nth-child(4) { background: #ffa07a; }
+        .item:nth-child(5) { background: #98d8c8; }
+        .item:nth-child(6) { background: #f7dc6f; }
+    </style>
+</head>
+<body>
+    <h1>CSS Grid Phase 1 Feature Tests</h1>
+    
+    <!-- FR UNIT WEIGHTING TESTS -->
+    <div class="test-section">
+        <h2>1. Fr Unit Weighting</h2>
+        
+        <h3>Test 1.1: Equal fr values (1fr 1fr 1fr)</h3>
+        <p>Expected: All columns should have equal width</p>
+        <div class="grid" id="fr-test-1">
+            <div class="item">1fr</div>
+            <div class="item">1fr</div>
+            <div class="item">1fr</div>
+        </div>
+        
+        <h3>Test 1.2: Mixed fr values (1fr 2fr 1fr)</h3>
+        <p>Expected: Middle column should be 2x width of outer columns</p>
+        <div class="grid" id="fr-test-2">
+            <div class="item">1fr</div>
+            <div class="item">2fr (2x)</div>
+            <div class="item">1fr</div>
+        </div>
+        
+        <h3>Test 1.3: Progressive fr values (1fr 2fr 3fr)</h3>
+        <p>Expected: Columns in ratio 1:2:3</p>
+        <div class="grid" id="fr-test-3">
+            <div class="item">1fr</div>
+            <div class="item">2fr</div>
+            <div class="item">3fr</div>
+        </div>
+    </div>
+
+    <!-- ALIGN-ITEMS TESTS -->
+    <div class="test-section">
+        <h2>2. Align-Items (Container-Level Alignment)</h2>
+        
+        <h3>Test 2.1: align-items: stretch (default)</h3>
+        <p>Expected: All items fill full row height (120px)</p>
+        <div class="grid" id="align-stretch">
+            <div class="item">Item 1<br>Stretch</div>
+            <div class="item">Item 2<br>Stretch</div>
+            <div class="item">Item 3<br>Stretch</div>
+            <div class="item">Item 4<br>Stretch</div>
+            <div class="item">Item 5<br>Stretch</div>
+            <div class="item">Item 6<br>Stretch</div>
+        </div>
+        
+        <h3>Test 2.2: align-items: start</h3>
+        <p>Expected: Items aligned to top of grid area, keep content height</p>
+        <div class="grid" id="align-start">
+            <div class="item">Top</div>
+            <div class="item">Top</div>
+            <div class="item">Top</div>
+            <div class="item">Top</div>
+            <div class="item">Top</div>
+            <div class="item">Top</div>
+        </div>
+        
+        <h3>Test 2.3: align-items: center</h3>
+        <p>Expected: Items vertically centered in grid area</p>
+        <div class="grid" id="align-center">
+            <div class="item">Center</div>
+            <div class="item">Center</div>
+            <div class="item">Center</div>
+            <div class="item">Center</div>
+            <div class="item">Center</div>
+            <div class="item">Center</div>
+        </div>
+        
+        <h3>Test 2.4: align-items: end</h3>
+        <p>Expected: Items aligned to bottom of grid area</p>
+        <div class="grid" id="align-end">
+            <div class="item">Bottom</div>
+            <div class="item">Bottom</div>
+            <div class="item">Bottom</div>
+            <div class="item">Bottom</div>
+            <div class="item">Bottom</div>
+            <div class="item">Bottom</div>
+        </div>
+    </div>
+
+    <!-- ALIGN-SELF TESTS -->
+    <div class="test-section">
+        <h2>3. Align-Self (Item-Level Override)</h2>
+        
+        <h3>Test 3.1: Individual align-self overrides</h3>
+        <p>Expected: Item 1 at top, Item 2 centered, Item 3 at bottom</p>
+        <p>(Container has align-items: stretch, but items override with align-self)</p>
+        <div class="grid" id="align-self-test">
+            <div class="item">align-self:<br>start</div>
+            <div class="item">align-self:<br>center</div>
+            <div class="item">align-self:<br>end</div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>Expected Results Summary</h2>
+        <ul>
+            <li><strong>Fr Weighting:</strong> Middle column in test 1.2 should be exactly 2x wider than side columns</li>
+            <li><strong>Align-Items Stretch:</strong> Items should fill entire 120px row height</li>
+            <li><strong>Align-Items Start:</strong> Items should be ~40px tall, aligned to top</li>
+            <li><strong>Align-Items Center:</strong> Items should be ~40px tall, centered vertically with ~40px space above/below</li>
+            <li><strong>Align-Items End:</strong> Items should be ~40px tall, aligned to bottom with ~80px space above</li>
+            <li><strong>Align-Self:</strong> First item at top, second centered, third at bottom - all in same row</li>
+        </ul>
+    </div>
+</body>
+</html>

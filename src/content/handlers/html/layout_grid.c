@@ -44,6 +44,153 @@
 #define GRID_PLACEMENT_AUTO (-1)
 
 /**
+ * Ensure row_heights array has capacity for at least required_row + 1 elements.
+ * Grows the array by doubling capacity as needed.
+ *
+ * \param row_heights      Pointer to the row_heights array pointer
+ * \param capacity         Pointer to current capacity
+ * \param required_row     The row index that must be accessible
+ * \return true on success, false on allocation failure
+ */
+static bool
+ensure_row_capacity(int **row_heights, int *capacity, int required_row)
+{
+	if (required_row < *capacity) {
+		return true; /* Already have capacity */
+	}
+
+	int new_cap = *capacity;
+	while (new_cap <= required_row) {
+		new_cap *= 2;
+	}
+
+	int *new_rows = realloc(*row_heights, new_cap * sizeof(int));
+	if (!new_rows) {
+		return false;
+	}
+
+	/* Zero-initialize the new elements */
+	memset(new_rows + *capacity, 0, (new_cap - *capacity) * sizeof(int));
+
+	*row_heights = new_rows;
+	*capacity = new_cap;
+	return true;
+}
+
+/**
+ * Initialize row heights array from CSS grid-template-rows property.
+ *
+ * Reads the computed row track values and populates the row_heights array.
+ *
+ * \param style              Grid container computed style
+ * \param row_heights        Pointer to row heights array pointer
+ * \param row_heights_capacity Pointer to array capacity
+ * \return true on success, false on allocation failure
+ */
+static bool init_row_heights_from_css(const css_computed_style *style,
+				      int **row_heights,
+				      int *row_heights_capacity)
+{
+	if (style == NULL) {
+		return true;
+	}
+
+	int32_t n_row_tracks = 0;
+	css_computed_grid_track *row_tracks = NULL;
+	uint8_t row_template_type;
+
+	row_template_type = css_computed_grid_template_rows(style,
+							    &n_row_tracks,
+							    &row_tracks);
+
+	if (row_template_type != CSS_GRID_TEMPLATE_SET || n_row_tracks <= 0 ||
+	    row_tracks == NULL) {
+		return true; /* No explicit rows defined */
+	}
+
+	NSLOG(layout,
+	      WARNING,
+	      "GRID LAYOUT: initializing %d row tracks from CSS",
+	      n_row_tracks);
+
+	for (int32_t i = 0; i < n_row_tracks; i++) {
+		if (!ensure_row_capacity(
+			    row_heights, row_heights_capacity, i)) {
+			return false;
+		}
+
+		/* Debug: log raw track values */
+		NSLOG(layout,
+		      WARNING,
+		      "GRID LAYOUT: row track[%d] raw: unit=%d value=%d",
+		      i,
+		      row_tracks[i].unit,
+		      FIXTOINT(row_tracks[i].value));
+
+		int row_height_px = 0;
+		/* Use CSS_UNIT directly from libcss (now properly converted) */
+
+		switch (row_tracks[i].unit) {
+		case CSS_UNIT_PX:
+			row_height_px = FIXTOINT(row_tracks[i].value);
+			break;
+		case CSS_UNIT_EM:
+			/* Convert em to px assuming 16px base */
+			row_height_px = FIXTOINT(row_tracks[i].value) * 16;
+			break;
+		case CSS_UNIT_FR:
+			/* fr units are flexible - use content height */
+			row_height_px = 0;
+			break;
+		case CSS_UNIT_PCT:
+			/* Percentage - treat as content-size */
+			row_height_px = 0;
+			break;
+		default:
+			/* Other units - approximate as px */
+			row_height_px = FIXTOINT(row_tracks[i].value);
+			break;
+		}
+
+		(*row_heights)[i] = row_height_px;
+		NSLOG(layout,
+		      WARNING,
+		      "GRID LAYOUT: row[%d] height=%d (from CSS)",
+		      i,
+		      row_height_px);
+	}
+
+	return true;
+}
+
+/**
+ * Get explicit row count from CSS grid-template-rows.
+ *
+ * Used for column-major auto-flow to know when to wrap to next column.
+ *
+ * \param grid  The grid container box
+ * \return Number of explicit rows, or 1 if none defined
+ */
+static int layout_grid_get_explicit_row_count(struct box *grid)
+{
+	if (grid->style == NULL) {
+		return 1;
+	}
+
+	int32_t n_tracks = 0;
+	css_computed_grid_track *tracks = NULL;
+	uint8_t type = css_computed_grid_template_rows(grid->style,
+						       &n_tracks,
+						       &tracks);
+
+	if (type == CSS_GRID_TEMPLATE_SET && n_tracks > 0) {
+		return n_tracks;
+	}
+
+	return 1; /* Default to 1 row */
+}
+
+/**
  * Get grid item placement from CSS computed style.
  *
  * \param style     The computed style of the grid item
@@ -592,16 +739,71 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
 	int row_height = 0;
 	int max_row = 0; /* Track highest row used */
 
-	/* Need to track row heights for multi-row grids */
-	int *row_heights = calloc(100, sizeof(int)); /* Max 100 rows for now */
+	/* Dynamic row heights array - starts at 100, grows as needed */
+	int row_heights_capacity = 100;
+	int *row_heights = calloc(row_heights_capacity, sizeof(int));
 	if (!row_heights) {
 		free(col_widths);
 		return false;
 	}
 
+	/* Initialize row heights from CSS grid-template-rows */
+	if (!init_row_heights_from_css(
+		    grid->style, &row_heights, &row_heights_capacity)) {
+		free(col_widths);
+		free(row_heights);
+		return false;
+	}
+
+	/* CSS Grid spec §8: Read grid-auto-flow to determine placement
+	 * direction
+	 * - row (default): Fill row by row, left to right, top to bottom
+	 * - column: Fill column by column, top to bottom, left to right
+	 * - dense variants: Backfill holes (Phase 3)
+	 */
+	uint8_t auto_flow = CSS_GRID_AUTO_FLOW_ROW; /* default per spec */
+	if (grid->style != NULL) {
+		auto_flow = css_computed_grid_auto_flow(grid->style);
+	}
+	bool flow_is_column = (auto_flow == CSS_GRID_AUTO_FLOW_COLUMN ||
+			       auto_flow == CSS_GRID_AUTO_FLOW_COLUMN_DENSE);
+
+	NSLOG(layout,
+	      INFO,
+	      "GRID LAYOUT: grid-auto-flow=%d (column=%s)",
+	      auto_flow,
+	      flow_is_column ? "yes" : "no");
+
+	/* For column mode, we need explicit row count to know when to wrap */
+	int num_rows = flow_is_column ? layout_grid_get_explicit_row_count(grid)
+				      : 1; /* row mode doesn't need this */
+
 	/* Auto-placement cursor for items without explicit placement */
 	int auto_col = 0;
 	int auto_row = 0;
+
+	/* CSS Grid spec §8.5: Dense packing requires tracking occupied cells
+	 * to enable backfilling holes left by larger items.
+	 * We use a simple bitmap: occupied[row * num_cols + col]
+	 */
+	bool is_dense = (auto_flow == CSS_GRID_AUTO_FLOW_ROW_DENSE ||
+			 auto_flow == CSS_GRID_AUTO_FLOW_COLUMN_DENSE);
+	bool *occupied = NULL;
+	int occupied_max_rows = row_heights_capacity; /* Use same capacity */
+
+	if (is_dense) {
+		occupied = calloc(occupied_max_rows * num_cols, sizeof(bool));
+		if (!occupied) {
+			free(col_widths);
+			free(row_heights);
+			return false;
+		}
+		NSLOG(layout,
+		      INFO,
+		      "GRID LAYOUT: dense mode enabled, allocated %dx%d occupation grid",
+		      num_cols,
+		      occupied_max_rows);
+	}
 
 	for (child = grid->children; child; child = child->next) {
 		int col_start, col_end, row_start, row_end;
@@ -623,21 +825,88 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
 		      row_start,
 		      row_end);
 
-		/* Determine column position */
+		/* Determine span first (needed for dense placement) */
+		if (col_end != GRID_PLACEMENT_AUTO && col_end > col_start &&
+		    col_start != GRID_PLACEMENT_AUTO) {
+			col_span = col_end - col_start;
+		} else {
+			col_span = 1;
+		}
+		if (row_end != GRID_PLACEMENT_AUTO && row_end > row_start &&
+		    row_start != GRID_PLACEMENT_AUTO) {
+			row_span = row_end - row_start;
+		} else {
+			row_span = 1;
+		}
+
+		/* Determine item position based on explicit placement or
+		 * auto-flow */
 		if (col_start != GRID_PLACEMENT_AUTO) {
 			item_col = col_start;
+		} else if (is_dense) {
+			/* CSS Grid spec §8.5: Dense mode - scan from start
+			 * for first available cell that fits item's span
+			 */
+			item_col = -1;
+			for (int scan_row = 0;
+			     scan_row < occupied_max_rows && item_col < 0;
+			     scan_row++) {
+				for (int scan_col = 0;
+				     scan_col <= num_cols - col_span;
+				     scan_col++) {
+					/* Check if all cells in span are free
+					 */
+					bool fits = true;
+					for (int dr = 0; dr < row_span && fits;
+					     dr++) {
+						for (int dc = 0;
+						     dc < col_span && fits;
+						     dc++) {
+							int idx =
+								(scan_row +
+								 dr) * num_cols +
+								scan_col + dc;
+							if (idx >= occupied_max_rows *
+									    num_cols ||
+							    occupied[idx]) {
+								fits = false;
+							}
+						}
+					}
+					if (fits) {
+						item_col = scan_col;
+						item_row = scan_row;
+						goto dense_found;
+					}
+				}
+			}
+		dense_found:
+			if (item_col < 0) {
+				/* Fallback: use cursor if scan failed */
+				item_col = auto_col;
+				item_row = auto_row;
+			}
 		} else {
-			/* Auto-placement: use next available column */
+			/* Normal mode: use cursor */
 			item_col = auto_col;
 		}
 
-		/* Determine row position */
 		if (row_start != GRID_PLACEMENT_AUTO) {
 			item_row = row_start;
-		} else {
-			/* Auto-placement: use current auto row */
+		} else if (!is_dense) {
+			/* Only set from cursor if not dense (dense sets both)
+			 */
 			item_row = auto_row;
 		}
+
+		NSLOG(layout,
+		      WARNING,
+		      "GRID PLACE DECISION: item_col=%d item_row=%d (cursor col=%d row=%d) flow_is_column=%d",
+		      item_col,
+		      item_row,
+		      auto_col,
+		      auto_row,
+		      flow_is_column);
 
 		/* Clamp to valid range */
 		if (item_col < 0)
@@ -647,16 +916,12 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
 		if (item_row < 0)
 			item_row = 0;
 
-		/* Determine span */
+		/* Recalculate span after positioning (for auto end values) */
 		if (col_end != GRID_PLACEMENT_AUTO && col_end > item_col) {
 			col_span = col_end - item_col;
-		} else {
-			col_span = 1;
 		}
 		if (row_end != GRID_PLACEMENT_AUTO && row_end > item_row) {
 			row_span = row_end - item_row;
-		} else {
-			row_span = 1;
 		}
 
 		/* Clamp span to grid bounds */
@@ -712,8 +977,13 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
 
 		/* Track row heights for all spanned rows */
 		int height_per_row = child->height / row_span;
-		for (int r = item_row; r < item_row + row_span && r < 100;
-		     r++) {
+		for (int r = item_row; r < item_row + row_span; r++) {
+			if (!ensure_row_capacity(
+				    &row_heights, &row_heights_capacity, r)) {
+				free(col_widths);
+				free(row_heights);
+				return false;
+			}
 			if (height_per_row > row_heights[r]) {
 				row_heights[r] = height_per_row;
 			}
@@ -724,11 +994,78 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
 			max_row = item_row + row_span;
 		}
 
+		/* Determine vertical alignment for this grid item */
+		uint8_t align = CSS_ALIGN_ITEMS_STRETCH; /* default */
+
+		/* Check align-self on the child first */
+		if (child->style) {
+			uint8_t align_self = css_computed_align_self(
+				child->style);
+			if (align_self == CSS_ALIGN_SELF_AUTO) {
+				/* Use align-items from grid container */
+				if (grid->style) {
+					align = css_computed_align_items(
+						grid->style);
+				}
+			} else {
+				/* Use align-self value */
+				align = align_self;
+			}
+		} else if (grid->style) {
+			/* No child style, use grid container's align-items */
+			align = css_computed_align_items(grid->style);
+		}
+
+		/* Calculate total available height for this item */
+		int spanned_height = 0;
+		for (int r = item_row; r < item_row + row_span; r++) {
+			spanned_height += row_heights[r];
+			if (r > item_row) {
+				spanned_height += gap_px;
+			}
+		}
+
+		/* Apply alignment */
+		int content_height = child->height; /* Height from layout */
+		int align_offset = 0;
+
+		switch (align) {
+		case CSS_ALIGN_ITEMS_STRETCH:
+			/* Stretch to fill entire spanned height */
+			child->height = spanned_height;
+			align_offset = 0;
+			break;
+		case CSS_ALIGN_ITEMS_FLEX_START:
+		case CSS_ALIGN_ITEMS_BASELINE:
+			/* Align to start (top) - keep content height */
+			align_offset = 0;
+			break;
+		case CSS_ALIGN_ITEMS_FLEX_END:
+			/* Align to end (bottom) */
+			align_offset = spanned_height - content_height;
+			if (align_offset < 0)
+				align_offset = 0;
+			break;
+		case CSS_ALIGN_ITEMS_CENTER:
+			/* Center vertically */
+			align_offset = (spanned_height - content_height) / 2;
+			if (align_offset < 0)
+				align_offset = 0;
+			break;
+		default:
+			/* Unknown - default to stretch */
+			child->height = spanned_height;
+			align_offset = 0;
+			break;
+		}
+
 		/* Calculate y position (sum of row heights before item_row) */
 		child_y = 0;
 		for (int r = 0; r < item_row; r++) {
 			child_y += row_heights[r] + gap_px;
 		}
+		/* Apply alignment offset within the grid area */
+		child_y += align_offset;
 
 		/* Position child */
 		child->x = child_x;
@@ -746,12 +1083,42 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
 		      child->width,
 		      child->height);
 
-		/* Advance auto-placement cursor */
-		if (col_start == GRID_PLACEMENT_AUTO) {
-			auto_col++;
-			if (auto_col >= num_cols) {
-				auto_col = 0;
+		/* Mark cells as occupied for dense mode tracking */
+		if (is_dense && occupied != NULL) {
+			for (int dr = 0; dr < row_span; dr++) {
+				for (int dc = 0; dc < col_span; dc++) {
+					int occ_row = item_row + dr;
+					int occ_col = item_col + dc;
+					if (occ_row < occupied_max_rows &&
+					    occ_col < num_cols) {
+						int idx = occ_row * num_cols +
+							  occ_col;
+						occupied[idx] = true;
+					}
+				}
+			}
+		}
+
+		/* CSS Grid spec §8: Advance auto-placement cursor
+		 * - row mode: Advance column, wrap to next row at end
+		 * - column mode: Advance row, wrap to next column at end
+		 */
+		if (col_start == GRID_PLACEMENT_AUTO &&
+		    row_start == GRID_PLACEMENT_AUTO) {
+			if (flow_is_column) {
+				/* Column mode: advance row first */
 				auto_row++;
+				if (auto_row >= num_rows) {
+					auto_row = 0;
+					auto_col++;
+				}
+			} else {
+				/* Row mode (default): advance column first */
+				auto_col++;
+				if (auto_col >= num_cols) {
+					auto_col = 0;
+					auto_row++;
+				}
 			}
 		}
 	}
@@ -767,6 +1134,7 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
 
 	grid->height = grid_height;
 
+	free(occupied);
 	free(row_heights);
 	free(col_widths);
 	return true;

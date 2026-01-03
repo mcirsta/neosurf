@@ -64,7 +64,7 @@ static css_error parse_track_size(css_language *c,
 			parserutils_vector_iterate(vector, ctx);
 			track->type = TRACK_SIMPLE;
 			track->value = INTTOFIX(1);
-			track->unit = CSS_UNIT_FR;
+			track->unit = UNIT_FR;
 			return CSS_OK;
 		} else if ((lwc_string_caseless_isequal(token->idata,
 							c->strings[MIN_CONTENT],
@@ -135,7 +135,7 @@ static css_error parse_track_size(css_language *c,
 						    &match) == lwc_error_ok &&
 					    match)) {
 					parserutils_vector_iterate(vector, ctx);
-					min_unit = CSS_UNIT_FR;
+					min_unit = UNIT_FR;
 					min_value = INTTOFIX(1);
 				} else {
 					*ctx = orig_ctx;
@@ -153,8 +153,8 @@ static css_error parse_track_size(css_language *c,
 					*ctx = orig_ctx;
 					return CSS_INVALID;
 				}
-				/* Convert bytecode unit to CSS unit */
-				min_unit = min_unit & 0xFF;
+				/* unit returned from css__parse_unit_specifier
+				 * is already in bytecode format */
 			}
 
 			/* Skip whitespace and comma */
@@ -194,7 +194,7 @@ static css_error parse_track_size(css_language *c,
 						    &match) == lwc_error_ok &&
 					    match)) {
 					parserutils_vector_iterate(vector, ctx);
-					max_unit = CSS_UNIT_FR;
+					max_unit = UNIT_FR;
 					max_value = INTTOFIX(1);
 				} else {
 					*ctx = orig_ctx;
@@ -212,8 +212,8 @@ static css_error parse_track_size(css_language *c,
 					*ctx = orig_ctx;
 					return CSS_INVALID;
 				}
-				/* Convert bytecode unit to CSS unit */
-				max_unit = max_unit & 0xFF;
+				/* unit returned from css__parse_unit_specifier
+				 * is already in bytecode format */
 			}
 
 			/* Skip whitespace and consume closing paren */
@@ -244,8 +244,8 @@ static css_error parse_track_size(css_language *c,
 					  &track->value,
 					  &track->unit);
 	if (error == CSS_OK) {
-		/* Convert bytecode unit to CSS unit */
-		track->unit = track->unit & 0xFF;
+		/* unit returned from css__parse_unit_specifier is
+		 * already in bytecode format */
 		track->type = TRACK_SIMPLE;
 		return CSS_OK;
 	}
