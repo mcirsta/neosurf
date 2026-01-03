@@ -1322,7 +1322,7 @@ static void convert_xml_to_box(void *p)
             root.children->parent = &root;
 
             /** \todo Remove box_normalise_block */
-            if (box_normalise_block(&root, ctx->root_box, ctx->content) == false) {
+            if (box_normalise_block(&root, ctx->root_box, (struct html_content *)ctx->content) == false) {
                 NSLOG(netsurf, WARNING, "box_normalise_block failed");
                 ctx->cb(ctx->content, false);
                 if (ctx->root_box != NULL)

@@ -6,8 +6,15 @@
  * Copyright 2015 Vincent Sanders <vince@netsurf-browser.org>
  */
 
+
 #ifndef nsgenbind_duk_libdom_h
 #define nsgenbind_duk_libdom_h
+
+struct ir;
+struct ir_entry;
+struct ir_attribute_entry;
+struct opctx;
+struct genbind_node;
 
 /**
  * Generate output for duktape and libdom bindings.

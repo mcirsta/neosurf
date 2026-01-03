@@ -25,6 +25,10 @@
 #ifndef _NETSURF_FETCH_H_
 #define _NETSURF_FETCH_H_
 
+#include <neosurf/utils/errors.h>
+#include <stddef.h>
+#include <stdint.h>
+
 struct nsurl;
 
 /**

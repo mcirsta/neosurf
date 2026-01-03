@@ -9,7 +9,9 @@
 #define dom_internal_core_documentfragment_h_
 
 #include <dom/core/doc_fragment.h>
+#include <dom/core/document.h>
 #include <dom/core/exceptions.h>
+#include <dom/core/string.h>
 
 dom_exception
 _dom_document_fragment_create(dom_document *doc, dom_string *name, dom_string *value, dom_document_fragment **result);

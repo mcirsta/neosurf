@@ -6,7 +6,7 @@ add_subdirectory(libnsgif)
 add_subdirectory(libnsutils)
 add_subdirectory(libparserutils)
 add_subdirectory(libsvgtiny)
-add_subdirectory(nsgenbind)
+# Duktape binding generator - not used since QuickJS migration\n# add_subdirectory(nsgenbind)
 
 # QuickJS-ng needs to be compiled with -fPIC for linking into shared library
 set(CMAKE_POSITION_INDEPENDENT_CODE ON)

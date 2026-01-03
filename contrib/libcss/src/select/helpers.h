@@ -8,6 +8,7 @@
 #ifndef css_select_helpers_h_
 #define css_select_helpers_h_
 
+#include "bytecode/bytecode.h"
 #include <assert.h>
 
 /**

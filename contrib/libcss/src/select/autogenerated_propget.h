@@ -13,6 +13,16 @@
 
 #ifndef CSS_COMPUTED_PROPGET_H_
 #define CSS_COMPUTED_PROPGET_H_
+#include <libcss/computed.h>
+#include "computed.h"
+
+#ifndef css_fixed_or_calc_typedef
+#define css_fixed_or_calc_typedef
+typedef union {
+    css_fixed value;
+    lwc_string *calc;
+} css_fixed_or_calc;
+#endif
 
 
 #define ALIGN_CONTENT_INDEX 15

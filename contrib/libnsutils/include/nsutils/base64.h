@@ -16,6 +16,7 @@
 #define NSUTILS_BASE64_H_
 
 #include <inttypes.h>
+#include <stddef.h>
 
 #include <nsutils/errors.h>
 

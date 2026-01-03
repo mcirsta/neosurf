@@ -9,6 +9,7 @@
 #define css_css__parse_properties_utils_h_
 
 #include "parse/language.h"
+#include "stylesheet.h"
 
 static inline bool is_css_inherit(css_language *c, const css_token *token)
 {

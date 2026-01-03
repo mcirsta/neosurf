@@ -28,6 +28,8 @@
 #ifndef NETSURF_HTML_LAYOUT_H
 #define NETSURF_HTML_LAYOUT_H
 
+#include <stdbool.h>
+
 struct box;
 struct html_content;
 struct gui_layout_table;

@@ -25,6 +25,8 @@
 #ifndef NETSURF_DESKTOP_CW_HELPER_H_
 #define NETSURF_DESKTOP_CW_HELPER_H_
 
+#include <neosurf/utils/errors.h>
+
 struct rect;
 struct core_window;
 

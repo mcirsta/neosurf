@@ -39,6 +39,11 @@
 #ifndef NETSURF_HTML_BOX_NORMALISE_H
 #define NETSURF_HTML_BOX_NORMALISE_H
 
+#include <stdbool.h>
+
+struct box;
+struct html_content;
+
 /**
  * Ensure the box tree is correctly nested by adding and removing nodes.
  *

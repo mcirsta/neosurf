@@ -43,7 +43,8 @@ struct nsurl;
 struct rect;
 struct redraw_context;
 struct cert_chain;
-enum content_debug;
+
+#include <neosurf/content_type.h>
 
 /**
  * type of browser window drag in progess

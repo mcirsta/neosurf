@@ -32,6 +32,7 @@
 #include <neosurf/console.h> /* console state and flags enums */
 #include <neosurf/content_type.h>
 #include <neosurf/mouse.h> /* mouse state enums */
+#include <neosurf/utils/errors.h>
 
 struct browser_window;
 struct browser_window_features;

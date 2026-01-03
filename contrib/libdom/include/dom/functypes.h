@@ -10,6 +10,7 @@
 
 #include <inttypes.h>
 #include <stddef.h>
+#include <stdint.h>
 
 /**
  * Severity levels for dom_msg function, based on syslog(3)

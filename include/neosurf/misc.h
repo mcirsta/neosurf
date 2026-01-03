@@ -25,6 +25,8 @@
 #ifndef NETSURF_MISC_H_
 #define NETSURF_MISC_H_
 
+#include <neosurf/utils/errors.h>
+
 struct form_control;
 struct gui_window;
 struct cert_chain;
