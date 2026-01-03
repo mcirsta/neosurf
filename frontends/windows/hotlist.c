@@ -25,22 +25,22 @@
 #include <stdlib.h>
 #include <windows.h>
 
-#include "neosurf/utils/log.h"
-#include "neosurf/utils/nsoption.h"
+#include "neosurf/desktop/hotlist.h"
 #include "neosurf/keypress.h"
 #include "neosurf/plotters.h"
-#include "neosurf/desktop/hotlist.h"
+#include "neosurf/utils/log.h"
+#include "neosurf/utils/nsoption.h"
 
-#include "windows/plot.h"
 #include "windows/corewindow.h"
 #include "windows/hotlist.h"
+#include "windows/plot.h"
 
 
 /**
  * Hotlist window container for win32.
  */
 struct nsw32_hotlist_window {
-	struct nsw32_corewindow core;
+    struct nsw32_corewindow core;
 };
 
 /** hotlist window singleton */
@@ -53,13 +53,12 @@ static struct nsw32_hotlist_window *hotlist_window = NULL;
  * \param nskey The netsurf key code
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror
-nsw32_hotlist_key(struct nsw32_corewindow *nsw32_cw, uint32_t nskey)
+static nserror nsw32_hotlist_key(struct nsw32_corewindow *nsw32_cw, uint32_t nskey)
 {
-	if (hotlist_keypress(nskey)) {
-		return NSERROR_OK;
-	}
-	return NSERROR_NOT_IMPLEMENTED;
+    if (hotlist_keypress(nskey)) {
+        return NSERROR_OK;
+    }
+    return NSERROR_NOT_IMPLEMENTED;
 }
 
 /**
@@ -71,14 +70,11 @@ nsw32_hotlist_key(struct nsw32_corewindow *nsw32_cw, uint32_t nskey)
  * \param y location of event
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror nsw32_hotlist_mouse(struct nsw32_corewindow *nsw32_cw,
-				   browser_mouse_state mouse_state,
-				   int x,
-				   int y)
+static nserror nsw32_hotlist_mouse(struct nsw32_corewindow *nsw32_cw, browser_mouse_state mouse_state, int x, int y)
 {
-	hotlist_mouse_action(mouse_state, x, y);
+    hotlist_mouse_action(mouse_state, x, y);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /**
@@ -90,26 +86,21 @@ static nserror nsw32_hotlist_mouse(struct nsw32_corewindow *nsw32_cw,
  * \param r The rectangle of the window that needs updating.
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror nsw32_hotlist_draw(struct nsw32_corewindow *nsw32_cw,
-				  int scrollx,
-				  int scrolly,
-				  struct rect *r)
+static nserror nsw32_hotlist_draw(struct nsw32_corewindow *nsw32_cw, int scrollx, int scrolly, struct rect *r)
 {
-	struct redraw_context ctx = {.interactive = true,
-				     .background_images = true,
-				     .plot = &win_plotters};
+    struct redraw_context ctx = {.interactive = true, .background_images = true, .plot = &win_plotters};
 
-	hotlist_redraw(-scrollx, -scrolly, r, &ctx);
+    hotlist_redraw(-scrollx, -scrolly, r, &ctx);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
 static nserror nsw32_hotlist_close(struct nsw32_corewindow *nsw32_cw)
 {
-	ShowWindow(nsw32_cw->hWnd, SW_HIDE);
+    ShowWindow(nsw32_cw->hWnd, SW_HIDE);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /**
@@ -119,73 +110,73 @@ static nserror nsw32_hotlist_close(struct nsw32_corewindow *nsw32_cw)
  */
 static nserror nsw32_hotlist_init(HINSTANCE hInstance)
 {
-	struct nsw32_hotlist_window *ncwin;
-	nserror res;
+    struct nsw32_hotlist_window *ncwin;
+    nserror res;
 
-	if (hotlist_window != NULL) {
-		return NSERROR_OK;
-	}
+    if (hotlist_window != NULL) {
+        return NSERROR_OK;
+    }
 
-	ncwin = calloc(1, sizeof(*ncwin));
-	if (ncwin == NULL) {
-		return NSERROR_NOMEM;
-	}
+    ncwin = calloc(1, sizeof(*ncwin));
+    if (ncwin == NULL) {
+        return NSERROR_NOMEM;
+    }
 
-	ncwin->core.title = "NeoSurf Bookmarks";
-	ncwin->core.draw = nsw32_hotlist_draw;
-	ncwin->core.key = nsw32_hotlist_key;
-	ncwin->core.mouse = nsw32_hotlist_mouse;
-	ncwin->core.close = nsw32_hotlist_close;
+    ncwin->core.title = "NeoSurf Bookmarks";
+    ncwin->core.draw = nsw32_hotlist_draw;
+    ncwin->core.key = nsw32_hotlist_key;
+    ncwin->core.mouse = nsw32_hotlist_mouse;
+    ncwin->core.close = nsw32_hotlist_close;
 
-	res = nsw32_corewindow_init(hInstance, NULL, &ncwin->core);
-	if (res != NSERROR_OK) {
-		free(ncwin);
-		return res;
-	}
+    res = nsw32_corewindow_init(hInstance, NULL, &ncwin->core);
+    if (res != NSERROR_OK) {
+        free(ncwin);
+        return res;
+    }
 
-	res = hotlist_manager_init((struct core_window *)ncwin);
-	if (res != NSERROR_OK) {
-		free(ncwin);
-		return res;
-	}
+    res = hotlist_manager_init((struct core_window *)ncwin);
+    if (res != NSERROR_OK) {
+        free(ncwin);
+        return res;
+    }
 
-	/* memoise window so it can be represented when necessary
-	 * instead of recreating every time.
-	 */
-	hotlist_window = ncwin;
+    /* memoise window so it can be represented when necessary
+     * instead of recreating every time.
+     */
+    hotlist_window = ncwin;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
 /* exported interface documented in windows/hotlist.h */
 nserror nsw32_hotlist_present(HINSTANCE hInstance)
 {
-	nserror res;
+    nserror res;
 
-	res = nsw32_hotlist_init(hInstance);
-	if (res == NSERROR_OK) {
-		ShowWindow(hotlist_window->core.hWnd, SW_SHOWNORMAL);
-	}
-	return res;
+    res = nsw32_hotlist_init(hInstance);
+    if (res == NSERROR_OK) {
+        ShowWindow(hotlist_window->core.hWnd, SW_SHOWNORMAL);
+    }
+    return res;
 }
 
 /* exported interface documented in windows/hotlist.h */
 nserror nsw32_hotlist_finalise(void)
 {
-	nserror res;
+    nserror res;
 
-	if (hotlist_window == NULL) {
-		return NSERROR_OK;
-	}
+    if (hotlist_window == NULL) {
+        return NSERROR_OK;
+    }
 
-	res = hotlist_fini();
-	if (res == NSERROR_OK) {
-		res = nsw32_corewindow_fini(&hotlist_window->core);
-		DestroyWindow(hotlist_window->core.hWnd);
-		free(hotlist_window);
-		hotlist_window = NULL;
-	}
+    res = hotlist_fini();
+    if (res == NSERROR_OK) {
+        res = nsw32_corewindow_fini(&hotlist_window->core);
+        DestroyWindow(hotlist_window->core.hWnd);
+        free(hotlist_window);
+        hotlist_window = NULL;
+    }
 
-	return res;
+    return res;
 }

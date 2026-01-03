@@ -43,11 +43,8 @@ struct nsurl;
  * \param background this is a background image
  * \return true on success, false on memory exhaustion
  */
-bool html_fetch_object(struct html_content *c,
-		       struct nsurl *url,
-		       struct box *box,
-		       content_type permitted_types,
-		       bool background);
+bool html_fetch_object(
+    struct html_content *c, struct nsurl *url, struct box *box, content_type permitted_types, bool background);
 
 /**
  * release memory of content objects associated with a HTML content
@@ -76,8 +73,7 @@ nserror html_object_close_objects(struct html_content *html);
  * \param bw Browser window handle to open contents with.
  * \return NSERROR_OK on success else appropriate error code.
  */
-nserror
-html_object_open_objects(struct html_content *html, struct browser_window *bw);
+nserror html_object_open_objects(struct html_content *html, struct browser_window *bw);
 
 
 /**

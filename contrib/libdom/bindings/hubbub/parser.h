@@ -8,8 +8,8 @@
 #ifndef dom_hubbub_parser_h_
 #define dom_hubbub_parser_h_
 
-#include <stddef.h>
 #include <inttypes.h>
+#include <stddef.h>
 
 #include <hubbub/errors.h>
 
@@ -26,9 +26,9 @@ typedef struct dom_hubbub_parser dom_hubbub_parser;
 
 /* The encoding source of the document */
 typedef enum dom_hubbub_encoding_source {
-	DOM_HUBBUB_ENCODING_SOURCE_HEADER,
-	DOM_HUBBUB_ENCODING_SOURCE_DETECTED,
-	DOM_HUBBUB_ENCODING_SOURCE_META
+    DOM_HUBBUB_ENCODING_SOURCE_HEADER,
+    DOM_HUBBUB_ENCODING_SOURCE_DETECTED,
+    DOM_HUBBUB_ENCODING_SOURCE_META
 } dom_hubbub_encoding_source;
 
 /* The recommended way to use the parser is:
@@ -52,50 +52,41 @@ typedef enum dom_hubbub_encoding_source {
  * Parameter block for dom_hubbub_parser_create
  */
 typedef struct dom_hubbub_parser_params {
-	const char *enc; /**< Source charset, or NULL */
-	bool fix_enc; /**< Whether fix the encoding */
+    const char *enc; /**< Source charset, or NULL */
+    bool fix_enc; /**< Whether fix the encoding */
 
-	bool enable_script; /**< Whether scripting should be enabled. */
-	dom_script script; /**< Script callback function */
+    bool enable_script; /**< Whether scripting should be enabled. */
+    dom_script script; /**< Script callback function */
 
-	dom_msg msg; /**< Informational message function */
-	void *ctx; /**< Pointer to client-specific private data */
+    dom_msg msg; /**< Informational message function */
+    void *ctx; /**< Pointer to client-specific private data */
 
-	/** default action fetcher function */
-	dom_events_default_action_fetcher daf;
+    /** default action fetcher function */
+    dom_events_default_action_fetcher daf;
 } dom_hubbub_parser_params;
 
 /* Create a Hubbub parser instance */
-dom_hubbub_error dom_hubbub_parser_create(dom_hubbub_parser_params *params,
-					  dom_hubbub_parser **parser,
-					  dom_document **document);
+dom_hubbub_error
+dom_hubbub_parser_create(dom_hubbub_parser_params *params, dom_hubbub_parser **parser, dom_document **document);
 
 /* Create a Hubbub parser instance for a document fragment */
-dom_hubbub_error
-dom_hubbub_fragment_parser_create(dom_hubbub_parser_params *params,
-				  dom_document *document,
-				  dom_hubbub_parser **parser,
-				  dom_document_fragment **fragment);
+dom_hubbub_error dom_hubbub_fragment_parser_create(dom_hubbub_parser_params *params, dom_document *document,
+    dom_hubbub_parser **parser, dom_document_fragment **fragment);
 
 /* Destroy a Hubbub parser instance */
 void dom_hubbub_parser_destroy(dom_hubbub_parser *parser);
 
 /* Parse a chunk of data */
-dom_hubbub_error dom_hubbub_parser_parse_chunk(dom_hubbub_parser *parser,
-					       const uint8_t *data,
-					       size_t len);
+dom_hubbub_error dom_hubbub_parser_parse_chunk(dom_hubbub_parser *parser, const uint8_t *data, size_t len);
 
 /* insert data into the parse stream but do not parse it */
-dom_hubbub_error dom_hubbub_parser_insert_chunk(dom_hubbub_parser *parser,
-						const uint8_t *data,
-						size_t length);
+dom_hubbub_error dom_hubbub_parser_insert_chunk(dom_hubbub_parser *parser, const uint8_t *data, size_t length);
 
 /* Notify parser that datastream is empty */
 dom_hubbub_error dom_hubbub_parser_completed(dom_hubbub_parser *parser);
 
 /* Retrieve the document's encoding */
-const char *dom_hubbub_parser_get_encoding(dom_hubbub_parser *parser,
-					   dom_hubbub_encoding_source *source);
+const char *dom_hubbub_parser_get_encoding(dom_hubbub_parser *parser, dom_hubbub_encoding_source *source);
 
 /**
  * Set the Parse pause state.

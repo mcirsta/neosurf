@@ -21,9 +21,9 @@
  * content generator for the about scheme web search
  */
 
+#include <sys/types.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <sys/types.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -39,66 +39,65 @@
 
 static nserror process_query_section(const char *str, size_t len, char **term)
 {
-	if (len < 3) {
-		return NSERROR_BAD_PARAMETER;
-	}
-	if (str[0] != 'q' || str[1] != '=') {
-		return NSERROR_BAD_PARAMETER;
-	}
-	return url_unescape(str + 2, len - 2, NULL, term);
+    if (len < 3) {
+        return NSERROR_BAD_PARAMETER;
+    }
+    if (str[0] != 'q' || str[1] != '=') {
+        return NSERROR_BAD_PARAMETER;
+    }
+    return url_unescape(str + 2, len - 2, NULL, term);
 }
 
 static nserror searchterm_from_query(struct nsurl *url, char **term)
 {
-	nserror res;
-	char *querystr;
-	size_t querylen;
-	size_t kvstart; /* key value start */
-	size_t kvlen; /* key value end */
+    nserror res;
+    char *querystr;
+    size_t querylen;
+    size_t kvstart; /* key value start */
+    size_t kvlen; /* key value end */
 
-	res = nsurl_get(url, NSURL_QUERY, &querystr, &querylen);
-	if (res != NSERROR_OK) {
-		return res;
-	}
+    res = nsurl_get(url, NSURL_QUERY, &querystr, &querylen);
+    if (res != NSERROR_OK) {
+        return res;
+    }
 
-	for (kvlen = 0, kvstart = 0; kvstart < querylen; kvstart += kvlen) {
-		/* get query section length */
-		kvlen = 0;
-		while (((kvstart + kvlen) < querylen) &&
-		       (querystr[kvstart + kvlen] != '&')) {
-			kvlen++;
-		}
+    for (kvlen = 0, kvstart = 0; kvstart < querylen; kvstart += kvlen) {
+        /* get query section length */
+        kvlen = 0;
+        while (((kvstart + kvlen) < querylen) && (querystr[kvstart + kvlen] != '&')) {
+            kvlen++;
+        }
 
-		res = process_query_section(querystr + kvstart, kvlen, term);
-		if (res == NSERROR_OK) {
-			break;
-		}
-		kvlen++; /* account for & separator */
-	}
-	free(querystr);
+        res = process_query_section(querystr + kvstart, kvlen, term);
+        if (res == NSERROR_OK) {
+            break;
+        }
+        kvlen++; /* account for & separator */
+    }
+    free(querystr);
 
-	return res;
+    return res;
 }
 
 bool fetch_about_websearch_handler(struct fetch_about_context *ctx)
 {
-	nserror res;
-	nsurl *url;
-	char *term;
+    nserror res;
+    nsurl *url;
+    char *term;
 
-	res = searchterm_from_query(fetch_about_get_url(ctx), &term);
-	if (res != NSERROR_OK) {
-		return false;
-	}
+    res = searchterm_from_query(fetch_about_get_url(ctx), &term);
+    if (res != NSERROR_OK) {
+        return false;
+    }
 
-	res = search_web_omni(term, SEARCH_WEB_OMNI_SEARCHONLY, &url);
-	free(term);
-	if (res != NSERROR_OK) {
-		return false;
-	}
+    res = search_web_omni(term, SEARCH_WEB_OMNI_SEARCHONLY, &url);
+    free(term);
+    if (res != NSERROR_OK) {
+        return false;
+    }
 
-	fetch_about_redirect(ctx, nsurl_access(url));
-	nsurl_unref(url);
+    fetch_about_redirect(ctx, nsurl_access(url));
+    nsurl_unref(url);
 
-	return true;
+    return true;
 }

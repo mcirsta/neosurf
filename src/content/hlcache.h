@@ -35,21 +35,21 @@ typedef struct hlcache_handle hlcache_handle;
 
 /** Context for retrieving a child object */
 typedef struct hlcache_child_context {
-	const char *charset; /**< Charset of parent */
-	bool quirks; /**< Whether parent is quirky */
+    const char *charset; /**< Charset of parent */
+    bool quirks; /**< Whether parent is quirky */
 } hlcache_child_context;
 
 /** High-level cache event */
 typedef struct hlcache_event {
-	content_msg type; /**< Event type */
-	union content_msg_data data; /**< Event data */
+    content_msg type; /**< Event type */
+    union content_msg_data data; /**< Event data */
 } hlcache_event;
 
 struct hlcache_parameters {
-	/** How frequently the background cache clean process is run (ms) */
-	unsigned int bg_clean_time;
+    /** How frequently the background cache clean process is run (ms) */
+    unsigned int bg_clean_time;
 
-	struct llcache_parameters llcache;
+    struct llcache_parameters llcache;
 };
 
 /**
@@ -60,20 +60,18 @@ struct hlcache_parameters {
  * \param pw      Pointer to client-specific data
  * \return NSERROR_OK on success, appropriate error otherwise.
  */
-typedef nserror (*hlcache_handle_callback)(hlcache_handle *handle,
-					   const hlcache_event *event,
-					   void *pw);
+typedef nserror (*hlcache_handle_callback)(hlcache_handle *handle, const hlcache_event *event, void *pw);
 
 /** Flags for high-level cache object retrieval */
 enum hlcache_retrieve_flag {
-	/* Note: low-level cache retrieval flags occupy the bottom 16 bits of
-	 * the flags word. High-level cache flags occupy the top 16 bits.
-	 * To avoid confusion, high-level flags are allocated from bit 31 down.
-	 */
-	/** It's permitted to convert this request into a download */
-	HLCACHE_RETRIEVE_MAY_DOWNLOAD = (1 << 31),
-	/* Permit content-type sniffing */
-	HLCACHE_RETRIEVE_SNIFF_TYPE = (1 << 30)
+    /* Note: low-level cache retrieval flags occupy the bottom 16 bits of
+     * the flags word. High-level cache flags occupy the top 16 bits.
+     * To avoid confusion, high-level flags are allocated from bit 31 down.
+     */
+    /** It's permitted to convert this request into a download */
+    HLCACHE_RETRIEVE_MAY_DOWNLOAD = (1 << 31),
+    /* Permit content-type sniffing */
+    HLCACHE_RETRIEVE_SNIFF_TYPE = (1 << 30)
 };
 
 /**
@@ -117,15 +115,9 @@ void hlcache_finalise(void);
  *
  * \todo Is there any way to sensibly reduce the number of parameters here?
  */
-nserror hlcache_handle_retrieve(nsurl *url,
-				uint32_t flags,
-				nsurl *referer,
-				llcache_post_data *post,
-				hlcache_handle_callback cb,
-				void *pw,
-				hlcache_child_context *child,
-				content_type accepted_types,
-				hlcache_handle **result);
+nserror hlcache_handle_retrieve(nsurl *url, uint32_t flags, nsurl *referer, llcache_post_data *post,
+    hlcache_handle_callback cb, void *pw, hlcache_child_context *child, content_type accepted_types,
+    hlcache_handle **result);
 
 /**
  * Release a high-level cache handle
@@ -151,9 +143,7 @@ nserror hlcache_handle_abort(hlcache_handle *handle);
  * \param pw      Private data for callback
  * \return NSERROR_OK on success, appropriate error otherwise
  */
-nserror hlcache_handle_replace_callback(hlcache_handle *handle,
-					hlcache_handle_callback cb,
-					void *pw);
+nserror hlcache_handle_replace_callback(hlcache_handle *handle, hlcache_handle_callback cb, void *pw);
 
 /**
  * Retrieve a content object from a cache handle

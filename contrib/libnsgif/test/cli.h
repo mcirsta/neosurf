@@ -12,8 +12,8 @@
 #ifndef _PELTAR_CLI_H_
 #define _PELTAR_CLI_H_
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 /**
  * Helper to get element count for an array,
@@ -26,54 +26,54 @@
  * CLI argument type.
  */
 enum cli_arg_type {
-	CLI_CMD, /**< A sub-command. Must match long argument name. */
-	CLI_BOOL, /**< Has no value; presence of flag indicates true. */
-	CLI_INT, /**< Has signed integer value. */
-	CLI_UINT, /**< Has unsigned integer value. */
-	CLI_ENUM, /**< Has enumeration value. */
-	CLI_STRING, /**< Has string value. */
+    CLI_CMD, /**< A sub-command. Must match long argument name. */
+    CLI_BOOL, /**< Has no value; presence of flag indicates true. */
+    CLI_INT, /**< Has signed integer value. */
+    CLI_UINT, /**< Has unsigned integer value. */
+    CLI_ENUM, /**< Has enumeration value. */
+    CLI_STRING, /**< Has string value. */
 };
 
 /** Enum value descriptor. */
 struct cli_str_val {
-	const char *str; /**< String for the enum value name. */
-	int64_t val; /**< The value for this string. */
-	const char *d; /**< Description of this value for help output. */
+    const char *str; /**< String for the enum value name. */
+    int64_t val; /**< The value for this string. */
+    const char *d; /**< Description of this value for help output. */
 };
 
 /** Enum data. */
 struct cli_enum {
-	const struct cli_str_val *desc; /**< Array describing enum values. */
-	int64_t *e; /**< Location to store \ref CLI_ENUM value. */
+    const struct cli_str_val *desc; /**< Array describing enum values. */
+    int64_t *e; /**< Location to store \ref CLI_ENUM value. */
 };
 
 /**
  * Client description for a command line argument.
  */
 struct cli_table_entry {
-	const char *l; /**< Long argument name. */
-	const char s; /**< Short flag name. (Non-positional arguments.) */
-	bool p; /**< Whether the argument is a positional argument. */
-	bool no_pos; /**< When present, no positional arguments are required. */
-	enum cli_arg_type t; /**< Argument type. */
-	union {
-		bool *b; /**< Location to store \ref CLI_BOOL value. */
-		int64_t *i; /**< Location to store \ref CLI_INT value. */
-		uint64_t *u; /**< Location to store \ref CLI_UINT value. */
-		const char **s; /**< Location to store \ref CLI_STRING value. */
-		struct cli_enum e; /**< \ref CLI_ENUM value details. */
-	} v; /**< Where to store type-specific values. */
-	const char *d; /**< Description of this argument for help output. */
+    const char *l; /**< Long argument name. */
+    const char s; /**< Short flag name. (Non-positional arguments.) */
+    bool p; /**< Whether the argument is a positional argument. */
+    bool no_pos; /**< When present, no positional arguments are required. */
+    enum cli_arg_type t; /**< Argument type. */
+    union {
+        bool *b; /**< Location to store \ref CLI_BOOL value. */
+        int64_t *i; /**< Location to store \ref CLI_INT value. */
+        uint64_t *u; /**< Location to store \ref CLI_UINT value. */
+        const char **s; /**< Location to store \ref CLI_STRING value. */
+        struct cli_enum e; /**< \ref CLI_ENUM value details. */
+    } v; /**< Where to store type-specific values. */
+    const char *d; /**< Description of this argument for help output. */
 };
 
 /**
  * Client command line interface specification.
  */
 struct cli_table {
-	const struct cli_table_entry *entries;
-	size_t count;
-	size_t min_positional;
-	const char *d; /**< Description of this application for help output. */
+    const struct cli_table_entry *entries;
+    size_t count;
+    size_t min_positional;
+    const char *d; /**< Description of this application for help output. */
 };
 
 /**

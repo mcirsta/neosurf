@@ -11,60 +11,59 @@
 
 static void _virtual_dom_mutation_event_destroy(struct dom_event *evt);
 
-static const struct dom_event_private_vtable _event_vtable = {
-	_virtual_dom_mutation_event_destroy};
+static const struct dom_event_private_vtable _event_vtable = {_virtual_dom_mutation_event_destroy};
 
 /* Constructor */
 dom_exception _dom_mutation_event_create(struct dom_mutation_event **evt)
 {
-	*evt = malloc(sizeof(dom_mutation_event));
-	if (*evt == NULL)
-		return DOM_NO_MEM_ERR;
+    *evt = malloc(sizeof(dom_mutation_event));
+    if (*evt == NULL)
+        return DOM_NO_MEM_ERR;
 
-	((struct dom_event *)*evt)->vtable = &_event_vtable;
+    ((struct dom_event *)*evt)->vtable = &_event_vtable;
 
-	return _dom_mutation_event_initialise(*evt);
+    return _dom_mutation_event_initialise(*evt);
 }
 
 /* Destructor */
 void _dom_mutation_event_destroy(struct dom_mutation_event *evt)
 {
-	_dom_mutation_event_finalise(evt);
+    _dom_mutation_event_finalise(evt);
 
-	free(evt);
+    free(evt);
 }
 
 /* Initialise function */
 dom_exception _dom_mutation_event_initialise(struct dom_mutation_event *evt)
 {
-	evt->related_node = NULL;
-	evt->prev_value = NULL;
-	evt->new_value = NULL;
-	evt->attr_name = NULL;
+    evt->related_node = NULL;
+    evt->prev_value = NULL;
+    evt->new_value = NULL;
+    evt->attr_name = NULL;
 
-	return _dom_event_initialise(&evt->base);
+    return _dom_event_initialise(&evt->base);
 }
 
 /* Finalise function */
 void _dom_mutation_event_finalise(struct dom_mutation_event *evt)
 {
-	dom_node_unref(evt->related_node);
-	dom_string_unref(evt->prev_value);
-	dom_string_unref(evt->new_value);
-	dom_string_unref(evt->attr_name);
+    dom_node_unref(evt->related_node);
+    dom_string_unref(evt->prev_value);
+    dom_string_unref(evt->new_value);
+    dom_string_unref(evt->attr_name);
 
-	evt->related_node = NULL;
-	evt->prev_value = NULL;
-	evt->new_value = NULL;
-	evt->attr_name = NULL;
+    evt->related_node = NULL;
+    evt->prev_value = NULL;
+    evt->new_value = NULL;
+    evt->attr_name = NULL;
 
-	_dom_event_finalise(&evt->base);
+    _dom_event_finalise(&evt->base);
 }
 
 /* The virtual destroy function */
 void _virtual_dom_mutation_event_destroy(struct dom_event *evt)
 {
-	_dom_mutation_event_destroy((dom_mutation_event *)evt);
+    _dom_mutation_event_destroy((dom_mutation_event *)evt);
 }
 
 /*----------------------------------------------------------------------*/
@@ -77,13 +76,12 @@ void _virtual_dom_mutation_event_destroy(struct dom_event *evt)
  * \param node  The related node
  * \return DOM_NO_ERR.
  */
-dom_exception _dom_mutation_event_get_related_node(dom_mutation_event *evt,
-						   struct dom_node **node)
+dom_exception _dom_mutation_event_get_related_node(dom_mutation_event *evt, struct dom_node **node)
 {
-	*node = evt->related_node;
-	dom_node_ref(*node);
+    *node = evt->related_node;
+    dom_node_ref(*node);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -93,13 +91,12 @@ dom_exception _dom_mutation_event_get_related_node(dom_mutation_event *evt,
  * \param ret  The old value
  * \return DOM_NO_ERR.
  */
-dom_exception
-_dom_mutation_event_get_prev_value(dom_mutation_event *evt, dom_string **ret)
+dom_exception _dom_mutation_event_get_prev_value(dom_mutation_event *evt, dom_string **ret)
 {
-	*ret = evt->prev_value;
-	dom_string_ref(*ret);
+    *ret = evt->prev_value;
+    dom_string_ref(*ret);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -109,13 +106,12 @@ _dom_mutation_event_get_prev_value(dom_mutation_event *evt, dom_string **ret)
  * \param ret  The new value
  * \return DOM_NO_ERR.
  */
-dom_exception
-_dom_mutation_event_get_new_value(dom_mutation_event *evt, dom_string **ret)
+dom_exception _dom_mutation_event_get_new_value(dom_mutation_event *evt, dom_string **ret)
 {
-	*ret = evt->new_value;
-	dom_string_ref(*ret);
+    *ret = evt->new_value;
+    dom_string_ref(*ret);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -125,13 +121,12 @@ _dom_mutation_event_get_new_value(dom_mutation_event *evt, dom_string **ret)
  * \param ret  The attribute name
  * \return DOM_NO_ERR.
  */
-dom_exception
-_dom_mutation_event_get_attr_name(dom_mutation_event *evt, dom_string **ret)
+dom_exception _dom_mutation_event_get_attr_name(dom_mutation_event *evt, dom_string **ret)
 {
-	*ret = evt->attr_name;
-	dom_string_ref(*ret);
+    *ret = evt->attr_name;
+    dom_string_ref(*ret);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -141,12 +136,11 @@ _dom_mutation_event_get_attr_name(dom_mutation_event *evt, dom_string **ret)
  * \param type  The change type
  * \return DOM_NO_ERR.
  */
-dom_exception _dom_mutation_event_get_attr_change(dom_mutation_event *evt,
-						  dom_mutation_type *type)
+dom_exception _dom_mutation_event_get_attr_change(dom_mutation_event *evt, dom_mutation_type *type)
 {
-	*type = evt->change;
+    *type = evt->change;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -163,31 +157,25 @@ dom_exception _dom_mutation_event_get_attr_change(dom_mutation_event *evt,
  * \param change      The change type
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_mutation_event_init(dom_mutation_event *evt,
-				       dom_string *type,
-				       bool bubble,
-				       bool cancelable,
-				       struct dom_node *node,
-				       dom_string *prev_value,
-				       dom_string *new_value,
-				       dom_string *attr_name,
-				       dom_mutation_type change)
+dom_exception _dom_mutation_event_init(dom_mutation_event *evt, dom_string *type, bool bubble, bool cancelable,
+    struct dom_node *node, dom_string *prev_value, dom_string *new_value, dom_string *attr_name,
+    dom_mutation_type change)
 {
-	evt->related_node = node;
-	dom_node_ref(node);
+    evt->related_node = node;
+    dom_node_ref(node);
 
-	evt->prev_value = prev_value;
-	dom_string_ref(prev_value);
+    evt->prev_value = prev_value;
+    dom_string_ref(prev_value);
 
-	evt->new_value = new_value;
-	dom_string_ref(new_value);
+    evt->new_value = new_value;
+    dom_string_ref(new_value);
 
-	evt->attr_name = attr_name;
-	dom_string_ref(attr_name);
+    evt->attr_name = attr_name;
+    dom_string_ref(attr_name);
 
-	evt->change = change;
+    evt->change = change;
 
-	return _dom_event_init(&evt->base, type, bubble, cancelable);
+    return _dom_event_init(&evt->base, type, bubble, cancelable);
 }
 
 /**
@@ -205,31 +193,23 @@ dom_exception _dom_mutation_event_init(dom_mutation_event *evt,
  * \param change      The change type
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_mutation_event_init_ns(dom_mutation_event *evt,
-					  dom_string *namespace,
-					  dom_string *type,
-					  bool bubble,
-					  bool cancelable,
-					  struct dom_node *node,
-					  dom_string *prev_value,
-					  dom_string *new_value,
-					  dom_string *attr_name,
-					  dom_mutation_type change)
+dom_exception _dom_mutation_event_init_ns(dom_mutation_event *evt, dom_string *namespace, dom_string *type, bool bubble,
+    bool cancelable, struct dom_node *node, dom_string *prev_value, dom_string *new_value, dom_string *attr_name,
+    dom_mutation_type change)
 {
-	evt->related_node = node;
-	dom_node_ref(node);
+    evt->related_node = node;
+    dom_node_ref(node);
 
-	evt->prev_value = prev_value;
-	dom_string_ref(prev_value);
+    evt->prev_value = prev_value;
+    dom_string_ref(prev_value);
 
-	evt->new_value = new_value;
-	dom_string_ref(new_value);
+    evt->new_value = new_value;
+    dom_string_ref(new_value);
 
-	evt->attr_name = attr_name;
-	dom_string_ref(attr_name);
+    evt->attr_name = attr_name;
+    dom_string_ref(attr_name);
 
-	evt->change = change;
+    evt->change = change;
 
-	return _dom_event_init_ns(
-		&evt->base, namespace, type, bubble, cancelable);
+    return _dom_event_init_ns(&evt->base, namespace, type, bubble, cancelable);
 }

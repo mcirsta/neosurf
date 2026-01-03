@@ -23,110 +23,96 @@
  * \param[out] cmd_out  Walk instruction from client.
  * \return false for early termination of walk, true otherwise.
  */
-static inline dom_exception dom_walk__cb(enum dom_walk_enable mask,
-					 enum dom_walk_stage stage,
-					 dom_node *node,
-					 dom_walk_cb cb,
-					 void *pw,
-					 enum dom_walk_cmd *cmd_out)
+static inline dom_exception dom_walk__cb(enum dom_walk_enable mask, enum dom_walk_stage stage, dom_node *node,
+    dom_walk_cb cb, void *pw, enum dom_walk_cmd *cmd_out)
 {
-	if ((1 << stage) & mask) {
-		dom_node_type type;
-		dom_exception exc;
+    if ((1 << stage) & mask) {
+        dom_node_type type;
+        dom_exception exc;
 
-		exc = dom_node_get_node_type(node, &type);
-		if (exc != DOM_NO_ERR) {
-			return exc;
-		}
+        exc = dom_node_get_node_type(node, &type);
+        if (exc != DOM_NO_ERR) {
+            return exc;
+        }
 
-		*cmd_out = cb(stage, type, node, pw);
-	}
+        *cmd_out = cb(stage, type, node, pw);
+    }
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /* exported interface documented in include/dom/walk.h */
-dom_exception libdom_treewalk(enum dom_walk_enable mask,
-			      dom_walk_cb cb,
-			      dom_node *root,
-			      void *pw)
+dom_exception libdom_treewalk(enum dom_walk_enable mask, dom_walk_cb cb, dom_node *root, void *pw)
 {
-	dom_node *node;
-	dom_exception exc;
-	enum dom_walk_cmd cmd = DOM_WALK_CMD_CONTINUE;
+    dom_node *node;
+    dom_exception exc;
+    enum dom_walk_cmd cmd = DOM_WALK_CMD_CONTINUE;
 
-	node = dom_node_ref(root);
+    node = dom_node_ref(root);
 
-	while (cmd != DOM_WALK_CMD_ABORT) {
-		dom_node *next = NULL;
+    while (cmd != DOM_WALK_CMD_ABORT) {
+        dom_node *next = NULL;
 
-		if (cmd != DOM_WALK_CMD_SKIP) {
-			exc = dom_node_get_first_child(node, &next);
-			if (exc != DOM_NO_ERR) {
-				dom_node_unref(node);
-				break;
-			}
-		}
+        if (cmd != DOM_WALK_CMD_SKIP) {
+            exc = dom_node_get_first_child(node, &next);
+            if (exc != DOM_NO_ERR) {
+                dom_node_unref(node);
+                break;
+            }
+        }
 
-		if (next != NULL) {
-			dom_node_unref(node);
-			node = next;
-		} else {
-			/* No children; siblings & ancestor's siblings */
-			while (node != root) {
-				exc = dom_walk__cb(mask,
-						   DOM_WALK_STAGE_LEAVE,
-						   node,
-						   cb,
-						   pw,
-						   &cmd);
-				if (exc != DOM_NO_ERR ||
-				    cmd == DOM_WALK_CMD_ABORT) {
-					dom_node_unref(node);
-					return exc;
-				}
+        if (next != NULL) {
+            dom_node_unref(node);
+            node = next;
+        } else {
+            /* No children; siblings & ancestor's siblings */
+            while (node != root) {
+                exc = dom_walk__cb(mask, DOM_WALK_STAGE_LEAVE, node, cb, pw, &cmd);
+                if (exc != DOM_NO_ERR || cmd == DOM_WALK_CMD_ABORT) {
+                    dom_node_unref(node);
+                    return exc;
+                }
 
-				exc = dom_node_get_next_sibling(node, &next);
-				if (exc != DOM_NO_ERR) {
-					dom_node_unref(node);
-					node = NULL;
-					break;
-				}
+                exc = dom_node_get_next_sibling(node, &next);
+                if (exc != DOM_NO_ERR) {
+                    dom_node_unref(node);
+                    node = NULL;
+                    break;
+                }
 
-				if (next != NULL) {
-					/* Found next sibling. */
-					break;
-				}
+                if (next != NULL) {
+                    /* Found next sibling. */
+                    break;
+                }
 
-				exc = dom_node_get_parent_node(node, &next);
-				if (exc != DOM_NO_ERR) {
-					dom_node_unref(node);
-					return exc;
-				}
+                exc = dom_node_get_parent_node(node, &next);
+                if (exc != DOM_NO_ERR) {
+                    dom_node_unref(node);
+                    return exc;
+                }
 
-				dom_node_unref(node);
-				node = next;
-			}
+                dom_node_unref(node);
+                node = next;
+            }
 
-			if (node == root) {
-				break;
-			}
+            if (node == root) {
+                break;
+            }
 
-			dom_node_unref(node);
-			node = next;
-		}
+            dom_node_unref(node);
+            node = next;
+        }
 
-		assert(node != NULL);
-		assert(node != root);
+        assert(node != NULL);
+        assert(node != root);
 
-		exc = dom_walk__cb(
-			mask, DOM_WALK_STAGE_ENTER, node, cb, pw, &cmd);
-		if (exc != DOM_NO_ERR) {
-			return exc;
-		}
-	}
+        exc = dom_walk__cb(mask, DOM_WALK_STAGE_ENTER, node, cb, pw, &cmd);
+        if (exc != DOM_NO_ERR) {
+            return exc;
+        }
+    }
 
-	dom_node_unref(node);
+    dom_node_unref(node);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }

@@ -33,8 +33,7 @@
  *   times with different macro definitions so there is no guard.
  */
 
-#if !defined(CORESTRING_LWC_VALUE) | !defined(CORESTRING_DOM_VALUE) |          \
-	!defined(CORESTRING_NSURL)
+#if !defined(CORESTRING_LWC_VALUE) | !defined(CORESTRING_DOM_VALUE) | !defined(CORESTRING_NSURL)
 #error "missing macro definition. This header must not be directly included"
 #endif
 
@@ -177,8 +176,7 @@ CORESTRING_LWC_VALUE(application_atom_xml, "application/atom+xml");
 CORESTRING_LWC_VALUE(audio_wave, "audio/wave");
 CORESTRING_LWC_VALUE(application_ogg, "application/ogg");
 CORESTRING_LWC_VALUE(video_webm, "video/webm");
-CORESTRING_LWC_VALUE(application_x_rar_compressed,
-		     "application/x-rar-compressed");
+CORESTRING_LWC_VALUE(application_x_rar_compressed, "application/x-rar-compressed");
 CORESTRING_LWC_VALUE(application_zip, "application/zip");
 CORESTRING_LWC_VALUE(application_x_gzip, "application/x-gzip");
 CORESTRING_LWC_VALUE(application_postscript, "application/postscript");

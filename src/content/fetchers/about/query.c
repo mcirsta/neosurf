@@ -24,35 +24,34 @@
 #include <stdlib.h>
 
 #include <neosurf/utils/errors.h>
-#include <neosurf/utils/nsurl.h>
 #include <neosurf/utils/messages.h>
+#include <neosurf/utils/nsurl.h>
 
 #include "query.h"
 
 /* exported interface documented in about/query.h */
-nserror
-get_query_description(struct nsurl *url, const char *key, char **out_str)
+nserror get_query_description(struct nsurl *url, const char *key, char **out_str)
 {
-	nserror res;
-	char *url_s;
-	size_t url_l;
-	char *str = NULL;
+    nserror res;
+    char *url_s;
+    size_t url_l;
+    char *str = NULL;
 
-	/* get the host in question */
-	res = nsurl_get(url, NSURL_HOST, &url_s, &url_l);
-	if (res != NSERROR_OK) {
-		return res;
-	}
+    /* get the host in question */
+    res = nsurl_get(url, NSURL_HOST, &url_s, &url_l);
+    if (res != NSERROR_OK) {
+        return res;
+    }
 
-	/* obtain the description with the url substituted */
-	str = messages_get_buff(key, url_s);
-	if (str == NULL) {
-		res = NSERROR_NOMEM;
-	} else {
-		*out_str = str;
-	}
+    /* obtain the description with the url substituted */
+    str = messages_get_buff(key, url_s);
+    if (str == NULL) {
+        res = NSERROR_NOMEM;
+    } else {
+        *out_str = str;
+    }
 
-	free(url_s);
+    free(url_s);
 
-	return res;
+    return res;
 }

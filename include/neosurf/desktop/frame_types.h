@@ -25,12 +25,12 @@
 #define _NETSURF_DESKTOP_FRAME_TYPES_H_
 
 struct frame_dimension {
-	float value;
-	enum {
-		FRAME_DIMENSION_PIXELS, /* '100', '200' */
-		FRAME_DIMENSION_PERCENT, /* '5%', '20%' */
-		FRAME_DIMENSION_RELATIVE /* '*', '2*' */
-	} unit;
+    float value;
+    enum {
+        FRAME_DIMENSION_PIXELS, /* '100', '200' */
+        FRAME_DIMENSION_PERCENT, /* '5%', '20%' */
+        FRAME_DIMENSION_RELATIVE /* '*', '2*' */
+    } unit;
 };
 
 /* Handy struct names */

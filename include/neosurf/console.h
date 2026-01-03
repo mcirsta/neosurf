@@ -28,9 +28,9 @@
  * Sources of messages which end up in the browser window console
  */
 typedef enum {
-	BW_CS_INPUT, /**< Input from the client */
-	BW_CS_SCRIPT_ERROR, /**< Error from some running script */
-	BW_CS_SCRIPT_CONSOLE, /**< Logging from some running script */
+    BW_CS_INPUT, /**< Input from the client */
+    BW_CS_SCRIPT_ERROR, /**< Error from some running script */
+    BW_CS_SCRIPT_CONSOLE, /**< Logging from some running script */
 } browser_window_console_source;
 
 /**
@@ -39,33 +39,33 @@ typedef enum {
  * It is valid to bitwise-or some of these flags together where indicated.
  */
 typedef enum {
-	/**
-	 * The log entry is foldable.
-	 *
-	 * Set this to indicate that the text should be folded on the first
-	 * newline on display.  If this is set but there are no newlines in
-	 * the logged text, the core will unset it before passing on to
-	 * callbacks or storing the log entry.
-	 */
-	BW_CS_FLAG_FOLDABLE = 1 << 0,
+    /**
+     * The log entry is foldable.
+     *
+     * Set this to indicate that the text should be folded on the first
+     * newline on display.  If this is set but there are no newlines in
+     * the logged text, the core will unset it before passing on to
+     * callbacks or storing the log entry.
+     */
+    BW_CS_FLAG_FOLDABLE = 1 << 0,
 
-	/** Logged at the 'debug' level, please use only one of the LEVEL flags
-	 */
-	BW_CS_FLAG_LEVEL_DEBUG = 0 << 1,
-	/** Logged at the 'log' level, please only use one of the LEVEL flags */
-	BW_CS_FLAG_LEVEL_LOG = 1 << 1,
-	/** Logged at the 'info' level, please use only one of the LEVEL flags
-	 */
-	BW_CS_FLAG_LEVEL_INFO = 2 << 1,
-	/** Logged at the 'warn' level, please use only one of the LEVEL flags
-	 */
-	BW_CS_FLAG_LEVEL_WARN = 3 << 1,
-	/** Logged at the 'error' level, please use only one of the LEVEL flags
-	 */
-	BW_CS_FLAG_LEVEL_ERROR = 4 << 1,
-	/* Levels 5, 6, 7 unused as yet */
-	/** Mask for the error level to allow easy comparison using the above */
-	BW_CS_FLAG_LEVEL_MASK = 7 << 1,
+    /** Logged at the 'debug' level, please use only one of the LEVEL flags
+     */
+    BW_CS_FLAG_LEVEL_DEBUG = 0 << 1,
+    /** Logged at the 'log' level, please only use one of the LEVEL flags */
+    BW_CS_FLAG_LEVEL_LOG = 1 << 1,
+    /** Logged at the 'info' level, please use only one of the LEVEL flags
+     */
+    BW_CS_FLAG_LEVEL_INFO = 2 << 1,
+    /** Logged at the 'warn' level, please use only one of the LEVEL flags
+     */
+    BW_CS_FLAG_LEVEL_WARN = 3 << 1,
+    /** Logged at the 'error' level, please use only one of the LEVEL flags
+     */
+    BW_CS_FLAG_LEVEL_ERROR = 4 << 1,
+    /* Levels 5, 6, 7 unused as yet */
+    /** Mask for the error level to allow easy comparison using the above */
+    BW_CS_FLAG_LEVEL_MASK = 7 << 1,
 } browser_window_console_flags;
 
 #endif /* _NETSURF_CONSOLE_H_ */

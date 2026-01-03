@@ -9,22 +9,21 @@
 #ifndef dom_utils_hashtable_h_
 #define dom_utils_hashtable_h_
 
-#include <stdbool.h>
 #include <dom/functypes.h>
+#include <stdbool.h>
 
 typedef struct dom_hash_table dom_hash_table;
 
 typedef struct dom_hash_vtable {
-	uint32_t (*hash)(void *key, void *pw);
-	void *(*clone_key)(void *key, void *pw);
-	void (*destroy_key)(void *key, void *pw);
-	void *(*clone_value)(void *value, void *pw);
-	void (*destroy_value)(void *value, void *pw);
-	bool (*key_isequal)(void *key1, void *key2, void *pw);
+    uint32_t (*hash)(void *key, void *pw);
+    void *(*clone_key)(void *key, void *pw);
+    void (*destroy_key)(void *key, void *pw);
+    void *(*clone_value)(void *value, void *pw);
+    void (*destroy_value)(void *value, void *pw);
+    bool (*key_isequal)(void *key1, void *key2, void *pw);
 } dom_hash_vtable;
 
-dom_hash_table *
-_dom_hash_create(unsigned int chains, const dom_hash_vtable *vtable, void *pw);
+dom_hash_table *_dom_hash_create(unsigned int chains, const dom_hash_vtable *vtable, void *pw);
 dom_hash_table *_dom_hash_clone(dom_hash_table *ht);
 void _dom_hash_destroy(dom_hash_table *ht);
 bool _dom_hash_add(dom_hash_table *ht, void *key, void *value, bool replace);

@@ -12,8 +12,8 @@
 extern "C" {
 #endif
 
-#include <stdbool.h>
 #include <inttypes.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 }

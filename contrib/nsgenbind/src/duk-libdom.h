@@ -30,14 +30,12 @@ int output_dictionary(struct ir *ir, struct ir_entry *dictionarye);
 /**
  * generate a declaration to implement a dictionary using duk and libdom.
  */
-int output_interface_declaration(struct opctx *outc,
-				 struct ir_entry *interfacee);
+int output_interface_declaration(struct opctx *outc, struct ir_entry *interfacee);
 
 /**
  * generate a declaration to implement a dictionary using duk and libdom.
  */
-int output_dictionary_declaration(struct opctx *outc,
-				  struct ir_entry *dictionarye);
+int output_dictionary_declaration(struct opctx *outc, struct ir_entry *dictionarye);
 
 /**
  * generate preface block for nsgenbind
@@ -59,9 +57,7 @@ int output_tool_prologue(struct opctx *outc);
  * \param nodetype the type of child node to search for.
  * \return The number of nodes written or 0 for none.
  */
-int output_cdata(struct opctx *outc,
-		 struct genbind_node *node,
-		 enum genbind_node_type nodetype);
+int output_cdata(struct opctx *outc, struct genbind_node *node, enum genbind_node_type nodetype);
 
 
 /**
@@ -86,9 +82,7 @@ int output_ccode(struct opctx *outc, struct genbind_node *node);
  * \param nodetype the type of child node to search for.
  * \return The number of nodes written or 0 for none.
  */
-int output_method_cdata(struct opctx *outc,
-			struct genbind_node *node,
-			enum genbind_method_type sel_method_type);
+int output_method_cdata(struct opctx *outc, struct genbind_node *node, enum genbind_method_type sel_method_type);
 
 /**
  * output a C variable type
@@ -103,9 +97,7 @@ int output_method_cdata(struct opctx *outc,
  * \param identifier If the indentifier should be output.
  * \return 0 on success.
  */
-int output_ctype(struct opctx *outc,
-		 struct genbind_node *node,
-		 bool identifier);
+int output_ctype(struct opctx *outc, struct genbind_node *node, bool identifier);
 
 /**
  * Generate a C name from an IDL name.
@@ -125,16 +117,14 @@ char *gen_idl2c_name(const char *idlname);
 /**
  * Generate class property setter for a single attribute.
  */
-int output_generated_attribute_setter(struct opctx *outc,
-				      struct ir_entry *interfacee,
-				      struct ir_attribute_entry *atributee);
+int output_generated_attribute_setter(
+    struct opctx *outc, struct ir_entry *interfacee, struct ir_attribute_entry *atributee);
 
 /**
  * Generate class property getter for a single attribute.
  */
-int output_generated_attribute_getter(struct opctx *outc,
-				      struct ir_entry *interfacee,
-				      struct ir_attribute_entry *atributee);
+int output_generated_attribute_getter(
+    struct opctx *outc, struct ir_entry *interfacee, struct ir_attribute_entry *atributee);
 
 
 #endif

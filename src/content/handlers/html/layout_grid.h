@@ -24,11 +24,11 @@
 #ifndef NETSURF_HTML_LAYOUT_GRID_H
 #define NETSURF_HTML_LAYOUT_GRID_H
 
-#include <stdbool.h>
-#include <libwapcaplet/libwapcaplet.h>
 #include <dom/dom.h>
-#include <neosurf/content/handlers/html/html.h>
+#include <libwapcaplet/libwapcaplet.h>
 #include <neosurf/content/handlers/html/box.h>
+#include <neosurf/content/handlers/html/html.h>
+#include <stdbool.h>
 
 /**
  * Layout a grid container.
@@ -38,9 +38,7 @@
  * \param  content          memory pool for any new boxes
  * \return  true on success, false on memory exhaustion
  */
-bool layout_grid(struct box *grid,
-		 int available_width,
-		 struct html_content *content);
+bool layout_grid(struct box *grid, int available_width, struct html_content *content);
 
 /**
  * Calculate minimum and maximum width of a grid container.
@@ -50,8 +48,6 @@ bool layout_grid(struct box *grid,
  * \param content   The HTML content being laid out.
  * \post  grid->min_width and grid->max_width filled in
  */
-void layout_minmax_grid(struct box *grid,
-			const struct gui_layout_table *font_func,
-			const struct html_content *content);
+void layout_minmax_grid(struct box *grid, const struct gui_layout_table *font_func, const struct html_content *content);
 
 #endif

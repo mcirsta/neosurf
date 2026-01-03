@@ -33,7 +33,6 @@
  * \param f File to write output to.
  * \param op Debug operation type.
  */
-nserror
-content_debug_dump(struct hlcache_handle *h, FILE *f, enum content_debug op);
+nserror content_debug_dump(struct hlcache_handle *h, FILE *f, enum content_debug op);
 
 #endif

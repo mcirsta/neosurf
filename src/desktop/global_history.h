@@ -81,10 +81,7 @@ nserror global_history_export(const char *path, const char *title);
  * \param clip  Current clip rectangle (wrt tree origin)
  * \param ctx   Current redraw context
  */
-void global_history_redraw(int x,
-			   int y,
-			   struct rect *clip,
-			   const struct redraw_context *ctx);
+void global_history_redraw(int x, int y, struct rect *clip, const struct redraw_context *ctx);
 
 /**
  * Handles all kinds of mouse action

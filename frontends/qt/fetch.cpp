@@ -21,10 +21,10 @@
  * Implementation of netsurf fetch for qt.
  */
 
+#include <limits.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
-#include <limits.h>
 
 #include <QResource>
 #include <QString>
@@ -32,9 +32,9 @@
 extern "C" {
 
 #include "utils/errors.h"
-#include "utils/log.h"
-#include "utils/filepath.h"
 #include "utils/file.h"
+#include "utils/filepath.h"
+#include "utils/log.h"
 #include "neosurf/fetch.h"
 }
 
@@ -52,33 +52,33 @@ extern "C" {
  */
 static const char *nsqt_fetch_filetype(const char *unix_path)
 {
-	int l;
-	char *res = (char *)"text/html";
-	l = strlen(unix_path);
-	NSLOG(netsurf, INFO, "unix path: %s", unix_path);
+    int l;
+    char *res = (char *)"text/html";
+    l = strlen(unix_path);
+    NSLOG(netsurf, INFO, "unix path: %s", unix_path);
 
 
-	if (l > 3 && strcasecmp(unix_path + l - 4, ".f79") == 0)
-		res = (char *)"text/css";
-	else if (l > 3 && strcasecmp(unix_path + l - 4, ".css") == 0)
-		res = (char *)"text/css";
-	else if (l > 3 && strcasecmp(unix_path + l - 4, ".jpg") == 0)
-		res = (char *)"image/jpeg";
-	else if (l > 4 && strcasecmp(unix_path + l - 5, ".jpeg") == 0)
-		res = (char *)"image/jpeg";
-	else if (l > 3 && strcasecmp(unix_path + l - 4, ".gif") == 0)
-		res = (char *)"image/gif";
-	else if (l > 3 && strcasecmp(unix_path + l - 4, ".png") == 0)
-		res = (char *)"image/png";
-	else if (l > 3 && strcasecmp(unix_path + l - 4, ".jng") == 0)
-		res = (char *)"image/jng";
-	else if (l > 3 && strcasecmp(unix_path + l - 4, ".svg") == 0)
-		res = (char *)"image/svg+xml";
-	else if (l > 3 && strcasecmp(unix_path + l - 4, ".txt") == 0)
-		res = (char *)"text/plain";
+    if (l > 3 && strcasecmp(unix_path + l - 4, ".f79") == 0)
+        res = (char *)"text/css";
+    else if (l > 3 && strcasecmp(unix_path + l - 4, ".css") == 0)
+        res = (char *)"text/css";
+    else if (l > 3 && strcasecmp(unix_path + l - 4, ".jpg") == 0)
+        res = (char *)"image/jpeg";
+    else if (l > 4 && strcasecmp(unix_path + l - 5, ".jpeg") == 0)
+        res = (char *)"image/jpeg";
+    else if (l > 3 && strcasecmp(unix_path + l - 4, ".gif") == 0)
+        res = (char *)"image/gif";
+    else if (l > 3 && strcasecmp(unix_path + l - 4, ".png") == 0)
+        res = (char *)"image/png";
+    else if (l > 3 && strcasecmp(unix_path + l - 4, ".jng") == 0)
+        res = (char *)"image/jng";
+    else if (l > 3 && strcasecmp(unix_path + l - 4, ".svg") == 0)
+        res = (char *)"image/svg+xml";
+    else if (l > 3 && strcasecmp(unix_path + l - 4, ".txt") == 0)
+        res = (char *)"text/plain";
 
-	NSLOG(netsurf, INFO, "mime type: %s", res);
-	return res;
+    NSLOG(netsurf, INFO, "mime type: %s", res);
+    return res;
 }
 
 /**
@@ -96,74 +96,60 @@ static const char *nsqt_fetch_filetype(const char *unix_path)
  */
 static nsurl *nsqt_get_resource_url(const char *path)
 {
-	char buf[PATH_MAX];
-	nsurl *url = NULL;
+    char buf[PATH_MAX];
+    nsurl *url = NULL;
 
-	neosurf_path_to_nsurl(filepath_sfind(respaths, buf, path), &url);
+    neosurf_path_to_nsurl(filepath_sfind(respaths, buf, path), &url);
 
-	return url;
+    return url;
 }
 
-static nserror nsqt_get_resource_data(const char *resname,
-				      const uint8_t **data_out,
-				      size_t *data_size_out)
+static nserror nsqt_get_resource_data(const char *resname, const uint8_t **data_out, size_t *data_size_out)
 {
-	QString qpath = QString(":/") + QString(resname);
-	QResource resource(qpath);
-	if (!resource.isValid()) {
-		NSLOG(netsurf,
-		      WARNING,
-		      "QResource not found: %s (path: %s)",
-		      resname,
-		      qpath.toUtf8().constData());
-		return NSERROR_NOT_FOUND;
-	}
+    QString qpath = QString(":/") + QString(resname);
+    QResource resource(qpath);
+    if (!resource.isValid()) {
+        NSLOG(netsurf, WARNING, "QResource not found: %s (path: %s)", resname, qpath.toUtf8().constData());
+        return NSERROR_NOT_FOUND;
+    }
 
-	QByteArray resource_data = resource.uncompressedData();
-	qint64 size = resource_data.size();
+    QByteArray resource_data = resource.uncompressedData();
+    qint64 size = resource_data.size();
 
-	NSLOG(netsurf,
-	      DEBUG,
-	      "QResource: %s size=%lld",
-	      resname,
-	      (long long)size);
+    NSLOG(netsurf, DEBUG, "QResource: %s size=%lld", resname, (long long)size);
 
-	if (size < 1) {
-		NSLOG(netsurf, ERROR, "QResource empty: %s", resname);
-		return NSERROR_NOT_FOUND;
-	}
+    if (size < 1) {
+        NSLOG(netsurf, ERROR, "QResource empty: %s", resname);
+        return NSERROR_NOT_FOUND;
+    }
 
-	uint8_t *data = (uint8_t *)malloc(size);
-	if (data == NULL) {
-		NSLOG(netsurf,
-		      ERROR,
-		      "Failed to allocate %lld bytes for resource: %s",
-		      (long long)size,
-		      resname);
-		return NSERROR_NOMEM;
-	}
-	memcpy(data, resource_data.data(), size);
+    uint8_t *data = (uint8_t *)malloc(size);
+    if (data == NULL) {
+        NSLOG(netsurf, ERROR, "Failed to allocate %lld bytes for resource: %s", (long long)size, resname);
+        return NSERROR_NOMEM;
+    }
+    memcpy(data, resource_data.data(), size);
 
-	*data_out = data;
-	*data_size_out = size;
-	return NSERROR_OK;
+    *data_out = data;
+    *data_size_out = size;
+    return NSERROR_OK;
 }
 
 static nserror nsqt_release_resource_data(const uint8_t *data)
 {
-	free((uint8_t *)data);
-	return NSERROR_OK;
+    free((uint8_t *)data);
+    return NSERROR_OK;
 }
 
 static struct gui_fetch_table fetch_table = {
-	.filetype = nsqt_fetch_filetype,
+    .filetype = nsqt_fetch_filetype,
 
-	.get_resource_url = nsqt_get_resource_url,
-	.get_resource_data = nsqt_get_resource_data,
-	.release_resource_data = nsqt_release_resource_data,
-	.mimetype = NULL,
-	.socket_open = NULL,
-	.socket_close = NULL,
+    .get_resource_url = nsqt_get_resource_url,
+    .get_resource_data = nsqt_get_resource_data,
+    .release_resource_data = nsqt_release_resource_data,
+    .mimetype = NULL,
+    .socket_open = NULL,
+    .socket_close = NULL,
 };
 
 struct gui_fetch_table *nsqt_fetch_table = &fetch_table;

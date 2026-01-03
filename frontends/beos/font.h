@@ -26,11 +26,7 @@
 
 #include "netsurf/plot_style.h"
 
-bool nsfont_paint(const plot_font_style_t *fstyle,
-		  const char *string,
-		  size_t length,
-		  int x,
-		  int y);
+bool nsfont_paint(const plot_font_style_t *fstyle, const char *string, size_t length, int x, int y);
 
 void nsbeos_style_to_font(BFont &font, const struct plot_font_style *fstyle);
 

@@ -32,16 +32,13 @@ struct download_context;
  * function table for download windows.
  */
 struct gui_download_table {
-	struct gui_download_window *(*create)(struct download_context *ctx,
-					      struct gui_window *parent);
+    struct gui_download_window *(*create)(struct download_context *ctx, struct gui_window *parent);
 
-	nserror (*data)(struct gui_download_window *dw,
-			const char *data,
-			unsigned int size);
+    nserror (*data)(struct gui_download_window *dw, const char *data, unsigned int size);
 
-	void (*error)(struct gui_download_window *dw, const char *error_msg);
+    void (*error)(struct gui_download_window *dw, const char *error_msg);
 
-	void (*done)(struct gui_download_window *dw);
+    void (*done)(struct gui_download_window *dw);
 };
 
 #endif

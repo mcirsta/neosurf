@@ -24,10 +24,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "neosurf/utils/log.h"
-#include "neosurf/utils/file.h"
 #include "neosurf/content/fetch.h"
 #include "neosurf/fetch.h"
+#include "neosurf/utils/file.h"
+#include "neosurf/utils/log.h"
 
 #include "windows/fetch.h"
 
@@ -39,89 +39,84 @@
  */
 static const char *fetch_filetype(const char *unix_path)
 {
-	const char *ext;
-	NSLOG(neosurf, INFO, "unix path %s", unix_path);
+    const char *ext;
+    NSLOG(neosurf, INFO, "unix path %s", unix_path);
 
-	ext = strrchr(unix_path, '.');
-	if (ext == NULL) {
-		NSLOG(neosurf,
-		      INFO,
-		      "no extension for %s returning html",
-		      unix_path);
-		return "text/html";
-	}
+    ext = strrchr(unix_path, '.');
+    if (ext == NULL) {
+        NSLOG(neosurf, INFO, "no extension for %s returning html", unix_path);
+        return "text/html";
+    }
 
-	ext++; /* skip dot */
+    ext++; /* skip dot */
 
-	NSLOG(neosurf, INFO, "extension %s", ext);
+    NSLOG(neosurf, INFO, "extension %s", ext);
 
-	if (strcasecmp(ext, "css") == 0)
-		return "text/css";
-	if (strcasecmp(ext, "jpg") == 0)
-		return "image/jpeg";
-	if (strcasecmp(ext, "jpeg") == 0)
-		return "image/jpeg";
-	if (strcasecmp(ext, "gif") == 0)
-		return "image/gif";
-	if (strcasecmp(ext, "png") == 0)
-		return "image/png";
-	if (strcasecmp(ext, "jng") == 0)
-		return "image/jng";
-	if (strcasecmp(ext, "svg") == 0)
-		return "image/svg";
-	if (strcasecmp(ext, "bmp") == 0)
-		return "image/x-ms-bmp";
-	if (strcasecmp(ext, "ico") == 0)
-		return "image/x-icon";
-	if (strcasecmp(ext, "webp") == 0)
-		return "image/webp";
+    if (strcasecmp(ext, "css") == 0)
+        return "text/css";
+    if (strcasecmp(ext, "jpg") == 0)
+        return "image/jpeg";
+    if (strcasecmp(ext, "jpeg") == 0)
+        return "image/jpeg";
+    if (strcasecmp(ext, "gif") == 0)
+        return "image/gif";
+    if (strcasecmp(ext, "png") == 0)
+        return "image/png";
+    if (strcasecmp(ext, "jng") == 0)
+        return "image/jng";
+    if (strcasecmp(ext, "svg") == 0)
+        return "image/svg";
+    if (strcasecmp(ext, "bmp") == 0)
+        return "image/x-ms-bmp";
+    if (strcasecmp(ext, "ico") == 0)
+        return "image/x-icon";
+    if (strcasecmp(ext, "webp") == 0)
+        return "image/webp";
 
-	return "text/html";
+    return "text/html";
 }
 
 
 /* exported interface documented in windows/fetch.h */
-nserror nsw32_get_resource_data(const char *path,
-				const uint8_t **data_out,
-				size_t *data_len_out)
+nserror nsw32_get_resource_data(const char *path, const uint8_t **data_out, size_t *data_len_out)
 {
-	HRSRC reshandle;
-	HGLOBAL datahandle;
-	uint8_t *data;
-	DWORD data_len;
+    HRSRC reshandle;
+    HGLOBAL datahandle;
+    uint8_t *data;
+    DWORD data_len;
 
-	reshandle = FindResource(NULL, path, "USER");
-	if (reshandle == NULL) {
-		return NSERROR_NOT_FOUND;
-	}
+    reshandle = FindResource(NULL, path, "USER");
+    if (reshandle == NULL) {
+        return NSERROR_NOT_FOUND;
+    }
 
-	data_len = SizeofResource(NULL, reshandle);
-	if (data_len == 0) {
-		return NSERROR_NOT_FOUND;
-	}
+    data_len = SizeofResource(NULL, reshandle);
+    if (data_len == 0) {
+        return NSERROR_NOT_FOUND;
+    }
 
-	datahandle = LoadResource(NULL, reshandle);
-	if (datahandle == NULL) {
-		return NSERROR_NOT_FOUND;
-	}
-	data = LockResource(datahandle);
-	if (data == NULL) {
-		return NSERROR_NOT_FOUND;
-	}
+    datahandle = LoadResource(NULL, reshandle);
+    if (datahandle == NULL) {
+        return NSERROR_NOT_FOUND;
+    }
+    data = LockResource(datahandle);
+    if (data == NULL) {
+        return NSERROR_NOT_FOUND;
+    }
 
-	*data_out = data;
-	*data_len_out = data_len;
+    *data_out = data;
+    *data_len_out = data_len;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
 /** win32 fetch operation table */
 static struct gui_fetch_table fetch_table = {
-	.filetype = fetch_filetype,
+    .filetype = fetch_filetype,
 
-	.get_resource_url = NULL,
-	.get_resource_data = nsw32_get_resource_data,
+    .get_resource_url = NULL,
+    .get_resource_data = nsw32_get_resource_data,
 };
 
 struct gui_fetch_table *win32_fetch_table = &fetch_table;

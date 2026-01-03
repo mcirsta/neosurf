@@ -16,12 +16,12 @@
  * The EventListener class
  */
 struct dom_event_listener {
-	handle_event handler; /**< The event handler function */
-	void *pw; /**< The private data of this listener */
+    handle_event handler; /**< The event handler function */
+    void *pw; /**< The private data of this listener */
 
-	unsigned int refcnt; /**< The reference count of this listener */
-	struct dom_document *doc;
-	/**< The document which create this listener */
+    unsigned int refcnt; /**< The reference count of this listener */
+    struct dom_document *doc;
+    /**< The document which create this listener */
 };
 
 #endif

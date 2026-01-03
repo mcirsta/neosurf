@@ -8,48 +8,47 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "events/mouse_event.h"
 #include "core/document.h"
+#include "events/mouse_event.h"
 
 #include "utils/utils.h"
 
 static void _virtual_dom_mouse_event_destroy(struct dom_event *evt);
 
-static const struct dom_event_private_vtable _event_vtable = {
-	_virtual_dom_mouse_event_destroy};
+static const struct dom_event_private_vtable _event_vtable = {_virtual_dom_mouse_event_destroy};
 
 /* Constructor */
 dom_exception _dom_mouse_event_create(struct dom_mouse_event **evt)
 {
-	*evt = malloc(sizeof(dom_mouse_event));
-	if (*evt == NULL)
-		return DOM_NO_MEM_ERR;
+    *evt = malloc(sizeof(dom_mouse_event));
+    if (*evt == NULL)
+        return DOM_NO_MEM_ERR;
 
-	((struct dom_event *)*evt)->vtable = &_event_vtable;
+    ((struct dom_event *)*evt)->vtable = &_event_vtable;
 
-	return _dom_mouse_event_initialise(*evt);
+    return _dom_mouse_event_initialise(*evt);
 }
 
 /* Destructor */
 void _dom_mouse_event_destroy(struct dom_mouse_event *evt)
 {
-	_dom_mouse_event_finalise((dom_ui_event *)evt);
+    _dom_mouse_event_finalise((dom_ui_event *)evt);
 
-	free(evt);
+    free(evt);
 }
 
 /* Initialise function */
 dom_exception _dom_mouse_event_initialise(struct dom_mouse_event *evt)
 {
-	evt->modifier_state = 0;
+    evt->modifier_state = 0;
 
-	return _dom_ui_event_initialise((dom_ui_event *)evt);
+    return _dom_ui_event_initialise((dom_ui_event *)evt);
 }
 
 /* The virtual destroy function */
 void _virtual_dom_mouse_event_destroy(struct dom_event *evt)
 {
-	_dom_mouse_event_destroy((dom_mouse_event *)evt);
+    _dom_mouse_event_destroy((dom_mouse_event *)evt);
 }
 
 /*----------------------------------------------------------------------*/
@@ -64,9 +63,9 @@ void _virtual_dom_mouse_event_destroy(struct dom_event *evt)
  */
 dom_exception _dom_mouse_event_get_screen_x(dom_mouse_event *evt, int32_t *x)
 {
-	*x = evt->sx;
+    *x = evt->sx;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -78,9 +77,9 @@ dom_exception _dom_mouse_event_get_screen_x(dom_mouse_event *evt, int32_t *x)
  */
 dom_exception _dom_mouse_event_get_screen_y(dom_mouse_event *evt, int32_t *y)
 {
-	*y = evt->sy;
+    *y = evt->sy;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -92,9 +91,9 @@ dom_exception _dom_mouse_event_get_screen_y(dom_mouse_event *evt, int32_t *y)
  */
 dom_exception _dom_mouse_event_get_client_x(dom_mouse_event *evt, int32_t *x)
 {
-	*x = evt->cx;
+    *x = evt->cx;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -106,9 +105,9 @@ dom_exception _dom_mouse_event_get_client_x(dom_mouse_event *evt, int32_t *x)
  */
 dom_exception _dom_mouse_event_get_client_y(dom_mouse_event *evt, int32_t *y)
 {
-	*y = evt->cy;
+    *y = evt->cy;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -120,9 +119,9 @@ dom_exception _dom_mouse_event_get_client_y(dom_mouse_event *evt, int32_t *y)
  */
 dom_exception _dom_mouse_event_get_ctrl_key(dom_mouse_event *evt, bool *key)
 {
-	*key = ((evt->modifier_state & DOM_MOD_CTRL) != 0);
+    *key = ((evt->modifier_state & DOM_MOD_CTRL) != 0);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -134,9 +133,9 @@ dom_exception _dom_mouse_event_get_ctrl_key(dom_mouse_event *evt, bool *key)
  */
 dom_exception _dom_mouse_event_get_shift_key(dom_mouse_event *evt, bool *key)
 {
-	*key = ((evt->modifier_state & DOM_MOD_SHIFT) != 0);
+    *key = ((evt->modifier_state & DOM_MOD_SHIFT) != 0);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -148,9 +147,9 @@ dom_exception _dom_mouse_event_get_shift_key(dom_mouse_event *evt, bool *key)
  */
 dom_exception _dom_mouse_event_get_alt_key(dom_mouse_event *evt, bool *key)
 {
-	*key = ((evt->modifier_state & DOM_MOD_ALT) != 0);
+    *key = ((evt->modifier_state & DOM_MOD_ALT) != 0);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -162,9 +161,9 @@ dom_exception _dom_mouse_event_get_alt_key(dom_mouse_event *evt, bool *key)
  */
 dom_exception _dom_mouse_event_get_meta_key(dom_mouse_event *evt, bool *key)
 {
-	*key = ((evt->modifier_state & DOM_MOD_META) != 0);
+    *key = ((evt->modifier_state & DOM_MOD_META) != 0);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -174,12 +173,11 @@ dom_exception _dom_mouse_event_get_meta_key(dom_mouse_event *evt, bool *key)
  * \param button  The pressed mouse button
  * \return DOM_NO_ERR.
  */
-dom_exception
-_dom_mouse_event_get_button(dom_mouse_event *evt, unsigned short *button)
+dom_exception _dom_mouse_event_get_button(dom_mouse_event *evt, unsigned short *button)
 {
-	*button = evt->button;
+    *button = evt->button;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -189,12 +187,11 @@ _dom_mouse_event_get_button(dom_mouse_event *evt, unsigned short *button)
  * \param et   The related EventTarget
  * \return DOM_NO_ERR.
  */
-dom_exception
-_dom_mouse_event_get_related_target(dom_mouse_event *evt, dom_event_target **et)
+dom_exception _dom_mouse_event_get_related_target(dom_mouse_event *evt, dom_event_target **et)
 {
-	*et = evt->related_target;
+    *et = evt->related_target;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -210,43 +207,38 @@ _dom_mouse_event_get_related_target(dom_mouse_event *evt, dom_event_target **et)
  * modifiers, this information could be deduced using keyboard events and
  * KeyboardEvent.keyLocation.
  */
-dom_exception _dom_mouse_event_get_modifier_state(dom_mouse_event *evt,
-						  dom_string *m,
-						  bool *state)
+dom_exception _dom_mouse_event_get_modifier_state(dom_mouse_event *evt, dom_string *m, bool *state)
 {
-	const char *data;
-	size_t len;
+    const char *data;
+    size_t len;
 
-	if (m == NULL) {
-		*state = false;
-		return DOM_NO_ERR;
-	}
+    if (m == NULL) {
+        *state = false;
+        return DOM_NO_ERR;
+    }
 
-	data = dom_string_data(m);
-	len = dom_string_byte_length(m);
+    data = dom_string_data(m);
+    len = dom_string_byte_length(m);
 
-	if (len == SLEN("AltGraph") && strncmp(data, "AltGraph", len) == 0) {
-		*state = ((evt->modifier_state & DOM_MOD_ALT_GRAPH) != 0);
-	} else if (len == SLEN("Alt") && strncmp(data, "Alt", len) == 0) {
-		*state = ((evt->modifier_state & DOM_MOD_ALT) != 0);
-	} else if (len == SLEN("CapsLock") &&
-		   strncmp(data, "CapsLock", len) == 0) {
-		*state = ((evt->modifier_state & DOM_MOD_CAPS_LOCK) != 0);
-	} else if (len == SLEN("Control") &&
-		   strncmp(data, "Control", len) == 0) {
-		*state = ((evt->modifier_state & DOM_MOD_CTRL) != 0);
-	} else if (len == SLEN("Meta") && strncmp(data, "Meta", len) == 0) {
-		*state = ((evt->modifier_state & DOM_MOD_META) != 0);
-	} else if (len == SLEN("NumLock") &&
-		   strncmp(data, "NumLock", len) == 0) {
-		*state = ((evt->modifier_state & DOM_MOD_NUM_LOCK) != 0);
-	} else if (len == SLEN("Scroll") && strncmp(data, "Scroll", len) == 0) {
-		*state = ((evt->modifier_state & DOM_MOD_SCROLL) != 0);
-	} else if (len == SLEN("Shift") && strncmp(data, "Shift", len) == 0) {
-		*state = ((evt->modifier_state & DOM_MOD_SHIFT) != 0);
-	}
+    if (len == SLEN("AltGraph") && strncmp(data, "AltGraph", len) == 0) {
+        *state = ((evt->modifier_state & DOM_MOD_ALT_GRAPH) != 0);
+    } else if (len == SLEN("Alt") && strncmp(data, "Alt", len) == 0) {
+        *state = ((evt->modifier_state & DOM_MOD_ALT) != 0);
+    } else if (len == SLEN("CapsLock") && strncmp(data, "CapsLock", len) == 0) {
+        *state = ((evt->modifier_state & DOM_MOD_CAPS_LOCK) != 0);
+    } else if (len == SLEN("Control") && strncmp(data, "Control", len) == 0) {
+        *state = ((evt->modifier_state & DOM_MOD_CTRL) != 0);
+    } else if (len == SLEN("Meta") && strncmp(data, "Meta", len) == 0) {
+        *state = ((evt->modifier_state & DOM_MOD_META) != 0);
+    } else if (len == SLEN("NumLock") && strncmp(data, "NumLock", len) == 0) {
+        *state = ((evt->modifier_state & DOM_MOD_NUM_LOCK) != 0);
+    } else if (len == SLEN("Scroll") && strncmp(data, "Scroll", len) == 0) {
+        *state = ((evt->modifier_state & DOM_MOD_SCROLL) != 0);
+    } else if (len == SLEN("Shift") && strncmp(data, "Shift", len) == 0) {
+        *state = ((evt->modifier_state & DOM_MOD_SHIFT) != 0);
+    }
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -269,47 +261,33 @@ dom_exception _dom_mouse_event_get_modifier_state(dom_mouse_event *evt,
  * \param et          The related target of this event, may be NULL
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_mouse_event_init(dom_mouse_event *evt,
-				    dom_string *type,
-				    bool bubble,
-				    bool cancelable,
-				    struct dom_abstract_view *view,
-				    int32_t detail,
-				    int32_t screen_x,
-				    int32_t screen_y,
-				    int32_t client_x,
-				    int32_t client_y,
-				    bool ctrl,
-				    bool alt,
-				    bool shift,
-				    bool meta,
-				    unsigned short button,
-				    dom_event_target *et)
+dom_exception _dom_mouse_event_init(dom_mouse_event *evt, dom_string *type, bool bubble, bool cancelable,
+    struct dom_abstract_view *view, int32_t detail, int32_t screen_x, int32_t screen_y, int32_t client_x,
+    int32_t client_y, bool ctrl, bool alt, bool shift, bool meta, unsigned short button, dom_event_target *et)
 {
-	evt->sx = screen_x;
-	evt->sy = screen_y;
-	evt->cx = client_x;
-	evt->cy = client_y;
+    evt->sx = screen_x;
+    evt->sy = screen_y;
+    evt->cx = client_x;
+    evt->cy = client_y;
 
-	evt->modifier_state = 0;
-	if (ctrl == true) {
-		evt->modifier_state = evt->modifier_state | DOM_MOD_CTRL;
-	}
-	if (alt == true) {
-		evt->modifier_state = evt->modifier_state | DOM_MOD_ALT;
-	}
-	if (shift == true) {
-		evt->modifier_state = evt->modifier_state | DOM_MOD_SHIFT;
-	}
-	if (meta == true) {
-		evt->modifier_state = evt->modifier_state | DOM_MOD_META;
-	}
+    evt->modifier_state = 0;
+    if (ctrl == true) {
+        evt->modifier_state = evt->modifier_state | DOM_MOD_CTRL;
+    }
+    if (alt == true) {
+        evt->modifier_state = evt->modifier_state | DOM_MOD_ALT;
+    }
+    if (shift == true) {
+        evt->modifier_state = evt->modifier_state | DOM_MOD_SHIFT;
+    }
+    if (meta == true) {
+        evt->modifier_state = evt->modifier_state | DOM_MOD_META;
+    }
 
-	evt->button = button;
-	evt->related_target = et;
+    evt->button = button;
+    evt->related_target = et;
 
-	return _dom_ui_event_init(
-		&evt->base, type, bubble, cancelable, view, detail);
+    return _dom_ui_event_init(&evt->base, type, bubble, cancelable, view, detail);
 }
 
 /**
@@ -333,46 +311,32 @@ dom_exception _dom_mouse_event_init(dom_mouse_event *evt,
  * \param et          The related target of this event, may be NULL
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_mouse_event_init_ns(dom_mouse_event *evt,
-				       dom_string *namespace,
-				       dom_string *type,
-				       bool bubble,
-				       bool cancelable,
-				       struct dom_abstract_view *view,
-				       int32_t detail,
-				       int32_t screen_x,
-				       int32_t screen_y,
-				       int32_t client_x,
-				       int32_t client_y,
-				       bool ctrl,
-				       bool alt,
-				       bool shift,
-				       bool meta,
-				       unsigned short button,
-				       dom_event_target *et)
+dom_exception _dom_mouse_event_init_ns(dom_mouse_event *evt, dom_string *namespace, dom_string *type, bool bubble,
+    bool cancelable, struct dom_abstract_view *view, int32_t detail, int32_t screen_x, int32_t screen_y,
+    int32_t client_x, int32_t client_y, bool ctrl, bool alt, bool shift, bool meta, unsigned short button,
+    dom_event_target *et)
 {
-	evt->sx = screen_x;
-	evt->sy = screen_y;
-	evt->cx = client_x;
-	evt->cy = client_y;
+    evt->sx = screen_x;
+    evt->sy = screen_y;
+    evt->cx = client_x;
+    evt->cy = client_y;
 
-	evt->modifier_state = 0;
-	if (ctrl == true) {
-		evt->modifier_state = evt->modifier_state | DOM_MOD_CTRL;
-	}
-	if (alt == true) {
-		evt->modifier_state = evt->modifier_state | DOM_MOD_ALT;
-	}
-	if (shift == true) {
-		evt->modifier_state = evt->modifier_state | DOM_MOD_SHIFT;
-	}
-	if (meta == true) {
-		evt->modifier_state = evt->modifier_state | DOM_MOD_META;
-	}
+    evt->modifier_state = 0;
+    if (ctrl == true) {
+        evt->modifier_state = evt->modifier_state | DOM_MOD_CTRL;
+    }
+    if (alt == true) {
+        evt->modifier_state = evt->modifier_state | DOM_MOD_ALT;
+    }
+    if (shift == true) {
+        evt->modifier_state = evt->modifier_state | DOM_MOD_SHIFT;
+    }
+    if (meta == true) {
+        evt->modifier_state = evt->modifier_state | DOM_MOD_META;
+    }
 
-	evt->button = button;
-	evt->related_target = et;
+    evt->button = button;
+    evt->related_target = et;
 
-	return _dom_ui_event_init_ns(
-		&evt->base, namespace, type, bubble, cancelable, view, detail);
+    return _dom_ui_event_init_ns(&evt->base, namespace, type, bubble, cancelable, view, detail);
 }

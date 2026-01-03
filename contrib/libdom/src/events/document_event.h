@@ -18,29 +18,29 @@ struct dom_document;
  * Type of Events
  */
 typedef enum {
-	DOM_EVENT = 0,
-	DOM_CUSTOM_EVENT,
-	DOM_UI_EVENT,
-	DOM_TEXT_EVENT,
-	DOM_KEYBOARD_EVENT,
-	DOM_MOUSE_EVENT,
-	DOM_MOUSE_MULTI_WHEEL_EVENT,
-	DOM_MOUSE_WHEEL_EVENT,
-	DOM_MUTATION_EVENT,
-	DOM_MUTATION_NAME_EVENT,
+    DOM_EVENT = 0,
+    DOM_CUSTOM_EVENT,
+    DOM_UI_EVENT,
+    DOM_TEXT_EVENT,
+    DOM_KEYBOARD_EVENT,
+    DOM_MOUSE_EVENT,
+    DOM_MOUSE_MULTI_WHEEL_EVENT,
+    DOM_MOUSE_WHEEL_EVENT,
+    DOM_MUTATION_EVENT,
+    DOM_MUTATION_NAME_EVENT,
 
-	DOM_EVENT_COUNT
+    DOM_EVENT_COUNT
 } dom_event_type;
 
 /**
  * The DocumentEvent internal class
  */
 struct dom_document_event_internal {
-	dom_events_default_action_fetcher actions;
-	/**< The default action fetecher */
-	void *actions_ctx; /**< The default action fetcher context */
-	struct lwc_string_s *event_types[DOM_EVENT_COUNT];
-	/**< Events type names */
+    dom_events_default_action_fetcher actions;
+    /**< The default action fetecher */
+    void *actions_ctx; /**< The default action fetcher context */
+    struct lwc_string_s *event_types[DOM_EVENT_COUNT];
+    /**< Events type names */
 };
 
 typedef struct dom_document_event_internal dom_document_event_internal;
@@ -53,9 +53,7 @@ typedef struct dom_document_event_internal dom_document_event_internal;
 
 /* Initialise this DocumentEvent */
 dom_exception _dom_document_event_internal_initialise(
-	dom_document_event_internal *dei,
-	dom_events_default_action_fetcher actions,
-	void *actions_ctx);
+    dom_document_event_internal *dei, dom_events_default_action_fetcher actions, void *actions_ctx);
 
 /* Finalise this DocumentEvent */
 void _dom_document_event_internal_finalise(dom_document_event_internal *dei);

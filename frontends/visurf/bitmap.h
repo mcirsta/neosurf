@@ -7,9 +7,9 @@ struct gui_bitmap_table;
 extern struct gui_bitmap_table vi_bitmap_table;
 
 struct bitmap {
-	cairo_surface_t *surface;
-	cairo_surface_t *scsurface;
-	bool converted;
+    cairo_surface_t *surface;
+    cairo_surface_t *scsurface;
+    bool converted;
 };
 
 int nsvi_bitmap_get_width(void *vbitmap);

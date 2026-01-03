@@ -8,13 +8,10 @@
 #ifndef css_css__parse_important_h_
 #define css_css__parse_important_h_
 
-#include "stylesheet.h"
 #include "parse/language.h"
+#include "stylesheet.h"
 
-css_error css__parse_important(css_language *c,
-			       const parserutils_vector *vector,
-			       int32_t *ctx,
-			       uint8_t *result);
+css_error css__parse_important(css_language *c, const parserutils_vector *vector, int32_t *ctx, uint8_t *result);
 
 void css__make_style_important(css_style *style);
 

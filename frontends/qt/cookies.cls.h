@@ -27,22 +27,22 @@
 
 class NS_Cookies : public NS_Corewindow
 {
-	Q_OBJECT
+    Q_OBJECT
 
-      public:
-	NS_Cookies(QWidget *parent);
-	~NS_Cookies();
+public:
+    NS_Cookies(QWidget *parent);
+    ~NS_Cookies();
 
-	/**
-	 * set the search term on the cookie view
-	 *
-	 * @param search_term The search term to set on the cookies view or
-	 *                    NULL to clear.
-	 */
-	nserror setSearch(const char *search_term);
+    /**
+     * set the search term on the cookie view
+     *
+     * @param search_term The search term to set on the cookies view or
+     *                    NULL to clear.
+     */
+    nserror setSearch(const char *search_term);
 
-      private:
-	void draw(struct rect *clip, struct redraw_context *ctx);
-	bool key_press(uint32_t nskey);
-	void mouse_action(browser_mouse_state mouse_state, int x, int y);
+private:
+    void draw(struct rect *clip, struct redraw_context *ctx);
+    bool key_press(uint32_t nskey);
+    void mouse_action(browser_mouse_state mouse_state, int x, int y);
 };

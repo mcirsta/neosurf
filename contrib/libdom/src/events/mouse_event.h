@@ -16,17 +16,17 @@
  * The mouse event
  */
 struct dom_mouse_event {
-	struct dom_ui_event base; /**< Base class */
+    struct dom_ui_event base; /**< Base class */
 
-	int32_t sx; /**< ScreenX */
-	int32_t sy; /**< ScreenY */
-	int32_t cx; /**< ClientX */
-	int32_t cy; /**< ClientY */
+    int32_t sx; /**< ScreenX */
+    int32_t sy; /**< ScreenY */
+    int32_t cx; /**< ClientX */
+    int32_t cy; /**< ClientY */
 
-	uint32_t modifier_state; /**< The modifier keys state */
+    uint32_t modifier_state; /**< The modifier keys state */
 
-	unsigned short button; /**< Which button is clicked */
-	dom_event_target *related_target; /**< The related target */
+    unsigned short button; /**< Which button is clicked */
+    dom_event_target *related_target; /**< The related target */
 };
 
 /* Constructor */

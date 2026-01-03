@@ -27,13 +27,13 @@
 #include <stdlib.h>
 #include <string.h>
 #ifdef _WIN32
-#include <windows.h>
 #include <process.h>
+#include <windows.h>
 #else
 #include <unistd.h>
 #endif
-#include <check.h>
 #include <libwapcaplet/libwapcaplet.h>
+#include <check.h>
 
 #include "utils/errors.h"
 #include "utils/log.h"
@@ -41,31 +41,27 @@
 
 static void test_lwc_iterator(lwc_string *str, void *pw)
 {
-	unsigned *count = (unsigned *)pw;
-	if (count != NULL) {
-		(*count)++;
-	}
-	fprintf(stderr,
-		"[lwc] [%3u] %.*s\n",
-		str->refcnt,
-		(int)lwc_string_length(str),
-		lwc_string_data(str));
+    unsigned *count = (unsigned *)pw;
+    if (count != NULL) {
+        (*count)++;
+    }
+    fprintf(stderr, "[lwc] [%3u] %.*s\n", str->refcnt, (int)lwc_string_length(str), lwc_string_data(str));
 }
 
 static const char *get_temp_dir(void)
 {
 #ifdef _WIN32
-	const char *p = getenv("TMP");
-	if (p == NULL)
-		p = getenv("TEMP");
-	if (p == NULL)
-		p = ".";
-	return p;
+    const char *p = getenv("TMP");
+    if (p == NULL)
+        p = getenv("TEMP");
+    if (p == NULL)
+        p = ".";
+    return p;
 #else
-	const char *p = getenv("TMPDIR");
-	if (p == NULL)
-		p = "/tmp";
-	return p;
+    const char *p = getenv("TMPDIR");
+    if (p == NULL)
+        p = "/tmp";
+    return p;
 #endif
 }
 
@@ -78,7 +74,7 @@ const char *test_choices_missing_path = "test/data/Choices-missing";
 /* Stubs */
 nserror nslog_set_filter_by_options()
 {
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /**
@@ -86,37 +82,35 @@ nserror nslog_set_filter_by_options()
  */
 static char *testnam(char *out)
 {
-	static int count = 0;
-	static char name[64];
-	int pid;
+    static int count = 0;
+    static char name[64];
+    int pid;
 #ifdef _WIN32
-	pid = _getpid();
+    pid = _getpid();
 #else
-	pid = getpid();
+    pid = getpid();
 #endif
 #ifdef _WIN32
-	snprintf(name, 64, "%s/nsoptiontest%d%d", get_temp_dir(), pid, count);
+    snprintf(name, 64, "%s/nsoptiontest%d%d", get_temp_dir(), pid, count);
 #else
-	snprintf(name, 64, "%s/nsoptiontest%d%d", get_temp_dir(), pid, count);
+    snprintf(name, 64, "%s/nsoptiontest%d%d", get_temp_dir(), pid, count);
 #endif
-	count++;
-	return name;
+    count++;
+    return name;
 }
 
 static nserror gui_options_init_defaults(struct nsoption_s *defaults)
 {
-	/* Set defaults for absent option strings */
-	nsoption_setnull_charp(ca_bundle,
-			       strdup("NetSurf:Resources.ca-bundle"));
-	nsoption_setnull_charp(cookie_file, strdup("NetSurf:Cookies"));
-	nsoption_setnull_charp(cookie_jar, strdup("Cookies"));
+    /* Set defaults for absent option strings */
+    nsoption_setnull_charp(ca_bundle, strdup("NetSurf:Resources.ca-bundle"));
+    nsoption_setnull_charp(cookie_file, strdup("NetSurf:Cookies"));
+    nsoption_setnull_charp(cookie_jar, strdup("Cookies"));
 
-	if (nsoption_charp(ca_bundle) == NULL ||
-	    nsoption_charp(cookie_file) == NULL ||
-	    nsoption_charp(cookie_jar) == NULL) {
-		return NSERROR_BAD_PARAMETER;
-	}
-	return NSERROR_OK;
+    if (nsoption_charp(ca_bundle) == NULL || nsoption_charp(cookie_file) == NULL ||
+        nsoption_charp(cookie_jar) == NULL) {
+        return NSERROR_BAD_PARAMETER;
+    }
+    return NSERROR_OK;
 }
 
 
@@ -125,80 +119,80 @@ static nserror gui_options_init_defaults(struct nsoption_s *defaults)
  */
 static int next_nc(FILE *fp)
 {
-	int ch;
-	do {
-		ch = fgetc(fp);
-	} while (ch == '\r');
-	return ch;
+    int ch;
+    do {
+        ch = fgetc(fp);
+    } while (ch == '\r');
+    return ch;
 }
 
 static int cmp(const char *f1, const char *f2)
 {
-	int res = 0;
-	FILE *fp1;
-	FILE *fp2;
-	int ch1;
-	int ch2;
+    int res = 0;
+    FILE *fp1;
+    FILE *fp2;
+    int ch1;
+    int ch2;
 
-	fp1 = fopen(f1, "rb");
-	if (fp1 == NULL) {
-		return -1;
-	}
-	fp2 = fopen(f2, "rb");
-	if (fp2 == NULL) {
-		fclose(fp1);
-		return -1;
-	}
+    fp1 = fopen(f1, "rb");
+    if (fp1 == NULL) {
+        return -1;
+    }
+    fp2 = fopen(f2, "rb");
+    if (fp2 == NULL) {
+        fclose(fp1);
+        return -1;
+    }
 
-	while (res == 0) {
-		ch1 = next_nc(fp1);
-		ch2 = next_nc(fp2);
+    while (res == 0) {
+        ch1 = next_nc(fp1);
+        ch2 = next_nc(fp2);
 
-		if (ch1 != ch2) {
-			res = 1;
-		}
+        if (ch1 != ch2) {
+            res = 1;
+        }
 
-		if (ch1 == EOF) {
-			break;
-		}
-	}
+        if (ch1 == EOF) {
+            break;
+        }
+    }
 
-	fclose(fp1);
-	fclose(fp2);
-	return res;
+    fclose(fp1);
+    fclose(fp2);
+    return res;
 }
 
 /** option create fixture */
 static void nsoption_create(void)
 {
-	fprintf(stderr, "[nsoption-test] fixture nsoption_create\n");
-	nserror res;
+    fprintf(stderr, "[nsoption-test] fixture nsoption_create\n");
+    nserror res;
 
-	res = nsoption_init(NULL, NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    res = nsoption_init(NULL, NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 }
 
 /** option create fixture for format case */
 static void nsoption_format_create(void)
 {
-	fprintf(stderr, "[nsoption-test] fixture nsoption_format_create\n");
-	nserror res;
+    fprintf(stderr, "[nsoption-test] fixture nsoption_format_create\n");
+    nserror res;
 
-	res = nsoption_init(NULL, NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    res = nsoption_init(NULL, NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 
-	/* read from file */
-	res = nsoption_read(test_choices_path, NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    /* read from file */
+    res = nsoption_read(test_choices_path, NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 }
 
 /** option teardown fixture */
 static void nsoption_teardown(void)
 {
-	nserror res;
+    nserror res;
 
-	res = nsoption_finalise(NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    res = nsoption_finalise(NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 }
 
 
@@ -207,88 +201,84 @@ static void nsoption_teardown(void)
  */
 START_TEST(nsoption_session_test)
 {
-	nserror res;
-	int argc = 2;
-	char arg1[] = "nsoption";
-	char arg2[] = "--http_proxy_host=fooo";
-	char *argv[] = {arg1, arg2, NULL};
-	char *outnam;
+    nserror res;
+    int argc = 2;
+    char arg1[] = "nsoption";
+    char arg2[] = "--http_proxy_host=fooo";
+    char *argv[] = {arg1, arg2, NULL};
+    char *outnam;
 
-	res = nsoption_init(gui_options_init_defaults, NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    res = nsoption_init(gui_options_init_defaults, NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 
-	/* read from file */
-	res = nsoption_read(test_choices_path, NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    /* read from file */
+    res = nsoption_read(test_choices_path, NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 
-	/* overlay commandline */
-	res = nsoption_commandline(&argc, &argv[0], NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    /* overlay commandline */
+    res = nsoption_commandline(&argc, &argv[0], NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 
-	/* change a string option */
-	nsoption_set_charp(http_proxy_host, strdup("bar"));
+    /* change a string option */
+    nsoption_set_charp(http_proxy_host, strdup("bar"));
 
-	/* change an uint option */
-	nsoption_set_uint(disc_cache_size, 42);
+    /* change an uint option */
+    nsoption_set_uint(disc_cache_size, 42);
 
-	/* change a colour */
-	nsoption_set_colour(sys_colour_Canvas, 0x00d0000d);
+    /* change a colour */
+    nsoption_set_colour(sys_colour_Canvas, 0x00d0000d);
 
-	/* write options out */
-	outnam = testnam(NULL);
-	res = nsoption_write(outnam, NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    /* write options out */
+    outnam = testnam(NULL);
+    res = nsoption_write(outnam, NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 
-	/* check for the correct answer */
-	ck_assert_int_eq(cmp(outnam, test_choices_full_path), 0);
+    /* check for the correct answer */
+    ck_assert_int_eq(cmp(outnam, test_choices_full_path), 0);
 
-	/* remove test output */
-	remove(outnam);
+    /* remove test output */
+    remove(outnam);
 
-	res = nsoption_finalise(NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    res = nsoption_finalise(NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 }
 END_TEST
 
 static TCase *nsoption_session_case_create(void)
 {
-	TCase *tc;
-	tc = tcase_create("Full session");
+    TCase *tc;
+    tc = tcase_create("Full session");
 
-	tcase_add_test(tc, nsoption_session_test);
+    tcase_add_test(tc, nsoption_session_test);
 
-	return tc;
+    return tc;
 }
 
 
 struct format_test_vec_s {
-	int opt_idx;
-	const char *res_html;
-	const char *res_text;
+    int opt_idx;
+    const char *res_html;
+    const char *res_text;
 };
 
 struct format_test_vec_s format_test_vec[] = {
-	{NSOPTION_http_proxy,
-	 "<tr><th>http_proxy</th><td>boolean</td><td>default</td><td>false</td></tr>",
-	 "http_proxy:0"},
-	{NSOPTION_enable_javascript,
-	 "<tr><th>enable_javascript</th><td>boolean</td><td>default</td><td>true</td></tr>",
-	 "enable_javascript:1"},
-	{NSOPTION_http_proxy_port,
-	 "<tr><th>http_proxy_port</th><td>integer</td><td>default</td><td>8080</td></tr>",
-	 "http_proxy_port:8080"},
-	{NSOPTION_http_proxy_host,
-	 "<tr><th>http_proxy_host</th><td>string</td><td>default</td><td><span class=\"null-content\">NULL</span></td></tr>",
-	 "http_proxy_host:"},
-	{NSOPTION_cookie_file,
-	 "<tr><th>cookie_file</th><td>string</td><td>user</td><td>/home/vince/.netsurf/Cookies</td></tr>",
-	 "cookie_file:/home/vince/.netsurf/Cookies"},
-	{NSOPTION_disc_cache_size,
-	 "<tr><th>disc_cache_size</th><td>unsigned integer</td><td>default</td><td>1073741824</td></tr>",
-	 "disc_cache_size:1073741824"},
-	{NSOPTION_sys_colour_Canvas,
-	 "<tr><th>sys_colour_Canvas</th><td>colour</td><td>default</td><td><span style=\"font-family:Monospace;\">#F1F1F1</span> <span style=\"background-color: #f1f1f1; border: 1px solid #000000; display: inline-block; width: 1em; height: 1em;\"></span></td></tr>",
-	 "sys_colour_Canvas:f1f1f1"},
+    {NSOPTION_http_proxy, "<tr><th>http_proxy</th><td>boolean</td><td>default</td><td>false</td></tr>", "http_proxy:0"},
+    {NSOPTION_enable_javascript, "<tr><th>enable_javascript</th><td>boolean</td><td>default</td><td>true</td></tr>",
+        "enable_javascript:1"},
+    {NSOPTION_http_proxy_port, "<tr><th>http_proxy_port</th><td>integer</td><td>default</td><td>8080</td></tr>",
+        "http_proxy_port:8080"},
+    {NSOPTION_http_proxy_host,
+        "<tr><th>http_proxy_host</th><td>string</td><td>default</td><td><span class=\"null-content\">NULL</span></td></tr>",
+        "http_proxy_host:"},
+    {NSOPTION_cookie_file,
+        "<tr><th>cookie_file</th><td>string</td><td>user</td><td>/home/vince/.netsurf/Cookies</td></tr>",
+        "cookie_file:/home/vince/.netsurf/Cookies"},
+    {NSOPTION_disc_cache_size,
+        "<tr><th>disc_cache_size</th><td>unsigned integer</td><td>default</td><td>1073741824</td></tr>",
+        "disc_cache_size:1073741824"},
+    {NSOPTION_sys_colour_Canvas,
+        "<tr><th>sys_colour_Canvas</th><td>colour</td><td>default</td><td><span style=\"font-family:Monospace;\">#F1F1F1</span> <span style=\"background-color: #f1f1f1; border: 1px solid #000000; display: inline-block; width: 1em; height: 1em;\"></span></td></tr>",
+        "sys_colour_Canvas:f1f1f1"},
 };
 
 /**
@@ -296,17 +286,14 @@ struct format_test_vec_s format_test_vec[] = {
  */
 START_TEST(nsoption_format_html_test)
 {
-	int ret;
-	char buffer[1024];
-	struct format_test_vec_s *tst = &format_test_vec[_i];
+    int ret;
+    char buffer[1024];
+    struct format_test_vec_s *tst = &format_test_vec[_i];
 
-	ret = nsoption_snoptionf(
-		buffer,
-		sizeof buffer,
-		tst->opt_idx,
-		"<tr><th>%k</th><td>%t</td><td>%p</td><td>%V</td></tr>");
-	ck_assert_int_gt(ret, 0);
-	ck_assert_str_eq(buffer, tst->res_html);
+    ret = nsoption_snoptionf(
+        buffer, sizeof buffer, tst->opt_idx, "<tr><th>%k</th><td>%t</td><td>%p</td><td>%V</td></tr>");
+    ck_assert_int_gt(ret, 0);
+    ck_assert_str_eq(buffer, tst->res_html);
 }
 END_TEST
 
@@ -315,13 +302,13 @@ END_TEST
  */
 START_TEST(nsoption_format_text_test)
 {
-	int ret;
-	char buffer[1024];
-	struct format_test_vec_s *tst = &format_test_vec[_i];
+    int ret;
+    char buffer[1024];
+    struct format_test_vec_s *tst = &format_test_vec[_i];
 
-	ret = nsoption_snoptionf(buffer, sizeof buffer, tst->opt_idx, "%k:%v");
-	ck_assert_int_gt(ret, 0);
-	ck_assert_str_eq(buffer, tst->res_text);
+    ret = nsoption_snoptionf(buffer, sizeof buffer, tst->opt_idx, "%k:%v");
+    ck_assert_int_gt(ret, 0);
+    ck_assert_str_eq(buffer, tst->res_text);
 }
 END_TEST
 
@@ -329,21 +316,17 @@ END_TEST
 
 static TCase *nsoption_format_case_create(void)
 {
-	TCase *tc;
-	tc = tcase_create("Formatted output");
+    TCase *tc;
+    tc = tcase_create("Formatted output");
 
-	/* ensure options are initialised and finalised for every test */
-	tcase_add_unchecked_fixture(tc,
-				    nsoption_format_create,
-				    nsoption_teardown);
+    /* ensure options are initialised and finalised for every test */
+    tcase_add_unchecked_fixture(tc, nsoption_format_create, nsoption_teardown);
 
-	tcase_add_loop_test(
-		tc, nsoption_format_html_test, 0, NELEMS(format_test_vec));
+    tcase_add_loop_test(tc, nsoption_format_html_test, 0, NELEMS(format_test_vec));
 
-	tcase_add_loop_test(
-		tc, nsoption_format_text_test, 0, NELEMS(format_test_vec));
+    tcase_add_loop_test(tc, nsoption_format_text_test, 0, NELEMS(format_test_vec));
 
-	return tc;
+    return tc;
 }
 
 
@@ -352,29 +335,29 @@ static TCase *nsoption_format_case_create(void)
  */
 START_TEST(nsoption_dump_test)
 {
-	nserror res;
-	char *outnam;
-	FILE *fp;
+    nserror res;
+    char *outnam;
+    FILE *fp;
 
-	res = nsoption_read(test_choices_path, NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    res = nsoption_read(test_choices_path, NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 
-	outnam = testnam(NULL);
+    outnam = testnam(NULL);
 
-	fp = fopen(outnam, "w");
-	res = nsoption_dump(fp, NULL);
-	fclose(fp);
+    fp = fopen(outnam, "w");
+    res = nsoption_dump(fp, NULL);
+    fclose(fp);
 
-	ck_assert_int_eq(res, NSERROR_OK);
+    ck_assert_int_eq(res, NSERROR_OK);
 
-	int cmp_res = cmp(outnam, test_choices_all_path);
-	if (cmp_res != 0) {
-		fprintf(stderr, "Output file: %s\n", outnam);
-	}
-	ck_assert_int_eq(cmp_res, 0);
+    int cmp_res = cmp(outnam, test_choices_all_path);
+    if (cmp_res != 0) {
+        fprintf(stderr, "Output file: %s\n", outnam);
+    }
+    ck_assert_int_eq(cmp_res, 0);
 
-	/* unlink(outnam); */
-	fprintf(stderr, "Output file: %s\n", outnam);
+    /* unlink(outnam); */
+    fprintf(stderr, "Output file: %s\n", outnam);
 }
 END_TEST
 
@@ -383,20 +366,20 @@ END_TEST
  */
 START_TEST(nsoption_write_test)
 {
-	nserror res;
-	char *outnam;
+    nserror res;
+    char *outnam;
 
-	res = nsoption_read(test_choices_path, NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    res = nsoption_read(test_choices_path, NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 
-	outnam = testnam(NULL);
+    outnam = testnam(NULL);
 
-	res = nsoption_write(outnam, NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    res = nsoption_write(outnam, NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 
-	ck_assert_int_eq(cmp(outnam, test_choices_short_path), 0);
+    ck_assert_int_eq(cmp(outnam, test_choices_short_path), 0);
 
-	unlink(outnam);
+    unlink(outnam);
 }
 END_TEST
 
@@ -405,12 +388,12 @@ END_TEST
  */
 START_TEST(nsoption_read_test)
 {
-	nserror res;
-	res = nsoption_read(test_choices_path, NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    nserror res;
+    res = nsoption_read(test_choices_path, NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 
-	ck_assert(nsoption_charp(homepage_url) != NULL);
-	ck_assert_str_eq(nsoption_charp(homepage_url), "about:welcome");
+    ck_assert(nsoption_charp(homepage_url) != NULL);
+    ck_assert_str_eq(nsoption_charp(homepage_url), "about:welcome");
 }
 END_TEST
 
@@ -420,9 +403,9 @@ END_TEST
  */
 START_TEST(nsoption_read_missing_test)
 {
-	nserror res;
-	res = nsoption_read(test_choices_missing_path, NULL);
-	ck_assert_int_eq(res, NSERROR_NOT_FOUND);
+    nserror res;
+    res = nsoption_read(test_choices_missing_path, NULL);
+    ck_assert_int_eq(res, NSERROR_NOT_FOUND);
 }
 END_TEST
 
@@ -431,38 +414,38 @@ END_TEST
  */
 START_TEST(nsoption_commandline_test)
 {
-	nserror res;
-	int argc = 4;
-	char arg1[] = "nsoption";
-	char arg2[] = "--http_proxy_host=fooo";
-	char arg3[] = "--http_proxy_port";
-	char arg4[] = "not-option";
-	char *argv[] = {arg1, arg2, arg3, arg4, NULL};
+    nserror res;
+    int argc = 4;
+    char arg1[] = "nsoption";
+    char arg2[] = "--http_proxy_host=fooo";
+    char arg3[] = "--http_proxy_port";
+    char arg4[] = "not-option";
+    char *argv[] = {arg1, arg2, arg3, arg4, NULL};
 
-	/* commandline */
-	res = nsoption_commandline(&argc, &argv[0], NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    /* commandline */
+    res = nsoption_commandline(&argc, &argv[0], NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 
-	ck_assert(nsoption_charp(http_proxy_host) != NULL);
-	ck_assert_str_eq(nsoption_charp(http_proxy_host), "fooo");
+    ck_assert(nsoption_charp(http_proxy_host) != NULL);
+    ck_assert_str_eq(nsoption_charp(http_proxy_host), "fooo");
 }
 END_TEST
 
 static TCase *nsoption_case_create(void)
 {
-	TCase *tc;
-	tc = tcase_create("File operations");
+    TCase *tc;
+    tc = tcase_create("File operations");
 
-	/* ensure options are initialised and finalised for every test */
-	tcase_add_unchecked_fixture(tc, nsoption_create, nsoption_teardown);
+    /* ensure options are initialised and finalised for every test */
+    tcase_add_unchecked_fixture(tc, nsoption_create, nsoption_teardown);
 
-	tcase_add_test(tc, nsoption_commandline_test);
-	tcase_add_test(tc, nsoption_read_test);
-	tcase_add_test(tc, nsoption_read_missing_test);
-	tcase_add_test(tc, nsoption_write_test);
-	tcase_add_test(tc, nsoption_dump_test);
+    tcase_add_test(tc, nsoption_commandline_test);
+    tcase_add_test(tc, nsoption_read_test);
+    tcase_add_test(tc, nsoption_read_missing_test);
+    tcase_add_test(tc, nsoption_write_test);
+    tcase_add_test(tc, nsoption_dump_test);
 
-	return tc;
+    return tc;
 }
 
 
@@ -471,12 +454,12 @@ static TCase *nsoption_case_create(void)
  */
 START_TEST(nsoption_api_fini_no_init_test)
 {
-	fprintf(stderr, "[nsoption-test] nsoption_api_fini_no_init_test\n");
-	nserror res;
+    fprintf(stderr, "[nsoption-test] nsoption_api_fini_no_init_test\n");
+    nserror res;
 
-	/* attempt to finalise without init */
-	res = nsoption_finalise(NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
+    /* attempt to finalise without init */
+    res = nsoption_finalise(NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
 }
 END_TEST
 
@@ -485,12 +468,12 @@ END_TEST
  */
 START_TEST(nsoption_api_read_no_path_test)
 {
-	fprintf(stderr, "[nsoption-test] nsoption_api_read_no_path_test\n");
-	nserror res;
+    fprintf(stderr, "[nsoption-test] nsoption_api_read_no_path_test\n");
+    nserror res;
 
-	/* read with no path or init */
-	res = nsoption_read(NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
+    /* read with no path or init */
+    res = nsoption_read(NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
 }
 END_TEST
 
@@ -499,12 +482,12 @@ END_TEST
  */
 START_TEST(nsoption_api_read_no_init_test)
 {
-	fprintf(stderr, "[nsoption-test] nsoption_api_read_no_init_test\n");
-	nserror res;
+    fprintf(stderr, "[nsoption-test] nsoption_api_read_no_init_test\n");
+    nserror res;
 
-	/* read with path but no init */
-	res = nsoption_read(test_choices_path, NULL);
-	ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
+    /* read with path but no init */
+    res = nsoption_read(test_choices_path, NULL);
+    ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
 }
 END_TEST
 
@@ -513,12 +496,12 @@ END_TEST
  */
 START_TEST(nsoption_api_write_no_path_test)
 {
-	fprintf(stderr, "[nsoption-test] nsoption_api_write_no_path_test\n");
-	nserror res;
+    fprintf(stderr, "[nsoption-test] nsoption_api_write_no_path_test\n");
+    nserror res;
 
-	/* write with no path or init */
-	res = nsoption_write(NULL, NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
+    /* write with no path or init */
+    res = nsoption_write(NULL, NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
 }
 END_TEST
 
@@ -527,12 +510,12 @@ END_TEST
  */
 START_TEST(nsoption_api_write_no_init_test)
 {
-	fprintf(stderr, "[nsoption-test] nsoption_api_write_no_init_test\n");
-	nserror res;
+    fprintf(stderr, "[nsoption-test] nsoption_api_write_no_init_test\n");
+    nserror res;
 
-	/* write with path but no init */
-	res = nsoption_write(test_choices_path, NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
+    /* write with path but no init */
+    res = nsoption_write(test_choices_path, NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
 }
 END_TEST
 
@@ -541,12 +524,12 @@ END_TEST
  */
 START_TEST(nsoption_api_dump_no_path_test)
 {
-	fprintf(stderr, "[nsoption-test] nsoption_api_dump_no_path_test\n");
-	nserror res;
+    fprintf(stderr, "[nsoption-test] nsoption_api_dump_no_path_test\n");
+    nserror res;
 
-	/* write with no path or init */
-	res = nsoption_dump(NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
+    /* write with no path or init */
+    res = nsoption_dump(NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
 }
 END_TEST
 
@@ -555,18 +538,18 @@ END_TEST
  */
 START_TEST(nsoption_api_dump_no_init_test)
 {
-	fprintf(stderr, "[nsoption-test] nsoption_api_dump_no_init_test\n");
-	nserror res;
-	FILE *outf;
+    fprintf(stderr, "[nsoption-test] nsoption_api_dump_no_init_test\n");
+    nserror res;
+    FILE *outf;
 
-	outf = tmpfile();
-	ck_assert(outf != NULL);
+    outf = tmpfile();
+    ck_assert(outf != NULL);
 
-	/* write with path but no init */
-	res = nsoption_dump(outf, NULL);
-	ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
+    /* write with path but no init */
+    res = nsoption_dump(outf, NULL);
+    ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
 
-	fclose(outf);
+    fclose(outf);
 }
 END_TEST
 
@@ -575,21 +558,20 @@ END_TEST
  */
 START_TEST(nsoption_api_commandline_no_args_test)
 {
-	fprintf(stderr,
-		"[nsoption-test] nsoption_api_commandline_no_args_test\n");
-	nserror res;
-	int argc = 2;
-	char arg1[] = "nsoption";
-	char arg2[] = "--http_proxy_host=fooo";
-	char *argv[] = {arg1, arg2, NULL};
+    fprintf(stderr, "[nsoption-test] nsoption_api_commandline_no_args_test\n");
+    nserror res;
+    int argc = 2;
+    char arg1[] = "nsoption";
+    char arg2[] = "--http_proxy_host=fooo";
+    char *argv[] = {arg1, arg2, NULL};
 
-	/* commandline with no argument count or init */
-	res = nsoption_commandline(NULL, &argv[0], NULL);
-	ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
+    /* commandline with no argument count or init */
+    res = nsoption_commandline(NULL, &argv[0], NULL);
+    ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
 
-	/* commandline with no argument vector or init */
-	res = nsoption_commandline(&argc, NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
+    /* commandline with no argument vector or init */
+    res = nsoption_commandline(&argc, NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
 }
 END_TEST
 
@@ -598,17 +580,16 @@ END_TEST
  */
 START_TEST(nsoption_api_commandline_no_init_test)
 {
-	fprintf(stderr,
-		"[nsoption-test] nsoption_api_commandline_no_init_test\n");
-	nserror res;
-	int argc = 2;
-	char arg1[] = "nsoption";
-	char arg2[] = "--http_proxy_host=fooo";
-	char *argv[] = {arg1, arg2, NULL};
+    fprintf(stderr, "[nsoption-test] nsoption_api_commandline_no_init_test\n");
+    nserror res;
+    int argc = 2;
+    char arg1[] = "nsoption";
+    char arg2[] = "--http_proxy_host=fooo";
+    char *argv[] = {arg1, arg2, NULL};
 
-	/* write with path but no init */
-	res = nsoption_commandline(&argc, &argv[0], NULL);
-	ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
+    /* write with path but no init */
+    res = nsoption_commandline(&argc, &argv[0], NULL);
+    ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
 }
 END_TEST
 
@@ -618,16 +599,16 @@ END_TEST
  */
 START_TEST(nsoption_api_fini_twice_test)
 {
-	fprintf(stderr, "[nsoption-test] nsoption_api_fini_twice_test\n");
-	nserror res;
-	res = nsoption_init(NULL, NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    fprintf(stderr, "[nsoption-test] nsoption_api_fini_twice_test\n");
+    nserror res;
+    res = nsoption_init(NULL, NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 
-	res = nsoption_finalise(NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    res = nsoption_finalise(NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 
-	res = nsoption_finalise(NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
+    res = nsoption_finalise(NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_BAD_PARAMETER);
 }
 END_TEST
 
@@ -637,13 +618,13 @@ END_TEST
  */
 START_TEST(nsoption_api_init_def_test)
 {
-	fprintf(stderr, "[nsoption-test] nsoption_api_init_def_test\n");
-	nserror res;
-	res = nsoption_init(NULL, NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    fprintf(stderr, "[nsoption-test] nsoption_api_init_def_test\n");
+    nserror res;
+    res = nsoption_init(NULL, NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 
-	res = nsoption_finalise(NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_OK);
+    res = nsoption_finalise(NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_OK);
 }
 END_TEST
 
@@ -652,19 +633,19 @@ END_TEST
  */
 START_TEST(nsoption_api_init_param_test)
 {
-	fprintf(stderr, "[nsoption-test] nsoption_api_init_param_test\n");
-	nserror res;
-	res = nsoption_init(NULL, &nsoptions, &nsoptions_default);
-	ck_assert_int_eq(res, NSERROR_OK);
+    fprintf(stderr, "[nsoption-test] nsoption_api_init_param_test\n");
+    nserror res;
+    res = nsoption_init(NULL, &nsoptions, &nsoptions_default);
+    ck_assert_int_eq(res, NSERROR_OK);
 
-	res = nsoption_finalise(nsoptions, nsoptions_default);
-	ck_assert_int_eq(res, NSERROR_OK);
+    res = nsoption_finalise(nsoptions, nsoptions_default);
+    ck_assert_int_eq(res, NSERROR_OK);
 }
 END_TEST
 
 static nserror failing_init_cb(struct nsoption_s *defaults)
 {
-	return NSERROR_INIT_FAILED;
+    return NSERROR_INIT_FAILED;
 }
 
 /**
@@ -672,10 +653,10 @@ static nserror failing_init_cb(struct nsoption_s *defaults)
  */
 START_TEST(nsoption_api_init_failcb_test)
 {
-	fprintf(stderr, "[nsoption-test] nsoption_api_init_failcb_test\n");
-	nserror res;
-	res = nsoption_init(failing_init_cb, NULL, NULL);
-	ck_assert_int_eq(res, NSERROR_INIT_FAILED);
+    fprintf(stderr, "[nsoption-test] nsoption_api_init_failcb_test\n");
+    nserror res;
+    res = nsoption_init(failing_init_cb, NULL, NULL);
+    ck_assert_int_eq(res, NSERROR_INIT_FAILED);
 }
 END_TEST
 
@@ -684,10 +665,10 @@ END_TEST
  */
 START_TEST(nsoption_api_snoptionf_badfmt_test)
 {
-	fprintf(stderr, "[nsoption-test] nsoption_api_snoptionf_badfmt_test\n");
-	int ret;
-	ret = nsoption_snoptionf(NULL, 0, -1, NULL);
-	ck_assert_int_eq(ret, -1);
+    fprintf(stderr, "[nsoption-test] nsoption_api_snoptionf_badfmt_test\n");
+    int ret;
+    ret = nsoption_snoptionf(NULL, 0, -1, NULL);
+    ck_assert_int_eq(ret, -1);
 }
 END_TEST
 
@@ -696,11 +677,11 @@ END_TEST
  */
 START_TEST(nsoption_api_snoptionf_param_test)
 {
-	fprintf(stderr, "[nsoption-test] nsoption_api_snoptionf_param_test\n");
-	int ret;
+    fprintf(stderr, "[nsoption-test] nsoption_api_snoptionf_param_test\n");
+    int ret;
 
-	ret = nsoption_snoptionf(NULL, 0, NSOPTION_LISTEND, "");
-	ck_assert_int_eq(ret, -1);
+    ret = nsoption_snoptionf(NULL, 0, NSOPTION_LISTEND, "");
+    ck_assert_int_eq(ret, -1);
 }
 END_TEST
 
@@ -709,73 +690,72 @@ END_TEST
  */
 START_TEST(nsoption_api_snoptionf_no_init_test)
 {
-	fprintf(stderr,
-		"[nsoption-test] nsoption_api_snoptionf_no_init_test\n");
-	int ret;
-	ret = nsoption_snoptionf(NULL, 0, 0, "");
-	fprintf(stderr, "[nsoption-test] ret=%d\n", ret);
-	ck_assert_int_eq(ret, -1);
+    fprintf(stderr, "[nsoption-test] nsoption_api_snoptionf_no_init_test\n");
+    int ret;
+    ret = nsoption_snoptionf(NULL, 0, 0, "");
+    fprintf(stderr, "[nsoption-test] ret=%d\n", ret);
+    ck_assert_int_eq(ret, -1);
 }
 END_TEST
 
 
 static TCase *nsoption_api_case_create(void)
 {
-	TCase *tc;
-	tc = tcase_create("API checks");
+    TCase *tc;
+    tc = tcase_create("API checks");
 
-	tcase_add_test(tc, nsoption_api_fini_no_init_test);
-	tcase_add_test(tc, nsoption_api_read_no_path_test);
-	tcase_add_test(tc, nsoption_api_read_no_init_test);
-	tcase_add_test(tc, nsoption_api_write_no_path_test);
-	tcase_add_test(tc, nsoption_api_write_no_init_test);
-	tcase_add_test(tc, nsoption_api_dump_no_path_test);
-	tcase_add_test(tc, nsoption_api_dump_no_init_test);
-	tcase_add_test(tc, nsoption_api_commandline_no_args_test);
-	tcase_add_test(tc, nsoption_api_commandline_no_init_test);
-	tcase_add_test(tc, nsoption_api_init_def_test);
-	tcase_add_test(tc, nsoption_api_fini_twice_test);
-	tcase_add_test(tc, nsoption_api_init_param_test);
-	tcase_add_test(tc, nsoption_api_init_failcb_test);
-	tcase_add_test(tc, nsoption_api_snoptionf_no_init_test);
-	tcase_add_test(tc, nsoption_api_snoptionf_badfmt_test);
-	tcase_add_test(tc, nsoption_api_snoptionf_param_test);
+    tcase_add_test(tc, nsoption_api_fini_no_init_test);
+    tcase_add_test(tc, nsoption_api_read_no_path_test);
+    tcase_add_test(tc, nsoption_api_read_no_init_test);
+    tcase_add_test(tc, nsoption_api_write_no_path_test);
+    tcase_add_test(tc, nsoption_api_write_no_init_test);
+    tcase_add_test(tc, nsoption_api_dump_no_path_test);
+    tcase_add_test(tc, nsoption_api_dump_no_init_test);
+    tcase_add_test(tc, nsoption_api_commandline_no_args_test);
+    tcase_add_test(tc, nsoption_api_commandline_no_init_test);
+    tcase_add_test(tc, nsoption_api_init_def_test);
+    tcase_add_test(tc, nsoption_api_fini_twice_test);
+    tcase_add_test(tc, nsoption_api_init_param_test);
+    tcase_add_test(tc, nsoption_api_init_failcb_test);
+    tcase_add_test(tc, nsoption_api_snoptionf_no_init_test);
+    tcase_add_test(tc, nsoption_api_snoptionf_badfmt_test);
+    tcase_add_test(tc, nsoption_api_snoptionf_param_test);
 
-	return tc;
+    return tc;
 }
 
 
 static Suite *nsoption_suite_create(void)
 {
-	Suite *s;
-	s = suite_create("User options");
+    Suite *s;
+    s = suite_create("User options");
 
-	suite_add_tcase(s, nsoption_api_case_create());
-	suite_add_tcase(s, nsoption_case_create());
-	suite_add_tcase(s, nsoption_format_case_create());
-	suite_add_tcase(s, nsoption_session_case_create());
+    suite_add_tcase(s, nsoption_api_case_create());
+    suite_add_tcase(s, nsoption_case_create());
+    suite_add_tcase(s, nsoption_format_case_create());
+    suite_add_tcase(s, nsoption_session_case_create());
 
-	return s;
+    return s;
 }
 
 int main(int argc, char **argv)
 {
-	int number_failed;
-	SRunner *sr;
+    int number_failed;
+    SRunner *sr;
 
-	fprintf(stderr, "[nsoption-test] creating suite\n");
-	sr = srunner_create(nsoption_suite_create());
+    fprintf(stderr, "[nsoption-test] creating suite\n");
+    sr = srunner_create(nsoption_suite_create());
 
-	fprintf(stderr, "[nsoption-test] running all tests\n");
-	srunner_run_all(sr, CK_ENV);
+    fprintf(stderr, "[nsoption-test] running all tests\n");
+    srunner_run_all(sr, CK_ENV);
 
-	number_failed = srunner_ntests_failed(sr);
-	srunner_free(sr);
+    number_failed = srunner_ntests_failed(sr);
+    srunner_free(sr);
 
-	fprintf(stderr, "[lwc] Remaining lwc strings:\n");
-	unsigned lwc_count = 0;
-	lwc_iterate_strings(test_lwc_iterator, &lwc_count);
-	fprintf(stderr, "[lwc] Remaining lwc strings count: %u\n", lwc_count);
+    fprintf(stderr, "[lwc] Remaining lwc strings:\n");
+    unsigned lwc_count = 0;
+    lwc_iterate_strings(test_lwc_iterator, &lwc_count);
+    fprintf(stderr, "[lwc] Remaining lwc strings count: %u\n", lwc_count);
 
-	return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

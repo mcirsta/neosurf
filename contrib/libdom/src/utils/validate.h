@@ -15,8 +15,8 @@
 #ifndef dom_utils_valid_h_
 #define dom_utils_valid_h_
 
-#include <stdbool.h>
 #include <dom/core/string.h>
+#include <stdbool.h>
 
 bool _dom_validate_name(dom_string *name);
 bool _dom_validate_ncname(dom_string *name);

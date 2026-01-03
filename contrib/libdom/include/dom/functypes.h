@@ -8,21 +8,21 @@
 #ifndef dom_functypes_h_
 #define dom_functypes_h_
 
-#include <stddef.h>
 #include <inttypes.h>
+#include <stddef.h>
 
 /**
  * Severity levels for dom_msg function, based on syslog(3)
  */
 enum {
-	DOM_MSG_DEBUG,
-	DOM_MSG_INFO,
-	DOM_MSG_NOTICE,
-	DOM_MSG_WARNING,
-	DOM_MSG_ERROR,
-	DOM_MSG_CRITICAL,
-	DOM_MSG_ALERT,
-	DOM_MSG_EMERGENCY
+    DOM_MSG_DEBUG,
+    DOM_MSG_INFO,
+    DOM_MSG_NOTICE,
+    DOM_MSG_WARNING,
+    DOM_MSG_ERROR,
+    DOM_MSG_CRITICAL,
+    DOM_MSG_ALERT,
+    DOM_MSG_EMERGENCY
 };
 
 /**

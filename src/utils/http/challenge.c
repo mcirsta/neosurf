@@ -29,10 +29,10 @@
  * Representation of an HTTP challenge
  */
 struct http_challenge {
-	http__item base;
+    http__item base;
 
-	lwc_string *scheme; /**< Challenge scheme */
-	http_parameter *params; /**< Challenge parameters */
+    lwc_string *scheme; /**< Challenge scheme */
+    http_parameter *params; /**< Challenge parameters */
 };
 
 /**
@@ -42,11 +42,11 @@ struct http_challenge {
  */
 static void http_destroy_challenge(http__item *item)
 {
-	http_challenge *self = (http_challenge *)item;
+    http_challenge *self = (http_challenge *)item;
 
-	lwc_string_unref(self->scheme);
-	http_parameter_list_destroy(self->params);
-	free(self);
+    lwc_string_unref(self->scheme);
+    http_parameter_list_destroy(self->params);
+    free(self);
 }
 
 /**
@@ -62,81 +62,79 @@ static void http_destroy_challenge(http__item *item)
  */
 nserror http__parse_challenge(const char **input, http_challenge **challenge)
 {
-	const char *pos = *input;
-	http_challenge *result;
-	lwc_string *scheme;
-	http_parameter *first = NULL;
-	http_parameter *params = NULL;
-	nserror error;
+    const char *pos = *input;
+    http_challenge *result;
+    lwc_string *scheme;
+    http_parameter *first = NULL;
+    http_parameter *params = NULL;
+    nserror error;
 
-	/* challenge   = auth-scheme 1*SP 1#auth-param
-	 * auth-scheme = token
-	 * auth-param  = parameter
-	 */
+    /* challenge   = auth-scheme 1*SP 1#auth-param
+     * auth-scheme = token
+     * auth-param  = parameter
+     */
 
-	error = http__parse_token(&pos, &scheme);
-	if (error != NSERROR_OK)
-		return error;
+    error = http__parse_token(&pos, &scheme);
+    if (error != NSERROR_OK)
+        return error;
 
-	if (*pos != ' ' && *pos != '\t') {
-		lwc_string_unref(scheme);
-		return NSERROR_NOT_FOUND;
-	}
+    if (*pos != ' ' && *pos != '\t') {
+        lwc_string_unref(scheme);
+        return NSERROR_NOT_FOUND;
+    }
 
-	http__skip_LWS(&pos);
+    http__skip_LWS(&pos);
 
-	error = http__parse_parameter(&pos, (http__item **)&first);
-	if (error != NSERROR_OK) {
-		lwc_string_unref(scheme);
-		return error;
-	}
+    error = http__parse_parameter(&pos, (http__item **)&first);
+    if (error != NSERROR_OK) {
+        lwc_string_unref(scheme);
+        return error;
+    }
 
-	http__skip_LWS(&pos);
+    http__skip_LWS(&pos);
 
-	if (*pos == ',') {
-		error = http__item_list_parse(
-			&pos, http__parse_parameter, first, &params);
-		if (error != NSERROR_OK && error != NSERROR_NOT_FOUND) {
-			lwc_string_unref(scheme);
-			return error;
-		}
-	} else {
-		params = first;
-	}
+    if (*pos == ',') {
+        error = http__item_list_parse(&pos, http__parse_parameter, first, &params);
+        if (error != NSERROR_OK && error != NSERROR_NOT_FOUND) {
+            lwc_string_unref(scheme);
+            return error;
+        }
+    } else {
+        params = first;
+    }
 
-	result = malloc(sizeof(*result));
-	if (result == NULL) {
-		http_parameter_list_destroy(params);
-		lwc_string_unref(scheme);
-		return NSERROR_NOMEM;
-	}
+    result = malloc(sizeof(*result));
+    if (result == NULL) {
+        http_parameter_list_destroy(params);
+        lwc_string_unref(scheme);
+        return NSERROR_NOMEM;
+    }
 
-	HTTP__ITEM_INIT(result, NULL, http_destroy_challenge);
-	result->scheme = scheme;
-	result->params = params;
+    HTTP__ITEM_INIT(result, NULL, http_destroy_challenge);
+    result->scheme = scheme;
+    result->params = params;
 
-	*challenge = result;
-	*input = pos;
+    *challenge = result;
+    *input = pos;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /* See challenge.h for documentation */
-const http_challenge *http_challenge_list_iterate(const http_challenge *cur,
-						  lwc_string **scheme,
-						  http_parameter **parameters)
+const http_challenge *
+http_challenge_list_iterate(const http_challenge *cur, lwc_string **scheme, http_parameter **parameters)
 {
-	if (cur == NULL)
-		return NULL;
+    if (cur == NULL)
+        return NULL;
 
-	*scheme = lwc_string_ref(cur->scheme);
-	*parameters = cur->params;
+    *scheme = lwc_string_ref(cur->scheme);
+    *parameters = cur->params;
 
-	return (http_challenge *)cur->base.next;
+    return (http_challenge *)cur->base.next;
 }
 
 /* See challenge.h for documentation */
 void http_challenge_list_destroy(http_challenge *list)
 {
-	http__item_list_destroy(list);
+    http__item_list_destroy(list);
 }

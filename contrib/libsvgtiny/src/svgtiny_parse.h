@@ -10,17 +10,17 @@
 
 static inline bool svg_is_whitespace(char c)
 {
-	return (c == 0x20 || c == 0x09 || c == 0x0A || c == 0x0D);
+    return (c == 0x20 || c == 0x09 || c == 0x0A || c == 0x0D);
 }
 
 static inline void advance_whitespace(const char **cursor, const char *textend)
 {
-	while ((*cursor) < textend) {
-		if (!svg_is_whitespace(**cursor)) {
-			break;
-		}
-		(*cursor)++;
-	}
+    while ((*cursor) < textend) {
+        if (!svg_is_whitespace(**cursor)) {
+            break;
+        }
+        (*cursor)++;
+    }
 }
 
 
@@ -30,14 +30,13 @@ static inline void advance_whitespace(const char **cursor, const char *textend)
  * \param cursor current cursor
  * \param textend end of buffer
  */
-static inline void
-advance_comma_whitespace(const char **cursor, const char *textend)
+static inline void advance_comma_whitespace(const char **cursor, const char *textend)
 {
-	advance_whitespace(cursor, textend);
-	if (((*cursor) < textend) && (**cursor == 0x2C /* , */)) {
-		(*cursor)++;
-		advance_whitespace(cursor, textend);
-	}
+    advance_whitespace(cursor, textend);
+    if (((*cursor) < textend) && (**cursor == 0x2C /* , */)) {
+        (*cursor)++;
+        advance_whitespace(cursor, textend);
+    }
 }
 
 #endif

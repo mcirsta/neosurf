@@ -18,27 +18,26 @@
  * \param error  The ParserUtils error to convert
  * \return The corresponding Hubbub error
  */
-static inline hubbub_error
-hubbub_error_from_parserutils_error(parserutils_error error)
+static inline hubbub_error hubbub_error_from_parserutils_error(parserutils_error error)
 {
-	if (error == PARSERUTILS_OK)
-		return HUBBUB_OK;
-	else if (error == PARSERUTILS_NOMEM)
-		return HUBBUB_NOMEM;
-	else if (error == PARSERUTILS_BADPARM)
-		return HUBBUB_BADPARM;
-	else if (error == PARSERUTILS_INVALID)
-		return HUBBUB_INVALID;
-	else if (error == PARSERUTILS_FILENOTFOUND)
-		return HUBBUB_FILENOTFOUND;
-	else if (error == PARSERUTILS_NEEDDATA)
-		return HUBBUB_NEEDDATA;
-	else if (error == PARSERUTILS_BADENCODING)
-		return HUBBUB_BADENCODING;
-	else if (error == PARSERUTILS_EOF)
-		return HUBBUB_OK;
+    if (error == PARSERUTILS_OK)
+        return HUBBUB_OK;
+    else if (error == PARSERUTILS_NOMEM)
+        return HUBBUB_NOMEM;
+    else if (error == PARSERUTILS_BADPARM)
+        return HUBBUB_BADPARM;
+    else if (error == PARSERUTILS_INVALID)
+        return HUBBUB_INVALID;
+    else if (error == PARSERUTILS_FILENOTFOUND)
+        return HUBBUB_FILENOTFOUND;
+    else if (error == PARSERUTILS_NEEDDATA)
+        return HUBBUB_NEEDDATA;
+    else if (error == PARSERUTILS_BADENCODING)
+        return HUBBUB_BADENCODING;
+    else if (error == PARSERUTILS_EOF)
+        return HUBBUB_OK;
 
-	return HUBBUB_UNKNOWN;
+    return HUBBUB_UNKNOWN;
 }
 
 #endif

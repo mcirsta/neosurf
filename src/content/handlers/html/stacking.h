@@ -70,19 +70,19 @@ int stacking_compare_z_index(const void *a, const void *b);
  * Entry for a deferred positioned element in a stacking context.
  */
 struct zindex_entry {
-	struct box *box;
-	int32_t z_index;
-	int x_parent;
-	int y_parent;
+    struct box *box;
+    int32_t z_index;
+    int x_parent;
+    int y_parent;
 };
 
 /**
  * Dynamic collection of deferred positioned elements for stacking context.
  */
 struct stacking_context {
-	struct zindex_entry *entries;
-	size_t count;
-	size_t capacity;
+    struct zindex_entry *entries;
+    size_t count;
+    size_t capacity;
 };
 
 /**
@@ -102,11 +102,7 @@ void stacking_context_init(struct stacking_context *ctx);
  * \param y_parent  Parent Y offset
  * \return true on success, false on allocation failure
  */
-bool stacking_context_add(struct stacking_context *ctx,
-			  struct box *box,
-			  int32_t z_index,
-			  int x_parent,
-			  int y_parent);
+bool stacking_context_add(struct stacking_context *ctx, struct box *box, int32_t z_index, int x_parent, int y_parent);
 
 /**
  * Sort the stacking context entries by z-index (stable sort).
@@ -137,10 +133,7 @@ void stacking_context_fini(struct stacking_context *ctx);
  * \param y_parent      Y offset of parent
  * \return true on success, false on allocation failure
  */
-bool stacking_context_collect_subtree(struct stacking_context *negative_ctx,
-				      struct stacking_context *positive_ctx,
-				      struct box *box,
-				      int x_parent,
-				      int y_parent);
+bool stacking_context_collect_subtree(struct stacking_context *negative_ctx, struct stacking_context *positive_ctx,
+    struct box *box, int x_parent, int y_parent);
 
 #endif /* NEOSURF_HTML_STACKING_H */

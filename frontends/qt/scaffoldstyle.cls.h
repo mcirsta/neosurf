@@ -23,19 +23,18 @@
  * Scaffold style class for QT frontend.
  */
 
-#include <QWidget>
 #include <QProxyStyle>
+#include <QWidget>
 
 /**
  * Class for netsurf scaffold style
  */
 class ScaffoldStyle : public QProxyStyle
 {
-	Q_OBJECT
-      public:
-	explicit ScaffoldStyle(QObject *parent = nullptr);
+    Q_OBJECT
+public:
+    explicit ScaffoldStyle(QObject *parent = nullptr);
 
-	virtual QRect subElementRect(SubElement subElement,
-				     const QStyleOption *option,
-				     const QWidget *widget) const override;
+    virtual QRect
+    subElementRect(SubElement subElement, const QStyleOption *option, const QWidget *widget) const override;
 };

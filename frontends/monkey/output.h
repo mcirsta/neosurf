@@ -20,14 +20,14 @@
 #define NS_MONKEY_OUTPUT_H
 
 enum monkey_output_type {
-	MOUT_DIE,
-	MOUT_ERROR,
-	MOUT_WARNING,
-	MOUT_GENERIC,
-	MOUT_WINDOW,
-	MOUT_LOGIN,
-	MOUT_DOWNLOAD,
-	MOUT_PLOT,
+    MOUT_DIE,
+    MOUT_ERROR,
+    MOUT_WARNING,
+    MOUT_GENERIC,
+    MOUT_WINDOW,
+    MOUT_LOGIN,
+    MOUT_DOWNLOAD,
+    MOUT_PLOT,
 };
 
 int moutf(enum monkey_output_type mout_type, const char *fmt, ...);

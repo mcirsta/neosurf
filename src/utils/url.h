@@ -39,10 +39,7 @@
  *                            Returned string is '\0' terminated.
  * \return  NSERROR_OK on success
  */
-nserror url_escape(const char *unescaped,
-		   bool sptoplus,
-		   const char *escexceptions,
-		   char **result);
+nserror url_escape(const char *unescaped, bool sptoplus, const char *escexceptions, char **result);
 
 
 /**
@@ -57,9 +54,6 @@ nserror url_escape(const char *unescaped,
  *                         Returned string has trailing '\0'.
  * \return NSERROR_OK on success
  */
-nserror url_unescape(const char *str,
-		     size_t length,
-		     size_t *length_out,
-		     char **result_out);
+nserror url_unescape(const char *str, size_t length, size_t *length_out, char **result_out);
 
 #endif

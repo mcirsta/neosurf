@@ -37,10 +37,10 @@ extern char *G_config_path;
 
 /* bounding box */
 typedef struct bbox_s {
-	int x0;
-	int y0;
-	int x1;
-	int y1;
+    int x0;
+    int y0;
+    int x1;
+    int y1;
 } bbox_t;
 
 /**

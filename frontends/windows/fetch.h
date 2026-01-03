@@ -35,8 +35,6 @@ extern struct gui_fetch_table *win32_fetch_table;
  * \return NSERROR_OK and the data and length values updated
  *         else appropriate error code.
  */
-nserror nsw32_get_resource_data(const char *path,
-				const uint8_t **data_out,
-				size_t *data_len_out);
+nserror nsw32_get_resource_data(const char *path, const uint8_t **data_out, size_t *data_len_out);
 
 #endif

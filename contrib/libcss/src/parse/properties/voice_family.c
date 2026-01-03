@@ -22,20 +22,11 @@
  */
 static bool voice_family_reserved(css_language *c, const css_token *ident)
 {
-	bool match;
+    bool match;
 
-	return (lwc_string_caseless_isequal(ident->idata,
-					    c->strings[MALE],
-					    &match) == lwc_error_ok &&
-		match) ||
-	       (lwc_string_caseless_isequal(ident->idata,
-					    c->strings[FEMALE],
-					    &match) == lwc_error_ok &&
-		match) ||
-	       (lwc_string_caseless_isequal(ident->idata,
-					    c->strings[CHILD],
-					    &match) == lwc_error_ok &&
-		match);
+    return (lwc_string_caseless_isequal(ident->idata, c->strings[MALE], &match) == lwc_error_ok && match) ||
+        (lwc_string_caseless_isequal(ident->idata, c->strings[FEMALE], &match) == lwc_error_ok && match) ||
+        (lwc_string_caseless_isequal(ident->idata, c->strings[CHILD], &match) == lwc_error_ok && match);
 }
 
 /**
@@ -45,35 +36,25 @@ static bool voice_family_reserved(css_language *c, const css_token *ident)
  * \param token	 Token to consider
  * \return Bytecode value
  */
-static css_code_t
-voice_family_value(css_language *c, const css_token *token, bool first)
+static css_code_t voice_family_value(css_language *c, const css_token *token, bool first)
 {
-	uint16_t value;
-	bool match;
+    uint16_t value;
+    bool match;
 
-	if (token->type == CSS_TOKEN_IDENT) {
-		if ((lwc_string_caseless_isequal(token->idata,
-						 c->strings[MALE],
-						 &match) == lwc_error_ok &&
-		     match))
-			value = VOICE_FAMILY_MALE;
-		else if ((lwc_string_caseless_isequal(token->idata,
-						      c->strings[FEMALE],
-						      &match) == lwc_error_ok &&
-			  match))
-			value = VOICE_FAMILY_FEMALE;
-		else if ((lwc_string_caseless_isequal(token->idata,
-						      c->strings[CHILD],
-						      &match) == lwc_error_ok &&
-			  match))
-			value = VOICE_FAMILY_CHILD;
-		else
-			value = VOICE_FAMILY_IDENT_LIST;
-	} else {
-		value = VOICE_FAMILY_STRING;
-	}
+    if (token->type == CSS_TOKEN_IDENT) {
+        if ((lwc_string_caseless_isequal(token->idata, c->strings[MALE], &match) == lwc_error_ok && match))
+            value = VOICE_FAMILY_MALE;
+        else if ((lwc_string_caseless_isequal(token->idata, c->strings[FEMALE], &match) == lwc_error_ok && match))
+            value = VOICE_FAMILY_FEMALE;
+        else if ((lwc_string_caseless_isequal(token->idata, c->strings[CHILD], &match) == lwc_error_ok && match))
+            value = VOICE_FAMILY_CHILD;
+        else
+            value = VOICE_FAMILY_IDENT_LIST;
+    } else {
+        value = VOICE_FAMILY_STRING;
+    }
 
-	return first ? buildOPV(CSS_PROP_VOICE_FAMILY, 0, value) : value;
+    return first ? buildOPV(CSS_PROP_VOICE_FAMILY, 0, value) : value;
 }
 
 /**
@@ -90,57 +71,46 @@ voice_family_value(css_language *c, const css_token *token, bool first)
  * Post condition: \a *ctx is updated with the next token to process
  *		 If the input is invalid, then \a *ctx remains unchanged.
  */
-css_error css__parse_voice_family(css_language *c,
-				  const parserutils_vector *vector,
-				  int32_t *ctx,
-				  css_style *result)
+css_error css__parse_voice_family(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result)
 {
-	int32_t orig_ctx = *ctx;
-	css_error error;
-	const css_token *token;
-	enum flag_value flag_value;
+    int32_t orig_ctx = *ctx;
+    css_error error;
+    const css_token *token;
+    enum flag_value flag_value;
 
-	/* [ IDENT+ | STRING ] [ ',' [ IDENT+ | STRING ] ]* | IDENT(inherit)
-	 *
-	 * In the case of IDENT+, any whitespace between tokens is collapsed to
-	 * a single space
-	 */
+    /* [ IDENT+ | STRING ] [ ',' [ IDENT+ | STRING ] ]* | IDENT(inherit)
+     *
+     * In the case of IDENT+, any whitespace between tokens is collapsed to
+     * a single space
+     */
 
-	token = parserutils_vector_iterate(vector, ctx);
-	if (token == NULL || (token->type != CSS_TOKEN_IDENT &&
-			      token->type != CSS_TOKEN_STRING)) {
-		*ctx = orig_ctx;
-		return CSS_INVALID;
-	}
+    token = parserutils_vector_iterate(vector, ctx);
+    if (token == NULL || (token->type != CSS_TOKEN_IDENT && token->type != CSS_TOKEN_STRING)) {
+        *ctx = orig_ctx;
+        return CSS_INVALID;
+    }
 
-	flag_value = get_css_flag_value(c, token);
+    flag_value = get_css_flag_value(c, token);
 
-	if (flag_value != FLAG_VALUE__NONE) {
-		error = css_stylesheet_style_flag_value(result,
-							flag_value,
-							CSS_PROP_VOICE_FAMILY);
+    if (flag_value != FLAG_VALUE__NONE) {
+        error = css_stylesheet_style_flag_value(result, flag_value, CSS_PROP_VOICE_FAMILY);
 
-	} else {
-		*ctx = orig_ctx;
+    } else {
+        *ctx = orig_ctx;
 
-		error = css__comma_list_to_style(c,
-						 vector,
-						 ctx,
-						 voice_family_reserved,
-						 voice_family_value,
-						 result);
-		if (error != CSS_OK) {
-			*ctx = orig_ctx;
-			return error;
-		}
+        error = css__comma_list_to_style(c, vector, ctx, voice_family_reserved, voice_family_value, result);
+        if (error != CSS_OK) {
+            *ctx = orig_ctx;
+            return error;
+        }
 
-		error = css__stylesheet_style_append(result, VOICE_FAMILY_END);
-	}
+        error = css__stylesheet_style_append(result, VOICE_FAMILY_END);
+    }
 
-	if (error != CSS_OK) {
-		*ctx = orig_ctx;
-		return error;
-	}
+    if (error != CSS_OK) {
+        *ctx = orig_ctx;
+        return error;
+    }
 
-	return CSS_OK;
+    return CSS_OK;
 }

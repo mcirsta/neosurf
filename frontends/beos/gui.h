@@ -18,11 +18,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdbool.h>
 #include <Application.h>
+#include <BeBuild.h>
 #include <FilePanel.h>
 #include <Window.h>
-#include <BeBuild.h>
+#include <stdbool.h>
 
 #ifndef B_BEOS_VERSION_DANO
 #define B_UI_SETTINGS_CHANGED '_UIC'
@@ -35,14 +35,8 @@ extern bool nsbeos_done;
 extern bool replicated;
 int gui_init_replicant(int argc, char **argv);
 
-extern "C" nserror gui_401login_open(struct nsurl *url,
-				     const char *realm,
-				     const char *username,
-				     const char *password,
-				     nserror (*cb)(const char *username,
-						   const char *password,
-						   void *pw),
-				     void *cbpw);
+extern "C" nserror gui_401login_open(struct nsurl *url, const char *realm, const char *username, const char *password,
+    nserror (*cb)(const char *username, const char *password, void *pw), void *cbpw);
 
 extern "C" void nsbeos_gui_poll(void);
 
@@ -50,16 +44,16 @@ extern char *options_file_location;
 
 class NSBrowserApplication : public BApplication
 {
-      public:
-	NSBrowserApplication();
-	virtual ~NSBrowserApplication();
+public:
+    NSBrowserApplication();
+    virtual ~NSBrowserApplication();
 
-	virtual void MessageReceived(BMessage *message);
-	virtual void RefsReceived(BMessage *message);
-	virtual void ArgvReceived(int32 argc, char **argv);
+    virtual void MessageReceived(BMessage *message);
+    virtual void RefsReceived(BMessage *message);
+    virtual void ArgvReceived(int32 argc, char **argv);
 
-	virtual void AboutRequested();
-	virtual bool QuitRequested();
+    virtual void AboutRequested();
+    virtual bool QuitRequested();
 };
 
 extern BWindow *wndAbout;
@@ -68,12 +62,8 @@ extern BWindow *wndTooltip;
 
 extern BFilePanel *wndOpenFile;
 
-void nsbeos_pipe_message(BMessage *message,
-			 BView *_this,
-			 struct gui_window *gui);
-void nsbeos_pipe_message_top(BMessage *message,
-			     BWindow *_this,
-			     struct beos_scaffolding *scaffold);
+void nsbeos_pipe_message(BMessage *message, BView *_this, struct gui_window *gui);
+void nsbeos_pipe_message_top(BMessage *message, BWindow *_this, struct beos_scaffolding *scaffold);
 
 void nsbeos_gui_view_source(struct hlcache_handle *content);
 image_id nsbeos_find_app_path(char *path);

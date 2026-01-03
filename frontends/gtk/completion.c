@@ -23,167 +23,144 @@
 
 #include <stdlib.h>
 
+#include <neosurf/browser_window.h>
+#include <neosurf/desktop/searchweb.h>
+#include <neosurf/url_db.h>
 #include <neosurf/utils/log.h>
 #include <neosurf/utils/messages.h>
 #include <neosurf/utils/nsoption.h>
 #include <neosurf/utils/nsurl.h>
-#include <neosurf/url_db.h>
-#include <neosurf/browser_window.h>
-#include <neosurf/desktop/searchweb.h>
 
 #include "gtk/compat.h"
-#include "gtk/warn.h"
+#include "gtk/completion.h"
 #include "gtk/scaffolding.h"
 #include "gtk/toolbar_items.h"
+#include "gtk/warn.h"
 #include "gtk/window.h"
-#include "gtk/completion.h"
 
 GtkListStore *nsgtk_completion_list;
 
 struct nsgtk_completion_ctx {
-	/**
-	 * callback to obtain a browser window for navigation
-	 */
-	struct browser_window *(*get_bw)(void *ctx);
+    /**
+     * callback to obtain a browser window for navigation
+     */
+    struct browser_window *(*get_bw)(void *ctx);
 
-	/**
-	 * context passed to get_bw function
-	 */
-	void *get_bw_ctx;
+    /**
+     * context passed to get_bw function
+     */
+    void *get_bw_ctx;
 };
 
 /**
  * completion row matcher
  */
-static gboolean nsgtk_completion_match(GtkEntryCompletion *completion,
-				       const gchar *key,
-				       GtkTreeIter *iter,
-				       gpointer user_data)
+static gboolean
+nsgtk_completion_match(GtkEntryCompletion *completion, const gchar *key, GtkTreeIter *iter, gpointer user_data)
 {
-	/* the completion list is modified to only contain valid
-	 * entries so this simply returns TRUE to indicate all rows
-	 * are in the list should be shown.
-	 */
-	return TRUE;
+    /* the completion list is modified to only contain valid
+     * entries so this simply returns TRUE to indicate all rows
+     * are in the list should be shown.
+     */
+    return TRUE;
 }
 
 
 /**
  * callback for each entry to add to completion list
  */
-static bool
-nsgtk_completion_udb_callback(nsurl *url, const struct url_data *data)
+static bool nsgtk_completion_udb_callback(nsurl *url, const struct url_data *data)
 {
-	GtkTreeIter iter;
+    GtkTreeIter iter;
 
-	if (data->visits != 0) {
-		gtk_list_store_append(nsgtk_completion_list, &iter);
-		gtk_list_store_set(
-			nsgtk_completion_list, &iter, 0, nsurl_access(url), -1);
-	}
-	return true;
+    if (data->visits != 0) {
+        gtk_list_store_append(nsgtk_completion_list, &iter);
+        gtk_list_store_set(nsgtk_completion_list, &iter, 0, nsurl_access(url), -1);
+    }
+    return true;
 }
 
 /**
  * event handler for when a completion suggestion is selected.
  */
-static gboolean nsgtk_completion_match_select(GtkEntryCompletion *widget,
-					      GtkTreeModel *model,
-					      GtkTreeIter *iter,
-					      gpointer data)
+static gboolean
+nsgtk_completion_match_select(GtkEntryCompletion *widget, GtkTreeModel *model, GtkTreeIter *iter, gpointer data)
 {
-	struct nsgtk_completion_ctx *cb_ctx;
-	GValue value = G_VALUE_INIT;
-	struct browser_window *bw;
-	nserror ret;
-	nsurl *url;
+    struct nsgtk_completion_ctx *cb_ctx;
+    GValue value = G_VALUE_INIT;
+    struct browser_window *bw;
+    nserror ret;
+    nsurl *url;
 
-	cb_ctx = data;
-	bw = cb_ctx->get_bw(cb_ctx->get_bw_ctx);
+    cb_ctx = data;
+    bw = cb_ctx->get_bw(cb_ctx->get_bw_ctx);
 
-	gtk_tree_model_get_value(model, iter, 0, &value);
+    gtk_tree_model_get_value(model, iter, 0, &value);
 
-	ret = search_web_omni(g_value_get_string(&value),
-			      SEARCH_WEB_OMNI_NONE,
-			      &url);
+    ret = search_web_omni(g_value_get_string(&value), SEARCH_WEB_OMNI_NONE, &url);
 
-	g_value_unset(&value);
+    g_value_unset(&value);
 
-	if (ret == NSERROR_OK) {
-		ret = browser_window_navigate(
-			bw, url, NULL, BW_NAVIGATE_HISTORY, NULL, NULL, NULL);
-		nsurl_unref(url);
-	}
-	if (ret != NSERROR_OK) {
-		nsgtk_warning(messages_get_errorcode(ret), 0);
-	}
+    if (ret == NSERROR_OK) {
+        ret = browser_window_navigate(bw, url, NULL, BW_NAVIGATE_HISTORY, NULL, NULL, NULL);
+        nsurl_unref(url);
+    }
+    if (ret != NSERROR_OK) {
+        nsgtk_warning(messages_get_errorcode(ret), 0);
+    }
 
-	return TRUE;
+    return TRUE;
 }
 
 /* exported interface documented in completion.h */
 void nsgtk_completion_init(void)
 {
-	nsgtk_completion_list = gtk_list_store_new(1, G_TYPE_STRING);
+    nsgtk_completion_list = gtk_list_store_new(1, G_TYPE_STRING);
 }
 
 /* exported interface documented in completion.h */
 gboolean nsgtk_completion_update(GtkEntry *entry)
 {
-	gtk_list_store_clear(nsgtk_completion_list);
+    gtk_list_store_clear(nsgtk_completion_list);
 
-	if (nsoption_bool(url_suggestion) == true) {
-		urldb_iterate_partial(gtk_entry_get_text(entry),
-				      nsgtk_completion_udb_callback);
-	}
+    if (nsoption_bool(url_suggestion) == true) {
+        urldb_iterate_partial(gtk_entry_get_text(entry), nsgtk_completion_udb_callback);
+    }
 
-	return TRUE;
+    return TRUE;
 }
 
 /* exported interface documented in completion.h */
-nserror
-nsgtk_completion_connect_signals(GtkEntry *entry,
-				 struct browser_window *(*get_bw)(void *ctx),
-				 void *get_bw_ctx)
+nserror nsgtk_completion_connect_signals(GtkEntry *entry, struct browser_window *(*get_bw)(void *ctx), void *get_bw_ctx)
 {
-	GtkEntryCompletion *completion;
-	struct nsgtk_completion_ctx *cb_ctx;
+    GtkEntryCompletion *completion;
+    struct nsgtk_completion_ctx *cb_ctx;
 
-	cb_ctx = calloc(1, sizeof(struct nsgtk_completion_ctx));
-	if (cb_ctx == NULL) {
-		return NSERROR_NOMEM;
-	}
+    cb_ctx = calloc(1, sizeof(struct nsgtk_completion_ctx));
+    if (cb_ctx == NULL) {
+        return NSERROR_NOMEM;
+    }
 
-	cb_ctx->get_bw = get_bw;
-	cb_ctx->get_bw_ctx = get_bw_ctx;
+    cb_ctx->get_bw = get_bw;
+    cb_ctx->get_bw_ctx = get_bw_ctx;
 
-	completion = gtk_entry_get_completion(entry);
+    completion = gtk_entry_get_completion(entry);
 
-	gtk_entry_completion_set_match_func(
-		completion, nsgtk_completion_match, NULL, NULL);
+    gtk_entry_completion_set_match_func(completion, nsgtk_completion_match, NULL, NULL);
 
-	gtk_entry_completion_set_model(completion,
-				       GTK_TREE_MODEL(nsgtk_completion_list));
+    gtk_entry_completion_set_model(completion, GTK_TREE_MODEL(nsgtk_completion_list));
 
-	gtk_entry_completion_set_text_column(completion, 0);
+    gtk_entry_completion_set_text_column(completion, 0);
 
-	gtk_entry_completion_set_minimum_key_length(completion, 1);
+    gtk_entry_completion_set_minimum_key_length(completion, 1);
 
-	/* enable popup for completion */
-	gtk_entry_completion_set_popup_completion(completion, TRUE);
+    /* enable popup for completion */
+    gtk_entry_completion_set_popup_completion(completion, TRUE);
 
-	/* when selected callback */
-	g_signal_connect(G_OBJECT(completion),
-			 "match-selected",
-			 G_CALLBACK(nsgtk_completion_match_select),
-			 cb_ctx);
+    /* when selected callback */
+    g_signal_connect(G_OBJECT(completion), "match-selected", G_CALLBACK(nsgtk_completion_match_select), cb_ctx);
 
-	g_object_set(G_OBJECT(completion),
-		     "popup-set-width",
-		     TRUE,
-		     "popup-single-match",
-		     TRUE,
-		     NULL);
+    g_object_set(G_OBJECT(completion), "popup-set-width", TRUE, "popup-single-match", TRUE, NULL);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }

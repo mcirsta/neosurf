@@ -5,73 +5,65 @@
  * Copyright 2009 John-Mark Bell <jmb@netsurf-browser.org>
  */
 
+#include "utils/utils.h"
 #include "bytecode/bytecode.h"
 #include "bytecode/opcodes.h"
-#include "select/propset.h"
 #include "select/propget.h"
-#include "utils/utils.h"
+#include "select/propset.h"
 
-#include "select/properties/properties.h"
 #include "select/properties/helpers.h"
+#include "select/properties/properties.h"
 
-css_error
-css__cascade_float(uint32_t opv, css_style *style, css_select_state *state)
+css_error css__cascade_float(uint32_t opv, css_style *style, css_select_state *state)
 {
-	uint16_t value = CSS_FLOAT_INHERIT;
+    uint16_t value = CSS_FLOAT_INHERIT;
 
-	UNUSED(style);
+    UNUSED(style);
 
-	if (hasFlagValue(opv) == false) {
-		switch (getValue(opv)) {
-		case FLOAT_LEFT:
-			value = CSS_FLOAT_LEFT;
-			break;
-		case FLOAT_RIGHT:
-			value = CSS_FLOAT_RIGHT;
-			break;
-		case FLOAT_NONE:
-			value = CSS_FLOAT_NONE;
-			break;
-		}
-	}
+    if (hasFlagValue(opv) == false) {
+        switch (getValue(opv)) {
+        case FLOAT_LEFT:
+            value = CSS_FLOAT_LEFT;
+            break;
+        case FLOAT_RIGHT:
+            value = CSS_FLOAT_RIGHT;
+            break;
+        case FLOAT_NONE:
+            value = CSS_FLOAT_NONE;
+            break;
+        }
+    }
 
-	if (css__outranks_existing(getOpcode(opv),
-				   isImportant(opv),
-				   state,
-				   getFlagValue(opv))) {
-		return set_float(state->computed, value);
-	}
+    if (css__outranks_existing(getOpcode(opv), isImportant(opv), state, getFlagValue(opv))) {
+        return set_float(state->computed, value);
+    }
 
-	return CSS_OK;
+    return CSS_OK;
 }
 
-css_error
-css__set_float_from_hint(const css_hint *hint, css_computed_style *style)
+css_error css__set_float_from_hint(const css_hint *hint, css_computed_style *style)
 {
-	return set_float(style, hint->status);
+    return set_float(style, hint->status);
 }
 
 css_error css__initial_float(css_select_state *state)
 {
-	return set_float(state->computed, CSS_FLOAT_NONE);
+    return set_float(state->computed, CSS_FLOAT_NONE);
+}
+
+css_error css__copy_float(const css_computed_style *from, css_computed_style *to)
+{
+    if (from == to) {
+        return CSS_OK;
+    }
+
+    return set_float(to, get_float(from));
 }
 
 css_error
-css__copy_float(const css_computed_style *from, css_computed_style *to)
+css__compose_float(const css_computed_style *parent, const css_computed_style *child, css_computed_style *result)
 {
-	if (from == to) {
-		return CSS_OK;
-	}
+    uint8_t type = get_float(child);
 
-	return set_float(to, get_float(from));
-}
-
-css_error css__compose_float(const css_computed_style *parent,
-			     const css_computed_style *child,
-			     css_computed_style *result)
-{
-	uint8_t type = get_float(child);
-
-	return css__copy_float(type == CSS_FLOAT_INHERIT ? parent : child,
-			       result);
+    return css__copy_float(type == CSS_FLOAT_INHERIT ? parent : child, result);
 }

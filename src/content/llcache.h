@@ -38,42 +38,39 @@ typedef struct llcache_handle llcache_handle;
 
 /** POST data object for low-level cache requests */
 typedef struct llcache_post_data {
-	enum {
-		LLCACHE_POST_URL_ENCODED,
-		LLCACHE_POST_MULTIPART
-	} type; /**< Type of POST data */
-	union {
-		char *urlenc; /**< URL encoded data */
-		struct fetch_multipart_data *multipart; /**< Multipart data */
-	} data; /**< POST data content */
+    enum { LLCACHE_POST_URL_ENCODED, LLCACHE_POST_MULTIPART } type; /**< Type of POST data */
+    union {
+        char *urlenc; /**< URL encoded data */
+        struct fetch_multipart_data *multipart; /**< Multipart data */
+    } data; /**< POST data content */
 } llcache_post_data;
 
 /** Flags for low-level cache object retrieval */
 enum llcache_retrieve_flag {
-	/* Note: We're permitted a maximum of 16 flags which must reside in the
-	 * bottom 16 bits of the flags word. See hlcache.h for further details.
-	 */
-	/** Force a new fetch */
-	LLCACHE_RETRIEVE_FORCE_FETCH = (1 << 0),
-	/** Requested URL was verified */
-	LLCACHE_RETRIEVE_VERIFIABLE = (1 << 1),
-	/**< No error pages */
-	LLCACHE_RETRIEVE_NO_ERROR_PAGES = (1 << 2),
-	/**< Stream data (implies that object is not cacheable) */
-	LLCACHE_RETRIEVE_STREAM_DATA = (1 << 3)
+    /* Note: We're permitted a maximum of 16 flags which must reside in the
+     * bottom 16 bits of the flags word. See hlcache.h for further details.
+     */
+    /** Force a new fetch */
+    LLCACHE_RETRIEVE_FORCE_FETCH = (1 << 0),
+    /** Requested URL was verified */
+    LLCACHE_RETRIEVE_VERIFIABLE = (1 << 1),
+    /**< No error pages */
+    LLCACHE_RETRIEVE_NO_ERROR_PAGES = (1 << 2),
+    /**< Stream data (implies that object is not cacheable) */
+    LLCACHE_RETRIEVE_STREAM_DATA = (1 << 3)
 };
 
 /** Low-level cache event types */
 typedef enum {
-	LLCACHE_EVENT_GOT_CERTS, /**< SSL certificates arrived */
-	LLCACHE_EVENT_HAD_HEADERS, /**< Received all headers */
-	LLCACHE_EVENT_HAD_DATA, /**< Received some data */
-	LLCACHE_EVENT_DONE, /**< Finished fetching data */
+    LLCACHE_EVENT_GOT_CERTS, /**< SSL certificates arrived */
+    LLCACHE_EVENT_HAD_HEADERS, /**< Received all headers */
+    LLCACHE_EVENT_HAD_DATA, /**< Received some data */
+    LLCACHE_EVENT_DONE, /**< Finished fetching data */
 
-	LLCACHE_EVENT_ERROR, /**< An error occurred during fetch */
-	LLCACHE_EVENT_PROGRESS, /**< Fetch progress update */
+    LLCACHE_EVENT_ERROR, /**< An error occurred during fetch */
+    LLCACHE_EVENT_PROGRESS, /**< Fetch progress update */
 
-	LLCACHE_EVENT_REDIRECT /**< Fetch URL redirect occured */
+    LLCACHE_EVENT_REDIRECT /**< Fetch URL redirect occured */
 } llcache_event_type;
 
 /**
@@ -83,23 +80,23 @@ typedef enum {
  * and must be copied if it is desirable to retain.
  */
 typedef struct {
-	llcache_event_type type; /**< Type of event */
-	union {
-		struct {
-			const uint8_t *buf; /**< Buffer of data */
-			size_t len; /**< Byte length of buffer */
-		} data; /**< Received data */
-		struct {
-			nserror code; /**< The error code */
-			const char *msg; /**< Error message */
-		} error;
-		const char *progress_msg; /**< Progress message */
-		struct {
-			nsurl *from; /**< Redirect origin */
-			nsurl *to; /**< Redirect target */
-		} redirect; /**< Fetch URL redirect occured */
-		const struct cert_chain *chain; /**< Certificate chain */
-	} data; /**< Event data */
+    llcache_event_type type; /**< Type of event */
+    union {
+        struct {
+            const uint8_t *buf; /**< Buffer of data */
+            size_t len; /**< Byte length of buffer */
+        } data; /**< Received data */
+        struct {
+            nserror code; /**< The error code */
+            const char *msg; /**< Error message */
+        } error;
+        const char *progress_msg; /**< Progress message */
+        struct {
+            nsurl *from; /**< Redirect origin */
+            nsurl *to; /**< Redirect target */
+        } redirect; /**< Fetch URL redirect occured */
+        const struct cert_chain *chain; /**< Certificate chain */
+    } data; /**< Event data */
 } llcache_event;
 
 /**
@@ -110,48 +107,46 @@ typedef struct {
  * \param pw      Pointer to client-specific data
  * \return NSERROR_OK on success, appropriate error otherwise.
  */
-typedef nserror (*llcache_handle_callback)(llcache_handle *handle,
-					   const llcache_event *event,
-					   void *pw);
+typedef nserror (*llcache_handle_callback)(llcache_handle *handle, const llcache_event *event, void *pw);
 
 /**
  * Parameters to configure the low level cache backing store.
  */
 struct llcache_store_parameters {
-	const char *path; /**< The path to the backing store */
+    const char *path; /**< The path to the backing store */
 
-	size_t limit; /**< The backing store upper bound target size */
-	size_t hysteresis; /**< The hysteresis around the target size */
+    size_t limit; /**< The backing store upper bound target size */
+    size_t hysteresis; /**< The hysteresis around the target size */
 };
 
 /**
  * Parameters to configure the low level cache.
  */
 struct llcache_parameters {
-	size_t limit; /**< The target upper bound for the RAM cache size */
-	size_t hysteresis; /**< The hysteresis around the target size */
+    size_t limit; /**< The target upper bound for the RAM cache size */
+    size_t hysteresis; /**< The hysteresis around the target size */
 
-	/** The minimum lifetime to consider sending objects to backing store.*/
-	int minimum_lifetime;
+    /** The minimum lifetime to consider sending objects to backing store.*/
+    int minimum_lifetime;
 
-	/** The minimum bandwidth to allow the backing store to
-	 * use in bytes/second
-	 */
-	size_t minimum_bandwidth;
+    /** The minimum bandwidth to allow the backing store to
+     * use in bytes/second
+     */
+    size_t minimum_bandwidth;
 
-	/** The maximum bandwidth to allow the backing store to use in
-	 * bytes/second
-	 */
-	size_t maximum_bandwidth;
+    /** The maximum bandwidth to allow the backing store to use in
+     * bytes/second
+     */
+    size_t maximum_bandwidth;
 
-	/** The time quantum over which to calculate the bandwidth values
-	 */
-	unsigned long time_quantum;
+    /** The time quantum over which to calculate the bandwidth values
+     */
+    unsigned long time_quantum;
 
-	/** The number of fetches to attempt when timing out */
-	uint32_t fetch_attempts;
+    /** The number of fetches to attempt when timing out */
+    uint32_t fetch_attempts;
 
-	struct llcache_store_parameters store;
+    struct llcache_store_parameters store;
 };
 
 /**
@@ -190,13 +185,8 @@ void llcache_clean(bool purge);
  * \param result   Pointer to location to recieve cache handle
  * \return NSERROR_OK on success, appropriate error otherwise
  */
-nserror llcache_handle_retrieve(nsurl *url,
-				uint32_t flags,
-				nsurl *referer,
-				const llcache_post_data *post,
-				llcache_handle_callback cb,
-				void *pw,
-				llcache_handle **result);
+nserror llcache_handle_retrieve(nsurl *url, uint32_t flags, nsurl *referer, const llcache_post_data *post,
+    llcache_handle_callback cb, void *pw, llcache_handle **result);
 
 /**
  * Change the callback associated with a low-level cache handle
@@ -206,9 +196,7 @@ nserror llcache_handle_retrieve(nsurl *url,
  * \param pw      Client data for new callback
  * \return NSERROR_OK on success, appropriate error otherwise
  */
-nserror llcache_handle_change_callback(llcache_handle *handle,
-				       llcache_handle_callback cb,
-				       void *pw);
+nserror llcache_handle_change_callback(llcache_handle *handle, llcache_handle_callback cb, void *pw);
 
 /**
  * Release a low-level cache handle
@@ -267,8 +255,7 @@ nsurl *llcache_handle_get_url(const llcache_handle *handle);
  * \param size    Pointer to location to receive byte length of data
  * \return Pointer to source data
  */
-const uint8_t *
-llcache_handle_get_source_data(const llcache_handle *handle, size_t *size);
+const uint8_t *llcache_handle_get_source_data(const llcache_handle *handle, size_t *size);
 
 /**
  * Retrieve a header value associated with a low-level cache object
@@ -283,8 +270,7 @@ llcache_handle_get_source_data(const llcache_handle *handle, size_t *size);
  *       key-value pairs for any additional parameters.
  * \todo Deal with multiple headers of the same key (e.g. Set-Cookie)
  */
-const char *
-llcache_handle_get_header(const llcache_handle *handle, const char *key);
+const char *llcache_handle_get_header(const llcache_handle *handle, const char *key);
 
 /**
  * Determine if the same underlying object is referenced by the given handles
@@ -293,7 +279,6 @@ llcache_handle_get_header(const llcache_handle *handle, const char *key);
  * \param b  Second handle
  * \return True if handles reference the same object, false otherwise
  */
-bool llcache_handle_references_same_object(const llcache_handle *a,
-					   const llcache_handle *b);
+bool llcache_handle_references_same_object(const llcache_handle *a, const llcache_handle *b);
 
 #endif

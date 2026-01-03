@@ -62,8 +62,7 @@ GdkCursor *nsgtk_create_menu_cursor(void);
  * \param builder_out The builder result
  * \return NSERROR_OK and builder_out updated or appropriate error code
  */
-nserror
-nsgtk_builder_new_from_resname(const char *resname, GtkBuilder **builder_out);
+nserror nsgtk_builder_new_from_resname(const char *resname, GtkBuilder **builder_out);
 
 
 /**
@@ -77,8 +76,7 @@ nsgtk_builder_new_from_resname(const char *resname, GtkBuilder **builder_out);
  * \param pixbuf_out The pixbuf result
  * \return NSERROR_OK and pixbuf_out updated or appropriate error code
  */
-nserror
-nsgdk_pixbuf_new_from_resname(const char *resname, GdkPixbuf **pixbuf_out);
+nserror nsgdk_pixbuf_new_from_resname(const char *resname, GdkPixbuf **pixbuf_out);
 
 /**
  * Get direct pointer to resource data.
@@ -94,9 +92,7 @@ nsgdk_pixbuf_new_from_resname(const char *resname, GdkPixbuf **pixbuf_out);
  * \param data_size_out The resulting data size.
  * \return NSERROR_OK and data_out updated or appropriate error code.
  */
-nserror nsgtk_data_from_resname(const char *resname,
-				const uint8_t **data_out,
-				size_t *data_size_out);
+nserror nsgtk_data_from_resname(const char *resname, const uint8_t **data_out, size_t *data_size_out);
 
 /**
  * Get path to resource data.

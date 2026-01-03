@@ -21,37 +21,35 @@
  * Implementation of GTK cookie manager.
  */
 
+#include <gtk/gtk.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <gtk/gtk.h>
 
-#include <neosurf/utils/log.h>
+#include <neosurf/desktop/cookie_manager.h>
 #include <neosurf/keypress.h>
 #include <neosurf/plotters.h>
-#include <neosurf/desktop/cookie_manager.h>
+#include <neosurf/utils/log.h>
 
 #include "gtk/cookies.h"
+#include "gtk/corewindow.h"
 #include "gtk/plotters.h"
 #include "gtk/resources.h"
-#include "gtk/corewindow.h"
 
 struct nsgtk_cookie_window {
-	struct nsgtk_corewindow core;
-	GtkBuilder *builder;
-	GtkWindow *wnd;
+    struct nsgtk_corewindow core;
+    GtkBuilder *builder;
+    GtkWindow *wnd;
 };
 
 static struct nsgtk_cookie_window *cookie_window = NULL;
 
-#define MENUPROTO(x)                                                           \
-	static gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, gpointer g)
+#define MENUPROTO(x) static gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, gpointer g)
 #define MENUEVENT(x) {#x, G_CALLBACK(nsgtk_on_##x##_activate)}
-#define MENUHANDLER(x)                                                         \
-	gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, gpointer g)
+#define MENUHANDLER(x) gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, gpointer g)
 
 struct menu_events {
-	const char *widget;
-	GCallback handler;
+    const char *widget;
+    GCallback handler;
 };
 
 /* edit menu */
@@ -71,88 +69,81 @@ MENUPROTO(collapse_cookies);
 
 static struct menu_events menu_events[] = {
 
-	/* edit menu */
-	MENUEVENT(delete_selected),
-	MENUEVENT(delete_all),
-	MENUEVENT(select_all),
-	MENUEVENT(clear_selection),
+    /* edit menu */
+    MENUEVENT(delete_selected), MENUEVENT(delete_all), MENUEVENT(select_all), MENUEVENT(clear_selection),
 
-	/* view menu*/
-	MENUEVENT(expand_all),
-	MENUEVENT(expand_domains),
-	MENUEVENT(expand_cookies),
-	MENUEVENT(collapse_all),
-	MENUEVENT(collapse_domains),
-	MENUEVENT(collapse_cookies),
+    /* view menu*/
+    MENUEVENT(expand_all), MENUEVENT(expand_domains), MENUEVENT(expand_cookies), MENUEVENT(collapse_all),
+    MENUEVENT(collapse_domains), MENUEVENT(collapse_cookies),
 
-	{NULL, NULL}};
+    {NULL, NULL}};
 
 
 /* edit menu */
 MENUHANDLER(delete_selected)
 {
-	cookie_manager_keypress(NS_KEY_DELETE_LEFT);
-	return TRUE;
+    cookie_manager_keypress(NS_KEY_DELETE_LEFT);
+    return TRUE;
 }
 
 MENUHANDLER(delete_all)
 {
-	cookie_manager_keypress(NS_KEY_ESCAPE);
-	cookie_manager_keypress(NS_KEY_ESCAPE);
-	cookie_manager_keypress(NS_KEY_SELECT_ALL);
-	cookie_manager_keypress(NS_KEY_DELETE_LEFT);
-	return TRUE;
+    cookie_manager_keypress(NS_KEY_ESCAPE);
+    cookie_manager_keypress(NS_KEY_ESCAPE);
+    cookie_manager_keypress(NS_KEY_SELECT_ALL);
+    cookie_manager_keypress(NS_KEY_DELETE_LEFT);
+    return TRUE;
 }
 
 MENUHANDLER(select_all)
 {
-	cookie_manager_keypress(NS_KEY_ESCAPE);
-	cookie_manager_keypress(NS_KEY_ESCAPE);
-	cookie_manager_keypress(NS_KEY_SELECT_ALL);
-	return TRUE;
+    cookie_manager_keypress(NS_KEY_ESCAPE);
+    cookie_manager_keypress(NS_KEY_ESCAPE);
+    cookie_manager_keypress(NS_KEY_SELECT_ALL);
+    return TRUE;
 }
 
 MENUHANDLER(clear_selection)
 {
-	cookie_manager_keypress(NS_KEY_CLEAR_SELECTION);
-	return TRUE;
+    cookie_manager_keypress(NS_KEY_CLEAR_SELECTION);
+    return TRUE;
 }
 
 /* view menu*/
 MENUHANDLER(expand_all)
 {
-	cookie_manager_expand(false);
-	return TRUE;
+    cookie_manager_expand(false);
+    return TRUE;
 }
 
 MENUHANDLER(expand_domains)
 {
-	cookie_manager_expand(true);
-	return TRUE;
+    cookie_manager_expand(true);
+    return TRUE;
 }
 
 MENUHANDLER(expand_cookies)
 {
-	cookie_manager_expand(false);
-	return TRUE;
+    cookie_manager_expand(false);
+    return TRUE;
 }
 
 MENUHANDLER(collapse_all)
 {
-	cookie_manager_contract(true);
-	return TRUE;
+    cookie_manager_contract(true);
+    return TRUE;
 }
 
 MENUHANDLER(collapse_domains)
 {
-	cookie_manager_contract(true);
-	return TRUE;
+    cookie_manager_contract(true);
+    return TRUE;
 }
 
 MENUHANDLER(collapse_cookies)
 {
-	cookie_manager_contract(false);
-	return TRUE;
+    cookie_manager_contract(false);
+    return TRUE;
 }
 
 /**
@@ -160,25 +151,22 @@ MENUHANDLER(collapse_cookies)
  */
 static void nsgtk_cookies_init_menu(struct nsgtk_cookie_window *ncwin)
 {
-	struct menu_events *event = menu_events;
-	GtkWidget *w;
+    struct menu_events *event = menu_events;
+    GtkWidget *w;
 
-	while (event->widget != NULL) {
-		w = GTK_WIDGET(
-			gtk_builder_get_object(ncwin->builder, event->widget));
-		if (w == NULL) {
-			NSLOG(neosurf,
-			      INFO,
-			      "Unable to connect menu widget "
-			      "%s"
-			      "",
-			      event->widget);
-		} else {
-			g_signal_connect(
-				G_OBJECT(w), "activate", event->handler, ncwin);
-		}
-		event++;
-	}
+    while (event->widget != NULL) {
+        w = GTK_WIDGET(gtk_builder_get_object(ncwin->builder, event->widget));
+        if (w == NULL) {
+            NSLOG(neosurf, INFO,
+                "Unable to connect menu widget "
+                "%s"
+                "",
+                event->widget);
+        } else {
+            g_signal_connect(G_OBJECT(w), "activate", event->handler, ncwin);
+        }
+        event++;
+    }
 }
 
 /**
@@ -190,14 +178,11 @@ static void nsgtk_cookies_init_menu(struct nsgtk_cookie_window *ncwin)
  * \param y location of event
  * \return NSERROR_OK on success otherwise appropriate error code
  */
-static nserror nsgtk_cookies_mouse(struct nsgtk_corewindow *nsgtk_cw,
-				   browser_mouse_state mouse_state,
-				   int x,
-				   int y)
+static nserror nsgtk_cookies_mouse(struct nsgtk_corewindow *nsgtk_cw, browser_mouse_state mouse_state, int x, int y)
 {
-	cookie_manager_mouse_action(mouse_state, x, y);
+    cookie_manager_mouse_action(mouse_state, x, y);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /**
@@ -207,13 +192,12 @@ static nserror nsgtk_cookies_mouse(struct nsgtk_corewindow *nsgtk_cw,
  * \param nskey The netsurf key code
  * \return NSERROR_OK on success otherwise appropriate error code
  */
-static nserror
-nsgtk_cookies_key(struct nsgtk_corewindow *nsgtk_cw, uint32_t nskey)
+static nserror nsgtk_cookies_key(struct nsgtk_corewindow *nsgtk_cw, uint32_t nskey)
 {
-	if (cookie_manager_keypress(nskey)) {
-		return NSERROR_OK;
-	}
-	return NSERROR_NOT_IMPLEMENTED;
+    if (cookie_manager_keypress(nskey)) {
+        return NSERROR_OK;
+    }
+    return NSERROR_NOT_IMPLEMENTED;
 }
 
 /**
@@ -223,16 +207,13 @@ nsgtk_cookies_key(struct nsgtk_corewindow *nsgtk_cw, uint32_t nskey)
  * \param r The rectangle of the window that needs updating.
  * \return NSERROR_OK on success otherwise appropriate error code
  */
-static nserror
-nsgtk_cookies_draw(struct nsgtk_corewindow *nsgtk_cw, struct rect *r)
+static nserror nsgtk_cookies_draw(struct nsgtk_corewindow *nsgtk_cw, struct rect *r)
 {
-	struct redraw_context ctx = {.interactive = true,
-				     .background_images = true,
-				     .plot = &nsgtk_plotters};
+    struct redraw_context ctx = {.interactive = true, .background_images = true, .plot = &nsgtk_plotters};
 
-	cookie_manager_redraw(0, 0, r, &ctx);
+    cookie_manager_redraw(0, 0, r, &ctx);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /**
@@ -242,100 +223,94 @@ nsgtk_cookies_draw(struct nsgtk_corewindow *nsgtk_cw, struct rect *r)
  */
 static nserror nsgtk_cookies_init(void)
 {
-	struct nsgtk_cookie_window *ncwin;
-	nserror res;
+    struct nsgtk_cookie_window *ncwin;
+    nserror res;
 
-	if (cookie_window != NULL) {
-		return NSERROR_OK;
-	}
+    if (cookie_window != NULL) {
+        return NSERROR_OK;
+    }
 
-	ncwin = calloc(1, sizeof(*ncwin));
-	if (ncwin == NULL) {
-		return NSERROR_NOMEM;
-	}
+    ncwin = calloc(1, sizeof(*ncwin));
+    if (ncwin == NULL) {
+        return NSERROR_NOMEM;
+    }
 
-	res = nsgtk_builder_new_from_resname("cookies", &ncwin->builder);
-	if (res != NSERROR_OK) {
-		NSLOG(neosurf, INFO, "Cookie UI builder init failed");
-		free(ncwin);
-		return res;
-	}
+    res = nsgtk_builder_new_from_resname("cookies", &ncwin->builder);
+    if (res != NSERROR_OK) {
+        NSLOG(neosurf, INFO, "Cookie UI builder init failed");
+        free(ncwin);
+        return res;
+    }
 
-	gtk_builder_connect_signals(ncwin->builder, NULL);
+    gtk_builder_connect_signals(ncwin->builder, NULL);
 
-	ncwin->wnd = GTK_WINDOW(
-		gtk_builder_get_object(ncwin->builder, "wndCookies"));
+    ncwin->wnd = GTK_WINDOW(gtk_builder_get_object(ncwin->builder, "wndCookies"));
 
-	ncwin->core.scrolled = GTK_SCROLLED_WINDOW(
-		gtk_builder_get_object(ncwin->builder, "cookiesScrolled"));
+    ncwin->core.scrolled = GTK_SCROLLED_WINDOW(gtk_builder_get_object(ncwin->builder, "cookiesScrolled"));
 
-	ncwin->core.drawing_area = GTK_DRAWING_AREA(
-		gtk_builder_get_object(ncwin->builder, "cookiesDrawingArea"));
+    ncwin->core.drawing_area = GTK_DRAWING_AREA(gtk_builder_get_object(ncwin->builder, "cookiesDrawingArea"));
 
-	/* make the delete event hide the window */
-	g_signal_connect(G_OBJECT(ncwin->wnd),
-			 "delete_event",
-			 G_CALLBACK(gtk_widget_hide_on_delete),
-			 NULL);
+    /* make the delete event hide the window */
+    g_signal_connect(G_OBJECT(ncwin->wnd), "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 
-	nsgtk_cookies_init_menu(ncwin);
+    nsgtk_cookies_init_menu(ncwin);
 
-	ncwin->core.draw = nsgtk_cookies_draw;
-	ncwin->core.key = nsgtk_cookies_key;
-	ncwin->core.mouse = nsgtk_cookies_mouse;
+    ncwin->core.draw = nsgtk_cookies_draw;
+    ncwin->core.key = nsgtk_cookies_key;
+    ncwin->core.mouse = nsgtk_cookies_mouse;
 
-	res = nsgtk_corewindow_init(&ncwin->core);
-	if (res != NSERROR_OK) {
-		free(ncwin);
-		return res;
-	}
+    res = nsgtk_corewindow_init(&ncwin->core);
+    if (res != NSERROR_OK) {
+        free(ncwin);
+        return res;
+    }
 
-	res = cookie_manager_init((struct core_window *)ncwin);
-	if (res != NSERROR_OK) {
-		free(ncwin);
-		return res;
-	}
+    res = cookie_manager_init((struct core_window *)ncwin);
+    if (res != NSERROR_OK) {
+        free(ncwin);
+        return res;
+    }
 
-	/* memoise window so it can be represented when necessary
-	 * instead of recreating every time.
-	 */
-	cookie_window = ncwin;
+    /* memoise window so it can be represented when necessary
+     * instead of recreating every time.
+     */
+    cookie_window = ncwin;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
 /* exported function documented gtk/cookies.h */
 nserror nsgtk_cookies_present(const char *search_term)
 {
-	nserror res;
+    nserror res;
 
-	res = nsgtk_cookies_init();
-	if (res == NSERROR_OK) {
-		gtk_window_present(cookie_window->wnd);
-		res = cookie_manager_set_search_string(search_term);
-	}
-	return res;
+    res = nsgtk_cookies_init();
+    if (res == NSERROR_OK) {
+        gtk_window_present(cookie_window->wnd);
+        res = cookie_manager_set_search_string(search_term);
+    }
+    return res;
 }
 
 
 /* exported function documented gtk/cookies.h */
 nserror nsgtk_cookies_destroy(void)
 {
-	nserror res;
+    nserror res;
 
-	if (cookie_window == NULL) {
-		return NSERROR_OK;
-	}
+    if (cookie_window == NULL) {
+        return NSERROR_OK;
+    }
 
-	res = cookie_manager_fini();
-	if (res == NSERROR_OK) {
-		res = nsgtk_corewindow_fini(&cookie_window->core);
-		gtk_widget_destroy(GTK_WIDGET(cookie_window->wnd));
-		g_object_unref(G_OBJECT(cookie_window->builder));
-		free(cookie_window);
-		cookie_window = NULL;
-	}
+    res = cookie_manager_fini();
+    if (res == NSERROR_OK) {
+        res = nsgtk_corewindow_fini(&cookie_window->core);
+        gtk_widget_destroy(GTK_WIDGET(cookie_window->wnd));
+        g_object_unref(G_OBJECT(cookie_window->builder));
+        free(cookie_window);
+        cookie_window = NULL;
+    }
 
-	return res;
+    return res;
 }

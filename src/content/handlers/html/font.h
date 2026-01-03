@@ -36,8 +36,7 @@ struct plot_font_style;
  * \param css      Computed style to consider
  * \param fstyle   Font style to populate
  */
-void font_plot_style_from_css(const css_unit_ctx *unit_len_ctx,
-			      const css_computed_style *css,
-			      struct plot_font_style *fstyle);
+void font_plot_style_from_css(
+    const css_unit_ctx *unit_len_ctx, const css_computed_style *css, struct plot_font_style *fstyle);
 
 #endif

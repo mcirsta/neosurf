@@ -23,68 +23,68 @@
  * Helpers to simplify core use of corewindow.
  */
 
+#include "desktop/cw_helper.h"
+#include <neosurf/content/handlers/css/utils.h>
 #include <neosurf/utils/errors.h>
+#include "desktop/gui_internal.h"
 #include "neosurf/browser.h"
 #include "neosurf/core_window.h"
 #include "neosurf/types.h"
-#include <neosurf/content/handlers/css/utils.h>
-#include "desktop/cw_helper.h"
-#include "desktop/gui_internal.h"
 
 /* exported interface documented in cw_helper.h */
 nserror cw_helper_scroll_visible(struct core_window *cw_h, const struct rect *r)
 {
-	nserror err;
-	int height;
-	int width;
-	int x0;
-	int y0;
-	int x1;
-	int y1;
+    nserror err;
+    int height;
+    int width;
+    int x0;
+    int y0;
+    int x1;
+    int y1;
 
-	assert(cw_t != NULL);
-	assert(cw_h != NULL);
-	assert(cw_t->get_scroll != NULL);
-	assert(cw_t->set_scroll != NULL);
-	assert(cw_t->get_window_dimensions != NULL);
+    assert(cw_t != NULL);
+    assert(cw_h != NULL);
+    assert(cw_t->get_scroll != NULL);
+    assert(cw_t->set_scroll != NULL);
+    assert(cw_t->get_window_dimensions != NULL);
 
-	err = guit->corewindow->get_dimensions(cw_h, &width, &height);
-	if (err != NSERROR_OK) {
-		return err;
-	}
+    err = guit->corewindow->get_dimensions(cw_h, &width, &height);
+    if (err != NSERROR_OK) {
+        return err;
+    }
 
-	guit->corewindow->get_scroll(cw_h, &x0, &y0);
-	if (err != NSERROR_OK) {
-		return err;
-	}
+    guit->corewindow->get_scroll(cw_h, &x0, &y0);
+    if (err != NSERROR_OK) {
+        return err;
+    }
 
-	y1 = y0 + height;
-	x1 = x0 + width;
+    y1 = y0 + height;
+    x1 = x0 + width;
 
-	if (r->y1 > y1) {
-		/* The bottom of the rectangle is off the bottom of the
-		 * window, so scroll down to fit it
-		 */
-		y0 = r->y1 - height;
-	}
-	if (r->y0 < y0) {
-		/* The top of the rectangle is off the top of the window,
-		 * so scroll up to fit it
-		 */
-		y0 = r->y0;
-	}
-	if (r->x1 > x1) {
-		/* The right of the rectangle is off the right of the window
-		 * so scroll right to fit it
-		 */
-		x0 = r->x1 - width;
-	}
-	if (r->x0 < x0) {
-		/* The left of the rectangle is off the left of the window
-		 * so scroll left to fit it
-		 */
-		x0 = r->x0;
-	}
+    if (r->y1 > y1) {
+        /* The bottom of the rectangle is off the bottom of the
+         * window, so scroll down to fit it
+         */
+        y0 = r->y1 - height;
+    }
+    if (r->y0 < y0) {
+        /* The top of the rectangle is off the top of the window,
+         * so scroll up to fit it
+         */
+        y0 = r->y0;
+    }
+    if (r->x1 > x1) {
+        /* The right of the rectangle is off the right of the window
+         * so scroll right to fit it
+         */
+        x0 = r->x1 - width;
+    }
+    if (r->x0 < x0) {
+        /* The left of the rectangle is off the left of the window
+         * so scroll left to fit it
+         */
+        x0 = r->x0;
+    }
 
-	return guit->corewindow->set_scroll(cw_h, x0, y0);
+    return guit->corewindow->set_scroll(cw_h, x0, y0);
 }

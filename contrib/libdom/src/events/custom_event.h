@@ -13,8 +13,8 @@
 #include "events/event.h"
 
 struct dom_custom_event {
-	struct dom_event base;
-	void *detail;
+    struct dom_event base;
+    void *detail;
 };
 
 /* Constructor */

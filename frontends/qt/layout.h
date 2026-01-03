@@ -36,11 +36,7 @@ extern struct gui_layout_table *nsqt_layout_table;
  * \param length length of string, in bytes
  * \return NSERROR_OK on success else error code.
  */
-nserror nsqt_layout_plot(QPainter *painter,
-			 const struct plot_font_style *fstyle,
-			 int x,
-			 int y,
-			 const char *text,
-			 size_t length);
+nserror nsqt_layout_plot(
+    QPainter *painter, const struct plot_font_style *fstyle, int x, int y, const char *text, size_t length);
 
 #endif

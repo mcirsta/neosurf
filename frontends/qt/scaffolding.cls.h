@@ -23,47 +23,47 @@
  * Scaffolding class for QT frontend.
  */
 
-#include <QWidget>
 #include <QTabWidget>
+#include <QWidget>
 
 /**
  * Class for netsurf scaffolding
  */
 class NS_Scaffold : public QTabWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
-      public:
-	NS_Scaffold(QWidget *parent);
+public:
+    NS_Scaffold(QWidget *parent);
 
-	/* static acessors */
-	static NS_Scaffold *get_scaffold(QWidget *page, bool use_current);
+    /* static acessors */
+    static NS_Scaffold *get_scaffold(QWidget *page, bool use_current);
 
-      public slots:
-	/**
-	 * scaffolding slot to change tab title
-	 *
-	 * iterates all the tabs to check if the signal came from one on this
-	 * notebook and if so update the title text.
-	 */
-	void changeTabTitle(const char *title);
+public slots:
+    /**
+     * scaffolding slot to change tab title
+     *
+     * iterates all the tabs to check if the signal came from one on this
+     * notebook and if so update the title text.
+     */
+    void changeTabTitle(const char *title);
 
-	/**
-	 * scaffolding slot to change tab icon
-	 *
-	 * iterates all the tabs to check if the signal came from one on this
-	 * notebook and if so update the icon.
-	 */
-	void changeTabIcon(const QIcon &icon);
+    /**
+     * scaffolding slot to change tab icon
+     *
+     * iterates all the tabs to check if the signal came from one on this
+     * notebook and if so update the icon.
+     */
+    void changeTabIcon(const QIcon &icon);
 
-      protected:
-	void closeEvent(QCloseEvent *event);
+protected:
+    void closeEvent(QCloseEvent *event);
 
-      private slots:
-	void destroyTab(int index);
-	void changeTab(int index);
-	void newtab_slot(bool checked);
+private slots:
+    void destroyTab(int index);
+    void changeTab(int index);
+    void newtab_slot(bool checked);
 
-      private:
-	QAction *m_newtab;
+private:
+    QAction *m_newtab;
 };

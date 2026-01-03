@@ -33,8 +33,7 @@
  * \param knk_ctx updated to copy of ctx, with plotter table replaced
  * \return true on success, false otherwise
  */
-bool knockout_plot_start(const struct redraw_context *ctx,
-			 struct redraw_context *knk_ctx);
+bool knockout_plot_start(const struct redraw_context *ctx, struct redraw_context *knk_ctx);
 /**
  * End a knockout plotting session
  *

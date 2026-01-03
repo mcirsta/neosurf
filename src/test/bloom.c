@@ -24,26 +24,22 @@
  * Implementation taken from original test rig in bloom filter code
  */
 
+#include <libwapcaplet/libwapcaplet.h>
 #include <assert.h>
+#include <check.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <check.h>
-#include <libwapcaplet/libwapcaplet.h>
 
 #include "utils/bloom.h"
 
 static void test_lwc_iterator(lwc_string *str, void *pw)
 {
-	unsigned *count = (unsigned *)pw;
-	if (count != NULL) {
-		(*count)++;
-	}
-	fprintf(stderr,
-		"[lwc] [%3u] %.*s\n",
-		str->refcnt,
-		(int)lwc_string_length(str),
-		lwc_string_data(str));
+    unsigned *count = (unsigned *)pw;
+    if (count != NULL) {
+        (*count)++;
+    }
+    fprintf(stderr, "[lwc] [%3u] %.*s\n", str->refcnt, (int)lwc_string_length(str), lwc_string_data(str));
 }
 
 #define BLOOM_SIZE 8192
@@ -62,28 +58,28 @@ static struct bloom_filter *dict_bloom;
  */
 static void dict_bloom_create(void)
 {
-	FILE *dictf;
-	char buf[BUFSIZ];
-	int i;
+    FILE *dictf;
+    char buf[BUFSIZ];
+    int i;
 
-	snprintf(buf, sizeof(buf), "%s/words", NEOSURF_TEST_DATA_DIR);
-	dictf = fopen(buf, "r");
-	ck_assert(dictf != NULL);
+    snprintf(buf, sizeof(buf), "%s/words", NEOSURF_TEST_DATA_DIR);
+    dictf = fopen(buf, "r");
+    ck_assert(dictf != NULL);
 
-	dict_bloom = bloom_create(BLOOM_SIZE);
-	ck_assert(dict_bloom != NULL);
+    dict_bloom = bloom_create(BLOOM_SIZE);
+    ck_assert(dict_bloom != NULL);
 
-	for (i = 0; i < BLOOM_SIZE; i++) {
-		fscanf(dictf, "%s", buf);
-		bloom_insert_str(dict_bloom, buf, strlen(buf));
-	}
+    for (i = 0; i < BLOOM_SIZE; i++) {
+        fscanf(dictf, "%s", buf);
+        bloom_insert_str(dict_bloom, buf, strlen(buf));
+    }
 
-	fclose(dictf);
+    fclose(dictf);
 }
 
 static void dict_bloom_teardown(void)
 {
-	bloom_destroy(dict_bloom);
+    bloom_destroy(dict_bloom);
 }
 
 /* Tests */
@@ -97,17 +93,17 @@ static void dict_bloom_teardown(void)
  */
 START_TEST(bloom_create_test)
 {
-	struct bloom_filter *b;
-	b = bloom_create(BLOOM_SIZE);
-	ck_assert(b != NULL);
+    struct bloom_filter *b;
+    b = bloom_create(BLOOM_SIZE);
+    ck_assert(b != NULL);
 
-	bloom_insert_str(b, "NetSurf", 7);
-	ck_assert(bloom_search_str(b, "NetSurf", 7));
-	ck_assert(!bloom_search_str(b, "NotSurf", 7));
+    bloom_insert_str(b, "NetSurf", 7);
+    ck_assert(bloom_search_str(b, "NetSurf", 7));
+    ck_assert(!bloom_search_str(b, "NotSurf", 7));
 
-	ck_assert(bloom_items(b) == 1);
+    ck_assert(bloom_items(b) == 1);
 
-	bloom_destroy(b);
+    bloom_destroy(b);
 }
 END_TEST
 
@@ -116,15 +112,15 @@ END_TEST
  */
 START_TEST(bloom_insert_empty_str_test)
 {
-	struct bloom_filter *b;
-	b = bloom_create(BLOOM_SIZE);
-	ck_assert(b != NULL);
+    struct bloom_filter *b;
+    b = bloom_create(BLOOM_SIZE);
+    ck_assert(b != NULL);
 
-	bloom_insert_str(b, NULL, 7);
+    bloom_insert_str(b, NULL, 7);
 
-	ck_assert(bloom_items(b) == 1);
+    ck_assert(bloom_items(b) == 1);
 
-	bloom_destroy(b);
+    bloom_destroy(b);
 }
 END_TEST
 
@@ -134,32 +130,32 @@ END_TEST
  */
 static TCase *bloom_api_case_create(void)
 {
-	TCase *tc;
+    TCase *tc;
 
-	tc = tcase_create("Creation");
+    tc = tcase_create("Creation");
 
-	tcase_add_test(tc, bloom_create_test);
-	tcase_add_test(tc, bloom_insert_empty_str_test);
+    tcase_add_test(tc, bloom_create_test);
+    tcase_add_test(tc, bloom_insert_empty_str_test);
 
-	return tc;
+    return tc;
 }
 
 
 START_TEST(bloom_match_test)
 {
-	FILE *dictf;
-	char buf[BUFSIZ];
-	int i;
+    FILE *dictf;
+    char buf[BUFSIZ];
+    int i;
 
-	snprintf(buf, sizeof(buf), "%s/words", NEOSURF_TEST_DATA_DIR);
-	dictf = fopen(buf, "r");
-	ck_assert(dictf != NULL);
+    snprintf(buf, sizeof(buf), "%s/words", NEOSURF_TEST_DATA_DIR);
+    dictf = fopen(buf, "r");
+    ck_assert(dictf != NULL);
 
-	for (i = 0; i < BLOOM_SIZE; i++) {
-		fscanf(dictf, "%s", buf);
-		ck_assert(bloom_search_str(dict_bloom, buf, strlen(buf)));
-	}
-	fclose(dictf);
+    for (i = 0; i < BLOOM_SIZE; i++) {
+        fscanf(dictf, "%s", buf);
+        ck_assert(bloom_search_str(dict_bloom, buf, strlen(buf)));
+    }
+    fclose(dictf);
 }
 END_TEST
 
@@ -169,46 +165,44 @@ END_TEST
  */
 static TCase *bloom_match_case_create(void)
 {
-	TCase *tc;
+    TCase *tc;
 
-	tc = tcase_create("Match");
+    tc = tcase_create("Match");
 
-	tcase_add_checked_fixture(tc, dict_bloom_create, dict_bloom_teardown);
+    tcase_add_checked_fixture(tc, dict_bloom_create, dict_bloom_teardown);
 
-	tcase_add_test(tc, bloom_match_test);
+    tcase_add_test(tc, bloom_match_test);
 
-	return tc;
+    return tc;
 }
 
 
 START_TEST(bloom_falsepositive_test)
 {
-	FILE *dictf;
-	char buf[BUFSIZ];
-	int i;
-	int false_positives = 0;
+    FILE *dictf;
+    char buf[BUFSIZ];
+    int i;
+    int false_positives = 0;
 
-	snprintf(buf, sizeof(buf), "%s/words", NEOSURF_TEST_DATA_DIR);
-	dictf = fopen(buf, "r");
-	ck_assert(dictf != NULL);
+    snprintf(buf, sizeof(buf), "%s/words", NEOSURF_TEST_DATA_DIR);
+    dictf = fopen(buf, "r");
+    ck_assert(dictf != NULL);
 
-	/* skip elements known presnent */
-	for (i = 0; i < BLOOM_SIZE; i++) {
-		fscanf(dictf, "%s", buf);
-	}
+    /* skip elements known presnent */
+    for (i = 0; i < BLOOM_SIZE; i++) {
+        fscanf(dictf, "%s", buf);
+    }
 
-	/* false positives are possible we are checking for low rate */
-	for (i = 0; i < BLOOM_SIZE; i++) {
-		fscanf(dictf, "%s", buf);
-		if (bloom_search_str(dict_bloom, buf, strlen(buf)) == true)
-			false_positives++;
-	}
-	fclose(dictf);
+    /* false positives are possible we are checking for low rate */
+    for (i = 0; i < BLOOM_SIZE; i++) {
+        fscanf(dictf, "%s", buf);
+        if (bloom_search_str(dict_bloom, buf, strlen(buf)) == true)
+            false_positives++;
+    }
+    fclose(dictf);
 
-	printf("false positive rate %d%%/%d%%\n",
-	       (false_positives * 100) / BLOOM_SIZE,
-	       FALSE_POSITIVE_RATE);
-	ck_assert(false_positives < ((BLOOM_SIZE * FALSE_POSITIVE_RATE) / 100));
+    printf("false positive rate %d%%/%d%%\n", (false_positives * 100) / BLOOM_SIZE, FALSE_POSITIVE_RATE);
+    ck_assert(false_positives < ((BLOOM_SIZE * FALSE_POSITIVE_RATE) / 100));
 }
 END_TEST
 
@@ -218,50 +212,50 @@ END_TEST
  */
 static TCase *bloom_rate_case_create(void)
 {
-	TCase *tc;
+    TCase *tc;
 
-	tc = tcase_create("False positive rate");
+    tc = tcase_create("False positive rate");
 
-	tcase_add_checked_fixture(tc, dict_bloom_create, dict_bloom_teardown);
+    tcase_add_checked_fixture(tc, dict_bloom_create, dict_bloom_teardown);
 
-	tcase_add_test(tc, bloom_falsepositive_test);
+    tcase_add_test(tc, bloom_falsepositive_test);
 
-	return tc;
+    return tc;
 }
 
 
 static Suite *bloom_suite(void)
 {
-	Suite *s;
-	s = suite_create("Bloom filter");
+    Suite *s;
+    s = suite_create("Bloom filter");
 
-	suite_add_tcase(s, bloom_api_case_create());
+    suite_add_tcase(s, bloom_api_case_create());
 #ifndef _WIN32
-	suite_add_tcase(s, bloom_match_case_create());
-	suite_add_tcase(s, bloom_rate_case_create());
+    suite_add_tcase(s, bloom_match_case_create());
+    suite_add_tcase(s, bloom_rate_case_create());
 #endif
 
-	return s;
+    return s;
 }
 
 int main(int argc, char **argv)
 {
-	int number_failed;
-	Suite *s;
-	SRunner *sr;
+    int number_failed;
+    Suite *s;
+    SRunner *sr;
 
-	s = bloom_suite();
+    s = bloom_suite();
 
-	sr = srunner_create(s);
-	srunner_run_all(sr, CK_ENV);
+    sr = srunner_create(s);
+    srunner_run_all(sr, CK_ENV);
 
-	number_failed = srunner_ntests_failed(sr);
-	srunner_free(sr);
+    number_failed = srunner_ntests_failed(sr);
+    srunner_free(sr);
 
-	fprintf(stderr, "[lwc] Remaining lwc strings:\n");
-	unsigned lwc_count = 0;
-	lwc_iterate_strings(test_lwc_iterator, &lwc_count);
-	fprintf(stderr, "[lwc] Remaining lwc strings count: %u\n", lwc_count);
+    fprintf(stderr, "[lwc] Remaining lwc strings:\n");
+    unsigned lwc_count = 0;
+    lwc_iterate_strings(test_lwc_iterator, &lwc_count);
+    fprintf(stderr, "[lwc] Remaining lwc strings count: %u\n", lwc_count);
 
-	return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

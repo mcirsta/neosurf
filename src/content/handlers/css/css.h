@@ -31,7 +31,7 @@ struct hlcache_handle;
  * Imported stylesheet record
  */
 struct nscss_import {
-	struct hlcache_handle *c; /**< Content containing sheet */
+    struct hlcache_handle *c; /**< Content containing sheet */
 };
 
 /**

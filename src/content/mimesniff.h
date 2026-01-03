@@ -48,11 +48,7 @@ struct llcache_handle;
  *         NSERROR_NOT_FOUND if sniffing is prohibited and no
  *                           Content-Type header was found
  */
-nserror mimesniff_compute_effective_type(const char *content_type_header,
-					 const uint8_t *data,
-					 size_t len,
-					 bool sniff_allowed,
-					 bool image_only,
-					 lwc_string **effective_type);
+nserror mimesniff_compute_effective_type(const char *content_type_header, const uint8_t *data, size_t len,
+    bool sniff_allowed, bool image_only, lwc_string **effective_type);
 
 #endif

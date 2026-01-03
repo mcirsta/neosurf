@@ -56,8 +56,7 @@ nserror browser_window_history_back(struct browser_window *bw, bool new_window);
  * \param new_window whether to open in new window.
  * \return NSERROR_OK or error code on faliure.
  */
-nserror
-browser_window_history_forward(struct browser_window *bw, bool new_window);
+nserror browser_window_history_forward(struct browser_window *bw, bool new_window);
 
 
 /**
@@ -84,8 +83,7 @@ bool browser_window_history_forward_available(struct browser_window *bw);
  * \param bitmap The bitmat for the current history entry.
  * \return NSERROR_OK or error code on faliure.
  */
-nserror browser_window_history_get_thumbnail(struct browser_window *bw,
-					     struct bitmap **bitmap_out);
+nserror browser_window_history_get_thumbnail(struct browser_window *bw, struct bitmap **bitmap_out);
 
 /**
  * Callback function type for history enumeration
@@ -95,14 +93,8 @@ nserror browser_window_history_get_thumbnail(struct browser_window *bw,
  * \param	entry		Current history entry
  * \return	true to continue enumeration, false to cancel enumeration
  */
-typedef bool (*browser_window_history_enumerate_cb)(
-	const struct browser_window *bw,
-	int x0,
-	int y0,
-	int x1,
-	int y1,
-	const struct history_entry *entry,
-	void *user_data);
+typedef bool (*browser_window_history_enumerate_cb)(const struct browser_window *bw, int x0, int y0, int x1, int y1,
+    const struct history_entry *entry, void *user_data);
 
 
 /**
@@ -113,9 +105,8 @@ typedef bool (*browser_window_history_enumerate_cb)(
  * \param	cb		callback function
  * \param	user_data	context pointer passed to cb
  */
-void browser_window_history_enumerate(const struct browser_window *bw,
-				      browser_window_history_enumerate_cb cb,
-				      void *user_data);
+void browser_window_history_enumerate(
+    const struct browser_window *bw, browser_window_history_enumerate_cb cb, void *user_data);
 
 
 /**
@@ -126,9 +117,7 @@ void browser_window_history_enumerate(const struct browser_window *bw,
  * \param	user_data	Data passed to the callback
  */
 void browser_window_history_enumerate_forward(
-	const struct browser_window *bw,
-	browser_window_history_enumerate_cb cb,
-	void *user_data);
+    const struct browser_window *bw, browser_window_history_enumerate_cb cb, void *user_data);
 
 
 /**
@@ -139,9 +128,7 @@ void browser_window_history_enumerate_forward(
  * \param	user_data	Data passed to the callback
  */
 void browser_window_history_enumerate_back(
-	const struct browser_window *bw,
-	browser_window_history_enumerate_cb cb,
-	void *user_data);
+    const struct browser_window *bw, browser_window_history_enumerate_cb cb, void *user_data);
 
 
 /**
@@ -150,8 +137,7 @@ void browser_window_history_enumerate_back(
  * \param entry the history entry to retrieve the URL from
  * \return A referenced nsurl URL
  */
-struct nsurl *
-browser_window_history_entry_get_url(const struct history_entry *entry);
+struct nsurl *browser_window_history_entry_get_url(const struct history_entry *entry);
 
 
 /**
@@ -160,8 +146,7 @@ browser_window_history_entry_get_url(const struct history_entry *entry);
  * \param entry the history entry to retrieve the fragment id from
  * \return the fragment id
  */
-const char *
-browser_window_history_entry_get_fragment_id(const struct history_entry *entry);
+const char *browser_window_history_entry_get_fragment_id(const struct history_entry *entry);
 
 
 /**
@@ -170,8 +155,7 @@ browser_window_history_entry_get_fragment_id(const struct history_entry *entry);
  * \param entry The history entry to retrieve the title from
  * \return the title
  */
-const char *
-browser_window_history_entry_get_title(const struct history_entry *entry);
+const char *browser_window_history_entry_get_title(const struct history_entry *entry);
 
 
 /**
@@ -182,8 +166,6 @@ browser_window_history_entry_get_title(const struct history_entry *entry);
  * \param  new_window  open entry in new window
  * \return NSERROR_OK or error code on faliure.
  */
-nserror browser_window_history_go(struct browser_window *bw,
-				  struct history_entry *entry,
-				  bool new_window);
+nserror browser_window_history_go(struct browser_window *bw, struct history_entry *entry, bool new_window);
 
 #endif

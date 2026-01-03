@@ -30,9 +30,9 @@ struct plot_font_style;
 extern HWND font_hwnd;
 
 struct font_desc {
-	const char *name;
-	int width, height;
-	const char *encoding;
+    const char *name;
+    int width, height;
+    const char *encoding;
 };
 
 extern struct gui_layout_table *win32_layout_table;
@@ -46,10 +46,7 @@ extern struct gui_utf8_table *win32_utf8_table;
  * \param[in] len The length of the utf-8 data
  * \param[out] result The reencoded string.
  */
-extern nserror utf8_to_font_encoding(const struct font_desc *font,
-				     const char *string,
-				     size_t len,
-				     char **result);
+extern nserror utf8_to_font_encoding(const struct font_desc *font, const char *string, size_t len, char **result);
 
 /**
  * generate a win32 font handle from a generic font style

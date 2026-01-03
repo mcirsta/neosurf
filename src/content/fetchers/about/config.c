@@ -25,12 +25,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "neosurf/types.h"
 #include <neosurf/utils/errors.h>
 #include <neosurf/utils/nsoption.h>
+#include "neosurf/types.h"
 
-#include "private.h"
 #include "config.h"
+#include "private.h"
 
 /**
  * Handler to generate about scheme config page
@@ -40,100 +40,89 @@
  */
 bool fetch_about_config_handler(struct fetch_about_context *ctx)
 {
-	char buffer[1024];
-	int slen = 0;
-	unsigned int opt_loop = 0;
-	int elen = 0; /* entry length */
-	nserror res;
-	bool even = false;
+    char buffer[1024];
+    int slen = 0;
+    unsigned int opt_loop = 0;
+    int elen = 0; /* entry length */
+    nserror res;
+    bool even = false;
 
-	/* content is going to return ok */
-	fetch_about_set_http_code(ctx, 200);
+    /* content is going to return ok */
+    fetch_about_set_http_code(ctx, 200);
 
-	/* content type */
-	if (fetch_about_send_header(ctx, "Content-Type: text/html")) {
-		goto fetch_about_config_handler_aborted;
-	}
+    /* content type */
+    if (fetch_about_send_header(ctx, "Content-Type: text/html")) {
+        goto fetch_about_config_handler_aborted;
+    }
 
-	res = fetch_about_ssenddataf(
-		ctx,
-		"<html>\n<head>\n"
-		"<title>NeoSurf Browser Config</title>\n"
-		"<link rel=\"stylesheet\" type=\"text/css\" "
-		"href=\"resource:internal.css\">\n"
-		"</head>\n"
-		"<body "
-		"id =\"configlist\" "
-		"class=\"ns-even-bg ns-even-fg ns-border\" "
-		"style=\"overflow: hidden;\">\n"
-		"<h1 class=\"ns-border\">NeoSurf Browser Config</h1>\n"
-		"<table class=\"config\">\n"
-		"<tr><th>Option</th>"
-		"<th>Type</th>"
-		"<th>Provenance</th>"
-		"<th>Setting</th></tr>\n");
-	if (res != NSERROR_OK) {
-		goto fetch_about_config_handler_aborted;
-	}
+    res = fetch_about_ssenddataf(ctx,
+        "<html>\n<head>\n"
+        "<title>NeoSurf Browser Config</title>\n"
+        "<link rel=\"stylesheet\" type=\"text/css\" "
+        "href=\"resource:internal.css\">\n"
+        "</head>\n"
+        "<body "
+        "id =\"configlist\" "
+        "class=\"ns-even-bg ns-even-fg ns-border\" "
+        "style=\"overflow: hidden;\">\n"
+        "<h1 class=\"ns-border\">NeoSurf Browser Config</h1>\n"
+        "<table class=\"config\">\n"
+        "<tr><th>Option</th>"
+        "<th>Type</th>"
+        "<th>Provenance</th>"
+        "<th>Setting</th></tr>\n");
+    if (res != NSERROR_OK) {
+        goto fetch_about_config_handler_aborted;
+    }
 
 
-	do {
-		if (even) {
-			elen = nsoption_snoptionf(
-				buffer + slen,
-				sizeof buffer - slen,
-				opt_loop,
-				"<tr class=\"ns-even-bg\">"
-				"<th class=\"ns-border\">%k</th>"
-				"<td class=\"ns-border\">%t</td>"
-				"<td class=\"ns-border\">%p</td>"
-				"<td class=\"ns-border\">%V</td>"
-				"</tr>\n");
-		} else {
-			elen = nsoption_snoptionf(
-				buffer + slen,
-				sizeof buffer - slen,
-				opt_loop,
-				"<tr class=\"ns-odd-bg\">"
-				"<th class=\"ns-border\">%k</th>"
-				"<td class=\"ns-border\">%t</td>"
-				"<td class=\"ns-border\">%p</td>"
-				"<td class=\"ns-border\">%V</td>"
-				"</tr>\n");
-		}
-		if (elen <= 0)
-			break; /* last option */
+    do {
+        if (even) {
+            elen = nsoption_snoptionf(buffer + slen, sizeof buffer - slen, opt_loop,
+                "<tr class=\"ns-even-bg\">"
+                "<th class=\"ns-border\">%k</th>"
+                "<td class=\"ns-border\">%t</td>"
+                "<td class=\"ns-border\">%p</td>"
+                "<td class=\"ns-border\">%V</td>"
+                "</tr>\n");
+        } else {
+            elen = nsoption_snoptionf(buffer + slen, sizeof buffer - slen, opt_loop,
+                "<tr class=\"ns-odd-bg\">"
+                "<th class=\"ns-border\">%k</th>"
+                "<td class=\"ns-border\">%t</td>"
+                "<td class=\"ns-border\">%p</td>"
+                "<td class=\"ns-border\">%V</td>"
+                "</tr>\n");
+        }
+        if (elen <= 0)
+            break; /* last option */
 
-		if (elen >= (int)(sizeof buffer - slen)) {
-			/* last entry would not fit in buffer, submit buffer */
-			res = fetch_about_senddata(ctx,
-						   (const uint8_t *)buffer,
-						   slen);
-			if (res != NSERROR_OK) {
-				goto fetch_about_config_handler_aborted;
-			}
-			slen = 0;
-		} else {
-			/* normal addition */
-			slen += elen;
-			opt_loop++;
-			even = !even;
-		}
-	} while (elen > 0);
+        if (elen >= (int)(sizeof buffer - slen)) {
+            /* last entry would not fit in buffer, submit buffer */
+            res = fetch_about_senddata(ctx, (const uint8_t *)buffer, slen);
+            if (res != NSERROR_OK) {
+                goto fetch_about_config_handler_aborted;
+            }
+            slen = 0;
+        } else {
+            /* normal addition */
+            slen += elen;
+            opt_loop++;
+            even = !even;
+        }
+    } while (elen > 0);
 
-	slen += snprintf(buffer + slen,
-			 sizeof buffer - slen,
-			 "</table>\n</body>\n</html>\n");
+    slen += snprintf(buffer + slen, sizeof buffer - slen, "</table>\n</body>\n</html>\n");
 
-	res = fetch_about_senddata(ctx, (const uint8_t *)buffer, slen);
-	if (res != NSERROR_OK) {
-		goto fetch_about_config_handler_aborted;
-	}
+    res = fetch_about_senddata(ctx, (const uint8_t *)buffer, slen);
+    if (res != NSERROR_OK) {
+        goto fetch_about_config_handler_aborted;
+    }
 
-	fetch_about_send_finished(ctx);
+    fetch_about_send_finished(ctx);
 
-	return true;
+    return true;
 
 fetch_about_config_handler_aborted:
-	return false;
+    return false;
 }

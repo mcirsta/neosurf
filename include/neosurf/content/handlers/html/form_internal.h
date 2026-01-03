@@ -26,8 +26,8 @@
 
 #include <stdbool.h>
 
-#include "neosurf/form.h"
 #include "utils/hashmap.h"
+#include "neosurf/form.h"
 
 struct box;
 struct form_control;
@@ -46,102 +46,101 @@ enum browser_mouse_state;
 
 /** Type of a struct form_control. */
 typedef enum {
-	GADGET_HIDDEN,
-	GADGET_TEXTBOX,
-	GADGET_RADIO,
-	GADGET_CHECKBOX,
-	GADGET_SELECT,
-	GADGET_TEXTAREA,
-	GADGET_IMAGE,
-	GADGET_PASSWORD,
-	GADGET_SUBMIT,
-	GADGET_RESET,
-	GADGET_FILE,
-	GADGET_BUTTON
+    GADGET_HIDDEN,
+    GADGET_TEXTBOX,
+    GADGET_RADIO,
+    GADGET_CHECKBOX,
+    GADGET_SELECT,
+    GADGET_TEXTAREA,
+    GADGET_IMAGE,
+    GADGET_PASSWORD,
+    GADGET_SUBMIT,
+    GADGET_RESET,
+    GADGET_FILE,
+    GADGET_BUTTON
 } form_control_type;
 
 /** Data for textarea */
 struct form_textarea_data {
-	struct form_control *gadget;
+    struct form_control *gadget;
 };
 
 struct image_input_coords {
-	int x;
-	int y;
+    int x;
+    int y;
 };
 
 /** Form control. */
 struct form_control {
-	void *node; /**< Corresponding DOM node */
-	struct dom_string
-		*node_value; /**< The last value sync'd with the DOM */
-	bool syncing; /**< Set if a DOM sync is in-progress */
-	struct html_content *html; /**< HTML content containing control */
+    void *node; /**< Corresponding DOM node */
+    struct dom_string *node_value; /**< The last value sync'd with the DOM */
+    bool syncing; /**< Set if a DOM sync is in-progress */
+    struct html_content *html; /**< HTML content containing control */
 
-	form_control_type type; /**< Type of control */
+    form_control_type type; /**< Type of control */
 
-	struct form *form; /**< Containing form */
+    struct form *form; /**< Containing form */
 
-	char *name; /**< Control name */
-	char *value; /**< Current value of control */
-	char *initial_value; /**< Initial value of control */
-	char *last_synced_value; /**< The last value sync'd to the DOM */
-	bool disabled; /**< Whether control is disabled */
+    char *name; /**< Control name */
+    char *value; /**< Current value of control */
+    char *initial_value; /**< Initial value of control */
+    char *last_synced_value; /**< The last value sync'd to the DOM */
+    bool disabled; /**< Whether control is disabled */
 
-	struct box *box; /**< Box for control */
+    struct box *box; /**< Box for control */
 
-	unsigned int length; /**< Number of characters in control */
-	unsigned int maxlength; /**< Maximum characters permitted */
+    unsigned int length; /**< Number of characters in control */
+    unsigned int maxlength; /**< Maximum characters permitted */
 
-	bool selected; /**< Whether control is selected */
+    bool selected; /**< Whether control is selected */
 
-	union {
-		struct {
-			int mx, my;
-		} image;
-		struct {
-			int num_items;
-			struct form_option *items, *last_item;
-			bool multiple;
-			int num_selected;
-			/** Currently selected item, if num_selected == 1. */
-			struct form_option *current;
-			struct form_select_menu *menu;
-		} select;
-		struct {
-			struct textarea *ta;
-			struct dom_string *initial;
-			struct form_textarea_data data;
-		} text; /**< input type=text or textarea */
-	} data;
+    union {
+        struct {
+            int mx, my;
+        } image;
+        struct {
+            int num_items;
+            struct form_option *items, *last_item;
+            bool multiple;
+            int num_selected;
+            /** Currently selected item, if num_selected == 1. */
+            struct form_option *current;
+            struct form_select_menu *menu;
+        } select;
+        struct {
+            struct textarea *ta;
+            struct dom_string *initial;
+            struct form_textarea_data data;
+        } text; /**< input type=text or textarea */
+    } data;
 
-	struct form_control *prev; /**< Previous control in this form */
-	struct form_control *next; /**< Next control in this form. */
+    struct form_control *prev; /**< Previous control in this form */
+    struct form_control *next; /**< Next control in this form. */
 };
 
 /** Form submit method. */
 typedef enum {
-	method_GET, /**< GET, always url encoded. */
-	method_POST_URLENC, /**< POST, url encoded. */
-	method_POST_MULTIPART /**< POST, multipart/form-data. */
+    method_GET, /**< GET, always url encoded. */
+    method_POST_URLENC, /**< POST, url encoded. */
+    method_POST_MULTIPART /**< POST, multipart/form-data. */
 } form_method;
 
 /** HTML form. */
 struct form {
-	void *node; /**< Corresponding DOM node */
+    void *node; /**< Corresponding DOM node */
 
-	char *action; /**< Absolute URL to submit to. */
-	char *target; /**< Target to submit to. */
-	form_method method; /**< Method and enctype. */
-	char *accept_charsets; /**< Charset to submit form in */
-	char *document_charset; /**< Charset of document containing form */
-	struct form_control *controls; /**< Linked list of controls. */
-	struct form_control *last_control; /**< Last control in list. */
+    char *action; /**< Absolute URL to submit to. */
+    char *target; /**< Target to submit to. */
+    form_method method; /**< Method and enctype. */
+    char *accept_charsets; /**< Charset to submit form in */
+    char *document_charset; /**< Charset of document containing form */
+    struct form_control *controls; /**< Linked list of controls. */
+    struct form_control *last_control; /**< Last control in list. */
 
-	/** Fast index from DOM node to form_control */
-	hashmap_t *control_index;
+    /** Fast index from DOM node to form_control */
+    hashmap_t *control_index;
 
-	struct form *prev; /**< Previous form in doc. */
+    struct form *prev; /**< Previous form in doc. */
 };
 
 /**
@@ -154,11 +153,7 @@ struct form {
  * \param width		width of redraw rectangle
  * \param height	height of redraw rectangle
  */
-typedef void (*select_menu_redraw_callback)(void *client_data,
-					    int x,
-					    int y,
-					    int width,
-					    int height);
+typedef void (*select_menu_redraw_callback)(void *client_data, int x, int y, int width, int height);
 
 /**
  * Create a struct form.
@@ -171,12 +166,8 @@ typedef void (*select_menu_redraw_callback)(void *client_data,
  * \param doc_charset  encoding of containing document, or NULL
  * \return A new form or NULL on memory exhaustion
  */
-struct form *form_new(void *node,
-		      const char *action,
-		      const char *target,
-		      form_method method,
-		      const char *charset,
-		      const char *doc_charset);
+struct form *form_new(void *node, const char *action, const char *target, form_method method, const char *charset,
+    const char *doc_charset);
 
 /**
  * Free a form and any controls it owns.
@@ -229,11 +220,7 @@ void form_free_control(struct form_control *control);
  * \param  node      the DOM node this option is associated with
  * \return  true on success, false on memory exhaustion
  */
-bool form_add_option(struct form_control *control,
-		     char *value,
-		     char *text,
-		     bool selected,
-		     void *node);
+bool form_add_option(struct form_control *control, char *value, char *text, bool selected, void *node);
 
 
 /**
@@ -245,10 +232,8 @@ bool form_add_option(struct form_control *control,
  * \param c The content the select menu is opening for.
  * \return NSERROR_OK on sucess else error code.
  */
-nserror form_open_select_menu(void *client_data,
-			      struct form_control *control,
-			      select_menu_redraw_callback redraw_callback,
-			      struct content *c);
+nserror form_open_select_menu(
+    void *client_data, struct form_control *control, select_menu_redraw_callback redraw_callback, struct content *c);
 
 
 /**
@@ -271,12 +256,8 @@ void form_free_select_menu(struct form_control *control);
  * \param ctx      current redraw context
  * \return         true on success, false otherwise
  */
-bool form_redraw_select_menu(struct form_control *control,
-			     int x,
-			     int y,
-			     float scale,
-			     const struct rect *clip,
-			     const struct redraw_context *ctx);
+bool form_redraw_select_menu(
+    struct form_control *control, int x, int y, float scale, const struct rect *clip, const struct redraw_context *ctx);
 
 
 /**
@@ -288,9 +269,7 @@ bool form_redraw_select_menu(struct form_control *control,
  * \param clip     the clipping rectangle
  * \return true if inside false otherwise
  */
-bool form_clip_inside_select_menu(struct form_control *control,
-				  float scale,
-				  const struct rect *clip);
+bool form_clip_inside_select_menu(struct form_control *control, float scale, const struct rect *clip);
 
 
 /**
@@ -302,10 +281,7 @@ bool form_clip_inside_select_menu(struct form_control *control,
  * \param y Y coordinate of click
  * \return text for the browser status bar or NULL if the menu has to be closed
  */
-const char *form_select_mouse_action(struct form_control *control,
-				     enum browser_mouse_state mouse,
-				     int x,
-				     int y);
+const char *form_select_mouse_action(struct form_control *control, enum browser_mouse_state mouse, int x, int y);
 
 
 /**
@@ -316,10 +292,7 @@ const char *form_select_mouse_action(struct form_control *control,
  * \param x X coordinate of drag end
  * \param y Y coordinate of drag end
  */
-void form_select_mouse_drag_end(struct form_control *control,
-				enum browser_mouse_state mouse,
-				int x,
-				int y);
+void form_select_mouse_drag_end(struct form_control *control, enum browser_mouse_state mouse, int x, int y);
 
 
 /**
@@ -329,19 +302,13 @@ void form_select_mouse_drag_end(struct form_control *control,
  * \param width		gets updated to menu width
  * \param height	gets updated to menu height
  */
-void form_select_get_dimensions(struct form_control *control,
-				int *width,
-				int *height);
+void form_select_get_dimensions(struct form_control *control, int *width, int *height);
 
 
 /**
  * Callback for the core select menu.
  */
-void form_select_menu_callback(void *client_data,
-			       int x,
-			       int y,
-			       int width,
-			       int height);
+void form_select_menu_callback(void *client_data, int x, int y, int width, int height);
 
 
 /**
@@ -359,10 +326,8 @@ void form_radio_set(struct form_control *radio);
  * \param form The form to submit.
  * \param submit_button The control used to submit the form.
  */
-nserror form_submit(struct nsurl *page_url,
-		    struct browser_window *target,
-		    struct form *form,
-		    struct form_control *submit_button);
+nserror form_submit(
+    struct nsurl *page_url, struct browser_window *target, struct form *form, struct form_control *submit_button);
 
 
 /**

@@ -14,14 +14,14 @@ extern "C" {
 
 #include <libwapcaplet/libwapcaplet.h>
 
-#include <libcss/errors.h>
-#include <libcss/types.h>
-#include <libcss/functypes.h>
 #include <libcss/computed.h>
+#include <libcss/errors.h>
+#include <libcss/font_face.h>
+#include <libcss/functypes.h>
 #include <libcss/properties.h>
 #include <libcss/select.h>
 #include <libcss/stylesheet.h>
-#include <libcss/font_face.h>
+#include <libcss/types.h>
 
 #ifdef __cplusplus
 }

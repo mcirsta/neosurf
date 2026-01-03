@@ -16,8 +16,8 @@
 #define libnsbmp_h_
 
 #include <stdbool.h>
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 /* bmp flags */
 #define BMP_NEW 0
@@ -29,27 +29,20 @@
 /**
  * error return values
  */
-typedef enum {
-	BMP_OK = 0,
-	BMP_INSUFFICIENT_MEMORY = 1,
-	BMP_INSUFFICIENT_DATA = 2,
-	BMP_DATA_ERROR = 3
-} bmp_result;
+typedef enum { BMP_OK = 0, BMP_INSUFFICIENT_MEMORY = 1, BMP_INSUFFICIENT_DATA = 2, BMP_DATA_ERROR = 3 } bmp_result;
 
 /**
  * encoding types
  */
 typedef enum {
-	BMP_ENCODING_RGB = 0,
-	BMP_ENCODING_RLE8 = 1,
-	BMP_ENCODING_RLE4 = 2,
-	BMP_ENCODING_BITFIELDS = 3
+    BMP_ENCODING_RGB = 0,
+    BMP_ENCODING_RLE8 = 1,
+    BMP_ENCODING_RLE4 = 2,
+    BMP_ENCODING_BITFIELDS = 3
 } bmp_encoding;
 
 /* API for Bitmap callbacks */
-typedef void *(*bmp_bitmap_cb_create)(int width,
-				      int height,
-				      unsigned int state);
+typedef void *(*bmp_bitmap_cb_create)(int width, int height, unsigned int state);
 typedef void (*bmp_bitmap_cb_destroy)(void *bitmap);
 typedef unsigned char *(*bmp_bitmap_cb_get_buffer)(void *bitmap);
 typedef size_t (*bmp_bitmap_cb_get_bpp)(void *bitmap);
@@ -58,87 +51,87 @@ typedef size_t (*bmp_bitmap_cb_get_bpp)(void *bitmap);
  * The Bitmap callbacks function table
  */
 typedef struct bmp_bitmap_callback_vt_s {
-	/** Callback to allocate bitmap storage. */
-	bmp_bitmap_cb_create bitmap_create;
-	/** Called to free bitmap storage. */
-	bmp_bitmap_cb_destroy bitmap_destroy;
-	/** Return a pointer to the pixel data in a bitmap. */
-	bmp_bitmap_cb_get_buffer bitmap_get_buffer;
+    /** Callback to allocate bitmap storage. */
+    bmp_bitmap_cb_create bitmap_create;
+    /** Called to free bitmap storage. */
+    bmp_bitmap_cb_destroy bitmap_destroy;
+    /** Return a pointer to the pixel data in a bitmap. */
+    bmp_bitmap_cb_get_buffer bitmap_get_buffer;
 } bmp_bitmap_callback_vt;
 
 /**
  * bitmap image
  */
 typedef struct bmp_image {
-	/** callbacks for bitmap functions */
-	bmp_bitmap_callback_vt bitmap_callbacks;
-	/** pointer to BMP data */
-	uint8_t *bmp_data;
-	/** width of BMP (valid after _analyse) */
-	uint32_t width;
-	/** heigth of BMP (valid after _analyse) */
-	uint32_t height;
-	/** whether the image has been decoded */
-	bool decoded;
-	/** decoded image */
-	void *bitmap;
+    /** callbacks for bitmap functions */
+    bmp_bitmap_callback_vt bitmap_callbacks;
+    /** pointer to BMP data */
+    uint8_t *bmp_data;
+    /** width of BMP (valid after _analyse) */
+    uint32_t width;
+    /** heigth of BMP (valid after _analyse) */
+    uint32_t height;
+    /** whether the image has been decoded */
+    bool decoded;
+    /** decoded image */
+    void *bitmap;
 
-	/* Internal members are listed below */
-	/** total number of bytes of BMP data available */
-	uint32_t buffer_size;
-	/** pixel encoding type */
-	bmp_encoding encoding;
-	/** offset of bitmap data */
-	uint32_t bitmap_offset;
-	/** bits per pixel */
-	uint16_t bpp;
-	/** number of colours */
-	uint32_t colours;
-	/** colour table */
-	uint32_t *colour_table;
-	/** whether to use bmp's limited transparency */
-	bool limited_trans;
-	/** colour to display for "transparent" pixels when using limited
-	 * transparency
-	 */
-	uint32_t trans_colour;
-	/** scanlines are top to bottom */
-	bool reversed;
-	/** image is part of an ICO, mask follows */
-	bool ico;
-	/** true if the bitmap does not contain an alpha channel */
-	bool opaque;
-	/** four bitwise mask */
-	uint32_t mask[4];
-	/** four bitwise shifts */
-	int32_t shift[4];
-	/** colour representing "transparency" in the bitmap */
-	uint32_t transparent_index;
+    /* Internal members are listed below */
+    /** total number of bytes of BMP data available */
+    uint32_t buffer_size;
+    /** pixel encoding type */
+    bmp_encoding encoding;
+    /** offset of bitmap data */
+    uint32_t bitmap_offset;
+    /** bits per pixel */
+    uint16_t bpp;
+    /** number of colours */
+    uint32_t colours;
+    /** colour table */
+    uint32_t *colour_table;
+    /** whether to use bmp's limited transparency */
+    bool limited_trans;
+    /** colour to display for "transparent" pixels when using limited
+     * transparency
+     */
+    uint32_t trans_colour;
+    /** scanlines are top to bottom */
+    bool reversed;
+    /** image is part of an ICO, mask follows */
+    bool ico;
+    /** true if the bitmap does not contain an alpha channel */
+    bool opaque;
+    /** four bitwise mask */
+    uint32_t mask[4];
+    /** four bitwise shifts */
+    int32_t shift[4];
+    /** colour representing "transparency" in the bitmap */
+    uint32_t transparent_index;
 } bmp_image;
 
 typedef struct ico_image {
-	bmp_image bmp;
-	struct ico_image *next;
+    bmp_image bmp;
+    struct ico_image *next;
 } ico_image;
 
 /**
  * icon image collection
  */
 typedef struct ico_collection {
-	/** callbacks for bitmap functions */
-	bmp_bitmap_callback_vt bitmap_callbacks;
-	/** width of largest BMP */
-	uint16_t width;
-	/** heigth of largest BMP */
-	uint16_t height;
+    /** callbacks for bitmap functions */
+    bmp_bitmap_callback_vt bitmap_callbacks;
+    /** width of largest BMP */
+    uint16_t width;
+    /** heigth of largest BMP */
+    uint16_t height;
 
-	/* Internal members are listed below */
-	/** pointer to ICO data */
-	uint8_t *ico_data;
-	/** total number of bytes of ICO data available */
-	uint32_t buffer_size;
-	/** root of linked list of images */
-	ico_image *first;
+    /* Internal members are listed below */
+    /** pointer to ICO data */
+    uint8_t *ico_data;
+    /** total number of bytes of ICO data available */
+    uint32_t buffer_size;
+    /** root of linked list of images */
+    ico_image *first;
 } ico_collection;
 
 /**
@@ -157,8 +150,7 @@ bmp_result bmp_create(bmp_image *bmp, bmp_bitmap_callback_vt *callbacks);
  * \param callbacks The callbacks the library will call on operations.
  * \return BMP_OK on success or appropriate error code.
  */
-bmp_result
-ico_collection_create(ico_collection *ico, bmp_bitmap_callback_vt *callbacks);
+bmp_result ico_collection_create(ico_collection *ico, bmp_bitmap_callback_vt *callbacks);
 
 /**
  * Analyse a BMP prior to decoding.

@@ -17,12 +17,12 @@ extern parserutils_charset_handler charset_utf8_codec_handler;
 extern parserutils_charset_handler charset_utf16_codec_handler;
 
 static parserutils_charset_handler *handler_table[] = {
-	&charset_utf8_codec_handler,
-	&charset_utf16_codec_handler,
-	&charset_8859_codec_handler,
-	&charset_ext8_codec_handler,
-	&charset_ascii_codec_handler,
-	NULL,
+    &charset_utf8_codec_handler,
+    &charset_utf16_codec_handler,
+    &charset_8859_codec_handler,
+    &charset_ext8_codec_handler,
+    &charset_ascii_codec_handler,
+    NULL,
 };
 
 /**
@@ -35,47 +35,44 @@ static parserutils_charset_handler *handler_table[] = {
  *         PARSERUTILS_NOMEM on memory exhaustion,
  *         PARSERUTILS_BADENCODING on unsupported charset
  */
-parserutils_error
-parserutils_charset_codec_create(const char *charset,
-				 parserutils_charset_codec **codec)
+parserutils_error parserutils_charset_codec_create(const char *charset, parserutils_charset_codec **codec)
 {
-	parserutils_charset_codec *c;
-	parserutils_charset_handler **handler;
-	const parserutils_charset_aliases_canon *canon;
-	parserutils_error error;
+    parserutils_charset_codec *c;
+    parserutils_charset_handler **handler;
+    const parserutils_charset_aliases_canon *canon;
+    parserutils_error error;
 
-	if (charset == NULL || codec == NULL)
-		return PARSERUTILS_BADPARM;
+    if (charset == NULL || codec == NULL)
+        return PARSERUTILS_BADPARM;
 
-	/* Canonicalise parserutils_charset name. */
-	canon = parserutils__charset_alias_canonicalise(charset,
-							strlen(charset));
-	if (canon == NULL)
-		return PARSERUTILS_BADENCODING;
+    /* Canonicalise parserutils_charset name. */
+    canon = parserutils__charset_alias_canonicalise(charset, strlen(charset));
+    if (canon == NULL)
+        return PARSERUTILS_BADENCODING;
 
-	/* Search for handler class */
-	for (handler = handler_table; *handler != NULL; handler++) {
-		if ((*handler)->handles_charset(canon->name))
-			break;
-	}
+    /* Search for handler class */
+    for (handler = handler_table; *handler != NULL; handler++) {
+        if ((*handler)->handles_charset(canon->name))
+            break;
+    }
 
-	/* None found */
-	if ((*handler) == NULL)
-		return PARSERUTILS_BADENCODING;
+    /* None found */
+    if ((*handler) == NULL)
+        return PARSERUTILS_BADENCODING;
 
-	/* Instantiate class */
-	error = (*handler)->create(canon->name, &c);
-	if (error != PARSERUTILS_OK)
-		return error;
+    /* Instantiate class */
+    error = (*handler)->create(canon->name, &c);
+    if (error != PARSERUTILS_OK)
+        return error;
 
-	/* and initialise it */
-	c->mibenum = canon->mib_enum;
+    /* and initialise it */
+    c->mibenum = canon->mib_enum;
 
-	c->errormode = PARSERUTILS_CHARSET_CODEC_ERROR_LOOSE;
+    c->errormode = PARSERUTILS_CHARSET_CODEC_ERROR_LOOSE;
 
-	*codec = c;
+    *codec = c;
 
-	return PARSERUTILS_OK;
+    return PARSERUTILS_OK;
 }
 
 /**
@@ -84,17 +81,16 @@ parserutils_charset_codec_create(const char *charset,
  * \param codec  The codec to destroy
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error
-parserutils_charset_codec_destroy(parserutils_charset_codec *codec)
+parserutils_error parserutils_charset_codec_destroy(parserutils_charset_codec *codec)
 {
-	if (codec == NULL)
-		return PARSERUTILS_BADPARM;
+    if (codec == NULL)
+        return PARSERUTILS_BADPARM;
 
-	codec->handler.destroy(codec);
+    codec->handler.destroy(codec);
 
-	free(codec);
+    free(codec);
 
-	return PARSERUTILS_OK;
+    return PARSERUTILS_OK;
 }
 
 /**
@@ -105,21 +101,19 @@ parserutils_charset_codec_destroy(parserutils_charset_codec *codec)
  * \param params  Option-specific parameters
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error
-parserutils_charset_codec_setopt(parserutils_charset_codec *codec,
-				 parserutils_charset_codec_opttype type,
-				 parserutils_charset_codec_optparams *params)
+parserutils_error parserutils_charset_codec_setopt(parserutils_charset_codec *codec,
+    parserutils_charset_codec_opttype type, parserutils_charset_codec_optparams *params)
 {
-	if (codec == NULL || params == NULL)
-		return PARSERUTILS_BADPARM;
+    if (codec == NULL || params == NULL)
+        return PARSERUTILS_BADPARM;
 
-	switch (type) {
-	case PARSERUTILS_CHARSET_CODEC_ERROR_MODE:
-		codec->errormode = params->error_mode.mode;
-		break;
-	}
+    switch (type) {
+    case PARSERUTILS_CHARSET_CODEC_ERROR_MODE:
+        codec->errormode = params->error_mode.mode;
+        break;
+    }
 
-	return PARSERUTILS_OK;
+    return PARSERUTILS_OK;
 }
 
 /**
@@ -134,19 +128,14 @@ parserutils_charset_codec_setopt(parserutils_charset_codec *codec,
  *
  * source, sourcelen, dest and destlen will be updated appropriately on exit
  */
-parserutils_error
-parserutils_charset_codec_encode(parserutils_charset_codec *codec,
-				 const uint8_t **source,
-				 size_t *sourcelen,
-				 uint8_t **dest,
-				 size_t *destlen)
+parserutils_error parserutils_charset_codec_encode(
+    parserutils_charset_codec *codec, const uint8_t **source, size_t *sourcelen, uint8_t **dest, size_t *destlen)
 {
-	if (codec == NULL || source == NULL || *source == NULL ||
-	    sourcelen == NULL || dest == NULL || *dest == NULL ||
-	    destlen == NULL)
-		return PARSERUTILS_BADPARM;
+    if (codec == NULL || source == NULL || *source == NULL || sourcelen == NULL || dest == NULL || *dest == NULL ||
+        destlen == NULL)
+        return PARSERUTILS_BADPARM;
 
-	return codec->handler.encode(codec, source, sourcelen, dest, destlen);
+    return codec->handler.encode(codec, source, sourcelen, dest, destlen);
 }
 
 /**
@@ -163,19 +152,14 @@ parserutils_charset_codec_encode(parserutils_charset_codec *codec,
  *
  * Call this with a source length of 0 to flush any buffers.
  */
-parserutils_error
-parserutils_charset_codec_decode(parserutils_charset_codec *codec,
-				 const uint8_t **source,
-				 size_t *sourcelen,
-				 uint8_t **dest,
-				 size_t *destlen)
+parserutils_error parserutils_charset_codec_decode(
+    parserutils_charset_codec *codec, const uint8_t **source, size_t *sourcelen, uint8_t **dest, size_t *destlen)
 {
-	if (codec == NULL || source == NULL || *source == NULL ||
-	    sourcelen == NULL || dest == NULL || *dest == NULL ||
-	    destlen == NULL)
-		return PARSERUTILS_BADPARM;
+    if (codec == NULL || source == NULL || *source == NULL || sourcelen == NULL || dest == NULL || *dest == NULL ||
+        destlen == NULL)
+        return PARSERUTILS_BADPARM;
 
-	return codec->handler.decode(codec, source, sourcelen, dest, destlen);
+    return codec->handler.decode(codec, source, sourcelen, dest, destlen);
 }
 
 /**
@@ -184,11 +168,10 @@ parserutils_charset_codec_decode(parserutils_charset_codec *codec,
  * \param codec  The codec to reset
  * \return PARSERUTILS_OK on success, appropriate error otherwise
  */
-parserutils_error
-parserutils_charset_codec_reset(parserutils_charset_codec *codec)
+parserutils_error parserutils_charset_codec_reset(parserutils_charset_codec *codec)
 {
-	if (codec == NULL)
-		return PARSERUTILS_BADPARM;
+    if (codec == NULL)
+        return PARSERUTILS_BADPARM;
 
-	return codec->handler.reset(codec);
+    return codec->handler.reset(codec);
 }

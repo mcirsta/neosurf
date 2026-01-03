@@ -25,50 +25,48 @@
 #include "utils/http/www-authenticate.h"
 
 /* See www-authenticate.h for documentation */
-nserror http_parse_www_authenticate(const char *header_value,
-				    http_www_authenticate **result)
+nserror http_parse_www_authenticate(const char *header_value, http_www_authenticate **result)
 {
-	const char *pos = header_value;
-	http_challenge *first = NULL;
-	http_challenge *list = NULL;
-	http_www_authenticate *wa;
-	nserror error;
+    const char *pos = header_value;
+    http_challenge *first = NULL;
+    http_challenge *list = NULL;
+    http_www_authenticate *wa;
+    nserror error;
 
-	/* 1#challenge */
+    /* 1#challenge */
 
-	http__skip_LWS(&pos);
+    http__skip_LWS(&pos);
 
-	error = http__parse_challenge(&pos, &first);
-	if (error != NSERROR_OK)
-		return error;
+    error = http__parse_challenge(&pos, &first);
+    if (error != NSERROR_OK)
+        return error;
 
-	http__skip_LWS(&pos);
+    http__skip_LWS(&pos);
 
-	if (*pos == ',') {
-		error = http__item_list_parse(
-			&pos, http__parse_challenge, first, &list);
-		if (error != NSERROR_OK && error != NSERROR_NOT_FOUND)
-			return error;
-	} else {
-		list = first;
-	}
+    if (*pos == ',') {
+        error = http__item_list_parse(&pos, http__parse_challenge, first, &list);
+        if (error != NSERROR_OK && error != NSERROR_NOT_FOUND)
+            return error;
+    } else {
+        list = first;
+    }
 
-	wa = malloc(sizeof(*wa));
-	if (wa == NULL) {
-		http_challenge_list_destroy(list);
-		return NSERROR_NOMEM;
-	}
+    wa = malloc(sizeof(*wa));
+    if (wa == NULL) {
+        http_challenge_list_destroy(list);
+        return NSERROR_NOMEM;
+    }
 
-	wa->challenges = list;
+    wa->challenges = list;
 
-	*result = wa;
+    *result = wa;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /* See www-authenticate.h for documentation */
 void http_www_authenticate_destroy(http_www_authenticate *victim)
 {
-	http_challenge_list_destroy(victim->challenges);
-	free(victim);
+    http_challenge_list_destroy(victim->challenges);
+    free(victim);
 }

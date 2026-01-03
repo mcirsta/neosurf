@@ -10,23 +10,21 @@
 
 #include <dom/core/node.h>
 
-#include "core/document.h"
-#include "core/doc_fragment.h"
-#include "core/node.h"
 #include "utils/utils.h"
+#include "core/doc_fragment.h"
+#include "core/document.h"
+#include "core/node.h"
 
 /**
  * A DOM document fragment
  */
 struct dom_document_fragment {
-	dom_node_internal base; /**< Base node */
+    dom_node_internal base; /**< Base node */
 };
 
-static const struct dom_node_vtable df_vtable = {{DOM_NODE_EVENT_TARGET_VTABLE},
-						 DOM_NODE_VTABLE};
+static const struct dom_node_vtable df_vtable = {{DOM_NODE_EVENT_TARGET_VTABLE}, DOM_NODE_VTABLE};
 
-static const struct dom_node_protect_vtable df_protect_vtable = {
-	DOM_DF_PROTECT_VTABLE};
+static const struct dom_node_protect_vtable df_protect_vtable = {DOM_DF_PROTECT_VTABLE};
 
 /**
  * Create a document fragment
@@ -42,37 +40,29 @@ static const struct dom_node_protect_vtable df_protect_vtable = {
  *
  * The returned node will already be referenced.
  */
-dom_exception _dom_document_fragment_create(dom_document *doc,
-					    dom_string *name,
-					    dom_string *value,
-					    dom_document_fragment **result)
+dom_exception
+_dom_document_fragment_create(dom_document *doc, dom_string *name, dom_string *value, dom_document_fragment **result)
 {
-	dom_document_fragment *f;
-	dom_exception err;
+    dom_document_fragment *f;
+    dom_exception err;
 
-	f = malloc(sizeof(dom_document_fragment));
-	if (f == NULL)
-		return DOM_NO_MEM_ERR;
+    f = malloc(sizeof(dom_document_fragment));
+    if (f == NULL)
+        return DOM_NO_MEM_ERR;
 
-	f->base.base.vtable = &df_vtable;
-	f->base.vtable = &df_protect_vtable;
+    f->base.base.vtable = &df_vtable;
+    f->base.vtable = &df_protect_vtable;
 
-	/* And initialise the node */
-	err = _dom_document_fragment_initialise(&f->base,
-						doc,
-						DOM_DOCUMENT_FRAGMENT_NODE,
-						name,
-						value,
-						NULL,
-						NULL);
-	if (err != DOM_NO_ERR) {
-		free(f);
-		return err;
-	}
+    /* And initialise the node */
+    err = _dom_document_fragment_initialise(&f->base, doc, DOM_DOCUMENT_FRAGMENT_NODE, name, value, NULL, NULL);
+    if (err != DOM_NO_ERR) {
+        free(f);
+        return err;
+    }
 
-	*result = f;
+    *result = f;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -84,11 +74,11 @@ dom_exception _dom_document_fragment_create(dom_document *doc,
  */
 void _dom_document_fragment_destroy(dom_document_fragment *frag)
 {
-	/* Finalise base class */
-	_dom_document_fragment_finalise(&frag->base);
+    /* Finalise base class */
+    _dom_document_fragment_finalise(&frag->base);
 
-	/* Destroy fragment */
-	free(frag);
+    /* Destroy fragment */
+    free(frag);
 }
 
 /*-----------------------------------------------------------------------*/
@@ -98,26 +88,26 @@ void _dom_document_fragment_destroy(dom_document_fragment *frag)
 /* The virtual destroy function of this class */
 void _dom_df_destroy(dom_node_internal *node)
 {
-	_dom_document_fragment_destroy((dom_document_fragment *)node);
+    _dom_document_fragment_destroy((dom_document_fragment *)node);
 }
 
 /* The copy constructor of this class */
 dom_exception _dom_df_copy(dom_node_internal *old, dom_node_internal **copy)
 {
-	dom_document_fragment *new_f;
-	dom_exception err;
+    dom_document_fragment *new_f;
+    dom_exception err;
 
-	new_f = malloc(sizeof(dom_document_fragment));
-	if (new_f == NULL)
-		return DOM_NO_MEM_ERR;
+    new_f = malloc(sizeof(dom_document_fragment));
+    if (new_f == NULL)
+        return DOM_NO_MEM_ERR;
 
-	err = dom_node_copy_internal(old, new_f);
-	if (err != DOM_NO_ERR) {
-		free(new_f);
-		return err;
-	}
+    err = dom_node_copy_internal(old, new_f);
+    if (err != DOM_NO_ERR) {
+        free(new_f);
+        return err;
+    }
 
-	*copy = (dom_node_internal *)new_f;
+    *copy = (dom_node_internal *)new_f;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }

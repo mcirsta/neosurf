@@ -21,10 +21,10 @@
  * helpers for X509 certificate chains
  */
 
-#include <stdlib.h>
-#include <stdint.h>
-#include <string.h>
 #include <nsutils/base64.h>
+#include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <neosurf/utils/errors.h>
 #include <neosurf/utils/log.h>
@@ -39,18 +39,18 @@
  */
 nserror cert_chain_alloc(size_t depth, struct cert_chain **chain_out)
 {
-	struct cert_chain *chain;
+    struct cert_chain *chain;
 
-	chain = calloc(1, sizeof(struct cert_chain));
-	if (chain == NULL) {
-		return NSERROR_NOMEM;
-	}
+    chain = calloc(1, sizeof(struct cert_chain));
+    if (chain == NULL) {
+        return NSERROR_NOMEM;
+    }
 
-	chain->depth = depth;
+    chain->depth = depth;
 
-	*chain_out = chain;
+    *chain_out = chain;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
@@ -59,35 +59,31 @@ nserror cert_chain_alloc(size_t depth, struct cert_chain **chain_out)
  *
  * exported interface documented in netsurf/ssl_certs.h
  */
-nserror
-cert_chain_dup_into(const struct cert_chain *src, struct cert_chain *dst)
+nserror cert_chain_dup_into(const struct cert_chain *src, struct cert_chain *dst)
 {
-	size_t depth;
-	for (depth = 0; depth < dst->depth; depth++) {
-		if (dst->certs[depth].der != NULL) {
-			free(dst->certs[depth].der);
-			dst->certs[depth].der = NULL;
-		}
-	}
+    size_t depth;
+    for (depth = 0; depth < dst->depth; depth++) {
+        if (dst->certs[depth].der != NULL) {
+            free(dst->certs[depth].der);
+            dst->certs[depth].der = NULL;
+        }
+    }
 
-	dst->depth = src->depth;
+    dst->depth = src->depth;
 
-	for (depth = 0; depth < src->depth; depth++) {
-		dst->certs[depth].err = src->certs[depth].err;
-		dst->certs[depth].der_length = src->certs[depth].der_length;
-		if (src->certs[depth].der != NULL) {
-			dst->certs[depth].der = malloc(
-				src->certs[depth].der_length);
-			if (dst->certs[depth].der == NULL) {
-				return NSERROR_NOMEM;
-			}
-			memcpy(dst->certs[depth].der,
-			       src->certs[depth].der,
-			       src->certs[depth].der_length);
-		}
-	}
+    for (depth = 0; depth < src->depth; depth++) {
+        dst->certs[depth].err = src->certs[depth].err;
+        dst->certs[depth].der_length = src->certs[depth].der_length;
+        if (src->certs[depth].der != NULL) {
+            dst->certs[depth].der = malloc(src->certs[depth].der_length);
+            if (dst->certs[depth].der == NULL) {
+                return NSERROR_NOMEM;
+            }
+            memcpy(dst->certs[depth].der, src->certs[depth].der, src->certs[depth].der_length);
+        }
+    }
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
@@ -96,36 +92,32 @@ cert_chain_dup_into(const struct cert_chain *src, struct cert_chain *dst)
  *
  * exported interface documented in netsurf/ssl_certs.h
  */
-nserror
-cert_chain_dup(const struct cert_chain *src, struct cert_chain **dst_out)
+nserror cert_chain_dup(const struct cert_chain *src, struct cert_chain **dst_out)
 {
-	struct cert_chain *dst;
-	size_t depth;
-	nserror res;
+    struct cert_chain *dst;
+    size_t depth;
+    nserror res;
 
-	res = cert_chain_alloc(src->depth, &dst);
-	if (res != NSERROR_OK) {
-		return res;
-	}
+    res = cert_chain_alloc(src->depth, &dst);
+    if (res != NSERROR_OK) {
+        return res;
+    }
 
-	for (depth = 0; depth < src->depth; depth++) {
-		dst->certs[depth].err = src->certs[depth].err;
-		dst->certs[depth].der_length = src->certs[depth].der_length;
-		if (src->certs[depth].der != NULL) {
-			dst->certs[depth].der = malloc(
-				src->certs[depth].der_length);
-			if (dst->certs[depth].der == NULL) {
-				cert_chain_free(dst);
-				return NSERROR_NOMEM;
-			}
-			memcpy(dst->certs[depth].der,
-			       src->certs[depth].der,
-			       src->certs[depth].der_length);
-		}
-	}
+    for (depth = 0; depth < src->depth; depth++) {
+        dst->certs[depth].err = src->certs[depth].err;
+        dst->certs[depth].der_length = src->certs[depth].der_length;
+        if (src->certs[depth].der != NULL) {
+            dst->certs[depth].der = malloc(src->certs[depth].der_length);
+            if (dst->certs[depth].der == NULL) {
+                cert_chain_free(dst);
+                return NSERROR_NOMEM;
+            }
+            memcpy(dst->certs[depth].der, src->certs[depth].der, src->certs[depth].der_length);
+        }
+    }
 
-	*dst_out = dst;
-	return NSERROR_OK;
+    *dst_out = dst;
+    return NSERROR_OK;
 }
 
 
@@ -134,30 +126,24 @@ cert_chain_dup(const struct cert_chain *src, struct cert_chain **dst_out)
 /**
  * process a part of a query extracting the certificate of an error code
  */
-static nserror
-process_query_section(const char *str, size_t len, struct cert_chain *chain)
+static nserror process_query_section(const char *str, size_t len, struct cert_chain *chain)
 {
-	nsuerror nsures;
+    nsuerror nsures;
 
-	if ((len > (5 + MIN_CERT_LEN)) && (strncmp(str, "cert=", 5) == 0)) {
-		/* possible certificate entry */
-		nsures = nsu_base64_decode_alloc_url(
-			(const uint8_t *)str + 5,
-			len - 5,
-			&chain->certs[chain->depth].der,
-			&chain->certs[chain->depth].der_length);
-		if (nsures == NSUERROR_OK) {
-			chain->depth++;
-		}
-	} else if ((len > 8) && (strncmp(str, "certerr=", 8) == 0)) {
-		/* certificate entry error code */
-		if (chain->depth > 0) {
-			chain->certs[chain->depth - 1].err = strtoul(str + 8,
-								     NULL,
-								     10);
-		}
-	}
-	return NSERROR_OK;
+    if ((len > (5 + MIN_CERT_LEN)) && (strncmp(str, "cert=", 5) == 0)) {
+        /* possible certificate entry */
+        nsures = nsu_base64_decode_alloc_url(
+            (const uint8_t *)str + 5, len - 5, &chain->certs[chain->depth].der, &chain->certs[chain->depth].der_length);
+        if (nsures == NSUERROR_OK) {
+            chain->depth++;
+        }
+    } else if ((len > 8) && (strncmp(str, "certerr=", 8) == 0)) {
+        /* certificate entry error code */
+        if (chain->depth > 0) {
+            chain->certs[chain->depth - 1].err = strtoul(str + 8, NULL, 10);
+        }
+    }
+    return NSERROR_OK;
 }
 
 /*
@@ -167,53 +153,52 @@ process_query_section(const char *str, size_t len, struct cert_chain *chain)
  */
 nserror cert_chain_from_query(struct nsurl *url, struct cert_chain **chain_out)
 {
-	struct cert_chain *chain;
-	nserror res;
-	char *querystr;
-	size_t querylen;
-	size_t kvstart;
-	size_t kvlen;
+    struct cert_chain *chain;
+    nserror res;
+    char *querystr;
+    size_t querylen;
+    size_t kvstart;
+    size_t kvlen;
 
-	res = nsurl_get(url, NSURL_QUERY, &querystr, &querylen);
-	if (res != NSERROR_OK) {
-		return res;
-	}
+    res = nsurl_get(url, NSURL_QUERY, &querystr, &querylen);
+    if (res != NSERROR_OK) {
+        return res;
+    }
 
-	if (querylen < MIN_CERT_LEN) {
-		free(querystr);
-		return NSERROR_NEED_DATA;
-	}
+    if (querylen < MIN_CERT_LEN) {
+        free(querystr);
+        return NSERROR_NEED_DATA;
+    }
 
-	res = cert_chain_alloc(0, &chain);
-	if (res != NSERROR_OK) {
-		free(querystr);
-		return res;
-	}
+    res = cert_chain_alloc(0, &chain);
+    if (res != NSERROR_OK) {
+        free(querystr);
+        return res;
+    }
 
-	for (kvlen = 0, kvstart = 0; kvstart < querylen; kvstart += kvlen) {
-		/* get query section length */
-		kvlen = 0;
-		while (((kvstart + kvlen) < querylen) &&
-		       (querystr[kvstart + kvlen] != '&')) {
-			kvlen++;
-		}
+    for (kvlen = 0, kvstart = 0; kvstart < querylen; kvstart += kvlen) {
+        /* get query section length */
+        kvlen = 0;
+        while (((kvstart + kvlen) < querylen) && (querystr[kvstart + kvlen] != '&')) {
+            kvlen++;
+        }
 
-		res = process_query_section(querystr + kvstart, kvlen, chain);
-		if (res != NSERROR_OK) {
-			break;
-		}
-		kvlen++; /* account for & separator */
-	}
-	free(querystr);
+        res = process_query_section(querystr + kvstart, kvlen, chain);
+        if (res != NSERROR_OK) {
+            break;
+        }
+        kvlen++; /* account for & separator */
+    }
+    free(querystr);
 
-	if (chain->depth > 0) {
-		*chain_out = chain;
-	} else {
-		free(chain);
-		return NSERROR_INVALID;
-	}
+    if (chain->depth > 0) {
+        *chain_out = chain;
+    } else {
+        free(chain);
+        return NSERROR_INVALID;
+    }
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
@@ -224,86 +209,80 @@ nserror cert_chain_from_query(struct nsurl *url, struct cert_chain **chain_out)
  */
 nserror cert_chain_to_query(struct cert_chain *chain, struct nsurl **url_out)
 {
-	nserror res;
-	nsurl *url;
-	size_t allocsize;
-	size_t urlstrlen;
-	uint8_t *urlstr;
-	size_t depth;
+    nserror res;
+    nsurl *url;
+    size_t allocsize;
+    size_t urlstrlen;
+    uint8_t *urlstr;
+    size_t depth;
 
-	allocsize = 20;
-	for (depth = 0; depth < chain->depth; depth++) {
-		allocsize += 7; /* allow for &cert= */
-		allocsize += 4 * ((chain->certs[depth].der_length + 2) / 3);
-		if (chain->certs[depth].err != SSL_CERT_ERR_OK) {
-			allocsize += 20; /* allow for &certerr=4000000000 */
-		}
-	}
+    allocsize = 20;
+    for (depth = 0; depth < chain->depth; depth++) {
+        allocsize += 7; /* allow for &cert= */
+        allocsize += 4 * ((chain->certs[depth].der_length + 2) / 3);
+        if (chain->certs[depth].err != SSL_CERT_ERR_OK) {
+            allocsize += 20; /* allow for &certerr=4000000000 */
+        }
+    }
 
-	urlstr = malloc(allocsize);
-	if (urlstr == NULL) {
-		return NSERROR_NOMEM;
-	}
+    urlstr = malloc(allocsize);
+    if (urlstr == NULL) {
+        return NSERROR_NOMEM;
+    }
 
-	urlstrlen = snprintf((char *)urlstr, allocsize, "about:certificate");
-	for (depth = 0; depth < chain->depth; depth++) {
-		int written;
-		nsuerror nsures;
-		size_t output_length;
+    urlstrlen = snprintf((char *)urlstr, allocsize, "about:certificate");
+    for (depth = 0; depth < chain->depth; depth++) {
+        int written;
+        nsuerror nsures;
+        size_t output_length;
 
-		written = snprintf((char *)urlstr + urlstrlen,
-				   allocsize - urlstrlen,
-				   "&cert=");
-		if (written < 0) {
-			free(urlstr);
-			return NSERROR_UNKNOWN;
-		}
-		if ((size_t)written >= allocsize - urlstrlen) {
-			free(urlstr);
-			return NSERROR_UNKNOWN;
-		}
+        written = snprintf((char *)urlstr + urlstrlen, allocsize - urlstrlen, "&cert=");
+        if (written < 0) {
+            free(urlstr);
+            return NSERROR_UNKNOWN;
+        }
+        if ((size_t)written >= allocsize - urlstrlen) {
+            free(urlstr);
+            return NSERROR_UNKNOWN;
+        }
 
-		urlstrlen += (size_t)written;
+        urlstrlen += (size_t)written;
 
-		output_length = allocsize - urlstrlen;
-		nsures = nsu_base64_encode_url(chain->certs[depth].der,
-					       chain->certs[depth].der_length,
-					       (uint8_t *)urlstr + urlstrlen,
-					       &output_length);
-		if (nsures != NSUERROR_OK) {
-			free(urlstr);
-			return (nserror)nsures;
-		}
-		urlstrlen += output_length;
+        output_length = allocsize - urlstrlen;
+        nsures = nsu_base64_encode_url(
+            chain->certs[depth].der, chain->certs[depth].der_length, (uint8_t *)urlstr + urlstrlen, &output_length);
+        if (nsures != NSUERROR_OK) {
+            free(urlstr);
+            return (nserror)nsures;
+        }
+        urlstrlen += output_length;
 
-		if (chain->certs[depth].err != SSL_CERT_ERR_OK) {
-			written = snprintf((char *)urlstr + urlstrlen,
-					   allocsize - urlstrlen,
-					   "&certerr=%d",
-					   chain->certs[depth].err);
-			if (written < 0) {
-				free(urlstr);
-				return NSERROR_UNKNOWN;
-			}
-			if ((size_t)written >= allocsize - urlstrlen) {
-				free(urlstr);
-				return NSERROR_UNKNOWN;
-			}
+        if (chain->certs[depth].err != SSL_CERT_ERR_OK) {
+            written = snprintf(
+                (char *)urlstr + urlstrlen, allocsize - urlstrlen, "&certerr=%d", chain->certs[depth].err);
+            if (written < 0) {
+                free(urlstr);
+                return NSERROR_UNKNOWN;
+            }
+            if ((size_t)written >= allocsize - urlstrlen) {
+                free(urlstr);
+                return NSERROR_UNKNOWN;
+            }
 
-			urlstrlen += (size_t)written;
-		}
-	}
-	urlstr[17] = '?';
-	urlstr[urlstrlen] = 0;
+            urlstrlen += (size_t)written;
+        }
+    }
+    urlstr[17] = '?';
+    urlstr[urlstrlen] = 0;
 
-	res = nsurl_create((const char *)urlstr, &url);
-	free(urlstr);
+    res = nsurl_create((const char *)urlstr, &url);
+    free(urlstr);
 
-	if (res == NSERROR_OK) {
-		*url_out = url;
-	}
+    if (res == NSERROR_OK) {
+        *url_out = url;
+    }
 
-	return res;
+    return res;
 }
 
 /*
@@ -313,19 +292,19 @@ nserror cert_chain_to_query(struct cert_chain *chain, struct nsurl **url_out)
  */
 nserror cert_chain_free(struct cert_chain *chain)
 {
-	size_t depth;
+    size_t depth;
 
-	if (chain != NULL) {
-		for (depth = 0; depth < chain->depth; depth++) {
-			if (chain->certs[depth].der != NULL) {
-				free(chain->certs[depth].der);
-			}
-		}
+    if (chain != NULL) {
+        for (depth = 0; depth < chain->depth; depth++) {
+            if (chain->certs[depth].der != NULL) {
+                free(chain->certs[depth].der);
+            }
+        }
 
-		free(chain);
-	}
+        free(chain);
+    }
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
@@ -336,18 +315,18 @@ nserror cert_chain_free(struct cert_chain *chain)
  */
 size_t cert_chain_size(const struct cert_chain *chain)
 {
-	size_t size = 0;
-	size_t depth;
+    size_t size = 0;
+    size_t depth;
 
-	if (chain != NULL) {
-		size += sizeof(struct cert_chain);
+    if (chain != NULL) {
+        size += sizeof(struct cert_chain);
 
-		for (depth = 0; depth < chain->depth; depth++) {
-			if (chain->certs[depth].der != NULL) {
-				size += chain->certs[depth].der_length;
-			}
-		}
-	}
+        for (depth = 0; depth < chain->depth; depth++) {
+            if (chain->certs[depth].der != NULL) {
+                size += chain->certs[depth].der_length;
+            }
+        }
+    }
 
-	return size;
+    return size;
 }

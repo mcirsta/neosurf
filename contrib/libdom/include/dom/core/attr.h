@@ -23,93 +23,61 @@ typedef struct dom_attr dom_attr;
 /**
  * The attribute type
  */
-typedef enum {
-	DOM_ATTR_UNSET = 0,
-	DOM_ATTR_STRING,
-	DOM_ATTR_BOOL,
-	DOM_ATTR_SHORT,
-	DOM_ATTR_INTEGER
-} dom_attr_type;
+typedef enum { DOM_ATTR_UNSET = 0, DOM_ATTR_STRING, DOM_ATTR_BOOL, DOM_ATTR_SHORT, DOM_ATTR_INTEGER } dom_attr_type;
 
 /* DOM Attr vtable */
 typedef struct dom_attr_vtable {
-	struct dom_node_vtable base;
+    struct dom_node_vtable base;
 
-	dom_exception (*dom_attr_get_name)(struct dom_attr *attr,
-					   dom_string **result);
-	dom_exception (*dom_attr_get_specified)(struct dom_attr *attr,
-						bool *result);
-	dom_exception (*dom_attr_get_value)(struct dom_attr *attr,
-					    dom_string **result);
-	dom_exception (*dom_attr_set_value)(struct dom_attr *attr,
-					    dom_string *value);
-	dom_exception (*dom_attr_get_owner_element)(
-		struct dom_attr *attr,
-		struct dom_element **result);
-	dom_exception (*dom_attr_get_schema_type_info)(
-		struct dom_attr *attr,
-		struct dom_type_info **result);
-	dom_exception (*dom_attr_is_id)(struct dom_attr *attr, bool *result);
+    dom_exception (*dom_attr_get_name)(struct dom_attr *attr, dom_string **result);
+    dom_exception (*dom_attr_get_specified)(struct dom_attr *attr, bool *result);
+    dom_exception (*dom_attr_get_value)(struct dom_attr *attr, dom_string **result);
+    dom_exception (*dom_attr_set_value)(struct dom_attr *attr, dom_string *value);
+    dom_exception (*dom_attr_get_owner_element)(struct dom_attr *attr, struct dom_element **result);
+    dom_exception (*dom_attr_get_schema_type_info)(struct dom_attr *attr, struct dom_type_info **result);
+    dom_exception (*dom_attr_is_id)(struct dom_attr *attr, bool *result);
 } dom_attr_vtable;
 
-static inline dom_exception
-dom_attr_get_name(struct dom_attr *attr, dom_string **result)
+static inline dom_exception dom_attr_get_name(struct dom_attr *attr, dom_string **result)
 {
-	return ((dom_attr_vtable *)((dom_node *)attr)->vtable)
-		->dom_attr_get_name(attr, result);
+    return ((dom_attr_vtable *)((dom_node *)attr)->vtable)->dom_attr_get_name(attr, result);
 }
 #define dom_attr_get_name(a, r) dom_attr_get_name((struct dom_attr *)(a), (r))
 
-static inline dom_exception
-dom_attr_get_specified(struct dom_attr *attr, bool *result)
+static inline dom_exception dom_attr_get_specified(struct dom_attr *attr, bool *result)
 {
-	return ((dom_attr_vtable *)((dom_node *)attr)->vtable)
-		->dom_attr_get_specified(attr, result);
+    return ((dom_attr_vtable *)((dom_node *)attr)->vtable)->dom_attr_get_specified(attr, result);
 }
-#define dom_attr_get_specified(a, r)                                           \
-	dom_attr_get_specified((struct dom_attr *)(a), (bool *)(r))
+#define dom_attr_get_specified(a, r) dom_attr_get_specified((struct dom_attr *)(a), (bool *)(r))
 
-static inline dom_exception
-dom_attr_get_value(struct dom_attr *attr, dom_string **result)
+static inline dom_exception dom_attr_get_value(struct dom_attr *attr, dom_string **result)
 {
-	return ((dom_attr_vtable *)((dom_node *)attr)->vtable)
-		->dom_attr_get_value(attr, result);
+    return ((dom_attr_vtable *)((dom_node *)attr)->vtable)->dom_attr_get_value(attr, result);
 }
 #define dom_attr_get_value(a, r) dom_attr_get_value((struct dom_attr *)(a), (r))
 
-static inline dom_exception
-dom_attr_set_value(struct dom_attr *attr, dom_string *value)
+static inline dom_exception dom_attr_set_value(struct dom_attr *attr, dom_string *value)
 {
-	return ((dom_attr_vtable *)((dom_node *)attr)->vtable)
-		->dom_attr_set_value(attr, value);
+    return ((dom_attr_vtable *)((dom_node *)attr)->vtable)->dom_attr_set_value(attr, value);
 }
 #define dom_attr_set_value(a, v) dom_attr_set_value((struct dom_attr *)(a), (v))
 
-static inline dom_exception
-dom_attr_get_owner_element(struct dom_attr *attr, struct dom_element **result)
+static inline dom_exception dom_attr_get_owner_element(struct dom_attr *attr, struct dom_element **result)
 {
-	return ((dom_attr_vtable *)((dom_node *)attr)->vtable)
-		->dom_attr_get_owner_element(attr, result);
+    return ((dom_attr_vtable *)((dom_node *)attr)->vtable)->dom_attr_get_owner_element(attr, result);
 }
-#define dom_attr_get_owner_element(a, r)                                       \
-	dom_attr_get_owner_element((struct dom_attr *)(a),                     \
-				   (struct dom_element **)(r))
+#define dom_attr_get_owner_element(a, r) dom_attr_get_owner_element((struct dom_attr *)(a), (struct dom_element **)(r))
 
-static inline dom_exception
-dom_attr_get_schema_type_info(struct dom_attr *attr,
-			      struct dom_type_info **result)
+static inline dom_exception dom_attr_get_schema_type_info(struct dom_attr *attr, struct dom_type_info **result)
 {
-	return ((dom_attr_vtable *)((dom_node *)attr)->vtable)
-		->dom_attr_get_schema_type_info(attr, result);
+    return ((dom_attr_vtable *)((dom_node *)attr)->vtable)->dom_attr_get_schema_type_info(attr, result);
 }
-#define dom_attr_get_schema_type_info(a, r)                                    \
-	dom_attr_get_schema_type_info((struct dom_attr *)(a),                  \
-				      (struct dom_type_info **)(r))
+#define dom_attr_get_schema_type_info(a, r)                                                                            \
+    dom_attr_get_schema_type_info((struct dom_attr *)(a), (struct dom_type_info **)(r))
 
 static inline dom_exception dom_attr_is_id(struct dom_attr *attr, bool *result)
 {
-	return ((dom_attr_vtable *)((dom_node *)attr)->vtable)
-		->dom_attr_is_id(attr, result);
+    return ((dom_attr_vtable *)((dom_node *)attr)->vtable)->dom_attr_is_id(attr, result);
 }
 #define dom_attr_is_id(a, r) dom_attr_is_id((struct dom_attr *)(a), (bool *)(r))
 

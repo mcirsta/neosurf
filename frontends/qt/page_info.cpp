@@ -27,39 +27,37 @@ extern "C" {
 #include "qt/page_info.cls.h"
 
 NS_Page_info::NS_Page_info(QWidget *parent, struct browser_window *bw)
-	: NS_Corewindow(parent, Qt::Popup), m_session(nullptr)
+    : NS_Corewindow(parent, Qt::Popup), m_session(nullptr)
 {
-	setAttribute(Qt::WA_DeleteOnClose);
-	page_info_create((struct core_window *)m_core_window, bw, &m_session);
+    setAttribute(Qt::WA_DeleteOnClose);
+    page_info_create((struct core_window *)m_core_window, bw, &m_session);
 }
 
 NS_Page_info::~NS_Page_info()
 {
-	page_info_destroy(m_session);
+    page_info_destroy(m_session);
 }
 
 void NS_Page_info::draw(struct rect *clip, struct redraw_context *ctx)
 {
-	page_info_redraw(m_session, 0, 0, clip, ctx);
+    page_info_redraw(m_session, 0, 0, clip, ctx);
 }
 
 bool NS_Page_info::key_press(uint32_t nskey)
 {
-	return page_info_keypress(m_session, nskey);
+    return page_info_keypress(m_session, nskey);
 }
 
 void NS_Page_info::mouse_action(browser_mouse_state mouse_state, int x, int y)
 {
-	bool did_something = false;
-	if ((mouse_state) &&
-	    (!geometry().contains(mapToGlobal(QPoint(x, y))))) {
-		/* click outside window */
-		did_something = true;
-	} else {
-		page_info_mouse_action(
-			m_session, mouse_state, x, y, &did_something);
-	}
-	if (did_something) {
-		close();
-	}
+    bool did_something = false;
+    if ((mouse_state) && (!geometry().contains(mapToGlobal(QPoint(x, y))))) {
+        /* click outside window */
+        did_something = true;
+    } else {
+        page_info_mouse_action(m_session, mouse_state, x, y, &did_something);
+    }
+    if (did_something) {
+        close();
+    }
 }

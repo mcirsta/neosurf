@@ -20,13 +20,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "utils/corestrings.h"
+#include "utils/nsurl.h"
+#include "utils/ring.h"
+#include "utils/url.h"
+#include "utils/utils.h"
 #include "content/fetch.h"
 #include "content/llcache.h"
-#include "utils/ring.h"
-#include "utils/nsurl.h"
-#include "utils/url.h"
-#include "utils/corestrings.h"
-#include "utils/utils.h"
 
 /******************************************************************************
  * Things that we'd reasonably expect to have to implement                    *
@@ -37,15 +37,15 @@ bool verbose_log;
 /* utils/utils.h */
 char *filename_from_path(char *path)
 {
-	char *leafname;
+    char *leafname;
 
-	leafname = strrchr(path, '/');
-	if (!leafname)
-		leafname = path;
-	else
-		leafname += 1;
+    leafname = strrchr(path, '/');
+    if (!leafname)
+        leafname = path;
+    else
+        leafname += 1;
 
-	return strdup(leafname);
+    return strdup(leafname);
 }
 
 /* utils/schedule.h */
@@ -61,47 +61,47 @@ void schedule_remove(schedule_callback_fn cb, void *pw)
 /* content/fetch.h */
 const char *fetch_filetype(const char *unix_path)
 {
-	return NULL;
+    return NULL;
 }
 
 /* content/fetch.h */
 char *fetch_mimetype(const char *ro_path)
 {
-	return NULL;
+    return NULL;
 }
 
 /* utils/url.h */
 char *path_to_url(const char *path)
 {
-	int urllen = strlen(path) + FILE_SCHEME_PREFIX_LEN + 1;
-	char *url = malloc(urllen);
+    int urllen = strlen(path) + FILE_SCHEME_PREFIX_LEN + 1;
+    char *url = malloc(urllen);
 
-	if (url == NULL) {
-		return NULL;
-	}
+    if (url == NULL) {
+        return NULL;
+    }
 
-	if (*path == '/') {
-		path++; /* file: paths are already absolute */
-	}
+    if (*path == '/') {
+        path++; /* file: paths are already absolute */
+    }
 
-	snprintf(url, urllen, "%s%s", FILE_SCHEME_PREFIX, path);
+    snprintf(url, urllen, "%s%s", FILE_SCHEME_PREFIX, path);
 
-	return url;
+    return url;
 }
 
 /* utils/url.h */
 char *url_to_path(const char *url)
 {
-	char *url_path;
-	char *path = NULL;
+    char *url_path;
+    char *path = NULL;
 
-	if (url_unescape(url, 0, NULL, &url_path) == NSERROR_OK) {
-		/* return the absolute path including leading / */
-		path = strdup(url_path + (FILE_SCHEME_PREFIX_LEN - 1));
-		free(url_path);
-	}
+    if (url_unescape(url, 0, NULL, &url_path) == NSERROR_OK) {
+        /* return the absolute path including leading / */
+        path = strdup(url_path + (FILE_SCHEME_PREFIX_LEN - 1));
+        free(url_path);
+    }
 
-	return path;
+    return path;
 }
 
 /******************************************************************************
@@ -116,7 +116,7 @@ char *url_to_path(const char *url)
  */
 bool cookie_manager_add(const struct cookie_data *data)
 {
-	return true;
+    return true;
 }
 
 /* desktop/cookie_manager.h -- used by urldb
@@ -140,12 +140,10 @@ void bitmap_destroy(void *bitmap)
  * URLdb shouldn't care about bitmaps.
  * This is because the legacy RO thumbnail stuff was hacked in and must die.
  */
-bool image_bitmap_plot(struct bitmap *bitmap,
-		       struct content_redraw_data *data,
-		       const struct rect *clip,
-		       const struct redraw_context *ctx)
+bool image_bitmap_plot(
+    struct bitmap *bitmap, struct content_redraw_data *data, const struct rect *clip, const struct redraw_context *ctx)
 {
-	return true;
+    return true;
 }
 
 /* content/fetchers/fetch_file.h -- used by fetcher core
@@ -162,222 +160,188 @@ void fetch_file_register(void)
  ******************************************************************************/
 
 typedef struct test_context {
-	struct fetch *parent;
+    struct fetch *parent;
 
-	bool aborted;
-	bool locked;
+    bool aborted;
+    bool locked;
 
-	struct test_context *r_prev;
-	struct test_context *r_next;
+    struct test_context *r_prev;
+    struct test_context *r_next;
 } test_context;
 
 static test_context *ring;
 
 bool test_initialise(lwc_string *scheme)
 {
-	/* Nothing to do */
-	return true;
+    /* Nothing to do */
+    return true;
 }
 
 bool test_can_fetch(const nsurl *url)
 {
-	/* Nothing to do */
-	return true;
+    /* Nothing to do */
+    return true;
 }
 
 void test_finalise(lwc_string *scheme)
 {
-	/* Nothing to do */
+    /* Nothing to do */
 }
 
-void *test_setup_fetch(struct fetch *parent,
-		       nsurl *url,
-		       bool only_2xx,
-		       bool downgrade_tls,
-		       const char *post_urlenc,
-		       const struct fetch_multipart_data *post_multipart,
-		       const char **headers)
+void *test_setup_fetch(struct fetch *parent, nsurl *url, bool only_2xx, bool downgrade_tls, const char *post_urlenc,
+    const struct fetch_multipart_data *post_multipart, const char **headers)
 {
-	test_context *ctx = calloc(1, sizeof(test_context));
+    test_context *ctx = calloc(1, sizeof(test_context));
 
-	if (ctx == NULL)
-		return NULL;
+    if (ctx == NULL)
+        return NULL;
 
-	ctx->parent = parent;
+    ctx->parent = parent;
 
-	RING_INSERT(ring, ctx);
+    RING_INSERT(ring, ctx);
 
-	return ctx;
+    return ctx;
 }
 
 bool test_start_fetch(void *handle)
 {
-	/* Nothing to do */
-	return true;
+    /* Nothing to do */
+    return true;
 }
 
 void test_abort_fetch(void *handle)
 {
-	test_context *ctx = handle;
+    test_context *ctx = handle;
 
-	ctx->aborted = true;
+    ctx->aborted = true;
 }
 
 void test_free_fetch(void *handle)
 {
-	test_context *ctx = handle;
+    test_context *ctx = handle;
 
-	RING_REMOVE(ring, ctx);
+    RING_REMOVE(ring, ctx);
 
-	free(ctx);
+    free(ctx);
 }
 
 void test_process(test_context *ctx)
 {
-	/** \todo Implement */
+    /** \todo Implement */
 }
 
 void test_poll(lwc_string *scheme)
 {
-	test_context *ctx, *next;
+    test_context *ctx, *next;
 
-	if (ring == NULL)
-		return;
+    if (ring == NULL)
+        return;
 
-	ctx = ring;
-	do {
-		next = ctx->r_next;
+    ctx = ring;
+    do {
+        next = ctx->r_next;
 
-		if (ctx->locked)
-			continue;
+        if (ctx->locked)
+            continue;
 
-		if (ctx->aborted == false) {
-			test_process(ctx);
-		}
+        if (ctx->aborted == false) {
+            test_process(ctx);
+        }
 
-		fetch_remove_from_queues(ctx->parent);
-		fetch_free(ctx->parent);
-	} while ((ctx = next) != ring && ring != NULL);
+        fetch_remove_from_queues(ctx->parent);
+        fetch_free(ctx->parent);
+    } while ((ctx = next) != ring && ring != NULL);
 }
 
 /******************************************************************************
  * The actual test code                                                       *
  ******************************************************************************/
 
-nserror query_handler(const llcache_query *query,
-		      void *pw,
-		      llcache_query_response cb,
-		      void *cbpw)
+nserror query_handler(const llcache_query *query, void *pw, llcache_query_response cb, void *cbpw)
 {
-	/* I'm too lazy to actually implement this. It should queue the query,
-	 * then deliver the response from main(). */
+    /* I'm too lazy to actually implement this. It should queue the query,
+     * then deliver the response from main(). */
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
-nserror
-event_handler(llcache_handle *handle, const llcache_event *event, void *pw)
+nserror event_handler(llcache_handle *handle, const llcache_event *event, void *pw)
 {
-	static char *event_names[] = {
-		"HAD_HEADERS", "HAD_DATA", "DONE", "ERROR", "PROGRESS"};
-	bool *done = pw;
+    static char *event_names[] = {"HAD_HEADERS", "HAD_DATA", "DONE", "ERROR", "PROGRESS"};
+    bool *done = pw;
 
-	if (event->type != LLCACHE_EVENT_PROGRESS)
-		fprintf(stdout, "%p : %s\n", handle, event_names[event->type]);
+    if (event->type != LLCACHE_EVENT_PROGRESS)
+        fprintf(stdout, "%p : %s\n", handle, event_names[event->type]);
 
-	/* Inform main() that the fetch completed */
-	if (event->type == LLCACHE_EVENT_DONE)
-		*done = true;
+    /* Inform main() that the fetch completed */
+    if (event->type == LLCACHE_EVENT_DONE)
+        *done = true;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 int main(int argc, char **argv)
 {
-	nserror error;
-	llcache_handle *handle;
-	llcache_handle *handle2;
-	lwc_string *scheme;
-	nsurl *url;
-	bool done = false;
+    nserror error;
+    llcache_handle *handle;
+    llcache_handle *handle2;
+    lwc_string *scheme;
+    nsurl *url;
+    bool done = false;
 
-	/* Initialise subsystems */
-	fetch_init();
+    /* Initialise subsystems */
+    fetch_init();
 
-	if (lwc_intern_string("test", SLEN("test"), &scheme) != lwc_error_ok) {
-		fprintf(stderr, "Failed to intern \"test\"\n");
-		return 1;
-	}
+    if (lwc_intern_string("test", SLEN("test"), &scheme) != lwc_error_ok) {
+        fprintf(stderr, "Failed to intern \"test\"\n");
+        return 1;
+    }
 
-	fetch_add_fetcher(scheme,
-			  test_initialise,
-			  test_can_fetch,
-			  test_setup_fetch,
-			  test_start_fetch,
-			  test_abort_fetch,
-			  test_free_fetch,
-			  test_poll,
-			  test_finalise);
+    fetch_add_fetcher(scheme, test_initialise, test_can_fetch, test_setup_fetch, test_start_fetch, test_abort_fetch,
+        test_free_fetch, test_poll, test_finalise);
 
-	/* Initialise low-level cache */
-	error = llcache_initialise(query_handler, NULL, 1024 * 1024);
-	if (error != NSERROR_OK) {
-		fprintf(stderr, "llcache_initialise: %d\n", error);
-		return 1;
-	}
+    /* Initialise low-level cache */
+    error = llcache_initialise(query_handler, NULL, 1024 * 1024);
+    if (error != NSERROR_OK) {
+        fprintf(stderr, "llcache_initialise: %d\n", error);
+        return 1;
+    }
 
-	if (nsurl_create("http://www.netsurf-browser.org", &url) !=
-	    NSERROR_OK) {
-		fprintf(stderr, "Failed creating url\n");
-		return 1;
-	}
+    if (nsurl_create("http://www.netsurf-browser.org", &url) != NSERROR_OK) {
+        fprintf(stderr, "Failed creating url\n");
+        return 1;
+    }
 
-	/* Retrieve an URL from the low-level cache (may trigger fetch) */
-	error = llcache_handle_retrieve(url,
-					LLCACHE_RETRIEVE_VERIFIABLE,
-					NULL,
-					NULL,
-					event_handler,
-					&done,
-					&handle);
-	if (error != NSERROR_OK) {
-		fprintf(stderr, "llcache_handle_retrieve: %d\n", error);
-		return 1;
-	}
+    /* Retrieve an URL from the low-level cache (may trigger fetch) */
+    error = llcache_handle_retrieve(url, LLCACHE_RETRIEVE_VERIFIABLE, NULL, NULL, event_handler, &done, &handle);
+    if (error != NSERROR_OK) {
+        fprintf(stderr, "llcache_handle_retrieve: %d\n", error);
+        return 1;
+    }
 
-	/* Poll relevant components */
-	while (done == false) {
-		llcache_poll();
-	}
+    /* Poll relevant components */
+    while (done == false) {
+        llcache_poll();
+    }
 
-	done = false;
-	error = llcache_handle_retrieve(url,
-					LLCACHE_RETRIEVE_VERIFIABLE,
-					NULL,
-					NULL,
-					event_handler,
-					&done,
-					&handle2);
-	if (error != NSERROR_OK) {
-		fprintf(stderr, "llcache_handle_retrieve: %d\n", error);
-		return 1;
-	}
+    done = false;
+    error = llcache_handle_retrieve(url, LLCACHE_RETRIEVE_VERIFIABLE, NULL, NULL, event_handler, &done, &handle2);
+    if (error != NSERROR_OK) {
+        fprintf(stderr, "llcache_handle_retrieve: %d\n", error);
+        return 1;
+    }
 
-	while (done == false) {
-		llcache_poll();
-	}
+    while (done == false) {
+        llcache_poll();
+    }
 
-	fprintf(stdout,
-		"%p, %p -> %d\n",
-		handle,
-		handle2,
-		llcache_handle_references_same_object(handle, handle2));
+    fprintf(stdout, "%p, %p -> %d\n", handle, handle2, llcache_handle_references_same_object(handle, handle2));
 
-	/* Cleanup */
-	llcache_handle_release(handle2);
-	llcache_handle_release(handle);
+    /* Cleanup */
+    llcache_handle_release(handle2);
+    llcache_handle_release(handle);
 
-	fetch_quit();
+    fetch_quit();
 
-	return 0;
+    return 0;
 }

@@ -16,17 +16,17 @@
 #define LOG(x) ((void)0)
 #else
 #ifdef __GNUC__
-#define LOG(x)                                                                 \
-	do { printf x, fputc('\n', stdout));                        \
-	} while (0)
+#define LOG(x)                                                                                                         \
+    do { printf x, fputc('\n', stdout));                                                                               \
+    } while (0)
 #elif defined(__CC_NORCROFT)
-#define LOG(x)                                                                 \
-	do { printf x, fputc('\n', stdout));                        \
-	} while (0)
+#define LOG(x)                                                                                                         \
+    do { printf x, fputc('\n', stdout));                                                                               \
+    } while (0)
 #else
-#define LOG(x)                                                                 \
-	do { printf x, fputc('\n', stdout));                        \
-	} while (0)
+#define LOG(x)                                                                                                         \
+    do { printf x, fputc('\n', stdout));                                                                               \
+    } while (0)
 #endif
 #endif
 

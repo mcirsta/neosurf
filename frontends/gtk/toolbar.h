@@ -32,11 +32,8 @@ struct nsgtk_scaffolding;
  * \param[out] toolbar a pointer to receive the result.
  * \return NSERROR_OK and toolbar updated on success else error code
  */
-nserror nsgtk_toolbar_create(GtkBuilder *builder,
-			     struct browser_window *(*get_bw)(void *ctx),
-			     void *get_bw_ctx,
-			     bool want_location_focus,
-			     struct nsgtk_toolbar **toolbar);
+nserror nsgtk_toolbar_create(GtkBuilder *builder, struct browser_window *(*get_bw)(void *ctx), void *get_bw_ctx,
+    bool want_location_focus, struct nsgtk_toolbar **toolbar);
 
 
 /**
@@ -93,8 +90,7 @@ nserror nsgtk_toolbar_set_url(struct nsgtk_toolbar *tb, nsurl *url);
  * \param pixbuf The pixel buffer data to use to set the web search icon
  * \return NSERROR_OK on success
  */
-nserror
-nsgtk_toolbar_set_websearch_image(struct nsgtk_toolbar *tb, GdkPixbuf *pixbuf);
+nserror nsgtk_toolbar_set_websearch_image(struct nsgtk_toolbar *tb, GdkPixbuf *pixbuf);
 
 
 /**
@@ -107,8 +103,7 @@ nsgtk_toolbar_set_websearch_image(struct nsgtk_toolbar *tb, GdkPixbuf *pixbuf);
  * \param itemid the id of the item to activate
  * \return NSERROR_OK on success
  */
-nserror nsgtk_toolbar_item_activate(struct nsgtk_toolbar *tb,
-				    nsgtk_toolbar_button itemid);
+nserror nsgtk_toolbar_item_activate(struct nsgtk_toolbar *tb, nsgtk_toolbar_button itemid);
 
 /**
  * set the toolbar to be shown or hidden
@@ -125,8 +120,7 @@ nserror nsgtk_toolbar_show(struct nsgtk_toolbar *tb, bool show);
  * \param tb The toolbar to position relative to
  * \param win The page-info window to position
  */
-nserror nsgtk_toolbar_position_page_info(struct nsgtk_toolbar *tb,
-					 struct nsgtk_pi_window *win);
+nserror nsgtk_toolbar_position_page_info(struct nsgtk_toolbar *tb, struct nsgtk_pi_window *win);
 
 /**
  * position the local history window appropriately

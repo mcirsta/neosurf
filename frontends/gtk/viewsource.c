@@ -16,72 +16,65 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <gtk/gtk.h>
 #include <stdlib.h>
 #include <string.h>
-#include <gtk/gtk.h>
 
-#include <neosurf/utils/utils.h>
-#include <neosurf/utils/utf8.h>
-#include <neosurf/utils/nsurl.h>
-#include <neosurf/utils/messages.h>
 #include <neosurf/browser_window.h>
 #include <neosurf/content.h>
+#include <neosurf/utils/messages.h>
+#include <neosurf/utils/nsurl.h>
+#include <neosurf/utils/utf8.h>
+#include <neosurf/utils/utils.h>
 
 #include "gtk/viewdata.h"
 #include "gtk/viewsource.h"
 
 nserror nsgtk_viewsource(GtkWindow *parent, struct browser_window *bw)
 {
-	nserror ret;
-	struct hlcache_handle *hlcontent;
-	const uint8_t *source_data;
-	size_t source_size;
-	char *ndata = NULL;
-	size_t ndata_len;
-	char *filename;
-	char *title;
+    nserror ret;
+    struct hlcache_handle *hlcontent;
+    const uint8_t *source_data;
+    size_t source_size;
+    char *ndata = NULL;
+    size_t ndata_len;
+    char *filename;
+    char *title;
 
-	hlcontent = browser_window_get_content(bw);
-	if (hlcontent == NULL) {
-		return NSERROR_BAD_PARAMETER;
-	}
+    hlcontent = browser_window_get_content(bw);
+    if (hlcontent == NULL) {
+        return NSERROR_BAD_PARAMETER;
+    }
 
-	if (content_get_type(hlcontent) != CONTENT_HTML) {
-		return NSERROR_BAD_CONTENT;
-	}
+    if (content_get_type(hlcontent) != CONTENT_HTML) {
+        return NSERROR_BAD_CONTENT;
+    }
 
-	source_data = content_get_source_data(hlcontent, &source_size);
+    source_data = content_get_source_data(hlcontent, &source_size);
 
-	ret = nsurl_nice(browser_window_access_url(bw), &filename, false);
-	if (ret != NSERROR_OK) {
-		filename = strdup(messages_get("SaveSource"));
-		if (filename == NULL) {
-			return NSERROR_NOMEM;
-		}
-	}
+    ret = nsurl_nice(browser_window_access_url(bw), &filename, false);
+    if (ret != NSERROR_OK) {
+        filename = strdup(messages_get("SaveSource"));
+        if (filename == NULL) {
+            return NSERROR_NOMEM;
+        }
+    }
 
-	title = malloc(strlen(nsurl_access(browser_window_access_url(bw))) +
-		       SLEN("Source of  - NeoSurf") + 1);
-	if (title == NULL) {
-		free(filename);
-		return NSERROR_NOMEM;
-	}
-	sprintf(title,
-		"Source of %s - NeoSurf",
-		nsurl_access(browser_window_access_url(bw)));
+    title = malloc(strlen(nsurl_access(browser_window_access_url(bw))) + SLEN("Source of  - NeoSurf") + 1);
+    if (title == NULL) {
+        free(filename);
+        return NSERROR_NOMEM;
+    }
+    sprintf(title, "Source of %s - NeoSurf", nsurl_access(browser_window_access_url(bw)));
 
-	ret = utf8_from_enc((const char *)source_data,
-			    content_get_encoding(hlcontent,
-						 CONTENT_ENCODING_NORMAL),
-			    source_size,
-			    &ndata,
-			    &ndata_len);
-	if (ret == NSERROR_OK) {
-		ret = nsgtk_viewdata(title, filename, ndata, ndata_len);
-	}
+    ret = utf8_from_enc((const char *)source_data, content_get_encoding(hlcontent, CONTENT_ENCODING_NORMAL),
+        source_size, &ndata, &ndata_len);
+    if (ret == NSERROR_OK) {
+        ret = nsgtk_viewdata(title, filename, ndata, ndata_len);
+    }
 
-	free(filename);
-	free(title);
+    free(filename);
+    free(title);
 
-	return ret;
+    return ret;
 }

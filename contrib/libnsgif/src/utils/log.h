@@ -15,10 +15,10 @@
 #ifdef NDEBUG
 #define LOG(x) ((void)0)
 #else
-#define LOG(x)                                                                 \
-	do {                                                                   \
-		fprintf(stderr, x), fputc('\n', stderr);                       \
-	} while (0)
+#define LOG(x)                                                                                                         \
+    do {                                                                                                               \
+        fprintf(stderr, x), fputc('\n', stderr);                                                                       \
+    } while (0)
 #endif /* NDEBUG */
 
 #endif /* _LIBNSGIF_LOG_H_ */

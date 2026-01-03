@@ -36,32 +36,26 @@
 typedef ssize_t regoff_t;
 
 typedef struct {
-	size_t re_nsub; /* Number of parenthesized subexpressions.*/
+    size_t re_nsub; /* Number of parenthesized subexpressions.*/
 } regex_t;
 
 
 typedef struct {
-	regoff_t rm_so; /* Byte offset from start of string to start
-			 *  of substring.
-			 */
-	regoff_t rm_eo; /* Byte offset from start of string of the
-			 *  first character after the end of substring.
-			 */
+    regoff_t rm_so; /* Byte offset from start of string to start
+                     *  of substring.
+                     */
+    regoff_t rm_eo; /* Byte offset from start of string of the
+                     *  first character after the end of substring.
+                     */
 } regmatch_t;
 
 
 int regcomp(regex_t *restrict preg, const char *restrictregex, int cflags);
 
-size_t regerror(int errorcode,
-		const regex_t *restrict preg,
-		char *restrict errbuf,
-		size_t errbuf_size);
+size_t regerror(int errorcode, const regex_t *restrict preg, char *restrict errbuf, size_t errbuf_size);
 
-int regexec(const regex_t *restrict preg,
-	    const char *restrict string,
-	    size_t nmatch,
-	    regmatch_t pmatch[restrict],
-	    int eflags);
+int regexec(
+    const regex_t *restrict preg, const char *restrict string, size_t nmatch, regmatch_t pmatch[restrict], int eflags);
 
 void regfree(regex_t *preg);
 

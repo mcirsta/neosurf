@@ -20,13 +20,13 @@
 #include <stdlib.h>
 
 struct xml_char_range {
-	unsigned int start;
-	unsigned int end;
+    unsigned int start;
+    unsigned int end;
 };
 
 struct xml_char_group {
-	size_t len;
-	const struct xml_char_range *range;
+    size_t len;
+    const struct xml_char_range *range;
 };
 
 /* The groups */
@@ -37,13 +37,11 @@ extern const struct xml_char_group digit_char_group;
 extern const struct xml_char_group extender_group;
 extern const struct xml_char_group ideographic_group;
 
-bool _dom_is_character_in_group(unsigned int ch,
-				const struct xml_char_group *group);
+bool _dom_is_character_in_group(unsigned int ch, const struct xml_char_group *group);
 
 #define is_base_char(ch) _dom_is_character_in_group((ch), &base_char_group)
 #define is_char(ch) _dom_is_character_in_group((ch), &char_group)
-#define is_combining_char(ch)                                                  \
-	_dom_is_character_in_group((ch), &combining_char_group)
+#define is_combining_char(ch) _dom_is_character_in_group((ch), &combining_char_group)
 #define is_digit(ch) _dom_is_character_in_group((ch), &digit_char_group)
 #define is_extender(ch) _dom_is_character_in_group((ch), &extender_group)
 #define is_ideographic(ch) _dom_is_character_in_group((ch), &ideographic_group)

@@ -11,11 +11,8 @@
 #include <dom/core/exceptions.h>
 #include <dom/core/pi.h>
 
-dom_exception
-_dom_processing_instruction_create(dom_document *doc,
-				   dom_string *name,
-				   dom_string *value,
-				   dom_processing_instruction **result);
+dom_exception _dom_processing_instruction_create(
+    dom_document *doc, dom_string *name, dom_string *value, dom_processing_instruction **result);
 
 void _dom_processing_instruction_destroy(dom_processing_instruction *pi);
 

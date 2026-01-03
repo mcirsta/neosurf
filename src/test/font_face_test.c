@@ -21,9 +21,9 @@
  * Test for font_face functionality.
  */
 
-#include <stdio.h>
-#include <stdbool.h>
 #include <assert.h>
+#include <stdbool.h>
+#include <stdio.h>
 
 /* Forward declaration - implemented in font_face.c, exported from libneosurf */
 bool html_font_face_is_available(const char *family_name);
@@ -33,9 +33,9 @@ bool html_font_face_is_available(const char *family_name);
  */
 static void test_font_not_available(void)
 {
-	bool available = html_font_face_is_available("NonExistentFont12345");
-	assert(!available);
-	printf("PASS: html_font_face_is_available returns false for unknown font\n");
+    bool available = html_font_face_is_available("NonExistentFont12345");
+    assert(!available);
+    printf("PASS: html_font_face_is_available returns false for unknown font\n");
 }
 
 /**
@@ -43,18 +43,18 @@ static void test_font_not_available(void)
  */
 static void test_font_empty_string(void)
 {
-	bool available = html_font_face_is_available("");
-	assert(!available);
-	printf("PASS: html_font_face_is_available returns false for empty string\n");
+    bool available = html_font_face_is_available("");
+    assert(!available);
+    printf("PASS: html_font_face_is_available returns false for empty string\n");
 }
 
 int main(void)
 {
-	printf("Running font_face tests...\n");
+    printf("Running font_face tests...\n");
 
-	test_font_not_available();
-	test_font_empty_string();
+    test_font_not_available();
+    test_font_empty_string();
 
-	printf("All font_face tests passed!\n");
-	return 0;
+    printf("All font_face tests passed!\n");
+    return 0;
 }

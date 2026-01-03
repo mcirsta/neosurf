@@ -29,53 +29,52 @@ extern struct gui_window_table *win32_window_table;
 #include "neosurf/mouse.h"
 
 struct browser_mouse {
-	struct gui_window *gui;
+    struct gui_window *gui;
 
-	double pressed_x;
-	double pressed_y;
-	bool waiting;
-	browser_mouse_state state;
+    double pressed_x;
+    double pressed_y;
+    bool waiting;
+    browser_mouse_state state;
 };
 
 struct gui_window {
-	/* The front's private data connected to a browser window */
-	/* currently 1<->1 gui_window<->windows window [non-tabbed] */
-	struct browser_window *bw; /**< the browser_window */
+    /* The front's private data connected to a browser window */
+    /* currently 1<->1 gui_window<->windows window [non-tabbed] */
+    struct browser_window *bw; /**< the browser_window */
 
-	HWND main; /**< handle to the actual window */
-	HWND toolbar; /**< toolbar handle */
-	HWND urlbar; /**< url bar handle */
-	HWND throbber; /** throbber handle */
-	HWND drawingarea; /**< drawing area handle */
-	HWND statusbar; /**< status bar handle */
-	HWND vscroll; /**< vertical scrollbar handle */
-	HWND hscroll; /**< horizontal scrollbar handle */
-	HWND tooltip; /**< tooltip handle */
+    HWND main; /**< handle to the actual window */
+    HWND toolbar; /**< toolbar handle */
+    HWND urlbar; /**< url bar handle */
+    HWND throbber; /** throbber handle */
+    HWND drawingarea; /**< drawing area handle */
+    HWND statusbar; /**< status bar handle */
+    HWND vscroll; /**< vertical scrollbar handle */
+    HWND hscroll; /**< horizontal scrollbar handle */
+    HWND tooltip; /**< tooltip handle */
 
-	HMENU mainmenu; /**< the main menu */
-	HMENU rclick; /**< the right-click menu */
-	struct nsws_localhistory
-		*localhistory; /**< handle to local history window */
-	int width; /**< width of window */
-	int height; /**< height of drawing area */
+    HMENU mainmenu; /**< the main menu */
+    HMENU rclick; /**< the right-click menu */
+    struct nsws_localhistory *localhistory; /**< handle to local history window */
+    int width; /**< width of window */
+    int height; /**< height of drawing area */
 
-	int toolbuttonc; /**< number of toolbar buttons */
-	int toolbuttonsize; /**< width, height of buttons */
-	bool throbbing; /**< whether currently throbbing */
+    int toolbuttonc; /**< number of toolbar buttons */
+    int toolbuttonsize; /**< width, height of buttons */
+    bool throbbing; /**< whether currently throbbing */
 
-	struct browser_mouse *mouse; /**< mouse state */
+    struct browser_mouse *mouse; /**< mouse state */
 
-	HACCEL acceltable; /**< accelerators */
+    HACCEL acceltable; /**< accelerators */
 
-	HBITMAP hPageInfo[8]; /**< page info handles */
+    HBITMAP hPageInfo[8]; /**< page info handles */
 
-	int scrollx; /**< current scroll location */
-	int scrolly; /**< current scroll location */
+    int scrollx; /**< current scroll location */
+    int scrolly; /**< current scroll location */
 
-	RECT *fullscreen; /**< memorize non-fullscreen area */
-	RECT redraw; /**< Area needing redraw. */
-	int requestscrollx, requestscrolly; /**< scolling requested. */
-	struct gui_window *next, *prev; /**< global linked list */
+    RECT *fullscreen; /**< memorize non-fullscreen area */
+    RECT redraw; /**< Area needing redraw. */
+    int requestscrollx, requestscrolly; /**< scolling requested. */
+    struct gui_window *next, *prev; /**< global linked list */
 };
 
 struct rect;

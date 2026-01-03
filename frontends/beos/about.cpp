@@ -21,12 +21,12 @@
 #include <stdlib.h>
 #include <string.h>
 extern "C" {
-#include "desktop/version.h"
 #include "utils/log.h"
-#include "testament.h"
 #include "utils/useragent.h"
-#include "curl/curlver.h"
 #include "netsurf/clipboard.h"
+#include "curl/curlver.h"
+#include "desktop/version.h"
+#include "testament.h"
 }
 #include "beos/about.h"
 #include "beos/scaffolding.h"
@@ -43,16 +43,15 @@ extern "C" {
  */
 void nsbeos_about(struct gui_window *gui)
 {
-	BString text;
-	text << "Netsurf  : " << user_agent_string() << "\n";
-	text << "Version  : " << netsurf_version << "\n";
-	text << "Build ID : " << WT_REVID << "\n";
-	text << "Date     : " << WT_COMPILEDATE << "\n";
-	text << "cURL     : " << LIBCURL_VERSION << "\n";
+    BString text;
+    text << "Netsurf  : " << user_agent_string() << "\n";
+    text << "Version  : " << netsurf_version << "\n";
+    text << "Build ID : " << WT_REVID << "\n";
+    text << "Date     : " << WT_COMPILEDATE << "\n";
+    text << "cURL     : " << LIBCURL_VERSION << "\n";
 
-	BAboutWindow *alert = new BAboutWindow("About NetSurf",
-					       "application/x-vnd.NetSurf");
-	alert->AddExtraInfo(text);
-	alert->Show();
-	// TODO: i18n-ize
+    BAboutWindow *alert = new BAboutWindow("About NetSurf", "application/x-vnd.NetSurf");
+    alert->AddExtraInfo(text);
+    alert->Show();
+    // TODO: i18n-ize
 }

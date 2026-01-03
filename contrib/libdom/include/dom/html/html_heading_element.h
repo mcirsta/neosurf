@@ -8,18 +8,14 @@
 #ifndef dom_html_heading_element_h_
 #define dom_html_heading_element_h_
 
-#include <stdbool.h>
 #include <dom/core/exceptions.h>
 #include <dom/core/string.h>
+#include <stdbool.h>
 
 typedef struct dom_html_heading_element dom_html_heading_element;
 
-dom_exception
-dom_html_heading_element_get_align(dom_html_heading_element *element,
-				   dom_string **align);
+dom_exception dom_html_heading_element_get_align(dom_html_heading_element *element, dom_string **align);
 
-dom_exception
-dom_html_heading_element_set_align(dom_html_heading_element *element,
-				   dom_string *align);
+dom_exception dom_html_heading_element_set_align(dom_html_heading_element *element, dom_string *align);
 
 #endif

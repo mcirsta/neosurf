@@ -8,8 +8,8 @@
 #ifndef utils_h_
 #define utils_h_
 
-#include <stddef.h>
 #include <inttypes.h>
+#include <stddef.h>
 
 #ifndef max
 #define max(a, b) ((a) > (b) ? (a) : (b))

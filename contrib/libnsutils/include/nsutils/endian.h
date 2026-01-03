@@ -23,9 +23,9 @@
  */
 static inline bool endian_host_is_le(void)
 {
-	const uint16_t test = 1;
+    const uint16_t test = 1;
 
-	return ((const uint8_t *)&test)[0];
+    return ((const uint8_t *)&test)[0];
 }
 
 /**
@@ -36,8 +36,8 @@ static inline bool endian_host_is_le(void)
  */
 static inline uint32_t endian_swap(uint32_t val)
 {
-	return ((val & 0xff000000) >> 24) | ((val & 0x00ff0000) >> 8) |
-	       ((val & 0x0000ff00) << 8) | ((val & 0x000000ff) << 24);
+    return ((val & 0xff000000) >> 24) | ((val & 0x00ff0000) >> 8) | ((val & 0x0000ff00) << 8) |
+        ((val & 0x000000ff) << 24);
 }
 
 /**
@@ -48,10 +48,10 @@ static inline uint32_t endian_swap(uint32_t val)
  */
 static inline uint32_t endian_host_to_big(uint32_t host)
 {
-	if (endian_host_is_le())
-		return endian_swap(host);
+    if (endian_host_is_le())
+        return endian_swap(host);
 
-	return host;
+    return host;
 }
 
 /**
@@ -62,10 +62,10 @@ static inline uint32_t endian_host_to_big(uint32_t host)
  */
 static inline uint32_t endian_big_to_host(uint32_t big)
 {
-	if (endian_host_is_le())
-		return endian_swap(big);
+    if (endian_host_is_le())
+        return endian_swap(big);
 
-	return big;
+    return big;
 }
 
 #endif

@@ -26,8 +26,8 @@
 #include <stdbool.h>
 
 #include "utils/config.h"
-#include "utils/nsurl.h"
 #include "utils/inet.h"
+#include "utils/nsurl.h"
 #include "neosurf/ssl_certs.h"
 
 struct content;
@@ -38,19 +38,19 @@ struct ssl_cert_info;
  * Fetcher message types
  */
 typedef enum {
-	FETCH_PROGRESS,
-	FETCH_CERTS,
-	FETCH_HEADER,
-	FETCH_DATA,
-	/* Anything after here is a completed fetch of some kind. */
-	FETCH_FINISHED,
-	FETCH_TIMEDOUT,
-	FETCH_ERROR,
-	FETCH_REDIRECT,
-	FETCH_NOTMODIFIED,
-	FETCH_AUTH,
-	FETCH_CERT_ERR,
-	FETCH_SSL_ERR
+    FETCH_PROGRESS,
+    FETCH_CERTS,
+    FETCH_HEADER,
+    FETCH_DATA,
+    /* Anything after here is a completed fetch of some kind. */
+    FETCH_FINISHED,
+    FETCH_TIMEDOUT,
+    FETCH_ERROR,
+    FETCH_REDIRECT,
+    FETCH_NOTMODIFIED,
+    FETCH_AUTH,
+    FETCH_CERT_ERR,
+    FETCH_SSL_ERR
 } fetch_msg_type;
 
 /** Minimum finished message type.
@@ -70,36 +70,36 @@ typedef enum {
  * Fetcher message data
  */
 typedef struct fetch_msg {
-	fetch_msg_type type;
+    fetch_msg_type type;
 
-	union {
-		const char *progress;
+    union {
+        const char *progress;
 
-		struct {
-			const uint8_t *buf;
-			size_t len;
-		} header_or_data;
+        struct {
+            const uint8_t *buf;
+            size_t len;
+        } header_or_data;
 
-		const char *error;
+        const char *error;
 
-		/** \todo Use nsurl */
-		const char *redirect;
+        /** \todo Use nsurl */
+        const char *redirect;
 
-		struct {
-			const char *realm;
-		} auth;
+        struct {
+            const char *realm;
+        } auth;
 
-		const struct cert_chain *chain;
-	} data;
+        const struct cert_chain *chain;
+    } data;
 } fetch_msg;
 
 /**
  * Fetcher post data types
  */
 typedef enum {
-	FETCH_POSTDATA_NONE,
-	FETCH_POSTDATA_URLENC,
-	FETCH_POSTDATA_MULTIPART,
+    FETCH_POSTDATA_NONE,
+    FETCH_POSTDATA_URLENC,
+    FETCH_POSTDATA_MULTIPART,
 } fetch_postdata_type;
 
 
@@ -107,26 +107,26 @@ typedef enum {
  * Fetch POST multipart data
  */
 struct fetch_multipart_data {
-	struct fetch_multipart_data *next; /**< Next in linked list */
+    struct fetch_multipart_data *next; /**< Next in linked list */
 
-	char *name; /**< Name of item */
-	char *value; /**< Item value */
+    char *name; /**< Name of item */
+    char *value; /**< Item value */
 
-	char *rawfile; /**< Raw filename if file is true */
-	bool file; /**< Item is a file */
+    char *rawfile; /**< Raw filename if file is true */
+    bool file; /**< Item is a file */
 };
 
 /**
  * fetch POST data
  */
 struct fetch_postdata {
-	fetch_postdata_type type;
-	union {
-		/** Url encoded POST string if type is FETCH_POSTDATA_URLENC */
-		char *urlenc;
-		/** Multipart post data if type is FETCH_POSTDATA_MULTIPART */
-		struct fetch_multipart_data *multipart;
-	} data;
+    fetch_postdata_type type;
+    union {
+        /** Url encoded POST string if type is FETCH_POSTDATA_URLENC */
+        char *urlenc;
+        /** Multipart post data if type is FETCH_POSTDATA_MULTIPART */
+        struct fetch_multipart_data *multipart;
+    } data;
 };
 
 
@@ -163,17 +163,9 @@ typedef void (*fetch_callback)(const fetch_msg *msg, void *p);
  * \param fetch_out ponter to recive new fetch object.
  * \return NSERROR_OK and fetch_out updated else appropriate error code
  */
-nserror fetch_start(nsurl *url,
-		    nsurl *referer,
-		    fetch_callback callback,
-		    void *p,
-		    bool only_2xx,
-		    const char *post_urlenc,
-		    const struct fetch_multipart_data *post_multipart,
-		    bool verifiable,
-		    bool downgrade_tls,
-		    const char *headers[],
-		    struct fetch **fetch_out);
+nserror fetch_start(nsurl *url, nsurl *referer, fetch_callback callback, void *p, bool only_2xx,
+    const char *post_urlenc, const struct fetch_multipart_data *post_multipart, bool verifiable, bool downgrade_tls,
+    const char *headers[], struct fetch **fetch_out);
 
 /**
  * Abort a fetch.
@@ -192,9 +184,7 @@ bool fetch_can_fetch(const nsurl *url);
 /**
  * Change the callback function for a fetch.
  */
-void fetch_change_callback(struct fetch *fetch,
-			   fetch_callback callback,
-			   void *p);
+void fetch_change_callback(struct fetch *fetch, fetch_callback callback, void *p);
 
 /**
  * Get the HTTP response code.
@@ -215,8 +205,7 @@ void fetch_multipart_data_destroy(struct fetch_multipart_data *list);
  * \param list  List to clone
  * \return Pointer to head of cloned list, or NULL on failure
  */
-struct fetch_multipart_data *
-fetch_multipart_data_clone(const struct fetch_multipart_data *list);
+struct fetch_multipart_data *fetch_multipart_data_clone(const struct fetch_multipart_data *list);
 
 /**
  * Find an entry in a fetch_multipart_data
@@ -225,8 +214,7 @@ fetch_multipart_data_clone(const struct fetch_multipart_data *list);
  * \param name The name to look for in the list
  * \return The value found, or NULL if not present
  */
-const char *fetch_multipart_data_find(const struct fetch_multipart_data *list,
-				      const char *name);
+const char *fetch_multipart_data_find(const struct fetch_multipart_data *list, const char *name);
 
 /**
  * Create an entry for a fetch_multipart_data
@@ -238,9 +226,7 @@ const char *fetch_multipart_data_find(const struct fetch_multipart_data *list,
  * \param value The value of the entry to create
  * \return The result of the attempt
  */
-nserror fetch_multipart_data_new_kv(struct fetch_multipart_data **list,
-				    const char *name,
-				    const char *value);
+nserror fetch_multipart_data_new_kv(struct fetch_multipart_data **list, const char *name, const char *value);
 
 /**
  * send message to fetch
@@ -291,9 +277,6 @@ void fetch_set_cookie(struct fetch *fetch, const char *data);
  * \param[out] maxfd The highest fd number in the set or -1 if no fd available.
  * \return NSERROR_OK on success or appropriate error code.
  */
-nserror fetch_fdset(fd_set *read_fd_set,
-		    fd_set *write_fd_set,
-		    fd_set *except_fd_set,
-		    int *maxfd);
+nserror fetch_fdset(fd_set *read_fd_set, fd_set *write_fd_set, fd_set *except_fd_set, int *maxfd);
 
 #endif

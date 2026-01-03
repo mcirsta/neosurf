@@ -11,46 +11,45 @@
 
 static void _virtual_dom_ui_event_destroy(struct dom_event *evt);
 
-static const struct dom_event_private_vtable _event_vtable = {
-	_virtual_dom_ui_event_destroy};
+static const struct dom_event_private_vtable _event_vtable = {_virtual_dom_ui_event_destroy};
 
 /* Constructor */
 dom_exception _dom_ui_event_create(struct dom_ui_event **evt)
 {
-	*evt = calloc(1, sizeof(dom_ui_event));
-	if (*evt == NULL)
-		return DOM_NO_MEM_ERR;
+    *evt = calloc(1, sizeof(dom_ui_event));
+    if (*evt == NULL)
+        return DOM_NO_MEM_ERR;
 
-	((struct dom_event *)*evt)->vtable = &_event_vtable;
+    ((struct dom_event *)*evt)->vtable = &_event_vtable;
 
-	return _dom_ui_event_initialise(*evt);
+    return _dom_ui_event_initialise(*evt);
 }
 
 /* Destructor */
 void _dom_ui_event_destroy(struct dom_ui_event *evt)
 {
-	_dom_ui_event_finalise(evt);
+    _dom_ui_event_finalise(evt);
 
-	free(evt);
+    free(evt);
 }
 
 /* Initialise function */
 dom_exception _dom_ui_event_initialise(struct dom_ui_event *evt)
 {
-	return _dom_event_initialise(&evt->base);
+    return _dom_event_initialise(&evt->base);
 }
 
 /* Finalise function */
 void _dom_ui_event_finalise(struct dom_ui_event *evt)
 {
-	evt->view = NULL;
-	_dom_event_finalise(&evt->base);
+    evt->view = NULL;
+    _dom_event_finalise(&evt->base);
 }
 
 /* The virtual destroy function */
 void _virtual_dom_ui_event_destroy(struct dom_event *evt)
 {
-	_dom_ui_event_destroy((dom_ui_event *)evt);
+    _dom_ui_event_destroy((dom_ui_event *)evt);
 }
 
 /*----------------------------------------------------------------------*/
@@ -63,12 +62,11 @@ void _virtual_dom_ui_event_destroy(struct dom_event *evt)
  * \param view  The returned AbstractView
  * \return DOM_NO_ERR.
  */
-dom_exception
-_dom_ui_event_get_view(dom_ui_event *evt, struct dom_abstract_view **view)
+dom_exception _dom_ui_event_get_view(dom_ui_event *evt, struct dom_abstract_view **view)
 {
-	*view = evt->view;
+    *view = evt->view;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -80,9 +78,9 @@ _dom_ui_event_get_view(dom_ui_event *evt, struct dom_abstract_view **view)
  */
 dom_exception _dom_ui_event_get_detail(dom_ui_event *evt, int32_t *detail)
 {
-	*detail = evt->detail;
+    *detail = evt->detail;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -96,17 +94,13 @@ dom_exception _dom_ui_event_get_detail(dom_ui_event *evt, int32_t *detail)
  * \param detail      The detail object
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_ui_event_init(dom_ui_event *evt,
-				 dom_string *type,
-				 bool bubble,
-				 bool cancelable,
-				 struct dom_abstract_view *view,
-				 int32_t detail)
+dom_exception _dom_ui_event_init(
+    dom_ui_event *evt, dom_string *type, bool bubble, bool cancelable, struct dom_abstract_view *view, int32_t detail)
 {
-	evt->view = view;
-	evt->detail = detail;
+    evt->view = view;
+    evt->detail = detail;
 
-	return _dom_event_init(&evt->base, type, bubble, cancelable);
+    return _dom_event_init(&evt->base, type, bubble, cancelable);
 }
 
 /**
@@ -121,17 +115,11 @@ dom_exception _dom_ui_event_init(dom_ui_event *evt,
  * \param detail      The detail object
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_ui_event_init_ns(dom_ui_event *evt,
-				    dom_string *namespace,
-				    dom_string *type,
-				    bool bubble,
-				    bool cancelable,
-				    struct dom_abstract_view *view,
-				    int32_t detail)
+dom_exception _dom_ui_event_init_ns(dom_ui_event *evt, dom_string *namespace, dom_string *type, bool bubble,
+    bool cancelable, struct dom_abstract_view *view, int32_t detail)
 {
-	evt->view = view;
-	evt->detail = detail;
+    evt->view = view;
+    evt->detail = detail;
 
-	return _dom_event_init_ns(
-		&evt->base, namespace, type, bubble, cancelable);
+    return _dom_event_init_ns(&evt->base, namespace, type, bubble, cancelable);
 }

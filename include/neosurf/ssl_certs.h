@@ -34,21 +34,21 @@ struct nsurl;
  * cache as simple ints.
  */
 typedef enum {
-	SSL_CERT_ERR_OK, /**< Nothing wrong with this certificate */
-	SSL_CERT_ERR_UNKNOWN, /**< Unknown error */
-	SSL_CERT_ERR_BAD_ISSUER, /**< Bad issuer */
-	SSL_CERT_ERR_BAD_SIG, /**< Bad signature on this certificate */
-	SSL_CERT_ERR_TOO_YOUNG, /**< This certificate is not yet valid */
-	SSL_CERT_ERR_TOO_OLD, /**< This certificate is no longer valid */
-	SSL_CERT_ERR_SELF_SIGNED, /**< This certificate (or the chain) is self
-				     signed */
-	SSL_CERT_ERR_CHAIN_SELF_SIGNED, /**< This certificate chain is self
-					   signed */
-	SSL_CERT_ERR_REVOKED, /**< This certificate has been revoked */
-	SSL_CERT_ERR_HOSTNAME_MISMATCH, /**< This certificate host did not match
-					   the server */
-	SSL_CERT_ERR_CERT_MISSING, /**< This certificate was missing from the
-				      chain, its data is useless */
+    SSL_CERT_ERR_OK, /**< Nothing wrong with this certificate */
+    SSL_CERT_ERR_UNKNOWN, /**< Unknown error */
+    SSL_CERT_ERR_BAD_ISSUER, /**< Bad issuer */
+    SSL_CERT_ERR_BAD_SIG, /**< Bad signature on this certificate */
+    SSL_CERT_ERR_TOO_YOUNG, /**< This certificate is not yet valid */
+    SSL_CERT_ERR_TOO_OLD, /**< This certificate is no longer valid */
+    SSL_CERT_ERR_SELF_SIGNED, /**< This certificate (or the chain) is self
+                     signed */
+    SSL_CERT_ERR_CHAIN_SELF_SIGNED, /**< This certificate chain is self
+                       signed */
+    SSL_CERT_ERR_REVOKED, /**< This certificate has been revoked */
+    SSL_CERT_ERR_HOSTNAME_MISMATCH, /**< This certificate host did not match
+                       the server */
+    SSL_CERT_ERR_CERT_MISSING, /**< This certificate was missing from the
+                      chain, its data is useless */
 } ssl_cert_err;
 
 /** Always the max known ssl certificate error type */
@@ -61,26 +61,26 @@ typedef enum {
  * X509 certificate chain
  */
 struct cert_chain {
-	/**
-	 * the number of certificates in the chain
-	 * */
-	size_t depth;
-	struct {
-		/**
-		 * Whatever is wrong with this certificate
-		 */
-		ssl_cert_err err;
+    /**
+     * the number of certificates in the chain
+     * */
+    size_t depth;
+    struct {
+        /**
+         * Whatever is wrong with this certificate
+         */
+        ssl_cert_err err;
 
-		/**
-		 * data in Distinguished Encoding Rules (DER) format
-		 */
-		uint8_t *der;
+        /**
+         * data in Distinguished Encoding Rules (DER) format
+         */
+        uint8_t *der;
 
-		/**
-		 * DER length
-		 */
-		size_t der_length;
-	} certs[MAX_CERT_DEPTH];
+        /**
+         * DER length
+         */
+        size_t der_length;
+    } certs[MAX_CERT_DEPTH];
 };
 
 /**
@@ -102,8 +102,7 @@ nserror cert_chain_alloc(size_t depth, struct cert_chain **chain_out);
  * NOTE: if this returns NSERROR_NOMEM then the destination chain will have
  * some amount of content and should be cleaned up with cert_chain_free.
  */
-nserror
-cert_chain_dup_into(const struct cert_chain *src, struct cert_chain *dst);
+nserror cert_chain_dup_into(const struct cert_chain *src, struct cert_chain *dst);
 
 /**
  * duplicate a certificate chain
@@ -112,8 +111,7 @@ cert_chain_dup_into(const struct cert_chain *src, struct cert_chain *dst);
  * \param dst_out A pointer to recive the duplicated chain
  * \return NSERROR_OK on success or NSERROR_NOMEM on memory exhaustion
  */
-nserror
-cert_chain_dup(const struct cert_chain *src, struct cert_chain **dst_out);
+nserror cert_chain_dup(const struct cert_chain *src, struct cert_chain **dst_out);
 
 /**
  * create a certificate chain from a fetch query string

@@ -37,87 +37,82 @@
 /** Insert the given item into the specified ring.
  * Assumes that the element is zeroed as appropriate.
  */
-#define RING_INSERT(ring, element)                                             \
-	/*LOG("RING_INSERT(%s, %p(%s))", #ring, element, element->host);*/     \
-	if (ring) {                                                            \
-		element->r_next = ring;                                        \
-		element->r_prev = ring->r_prev;                                \
-		ring->r_prev = element;                                        \
-		element->r_prev->r_next = element;                             \
-	} else                                                                 \
-		ring = element->r_prev = element->r_next = element
+#define RING_INSERT(ring, element)                                                                                     \
+    /*LOG("RING_INSERT(%s, %p(%s))", #ring, element, element->host);*/                                                 \
+    if (ring) {                                                                                                        \
+        element->r_next = ring;                                                                                        \
+        element->r_prev = ring->r_prev;                                                                                \
+        ring->r_prev = element;                                                                                        \
+        element->r_prev->r_next = element;                                                                             \
+    } else                                                                                                             \
+        ring = element->r_prev = element->r_next = element
 
 /** Remove the given element from the specified ring.
  * Will zero the element as needed
  */
-#define RING_REMOVE(ring, element)                                             \
-	/*LOG("RING_REMOVE(%s, %p(%s)", #ring, element, element->host);*/      \
-	if (element->r_next != element) {                                      \
-		/* Not the only thing in the ring */                           \
-		element->r_next->r_prev = element->r_prev;                     \
-		element->r_prev->r_next = element->r_next;                     \
-		if (ring == element)                                           \
-			ring = element->r_next;                                \
-	} else {                                                               \
-		/* Only thing in the ring */                                   \
-		ring = 0;                                                      \
-	}                                                                      \
-	element->r_next = element->r_prev = 0
+#define RING_REMOVE(ring, element)                                                                                     \
+    /*LOG("RING_REMOVE(%s, %p(%s)", #ring, element, element->host);*/                                                  \
+    if (element->r_next != element) {                                                                                  \
+        /* Not the only thing in the ring */                                                                           \
+        element->r_next->r_prev = element->r_prev;                                                                     \
+        element->r_prev->r_next = element->r_next;                                                                     \
+        if (ring == element)                                                                                           \
+            ring = element->r_next;                                                                                    \
+    } else {                                                                                                           \
+        /* Only thing in the ring */                                                                                   \
+        ring = 0;                                                                                                      \
+    }                                                                                                                  \
+    element->r_next = element->r_prev = 0
 
 /** Find the element (by hostname) in the given ring, leave it in the
  * provided element variable
  */
-#define RING_FINDBYLWCHOST(ring, element, lwc_hostname)                        \
-	/*LOG("RING_FINDBYHOST(%s, %s)", #ring, hostname);*/                   \
-	if (ring) {                                                            \
-		bool found = false;                                            \
-		element = ring;                                                \
-		do {                                                           \
-			if (lwc_string_isequal(element->host,                  \
-					       lwc_hostname,                   \
-					       &found) == lwc_error_ok &&      \
-			    found == true) {                                   \
-				break;                                         \
-			}                                                      \
-			element = element->r_next;                             \
-		} while (element != ring);                                     \
-		if (!found)                                                    \
-			element = 0;                                           \
-	} else                                                                 \
-		element = 0
+#define RING_FINDBYLWCHOST(ring, element, lwc_hostname)                                                                \
+    /*LOG("RING_FINDBYHOST(%s, %s)", #ring, hostname);*/                                                               \
+    if (ring) {                                                                                                        \
+        bool found = false;                                                                                            \
+        element = ring;                                                                                                \
+        do {                                                                                                           \
+            if (lwc_string_isequal(element->host, lwc_hostname, &found) == lwc_error_ok && found == true) {            \
+                break;                                                                                                 \
+            }                                                                                                          \
+            element = element->r_next;                                                                                 \
+        } while (element != ring);                                                                                     \
+        if (!found)                                                                                                    \
+            element = 0;                                                                                               \
+    } else                                                                                                             \
+        element = 0
 
 /** Measure the size of a ring and put it in the supplied variable */
-#define RING_GETSIZE(ringtype, ring, sizevar)                                  \
-	/*LOG("RING_GETSIZE(%s)", #ring);*/                                    \
-	if (ring) {                                                            \
-		ringtype *p = ring;                                            \
-		sizevar = 0;                                                   \
-		do {                                                           \
-			sizevar++;                                             \
-			p = p->r_next;                                         \
-		} while (p != ring);                                           \
-	} else                                                                 \
-		sizevar = 0
+#define RING_GETSIZE(ringtype, ring, sizevar)                                                                          \
+    /*LOG("RING_GETSIZE(%s)", #ring);*/                                                                                \
+    if (ring) {                                                                                                        \
+        ringtype *p = ring;                                                                                            \
+        sizevar = 0;                                                                                                   \
+        do {                                                                                                           \
+            sizevar++;                                                                                                 \
+            p = p->r_next;                                                                                             \
+        } while (p != ring);                                                                                           \
+    } else                                                                                                             \
+        sizevar = 0
 
 /** Count the number of elements in the ring which match the provided
  * lwc_hostname */
-#define RING_COUNTBYLWCHOST(ringtype, ring, sizevar, lwc_hostname)             \
-	/*LOG("RING_COUNTBYHOST(%s, %s)", #ring, hostname);*/                  \
-	if (ring) {                                                            \
-		ringtype *p = ring;                                            \
-		sizevar = 0;                                                   \
-		do {                                                           \
-			bool matches = false;                                  \
-			/* nsurl guarantees lowercase host */                  \
-			if (lwc_string_isequal(p->host,                        \
-					       lwc_hostname,                   \
-					       &matches) == lwc_error_ok)      \
-				if (matches)                                   \
-					sizevar++;                             \
-			p = p->r_next;                                         \
-		} while (p != ring);                                           \
-	} else                                                                 \
-		sizevar = 0
+#define RING_COUNTBYLWCHOST(ringtype, ring, sizevar, lwc_hostname)                                                     \
+    /*LOG("RING_COUNTBYHOST(%s, %s)", #ring, hostname);*/                                                              \
+    if (ring) {                                                                                                        \
+        ringtype *p = ring;                                                                                            \
+        sizevar = 0;                                                                                                   \
+        do {                                                                                                           \
+            bool matches = false;                                                                                      \
+            /* nsurl guarantees lowercase host */                                                                      \
+            if (lwc_string_isequal(p->host, lwc_hostname, &matches) == lwc_error_ok)                                   \
+                if (matches)                                                                                           \
+                    sizevar++;                                                                                         \
+            p = p->r_next;                                                                                             \
+        } while (p != ring);                                                                                           \
+    } else                                                                                                             \
+        sizevar = 0
 
 /*
  * Ring iteration works as follows:
@@ -132,24 +127,23 @@
  * the ring such as deleting or adding an element.
  */
 
-#define RING_ITERATE_START(ringtype, ring, iteratorptr)                        \
-	if (ring != NULL) {                                                    \
-		ringtype *iteratorptr = ring;                                  \
-		do {                                                           \
-			do {
+#define RING_ITERATE_START(ringtype, ring, iteratorptr)                                                                \
+    if (ring != NULL) {                                                                                                \
+        ringtype *iteratorptr = ring;                                                                                  \
+        do {                                                                                                           \
+            do {
 
-#define RING_ITERATE_STOP(ring, iteratorptr)                                   \
-	goto iteration_end_ring##_##iteratorptr
+#define RING_ITERATE_STOP(ring, iteratorptr) goto iteration_end_ring##_##iteratorptr
 
-#define RING_ITERATE_END(ring, iteratorptr)                                    \
-	}                                                                      \
-	while (false)                                                          \
-		;                                                              \
-	iteratorptr = iteratorptr->r_next;                                     \
-	}                                                                      \
-	while (iteratorptr != ring)                                            \
-		;                                                              \
-	}                                                                      \
-	iteration_end_ring##_##iteratorptr:
+#define RING_ITERATE_END(ring, iteratorptr)                                                                            \
+    }                                                                                                                  \
+    while (false)                                                                                                      \
+        ;                                                                                                              \
+    iteratorptr = iteratorptr->r_next;                                                                                 \
+    }                                                                                                                  \
+    while (iteratorptr != ring)                                                                                        \
+        ;                                                                                                              \
+    }                                                                                                                  \
+    iteration_end_ring##_##iteratorptr:
 
 #endif

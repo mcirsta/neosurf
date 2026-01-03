@@ -16,22 +16,22 @@
 
 static inline bool less(int excepted, int actual)
 {
-	return actual < excepted;
+    return actual < excepted;
 }
 
 static inline bool less_or_equals(int excepted, int actual)
 {
-	return actual <= excepted;
+    return actual <= excepted;
 }
 
 static inline bool greater(int excepted, int actual)
 {
-	return actual > excepted;
+    return actual > excepted;
 }
 
 static inline bool greater_or_equals(int excepted, int actual)
 {
-	return actual >= excepted;
+    return actual >= excepted;
 }
 
 #endif

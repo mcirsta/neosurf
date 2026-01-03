@@ -24,19 +24,15 @@
 #include <stddef.h>
 
 #include "utils/utf8.h"
-#include "neosurf/plot_style.h"
 #include "neosurf/layout.h"
+#include "neosurf/plot_style.h"
 
 #include "monkey/layout.h"
 
-static nserror nsfont_width(const plot_font_style_t *fstyle,
-			    const char *string,
-			    size_t length,
-			    int *width)
+static nserror nsfont_width(const plot_font_style_t *fstyle, const char *string, size_t length, int *width)
 {
-	*width = (fstyle->size * utf8_bounded_length(string, length)) /
-		 PLOT_STYLE_SCALE;
-	return NSERROR_OK;
+    *width = (fstyle->size * utf8_bounded_length(string, length)) / PLOT_STYLE_SCALE;
+    return NSERROR_OK;
 }
 
 /**
@@ -51,18 +47,14 @@ static nserror nsfont_width(const plot_font_style_t *fstyle,
  * \return  true on success, false on error and error reported
  */
 
-static nserror nsfont_position_in_string(const plot_font_style_t *fstyle,
-					 const char *string,
-					 size_t length,
-					 int x,
-					 size_t *char_offset,
-					 int *actual_x)
+static nserror nsfont_position_in_string(
+    const plot_font_style_t *fstyle, const char *string, size_t length, int x, size_t *char_offset, int *actual_x)
 {
-	*char_offset = x / (fstyle->size / PLOT_STYLE_SCALE);
-	if (*char_offset > length)
-		*char_offset = length;
-	*actual_x = *char_offset * (fstyle->size / PLOT_STYLE_SCALE);
-	return NSERROR_OK;
+    *char_offset = x / (fstyle->size / PLOT_STYLE_SCALE);
+    if (*char_offset > length)
+        *char_offset = length;
+    *actual_x = *char_offset * (fstyle->size / PLOT_STYLE_SCALE);
+    return NSERROR_OK;
 }
 
 
@@ -89,38 +81,33 @@ static nserror nsfont_position_in_string(const plot_font_style_t *fstyle,
  * Returning char_offset == length means no split possible
  */
 
-static nserror nsfont_split(const plot_font_style_t *fstyle,
-			    const char *string,
-			    size_t length,
-			    int x,
-			    size_t *char_offset,
-			    int *actual_x)
+static nserror nsfont_split(
+    const plot_font_style_t *fstyle, const char *string, size_t length, int x, size_t *char_offset, int *actual_x)
 {
-	int c_off = *char_offset = x / (fstyle->size / PLOT_STYLE_SCALE);
-	if (*char_offset > length) {
-		*char_offset = length;
-	} else {
-		while (*char_offset > 0) {
-			if (string[*char_offset] == ' ')
-				break;
-			(*char_offset)--;
-		}
-		if (*char_offset == 0) {
-			*char_offset = c_off;
-			while (*char_offset < length &&
-			       string[*char_offset] != ' ') {
-				(*char_offset)++;
-			}
-		}
-	}
-	*actual_x = *char_offset * (fstyle->size / PLOT_STYLE_SCALE);
-	return NSERROR_OK;
+    int c_off = *char_offset = x / (fstyle->size / PLOT_STYLE_SCALE);
+    if (*char_offset > length) {
+        *char_offset = length;
+    } else {
+        while (*char_offset > 0) {
+            if (string[*char_offset] == ' ')
+                break;
+            (*char_offset)--;
+        }
+        if (*char_offset == 0) {
+            *char_offset = c_off;
+            while (*char_offset < length && string[*char_offset] != ' ') {
+                (*char_offset)++;
+            }
+        }
+    }
+    *actual_x = *char_offset * (fstyle->size / PLOT_STYLE_SCALE);
+    return NSERROR_OK;
 }
 
 static struct gui_layout_table layout_table = {
-	.width = nsfont_width,
-	.position = nsfont_position_in_string,
-	.split = nsfont_split,
+    .width = nsfont_width,
+    .position = nsfont_position_in_string,
+    .split = nsfont_split,
 };
 
 struct gui_layout_table *monkey_layout_table = &layout_table;

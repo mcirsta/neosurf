@@ -16,44 +16,44 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <limits.h>
 #ifdef _WIN32
-#include <winsock2.h>
 #include <windows.h>
+#include <winsock2.h>
 #else
 #include <sys/select.h>
 #endif
 #include <sys/types.h>
-#include <unistd.h>
-#include <string.h>
 #include <errno.h>
 #include <signal.h>
+#include <string.h>
+#include <unistd.h>
 
 #include "utils/config.h"
-#include "neosurf/utils/sys_time.h"
+#include "utils/filepath.h"
 #include "utils/log.h"
 #include "utils/messages.h"
-#include "utils/filepath.h"
 #include "utils/nsoption.h"
 #include "utils/nsurl.h"
+#include "neosurf/content/backing_store.h"
+#include "neosurf/content/fetch.h"
+#include "neosurf/cookie_db.h"
 #include "neosurf/misc.h"
 #include "neosurf/neosurf.h"
 #include "neosurf/url_db.h"
-#include "neosurf/cookie_db.h"
-#include "neosurf/content/fetch.h"
-#include "neosurf/content/backing_store.h"
+#include "neosurf/utils/sys_time.h"
 
-#include "monkey/output.h"
-#include "monkey/dispatch.h"
-#include "monkey/browser.h"
 #include "monkey/401login.h"
-#include "monkey/filetype.h"
-#include "monkey/fetch.h"
-#include "monkey/schedule.h"
 #include "monkey/bitmap.h"
+#include "monkey/browser.h"
+#include "monkey/dispatch.h"
+#include "monkey/fetch.h"
+#include "monkey/filetype.h"
 #include "monkey/layout.h"
+#include "monkey/output.h"
+#include "monkey/schedule.h"
 
 /** maximum number of languages in language vector */
 #define LANGV_SIZE 32
@@ -74,8 +74,8 @@ static bool monkey_done = false;
  */
 static void die(const char *const error)
 {
-	moutf(MOUT_DIE, "%s", error);
-	exit(EXIT_FAILURE);
+    moutf(MOUT_DIE, "%s", error);
+    exit(EXIT_FAILURE);
 }
 
 /**
@@ -87,29 +87,29 @@ static void die(const char *const error)
  */
 static const char *get_language(void)
 {
-	const char *lang;
+    const char *lang;
 
-	lang = getenv("LANGUAGE");
-	if ((lang != NULL) && (lang[0] != '\0')) {
-		return lang;
-	}
+    lang = getenv("LANGUAGE");
+    if ((lang != NULL) && (lang[0] != '\0')) {
+        return lang;
+    }
 
-	lang = getenv("LC_ALL");
-	if ((lang != NULL) && (lang[0] != '\0')) {
-		return lang;
-	}
+    lang = getenv("LC_ALL");
+    if ((lang != NULL) && (lang[0] != '\0')) {
+        return lang;
+    }
 
-	lang = getenv("LC_MESSAGES");
-	if ((lang != NULL) && (lang[0] != '\0')) {
-		return lang;
-	}
+    lang = getenv("LC_MESSAGES");
+    if ((lang != NULL) && (lang[0] != '\0')) {
+        return lang;
+    }
 
-	lang = getenv("LANG");
-	if ((lang != NULL) && (lang[0] != '\0')) {
-		return lang;
-	}
+    lang = getenv("LANG");
+    if ((lang != NULL) && (lang[0] != '\0')) {
+        return lang;
+    }
 
-	return NULL;
+    return NULL;
 }
 
 
@@ -130,56 +130,56 @@ static const char *get_language(void)
  */
 static const char *const *get_languagev(void)
 {
-	static const char *langv[LANGV_SIZE];
-	int langidx = 0; /* index of next entry in vector */
-	static char langs[LANGS_SIZE];
-	char *curp; /* next language parameter in langs string */
-	const char *lange; /* language from environment variable */
-	int lang_len;
-	char *cln; /* colon in lange */
+    static const char *langv[LANGV_SIZE];
+    int langidx = 0; /* index of next entry in vector */
+    static char langs[LANGS_SIZE];
+    char *curp; /* next language parameter in langs string */
+    const char *lange; /* language from environment variable */
+    int lang_len;
+    char *cln; /* colon in lange */
 
-	/* return cached vector */
-	if (langv[0] != NULL) {
-		return &langv[0];
-	}
+    /* return cached vector */
+    if (langv[0] != NULL) {
+        return &langv[0];
+    }
 
-	curp = &langs[0];
+    curp = &langs[0];
 
-	lange = get_language();
+    lange = get_language();
 
-	if (lange != NULL) {
-		lang_len = strlen(lange) + 1;
-		if (lang_len < (LANGS_SIZE - 2)) {
-			memcpy(curp, lange, lang_len);
-			while ((curp[0] != 0) && (langidx < (LANGV_SIZE - 2))) {
-				/* avoid using strchrnul as it is not portable
-				 */
-				cln = strchr(curp, ':');
-				if (cln == NULL) {
-					langv[langidx++] = curp;
-					curp += lang_len;
-					break;
-				} else {
-					if ((cln - curp) > 1) {
-						/* only place non empty entries
-						 * in vector */
-						langv[langidx++] = curp;
-					}
-					*cln++ = 0; /* null terminate */
-					lang_len -= (cln - curp);
-					curp = cln;
-				}
-			}
-		}
-	}
+    if (lange != NULL) {
+        lang_len = strlen(lange) + 1;
+        if (lang_len < (LANGS_SIZE - 2)) {
+            memcpy(curp, lange, lang_len);
+            while ((curp[0] != 0) && (langidx < (LANGV_SIZE - 2))) {
+                /* avoid using strchrnul as it is not portable
+                 */
+                cln = strchr(curp, ':');
+                if (cln == NULL) {
+                    langv[langidx++] = curp;
+                    curp += lang_len;
+                    break;
+                } else {
+                    if ((cln - curp) > 1) {
+                        /* only place non empty entries
+                         * in vector */
+                        langv[langidx++] = curp;
+                    }
+                    *cln++ = 0; /* null terminate */
+                    lang_len -= (cln - curp);
+                    curp = cln;
+                }
+            }
+        }
+    }
 
-	/* ensure C language is present */
-	langv[langidx++] = curp;
-	*curp++ = 'C';
-	*curp++ = 0;
-	langv[langidx] = NULL;
+    /* ensure C language is present */
+    langv[langidx++] = curp;
+    *curp++ = 'C';
+    *curp++ = 0;
+    langv[langidx] = NULL;
 
-	return &langv[0];
+    return &langv[0];
 }
 
 /**
@@ -194,52 +194,52 @@ static const char *const *get_languagev(void)
  */
 static char **nsmonkey_init_resource(const char *resource_path)
 {
-	const char *const *langv;
-	char **pathv; /* resource path string vector */
-	char **respath; /* resource paths vector */
+    const char *const *langv;
+    char **pathv; /* resource path string vector */
+    char **respath; /* resource paths vector */
 
-	pathv = filepath_path_to_strvec(resource_path);
+    pathv = filepath_path_to_strvec(resource_path);
 
-	langv = get_languagev();
+    langv = get_languagev();
 
-	respath = filepath_generate(pathv, langv);
+    respath = filepath_generate(pathv, langv);
 
-	filepath_free_strvec(pathv);
+    filepath_free_strvec(pathv);
 
-	return respath;
+    return respath;
 }
 
 static void monkey_quit(void)
 {
-	urldb_save_cookies(nsoption_charp(cookie_jar));
-	urldb_save(nsoption_charp(url_file));
-	monkey_fetch_filetype_fin();
+    urldb_save_cookies(nsoption_charp(cookie_jar));
+    urldb_save(nsoption_charp(url_file));
+    monkey_fetch_filetype_fin();
 }
 
 static nserror gui_launch_url(struct nsurl *url)
 {
-	moutf(MOUT_GENERIC, "LAUNCH URL %s", nsurl_access(url));
-	return NSERROR_OK;
+    moutf(MOUT_GENERIC, "LAUNCH URL %s", nsurl_access(url));
+    return NSERROR_OK;
 }
 
 static nserror gui_present_cookies(const char *search_term)
 {
-	if (search_term != NULL) {
-		moutf(MOUT_GENERIC, "PRESENT_COOKIES %s", search_term);
-	} else {
-		moutf(MOUT_GENERIC, "PRESENT_COOKIES");
-	}
-	return NSERROR_OK;
+    if (search_term != NULL) {
+        moutf(MOUT_GENERIC, "PRESENT_COOKIES %s", search_term);
+    } else {
+        moutf(MOUT_GENERIC, "PRESENT_COOKIES");
+    }
+    return NSERROR_OK;
 }
 
 static void quit_handler(int argc, char **argv)
 {
-	monkey_done = true;
+    monkey_done = true;
 }
 
 static void monkey_options_handle_command(int argc, char **argv)
 {
-	nsoption_commandline(&argc, argv, nsoptions);
+    nsoption_commandline(&argc, argv, nsoptions);
 }
 
 /**
@@ -250,12 +250,12 @@ static void monkey_options_handle_command(int argc, char **argv)
  */
 static nserror set_defaults(struct nsoption_s *defaults)
 {
-	/* Set defaults for absent option strings */
-	nsoption_setnull_charp(cookie_file, strdup("~/.netsurf/Cookies"));
-	nsoption_setnull_charp(cookie_jar, strdup("~/.netsurf/Cookies"));
-	nsoption_setnull_charp(url_file, strdup("~/.netsurf/URLs"));
+    /* Set defaults for absent option strings */
+    nsoption_setnull_charp(cookie_file, strdup("~/.netsurf/Cookies"));
+    nsoption_setnull_charp(cookie_jar, strdup("~/.netsurf/Cookies"));
+    nsoption_setnull_charp(url_file, strdup("~/.netsurf/URLs"));
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
@@ -264,315 +264,285 @@ static nserror set_defaults(struct nsoption_s *defaults)
  */
 static bool nslog_stream_configure(FILE *fptr)
 {
-	/* set log stream to be non-buffering */
-	setbuf(fptr, NULL);
+    /* set log stream to be non-buffering */
+    setbuf(fptr, NULL);
 
-	return true;
+    return true;
 }
 
 static struct gui_misc_table monkey_misc_table = {
-	.schedule = monkey_schedule,
+    .schedule = monkey_schedule,
 
-	.quit = monkey_quit,
-	.launch_url = gui_launch_url,
-	.login = gui_401login_open,
-	.present_cookies = gui_present_cookies,
+    .quit = monkey_quit,
+    .launch_url = gui_launch_url,
+    .login = gui_401login_open,
+    .present_cookies = gui_present_cookies,
 };
 
 static void monkey_run(void)
 {
-	fd_set read_fd_set, write_fd_set, exc_fd_set;
-	int max_fd;
-	int rdy_fd;
-	int schedtm;
-	struct timeval tv;
-	struct timeval *timeout;
+    fd_set read_fd_set, write_fd_set, exc_fd_set;
+    int max_fd;
+    int rdy_fd;
+    int schedtm;
+    struct timeval tv;
+    struct timeval *timeout;
 
-	while (!monkey_done) {
+    while (!monkey_done) {
 
-		/* discover the next scheduled event time */
-		schedtm = monkey_schedule_run();
+        /* discover the next scheduled event time */
+        schedtm = monkey_schedule_run();
 
-		/* clears fdset */
-		fetch_fdset(&read_fd_set, &write_fd_set, &exc_fd_set, &max_fd);
+        /* clears fdset */
+        fetch_fdset(&read_fd_set, &write_fd_set, &exc_fd_set, &max_fd);
 
 
 #ifndef _WIN32
-		if (max_fd < 0) {
-			max_fd = 0;
-		}
-		FD_SET(0, &read_fd_set);
-		FD_SET(0, &exc_fd_set);
+        if (max_fd < 0) {
+            max_fd = 0;
+        }
+        FD_SET(0, &read_fd_set);
+        FD_SET(0, &exc_fd_set);
 #endif
 
-		/* setup timeout */
-		switch (schedtm) {
-		case -1:
-			NSLOG(netsurf, INFO, "Iterate blocking");
-			moutf(MOUT_GENERIC, "POLL BLOCKING");
-			timeout = NULL;
-			break;
+        /* setup timeout */
+        switch (schedtm) {
+        case -1:
+            NSLOG(netsurf, INFO, "Iterate blocking");
+            moutf(MOUT_GENERIC, "POLL BLOCKING");
+            timeout = NULL;
+            break;
 
-		case 0:
-			NSLOG(netsurf, INFO, "Iterate immediate");
-			tv.tv_sec = 0;
-			tv.tv_usec = 0;
-			timeout = &tv;
-			break;
+        case 0:
+            NSLOG(netsurf, INFO, "Iterate immediate");
+            tv.tv_sec = 0;
+            tv.tv_usec = 0;
+            timeout = &tv;
+            break;
 
-		default:
-			NSLOG(netsurf, INFO, "Iterate non-blocking");
-			moutf(MOUT_GENERIC, "POLL TIMED %d", schedtm);
-			tv.tv_sec = schedtm / 1000; /* miliseconds to seconds */
-			tv.tv_usec = (schedtm % 1000) *
-				     1000; /* remainder to microseconds */
-			timeout = &tv;
-			break;
-		}
+        default:
+            NSLOG(netsurf, INFO, "Iterate non-blocking");
+            moutf(MOUT_GENERIC, "POLL TIMED %d", schedtm);
+            tv.tv_sec = schedtm / 1000; /* miliseconds to seconds */
+            tv.tv_usec = (schedtm % 1000) * 1000; /* remainder to microseconds */
+            timeout = &tv;
+            break;
+        }
 
 #ifdef _WIN32
-		if (max_fd < 0) {
-			if (schedtm == -1) {
-				Sleep(1);
-			} else if (schedtm == 0) {
-				Sleep(0);
-			} else {
-				Sleep((DWORD)schedtm);
-			}
-		} else {
-			rdy_fd = select(max_fd + 1,
-					&read_fd_set,
-					&write_fd_set,
-					&exc_fd_set,
-					timeout);
-			if (rdy_fd < 0) {
-				NSLOG(netsurf,
-				      CRITICAL,
-				      "Unable to select: %s",
-				      strerror(errno));
-				Sleep(1);
-			}
-		}
-		{
-			DWORD avail = 0;
-			HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
-			if (hIn != INVALID_HANDLE_VALUE) {
-				if (PeekNamedPipe(
-					    hIn, NULL, 0, NULL, &avail, NULL) &&
-				    avail > 0) {
-					monkey_process_command();
-				}
-			}
-		}
+        if (max_fd < 0) {
+            if (schedtm == -1) {
+                Sleep(1);
+            } else if (schedtm == 0) {
+                Sleep(0);
+            } else {
+                Sleep((DWORD)schedtm);
+            }
+        } else {
+            rdy_fd = select(max_fd + 1, &read_fd_set, &write_fd_set, &exc_fd_set, timeout);
+            if (rdy_fd < 0) {
+                NSLOG(netsurf, CRITICAL, "Unable to select: %s", strerror(errno));
+                Sleep(1);
+            }
+        }
+        {
+            DWORD avail = 0;
+            HANDLE hIn = GetStdHandle(STD_INPUT_HANDLE);
+            if (hIn != INVALID_HANDLE_VALUE) {
+                if (PeekNamedPipe(hIn, NULL, 0, NULL, &avail, NULL) && avail > 0) {
+                    monkey_process_command();
+                }
+            }
+        }
 #else
-		rdy_fd = select(max_fd + 1,
-				&read_fd_set,
-				&write_fd_set,
-				&exc_fd_set,
-				timeout);
-		if (rdy_fd < 0) {
-			NSLOG(netsurf,
-			      CRITICAL,
-			      "Unable to select: %s",
-			      strerror(errno));
-			monkey_done = true;
-		} else if (rdy_fd > 0) {
-			if (FD_ISSET(0, &read_fd_set)) {
-				monkey_process_command();
-			}
-		}
+        rdy_fd = select(max_fd + 1, &read_fd_set, &write_fd_set, &exc_fd_set, timeout);
+        if (rdy_fd < 0) {
+            NSLOG(netsurf, CRITICAL, "Unable to select: %s", strerror(errno));
+            monkey_done = true;
+        } else if (rdy_fd > 0) {
+            if (FD_ISSET(0, &read_fd_set)) {
+                monkey_process_command();
+            }
+        }
 #endif
-	}
+    }
 }
 
 #if (!defined(NDEBUG) && defined(HAVE_EXECINFO))
 #include <execinfo.h>
 static void *backtrace_buffer[4096];
 
-void __assert_fail(const char *__assertion,
-		   const char *__file,
-		   unsigned int __line,
-		   const char *__function)
+void __assert_fail(const char *__assertion, const char *__file, unsigned int __line, const char *__function)
 {
-	int frames;
-	fprintf(stderr,
-		"MONKEY: Assertion failure!\n"
-		"%s:%d: %s: Assertion `%s` failed.\n",
-		__file,
-		__line,
-		__function,
-		__assertion);
+    int frames;
+    fprintf(stderr,
+        "MONKEY: Assertion failure!\n"
+        "%s:%d: %s: Assertion `%s` failed.\n",
+        __file, __line, __function, __assertion);
 
-	frames = backtrace(&backtrace_buffer[0], 4096);
-	if (frames > 0 && frames < 4096) {
-		fprintf(stderr, "Backtrace:\n");
-		fflush(stderr);
-		backtrace_symbols_fd(&backtrace_buffer[0], frames, 2);
-	}
+    frames = backtrace(&backtrace_buffer[0], 4096);
+    if (frames > 0 && frames < 4096) {
+        fprintf(stderr, "Backtrace:\n");
+        fflush(stderr);
+        backtrace_symbols_fd(&backtrace_buffer[0], frames, 2);
+    }
 
-	abort();
+    abort();
 }
 
 static void signal_handler(int sig)
 {
-	int frames;
-	fprintf(stderr,
-		"Caught signal %s (%d)\n",
-		((sig == SIGSEGV)
-			 ? "SIGSEGV"
-			 : ((sig == SIGILL)
-				    ? "SIGILL"
-				    : ((sig == SIGFPE)
-					       ? "SIGFPE"
-					       : ((sig == SIGBUS)
-							  ? "SIGBUS"
-							  : "unknown signal")))),
-		sig);
-	frames = backtrace(&backtrace_buffer[0], 4096);
-	if (frames > 0 && frames < 4096) {
-		fprintf(stderr, "Backtrace:\n");
-		fflush(stderr);
-		backtrace_symbols_fd(&backtrace_buffer[0], frames, 2);
-	}
+    int frames;
+    fprintf(stderr, "Caught signal %s (%d)\n",
+        ((sig == SIGSEGV)
+                ? "SIGSEGV"
+                : ((sig == SIGILL) ? "SIGILL"
+                                   : ((sig == SIGFPE) ? "SIGFPE" : ((sig == SIGBUS) ? "SIGBUS" : "unknown signal")))),
+        sig);
+    frames = backtrace(&backtrace_buffer[0], 4096);
+    if (frames > 0 && frames < 4096) {
+        fprintf(stderr, "Backtrace:\n");
+        fflush(stderr);
+        backtrace_symbols_fd(&backtrace_buffer[0], frames, 2);
+    }
 
-	abort();
+    abort();
 }
 
 #endif
 
 int main(int argc, char **argv)
 {
-	char *messages;
-	char *options;
-	char buf[PATH_MAX];
-	nserror ret;
-	struct neosurf_table monkey_table = {
-		.misc = &monkey_misc_table,
-		.window = monkey_window_table,
-		.download = monkey_download_table,
-		.fetch = monkey_fetch_table,
-		.bitmap = monkey_bitmap_table,
-		.layout = monkey_layout_table,
-		.llcache = filesystem_llcache_table,
-	};
+    char *messages;
+    char *options;
+    char buf[PATH_MAX];
+    nserror ret;
+    struct neosurf_table monkey_table = {
+        .misc = &monkey_misc_table,
+        .window = monkey_window_table,
+        .download = monkey_download_table,
+        .fetch = monkey_fetch_table,
+        .bitmap = monkey_bitmap_table,
+        .layout = monkey_layout_table,
+        .llcache = filesystem_llcache_table,
+    };
 
-	moutf(MOUT_GENERIC, "BOOT MAIN ENTRY");
+    moutf(MOUT_GENERIC, "BOOT MAIN ENTRY");
 
 #if (!defined(NDEBUG) && defined(HAVE_EXECINFO))
-	/* Catch segfault, illegal instructions and fp exceptions */
-	signal(SIGSEGV, signal_handler);
-	signal(SIGILL, signal_handler);
-	signal(SIGFPE, signal_handler);
-	/* It's unlikely, but SIGBUS could happen on some platforms */
-	signal(SIGBUS, signal_handler);
+    /* Catch segfault, illegal instructions and fp exceptions */
+    signal(SIGSEGV, signal_handler);
+    signal(SIGILL, signal_handler);
+    signal(SIGFPE, signal_handler);
+    /* It's unlikely, but SIGBUS could happen on some platforms */
+    signal(SIGBUS, signal_handler);
 #endif
 
-	ret = neosurf_register(&monkey_table);
-	if (ret != NSERROR_OK) {
-		die("NetSurf operation table failed registration");
-	}
+    ret = neosurf_register(&monkey_table);
+    if (ret != NSERROR_OK) {
+        die("NetSurf operation table failed registration");
+    }
 
-	moutf(MOUT_GENERIC, "BOOT REGISTERED");
+    moutf(MOUT_GENERIC, "BOOT REGISTERED");
 
-	/* Unbuffer stdin/out/err */
-	setbuf(stdin, NULL);
-	setbuf(stdout, NULL);
-	setbuf(stderr, NULL);
-	moutf(MOUT_GENERIC, "BOOT SETBUF");
+    /* Unbuffer stdin/out/err */
+    setbuf(stdin, NULL);
+    setbuf(stdout, NULL);
+    setbuf(stderr, NULL);
+    moutf(MOUT_GENERIC, "BOOT SETBUF");
 
-	/* Prep the search paths */
-	respaths = nsmonkey_init_resource(
-		"${HOME}/.netsurf/:${NETSURFRES}:" MONKEY_RESPATH
-		":./frontends/monkey/res:" MONKEY_SRCPATH "");
-	moutf(MOUT_GENERIC, "BOOT RESPATHS READY");
+    /* Prep the search paths */
+    respaths = nsmonkey_init_resource(
+        "${HOME}/.netsurf/:${NETSURFRES}:" MONKEY_RESPATH ":./frontends/monkey/res:" MONKEY_SRCPATH "");
+    moutf(MOUT_GENERIC, "BOOT RESPATHS READY");
 
-	/* initialise logging. Not fatal if it fails but not much we can do
-	 * about it either.
-	 */
-	nslog_init(nslog_stream_configure, &argc, argv);
-	moutf(MOUT_GENERIC, "BOOT NSLOG INIT");
+    /* initialise logging. Not fatal if it fails but not much we can do
+     * about it either.
+     */
+    nslog_init(nslog_stream_configure, &argc, argv);
+    moutf(MOUT_GENERIC, "BOOT NSLOG INIT");
 
-	/* user options setup */
-	ret = nsoption_init(set_defaults, &nsoptions, &nsoptions_default);
-	if (ret != NSERROR_OK) {
-		die("Options failed to initialise");
-	}
-	options = filepath_find(respaths, "Choices");
-	nsoption_read(options, nsoptions);
-	free(options);
-	nsoption_commandline(&argc, argv, nsoptions);
-	moutf(MOUT_GENERIC, "BOOT OPTIONS READY");
+    /* user options setup */
+    ret = nsoption_init(set_defaults, &nsoptions, &nsoptions_default);
+    if (ret != NSERROR_OK) {
+        die("Options failed to initialise");
+    }
+    options = filepath_find(respaths, "Choices");
+    nsoption_read(options, nsoptions);
+    free(options);
+    nsoption_commandline(&argc, argv, nsoptions);
+    moutf(MOUT_GENERIC, "BOOT OPTIONS READY");
 
-	messages = filepath_find(respaths, "Messages");
-	ret = messages_add_from_file(messages);
-	if (ret != NSERROR_OK) {
-		NSLOG(netsurf, INFO, "Messages failed to load");
-	}
-	moutf(MOUT_GENERIC, "BOOT MESSAGES LOADED");
+    messages = filepath_find(respaths, "Messages");
+    ret = messages_add_from_file(messages);
+    if (ret != NSERROR_OK) {
+        NSLOG(netsurf, INFO, "Messages failed to load");
+    }
+    moutf(MOUT_GENERIC, "BOOT MESSAGES LOADED");
 
-	/* common initialisation */
-	ret = neosurf_init(NULL);
-	free(messages);
-	if (ret != NSERROR_OK) {
-		die("NetSurf failed to initialise");
-	}
-	moutf(MOUT_GENERIC, "BOOT CORE INIT");
+    /* common initialisation */
+    ret = neosurf_init(NULL);
+    free(messages);
+    if (ret != NSERROR_OK) {
+        die("NetSurf failed to initialise");
+    }
+    moutf(MOUT_GENERIC, "BOOT CORE INIT");
 
-	filepath_sfinddef(respaths, buf, "mime.types", "/etc/");
-	monkey_fetch_filetype_init(buf);
-	moutf(MOUT_GENERIC, "BOOT FILETYPE INIT");
+    filepath_sfinddef(respaths, buf, "mime.types", "/etc/");
+    monkey_fetch_filetype_init(buf);
+    moutf(MOUT_GENERIC, "BOOT FILETYPE INIT");
 
-	urldb_load(nsoption_charp(url_file));
-	urldb_load_cookies(nsoption_charp(cookie_file));
-	moutf(MOUT_GENERIC, "BOOT URLDB COOKIES LOADED");
+    urldb_load(nsoption_charp(url_file));
+    urldb_load_cookies(nsoption_charp(cookie_file));
+    moutf(MOUT_GENERIC, "BOOT URLDB COOKIES LOADED");
 
-	/* Free resource paths now we're done finding resources */
-	for (char **s = respaths; *s != NULL; s++) {
-		free(*s);
-	}
-	free(respaths);
+    /* Free resource paths now we're done finding resources */
+    for (char **s = respaths; *s != NULL; s++) {
+        free(*s);
+    }
+    free(respaths);
 
-	ret = monkey_register_handler("QUIT", quit_handler);
-	if (ret != NSERROR_OK) {
-		die("quit handler failed to register");
-	}
+    ret = monkey_register_handler("QUIT", quit_handler);
+    if (ret != NSERROR_OK) {
+        die("quit handler failed to register");
+    }
 
-	ret = monkey_register_handler("WINDOW", monkey_window_handle_command);
-	if (ret != NSERROR_OK) {
-		die("window handler failed to register");
-	}
+    ret = monkey_register_handler("WINDOW", monkey_window_handle_command);
+    if (ret != NSERROR_OK) {
+        die("window handler failed to register");
+    }
 
-	ret = monkey_register_handler("OPTIONS", monkey_options_handle_command);
-	if (ret != NSERROR_OK) {
-		die("options handler failed to register");
-	}
+    ret = monkey_register_handler("OPTIONS", monkey_options_handle_command);
+    if (ret != NSERROR_OK) {
+        die("options handler failed to register");
+    }
 
-	ret = monkey_register_handler("LOGIN", monkey_login_handle_command);
-	if (ret != NSERROR_OK) {
-		die("login handler failed to register");
-	}
+    ret = monkey_register_handler("LOGIN", monkey_login_handle_command);
+    if (ret != NSERROR_OK) {
+        die("login handler failed to register");
+    }
 
-	moutf(MOUT_GENERIC, "BOOT HANDLERS REGISTERED");
+    moutf(MOUT_GENERIC, "BOOT HANDLERS REGISTERED");
 
 
-	moutf(MOUT_GENERIC, "STARTED");
-	moutf(MOUT_GENERIC, "RUN LOOP START");
-	monkey_run();
+    moutf(MOUT_GENERIC, "STARTED");
+    moutf(MOUT_GENERIC, "RUN LOOP START");
+    monkey_run();
 
-	moutf(MOUT_GENERIC, "CLOSING_DOWN");
-	monkey_kill_browser_windows();
+    moutf(MOUT_GENERIC, "CLOSING_DOWN");
+    monkey_kill_browser_windows();
 
-	neosurf_exit();
-	moutf(MOUT_GENERIC, "FINISHED");
+    neosurf_exit();
+    moutf(MOUT_GENERIC, "FINISHED");
 
-	/* finalise options */
-	nsoption_finalise(nsoptions, nsoptions_default);
+    /* finalise options */
+    nsoption_finalise(nsoptions, nsoptions_default);
 
-	/* finalise logging */
-	nslog_finalise();
+    /* finalise logging */
+    nslog_finalise();
 
-	/* And free any monkey-specific bits */
-	monkey_free_handlers();
+    /* And free any monkey-specific bits */
+    monkey_free_handlers();
 
-	return 0;
+    return 0;
 }

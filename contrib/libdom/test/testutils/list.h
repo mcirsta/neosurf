@@ -17,24 +17,19 @@
  * The high byte is used for category type
  * The low byte is used for concrete type
  */
-typedef enum TYPE {
-	INT = 0x0001,
-	STRING = 0x0100,
-	DOM_STRING = 0x0101,
-	NODE = 0x0200
-} TYPE;
+typedef enum TYPE { INT = 0x0001, STRING = 0x0100, DOM_STRING = 0x0101, NODE = 0x0200 } TYPE;
 
 
 struct list_elt {
-	void *data;
-	struct list_elt *next;
+    void *data;
+    struct list_elt *next;
 };
 
 typedef struct list {
-	unsigned int size;
-	TYPE type;
-	struct list_elt *head;
-	struct list_elt *tail;
+    unsigned int size;
+    TYPE type;
+    struct list_elt *head;
+    struct list_elt *tail;
 } list;
 
 struct list *list_new(TYPE type);
@@ -63,8 +58,6 @@ bool list_contains(struct list *list, void *data, comparator comparator);
 /**
  * Tests if superlist contains all elements in sublist.  Order is not important.
  */
-bool list_contains_all(struct list *superList,
-		       struct list *subList,
-		       comparator comparator);
+bool list_contains_all(struct list *superList, struct list *subList, comparator comparator);
 
 #endif

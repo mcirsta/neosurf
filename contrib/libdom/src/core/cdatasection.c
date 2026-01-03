@@ -8,20 +8,19 @@
 
 #include <stdlib.h>
 
+#include "utils/utils.h"
 #include "core/cdatasection.h"
 #include "core/document.h"
 #include "core/text.h"
-#include "utils/utils.h"
 
 /**
  * A DOM CDATA section
  */
 struct dom_cdata_section {
-	dom_text base; /**< Base node */
+    dom_text base; /**< Base node */
 };
 
-static const struct dom_node_protect_vtable cdata_section_protect_vtable = {
-	DOM_CDATA_SECTION_PROTECT_VTABLE};
+static const struct dom_node_protect_vtable cdata_section_protect_vtable = {DOM_CDATA_SECTION_PROTECT_VTABLE};
 
 /**
  * Create a CDATA section
@@ -36,34 +35,31 @@ static const struct dom_node_protect_vtable cdata_section_protect_vtable = {
  *
  * The returned node will already be referenced.
  */
-dom_exception _dom_cdata_section_create(dom_document *doc,
-					dom_string *name,
-					dom_string *value,
-					dom_cdata_section **result)
+dom_exception
+_dom_cdata_section_create(dom_document *doc, dom_string *name, dom_string *value, dom_cdata_section **result)
 {
-	dom_cdata_section *c;
-	dom_exception err;
+    dom_cdata_section *c;
+    dom_exception err;
 
-	/* Allocate the comment node */
-	c = malloc(sizeof(dom_cdata_section));
-	if (c == NULL)
-		return DOM_NO_MEM_ERR;
+    /* Allocate the comment node */
+    c = malloc(sizeof(dom_cdata_section));
+    if (c == NULL)
+        return DOM_NO_MEM_ERR;
 
-	/* Set up vtable */
-	((dom_node_internal *)c)->base.vtable = &text_vtable;
-	((dom_node_internal *)c)->vtable = &cdata_section_protect_vtable;
+    /* Set up vtable */
+    ((dom_node_internal *)c)->base.vtable = &text_vtable;
+    ((dom_node_internal *)c)->vtable = &cdata_section_protect_vtable;
 
-	/* And initialise the node */
-	err = _dom_cdata_section_initialise(
-		&c->base, doc, DOM_CDATA_SECTION_NODE, name, value);
-	if (err != DOM_NO_ERR) {
-		free(c);
-		return err;
-	}
+    /* And initialise the node */
+    err = _dom_cdata_section_initialise(&c->base, doc, DOM_CDATA_SECTION_NODE, name, value);
+    if (err != DOM_NO_ERR) {
+        free(c);
+        return err;
+    }
 
-	*result = c;
+    *result = c;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -75,11 +71,11 @@ dom_exception _dom_cdata_section_create(dom_document *doc,
  */
 void _dom_cdata_section_destroy(dom_cdata_section *cdata)
 {
-	/* Clean up base node contents */
-	_dom_cdata_section_finalise(&cdata->base);
+    /* Clean up base node contents */
+    _dom_cdata_section_finalise(&cdata->base);
 
-	/* Destroy the node */
-	free(cdata);
+    /* Destroy the node */
+    free(cdata);
 }
 
 /*--------------------------------------------------------------------------*/
@@ -89,27 +85,26 @@ void _dom_cdata_section_destroy(dom_cdata_section *cdata)
 /* The virtual destroy function of this class */
 void __dom_cdata_section_destroy(dom_node_internal *node)
 {
-	_dom_cdata_section_destroy((dom_cdata_section *)node);
+    _dom_cdata_section_destroy((dom_cdata_section *)node);
 }
 
 /* The copy constructor of this class */
-dom_exception
-_dom_cdata_section_copy(dom_node_internal *old, dom_node_internal **copy)
+dom_exception _dom_cdata_section_copy(dom_node_internal *old, dom_node_internal **copy)
 {
-	dom_cdata_section *new_cdata;
-	dom_exception err;
+    dom_cdata_section *new_cdata;
+    dom_exception err;
 
-	new_cdata = malloc(sizeof(dom_cdata_section));
-	if (new_cdata == NULL)
-		return DOM_NO_MEM_ERR;
+    new_cdata = malloc(sizeof(dom_cdata_section));
+    if (new_cdata == NULL)
+        return DOM_NO_MEM_ERR;
 
-	err = dom_text_copy_internal(old, new_cdata);
-	if (err != DOM_NO_ERR) {
-		free(new_cdata);
-		return err;
-	}
+    err = dom_text_copy_internal(old, new_cdata);
+    if (err != DOM_NO_ERR) {
+        free(new_cdata);
+        return err;
+    }
 
-	*copy = (dom_node_internal *)new_cdata;
+    *copy = (dom_node_internal *)new_cdata;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }

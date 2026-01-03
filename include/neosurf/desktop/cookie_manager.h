@@ -26,8 +26,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include <neosurf/utils/errors.h>
 #include <neosurf/mouse.h>
+#include <neosurf/utils/errors.h>
 
 struct redraw_context;
 struct cookie_data;
@@ -88,10 +88,7 @@ nserror cookie_manager_set_search_string(const char *string);
  * \param clip  Current clip rectangle (wrt tree origin)
  * \param ctx	Current redraw context
  */
-void cookie_manager_redraw(int x,
-			   int y,
-			   struct rect *clip,
-			   const struct redraw_context *ctx);
+void cookie_manager_redraw(int x, int y, struct rect *clip, const struct redraw_context *ctx);
 
 /**
  * Handles all kinds of mouse action

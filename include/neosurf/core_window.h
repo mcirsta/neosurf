@@ -39,10 +39,10 @@ struct rect;
  * drag status passed to drag_status callback
  */
 typedef enum {
-	CORE_WINDOW_DRAG_NONE,
-	CORE_WINDOW_DRAG_SELECTION,
-	CORE_WINDOW_DRAG_TEXT_SELECTION,
-	CORE_WINDOW_DRAG_MOVE
+    CORE_WINDOW_DRAG_NONE,
+    CORE_WINDOW_DRAG_SELECTION,
+    CORE_WINDOW_DRAG_TEXT_SELECTION,
+    CORE_WINDOW_DRAG_MOVE
 } core_window_drag_status;
 
 /**
@@ -51,80 +51,77 @@ typedef enum {
  * function table implementing core window operations
  */
 struct core_window_table {
-	/**
-	 * Invalidate an area of a window.
-	 *
-	 * The specified area of the window should now be considered
-	 *  out of date. If the area is NULL the entire window must be
-	 *  invalidated. It is expected that the windowing system will
-	 *  then subsequently cause redraw/expose operations as
-	 *  necessary.
-	 *
-	 * \note the frontend should not attempt to actually start the
-	 *  redraw operations as a result of this callback because the
-	 *  core redraw functions may already be threaded.
-	 *
-	 * \param[in] cw The core window to invalidate.
-	 * \param[in] rect area to redraw or NULL for the entire window area
-	 * \return NSERROR_OK on success or appropriate error code
-	 */
-	nserror (*invalidate)(struct core_window *cw, const struct rect *rect);
+    /**
+     * Invalidate an area of a window.
+     *
+     * The specified area of the window should now be considered
+     *  out of date. If the area is NULL the entire window must be
+     *  invalidated. It is expected that the windowing system will
+     *  then subsequently cause redraw/expose operations as
+     *  necessary.
+     *
+     * \note the frontend should not attempt to actually start the
+     *  redraw operations as a result of this callback because the
+     *  core redraw functions may already be threaded.
+     *
+     * \param[in] cw The core window to invalidate.
+     * \param[in] rect area to redraw or NULL for the entire window area
+     * \return NSERROR_OK on success or appropriate error code
+     */
+    nserror (*invalidate)(struct core_window *cw, const struct rect *rect);
 
-	/**
-	 * Update the logical extent of the window
-	 *
-	 * \param[in] cw the core window object
-	 * \param[in] width the width in px, or negative if don't care
-	 * \param[in] height the height in px, or negative if don't care
-	 * \return NSERROR_OK on success or appropriate error code
-	 */
-	nserror (*set_extent)(struct core_window *cw, int width, int height);
+    /**
+     * Update the logical extent of the window
+     *
+     * \param[in] cw the core window object
+     * \param[in] width the width in px, or negative if don't care
+     * \param[in] height the height in px, or negative if don't care
+     * \return NSERROR_OK on success or appropriate error code
+     */
+    nserror (*set_extent)(struct core_window *cw, int width, int height);
 
-	/**
-	 * Scroll the window to given scroll offsets
-	 *
-	 * Note: Core callers of this may want to look at calling
-	 * the `cw_helper_scroll_visible()`, rather than calling
-	 * this directly.
-	 *
-	 * \param[in] cw the core window object
-	 * \param[in] x x-scroll value to set
-	 * \param[in] y y-scroll value to set
-	 * \return NSERROR_OK on success or appropriate error code
-	 */
-	nserror (*set_scroll)(struct core_window *cw, int x, int y);
+    /**
+     * Scroll the window to given scroll offsets
+     *
+     * Note: Core callers of this may want to look at calling
+     * the `cw_helper_scroll_visible()`, rather than calling
+     * this directly.
+     *
+     * \param[in] cw the core window object
+     * \param[in] x x-scroll value to set
+     * \param[in] y y-scroll value to set
+     * \return NSERROR_OK on success or appropriate error code
+     */
+    nserror (*set_scroll)(struct core_window *cw, int x, int y);
 
-	/**
-	 * Get the current scroll offsets
-	 *
-	 * \param[in] cw the core window object
-	 * \param[out] returns horizontal scroll in px
-	 * \param[out] returns vertical scroll in px
-	 * \return NSERROR_OK on success or appropriate error code
-	 */
-	nserror (*get_scroll)(const struct core_window *cw, int *x, int *y);
+    /**
+     * Get the current scroll offsets
+     *
+     * \param[in] cw the core window object
+     * \param[out] returns horizontal scroll in px
+     * \param[out] returns vertical scroll in px
+     * \return NSERROR_OK on success or appropriate error code
+     */
+    nserror (*get_scroll)(const struct core_window *cw, int *x, int *y);
 
-	/**
-	 * Get window viewport dimensions
-	 *
-	 * \param[in] cw the core window object
-	 * \param[out] width to be set to viewport width in px
-	 * \param[out] height to be set to viewport height in px
-	 * \return NSERROR_OK on success or appropriate error code
-	 */
-	nserror (*get_dimensions)(const struct core_window *cw,
-				  int *width,
-				  int *height);
+    /**
+     * Get window viewport dimensions
+     *
+     * \param[in] cw the core window object
+     * \param[out] width to be set to viewport width in px
+     * \param[out] height to be set to viewport height in px
+     * \return NSERROR_OK on success or appropriate error code
+     */
+    nserror (*get_dimensions)(const struct core_window *cw, int *width, int *height);
 
-	/**
-	 * Inform corewindow owner of drag status
-	 *
-	 * \param[in] cw the core window object
-	 * \param[in] ds the current drag status
-	 * \return NSERROR_OK on success or appropriate error code
-	 */
-	nserror (*drag_status)(struct core_window *cw,
-			       core_window_drag_status ds);
+    /**
+     * Inform corewindow owner of drag status
+     *
+     * \param[in] cw the core window object
+     * \param[in] ds the current drag status
+     * \return NSERROR_OK on success or appropriate error code
+     */
+    nserror (*drag_status)(struct core_window *cw, core_window_drag_status ds);
 };
 
 

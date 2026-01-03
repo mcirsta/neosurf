@@ -13,47 +13,46 @@
 
 static void _virtual_dom_custom_event_destroy(struct dom_event *evt);
 
-static struct dom_event_private_vtable _event_vtable = {
-	_virtual_dom_custom_event_destroy};
+static struct dom_event_private_vtable _event_vtable = {_virtual_dom_custom_event_destroy};
 
 /* Constructor */
 dom_exception _dom_custom_event_create(struct dom_custom_event **evt)
 {
-	*evt = malloc(sizeof(dom_custom_event));
-	if (*evt == NULL)
-		return DOM_NO_MEM_ERR;
+    *evt = malloc(sizeof(dom_custom_event));
+    if (*evt == NULL)
+        return DOM_NO_MEM_ERR;
 
-	((struct dom_event *)*evt)->vtable = &_event_vtable;
+    ((struct dom_event *)*evt)->vtable = &_event_vtable;
 
-	return _dom_custom_event_initialise(*evt);
+    return _dom_custom_event_initialise(*evt);
 }
 
 /* Destructor */
 void _dom_custom_event_destroy(struct dom_custom_event *evt)
 {
-	_dom_custom_event_finalise(evt);
+    _dom_custom_event_finalise(evt);
 
-	free(evt);
+    free(evt);
 }
 
 /* Initialise function */
 dom_exception _dom_custom_event_initialise(struct dom_custom_event *evt)
 {
-	evt->detail = NULL;
-	return _dom_event_initialise(&evt->base);
+    evt->detail = NULL;
+    return _dom_event_initialise(&evt->base);
 }
 
 /* Finalise function */
 void _dom_custom_event_finalise(struct dom_custom_event *evt)
 {
-	evt->detail = NULL;
-	_dom_event_finalise(&evt->base);
+    evt->detail = NULL;
+    _dom_event_finalise(&evt->base);
 }
 
 /* The virtual destroy function */
 void _virtual_dom_custom_event_destroy(struct dom_event *evt)
 {
-	_dom_custom_event_destroy((dom_custom_event *)evt);
+    _dom_custom_event_destroy((dom_custom_event *)evt);
 }
 
 /*----------------------------------------------------------------------*/
@@ -68,9 +67,9 @@ void _virtual_dom_custom_event_destroy(struct dom_event *evt)
  */
 dom_exception _dom_custom_event_get_detail(dom_custom_event *evt, void **detail)
 {
-	*detail = evt->detail;
+    *detail = evt->detail;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -84,14 +83,9 @@ dom_exception _dom_custom_event_get_detail(dom_custom_event *evt, void **detail)
  * \param detail      The detail object of this custom event
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_custom_event_init_ns(dom_custom_event *evt,
-					dom_string *namespace,
-					dom_string *type,
-					bool bubble,
-					bool cancelable,
-					void *detail)
+dom_exception _dom_custom_event_init_ns(
+    dom_custom_event *evt, dom_string *namespace, dom_string *type, bool bubble, bool cancelable, void *detail)
 {
-	evt->detail = detail;
-	return _dom_event_init_ns(
-		&evt->base, namespace, type, bubble, cancelable);
+    evt->detail = detail;
+    return _dom_event_init_ns(&evt->base, namespace, type, bubble, cancelable);
 }

@@ -22,23 +22,23 @@
  * win32 gui implementation.
  */
 
-#include <stdbool.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <windows.h>
 
-#include "neosurf/utils/errors.h"
-#include "neosurf/utils/nsurl.h"
-#include "neosurf/utils/log.h"
-#include "neosurf/utils/corestrings.h"
-#include "neosurf/utils/file.h"
-#include "neosurf/utils/messages.h"
 #include "neosurf/browser_window.h"
+#include "neosurf/utils/corestrings.h"
+#include "neosurf/utils/errors.h"
+#include "neosurf/utils/file.h"
+#include "neosurf/utils/log.h"
+#include "neosurf/utils/messages.h"
+#include "neosurf/utils/nsurl.h"
 
+#include "windows/gui.h"
 #include "windows/schedule.h"
 #include "windows/window.h"
-#include "windows/gui.h"
 
 /* exported global defined in windows/gui.h */
 HINSTANCE hinst;
@@ -49,8 +49,8 @@ char *G_config_path;
 static bool win32_quit = false;
 
 struct dialog_list_entry {
-	struct dialog_list_entry *next;
-	HWND hwnd;
+    struct dialog_list_entry *next;
+    HWND hwnd;
 };
 
 static struct dialog_list_entry *dlglist = NULL;
@@ -58,46 +58,42 @@ static struct dialog_list_entry *dlglist = NULL;
 /* exported interface documented in gui.h */
 nserror nsw32_add_dialog(HWND hwndDlg)
 {
-	struct dialog_list_entry *nentry;
-	nentry = malloc(sizeof(struct dialog_list_entry));
-	if (nentry == NULL) {
-		return NSERROR_NOMEM;
-	}
+    struct dialog_list_entry *nentry;
+    nentry = malloc(sizeof(struct dialog_list_entry));
+    if (nentry == NULL) {
+        return NSERROR_NOMEM;
+    }
 
-	nentry->hwnd = hwndDlg;
-	nentry->next = dlglist;
-	dlglist = nentry;
+    nentry->hwnd = hwndDlg;
+    nentry->next = dlglist;
+    dlglist = nentry;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /* exported interface documented in gui.h */
 nserror nsw32_del_dialog(HWND hwndDlg)
 {
-	struct dialog_list_entry **prev;
-	struct dialog_list_entry *cur;
+    struct dialog_list_entry **prev;
+    struct dialog_list_entry *cur;
 
-	prev = &dlglist;
-	cur = *prev;
+    prev = &dlglist;
+    cur = *prev;
 
-	while (cur != NULL) {
-		if (cur->hwnd == hwndDlg) {
-			/* found match */
-			*prev = cur->next;
-			NSLOG(neosurf,
-			      DEBUG,
-			      "removed hwnd %p entry %p",
-			      cur->hwnd,
-			      cur);
-			free(cur);
-			return NSERROR_OK;
-		}
-		prev = &cur->next;
-		cur = *prev;
-	}
-	NSLOG(neosurf, INFO, "did not find hwnd %p", hwndDlg);
+    while (cur != NULL) {
+        if (cur->hwnd == hwndDlg) {
+            /* found match */
+            *prev = cur->next;
+            NSLOG(neosurf, DEBUG, "removed hwnd %p entry %p", cur->hwnd, cur);
+            free(cur);
+            return NSERROR_OK;
+        }
+        prev = &cur->next;
+        cur = *prev;
+    }
+    NSLOG(neosurf, INFO, "did not find hwnd %p", hwndDlg);
 
-	return NSERROR_NOT_FOUND;
+    return NSERROR_NOT_FOUND;
 }
 
 /**
@@ -105,96 +101,85 @@ nserror nsw32_del_dialog(HWND hwndDlg)
  */
 static nserror handle_dialog_message(LPMSG lpMsg)
 {
-	struct dialog_list_entry *cur;
-	cur = dlglist;
-	while (cur != NULL) {
-		if (IsDialogMessage(cur->hwnd, lpMsg)) {
-			NSLOG(neosurf,
-			      DEBUG,
-			      "dispatched dialog hwnd %p",
-			      cur->hwnd);
-			return NSERROR_OK;
-		}
-		cur = cur->next;
-	}
+    struct dialog_list_entry *cur;
+    cur = dlglist;
+    while (cur != NULL) {
+        if (IsDialogMessage(cur->hwnd, lpMsg)) {
+            NSLOG(neosurf, DEBUG, "dispatched dialog hwnd %p", cur->hwnd);
+            return NSERROR_OK;
+        }
+        cur = cur->next;
+    }
 
-	return NSERROR_NOT_FOUND;
+    return NSERROR_NOT_FOUND;
 }
 
 /* exported interface documented in gui.h */
 void win32_set_quit(bool q)
 {
-	win32_quit = q;
+    win32_quit = q;
 }
 
 /* exported interface documented in gui.h */
 void win32_run(void)
 {
-	MSG Msg;
-	int timeout;
+    MSG Msg;
+    int timeout;
 
-	NSLOG(neosurf, INFO, "Starting messgae dispatcher");
+    NSLOG(neosurf, INFO, "Starting messgae dispatcher");
 
-	while (!win32_quit) {
-		timeout = schedule_run();
+    while (!win32_quit) {
+        timeout = schedule_run();
 
-		DWORD wait_timeout;
-		if (timeout < 0) {
-			wait_timeout = INFINITE;
-		} else {
-			wait_timeout = (DWORD)timeout;
-		}
+        DWORD wait_timeout;
+        if (timeout < 0) {
+            wait_timeout = INFINITE;
+        } else {
+            wait_timeout = (DWORD)timeout;
+        }
 
-		DWORD wait_result = MsgWaitForMultipleObjectsEx(
-			0,
-			NULL,
-			wait_timeout,
-			QS_ALLINPUT,
-			MWMO_INPUTAVAILABLE);
+        DWORD wait_result = MsgWaitForMultipleObjectsEx(0, NULL, wait_timeout, QS_ALLINPUT, MWMO_INPUTAVAILABLE);
 
-		if (wait_result == WAIT_OBJECT_0) {
-			while (PeekMessage(&Msg, NULL, 0, 0, PM_REMOVE)) {
-				if (Msg.message == WM_QUIT) {
-					win32_quit = true;
-					break;
-				}
+        if (wait_result == WAIT_OBJECT_0) {
+            while (PeekMessage(&Msg, NULL, 0, 0, PM_REMOVE)) {
+                if (Msg.message == WM_QUIT) {
+                    win32_quit = true;
+                    break;
+                }
 
-				if (handle_dialog_message(&Msg) != NSERROR_OK) {
-					TranslateMessage(&Msg);
-					DispatchMessage(&Msg);
-				}
+                if (handle_dialog_message(&Msg) != NSERROR_OK) {
+                    TranslateMessage(&Msg);
+                    DispatchMessage(&Msg);
+                }
 
-				if (win32_quit) {
-					break;
-				}
-			}
-		}
-	}
+                if (win32_quit) {
+                    break;
+                }
+            }
+        }
+    }
 }
 
 
 /* exported function documented in windows/gui.h */
 nserror win32_warning(const char *warning, const char *detail)
 {
-	size_t len = 1 +
-		     ((warning != NULL) ? strlen(messages_get(warning)) : 0) +
-		     ((detail != 0) ? strlen(detail) : 0);
-	char message[len];
-	snprintf(message, len, messages_get(warning), detail);
-	MessageBox(NULL, message, "Warning", MB_ICONWARNING);
+    size_t len = 1 + ((warning != NULL) ? strlen(messages_get(warning)) : 0) + ((detail != 0) ? strlen(detail) : 0);
+    char message[len];
+    snprintf(message, len, messages_get(warning), detail);
+    MessageBox(NULL, message, "Warning", MB_ICONWARNING);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
 /* exported function documented in windows/gui.h */
 nserror win32_report_nserror(nserror error, const char *detail)
 {
-	size_t len = 1 + strlen(messages_get_errorcode(error)) +
-		     ((detail != 0) ? strlen(detail) : 0);
-	char message[len];
-	snprintf(message, len, messages_get_errorcode(error), detail);
-	MessageBox(NULL, message, "Warning", MB_ICONWARNING);
+    size_t len = 1 + strlen(messages_get_errorcode(error)) + ((detail != 0) ? strlen(detail) : 0);
+    char message[len];
+    snprintf(message, len, messages_get_errorcode(error), detail);
+    MessageBox(NULL, message, "Warning", MB_ICONWARNING);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }

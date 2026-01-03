@@ -106,7 +106,6 @@ nserror hash_add_file(struct hash_table *ht, const char *path);
  * \param size length of \a data
  * \return NSERROR_OK on success else error code
  */
-nserror
-hash_add_inline(struct hash_table *ht, const uint8_t *data, size_t size);
+nserror hash_add_inline(struct hash_table *ht, const uint8_t *data, size_t size);
 
 #endif

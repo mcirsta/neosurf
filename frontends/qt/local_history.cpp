@@ -21,61 +21,57 @@
  * Local history corewindow.
  */
 extern "C" {
-#include "neosurf/content.h"
 #include "neosurf/browser_window.h"
+#include "neosurf/content.h"
 
-#include "desktop/local_history.h"
 #include "desktop/browser_private.h"
+#include "desktop/local_history.h"
 }
 
 #include "qt/local_history.cls.h"
 
 NS_Local_history::NS_Local_history(QWidget *parent, struct browser_window *bw)
-	: NS_Corewindow(parent, Qt::Popup), m_session(nullptr)
+    : NS_Corewindow(parent, Qt::Popup), m_session(nullptr)
 {
-	setMaximumSize(bw);
-	local_history_init((struct core_window *)m_core_window, bw, &m_session);
+    setMaximumSize(bw);
+    local_history_init((struct core_window *)m_core_window, bw, &m_session);
 }
 
 NS_Local_history::~NS_Local_history()
 {
-	local_history_fini(m_session);
+    local_history_fini(m_session);
 }
 
 void NS_Local_history::setMaximumSize(struct browser_window *bw)
 {
-	QSize size(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
-	int w, h;
+    QSize size(QWIDGETSIZE_MAX, QWIDGETSIZE_MAX);
+    int w, h;
 
-	if (browser_window_get_dimensions(bw, &w, &h) == NSERROR_OK) {
-		NS_Corewindow::setMaximumSize(w, h);
-	}
+    if (browser_window_get_dimensions(bw, &w, &h) == NSERROR_OK) {
+        NS_Corewindow::setMaximumSize(w, h);
+    }
 }
 
 nserror NS_Local_history::setbw(struct browser_window *bw)
 {
-	setMaximumSize(bw);
-	return local_history_set(m_session, bw);
+    setMaximumSize(bw);
+    return local_history_set(m_session, bw);
 }
 
 void NS_Local_history::draw(struct rect *clip, struct redraw_context *ctx)
 {
-	local_history_redraw(m_session, 0, 0, clip, ctx);
+    local_history_redraw(m_session, 0, 0, clip, ctx);
 }
 
 bool NS_Local_history::key_press(uint32_t nskey)
 {
-	return local_history_keypress(m_session, nskey);
+    return local_history_keypress(m_session, nskey);
 }
 
-void NS_Local_history::mouse_action(browser_mouse_state mouse_state,
-				    int x,
-				    int y)
+void NS_Local_history::mouse_action(browser_mouse_state mouse_state, int x, int y)
 {
-	if (((mouse_state) &&
-	     (!geometry().contains(mapToGlobal(QPoint(x, y))))) ||
-	    (local_history_mouse_action(m_session, mouse_state, x, y) ==
-	     NSERROR_OK)) {
-		close();
-	}
+    if (((mouse_state) && (!geometry().contains(mapToGlobal(QPoint(x, y))))) ||
+        (local_history_mouse_action(m_session, mouse_state, x, y) == NSERROR_OK)) {
+        close();
+    }
 }

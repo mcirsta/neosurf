@@ -30,7 +30,6 @@
  * This is the same as the GTK+ 3 gdk_pixbuf_get_from_surface but
  * actually works and is available on gtk 2
  */
-GdkPixbuf *
-nsgdk_pixbuf_get_from_surface(cairo_surface_t *surface, int width, int height);
+GdkPixbuf *nsgdk_pixbuf_get_from_surface(cairo_surface_t *surface, int width, int height);
 
 #endif /* NETSURF_GTK_GDK_H */

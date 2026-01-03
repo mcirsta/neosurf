@@ -252,61 +252,52 @@ typedef void *(*duk_alloc_function)(void *udata, duk_size_t size);
 typedef void *(*duk_realloc_function)(void *udata, void *ptr, duk_size_t size);
 typedef void (*duk_free_function)(void *udata, void *ptr);
 typedef void (*duk_fatal_function)(void *udata, const char *msg);
-typedef void (*duk_decode_char_function)(void *udata,
-					 duk_codepoint_t codepoint);
-typedef duk_codepoint_t (*duk_map_char_function)(void *udata,
-						 duk_codepoint_t codepoint);
+typedef void (*duk_decode_char_function)(void *udata, duk_codepoint_t codepoint);
+typedef duk_codepoint_t (*duk_map_char_function)(void *udata, duk_codepoint_t codepoint);
 typedef duk_ret_t (*duk_safe_call_function)(duk_context *ctx, void *udata);
-typedef duk_size_t (*duk_debug_read_function)(void *udata,
-					      char *buffer,
-					      duk_size_t length);
-typedef duk_size_t (*duk_debug_write_function)(void *udata,
-					       const char *buffer,
-					       duk_size_t length);
+typedef duk_size_t (*duk_debug_read_function)(void *udata, char *buffer, duk_size_t length);
+typedef duk_size_t (*duk_debug_write_function)(void *udata, const char *buffer, duk_size_t length);
 typedef duk_size_t (*duk_debug_peek_function)(void *udata);
 typedef void (*duk_debug_read_flush_function)(void *udata);
 typedef void (*duk_debug_write_flush_function)(void *udata);
-typedef duk_idx_t (*duk_debug_request_function)(duk_context *ctx,
-						void *udata,
-						duk_idx_t nvalues);
+typedef duk_idx_t (*duk_debug_request_function)(duk_context *ctx, void *udata, duk_idx_t nvalues);
 typedef void (*duk_debug_detached_function)(duk_context *ctx, void *udata);
 
 struct duk_thread_state {
-	/* XXX: Enough space to hold internal suspend/resume structure.
-	 * This is rather awkward and to be fixed when the internal
-	 * structure is visible for the public API header.
-	 */
-	char data[128];
+    /* XXX: Enough space to hold internal suspend/resume structure.
+     * This is rather awkward and to be fixed when the internal
+     * structure is visible for the public API header.
+     */
+    char data[128];
 };
 
 struct duk_memory_functions {
-	duk_alloc_function alloc_func;
-	duk_realloc_function realloc_func;
-	duk_free_function free_func;
-	void *udata;
+    duk_alloc_function alloc_func;
+    duk_realloc_function realloc_func;
+    duk_free_function free_func;
+    void *udata;
 };
 
 struct duk_function_list_entry {
-	const char *key;
-	duk_c_function value;
-	duk_idx_t nargs;
+    const char *key;
+    duk_c_function value;
+    duk_idx_t nargs;
 };
 
 struct duk_number_list_entry {
-	const char *key;
-	duk_double_t value;
+    const char *key;
+    duk_double_t value;
 };
 
 struct duk_time_components {
-	duk_double_t year; /* year, e.g. 2016, ECMAScript year range */
-	duk_double_t month; /* month: 1-12 */
-	duk_double_t day; /* day: 1-31 */
-	duk_double_t hours; /* hour: 0-59 */
-	duk_double_t minutes; /* minute: 0-59 */
-	duk_double_t seconds; /* second: 0-59 (in POSIX time no leap second) */
-	duk_double_t milliseconds; /* may contain sub-millisecond fractions */
-	duk_double_t
-		weekday; /* weekday: 0-6, 0=Sunday, 1=Monday, ..., 6=Saturday */
+    duk_double_t year; /* year, e.g. 2016, ECMAScript year range */
+    duk_double_t month; /* month: 1-12 */
+    duk_double_t day; /* day: 1-31 */
+    duk_double_t hours; /* hour: 0-59 */
+    duk_double_t minutes; /* minute: 0-59 */
+    duk_double_t seconds; /* second: 0-59 (in POSIX time no leap second) */
+    duk_double_t milliseconds; /* may contain sub-millisecond fractions */
+    duk_double_t weekday; /* weekday: 0-6, 0=Sunday, 1=Monday, ..., 6=Saturday */
 };
 
 /*
@@ -339,13 +330,13 @@ struct duk_time_components {
 #define DUK_TYPE_NULL 2U /* ECMAScript null */
 #define DUK_TYPE_BOOLEAN 3U /* ECMAScript boolean: 0 or 1 */
 #define DUK_TYPE_NUMBER 4U /* ECMAScript number: double */
-#define DUK_TYPE_STRING                                                        \
-	5U /* ECMAScript string: CESU-8 / extended UTF-8 encoded */
-#define DUK_TYPE_OBJECT                                                        \
-	6U /* ECMAScript object: includes objects, arrays, functions, threads  \
-	    */
-#define DUK_TYPE_BUFFER 7U /* fixed or dynamic, garbage collected byte buffer  \
-			    */
+#define DUK_TYPE_STRING 5U /* ECMAScript string: CESU-8 / extended UTF-8 encoded */
+#define DUK_TYPE_OBJECT                                                                                                \
+    6U /* ECMAScript object: includes objects, arrays, functions, threads                                              \
+        */
+#define DUK_TYPE_BUFFER                                                                                                \
+    7U /* fixed or dynamic, garbage collected byte buffer                                                              \
+        */
 #define DUK_TYPE_POINTER 8U /* raw void pointer */
 #define DUK_TYPE_LIGHTFUNC 9U /* lightweight function pointer */
 #define DUK_TYPE_MAX 9U
@@ -361,81 +352,74 @@ struct duk_time_components {
 #define DUK_TYPE_MASK_BUFFER (1U << DUK_TYPE_BUFFER)
 #define DUK_TYPE_MASK_POINTER (1U << DUK_TYPE_POINTER)
 #define DUK_TYPE_MASK_LIGHTFUNC (1U << DUK_TYPE_LIGHTFUNC)
-#define DUK_TYPE_MASK_THROW                                                    \
-	(1U << 10) /* internal flag value: throw if mask doesn't match */
-#define DUK_TYPE_MASK_PROMOTE                                                  \
-	(1U << 11) /* internal flag value: promote to object if mask matches   \
-		    */
+#define DUK_TYPE_MASK_THROW (1U << 10) /* internal flag value: throw if mask doesn't match */
+#define DUK_TYPE_MASK_PROMOTE                                                                                          \
+    (1U << 11) /* internal flag value: promote to object if mask matches                                               \
+                */
 
 /* Coercion hints */
-#define DUK_HINT_NONE                                                          \
-	0 /* prefer number, unless input is a Date, in which                   \
-	   * case prefer string (E5 Section 8.12.8)                            \
-	   */
+#define DUK_HINT_NONE                                                                                                  \
+    0 /* prefer number, unless input is a Date, in which                                                               \
+       * case prefer string (E5 Section 8.12.8)                                                                        \
+       */
 #define DUK_HINT_STRING 1 /* prefer string */
 #define DUK_HINT_NUMBER 2 /* prefer number */
 
 /* Enumeration flags for duk_enum() */
-#define DUK_ENUM_INCLUDE_NONENUMERABLE                                         \
-	(1U << 0) /* enumerate non-numerable properties in addition to         \
-		     enumerable */
-#define DUK_ENUM_INCLUDE_HIDDEN                                                \
-	(1U << 1) /* enumerate hidden symbols too (in Duktape 1.x called       \
-		     internal properties) */
+#define DUK_ENUM_INCLUDE_NONENUMERABLE                                                                                 \
+    (1U << 0) /* enumerate non-numerable properties in addition to                                                     \
+             enumerable */
+#define DUK_ENUM_INCLUDE_HIDDEN                                                                                        \
+    (1U << 1) /* enumerate hidden symbols too (in Duktape 1.x called                                                   \
+             internal properties) */
 #define DUK_ENUM_INCLUDE_SYMBOLS (1U << 2) /* enumerate symbols */
 #define DUK_ENUM_EXCLUDE_STRINGS (1U << 3) /* exclude strings */
-#define DUK_ENUM_OWN_PROPERTIES_ONLY                                           \
-	(1U << 4) /* don't walk prototype chain, only check own properties */
-#define DUK_ENUM_ARRAY_INDICES_ONLY (1U << 5) /* only enumerate array indices  \
-					       */
+#define DUK_ENUM_OWN_PROPERTIES_ONLY (1U << 4) /* don't walk prototype chain, only check own properties */
+#define DUK_ENUM_ARRAY_INDICES_ONLY                                                                                    \
+    (1U << 5) /* only enumerate array indices                                                                          \
+               */
 /* XXX: misleading name */
-#define DUK_ENUM_SORT_ARRAY_INDICES                                            \
-	(1U                                                                    \
-	 << 6) /* sort array indices (applied to full enumeration result,      \
-		  including inherited array indices); XXX: misleading name */
-#define DUK_ENUM_NO_PROXY_BEHAVIOR                                             \
-	(1U << 7) /* enumerate a proxy object itself without invoking proxy    \
-		     behavior */
+#define DUK_ENUM_SORT_ARRAY_INDICES                                                                                    \
+    (1U << 6) /* sort array indices (applied to full enumeration result,                                               \
+             including inherited array indices); XXX: misleading name */
+#define DUK_ENUM_NO_PROXY_BEHAVIOR                                                                                     \
+    (1U << 7) /* enumerate a proxy object itself without invoking proxy                                                \
+             behavior */
 
 /* Compilation flags for duk_compile() and duk_eval() */
 /* DUK_COMPILE_xxx bits 0-2 are reserved for an internal 'nargs' argument.
  */
-#define DUK_COMPILE_EVAL                                                       \
-	(1U << 3) /* compile eval code (instead of global code) */
-#define DUK_COMPILE_FUNCTION                                                   \
-	(1U << 4) /* compile function code (instead of global code) */
-#define DUK_COMPILE_STRICT                                                     \
-	(1U << 5) /* use strict (outer) context for global, eval, or function  \
-		     code */
-#define DUK_COMPILE_SHEBANG                                                    \
-	(1U << 6) /* allow shebang ('#! ...') comment on first line of source  \
-		   */
+#define DUK_COMPILE_EVAL (1U << 3) /* compile eval code (instead of global code) */
+#define DUK_COMPILE_FUNCTION (1U << 4) /* compile function code (instead of global code) */
+#define DUK_COMPILE_STRICT                                                                                             \
+    (1U << 5) /* use strict (outer) context for global, eval, or function                                              \
+             code */
+#define DUK_COMPILE_SHEBANG                                                                                            \
+    (1U << 6) /* allow shebang ('#! ...') comment on first line of source                                              \
+               */
 #define DUK_COMPILE_SAFE (1U << 7) /* (internal) catch compilation errors */
 #define DUK_COMPILE_NORESULT (1U << 8) /* (internal) omit eval result */
-#define DUK_COMPILE_NOSOURCE                                                   \
-	(1U << 9) /* (internal) no source string on stack */
-#define DUK_COMPILE_STRLEN                                                     \
-	(1U << 10) /* (internal) take strlen() of src_buffer (avoids double    \
-		      evaluation in macro) */
-#define DUK_COMPILE_NOFILENAME (1U << 11) /* (internal) no filename on stack   \
-					   */
-#define DUK_COMPILE_FUNCEXPR                                                   \
-	(1U << 12) /* (internal) source is a function expression (used for     \
-		      Function constructor) */
+#define DUK_COMPILE_NOSOURCE (1U << 9) /* (internal) no source string on stack */
+#define DUK_COMPILE_STRLEN                                                                                             \
+    (1U << 10) /* (internal) take strlen() of src_buffer (avoids double                                                \
+              evaluation in macro) */
+#define DUK_COMPILE_NOFILENAME                                                                                         \
+    (1U << 11) /* (internal) no filename on stack                                                                      \
+                */
+#define DUK_COMPILE_FUNCEXPR                                                                                           \
+    (1U << 12) /* (internal) source is a function expression (used for                                                 \
+              Function constructor) */
 
 /* Flags for duk_def_prop() and its variants; base flags + a lot of convenience
  * shorthands */
-#define DUK_DEFPROP_WRITABLE                                                   \
-	(1U                                                                    \
-	 << 0) /* set writable (effective if DUK_DEFPROP_HAVE_WRITABLE set) */
-#define DUK_DEFPROP_ENUMERABLE                                                 \
-	(1U << 1) /* set enumerable (effective if DUK_DEFPROP_HAVE_ENUMERABLE  \
-		     set) */
-#define DUK_DEFPROP_CONFIGURABLE                                               \
-	(1U << 2) /* set configurable (effective if                            \
-		     DUK_DEFPROP_HAVE_CONFIGURABLE set) */
-#define DUK_DEFPROP_RESERVED3                                                  \
-	(1U << 3) /* INTERNAL: reserved, internally accessor flag */
+#define DUK_DEFPROP_WRITABLE (1U << 0) /* set writable (effective if DUK_DEFPROP_HAVE_WRITABLE set) */
+#define DUK_DEFPROP_ENUMERABLE                                                                                         \
+    (1U << 1) /* set enumerable (effective if DUK_DEFPROP_HAVE_ENUMERABLE                                              \
+             set) */
+#define DUK_DEFPROP_CONFIGURABLE                                                                                       \
+    (1U << 2) /* set configurable (effective if                                                                        \
+             DUK_DEFPROP_HAVE_CONFIGURABLE set) */
+#define DUK_DEFPROP_RESERVED3 (1U << 3) /* INTERNAL: reserved, internally accessor flag */
 #define DUK_DEFPROP_RESERVED4 (1U << 4) /* INTERNAL: reserved */
 #define DUK_DEFPROP_RESERVED5 (1U << 5) /* INTERNAL: reserved */
 #define DUK_DEFPROP_RESERVED6 (1U << 6) /* INTERNAL: reserved */
@@ -444,24 +428,20 @@ struct duk_time_components {
 #define DUK_DEFPROP_HAVE_WRITABLE (1U << 8) /* set/clear writable */
 #define DUK_DEFPROP_HAVE_ENUMERABLE (1U << 9) /* set/clear enumerable */
 #define DUK_DEFPROP_HAVE_CONFIGURABLE (1U << 10) /* set/clear configurable */
-#define DUK_DEFPROP_HAVE_VALUE (1U << 11) /* set value (given on value stack)  \
-					   */
-#define DUK_DEFPROP_HAVE_GETTER                                                \
-	(1U << 12) /* set getter (given on value stack) */
-#define DUK_DEFPROP_HAVE_SETTER                                                \
-	(1U << 13) /* set setter (given on value stack) */
-#define DUK_DEFPROP_FORCE                                                      \
-	(1U << 14) /* force change if possible, may still fail for e.g.        \
-		      virtual properties */
+#define DUK_DEFPROP_HAVE_VALUE                                                                                         \
+    (1U << 11) /* set value (given on value stack)                                                                     \
+                */
+#define DUK_DEFPROP_HAVE_GETTER (1U << 12) /* set getter (given on value stack) */
+#define DUK_DEFPROP_HAVE_SETTER (1U << 13) /* set setter (given on value stack) */
+#define DUK_DEFPROP_FORCE                                                                                              \
+    (1U << 14) /* force change if possible, may still fail for e.g.                                                    \
+              virtual properties */
 #define DUK_DEFPROP_THROW (1U << 15) /* INTERNAL: throw on errors */
-#define DUK_DEFPROP_SET_WRITABLE                                               \
-	(DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_WRITABLE)
+#define DUK_DEFPROP_SET_WRITABLE (DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_WRITABLE)
 #define DUK_DEFPROP_CLEAR_WRITABLE DUK_DEFPROP_HAVE_WRITABLE
-#define DUK_DEFPROP_SET_ENUMERABLE                                             \
-	(DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_ENUMERABLE)
+#define DUK_DEFPROP_SET_ENUMERABLE (DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_ENUMERABLE)
 #define DUK_DEFPROP_CLEAR_ENUMERABLE DUK_DEFPROP_HAVE_ENUMERABLE
-#define DUK_DEFPROP_SET_CONFIGURABLE                                           \
-	(DUK_DEFPROP_HAVE_CONFIGURABLE | DUK_DEFPROP_CONFIGURABLE)
+#define DUK_DEFPROP_SET_CONFIGURABLE (DUK_DEFPROP_HAVE_CONFIGURABLE | DUK_DEFPROP_CONFIGURABLE)
 #define DUK_DEFPROP_CLEAR_CONFIGURABLE DUK_DEFPROP_HAVE_CONFIGURABLE
 #define DUK_DEFPROP_W DUK_DEFPROP_WRITABLE
 #define DUK_DEFPROP_E DUK_DEFPROP_ENUMERABLE
@@ -469,45 +449,29 @@ struct duk_time_components {
 #define DUK_DEFPROP_WE (DUK_DEFPROP_WRITABLE | DUK_DEFPROP_ENUMERABLE)
 #define DUK_DEFPROP_WC (DUK_DEFPROP_WRITABLE | DUK_DEFPROP_CONFIGURABLE)
 #define DUK_DEFPROP_EC (DUK_DEFPROP_ENUMERABLE | DUK_DEFPROP_CONFIGURABLE)
-#define DUK_DEFPROP_WEC                                                        \
-	(DUK_DEFPROP_WRITABLE | DUK_DEFPROP_ENUMERABLE |                       \
-	 DUK_DEFPROP_CONFIGURABLE)
+#define DUK_DEFPROP_WEC (DUK_DEFPROP_WRITABLE | DUK_DEFPROP_ENUMERABLE | DUK_DEFPROP_CONFIGURABLE)
 #define DUK_DEFPROP_HAVE_W DUK_DEFPROP_HAVE_WRITABLE
 #define DUK_DEFPROP_HAVE_E DUK_DEFPROP_HAVE_ENUMERABLE
 #define DUK_DEFPROP_HAVE_C DUK_DEFPROP_HAVE_CONFIGURABLE
-#define DUK_DEFPROP_HAVE_WE                                                    \
-	(DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_HAVE_ENUMERABLE)
-#define DUK_DEFPROP_HAVE_WC                                                    \
-	(DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_HAVE_CONFIGURABLE)
-#define DUK_DEFPROP_HAVE_EC                                                    \
-	(DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_HAVE_CONFIGURABLE)
-#define DUK_DEFPROP_HAVE_WEC                                                   \
-	(DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_HAVE_ENUMERABLE |             \
-	 DUK_DEFPROP_HAVE_CONFIGURABLE)
+#define DUK_DEFPROP_HAVE_WE (DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_HAVE_ENUMERABLE)
+#define DUK_DEFPROP_HAVE_WC (DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_HAVE_CONFIGURABLE)
+#define DUK_DEFPROP_HAVE_EC (DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_HAVE_CONFIGURABLE)
+#define DUK_DEFPROP_HAVE_WEC (DUK_DEFPROP_HAVE_WRITABLE | DUK_DEFPROP_HAVE_ENUMERABLE | DUK_DEFPROP_HAVE_CONFIGURABLE)
 #define DUK_DEFPROP_SET_W DUK_DEFPROP_SET_WRITABLE
 #define DUK_DEFPROP_SET_E DUK_DEFPROP_SET_ENUMERABLE
 #define DUK_DEFPROP_SET_C DUK_DEFPROP_SET_CONFIGURABLE
-#define DUK_DEFPROP_SET_WE                                                     \
-	(DUK_DEFPROP_SET_WRITABLE | DUK_DEFPROP_SET_ENUMERABLE)
-#define DUK_DEFPROP_SET_WC                                                     \
-	(DUK_DEFPROP_SET_WRITABLE | DUK_DEFPROP_SET_CONFIGURABLE)
-#define DUK_DEFPROP_SET_EC                                                     \
-	(DUK_DEFPROP_SET_ENUMERABLE | DUK_DEFPROP_SET_CONFIGURABLE)
-#define DUK_DEFPROP_SET_WEC                                                    \
-	(DUK_DEFPROP_SET_WRITABLE | DUK_DEFPROP_SET_ENUMERABLE |               \
-	 DUK_DEFPROP_SET_CONFIGURABLE)
+#define DUK_DEFPROP_SET_WE (DUK_DEFPROP_SET_WRITABLE | DUK_DEFPROP_SET_ENUMERABLE)
+#define DUK_DEFPROP_SET_WC (DUK_DEFPROP_SET_WRITABLE | DUK_DEFPROP_SET_CONFIGURABLE)
+#define DUK_DEFPROP_SET_EC (DUK_DEFPROP_SET_ENUMERABLE | DUK_DEFPROP_SET_CONFIGURABLE)
+#define DUK_DEFPROP_SET_WEC (DUK_DEFPROP_SET_WRITABLE | DUK_DEFPROP_SET_ENUMERABLE | DUK_DEFPROP_SET_CONFIGURABLE)
 #define DUK_DEFPROP_CLEAR_W DUK_DEFPROP_CLEAR_WRITABLE
 #define DUK_DEFPROP_CLEAR_E DUK_DEFPROP_CLEAR_ENUMERABLE
 #define DUK_DEFPROP_CLEAR_C DUK_DEFPROP_CLEAR_CONFIGURABLE
-#define DUK_DEFPROP_CLEAR_WE                                                   \
-	(DUK_DEFPROP_CLEAR_WRITABLE | DUK_DEFPROP_CLEAR_ENUMERABLE)
-#define DUK_DEFPROP_CLEAR_WC                                                   \
-	(DUK_DEFPROP_CLEAR_WRITABLE | DUK_DEFPROP_CLEAR_CONFIGURABLE)
-#define DUK_DEFPROP_CLEAR_EC                                                   \
-	(DUK_DEFPROP_CLEAR_ENUMERABLE | DUK_DEFPROP_CLEAR_CONFIGURABLE)
-#define DUK_DEFPROP_CLEAR_WEC                                                  \
-	(DUK_DEFPROP_CLEAR_WRITABLE | DUK_DEFPROP_CLEAR_ENUMERABLE |           \
-	 DUK_DEFPROP_CLEAR_CONFIGURABLE)
+#define DUK_DEFPROP_CLEAR_WE (DUK_DEFPROP_CLEAR_WRITABLE | DUK_DEFPROP_CLEAR_ENUMERABLE)
+#define DUK_DEFPROP_CLEAR_WC (DUK_DEFPROP_CLEAR_WRITABLE | DUK_DEFPROP_CLEAR_CONFIGURABLE)
+#define DUK_DEFPROP_CLEAR_EC (DUK_DEFPROP_CLEAR_ENUMERABLE | DUK_DEFPROP_CLEAR_CONFIGURABLE)
+#define DUK_DEFPROP_CLEAR_WEC                                                                                          \
+    (DUK_DEFPROP_CLEAR_WRITABLE | DUK_DEFPROP_CLEAR_ENUMERABLE | DUK_DEFPROP_CLEAR_CONFIGURABLE)
 #define DUK_DEFPROP_ATTR_W (DUK_DEFPROP_HAVE_WEC | DUK_DEFPROP_W)
 #define DUK_DEFPROP_ATTR_E (DUK_DEFPROP_HAVE_WEC | DUK_DEFPROP_E)
 #define DUK_DEFPROP_ATTR_C (DUK_DEFPROP_HAVE_WEC | DUK_DEFPROP_C)
@@ -517,8 +481,7 @@ struct duk_time_components {
 #define DUK_DEFPROP_ATTR_WEC (DUK_DEFPROP_HAVE_WEC | DUK_DEFPROP_WEC)
 
 /* Flags for duk_push_thread_raw() */
-#define DUK_THREAD_NEW_GLOBAL_ENV                                              \
-	(1U << 0) /* create a new global environment */
+#define DUK_THREAD_NEW_GLOBAL_ENV (1U << 0) /* create a new global environment */
 
 /* Flags for duk_gc() */
 #define DUK_GC_COMPACT (1U << 0) /* compact heap objects */
@@ -589,16 +552,12 @@ DUK_EXTERNAL_DECL duk_int_t duk_api_global_line;
  */
 
 DUK_EXTERNAL_DECL
-duk_context *duk_create_heap(duk_alloc_function alloc_func,
-			     duk_realloc_function realloc_func,
-			     duk_free_function free_func,
-			     void *heap_udata,
-			     duk_fatal_function fatal_handler);
+duk_context *duk_create_heap(duk_alloc_function alloc_func, duk_realloc_function realloc_func,
+    duk_free_function free_func, void *heap_udata, duk_fatal_function fatal_handler);
 DUK_EXTERNAL_DECL void duk_destroy_heap(duk_context *ctx);
 
 DUK_EXTERNAL_DECL void duk_suspend(duk_context *ctx, duk_thread_state *state);
-DUK_EXTERNAL_DECL void
-duk_resume(duk_context *ctx, const duk_thread_state *state);
+DUK_EXTERNAL_DECL void duk_resume(duk_context *ctx, const duk_thread_state *state);
 
 #define duk_create_heap_default() duk_create_heap(NULL, NULL, NULL, NULL, NULL)
 
@@ -610,14 +569,11 @@ duk_resume(duk_context *ctx, const duk_thread_state *state);
 
 DUK_EXTERNAL_DECL void *duk_alloc_raw(duk_context *ctx, duk_size_t size);
 DUK_EXTERNAL_DECL void duk_free_raw(duk_context *ctx, void *ptr);
-DUK_EXTERNAL_DECL void *
-duk_realloc_raw(duk_context *ctx, void *ptr, duk_size_t size);
+DUK_EXTERNAL_DECL void *duk_realloc_raw(duk_context *ctx, void *ptr, duk_size_t size);
 DUK_EXTERNAL_DECL void *duk_alloc(duk_context *ctx, duk_size_t size);
 DUK_EXTERNAL_DECL void duk_free(duk_context *ctx, void *ptr);
-DUK_EXTERNAL_DECL void *
-duk_realloc(duk_context *ctx, void *ptr, duk_size_t size);
-DUK_EXTERNAL_DECL void
-duk_get_memory_functions(duk_context *ctx, duk_memory_functions *out_funcs);
+DUK_EXTERNAL_DECL void *duk_realloc(duk_context *ctx, void *ptr, duk_size_t size);
+DUK_EXTERNAL_DECL void duk_get_memory_functions(duk_context *ctx, duk_memory_functions *out_funcs);
 DUK_EXTERNAL_DECL void duk_gc(duk_context *ctx, duk_uint_t flags);
 
 /*
@@ -626,73 +582,44 @@ DUK_EXTERNAL_DECL void duk_gc(duk_context *ctx, duk_uint_t flags);
 
 DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_throw_raw(duk_context *ctx));
 #define duk_throw(ctx) (duk_throw_raw((ctx)), (duk_ret_t)0)
-DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_fatal_raw(duk_context *ctx,
-						      const char *err_msg));
+DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_fatal_raw(duk_context *ctx, const char *err_msg));
 #define duk_fatal(ctx, err_msg) (duk_fatal_raw((ctx), (err_msg)), (duk_ret_t)0)
-DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_error_raw(duk_context *ctx,
-						      duk_errcode_t err_code,
-						      const char *filename,
-						      duk_int_t line,
-						      const char *fmt,
-						      ...));
+DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_error_raw(
+    duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, ...));
 
 #if defined(DUK_API_VARIADIC_MACROS)
-#define duk_error(ctx, err_code, ...)                                          \
-	(duk_error_raw((ctx),                                                  \
-		       (duk_errcode_t)(err_code),                              \
-		       (const char *)(DUK_FILE_MACRO),                         \
-		       (duk_int_t)(DUK_LINE_MACRO),                            \
-		       __VA_ARGS__),                                           \
-	 (duk_ret_t)0)
-#define duk_generic_error(ctx, ...)                                            \
-	(duk_error_raw((ctx),                                                  \
-		       (duk_errcode_t)DUK_ERR_ERROR,                           \
-		       (const char *)(DUK_FILE_MACRO),                         \
-		       (duk_int_t)(DUK_LINE_MACRO),                            \
-		       __VA_ARGS__),                                           \
-	 (duk_ret_t)0)
-#define duk_eval_error(ctx, ...)                                               \
-	(duk_error_raw((ctx),                                                  \
-		       (duk_errcode_t)DUK_ERR_EVAL_ERROR,                      \
-		       (const char *)(DUK_FILE_MACRO),                         \
-		       (duk_int_t)(DUK_LINE_MACRO),                            \
-		       __VA_ARGS__),                                           \
-	 (duk_ret_t)0)
-#define duk_range_error(ctx, ...)                                              \
-	(duk_error_raw((ctx),                                                  \
-		       (duk_errcode_t)DUK_ERR_RANGE_ERROR,                     \
-		       (const char *)(DUK_FILE_MACRO),                         \
-		       (duk_int_t)(DUK_LINE_MACRO),                            \
-		       __VA_ARGS__),                                           \
-	 (duk_ret_t)0)
-#define duk_reference_error(ctx, ...)                                          \
-	(duk_error_raw((ctx),                                                  \
-		       (duk_errcode_t)DUK_ERR_REFERENCE_ERROR,                 \
-		       (const char *)(DUK_FILE_MACRO),                         \
-		       (duk_int_t)(DUK_LINE_MACRO),                            \
-		       __VA_ARGS__),                                           \
-	 (duk_ret_t)0)
-#define duk_syntax_error(ctx, ...)                                             \
-	(duk_error_raw((ctx),                                                  \
-		       (duk_errcode_t)DUK_ERR_SYNTAX_ERROR,                    \
-		       (const char *)(DUK_FILE_MACRO),                         \
-		       (duk_int_t)(DUK_LINE_MACRO),                            \
-		       __VA_ARGS__),                                           \
-	 (duk_ret_t)0)
-#define duk_type_error(ctx, ...)                                               \
-	(duk_error_raw((ctx),                                                  \
-		       (duk_errcode_t)DUK_ERR_TYPE_ERROR,                      \
-		       (const char *)(DUK_FILE_MACRO),                         \
-		       (duk_int_t)(DUK_LINE_MACRO),                            \
-		       __VA_ARGS__),                                           \
-	 (duk_ret_t)0)
-#define duk_uri_error(ctx, ...)                                                \
-	(duk_error_raw((ctx),                                                  \
-		       (duk_errcode_t)DUK_ERR_URI_ERROR,                       \
-		       (const char *)(DUK_FILE_MACRO),                         \
-		       (duk_int_t)(DUK_LINE_MACRO),                            \
-		       __VA_ARGS__),                                           \
-	 (duk_ret_t)0)
+#define duk_error(ctx, err_code, ...)                                                                                  \
+    (duk_error_raw(                                                                                                    \
+         (ctx), (duk_errcode_t)(err_code), (const char *)(DUK_FILE_MACRO), (duk_int_t)(DUK_LINE_MACRO), __VA_ARGS__),  \
+        (duk_ret_t)0)
+#define duk_generic_error(ctx, ...)                                                                                    \
+    (duk_error_raw((ctx), (duk_errcode_t)DUK_ERR_ERROR, (const char *)(DUK_FILE_MACRO), (duk_int_t)(DUK_LINE_MACRO),   \
+         __VA_ARGS__),                                                                                                 \
+        (duk_ret_t)0)
+#define duk_eval_error(ctx, ...)                                                                                       \
+    (duk_error_raw((ctx), (duk_errcode_t)DUK_ERR_EVAL_ERROR, (const char *)(DUK_FILE_MACRO),                           \
+         (duk_int_t)(DUK_LINE_MACRO), __VA_ARGS__),                                                                    \
+        (duk_ret_t)0)
+#define duk_range_error(ctx, ...)                                                                                      \
+    (duk_error_raw((ctx), (duk_errcode_t)DUK_ERR_RANGE_ERROR, (const char *)(DUK_FILE_MACRO),                          \
+         (duk_int_t)(DUK_LINE_MACRO), __VA_ARGS__),                                                                    \
+        (duk_ret_t)0)
+#define duk_reference_error(ctx, ...)                                                                                  \
+    (duk_error_raw((ctx), (duk_errcode_t)DUK_ERR_REFERENCE_ERROR, (const char *)(DUK_FILE_MACRO),                      \
+         (duk_int_t)(DUK_LINE_MACRO), __VA_ARGS__),                                                                    \
+        (duk_ret_t)0)
+#define duk_syntax_error(ctx, ...)                                                                                     \
+    (duk_error_raw((ctx), (duk_errcode_t)DUK_ERR_SYNTAX_ERROR, (const char *)(DUK_FILE_MACRO),                         \
+         (duk_int_t)(DUK_LINE_MACRO), __VA_ARGS__),                                                                    \
+        (duk_ret_t)0)
+#define duk_type_error(ctx, ...)                                                                                       \
+    (duk_error_raw((ctx), (duk_errcode_t)DUK_ERR_TYPE_ERROR, (const char *)(DUK_FILE_MACRO),                           \
+         (duk_int_t)(DUK_LINE_MACRO), __VA_ARGS__),                                                                    \
+        (duk_ret_t)0)
+#define duk_uri_error(ctx, ...)                                                                                        \
+    (duk_error_raw((ctx), (duk_errcode_t)DUK_ERR_URI_ERROR, (const char *)(DUK_FILE_MACRO),                            \
+         (duk_int_t)(DUK_LINE_MACRO), __VA_ARGS__),                                                                    \
+        (duk_ret_t)0)
 #else /* DUK_API_VARIADIC_MACROS */
 /* For legacy compilers without variadic macros a macro hack is used to allow
  * variable arguments.  While the macro allows "return duk_error(...)", it
@@ -703,144 +630,76 @@ DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_error_raw(duk_context *ctx,
  * "(duk_error(...), 0)") won't work due to the macro hack structure.
  */
 DUK_API_NORETURN(
-	DUK_EXTERNAL_DECL duk_ret_t duk_error_stash(duk_context *ctx,
-						    duk_errcode_t err_code,
-						    const char *fmt,
-						    ...));
-DUK_API_NORETURN(
-	DUK_EXTERNAL_DECL duk_ret_t duk_generic_error_stash(duk_context *ctx,
-							    const char *fmt,
-							    ...));
-DUK_API_NORETURN(
-	DUK_EXTERNAL_DECL duk_ret_t duk_eval_error_stash(duk_context *ctx,
-							 const char *fmt,
-							 ...));
-DUK_API_NORETURN(
-	DUK_EXTERNAL_DECL duk_ret_t duk_range_error_stash(duk_context *ctx,
-							  const char *fmt,
-							  ...));
-DUK_API_NORETURN(
-	DUK_EXTERNAL_DECL duk_ret_t duk_reference_error_stash(duk_context *ctx,
-							      const char *fmt,
-							      ...));
-DUK_API_NORETURN(
-	DUK_EXTERNAL_DECL duk_ret_t duk_syntax_error_stash(duk_context *ctx,
-							   const char *fmt,
-							   ...));
-DUK_API_NORETURN(
-	DUK_EXTERNAL_DECL duk_ret_t duk_type_error_stash(duk_context *ctx,
-							 const char *fmt,
-							 ...));
-DUK_API_NORETURN(
-	DUK_EXTERNAL_DECL duk_ret_t duk_uri_error_stash(duk_context *ctx,
-							const char *fmt,
-							...));
-#define duk_error                                                              \
-	(duk_api_global_filename = (const char *)(DUK_FILE_MACRO),             \
-	 duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),                    \
-	 duk_error_stash) /* last value is func pointer, arguments follow in   \
-			     parens */
-#define duk_generic_error                                                      \
-	(duk_api_global_filename = (const char *)(DUK_FILE_MACRO),             \
-	 duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),                    \
-	 duk_generic_error_stash)
-#define duk_eval_error                                                         \
-	(duk_api_global_filename = (const char *)(DUK_FILE_MACRO),             \
-	 duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),                    \
-	 duk_eval_error_stash)
-#define duk_range_error                                                        \
-	(duk_api_global_filename = (const char *)(DUK_FILE_MACRO),             \
-	 duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),                    \
-	 duk_range_error_stash)
-#define duk_reference_error                                                    \
-	(duk_api_global_filename = (const char *)(DUK_FILE_MACRO),             \
-	 duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),                    \
-	 duk_reference_error_stash)
-#define duk_syntax_error                                                       \
-	(duk_api_global_filename = (const char *)(DUK_FILE_MACRO),             \
-	 duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),                    \
-	 duk_syntax_error_stash)
-#define duk_type_error                                                         \
-	(duk_api_global_filename = (const char *)(DUK_FILE_MACRO),             \
-	 duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),                    \
-	 duk_type_error_stash)
-#define duk_uri_error                                                          \
-	(duk_api_global_filename = (const char *)(DUK_FILE_MACRO),             \
-	 duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),                    \
-	 duk_uri_error_stash)
+    DUK_EXTERNAL_DECL duk_ret_t duk_error_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...));
+DUK_API_NORETURN(DUK_EXTERNAL_DECL duk_ret_t duk_generic_error_stash(duk_context *ctx, const char *fmt, ...));
+DUK_API_NORETURN(DUK_EXTERNAL_DECL duk_ret_t duk_eval_error_stash(duk_context *ctx, const char *fmt, ...));
+DUK_API_NORETURN(DUK_EXTERNAL_DECL duk_ret_t duk_range_error_stash(duk_context *ctx, const char *fmt, ...));
+DUK_API_NORETURN(DUK_EXTERNAL_DECL duk_ret_t duk_reference_error_stash(duk_context *ctx, const char *fmt, ...));
+DUK_API_NORETURN(DUK_EXTERNAL_DECL duk_ret_t duk_syntax_error_stash(duk_context *ctx, const char *fmt, ...));
+DUK_API_NORETURN(DUK_EXTERNAL_DECL duk_ret_t duk_type_error_stash(duk_context *ctx, const char *fmt, ...));
+DUK_API_NORETURN(DUK_EXTERNAL_DECL duk_ret_t duk_uri_error_stash(duk_context *ctx, const char *fmt, ...));
+#define duk_error                                                                                                      \
+    (duk_api_global_filename = (const char *)(DUK_FILE_MACRO), duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),      \
+        duk_error_stash) /* last value is func pointer, arguments follow in                                            \
+                    parens */
+#define duk_generic_error                                                                                              \
+    (duk_api_global_filename = (const char *)(DUK_FILE_MACRO), duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),      \
+        duk_generic_error_stash)
+#define duk_eval_error                                                                                                 \
+    (duk_api_global_filename = (const char *)(DUK_FILE_MACRO), duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),      \
+        duk_eval_error_stash)
+#define duk_range_error                                                                                                \
+    (duk_api_global_filename = (const char *)(DUK_FILE_MACRO), duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),      \
+        duk_range_error_stash)
+#define duk_reference_error                                                                                            \
+    (duk_api_global_filename = (const char *)(DUK_FILE_MACRO), duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),      \
+        duk_reference_error_stash)
+#define duk_syntax_error                                                                                               \
+    (duk_api_global_filename = (const char *)(DUK_FILE_MACRO), duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),      \
+        duk_syntax_error_stash)
+#define duk_type_error                                                                                                 \
+    (duk_api_global_filename = (const char *)(DUK_FILE_MACRO), duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),      \
+        duk_type_error_stash)
+#define duk_uri_error                                                                                                  \
+    (duk_api_global_filename = (const char *)(DUK_FILE_MACRO), duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),      \
+        duk_uri_error_stash)
 #endif /* DUK_API_VARIADIC_MACROS */
 
-DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_error_va_raw(duk_context *ctx,
-							 duk_errcode_t err_code,
-							 const char *filename,
-							 duk_int_t line,
-							 const char *fmt,
-							 va_list ap));
+DUK_API_NORETURN(DUK_EXTERNAL_DECL void duk_error_va_raw(
+    duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap));
 
-#define duk_error_va(ctx, err_code, fmt, ap)                                   \
-	(duk_error_va_raw((ctx),                                               \
-			  (duk_errcode_t)(err_code),                           \
-			  (const char *)(DUK_FILE_MACRO),                      \
-			  (duk_int_t)(DUK_LINE_MACRO),                         \
-			  (fmt),                                               \
-			  (ap)),                                               \
-	 (duk_ret_t)0)
-#define duk_generic_error_va(ctx, fmt, ap)                                     \
-	(duk_error_va_raw((ctx),                                               \
-			  (duk_errcode_t)DUK_ERR_ERROR,                        \
-			  (const char *)(DUK_FILE_MACRO),                      \
-			  (duk_int_t)(DUK_LINE_MACRO),                         \
-			  (fmt),                                               \
-			  (ap)),                                               \
-	 (duk_ret_t)0)
-#define duk_eval_error_va(ctx, fmt, ap)                                        \
-	(duk_error_va_raw((ctx),                                               \
-			  (duk_errcode_t)DUK_ERR_EVAL_ERROR,                   \
-			  (const char *)(DUK_FILE_MACRO),                      \
-			  (duk_int_t)(DUK_LINE_MACRO),                         \
-			  (fmt),                                               \
-			  (ap)),                                               \
-	 (duk_ret_t)0)
-#define duk_range_error_va(ctx, fmt, ap)                                       \
-	(duk_error_va_raw((ctx),                                               \
-			  (duk_errcode_t)DUK_ERR_RANGE_ERROR,                  \
-			  (const char *)(DUK_FILE_MACRO),                      \
-			  (duk_int_t)(DUK_LINE_MACRO),                         \
-			  (fmt),                                               \
-			  (ap)),                                               \
-	 (duk_ret_t)0)
-#define duk_reference_error_va(ctx, fmt, ap)                                   \
-	(duk_error_va_raw((ctx),                                               \
-			  (duk_errcode_t)DUK_ERR_REFERENCE_ERROR,              \
-			  (const char *)(DUK_FILE_MACRO),                      \
-			  (duk_int_t)(DUK_LINE_MACRO),                         \
-			  (fmt),                                               \
-			  (ap)),                                               \
-	 (duk_ret_t)0)
-#define duk_syntax_error_va(ctx, fmt, ap)                                      \
-	(duk_error_va_raw((ctx),                                               \
-			  (duk_errcode_t)DUK_ERR_SYNTAX_ERROR,                 \
-			  (const char *)(DUK_FILE_MACRO),                      \
-			  (duk_int_t)(DUK_LINE_MACRO),                         \
-			  (fmt),                                               \
-			  (ap)),                                               \
-	 (duk_ret_t)0)
-#define duk_type_error_va(ctx, fmt, ap)                                        \
-	(duk_error_va_raw((ctx),                                               \
-			  (duk_errcode_t)DUK_ERR_TYPE_ERROR,                   \
-			  (const char *)(DUK_FILE_MACRO),                      \
-			  (duk_int_t)(DUK_LINE_MACRO),                         \
-			  (fmt),                                               \
-			  (ap)),                                               \
-	 (duk_ret_t)0)
-#define duk_uri_error_va(ctx, fmt, ap)                                         \
-	(duk_error_va_raw((ctx),                                               \
-			  (duk_errcode_t)DUK_ERR_URI_ERROR,                    \
-			  (const char *)(DUK_FILE_MACRO),                      \
-			  (duk_int_t)(DUK_LINE_MACRO),                         \
-			  (fmt),                                               \
-			  (ap)),                                               \
-	 (duk_ret_t)0)
+#define duk_error_va(ctx, err_code, fmt, ap)                                                                           \
+    (duk_error_va_raw(                                                                                                 \
+         (ctx), (duk_errcode_t)(err_code), (const char *)(DUK_FILE_MACRO), (duk_int_t)(DUK_LINE_MACRO), (fmt), (ap)),  \
+        (duk_ret_t)0)
+#define duk_generic_error_va(ctx, fmt, ap)                                                                             \
+    (duk_error_va_raw((ctx), (duk_errcode_t)DUK_ERR_ERROR, (const char *)(DUK_FILE_MACRO),                             \
+         (duk_int_t)(DUK_LINE_MACRO), (fmt), (ap)),                                                                    \
+        (duk_ret_t)0)
+#define duk_eval_error_va(ctx, fmt, ap)                                                                                \
+    (duk_error_va_raw((ctx), (duk_errcode_t)DUK_ERR_EVAL_ERROR, (const char *)(DUK_FILE_MACRO),                        \
+         (duk_int_t)(DUK_LINE_MACRO), (fmt), (ap)),                                                                    \
+        (duk_ret_t)0)
+#define duk_range_error_va(ctx, fmt, ap)                                                                               \
+    (duk_error_va_raw((ctx), (duk_errcode_t)DUK_ERR_RANGE_ERROR, (const char *)(DUK_FILE_MACRO),                       \
+         (duk_int_t)(DUK_LINE_MACRO), (fmt), (ap)),                                                                    \
+        (duk_ret_t)0)
+#define duk_reference_error_va(ctx, fmt, ap)                                                                           \
+    (duk_error_va_raw((ctx), (duk_errcode_t)DUK_ERR_REFERENCE_ERROR, (const char *)(DUK_FILE_MACRO),                   \
+         (duk_int_t)(DUK_LINE_MACRO), (fmt), (ap)),                                                                    \
+        (duk_ret_t)0)
+#define duk_syntax_error_va(ctx, fmt, ap)                                                                              \
+    (duk_error_va_raw((ctx), (duk_errcode_t)DUK_ERR_SYNTAX_ERROR, (const char *)(DUK_FILE_MACRO),                      \
+         (duk_int_t)(DUK_LINE_MACRO), (fmt), (ap)),                                                                    \
+        (duk_ret_t)0)
+#define duk_type_error_va(ctx, fmt, ap)                                                                                \
+    (duk_error_va_raw((ctx), (duk_errcode_t)DUK_ERR_TYPE_ERROR, (const char *)(DUK_FILE_MACRO),                        \
+         (duk_int_t)(DUK_LINE_MACRO), (fmt), (ap)),                                                                    \
+        (duk_ret_t)0)
+#define duk_uri_error_va(ctx, fmt, ap)                                                                                 \
+    (duk_error_va_raw((ctx), (duk_errcode_t)DUK_ERR_URI_ERROR, (const char *)(DUK_FILE_MACRO),                         \
+         (duk_int_t)(DUK_LINE_MACRO), (fmt), (ap)),                                                                    \
+        (duk_ret_t)0)
 
 /*
  *  Other state related functions
@@ -853,12 +712,9 @@ DUK_EXTERNAL_DECL duk_bool_t duk_is_constructor_call(duk_context *ctx);
  *  Stack management
  */
 
-DUK_EXTERNAL_DECL duk_idx_t duk_normalize_index(duk_context *ctx,
-						duk_idx_t idx);
-DUK_EXTERNAL_DECL duk_idx_t duk_require_normalize_index(duk_context *ctx,
-							duk_idx_t idx);
-DUK_EXTERNAL_DECL duk_bool_t duk_is_valid_index(duk_context *ctx,
-						duk_idx_t idx);
+DUK_EXTERNAL_DECL duk_idx_t duk_normalize_index(duk_context *ctx, duk_idx_t idx);
+DUK_EXTERNAL_DECL duk_idx_t duk_require_normalize_index(duk_context *ctx, duk_idx_t idx);
+DUK_EXTERNAL_DECL duk_bool_t duk_is_valid_index(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL void duk_require_valid_index(duk_context *ctx, duk_idx_t idx);
 
 DUK_EXTERNAL_DECL duk_idx_t duk_get_top(duk_context *ctx);
@@ -875,34 +731,27 @@ DUK_EXTERNAL_DECL duk_idx_t duk_require_top_index(duk_context *ctx);
  */
 DUK_EXTERNAL_DECL duk_bool_t duk_check_stack(duk_context *ctx, duk_idx_t extra);
 DUK_EXTERNAL_DECL void duk_require_stack(duk_context *ctx, duk_idx_t extra);
-DUK_EXTERNAL_DECL duk_bool_t duk_check_stack_top(duk_context *ctx,
-						 duk_idx_t top);
+DUK_EXTERNAL_DECL duk_bool_t duk_check_stack_top(duk_context *ctx, duk_idx_t top);
 DUK_EXTERNAL_DECL void duk_require_stack_top(duk_context *ctx, duk_idx_t top);
 
 /*
  *  Stack manipulation (other than push/pop)
  */
 
-DUK_EXTERNAL_DECL void
-duk_swap(duk_context *ctx, duk_idx_t idx1, duk_idx_t idx2);
+DUK_EXTERNAL_DECL void duk_swap(duk_context *ctx, duk_idx_t idx1, duk_idx_t idx2);
 DUK_EXTERNAL_DECL void duk_swap_top(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL void duk_dup(duk_context *ctx, duk_idx_t from_idx);
 DUK_EXTERNAL_DECL void duk_dup_top(duk_context *ctx);
 DUK_EXTERNAL_DECL void duk_insert(duk_context *ctx, duk_idx_t to_idx);
 DUK_EXTERNAL_DECL void duk_pull(duk_context *ctx, duk_idx_t from_idx);
 DUK_EXTERNAL_DECL void duk_replace(duk_context *ctx, duk_idx_t to_idx);
-DUK_EXTERNAL_DECL void
-duk_copy(duk_context *ctx, duk_idx_t from_idx, duk_idx_t to_idx);
+DUK_EXTERNAL_DECL void duk_copy(duk_context *ctx, duk_idx_t from_idx, duk_idx_t to_idx);
 DUK_EXTERNAL_DECL void duk_remove(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL void duk_xcopymove_raw(duk_context *to_ctx,
-					 duk_context *from_ctx,
-					 duk_idx_t count,
-					 duk_bool_t is_copy);
+DUK_EXTERNAL_DECL void
+duk_xcopymove_raw(duk_context *to_ctx, duk_context *from_ctx, duk_idx_t count, duk_bool_t is_copy);
 
-#define duk_xmove_top(to_ctx, from_ctx, count)                                 \
-	duk_xcopymove_raw((to_ctx), (from_ctx), (count), 0 /*is_copy*/)
-#define duk_xcopy_top(to_ctx, from_ctx, count)                                 \
-	duk_xcopymove_raw((to_ctx), (from_ctx), (count), 1 /*is_copy*/)
+#define duk_xmove_top(to_ctx, from_ctx, count) duk_xcopymove_raw((to_ctx), (from_ctx), (count), 0 /*is_copy*/)
+#define duk_xcopy_top(to_ctx, from_ctx, count) duk_xcopymove_raw((to_ctx), (from_ctx), (count), 1 /*is_copy*/)
 
 /*
  *  Push operations
@@ -922,15 +771,11 @@ DUK_EXTERNAL_DECL void duk_push_number(duk_context *ctx, duk_double_t val);
 DUK_EXTERNAL_DECL void duk_push_nan(duk_context *ctx);
 DUK_EXTERNAL_DECL void duk_push_int(duk_context *ctx, duk_int_t val);
 DUK_EXTERNAL_DECL void duk_push_uint(duk_context *ctx, duk_uint_t val);
-DUK_EXTERNAL_DECL const char *
-duk_push_string(duk_context *ctx, const char *str);
-DUK_EXTERNAL_DECL const char *
-duk_push_lstring(duk_context *ctx, const char *str, duk_size_t len);
+DUK_EXTERNAL_DECL const char *duk_push_string(duk_context *ctx, const char *str);
+DUK_EXTERNAL_DECL const char *duk_push_lstring(duk_context *ctx, const char *str, duk_size_t len);
 DUK_EXTERNAL_DECL void duk_push_pointer(duk_context *ctx, void *p);
-DUK_EXTERNAL_DECL const char *
-duk_push_sprintf(duk_context *ctx, const char *fmt, ...);
-DUK_EXTERNAL_DECL const char *
-duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap);
+DUK_EXTERNAL_DECL const char *duk_push_sprintf(duk_context *ctx, const char *fmt, ...);
+DUK_EXTERNAL_DECL const char *duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap);
 
 /* duk_push_literal() may evaluate its argument (a C string literal) more than
  * once on purpose.  When speed is preferred, sizeof() avoids an unnecessary
@@ -941,10 +786,8 @@ duk_push_vsprintf(duk_context *ctx, const char *fmt, va_list ap);
 #if defined(DUK_USE_PREFER_SIZE)
 #define duk_push_literal(ctx, cstring) duk_push_string((ctx), (cstring))
 #else
-DUK_EXTERNAL_DECL const char *
-duk_push_literal_raw(duk_context *ctx, const char *str, duk_size_t len);
-#define duk_push_literal(ctx, cstring)                                         \
-	duk_push_literal_raw((ctx), (cstring), sizeof((cstring)) - 1U)
+DUK_EXTERNAL_DECL const char *duk_push_literal_raw(duk_context *ctx, const char *str, duk_size_t len);
+#define duk_push_literal(ctx, cstring) duk_push_literal_raw((ctx), (cstring), sizeof((cstring)) - 1U)
 #endif
 
 DUK_EXTERNAL_DECL void duk_push_this(duk_context *ctx);
@@ -954,90 +797,56 @@ DUK_EXTERNAL_DECL void duk_push_current_thread(duk_context *ctx);
 DUK_EXTERNAL_DECL void duk_push_global_object(duk_context *ctx);
 DUK_EXTERNAL_DECL void duk_push_heap_stash(duk_context *ctx);
 DUK_EXTERNAL_DECL void duk_push_global_stash(duk_context *ctx);
-DUK_EXTERNAL_DECL void
-duk_push_thread_stash(duk_context *ctx, duk_context *target_ctx);
+DUK_EXTERNAL_DECL void duk_push_thread_stash(duk_context *ctx, duk_context *target_ctx);
 
 DUK_EXTERNAL_DECL duk_idx_t duk_push_object(duk_context *ctx);
 DUK_EXTERNAL_DECL duk_idx_t duk_push_bare_object(duk_context *ctx);
 DUK_EXTERNAL_DECL duk_idx_t duk_push_array(duk_context *ctx);
 DUK_EXTERNAL_DECL duk_idx_t duk_push_bare_array(duk_context *ctx);
-DUK_EXTERNAL_DECL duk_idx_t duk_push_c_function(duk_context *ctx,
-						duk_c_function func,
-						duk_idx_t nargs);
-DUK_EXTERNAL_DECL duk_idx_t duk_push_c_lightfunc(duk_context *ctx,
-						 duk_c_function func,
-						 duk_idx_t nargs,
-						 duk_idx_t length,
-						 duk_int_t magic);
-DUK_EXTERNAL_DECL duk_idx_t duk_push_thread_raw(duk_context *ctx,
-						duk_uint_t flags);
-DUK_EXTERNAL_DECL duk_idx_t duk_push_proxy(duk_context *ctx,
-					   duk_uint_t proxy_flags);
+DUK_EXTERNAL_DECL duk_idx_t duk_push_c_function(duk_context *ctx, duk_c_function func, duk_idx_t nargs);
+DUK_EXTERNAL_DECL duk_idx_t duk_push_c_lightfunc(
+    duk_context *ctx, duk_c_function func, duk_idx_t nargs, duk_idx_t length, duk_int_t magic);
+DUK_EXTERNAL_DECL duk_idx_t duk_push_thread_raw(duk_context *ctx, duk_uint_t flags);
+DUK_EXTERNAL_DECL duk_idx_t duk_push_proxy(duk_context *ctx, duk_uint_t proxy_flags);
 
 #define duk_push_thread(ctx) duk_push_thread_raw((ctx), 0 /*flags*/)
 
-#define duk_push_thread_new_globalenv(ctx)                                     \
-	duk_push_thread_raw((ctx), DUK_THREAD_NEW_GLOBAL_ENV /*flags*/)
+#define duk_push_thread_new_globalenv(ctx) duk_push_thread_raw((ctx), DUK_THREAD_NEW_GLOBAL_ENV /*flags*/)
 
-DUK_EXTERNAL_DECL duk_idx_t duk_push_error_object_raw(duk_context *ctx,
-						      duk_errcode_t err_code,
-						      const char *filename,
-						      duk_int_t line,
-						      const char *fmt,
-						      ...);
+DUK_EXTERNAL_DECL duk_idx_t duk_push_error_object_raw(
+    duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, ...);
 
 #if defined(DUK_API_VARIADIC_MACROS)
-#define duk_push_error_object(ctx, err_code, ...)                              \
-	duk_push_error_object_raw((ctx),                                       \
-				  (err_code),                                  \
-				  (const char *)(DUK_FILE_MACRO),              \
-				  (duk_int_t)(DUK_LINE_MACRO),                 \
-				  __VA_ARGS__)
+#define duk_push_error_object(ctx, err_code, ...)                                                                      \
+    duk_push_error_object_raw(                                                                                         \
+        (ctx), (err_code), (const char *)(DUK_FILE_MACRO), (duk_int_t)(DUK_LINE_MACRO), __VA_ARGS__)
 #else
-DUK_EXTERNAL_DECL duk_idx_t duk_push_error_object_stash(duk_context *ctx,
-							duk_errcode_t err_code,
-							const char *fmt,
-							...);
+DUK_EXTERNAL_DECL duk_idx_t duk_push_error_object_stash(duk_context *ctx, duk_errcode_t err_code, const char *fmt, ...);
 /* Note: parentheses are required so that the comma expression works in
  * assignments. */
-#define duk_push_error_object                                                  \
-	(duk_api_global_filename = (const char *)(DUK_FILE_MACRO),             \
-	 duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),                    \
-	 duk_push_error_object_stash) /* last value is func pointer, arguments \
-					 follow in parens */
+#define duk_push_error_object                                                                                          \
+    (duk_api_global_filename = (const char *)(DUK_FILE_MACRO), duk_api_global_line = (duk_int_t)(DUK_LINE_MACRO),      \
+        duk_push_error_object_stash) /* last value is func pointer, arguments                                          \
+                        follow in parens */
 #endif
 
-DUK_EXTERNAL_DECL duk_idx_t duk_push_error_object_va_raw(duk_context *ctx,
-							 duk_errcode_t err_code,
-							 const char *filename,
-							 duk_int_t line,
-							 const char *fmt,
-							 va_list ap);
-#define duk_push_error_object_va(ctx, err_code, fmt, ap)                       \
-	duk_push_error_object_va_raw((ctx),                                    \
-				     (err_code),                               \
-				     (const char *)(DUK_FILE_MACRO),           \
-				     (duk_int_t)(DUK_LINE_MACRO),              \
-				     (fmt),                                    \
-				     (ap))
+DUK_EXTERNAL_DECL duk_idx_t duk_push_error_object_va_raw(
+    duk_context *ctx, duk_errcode_t err_code, const char *filename, duk_int_t line, const char *fmt, va_list ap);
+#define duk_push_error_object_va(ctx, err_code, fmt, ap)                                                               \
+    duk_push_error_object_va_raw(                                                                                      \
+        (ctx), (err_code), (const char *)(DUK_FILE_MACRO), (duk_int_t)(DUK_LINE_MACRO), (fmt), (ap))
 
 #define DUK_BUF_FLAG_DYNAMIC (1 << 0) /* internal flag: dynamic buffer */
 #define DUK_BUF_FLAG_EXTERNAL (1 << 1) /* internal flag: external buffer */
-#define DUK_BUF_FLAG_NOZERO                                                    \
-	(1 << 2) /* internal flag: don't zero allocated buffer */
+#define DUK_BUF_FLAG_NOZERO (1 << 2) /* internal flag: don't zero allocated buffer */
 
-DUK_EXTERNAL_DECL void *
-duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_small_uint_t flags);
+DUK_EXTERNAL_DECL void *duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_small_uint_t flags);
 
-#define duk_push_buffer(ctx, size, dynamic)                                    \
-	duk_push_buffer_raw((ctx), (size), (dynamic) ? DUK_BUF_FLAG_DYNAMIC : 0)
-#define duk_push_fixed_buffer(ctx, size)                                       \
-	duk_push_buffer_raw((ctx), (size), 0 /*flags*/)
-#define duk_push_dynamic_buffer(ctx, size)                                     \
-	duk_push_buffer_raw((ctx), (size), DUK_BUF_FLAG_DYNAMIC /*flags*/)
-#define duk_push_external_buffer(ctx)                                          \
-	((void)duk_push_buffer_raw(                                            \
-		(ctx), 0, DUK_BUF_FLAG_DYNAMIC | DUK_BUF_FLAG_EXTERNAL))
+#define duk_push_buffer(ctx, size, dynamic) duk_push_buffer_raw((ctx), (size), (dynamic) ? DUK_BUF_FLAG_DYNAMIC : 0)
+#define duk_push_fixed_buffer(ctx, size) duk_push_buffer_raw((ctx), (size), 0 /*flags*/)
+#define duk_push_dynamic_buffer(ctx, size) duk_push_buffer_raw((ctx), (size), DUK_BUF_FLAG_DYNAMIC /*flags*/)
+#define duk_push_external_buffer(ctx)                                                                                  \
+    ((void)duk_push_buffer_raw((ctx), 0, DUK_BUF_FLAG_DYNAMIC | DUK_BUF_FLAG_EXTERNAL))
 
 #define DUK_BUFOBJ_ARRAYBUFFER 0
 #define DUK_BUFOBJ_NODEJS_BUFFER 1
@@ -1052,11 +861,8 @@ duk_push_buffer_raw(duk_context *ctx, duk_size_t size, duk_small_uint_t flags);
 #define DUK_BUFOBJ_FLOAT32ARRAY 10
 #define DUK_BUFOBJ_FLOAT64ARRAY 11
 
-DUK_EXTERNAL_DECL void duk_push_buffer_object(duk_context *ctx,
-					      duk_idx_t idx_buffer,
-					      duk_size_t byte_offset,
-					      duk_size_t byte_length,
-					      duk_uint_t flags);
+DUK_EXTERNAL_DECL void duk_push_buffer_object(
+    duk_context *ctx, duk_idx_t idx_buffer, duk_size_t byte_offset, duk_size_t byte_length, duk_uint_t flags);
 
 DUK_EXTERNAL_DECL duk_idx_t duk_push_heapptr(duk_context *ctx, void *ptr);
 
@@ -1077,13 +883,9 @@ DUK_EXTERNAL_DECL void duk_pop_3(duk_context *ctx);
  */
 
 DUK_EXTERNAL_DECL duk_int_t duk_get_type(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL duk_bool_t duk_check_type(duk_context *ctx,
-					    duk_idx_t idx,
-					    duk_int_t type);
+DUK_EXTERNAL_DECL duk_bool_t duk_check_type(duk_context *ctx, duk_idx_t idx, duk_int_t type);
 DUK_EXTERNAL_DECL duk_uint_t duk_get_type_mask(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL duk_bool_t duk_check_type_mask(duk_context *ctx,
-						 duk_idx_t idx,
-						 duk_uint_t mask);
+DUK_EXTERNAL_DECL duk_bool_t duk_check_type_mask(duk_context *ctx, duk_idx_t idx, duk_uint_t mask);
 
 DUK_EXTERNAL_DECL duk_bool_t duk_is_undefined(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_is_null(duk_context *ctx, duk_idx_t idx);
@@ -1096,8 +898,7 @@ DUK_EXTERNAL_DECL duk_bool_t duk_is_nan(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_is_string(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_is_object(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_is_buffer(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL duk_bool_t duk_is_buffer_data(duk_context *ctx,
-						duk_idx_t idx);
+DUK_EXTERNAL_DECL duk_bool_t duk_is_buffer_data(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_is_pointer(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_is_lightfunc(duk_context *ctx, duk_idx_t idx);
 
@@ -1105,62 +906,42 @@ DUK_EXTERNAL_DECL duk_bool_t duk_is_symbol(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_is_array(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_is_function(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_is_c_function(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL duk_bool_t duk_is_ecmascript_function(duk_context *ctx,
-							duk_idx_t idx);
-DUK_EXTERNAL_DECL duk_bool_t duk_is_bound_function(duk_context *ctx,
-						   duk_idx_t idx);
+DUK_EXTERNAL_DECL duk_bool_t duk_is_ecmascript_function(duk_context *ctx, duk_idx_t idx);
+DUK_EXTERNAL_DECL duk_bool_t duk_is_bound_function(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_bool_t duk_is_thread(duk_context *ctx, duk_idx_t idx);
 
 #define duk_is_callable(ctx, idx) duk_is_function((ctx), (idx))
 DUK_EXTERNAL_DECL
-	duk_bool_t duk_is_constructable(duk_context *ctx, duk_idx_t idx);
+duk_bool_t duk_is_constructable(duk_context *ctx, duk_idx_t idx);
 
-DUK_EXTERNAL_DECL duk_bool_t duk_is_dynamic_buffer(duk_context *ctx,
-						   duk_idx_t idx);
-DUK_EXTERNAL_DECL duk_bool_t duk_is_fixed_buffer(duk_context *ctx,
-						 duk_idx_t idx);
-DUK_EXTERNAL_DECL duk_bool_t duk_is_external_buffer(duk_context *ctx,
-						    duk_idx_t idx);
+DUK_EXTERNAL_DECL duk_bool_t duk_is_dynamic_buffer(duk_context *ctx, duk_idx_t idx);
+DUK_EXTERNAL_DECL duk_bool_t duk_is_fixed_buffer(duk_context *ctx, duk_idx_t idx);
+DUK_EXTERNAL_DECL duk_bool_t duk_is_external_buffer(duk_context *ctx, duk_idx_t idx);
 
 /* Buffers and lightfuncs are not considered primitive because they mimic
  * objects and e.g. duk_to_primitive() will coerce them instead of returning
  * them as is.  Symbols are represented as strings internally.
  */
-#define duk_is_primitive(ctx, idx)                                             \
-	duk_check_type_mask((ctx),                                             \
-			    (idx),                                             \
-			    DUK_TYPE_MASK_UNDEFINED | DUK_TYPE_MASK_NULL |     \
-				    DUK_TYPE_MASK_BOOLEAN |                    \
-				    DUK_TYPE_MASK_NUMBER |                     \
-				    DUK_TYPE_MASK_STRING |                     \
-				    DUK_TYPE_MASK_POINTER)
+#define duk_is_primitive(ctx, idx)                                                                                     \
+    duk_check_type_mask((ctx), (idx),                                                                                  \
+        DUK_TYPE_MASK_UNDEFINED | DUK_TYPE_MASK_NULL | DUK_TYPE_MASK_BOOLEAN | DUK_TYPE_MASK_NUMBER |                  \
+            DUK_TYPE_MASK_STRING | DUK_TYPE_MASK_POINTER)
 
 /* Symbols are object coercible, covered by DUK_TYPE_MASK_STRING. */
-#define duk_is_object_coercible(ctx, idx)                                      \
-	duk_check_type_mask((ctx),                                             \
-			    (idx),                                             \
-			    DUK_TYPE_MASK_BOOLEAN | DUK_TYPE_MASK_NUMBER |     \
-				    DUK_TYPE_MASK_STRING |                     \
-				    DUK_TYPE_MASK_OBJECT |                     \
-				    DUK_TYPE_MASK_BUFFER |                     \
-				    DUK_TYPE_MASK_POINTER |                    \
-				    DUK_TYPE_MASK_LIGHTFUNC)
+#define duk_is_object_coercible(ctx, idx)                                                                              \
+    duk_check_type_mask((ctx), (idx),                                                                                  \
+        DUK_TYPE_MASK_BOOLEAN | DUK_TYPE_MASK_NUMBER | DUK_TYPE_MASK_STRING | DUK_TYPE_MASK_OBJECT |                   \
+            DUK_TYPE_MASK_BUFFER | DUK_TYPE_MASK_POINTER | DUK_TYPE_MASK_LIGHTFUNC)
 
 DUK_EXTERNAL_DECL
-	duk_errcode_t duk_get_error_code(duk_context *ctx, duk_idx_t idx);
+duk_errcode_t duk_get_error_code(duk_context *ctx, duk_idx_t idx);
 #define duk_is_error(ctx, idx) (duk_get_error_code((ctx), (idx)) != 0)
-#define duk_is_eval_error(ctx, idx)                                            \
-	(duk_get_error_code((ctx), (idx)) == DUK_ERR_EVAL_ERROR)
-#define duk_is_range_error(ctx, idx)                                           \
-	(duk_get_error_code((ctx), (idx)) == DUK_ERR_RANGE_ERROR)
-#define duk_is_reference_error(ctx, idx)                                       \
-	(duk_get_error_code((ctx), (idx)) == DUK_ERR_REFERENCE_ERROR)
-#define duk_is_syntax_error(ctx, idx)                                          \
-	(duk_get_error_code((ctx), (idx)) == DUK_ERR_SYNTAX_ERROR)
-#define duk_is_type_error(ctx, idx)                                            \
-	(duk_get_error_code((ctx), (idx)) == DUK_ERR_TYPE_ERROR)
-#define duk_is_uri_error(ctx, idx)                                             \
-	(duk_get_error_code((ctx), (idx)) == DUK_ERR_URI_ERROR)
+#define duk_is_eval_error(ctx, idx) (duk_get_error_code((ctx), (idx)) == DUK_ERR_EVAL_ERROR)
+#define duk_is_range_error(ctx, idx) (duk_get_error_code((ctx), (idx)) == DUK_ERR_RANGE_ERROR)
+#define duk_is_reference_error(ctx, idx) (duk_get_error_code((ctx), (idx)) == DUK_ERR_REFERENCE_ERROR)
+#define duk_is_syntax_error(ctx, idx) (duk_get_error_code((ctx), (idx)) == DUK_ERR_SYNTAX_ERROR)
+#define duk_is_type_error(ctx, idx) (duk_get_error_code((ctx), (idx)) == DUK_ERR_TYPE_ERROR)
+#define duk_is_uri_error(ctx, idx) (duk_get_error_code((ctx), (idx)) == DUK_ERR_URI_ERROR)
 
 /*
  *  Get operations: no coercion, returns default value for invalid
@@ -1175,15 +956,11 @@ DUK_EXTERNAL_DECL duk_double_t duk_get_number(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_int_t duk_get_int(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_uint_t duk_get_uint(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL const char *duk_get_string(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL const char *
-duk_get_lstring(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len);
-DUK_EXTERNAL_DECL void *
-duk_get_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size);
-DUK_EXTERNAL_DECL void *
-duk_get_buffer_data(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size);
+DUK_EXTERNAL_DECL const char *duk_get_lstring(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len);
+DUK_EXTERNAL_DECL void *duk_get_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size);
+DUK_EXTERNAL_DECL void *duk_get_buffer_data(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size);
 DUK_EXTERNAL_DECL void *duk_get_pointer(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL duk_c_function duk_get_c_function(duk_context *ctx,
-						    duk_idx_t idx);
+DUK_EXTERNAL_DECL duk_c_function duk_get_c_function(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_context *duk_get_context(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL void *duk_get_heapptr(duk_context *ctx, duk_idx_t idx);
 
@@ -1192,46 +969,21 @@ DUK_EXTERNAL_DECL void *duk_get_heapptr(duk_context *ctx, duk_idx_t idx);
  *  explicit default value.
  */
 
-DUK_EXTERNAL_DECL duk_bool_t duk_get_boolean_default(duk_context *ctx,
-						     duk_idx_t idx,
-						     duk_bool_t def_value);
-DUK_EXTERNAL_DECL duk_double_t duk_get_number_default(duk_context *ctx,
-						      duk_idx_t idx,
-						      duk_double_t def_value);
-DUK_EXTERNAL_DECL duk_int_t duk_get_int_default(duk_context *ctx,
-						duk_idx_t idx,
-						duk_int_t def_value);
-DUK_EXTERNAL_DECL duk_uint_t duk_get_uint_default(duk_context *ctx,
-						  duk_idx_t idx,
-						  duk_uint_t def_value);
+DUK_EXTERNAL_DECL duk_bool_t duk_get_boolean_default(duk_context *ctx, duk_idx_t idx, duk_bool_t def_value);
+DUK_EXTERNAL_DECL duk_double_t duk_get_number_default(duk_context *ctx, duk_idx_t idx, duk_double_t def_value);
+DUK_EXTERNAL_DECL duk_int_t duk_get_int_default(duk_context *ctx, duk_idx_t idx, duk_int_t def_value);
+DUK_EXTERNAL_DECL duk_uint_t duk_get_uint_default(duk_context *ctx, duk_idx_t idx, duk_uint_t def_value);
+DUK_EXTERNAL_DECL const char *duk_get_string_default(duk_context *ctx, duk_idx_t idx, const char *def_value);
 DUK_EXTERNAL_DECL const char *
-duk_get_string_default(duk_context *ctx, duk_idx_t idx, const char *def_value);
-DUK_EXTERNAL_DECL const char *duk_get_lstring_default(duk_context *ctx,
-						      duk_idx_t idx,
-						      duk_size_t *out_len,
-						      const char *def_ptr,
-						      duk_size_t def_len);
-DUK_EXTERNAL_DECL void *duk_get_buffer_default(duk_context *ctx,
-					       duk_idx_t idx,
-					       duk_size_t *out_size,
-					       void *def_ptr,
-					       duk_size_t def_len);
-DUK_EXTERNAL_DECL void *duk_get_buffer_data_default(duk_context *ctx,
-						    duk_idx_t idx,
-						    duk_size_t *out_size,
-						    void *def_ptr,
-						    duk_size_t def_len);
+duk_get_lstring_default(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len, const char *def_ptr, duk_size_t def_len);
 DUK_EXTERNAL_DECL void *
-duk_get_pointer_default(duk_context *ctx, duk_idx_t idx, void *def_value);
-DUK_EXTERNAL_DECL duk_c_function
-duk_get_c_function_default(duk_context *ctx,
-			   duk_idx_t idx,
-			   duk_c_function def_value);
-DUK_EXTERNAL_DECL duk_context *duk_get_context_default(duk_context *ctx,
-						       duk_idx_t idx,
-						       duk_context *def_value);
+duk_get_buffer_default(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size, void *def_ptr, duk_size_t def_len);
 DUK_EXTERNAL_DECL void *
-duk_get_heapptr_default(duk_context *ctx, duk_idx_t idx, void *def_value);
+duk_get_buffer_data_default(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size, void *def_ptr, duk_size_t def_len);
+DUK_EXTERNAL_DECL void *duk_get_pointer_default(duk_context *ctx, duk_idx_t idx, void *def_value);
+DUK_EXTERNAL_DECL duk_c_function duk_get_c_function_default(duk_context *ctx, duk_idx_t idx, duk_c_function def_value);
+DUK_EXTERNAL_DECL duk_context *duk_get_context_default(duk_context *ctx, duk_idx_t idx, duk_context *def_value);
+DUK_EXTERNAL_DECL void *duk_get_heapptr_default(duk_context *ctx, duk_idx_t idx, void *def_value);
 
 /*
  *  Opt operations: like require operations but with an explicit default value
@@ -1239,91 +991,54 @@ duk_get_heapptr_default(duk_context *ctx, duk_idx_t idx, void *def_value);
  *  cause a TypeError.
  */
 
-DUK_EXTERNAL_DECL duk_bool_t duk_opt_boolean(duk_context *ctx,
-					     duk_idx_t idx,
-					     duk_bool_t def_value);
-DUK_EXTERNAL_DECL duk_double_t duk_opt_number(duk_context *ctx,
-					      duk_idx_t idx,
-					      duk_double_t def_value);
-DUK_EXTERNAL_DECL duk_int_t duk_opt_int(duk_context *ctx,
-					duk_idx_t idx,
-					duk_int_t def_value);
-DUK_EXTERNAL_DECL duk_uint_t duk_opt_uint(duk_context *ctx,
-					  duk_idx_t idx,
-					  duk_uint_t def_value);
+DUK_EXTERNAL_DECL duk_bool_t duk_opt_boolean(duk_context *ctx, duk_idx_t idx, duk_bool_t def_value);
+DUK_EXTERNAL_DECL duk_double_t duk_opt_number(duk_context *ctx, duk_idx_t idx, duk_double_t def_value);
+DUK_EXTERNAL_DECL duk_int_t duk_opt_int(duk_context *ctx, duk_idx_t idx, duk_int_t def_value);
+DUK_EXTERNAL_DECL duk_uint_t duk_opt_uint(duk_context *ctx, duk_idx_t idx, duk_uint_t def_value);
+DUK_EXTERNAL_DECL const char *duk_opt_string(duk_context *ctx, duk_idx_t idx, const char *def_ptr);
 DUK_EXTERNAL_DECL const char *
-duk_opt_string(duk_context *ctx, duk_idx_t idx, const char *def_ptr);
-DUK_EXTERNAL_DECL const char *duk_opt_lstring(duk_context *ctx,
-					      duk_idx_t idx,
-					      duk_size_t *out_len,
-					      const char *def_ptr,
-					      duk_size_t def_len);
-DUK_EXTERNAL_DECL void *duk_opt_buffer(duk_context *ctx,
-				       duk_idx_t idx,
-				       duk_size_t *out_size,
-				       void *def_ptr,
-				       duk_size_t def_size);
-DUK_EXTERNAL_DECL void *duk_opt_buffer_data(duk_context *ctx,
-					    duk_idx_t idx,
-					    duk_size_t *out_size,
-					    void *def_ptr,
-					    duk_size_t def_size);
+duk_opt_lstring(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len, const char *def_ptr, duk_size_t def_len);
 DUK_EXTERNAL_DECL void *
-duk_opt_pointer(duk_context *ctx, duk_idx_t idx, void *def_value);
-DUK_EXTERNAL_DECL duk_c_function duk_opt_c_function(duk_context *ctx,
-						    duk_idx_t idx,
-						    duk_c_function def_value);
-DUK_EXTERNAL_DECL duk_context *
-duk_opt_context(duk_context *ctx, duk_idx_t idx, duk_context *def_value);
+duk_opt_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size, void *def_ptr, duk_size_t def_size);
 DUK_EXTERNAL_DECL void *
-duk_opt_heapptr(duk_context *ctx, duk_idx_t idx, void *def_value);
+duk_opt_buffer_data(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size, void *def_ptr, duk_size_t def_size);
+DUK_EXTERNAL_DECL void *duk_opt_pointer(duk_context *ctx, duk_idx_t idx, void *def_value);
+DUK_EXTERNAL_DECL duk_c_function duk_opt_c_function(duk_context *ctx, duk_idx_t idx, duk_c_function def_value);
+DUK_EXTERNAL_DECL duk_context *duk_opt_context(duk_context *ctx, duk_idx_t idx, duk_context *def_value);
+DUK_EXTERNAL_DECL void *duk_opt_heapptr(duk_context *ctx, duk_idx_t idx, void *def_value);
 
 /*
  *  Require operations: no coercion, throw error if index or type
  *  is incorrect.  No defaulting.
  */
 
-#define duk_require_type_mask(ctx, idx, mask)                                  \
-	((void)duk_check_type_mask((ctx), (idx), (mask) | DUK_TYPE_MASK_THROW))
+#define duk_require_type_mask(ctx, idx, mask) ((void)duk_check_type_mask((ctx), (idx), (mask) | DUK_TYPE_MASK_THROW))
 
 DUK_EXTERNAL_DECL void duk_require_undefined(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL void duk_require_null(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL duk_bool_t duk_require_boolean(duk_context *ctx,
-						 duk_idx_t idx);
-DUK_EXTERNAL_DECL duk_double_t duk_require_number(duk_context *ctx,
-						  duk_idx_t idx);
+DUK_EXTERNAL_DECL duk_bool_t duk_require_boolean(duk_context *ctx, duk_idx_t idx);
+DUK_EXTERNAL_DECL duk_double_t duk_require_number(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_int_t duk_require_int(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_uint_t duk_require_uint(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL const char *
-duk_require_string(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL const char *
-duk_require_lstring(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len);
+DUK_EXTERNAL_DECL const char *duk_require_string(duk_context *ctx, duk_idx_t idx);
+DUK_EXTERNAL_DECL const char *duk_require_lstring(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len);
 DUK_EXTERNAL_DECL void duk_require_object(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL void *
-duk_require_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size);
-DUK_EXTERNAL_DECL void *
-duk_require_buffer_data(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size);
+DUK_EXTERNAL_DECL void *duk_require_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size);
+DUK_EXTERNAL_DECL void *duk_require_buffer_data(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size);
 DUK_EXTERNAL_DECL void *duk_require_pointer(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL duk_c_function duk_require_c_function(duk_context *ctx,
-							duk_idx_t idx);
-DUK_EXTERNAL_DECL duk_context *
-duk_require_context(duk_context *ctx, duk_idx_t idx);
+DUK_EXTERNAL_DECL duk_c_function duk_require_c_function(duk_context *ctx, duk_idx_t idx);
+DUK_EXTERNAL_DECL duk_context *duk_require_context(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL void duk_require_function(duk_context *ctx, duk_idx_t idx);
 #define duk_require_callable(ctx, idx) duk_require_function((ctx), (idx))
 DUK_EXTERNAL_DECL void duk_require_constructor_call(duk_context *ctx);
-DUK_EXTERNAL_DECL void
-duk_require_constructable(duk_context *ctx, duk_idx_t idx);
+DUK_EXTERNAL_DECL void duk_require_constructable(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL void *duk_require_heapptr(duk_context *ctx, duk_idx_t idx);
 
 /* Symbols are object coercible and covered by DUK_TYPE_MASK_STRING. */
-#define duk_require_object_coercible(ctx, idx)                                 \
-	((void)duk_check_type_mask(                                            \
-		(ctx),                                                         \
-		(idx),                                                         \
-		DUK_TYPE_MASK_BOOLEAN | DUK_TYPE_MASK_NUMBER |                 \
-			DUK_TYPE_MASK_STRING | DUK_TYPE_MASK_OBJECT |          \
-			DUK_TYPE_MASK_BUFFER | DUK_TYPE_MASK_POINTER |         \
-			DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_THROW))
+#define duk_require_object_coercible(ctx, idx)                                                                         \
+    ((void)duk_check_type_mask((ctx), (idx),                                                                           \
+        DUK_TYPE_MASK_BOOLEAN | DUK_TYPE_MASK_NUMBER | DUK_TYPE_MASK_STRING | DUK_TYPE_MASK_OBJECT |                   \
+            DUK_TYPE_MASK_BUFFER | DUK_TYPE_MASK_POINTER | DUK_TYPE_MASK_LIGHTFUNC | DUK_TYPE_MASK_THROW))
 
 /*
  *  Coercion operations: in-place coercion, return coerced value where
@@ -1342,36 +1057,24 @@ DUK_EXTERNAL_DECL duk_int32_t duk_to_int32(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_uint32_t duk_to_uint32(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL duk_uint16_t duk_to_uint16(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL const char *duk_to_string(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL const char *
-duk_to_lstring(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len);
-DUK_EXTERNAL_DECL void *duk_to_buffer_raw(duk_context *ctx,
-					  duk_idx_t idx,
-					  duk_size_t *out_size,
-					  duk_uint_t flags);
+DUK_EXTERNAL_DECL const char *duk_to_lstring(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len);
+DUK_EXTERNAL_DECL void *duk_to_buffer_raw(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size, duk_uint_t flags);
 DUK_EXTERNAL_DECL void *duk_to_pointer(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL void duk_to_object(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL void
-duk_to_primitive(duk_context *ctx, duk_idx_t idx, duk_int_t hint);
+DUK_EXTERNAL_DECL void duk_to_primitive(duk_context *ctx, duk_idx_t idx, duk_int_t hint);
 
 #define DUK_BUF_MODE_FIXED 0 /* internal: request fixed buffer result */
 #define DUK_BUF_MODE_DYNAMIC 1 /* internal: request dynamic buffer result */
-#define DUK_BUF_MODE_DONTCARE                                                  \
-	2 /* internal: don't care about fixed/dynamic nature */
+#define DUK_BUF_MODE_DONTCARE 2 /* internal: don't care about fixed/dynamic nature */
 
-#define duk_to_buffer(ctx, idx, out_size)                                      \
-	duk_to_buffer_raw((ctx), (idx), (out_size), DUK_BUF_MODE_DONTCARE)
-#define duk_to_fixed_buffer(ctx, idx, out_size)                                \
-	duk_to_buffer_raw((ctx), (idx), (out_size), DUK_BUF_MODE_FIXED)
-#define duk_to_dynamic_buffer(ctx, idx, out_size)                              \
-	duk_to_buffer_raw((ctx), (idx), (out_size), DUK_BUF_MODE_DYNAMIC)
+#define duk_to_buffer(ctx, idx, out_size) duk_to_buffer_raw((ctx), (idx), (out_size), DUK_BUF_MODE_DONTCARE)
+#define duk_to_fixed_buffer(ctx, idx, out_size) duk_to_buffer_raw((ctx), (idx), (out_size), DUK_BUF_MODE_FIXED)
+#define duk_to_dynamic_buffer(ctx, idx, out_size) duk_to_buffer_raw((ctx), (idx), (out_size), DUK_BUF_MODE_DYNAMIC)
 
 /* safe variants of a few coercion operations */
-DUK_EXTERNAL_DECL const char *
-duk_safe_to_lstring(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len);
-DUK_EXTERNAL_DECL const char *
-duk_to_stacktrace(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL const char *
-duk_safe_to_stacktrace(duk_context *ctx, duk_idx_t idx);
+DUK_EXTERNAL_DECL const char *duk_safe_to_lstring(duk_context *ctx, duk_idx_t idx, duk_size_t *out_len);
+DUK_EXTERNAL_DECL const char *duk_to_stacktrace(duk_context *ctx, duk_idx_t idx);
+DUK_EXTERNAL_DECL const char *duk_safe_to_stacktrace(duk_context *ctx, duk_idx_t idx);
 #define duk_safe_to_string(ctx, idx) duk_safe_to_lstring((ctx), (idx), NULL)
 
 /*
@@ -1379,8 +1082,7 @@ duk_safe_to_stacktrace(duk_context *ctx, duk_idx_t idx);
  */
 
 DUK_EXTERNAL_DECL duk_size_t duk_get_length(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL void
-duk_set_length(duk_context *ctx, duk_idx_t idx, duk_size_t len);
+DUK_EXTERNAL_DECL void duk_set_length(duk_context *ctx, duk_idx_t idx, duk_size_t len);
 #if 0
 /* duk_require_length()? */
 /* duk_opt_length()? */
@@ -1390,31 +1092,24 @@ duk_set_length(duk_context *ctx, duk_idx_t idx, duk_size_t len);
  *  Misc conversion
  */
 
-DUK_EXTERNAL_DECL const char *
-duk_base64_encode(duk_context *ctx, duk_idx_t idx);
+DUK_EXTERNAL_DECL const char *duk_base64_encode(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL void duk_base64_decode(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL const char *duk_hex_encode(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL void duk_hex_decode(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL const char *duk_json_encode(duk_context *ctx, duk_idx_t idx);
 DUK_EXTERNAL_DECL void duk_json_decode(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL void
-duk_cbor_encode(duk_context *ctx, duk_idx_t idx, duk_uint_t encode_flags);
-DUK_EXTERNAL_DECL void
-duk_cbor_decode(duk_context *ctx, duk_idx_t idx, duk_uint_t decode_flags);
+DUK_EXTERNAL_DECL void duk_cbor_encode(duk_context *ctx, duk_idx_t idx, duk_uint_t encode_flags);
+DUK_EXTERNAL_DECL void duk_cbor_decode(duk_context *ctx, duk_idx_t idx, duk_uint_t decode_flags);
 
-DUK_EXTERNAL_DECL const char *
-duk_buffer_to_string(duk_context *ctx, duk_idx_t idx);
+DUK_EXTERNAL_DECL const char *duk_buffer_to_string(duk_context *ctx, duk_idx_t idx);
 
 /*
  *  Buffer
  */
 
-DUK_EXTERNAL_DECL void *
-duk_resize_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t new_size);
-DUK_EXTERNAL_DECL void *
-duk_steal_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size);
-DUK_EXTERNAL_DECL void
-duk_config_buffer(duk_context *ctx, duk_idx_t idx, void *ptr, duk_size_t len);
+DUK_EXTERNAL_DECL void *duk_resize_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t new_size);
+DUK_EXTERNAL_DECL void *duk_steal_buffer(duk_context *ctx, duk_idx_t idx, duk_size_t *out_size);
+DUK_EXTERNAL_DECL void duk_config_buffer(duk_context *ctx, duk_idx_t idx, void *ptr, duk_size_t len);
 
 /*
  *  Property access
@@ -1427,151 +1122,88 @@ duk_config_buffer(duk_context *ctx, duk_idx_t idx, void *ptr, duk_size_t len);
  */
 
 DUK_EXTERNAL_DECL duk_bool_t duk_get_prop(duk_context *ctx, duk_idx_t obj_idx);
-DUK_EXTERNAL_DECL duk_bool_t duk_get_prop_string(duk_context *ctx,
-						 duk_idx_t obj_idx,
-						 const char *key);
-DUK_EXTERNAL_DECL duk_bool_t duk_get_prop_lstring(duk_context *ctx,
-						  duk_idx_t obj_idx,
-						  const char *key,
-						  duk_size_t key_len);
+DUK_EXTERNAL_DECL duk_bool_t duk_get_prop_string(duk_context *ctx, duk_idx_t obj_idx, const char *key);
+DUK_EXTERNAL_DECL duk_bool_t duk_get_prop_lstring(
+    duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
 #if defined(DUK_USE_PREFER_SIZE)
-#define duk_get_prop_literal(ctx, obj_idx, key)                                \
-	duk_get_prop_string((ctx), (obj_idx), (key))
+#define duk_get_prop_literal(ctx, obj_idx, key) duk_get_prop_string((ctx), (obj_idx), (key))
 #else
-DUK_EXTERNAL_DECL duk_bool_t duk_get_prop_literal_raw(duk_context *ctx,
-						      duk_idx_t obj_idx,
-						      const char *key,
-						      duk_size_t key_len);
-#define duk_get_prop_literal(ctx, obj_idx, key)                                \
-	duk_get_prop_literal_raw((ctx), (obj_idx), (key), sizeof((key)) - 1U)
+DUK_EXTERNAL_DECL
+duk_bool_t duk_get_prop_literal_raw(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
+#define duk_get_prop_literal(ctx, obj_idx, key) duk_get_prop_literal_raw((ctx), (obj_idx), (key), sizeof((key)) - 1U)
 #endif
-DUK_EXTERNAL_DECL duk_bool_t duk_get_prop_index(duk_context *ctx,
-						duk_idx_t obj_idx,
-						duk_uarridx_t arr_idx);
-DUK_EXTERNAL_DECL duk_bool_t duk_get_prop_heapptr(duk_context *ctx,
-						  duk_idx_t obj_idx,
-						  void *ptr);
+DUK_EXTERNAL_DECL duk_bool_t duk_get_prop_index(duk_context *ctx, duk_idx_t obj_idx, duk_uarridx_t arr_idx);
+DUK_EXTERNAL_DECL duk_bool_t duk_get_prop_heapptr(duk_context *ctx, duk_idx_t obj_idx, void *ptr);
 DUK_EXTERNAL_DECL duk_bool_t duk_put_prop(duk_context *ctx, duk_idx_t obj_idx);
-DUK_EXTERNAL_DECL duk_bool_t duk_put_prop_string(duk_context *ctx,
-						 duk_idx_t obj_idx,
-						 const char *key);
-DUK_EXTERNAL_DECL duk_bool_t duk_put_prop_lstring(duk_context *ctx,
-						  duk_idx_t obj_idx,
-						  const char *key,
-						  duk_size_t key_len);
+DUK_EXTERNAL_DECL duk_bool_t duk_put_prop_string(duk_context *ctx, duk_idx_t obj_idx, const char *key);
+DUK_EXTERNAL_DECL duk_bool_t duk_put_prop_lstring(
+    duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
 #if defined(DUK_USE_PREFER_SIZE)
-#define duk_put_prop_literal(ctx, obj_idx, key)                                \
-	duk_put_prop_string((ctx), (obj_idx), (key))
+#define duk_put_prop_literal(ctx, obj_idx, key) duk_put_prop_string((ctx), (obj_idx), (key))
 #else
-DUK_EXTERNAL_DECL duk_bool_t duk_put_prop_literal_raw(duk_context *ctx,
-						      duk_idx_t obj_idx,
-						      const char *key,
-						      duk_size_t key_len);
-#define duk_put_prop_literal(ctx, obj_idx, key)                                \
-	duk_put_prop_literal_raw((ctx), (obj_idx), (key), sizeof((key)) - 1U)
+DUK_EXTERNAL_DECL
+duk_bool_t duk_put_prop_literal_raw(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
+#define duk_put_prop_literal(ctx, obj_idx, key) duk_put_prop_literal_raw((ctx), (obj_idx), (key), sizeof((key)) - 1U)
 #endif
-DUK_EXTERNAL_DECL duk_bool_t duk_put_prop_index(duk_context *ctx,
-						duk_idx_t obj_idx,
-						duk_uarridx_t arr_idx);
-DUK_EXTERNAL_DECL duk_bool_t duk_put_prop_heapptr(duk_context *ctx,
-						  duk_idx_t obj_idx,
-						  void *ptr);
+DUK_EXTERNAL_DECL duk_bool_t duk_put_prop_index(duk_context *ctx, duk_idx_t obj_idx, duk_uarridx_t arr_idx);
+DUK_EXTERNAL_DECL duk_bool_t duk_put_prop_heapptr(duk_context *ctx, duk_idx_t obj_idx, void *ptr);
 DUK_EXTERNAL_DECL duk_bool_t duk_del_prop(duk_context *ctx, duk_idx_t obj_idx);
-DUK_EXTERNAL_DECL duk_bool_t duk_del_prop_string(duk_context *ctx,
-						 duk_idx_t obj_idx,
-						 const char *key);
-DUK_EXTERNAL_DECL duk_bool_t duk_del_prop_lstring(duk_context *ctx,
-						  duk_idx_t obj_idx,
-						  const char *key,
-						  duk_size_t key_len);
+DUK_EXTERNAL_DECL duk_bool_t duk_del_prop_string(duk_context *ctx, duk_idx_t obj_idx, const char *key);
+DUK_EXTERNAL_DECL duk_bool_t duk_del_prop_lstring(
+    duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
 #if defined(DUK_USE_PREFER_SIZE)
-#define duk_del_prop_literal(ctx, obj_idx, key)                                \
-	duk_del_prop_string((ctx), (obj_idx), (key))
+#define duk_del_prop_literal(ctx, obj_idx, key) duk_del_prop_string((ctx), (obj_idx), (key))
 #else
-DUK_EXTERNAL_DECL duk_bool_t duk_del_prop_literal_raw(duk_context *ctx,
-						      duk_idx_t obj_idx,
-						      const char *key,
-						      duk_size_t key_len);
-#define duk_del_prop_literal(ctx, obj_idx, key)                                \
-	duk_del_prop_literal_raw((ctx), (obj_idx), (key), sizeof((key)) - 1U)
+DUK_EXTERNAL_DECL
+duk_bool_t duk_del_prop_literal_raw(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
+#define duk_del_prop_literal(ctx, obj_idx, key) duk_del_prop_literal_raw((ctx), (obj_idx), (key), sizeof((key)) - 1U)
 #endif
-DUK_EXTERNAL_DECL duk_bool_t duk_del_prop_index(duk_context *ctx,
-						duk_idx_t obj_idx,
-						duk_uarridx_t arr_idx);
-DUK_EXTERNAL_DECL duk_bool_t duk_del_prop_heapptr(duk_context *ctx,
-						  duk_idx_t obj_idx,
-						  void *ptr);
+DUK_EXTERNAL_DECL duk_bool_t duk_del_prop_index(duk_context *ctx, duk_idx_t obj_idx, duk_uarridx_t arr_idx);
+DUK_EXTERNAL_DECL duk_bool_t duk_del_prop_heapptr(duk_context *ctx, duk_idx_t obj_idx, void *ptr);
 DUK_EXTERNAL_DECL duk_bool_t duk_has_prop(duk_context *ctx, duk_idx_t obj_idx);
-DUK_EXTERNAL_DECL duk_bool_t duk_has_prop_string(duk_context *ctx,
-						 duk_idx_t obj_idx,
-						 const char *key);
-DUK_EXTERNAL_DECL duk_bool_t duk_has_prop_lstring(duk_context *ctx,
-						  duk_idx_t obj_idx,
-						  const char *key,
-						  duk_size_t key_len);
+DUK_EXTERNAL_DECL duk_bool_t duk_has_prop_string(duk_context *ctx, duk_idx_t obj_idx, const char *key);
+DUK_EXTERNAL_DECL duk_bool_t duk_has_prop_lstring(
+    duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
 #if defined(DUK_USE_PREFER_SIZE)
-#define duk_has_prop_literal(ctx, obj_idx, key)                                \
-	duk_has_prop_string((ctx), (obj_idx), (key))
+#define duk_has_prop_literal(ctx, obj_idx, key) duk_has_prop_string((ctx), (obj_idx), (key))
 #else
-DUK_EXTERNAL_DECL duk_bool_t duk_has_prop_literal_raw(duk_context *ctx,
-						      duk_idx_t obj_idx,
-						      const char *key,
-						      duk_size_t key_len);
-#define duk_has_prop_literal(ctx, obj_idx, key)                                \
-	duk_has_prop_literal_raw((ctx), (obj_idx), (key), sizeof((key)) - 1U)
+DUK_EXTERNAL_DECL
+duk_bool_t duk_has_prop_literal_raw(duk_context *ctx, duk_idx_t obj_idx, const char *key, duk_size_t key_len);
+#define duk_has_prop_literal(ctx, obj_idx, key) duk_has_prop_literal_raw((ctx), (obj_idx), (key), sizeof((key)) - 1U)
 #endif
-DUK_EXTERNAL_DECL duk_bool_t duk_has_prop_index(duk_context *ctx,
-						duk_idx_t obj_idx,
-						duk_uarridx_t arr_idx);
-DUK_EXTERNAL_DECL duk_bool_t duk_has_prop_heapptr(duk_context *ctx,
-						  duk_idx_t obj_idx,
-						  void *ptr);
+DUK_EXTERNAL_DECL duk_bool_t duk_has_prop_index(duk_context *ctx, duk_idx_t obj_idx, duk_uarridx_t arr_idx);
+DUK_EXTERNAL_DECL duk_bool_t duk_has_prop_heapptr(duk_context *ctx, duk_idx_t obj_idx, void *ptr);
 
-DUK_EXTERNAL_DECL void
-duk_get_prop_desc(duk_context *ctx, duk_idx_t obj_idx, duk_uint_t flags);
-DUK_EXTERNAL_DECL void
-duk_def_prop(duk_context *ctx, duk_idx_t obj_idx, duk_uint_t flags);
+DUK_EXTERNAL_DECL void duk_get_prop_desc(duk_context *ctx, duk_idx_t obj_idx, duk_uint_t flags);
+DUK_EXTERNAL_DECL void duk_def_prop(duk_context *ctx, duk_idx_t obj_idx, duk_uint_t flags);
 
-DUK_EXTERNAL_DECL duk_bool_t duk_get_global_string(duk_context *ctx,
-						   const char *key);
-DUK_EXTERNAL_DECL duk_bool_t duk_get_global_lstring(duk_context *ctx,
-						    const char *key,
-						    duk_size_t key_len);
+DUK_EXTERNAL_DECL duk_bool_t duk_get_global_string(duk_context *ctx, const char *key);
+DUK_EXTERNAL_DECL duk_bool_t duk_get_global_lstring(duk_context *ctx, const char *key, duk_size_t key_len);
 #if defined(DUK_USE_PREFER_SIZE)
 #define duk_get_global_literal(ctx, key) duk_get_global_string((ctx), (key))
 #else
-DUK_EXTERNAL_DECL duk_bool_t duk_get_global_literal_raw(duk_context *ctx,
-							const char *key,
-							duk_size_t key_len);
-#define duk_get_global_literal(ctx, key)                                       \
-	duk_get_global_literal_raw((ctx), (key), sizeof((key)) - 1U)
+DUK_EXTERNAL_DECL duk_bool_t duk_get_global_literal_raw(duk_context *ctx, const char *key, duk_size_t key_len);
+#define duk_get_global_literal(ctx, key) duk_get_global_literal_raw((ctx), (key), sizeof((key)) - 1U)
 #endif
 DUK_EXTERNAL_DECL
-	duk_bool_t duk_get_global_heapptr(duk_context *ctx, void *ptr);
-DUK_EXTERNAL_DECL duk_bool_t duk_put_global_string(duk_context *ctx,
-						   const char *key);
-DUK_EXTERNAL_DECL duk_bool_t duk_put_global_lstring(duk_context *ctx,
-						    const char *key,
-						    duk_size_t key_len);
+duk_bool_t duk_get_global_heapptr(duk_context *ctx, void *ptr);
+DUK_EXTERNAL_DECL duk_bool_t duk_put_global_string(duk_context *ctx, const char *key);
+DUK_EXTERNAL_DECL duk_bool_t duk_put_global_lstring(duk_context *ctx, const char *key, duk_size_t key_len);
 #if defined(DUK_USE_PREFER_SIZE)
 #define duk_put_global_literal(ctx, key) duk_put_global_string((ctx), (key))
 #else
-DUK_EXTERNAL_DECL duk_bool_t duk_put_global_literal_raw(duk_context *ctx,
-							const char *key,
-							duk_size_t key_len);
-#define duk_put_global_literal(ctx, key)                                       \
-	duk_put_global_literal_raw((ctx), (key), sizeof((key)) - 1U)
+DUK_EXTERNAL_DECL duk_bool_t duk_put_global_literal_raw(duk_context *ctx, const char *key, duk_size_t key_len);
+#define duk_put_global_literal(ctx, key) duk_put_global_literal_raw((ctx), (key), sizeof((key)) - 1U)
 #endif
 DUK_EXTERNAL_DECL
-	duk_bool_t duk_put_global_heapptr(duk_context *ctx, void *ptr);
+duk_bool_t duk_put_global_heapptr(duk_context *ctx, void *ptr);
 
 /*
  *  Inspection
  */
 
 DUK_EXTERNAL_DECL void duk_inspect_value(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL void
-duk_inspect_callstack_entry(duk_context *ctx, duk_int_t level);
+DUK_EXTERNAL_DECL void duk_inspect_callstack_entry(duk_context *ctx, duk_int_t level);
 
 /*
  *  Object prototype
@@ -1598,33 +1230,23 @@ DUK_EXTERNAL_DECL void duk_set_global_object(duk_context *ctx);
  */
 
 DUK_EXTERNAL_DECL duk_int_t duk_get_magic(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL void
-duk_set_magic(duk_context *ctx, duk_idx_t idx, duk_int_t magic);
+DUK_EXTERNAL_DECL void duk_set_magic(duk_context *ctx, duk_idx_t idx, duk_int_t magic);
 DUK_EXTERNAL_DECL duk_int_t duk_get_current_magic(duk_context *ctx);
 
 /*
  *  Module helpers: put multiple function or constant properties
  */
 
-DUK_EXTERNAL_DECL void
-duk_put_function_list(duk_context *ctx,
-		      duk_idx_t obj_idx,
-		      const duk_function_list_entry *funcs);
-DUK_EXTERNAL_DECL void
-duk_put_number_list(duk_context *ctx,
-		    duk_idx_t obj_idx,
-		    const duk_number_list_entry *numbers);
+DUK_EXTERNAL_DECL void duk_put_function_list(duk_context *ctx, duk_idx_t obj_idx, const duk_function_list_entry *funcs);
+DUK_EXTERNAL_DECL void duk_put_number_list(duk_context *ctx, duk_idx_t obj_idx, const duk_number_list_entry *numbers);
 
 /*
  *  Object operations
  */
 
 DUK_EXTERNAL_DECL void duk_compact(duk_context *ctx, duk_idx_t obj_idx);
-DUK_EXTERNAL_DECL void
-duk_enum(duk_context *ctx, duk_idx_t obj_idx, duk_uint_t enum_flags);
-DUK_EXTERNAL_DECL duk_bool_t duk_next(duk_context *ctx,
-				      duk_idx_t enum_idx,
-				      duk_bool_t get_value);
+DUK_EXTERNAL_DECL void duk_enum(duk_context *ctx, duk_idx_t obj_idx, duk_uint_t enum_flags);
+DUK_EXTERNAL_DECL duk_bool_t duk_next(duk_context *ctx, duk_idx_t enum_idx, duk_bool_t get_value);
 DUK_EXTERNAL_DECL void duk_seal(duk_context *ctx, duk_idx_t obj_idx);
 DUK_EXTERNAL_DECL void duk_freeze(duk_context *ctx, duk_idx_t obj_idx);
 
@@ -1634,39 +1256,22 @@ DUK_EXTERNAL_DECL void duk_freeze(duk_context *ctx, duk_idx_t obj_idx);
 
 DUK_EXTERNAL_DECL void duk_concat(duk_context *ctx, duk_idx_t count);
 DUK_EXTERNAL_DECL void duk_join(duk_context *ctx, duk_idx_t count);
-DUK_EXTERNAL_DECL void duk_decode_string(duk_context *ctx,
-					 duk_idx_t idx,
-					 duk_decode_char_function callback,
-					 void *udata);
-DUK_EXTERNAL_DECL void duk_map_string(duk_context *ctx,
-				      duk_idx_t idx,
-				      duk_map_char_function callback,
-				      void *udata);
-DUK_EXTERNAL_DECL void duk_substring(duk_context *ctx,
-				     duk_idx_t idx,
-				     duk_size_t start_char_offset,
-				     duk_size_t end_char_offset);
+DUK_EXTERNAL_DECL void
+duk_decode_string(duk_context *ctx, duk_idx_t idx, duk_decode_char_function callback, void *udata);
+DUK_EXTERNAL_DECL void duk_map_string(duk_context *ctx, duk_idx_t idx, duk_map_char_function callback, void *udata);
+DUK_EXTERNAL_DECL void
+duk_substring(duk_context *ctx, duk_idx_t idx, duk_size_t start_char_offset, duk_size_t end_char_offset);
 DUK_EXTERNAL_DECL void duk_trim(duk_context *ctx, duk_idx_t idx);
-DUK_EXTERNAL_DECL duk_codepoint_t duk_char_code_at(duk_context *ctx,
-						   duk_idx_t idx,
-						   duk_size_t char_offset);
+DUK_EXTERNAL_DECL duk_codepoint_t duk_char_code_at(duk_context *ctx, duk_idx_t idx, duk_size_t char_offset);
 
 /*
  *  ECMAScript operators
  */
 
-DUK_EXTERNAL_DECL duk_bool_t duk_equals(duk_context *ctx,
-					duk_idx_t idx1,
-					duk_idx_t idx2);
-DUK_EXTERNAL_DECL duk_bool_t duk_strict_equals(duk_context *ctx,
-					       duk_idx_t idx1,
-					       duk_idx_t idx2);
-DUK_EXTERNAL_DECL duk_bool_t duk_samevalue(duk_context *ctx,
-					   duk_idx_t idx1,
-					   duk_idx_t idx2);
-DUK_EXTERNAL_DECL duk_bool_t duk_instanceof(duk_context *ctx,
-					    duk_idx_t idx1,
-					    duk_idx_t idx2);
+DUK_EXTERNAL_DECL duk_bool_t duk_equals(duk_context *ctx, duk_idx_t idx1, duk_idx_t idx2);
+DUK_EXTERNAL_DECL duk_bool_t duk_strict_equals(duk_context *ctx, duk_idx_t idx1, duk_idx_t idx2);
+DUK_EXTERNAL_DECL duk_bool_t duk_samevalue(duk_context *ctx, duk_idx_t idx1, duk_idx_t idx2);
+DUK_EXTERNAL_DECL duk_bool_t duk_instanceof(duk_context *ctx, duk_idx_t idx1, duk_idx_t idx2);
 
 /*
  *  Random
@@ -1680,20 +1285,14 @@ DUK_EXTERNAL_DECL duk_double_t duk_random(duk_context *ctx);
 
 DUK_EXTERNAL_DECL void duk_call(duk_context *ctx, duk_idx_t nargs);
 DUK_EXTERNAL_DECL void duk_call_method(duk_context *ctx, duk_idx_t nargs);
-DUK_EXTERNAL_DECL void
-duk_call_prop(duk_context *ctx, duk_idx_t obj_idx, duk_idx_t nargs);
+DUK_EXTERNAL_DECL void duk_call_prop(duk_context *ctx, duk_idx_t obj_idx, duk_idx_t nargs);
 DUK_EXTERNAL_DECL duk_int_t duk_pcall(duk_context *ctx, duk_idx_t nargs);
 DUK_EXTERNAL_DECL duk_int_t duk_pcall_method(duk_context *ctx, duk_idx_t nargs);
-DUK_EXTERNAL_DECL duk_int_t duk_pcall_prop(duk_context *ctx,
-					   duk_idx_t obj_idx,
-					   duk_idx_t nargs);
+DUK_EXTERNAL_DECL duk_int_t duk_pcall_prop(duk_context *ctx, duk_idx_t obj_idx, duk_idx_t nargs);
 DUK_EXTERNAL_DECL void duk_new(duk_context *ctx, duk_idx_t nargs);
 DUK_EXTERNAL_DECL duk_int_t duk_pnew(duk_context *ctx, duk_idx_t nargs);
-DUK_EXTERNAL_DECL duk_int_t duk_safe_call(duk_context *ctx,
-					  duk_safe_call_function func,
-					  void *udata,
-					  duk_idx_t nargs,
-					  duk_idx_t nrets);
+DUK_EXTERNAL_DECL duk_int_t duk_safe_call(
+    duk_context *ctx, duk_safe_call_function func, void *udata, duk_idx_t nargs, duk_idx_t nrets);
 
 /*
  *  Thread management
@@ -1707,173 +1306,92 @@ DUK_EXTERNAL_DECL duk_int_t duk_safe_call(duk_context *ctx,
  *  Compilation and evaluation
  */
 
-DUK_EXTERNAL_DECL duk_int_t duk_eval_raw(duk_context *ctx,
-					 const char *src_buffer,
-					 duk_size_t src_length,
-					 duk_uint_t flags);
-DUK_EXTERNAL_DECL duk_int_t duk_compile_raw(duk_context *ctx,
-					    const char *src_buffer,
-					    duk_size_t src_length,
-					    duk_uint_t flags);
+DUK_EXTERNAL_DECL duk_int_t duk_eval_raw(
+    duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_uint_t flags);
+DUK_EXTERNAL_DECL duk_int_t duk_compile_raw(
+    duk_context *ctx, const char *src_buffer, duk_size_t src_length, duk_uint_t flags);
 
 /* plain */
-#define duk_eval(ctx)                                                          \
-	((void)duk_eval_raw((ctx),                                             \
-			    NULL,                                              \
-			    0,                                                 \
-			    1 /*args*/ | DUK_COMPILE_EVAL |                    \
-				    DUK_COMPILE_NOFILENAME))
+#define duk_eval(ctx) ((void)duk_eval_raw((ctx), NULL, 0, 1 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_NOFILENAME))
 
-#define duk_eval_noresult(ctx)                                                 \
-	((void)duk_eval_raw((ctx),                                             \
-			    NULL,                                              \
-			    0,                                                 \
-			    1 /*args*/ | DUK_COMPILE_EVAL |                    \
-				    DUK_COMPILE_NORESULT |                     \
-				    DUK_COMPILE_NOFILENAME))
+#define duk_eval_noresult(ctx)                                                                                         \
+    ((void)duk_eval_raw((ctx), NULL, 0, 1 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_NORESULT | DUK_COMPILE_NOFILENAME))
 
-#define duk_peval(ctx)                                                         \
-	(duk_eval_raw((ctx),                                                   \
-		      NULL,                                                    \
-		      0,                                                       \
-		      1 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_SAFE |       \
-			      DUK_COMPILE_NOFILENAME))
+#define duk_peval(ctx)                                                                                                 \
+    (duk_eval_raw((ctx), NULL, 0, 1 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NOFILENAME))
 
-#define duk_peval_noresult(ctx)                                                \
-	(duk_eval_raw((ctx),                                                   \
-		      NULL,                                                    \
-		      0,                                                       \
-		      1 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_SAFE |       \
-			      DUK_COMPILE_NORESULT | DUK_COMPILE_NOFILENAME))
+#define duk_peval_noresult(ctx)                                                                                        \
+    (duk_eval_raw((ctx), NULL, 0,                                                                                      \
+        1 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NORESULT | DUK_COMPILE_NOFILENAME))
 
-#define duk_compile(ctx, flags)                                                \
-	((void)duk_compile_raw((ctx), NULL, 0, 2 /*args*/ | (flags)))
+#define duk_compile(ctx, flags) ((void)duk_compile_raw((ctx), NULL, 0, 2 /*args*/ | (flags)))
 
-#define duk_pcompile(ctx, flags)                                               \
-	(duk_compile_raw(                                                      \
-		(ctx), NULL, 0, 2 /*args*/ | (flags) | DUK_COMPILE_SAFE))
+#define duk_pcompile(ctx, flags) (duk_compile_raw((ctx), NULL, 0, 2 /*args*/ | (flags) | DUK_COMPILE_SAFE))
 
 /* string */
-#define duk_eval_string(ctx, src)                                              \
-	((void)duk_eval_raw(                                                   \
-		(ctx),                                                         \
-		(src),                                                         \
-		0,                                                             \
-		0 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE |         \
-			DUK_COMPILE_STRLEN | DUK_COMPILE_NOFILENAME))
+#define duk_eval_string(ctx, src)                                                                                      \
+    ((void)duk_eval_raw((ctx), (src), 0,                                                                               \
+        0 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN | DUK_COMPILE_NOFILENAME))
 
-#define duk_eval_string_noresult(ctx, src)                                     \
-	((void)duk_eval_raw(                                                   \
-		(ctx),                                                         \
-		(src),                                                         \
-		0,                                                             \
-		0 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE |         \
-			DUK_COMPILE_STRLEN | DUK_COMPILE_NORESULT |            \
-			DUK_COMPILE_NOFILENAME))
+#define duk_eval_string_noresult(ctx, src)                                                                             \
+    ((void)duk_eval_raw((ctx), (src), 0,                                                                               \
+        0 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN | DUK_COMPILE_NORESULT |             \
+            DUK_COMPILE_NOFILENAME))
 
-#define duk_peval_string(ctx, src)                                             \
-	(duk_eval_raw((ctx),                                                   \
-		      (src),                                                   \
-		      0,                                                       \
-		      0 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_SAFE |       \
-			      DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN |      \
-			      DUK_COMPILE_NOFILENAME))
+#define duk_peval_string(ctx, src)                                                                                     \
+    (duk_eval_raw((ctx), (src), 0,                                                                                     \
+        0 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN |                 \
+            DUK_COMPILE_NOFILENAME))
 
-#define duk_peval_string_noresult(ctx, src)                                    \
-	(duk_eval_raw((ctx),                                                   \
-		      (src),                                                   \
-		      0,                                                       \
-		      0 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_SAFE |       \
-			      DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN |      \
-			      DUK_COMPILE_NORESULT | DUK_COMPILE_NOFILENAME))
+#define duk_peval_string_noresult(ctx, src)                                                                            \
+    (duk_eval_raw((ctx), (src), 0,                                                                                     \
+        0 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN |                 \
+            DUK_COMPILE_NORESULT | DUK_COMPILE_NOFILENAME))
 
-#define duk_compile_string(ctx, flags, src)                                    \
-	((void)duk_compile_raw((ctx),                                          \
-			       (src),                                          \
-			       0,                                              \
-			       0 /*args*/ | (flags) | DUK_COMPILE_NOSOURCE |   \
-				       DUK_COMPILE_STRLEN |                    \
-				       DUK_COMPILE_NOFILENAME))
+#define duk_compile_string(ctx, flags, src)                                                                            \
+    ((void)duk_compile_raw(                                                                                            \
+        (ctx), (src), 0, 0 /*args*/ | (flags) | DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN | DUK_COMPILE_NOFILENAME))
 
-#define duk_compile_string_filename(ctx, flags, src)                           \
-	((void)duk_compile_raw((ctx),                                          \
-			       (src),                                          \
-			       0,                                              \
-			       1 /*args*/ | (flags) | DUK_COMPILE_NOSOURCE |   \
-				       DUK_COMPILE_STRLEN))
+#define duk_compile_string_filename(ctx, flags, src)                                                                   \
+    ((void)duk_compile_raw((ctx), (src), 0, 1 /*args*/ | (flags) | DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN))
 
-#define duk_pcompile_string(ctx, flags, src)                                   \
-	(duk_compile_raw((ctx),                                                \
-			 (src),                                                \
-			 0,                                                    \
-			 0 /*args*/ | (flags) | DUK_COMPILE_SAFE |             \
-				 DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN |   \
-				 DUK_COMPILE_NOFILENAME))
+#define duk_pcompile_string(ctx, flags, src)                                                                           \
+    (duk_compile_raw((ctx), (src), 0,                                                                                  \
+        0 /*args*/ | (flags) | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN | DUK_COMPILE_NOFILENAME))
 
-#define duk_pcompile_string_filename(ctx, flags, src)                          \
-	(duk_compile_raw((ctx),                                                \
-			 (src),                                                \
-			 0,                                                    \
-			 1 /*args*/ | (flags) | DUK_COMPILE_SAFE |             \
-				 DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN))
+#define duk_pcompile_string_filename(ctx, flags, src)                                                                  \
+    (duk_compile_raw(                                                                                                  \
+        (ctx), (src), 0, 1 /*args*/ | (flags) | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE | DUK_COMPILE_STRLEN))
 
 /* lstring */
-#define duk_eval_lstring(ctx, buf, len)                                        \
-	((void)duk_eval_raw((ctx),                                             \
-			    buf,                                               \
-			    len,                                               \
-			    0 /*args*/ | DUK_COMPILE_EVAL |                    \
-				    DUK_COMPILE_NOSOURCE |                     \
-				    DUK_COMPILE_NOFILENAME))
+#define duk_eval_lstring(ctx, buf, len)                                                                                \
+    ((void)duk_eval_raw((ctx), buf, len, 0 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE | DUK_COMPILE_NOFILENAME))
 
-#define duk_eval_lstring_noresult(ctx, buf, len)                               \
-	((void)duk_eval_raw(                                                   \
-		(ctx),                                                         \
-		buf,                                                           \
-		len,                                                           \
-		0 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE |         \
-			DUK_COMPILE_NORESULT | DUK_COMPILE_NOFILENAME))
+#define duk_eval_lstring_noresult(ctx, buf, len)                                                                       \
+    ((void)duk_eval_raw((ctx), buf, len,                                                                               \
+        0 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE | DUK_COMPILE_NORESULT | DUK_COMPILE_NOFILENAME))
 
-#define duk_peval_lstring(ctx, buf, len)                                       \
-	(duk_eval_raw((ctx),                                                   \
-		      buf,                                                     \
-		      len,                                                     \
-		      0 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE |   \
-			      DUK_COMPILE_SAFE | DUK_COMPILE_NOFILENAME))
+#define duk_peval_lstring(ctx, buf, len)                                                                               \
+    (duk_eval_raw((ctx), buf, len,                                                                                     \
+        0 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_NOSOURCE | DUK_COMPILE_SAFE | DUK_COMPILE_NOFILENAME))
 
-#define duk_peval_lstring_noresult(ctx, buf, len)                              \
-	(duk_eval_raw((ctx),                                                   \
-		      buf,                                                     \
-		      len,                                                     \
-		      0 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_SAFE |       \
-			      DUK_COMPILE_NOSOURCE | DUK_COMPILE_NORESULT |    \
-			      DUK_COMPILE_NOFILENAME))
+#define duk_peval_lstring_noresult(ctx, buf, len)                                                                      \
+    (duk_eval_raw((ctx), buf, len,                                                                                     \
+        0 /*args*/ | DUK_COMPILE_EVAL | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE | DUK_COMPILE_NORESULT |               \
+            DUK_COMPILE_NOFILENAME))
 
-#define duk_compile_lstring(ctx, flags, buf, len)                              \
-	((void)duk_compile_raw((ctx),                                          \
-			       buf,                                            \
-			       len,                                            \
-			       0 /*args*/ | (flags) | DUK_COMPILE_NOSOURCE |   \
-				       DUK_COMPILE_NOFILENAME))
+#define duk_compile_lstring(ctx, flags, buf, len)                                                                      \
+    ((void)duk_compile_raw((ctx), buf, len, 0 /*args*/ | (flags) | DUK_COMPILE_NOSOURCE | DUK_COMPILE_NOFILENAME))
 
-#define duk_compile_lstring_filename(ctx, flags, buf, len)                     \
-	((void)duk_compile_raw(                                                \
-		(ctx), buf, len, 1 /*args*/ | (flags) | DUK_COMPILE_NOSOURCE))
+#define duk_compile_lstring_filename(ctx, flags, buf, len)                                                             \
+    ((void)duk_compile_raw((ctx), buf, len, 1 /*args*/ | (flags) | DUK_COMPILE_NOSOURCE))
 
-#define duk_pcompile_lstring(ctx, flags, buf, len)                             \
-	(duk_compile_raw((ctx),                                                \
-			 buf,                                                  \
-			 len,                                                  \
-			 0 /*args*/ | (flags) | DUK_COMPILE_SAFE |             \
-				 DUK_COMPILE_NOSOURCE |                        \
-				 DUK_COMPILE_NOFILENAME))
+#define duk_pcompile_lstring(ctx, flags, buf, len)                                                                     \
+    (duk_compile_raw(                                                                                                  \
+        (ctx), buf, len, 0 /*args*/ | (flags) | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE | DUK_COMPILE_NOFILENAME))
 
-#define duk_pcompile_lstring_filename(ctx, flags, buf, len)                    \
-	(duk_compile_raw((ctx),                                                \
-			 buf,                                                  \
-			 len,                                                  \
-			 1 /*args*/ | (flags) | DUK_COMPILE_SAFE |             \
-				 DUK_COMPILE_NOSOURCE))
+#define duk_pcompile_lstring_filename(ctx, flags, buf, len)                                                            \
+    (duk_compile_raw((ctx), buf, len, 1 /*args*/ | (flags) | DUK_COMPILE_SAFE | DUK_COMPILE_NOSOURCE))
 
 /*
  *  Bytecode load/dump
@@ -1892,20 +1410,13 @@ DUK_EXTERNAL_DECL void duk_push_context_dump(duk_context *ctx);
  *  Debugger (debug protocol)
  */
 
-DUK_EXTERNAL_DECL void
-duk_debugger_attach(duk_context *ctx,
-		    duk_debug_read_function read_cb,
-		    duk_debug_write_function write_cb,
-		    duk_debug_peek_function peek_cb,
-		    duk_debug_read_flush_function read_flush_cb,
-		    duk_debug_write_flush_function write_flush_cb,
-		    duk_debug_request_function request_cb,
-		    duk_debug_detached_function detached_cb,
-		    void *udata);
+DUK_EXTERNAL_DECL void duk_debugger_attach(duk_context *ctx, duk_debug_read_function read_cb,
+    duk_debug_write_function write_cb, duk_debug_peek_function peek_cb, duk_debug_read_flush_function read_flush_cb,
+    duk_debug_write_flush_function write_flush_cb, duk_debug_request_function request_cb,
+    duk_debug_detached_function detached_cb, void *udata);
 DUK_EXTERNAL_DECL void duk_debugger_detach(duk_context *ctx);
 DUK_EXTERNAL_DECL void duk_debugger_cooperate(duk_context *ctx);
-DUK_EXTERNAL_DECL duk_bool_t duk_debugger_notify(duk_context *ctx,
-						 duk_idx_t nvalues);
+DUK_EXTERNAL_DECL duk_bool_t duk_debugger_notify(duk_context *ctx, duk_idx_t nvalues);
 DUK_EXTERNAL_DECL void duk_debugger_pause(duk_context *ctx);
 
 /*
@@ -1913,11 +1424,8 @@ DUK_EXTERNAL_DECL void duk_debugger_pause(duk_context *ctx);
  */
 
 DUK_EXTERNAL_DECL duk_double_t duk_get_now(duk_context *ctx);
-DUK_EXTERNAL_DECL void duk_time_to_components(duk_context *ctx,
-					      duk_double_t timeval,
-					      duk_time_components *comp);
-DUK_EXTERNAL_DECL duk_double_t
-duk_components_to_time(duk_context *ctx, duk_time_components *comp);
+DUK_EXTERNAL_DECL void duk_time_to_components(duk_context *ctx, duk_double_t timeval, duk_time_components *comp);
+DUK_EXTERNAL_DECL duk_double_t duk_components_to_time(duk_context *ctx, duk_time_components *comp);
 
 /*
  *  Date provider related constants
@@ -1983,37 +1491,32 @@ duk_components_to_time(duk_context *ctx, duk_time_components *comp);
  * don't need.
  */
 
-#define DUK_DATE_FLAG_NAN_TO_ZERO                                              \
-	(1 << 0) /* timeval breakdown: internal time value NaN -> zero */
-#define DUK_DATE_FLAG_NAN_TO_RANGE_ERROR                                       \
-	(1 << 1) /* timeval breakdown: internal time value NaN -> RangeError   \
-		    (toISOString) */
-#define DUK_DATE_FLAG_ONEBASED                                                 \
-	(1 << 2) /* timeval breakdown: convert month and day-of-month parts to \
-		    one-based (default is zero-based) */
-#define DUK_DATE_FLAG_EQUIVYEAR                                                \
-	(1 << 3) /* timeval breakdown: replace year with equivalent year in    \
-		    the [1971,2037] range for DST calculations */
-#define DUK_DATE_FLAG_LOCALTIME (1 << 4) /* convert time value to local time   \
-					  */
-#define DUK_DATE_FLAG_SUB1900                                                  \
-	(1 << 5) /* getter: subtract 1900 from year when getting year part */
-#define DUK_DATE_FLAG_TOSTRING_DATE                                            \
-	(1 << 6) /* include date part in string conversion result */
-#define DUK_DATE_FLAG_TOSTRING_TIME                                            \
-	(1 << 7) /* include time part in string conversion result */
-#define DUK_DATE_FLAG_TOSTRING_LOCALE                                          \
-	(1 << 8) /* use locale specific formatting if available */
-#define DUK_DATE_FLAG_TIMESETTER                                               \
-	(1                                                                     \
-	 << 9) /* setter: call is a time setter (affects hour, min, sec, ms);  \
-		  otherwise date setter (affects year, month, day-in-month) */
-#define DUK_DATE_FLAG_YEAR_FIXUP                                               \
-	(1 << 10) /* setter: perform 2-digit year fixup (00...99 ->            \
-		     1900...1999) */
-#define DUK_DATE_FLAG_SEP_T                                                    \
-	(1 << 11) /* string conversion: use 'T' instead of ' ' as a separator  \
-		   */
+#define DUK_DATE_FLAG_NAN_TO_ZERO (1 << 0) /* timeval breakdown: internal time value NaN -> zero */
+#define DUK_DATE_FLAG_NAN_TO_RANGE_ERROR                                                                               \
+    (1 << 1) /* timeval breakdown: internal time value NaN -> RangeError                                               \
+            (toISOString) */
+#define DUK_DATE_FLAG_ONEBASED                                                                                         \
+    (1 << 2) /* timeval breakdown: convert month and day-of-month parts to                                             \
+            one-based (default is zero-based) */
+#define DUK_DATE_FLAG_EQUIVYEAR                                                                                        \
+    (1 << 3) /* timeval breakdown: replace year with equivalent year in                                                \
+            the [1971,2037] range for DST calculations */
+#define DUK_DATE_FLAG_LOCALTIME                                                                                        \
+    (1 << 4) /* convert time value to local time                                                                       \
+              */
+#define DUK_DATE_FLAG_SUB1900 (1 << 5) /* getter: subtract 1900 from year when getting year part */
+#define DUK_DATE_FLAG_TOSTRING_DATE (1 << 6) /* include date part in string conversion result */
+#define DUK_DATE_FLAG_TOSTRING_TIME (1 << 7) /* include time part in string conversion result */
+#define DUK_DATE_FLAG_TOSTRING_LOCALE (1 << 8) /* use locale specific formatting if available */
+#define DUK_DATE_FLAG_TIMESETTER                                                                                       \
+    (1 << 9) /* setter: call is a time setter (affects hour, min, sec, ms);                                            \
+            otherwise date setter (affects year, month, day-in-month) */
+#define DUK_DATE_FLAG_YEAR_FIXUP                                                                                       \
+    (1 << 10) /* setter: perform 2-digit year fixup (00...99 ->                                                        \
+             1900...1999) */
+#define DUK_DATE_FLAG_SEP_T                                                                                            \
+    (1 << 11) /* string conversion: use 'T' instead of ' ' as a separator                                              \
+               */
 #define DUK_DATE_FLAG_VALUE_SHIFT 12 /* additional values begin at bit 12 */
 
 /*

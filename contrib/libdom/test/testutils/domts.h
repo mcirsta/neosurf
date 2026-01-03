@@ -8,12 +8,12 @@
 #ifndef domts_h_
 #define domts_h_
 
-#include <domtscondition.h>
-#include <domtsasserts.h>
-#include <list.h>
-#include <foreach.h>
-#include <utils.h>
 #include <comparators.h>
+#include <domtsasserts.h>
+#include <domtscondition.h>
+#include <foreach.h>
+#include <list.h>
+#include <utils.h>
 
 dom_document *load_xml(const char *file, bool willBeModified);
 dom_document *load_html(const char *file, bool willBeModified);

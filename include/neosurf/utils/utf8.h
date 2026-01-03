@@ -118,8 +118,7 @@ size_t utf8_next(const char *s, size_t l, size_t o);
  * \param result  Pointer to location to store result (allocated on heap)
  * \return standard nserror value
  */
-nserror
-utf8_to_enc(const char *string, const char *encname, size_t len, char **result);
+nserror utf8_to_enc(const char *string, const char *encname, size_t len, char **result);
 
 /**
  * Convert a string in the named encoding into a UTF-8 string
@@ -131,11 +130,7 @@ utf8_to_enc(const char *string, const char *encname, size_t len, char **result);
  * \param result_len The length of the data placed in result.
  * \return standard nserror value
  */
-nserror utf8_from_enc(const char *string,
-		      const char *encname,
-		      size_t len,
-		      char **result,
-		      size_t *result_len);
+nserror utf8_from_enc(const char *string, const char *encname, size_t len, char **result, size_t *result_len);
 
 /**
  * Convert a UTF-8 encoded string into a string of the given encoding,
@@ -147,10 +142,7 @@ nserror utf8_from_enc(const char *string,
  * \param result   Pointer to location to receive result
  * \return standard nserror code
  */
-nserror utf8_to_html(const char *string,
-		     const char *encname,
-		     size_t len,
-		     char **result);
+nserror utf8_to_html(const char *string, const char *encname, size_t len, char **result);
 
 /**
  * Save the given utf8 text to a file, converting to local encoding.

@@ -24,14 +24,14 @@
  * DOM named node map
  */
 struct dom_namednodemap {
-	dom_document *owner; /**< Owning document */
+    dom_document *owner; /**< Owning document */
 
-	void *priv; /**< Private data */
+    void *priv; /**< Private data */
 
-	struct nnm_operation *opt; /**< The underlaid operation
-				    * implementations */
+    struct nnm_operation *opt; /**< The underlaid operation
+                                * implementations */
 
-	uint32_t refcnt; /**< Reference count */
+    uint32_t refcnt; /**< Reference count */
 };
 
 /**
@@ -54,27 +54,24 @@ struct dom_namednodemap {
  * explicitly reference it. The client must unref the map once it is
  * finished with it.
  */
-dom_exception _dom_namednodemap_create(dom_document *doc,
-				       void *priv,
-				       struct nnm_operation *opt,
-				       dom_namednodemap **map)
+dom_exception _dom_namednodemap_create(dom_document *doc, void *priv, struct nnm_operation *opt, dom_namednodemap **map)
 {
-	dom_namednodemap *m;
+    dom_namednodemap *m;
 
-	m = malloc(sizeof(dom_namednodemap));
-	if (m == NULL)
-		return DOM_NO_MEM_ERR;
+    m = malloc(sizeof(dom_namednodemap));
+    if (m == NULL)
+        return DOM_NO_MEM_ERR;
 
-	m->owner = doc;
+    m->owner = doc;
 
-	m->priv = priv;
-	m->opt = opt;
+    m->priv = priv;
+    m->opt = opt;
 
-	m->refcnt = 1;
+    m->refcnt = 1;
 
-	*map = m;
+    *map = m;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -84,8 +81,8 @@ dom_exception _dom_namednodemap_create(dom_document *doc,
  */
 void dom_namednodemap_ref(dom_namednodemap *map)
 {
-	assert(map != NULL);
-	map->refcnt++;
+    assert(map != NULL);
+    map->refcnt++;
 }
 
 /**
@@ -98,16 +95,16 @@ void dom_namednodemap_ref(dom_namednodemap *map)
  */
 void dom_namednodemap_unref(dom_namednodemap *map)
 {
-	if (map == NULL)
-		return;
+    if (map == NULL)
+        return;
 
-	if (--map->refcnt == 0) {
-		/* Call the implementation specific destroy */
-		map->opt->namednodemap_destroy(map->priv);
+    if (--map->refcnt == 0) {
+        /* Call the implementation specific destroy */
+        map->opt->namednodemap_destroy(map->priv);
 
-		/* Destroy the map object */
-		free(map);
-	}
+        /* Destroy the map object */
+        free(map);
+    }
 }
 
 /**
@@ -117,11 +114,10 @@ void dom_namednodemap_unref(dom_namednodemap *map)
  * \param length  Pointer to location to receive length
  * \return DOM_NO_ERR.
  */
-dom_exception
-dom_namednodemap_get_length(dom_namednodemap *map, dom_ulong *length)
+dom_exception dom_namednodemap_get_length(dom_namednodemap *map, dom_ulong *length)
 {
-	assert(map->opt != NULL);
-	return map->opt->namednodemap_get_length(map->priv, length);
+    assert(map->opt != NULL);
+    return map->opt->namednodemap_get_length(map->priv, length);
 }
 
 /**
@@ -135,12 +131,10 @@ dom_namednodemap_get_length(dom_namednodemap *map, dom_ulong *length)
  * The returned node will have had its reference count increased. The client
  * should unref the node once it has finished with it.
  */
-dom_exception _dom_namednodemap_get_named_item(dom_namednodemap *map,
-					       dom_string *name,
-					       dom_node **node)
+dom_exception _dom_namednodemap_get_named_item(dom_namednodemap *map, dom_string *name, dom_node **node)
 {
-	assert(map->opt != NULL);
-	return map->opt->namednodemap_get_named_item(map->priv, name, node);
+    assert(map->opt != NULL);
+    return map->opt->namednodemap_get_named_item(map->priv, name, node);
 }
 
 /**
@@ -167,12 +161,10 @@ dom_exception _dom_namednodemap_get_named_item(dom_namednodemap *map,
  * The returned node will have had its reference count increased. The client
  * should unref the node once it has finished with it.
  */
-dom_exception _dom_namednodemap_set_named_item(dom_namednodemap *map,
-					       dom_node *arg,
-					       dom_node **node)
+dom_exception _dom_namednodemap_set_named_item(dom_namednodemap *map, dom_node *arg, dom_node **node)
 {
-	assert(map->opt != NULL);
-	return map->opt->namednodemap_set_named_item(map->priv, arg, node);
+    assert(map->opt != NULL);
+    return map->opt->namednodemap_set_named_item(map->priv, arg, node);
 }
 
 /**
@@ -189,12 +181,10 @@ dom_exception _dom_namednodemap_set_named_item(dom_namednodemap *map,
  * The returned node will have had its reference count increased. The client
  * should unref the node once it has finished with it.
  */
-dom_exception _dom_namednodemap_remove_named_item(dom_namednodemap *map,
-						  dom_string *name,
-						  dom_node **node)
+dom_exception _dom_namednodemap_remove_named_item(dom_namednodemap *map, dom_string *name, dom_node **node)
 {
-	assert(map->opt != NULL);
-	return map->opt->namednodemap_remove_named_item(map->priv, name, node);
+    assert(map->opt != NULL);
+    return map->opt->namednodemap_remove_named_item(map->priv, name, node);
 }
 
 /**
@@ -211,11 +201,10 @@ dom_exception _dom_namednodemap_remove_named_item(dom_namednodemap *map,
  * The returned node will have had its reference count increased. The client
  * should unref the node once it has finished with it.
  */
-dom_exception
-_dom_namednodemap_item(dom_namednodemap *map, dom_ulong index, dom_node **node)
+dom_exception _dom_namednodemap_item(dom_namednodemap *map, dom_ulong index, dom_node **node)
 {
-	assert(map->opt != NULL);
-	return map->opt->namednodemap_item(map->priv, index, node);
+    assert(map->opt != NULL);
+    return map->opt->namednodemap_item(map->priv, index, node);
 }
 
 /**
@@ -234,14 +223,11 @@ _dom_namednodemap_item(dom_namednodemap *map, dom_ulong index, dom_node **node)
  * The returned node will have had its reference count increased. The client
  * should unref the node once it has finished with it.
  */
-dom_exception _dom_namednodemap_get_named_item_ns(dom_namednodemap *map,
-						  dom_string *namespace,
-						  dom_string *localname,
-						  dom_node **node)
+dom_exception _dom_namednodemap_get_named_item_ns(
+    dom_namednodemap *map, dom_string *namespace, dom_string *localname, dom_node **node)
 {
-	assert(map->opt != NULL);
-	return map->opt->namednodemap_get_named_item_ns(
-		map->priv, namespace, localname, node);
+    assert(map->opt != NULL);
+    return map->opt->namednodemap_get_named_item_ns(map->priv, namespace, localname, node);
 }
 
 /**
@@ -273,12 +259,10 @@ dom_exception _dom_namednodemap_get_named_item_ns(dom_namednodemap *map,
  * The returned node will have had its reference count increased. The client
  * should unref the node once it has finished with it.
  */
-dom_exception _dom_namednodemap_set_named_item_ns(dom_namednodemap *map,
-						  dom_node *arg,
-						  dom_node **node)
+dom_exception _dom_namednodemap_set_named_item_ns(dom_namednodemap *map, dom_node *arg, dom_node **node)
 {
-	assert(map->opt != NULL);
-	return map->opt->namednodemap_set_named_item_ns(map->priv, arg, node);
+    assert(map->opt != NULL);
+    return map->opt->namednodemap_set_named_item_ns(map->priv, arg, node);
 }
 
 /**
@@ -300,14 +284,11 @@ dom_exception _dom_namednodemap_set_named_item_ns(dom_namednodemap *map,
  * The returned node will have had its reference count increased. The client
  * should unref the node once it has finished with it.
  */
-dom_exception _dom_namednodemap_remove_named_item_ns(dom_namednodemap *map,
-						     dom_string *namespace,
-						     dom_string *localname,
-						     dom_node **node)
+dom_exception _dom_namednodemap_remove_named_item_ns(
+    dom_namednodemap *map, dom_string *namespace, dom_string *localname, dom_node **node)
 {
-	assert(map->opt != NULL);
-	return map->opt->namednodemap_remove_named_item_ns(
-		map->priv, namespace, localname, node);
+    assert(map->opt != NULL);
+    return map->opt->namednodemap_remove_named_item_ns(map->priv, namespace, localname, node);
 }
 
 /**
@@ -316,9 +297,8 @@ dom_exception _dom_namednodemap_remove_named_item_ns(dom_namednodemap *map,
  */
 bool _dom_namednodemap_equal(dom_namednodemap *m1, dom_namednodemap *m2)
 {
-	assert(m1->opt != NULL);
-	return (m1->opt == m2->opt &&
-		m1->opt->namednodemap_equal(m1->priv, m2->priv));
+    assert(m1->opt != NULL);
+    return (m1->opt == m2->opt && m1->opt->namednodemap_equal(m1->priv, m2->priv));
 }
 
 /**
@@ -329,5 +309,5 @@ bool _dom_namednodemap_equal(dom_namednodemap *m1, dom_namednodemap *m2)
  */
 void _dom_namednodemap_update(dom_namednodemap *map, void *priv)
 {
-	map->priv = priv;
+    map->priv = priv;
 }

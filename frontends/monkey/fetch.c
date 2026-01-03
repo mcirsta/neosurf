@@ -16,38 +16,38 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <stdbool.h>
 #include <limits.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include "utils/errors.h"
-#include "neosurf/utils/file.h"
-#include "neosurf/utils/nsurl.h"
 #include "utils/filepath.h"
 #include "neosurf/fetch.h"
+#include "neosurf/utils/file.h"
+#include "neosurf/utils/nsurl.h"
 
-#include "monkey/filetype.h"
 #include "monkey/fetch.h"
+#include "monkey/filetype.h"
 
 extern char **respaths;
 
 
 static nsurl *gui_get_resource_url(const char *path)
 {
-	char buf[PATH_MAX];
-	nsurl *url = NULL;
+    char buf[PATH_MAX];
+    nsurl *url = NULL;
 
-	neosurf_path_to_nsurl(filepath_sfind(respaths, buf, path), &url);
+    neosurf_path_to_nsurl(filepath_sfind(respaths, buf, path), &url);
 
-	return url;
+    return url;
 }
 
 static struct gui_fetch_table fetch_table = {
-	.filetype = monkey_fetch_filetype,
+    .filetype = monkey_fetch_filetype,
 
-	.get_resource_url = gui_get_resource_url,
+    .get_resource_url = gui_get_resource_url,
 };
 
 struct gui_fetch_table *monkey_fetch_table = &fetch_table;

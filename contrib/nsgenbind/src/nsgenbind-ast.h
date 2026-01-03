@@ -10,51 +10,50 @@
 #define nsgenbind_nsgenbind_ast_h
 
 enum genbind_node_type {
-	GENBIND_NODE_TYPE_ROOT = 0,
-	GENBIND_NODE_TYPE_IDENT, /**< generic identifier string */
-	GENBIND_NODE_TYPE_NAME, /**< generic type string */
-	GENBIND_NODE_TYPE_MODIFIER, /**< node modifier */
-	GENBIND_NODE_TYPE_CDATA, /**< verbatim block of character data */
-	GENBIND_NODE_TYPE_STRING, /**< text string */
-	GENBIND_NODE_TYPE_LINE, /**< linenumber */
-	GENBIND_NODE_TYPE_FILE, /**< file name */
+    GENBIND_NODE_TYPE_ROOT = 0,
+    GENBIND_NODE_TYPE_IDENT, /**< generic identifier string */
+    GENBIND_NODE_TYPE_NAME, /**< generic type string */
+    GENBIND_NODE_TYPE_MODIFIER, /**< node modifier */
+    GENBIND_NODE_TYPE_CDATA, /**< verbatim block of character data */
+    GENBIND_NODE_TYPE_STRING, /**< text string */
+    GENBIND_NODE_TYPE_LINE, /**< linenumber */
+    GENBIND_NODE_TYPE_FILE, /**< file name */
 
-	GENBIND_NODE_TYPE_BINDING, /**< Binding */
-	GENBIND_NODE_TYPE_WEBIDL,
+    GENBIND_NODE_TYPE_BINDING, /**< Binding */
+    GENBIND_NODE_TYPE_WEBIDL,
 
-	GENBIND_NODE_TYPE_CLASS, /**< class definition */
-	GENBIND_NODE_TYPE_PRIVATE,
-	GENBIND_NODE_TYPE_INTERNAL,
-	GENBIND_NODE_TYPE_PROPERTY,
-	GENBIND_NODE_TYPE_FLAGS,
+    GENBIND_NODE_TYPE_CLASS, /**< class definition */
+    GENBIND_NODE_TYPE_PRIVATE,
+    GENBIND_NODE_TYPE_INTERNAL,
+    GENBIND_NODE_TYPE_PROPERTY,
+    GENBIND_NODE_TYPE_FLAGS,
 
-	GENBIND_NODE_TYPE_METHOD, /**< binding method */
-	GENBIND_NODE_TYPE_METHOD_TYPE, /**< binding method type */
+    GENBIND_NODE_TYPE_METHOD, /**< binding method */
+    GENBIND_NODE_TYPE_METHOD_TYPE, /**< binding method type */
 
-	GENBIND_NODE_TYPE_PARAMETER, /**< method parameter */
+    GENBIND_NODE_TYPE_PARAMETER, /**< method parameter */
 };
 
 /* modifier flags */
 enum genbind_type_modifier {
-	GENBIND_TYPE_NONE = 0,
-	GENBIND_TYPE_TYPE = 1, /**< identifies a type handler */
-	GENBIND_TYPE_UNSHARED = 2, /**< unshared item */
-	GENBIND_TYPE_TYPE_UNSHARED =
-		3, /**< identifies a unshared type handler */
+    GENBIND_TYPE_NONE = 0,
+    GENBIND_TYPE_TYPE = 1, /**< identifies a type handler */
+    GENBIND_TYPE_UNSHARED = 2, /**< unshared item */
+    GENBIND_TYPE_TYPE_UNSHARED = 3, /**< identifies a unshared type handler */
 };
 
 /* binding method types */
 enum genbind_method_type {
-	GENBIND_METHOD_TYPE_INIT = 0, /**< method is initialiser */
-	GENBIND_METHOD_TYPE_FINI, /**< method is finalizer */
-	GENBIND_METHOD_TYPE_METHOD, /**< method is a method */
-	GENBIND_METHOD_TYPE_GETTER, /**< method is a getter */
-	GENBIND_METHOD_TYPE_SETTER, /**< method is a setter */
-	GENBIND_METHOD_TYPE_PROTOTYPE, /**< method is a prototype */
-	GENBIND_METHOD_TYPE_PREFACE, /**< method is a preface */
-	GENBIND_METHOD_TYPE_PROLOGUE, /**< method is a prologue */
-	GENBIND_METHOD_TYPE_EPILOGUE, /**< method is a epilogue */
-	GENBIND_METHOD_TYPE_POSTFACE, /**< method is a postface */
+    GENBIND_METHOD_TYPE_INIT = 0, /**< method is initialiser */
+    GENBIND_METHOD_TYPE_FINI, /**< method is finalizer */
+    GENBIND_METHOD_TYPE_METHOD, /**< method is a method */
+    GENBIND_METHOD_TYPE_GETTER, /**< method is a getter */
+    GENBIND_METHOD_TYPE_SETTER, /**< method is a setter */
+    GENBIND_METHOD_TYPE_PROTOTYPE, /**< method is a prototype */
+    GENBIND_METHOD_TYPE_PREFACE, /**< method is a preface */
+    GENBIND_METHOD_TYPE_PROLOGUE, /**< method is a prologue */
+    GENBIND_METHOD_TYPE_EPILOGUE, /**< method is a epilogue */
+    GENBIND_METHOD_TYPE_POSTFACE, /**< method is a postface */
 };
 
 struct genbind_node;
@@ -75,26 +74,20 @@ char *genbind_strapp(char *a, char *b);
 /**
  * create a new node with value from pointer
  */
-struct genbind_node *
-genbind_new_node(enum genbind_node_type type, struct genbind_node *l, void *r);
+struct genbind_node *genbind_new_node(enum genbind_node_type type, struct genbind_node *l, void *r);
 
 /**
  * create a new number node
  *
  * Create a node with of number type
  */
-struct genbind_node *genbind_new_number_node(enum genbind_node_type type,
-					     struct genbind_node *l,
-					     int number);
+struct genbind_node *genbind_new_number_node(enum genbind_node_type type, struct genbind_node *l, int number);
 
-struct genbind_node *
-genbind_node_link(struct genbind_node *tgt, struct genbind_node *src);
+struct genbind_node *genbind_node_link(struct genbind_node *tgt, struct genbind_node *src);
 
-struct genbind_node *
-genbind_node_prepend(struct genbind_node *list, struct genbind_node *inst);
+struct genbind_node *genbind_node_prepend(struct genbind_node *list, struct genbind_node *inst);
 
-struct genbind_node *
-genbind_node_add(struct genbind_node *node, struct genbind_node *list);
+struct genbind_node *genbind_node_add(struct genbind_node *node, struct genbind_node *list);
 
 /**
  * Dump the binding AST to file
@@ -122,10 +115,8 @@ void genbind_free_ast(struct genbind_node *node);
  * @param cb Comparison callback
  * @param ctx Context for callback
  */
-struct genbind_node *genbind_node_find(struct genbind_node *node,
-				       struct genbind_node *prev,
-				       genbind_callback_t *cb,
-				       void *ctx);
+struct genbind_node *
+genbind_node_find(struct genbind_node *node, struct genbind_node *prev, genbind_callback_t *cb, void *ctx);
 
 /**
  * Depth first left hand search returning nodes of the specified type
@@ -137,9 +128,8 @@ struct genbind_node *genbind_node_find(struct genbind_node *node,
  * @param nodetype The type of node to seach for
  * @return The found node or NULL for no nodes.
  */
-struct genbind_node *genbind_node_find_type(struct genbind_node *node,
-					    struct genbind_node *prev,
-					    enum genbind_node_type nodetype);
+struct genbind_node *
+genbind_node_find_type(struct genbind_node *node, struct genbind_node *prev, enum genbind_node_type nodetype);
 
 /**
  * count how many nodes of a specified type.
@@ -152,8 +142,7 @@ struct genbind_node *genbind_node_find_type(struct genbind_node *node,
  * @param nodetype The type of node to count
  * @return The number of nodes found.
  */
-int genbind_node_enumerate_type(struct genbind_node *node,
-				enum genbind_node_type type);
+int genbind_node_enumerate_type(struct genbind_node *node, enum genbind_node_type type);
 
 
 /**
@@ -167,11 +156,8 @@ int genbind_node_enumerate_type(struct genbind_node *node,
  * @param nodetype The type of node to seach for
  * @param ident The text to match the ident child node to
  */
-struct genbind_node *
-genbind_node_find_type_ident(struct genbind_node *node,
-			     struct genbind_node *prev,
-			     enum genbind_node_type nodetype,
-			     const char *ident);
+struct genbind_node *genbind_node_find_type_ident(
+    struct genbind_node *node, struct genbind_node *prev, enum genbind_node_type nodetype, const char *ident);
 
 
 /**
@@ -185,9 +171,7 @@ genbind_node_find_type_ident(struct genbind_node *node,
  * \return A node of type GENBIND_NODE_TYPE_METHOD on success or NULL on faliure
  */
 struct genbind_node *
-genbind_node_find_method(struct genbind_node *node,
-			 struct genbind_node *prev,
-			 enum genbind_method_type methodtype);
+genbind_node_find_method(struct genbind_node *node, struct genbind_node *prev, enum genbind_method_type methodtype);
 
 
 /**
@@ -201,11 +185,8 @@ genbind_node_find_method(struct genbind_node *node,
  * \param ident The identifier to search for
  * \return A node of type GENBIND_NODE_TYPE_METHOD on success or NULL on faliure
  */
-struct genbind_node *
-genbind_node_find_method_ident(struct genbind_node *node,
-			       struct genbind_node *prev,
-			       enum genbind_method_type methodtype,
-			       const char *ident);
+struct genbind_node *genbind_node_find_method_ident(
+    struct genbind_node *node, struct genbind_node *prev, enum genbind_method_type methodtype, const char *ident);
 
 
 /**
@@ -216,10 +197,8 @@ genbind_node_find_method_ident(struct genbind_node *node,
  *
  * @param node The node to start the search from.
  */
-int genbind_node_foreach_type(struct genbind_node *node,
-			      enum genbind_node_type type,
-			      genbind_callback_t *cb,
-			      void *ctx);
+int genbind_node_foreach_type(
+    struct genbind_node *node, enum genbind_node_type type, genbind_callback_t *cb, void *ctx);
 
 /** get a nodes node list content
  *

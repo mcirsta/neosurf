@@ -17,27 +17,27 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <winsock2.h>
 #include <windows.h>
+#include <winsock2.h>
 
 #include <limits.h>
-#include <unistd.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
+#include "neosurf/utils/filepath.h"
 #include "neosurf/utils/log.h"
 #include "neosurf/utils/nsurl.h"
 #include "neosurf/utils/utils.h"
-#include "neosurf/utils/filepath.h"
 
 #include "windows/findfile.h"
 
 static char *realpath(const char *path, char *resolved_path)
 {
-	/* useless, but there we go */
-	return strncpy(resolved_path, path, PATH_MAX);
+    /* useless, but there we go */
+    return strncpy(resolved_path, path, PATH_MAX);
 }
 
 
@@ -56,53 +56,53 @@ static char *realpath(const char *path, char *resolved_path)
 
 char *nsws_find_resource(char *buf, const char *filename, const char *def)
 {
-	char *cdir = getenv("HOME");
-	char t[PATH_MAX];
+    char *cdir = getenv("HOME");
+    char t[PATH_MAX];
 
-	if (cdir != NULL) {
-		NSLOG(neosurf, INFO, "Found Home %s", cdir);
-		strcpy(t, cdir);
-		strcat(t, "/.neosurf/");
-		strcat(t, filename);
-		if ((realpath(t, buf) != NULL) && (access(buf, R_OK) == 0))
-			return buf;
-	}
+    if (cdir != NULL) {
+        NSLOG(neosurf, INFO, "Found Home %s", cdir);
+        strcpy(t, cdir);
+        strcat(t, "/.neosurf/");
+        strcat(t, filename);
+        if ((realpath(t, buf) != NULL) && (access(buf, R_OK) == 0))
+            return buf;
+    }
 
-	cdir = getenv("NEOSURFRES");
+    cdir = getenv("NEOSURFRES");
 
-	if (cdir != NULL) {
-		if (realpath(cdir, buf) != NULL) {
-			strcat(buf, "/");
-			strcat(buf, filename);
-			if (access(buf, R_OK) == 0)
-				return buf;
-		}
-	}
+    if (cdir != NULL) {
+        if (realpath(cdir, buf) != NULL) {
+            strcat(buf, "/");
+            strcat(buf, filename);
+            if (access(buf, R_OK) == 0)
+                return buf;
+        }
+    }
 
-	strcpy(t, NEOSURF_WINDOWS_RESPATH);
-	strcat(t, filename);
-	if ((realpath(t, buf) != NULL) && (access(buf, R_OK) == 0))
-		return buf;
+    strcpy(t, NEOSURF_WINDOWS_RESPATH);
+    strcat(t, filename);
+    if ((realpath(t, buf) != NULL) && (access(buf, R_OK) == 0))
+        return buf;
 
-	getcwd(t, PATH_MAX - SLEN("\\res\\") - strlen(filename));
-	strcat(t, "\\res\\");
-	strcat(t, filename);
-	NSLOG(neosurf, INFO, "looking in %s", t);
-	if ((realpath(t, buf) != NULL) && (access(buf, R_OK) == 0))
-		return buf;
+    getcwd(t, PATH_MAX - SLEN("\\res\\") - strlen(filename));
+    strcat(t, "\\res\\");
+    strcat(t, filename);
+    NSLOG(neosurf, INFO, "looking in %s", t);
+    if ((realpath(t, buf) != NULL) && (access(buf, R_OK) == 0))
+        return buf;
 
-	if (def[0] == '~') {
-		snprintf(t, PATH_MAX, "%s%s", getenv("HOME"), def + 1);
-		if (realpath(t, buf) == NULL) {
-			strcpy(buf, t);
-		}
-	} else {
-		if (realpath(def, buf) == NULL) {
-			strcpy(buf, def);
-		}
-	}
+    if (def[0] == '~') {
+        snprintf(t, PATH_MAX, "%s%s", getenv("HOME"), def + 1);
+        if (realpath(t, buf) == NULL) {
+            strcpy(buf, t);
+        }
+    } else {
+        if (realpath(def, buf) == NULL) {
+            strcpy(buf, def);
+        }
+    }
 
-	return buf;
+    return buf;
 }
 
 

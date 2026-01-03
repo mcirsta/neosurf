@@ -22,15 +22,15 @@
  *
  */
 
-#include <stdint.h>
 #include <gtk/gtk.h>
+#include <stdint.h>
 
-#include <neosurf/utils/log.h>
 #include <neosurf/utils/errors.h>
 #include <neosurf/utils/hashtable.h>
+#include <neosurf/utils/log.h>
 
-#include "gtk/resources.h"
 #include "gtk/accelerator.h"
+#include "gtk/resources.h"
 
 /** acclelerators are stored in a fixed-size hash table. */
 #define HASH_SIZE 53
@@ -40,39 +40,37 @@ static struct hash_table *accelerators_hash = NULL;
 
 nserror nsgtk_accelerator_init(char **respaths)
 {
-	nserror res;
-	const uint8_t *data;
-	size_t data_size;
+    nserror res;
+    const uint8_t *data;
+    size_t data_size;
 
-	if (accelerators_hash == NULL) {
-		accelerators_hash = hash_create(HASH_SIZE);
-	}
-	if (accelerators_hash == NULL) {
-		NSLOG(neosurf, INFO, "Unable to create hash table");
-		return NSERROR_NOMEM;
-	}
+    if (accelerators_hash == NULL) {
+        accelerators_hash = hash_create(HASH_SIZE);
+    }
+    if (accelerators_hash == NULL) {
+        NSLOG(neosurf, INFO, "Unable to create hash table");
+        return NSERROR_NOMEM;
+    }
 
-	res = nsgtk_data_from_resname("accelerators", &data, &data_size);
-	if (res == NSERROR_OK) {
-		res = hash_add_inline(accelerators_hash, data, data_size);
-	} else {
-		const char *accelerators_path;
-		/* Obtain path to accelerators */
-		res = nsgtk_path_from_resname("accelerators",
-					      &accelerators_path);
-		if (res == NSERROR_OK) {
-			res = hash_add_file(accelerators_hash,
-					    accelerators_path);
-		}
-	}
+    res = nsgtk_data_from_resname("accelerators", &data, &data_size);
+    if (res == NSERROR_OK) {
+        res = hash_add_inline(accelerators_hash, data, data_size);
+    } else {
+        const char *accelerators_path;
+        /* Obtain path to accelerators */
+        res = nsgtk_path_from_resname("accelerators", &accelerators_path);
+        if (res == NSERROR_OK) {
+            res = hash_add_file(accelerators_hash, accelerators_path);
+        }
+    }
 
-	return res;
+    return res;
 }
 
 const char *nsgtk_accelerator_get_desc(const char *key)
 {
-	if ((key == NULL) || (accelerators_hash == NULL)) {
-		return NULL;
-	}
-	return hash_get(accelerators_hash, key);
+    if ((key == NULL) || (accelerators_hash == NULL)) {
+        return NULL;
+    }
+    return hash_get(accelerators_hash, key);
 }

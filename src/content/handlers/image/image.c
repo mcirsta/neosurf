@@ -19,18 +19,19 @@
 #include <stdbool.h>
 #include <stdlib.h>
 
-#include <neosurf/utils/utils.h>
-#include <neosurf/utils/log.h>
-#include <neosurf/utils/messages.h>
-#include <neosurf/plotters.h>
 #include <neosurf/bitmap.h>
 #include <neosurf/content.h>
 #include <neosurf/desktop/gui_internal.h>
+#include <neosurf/plotters.h>
+#include <neosurf/utils/log.h>
+#include <neosurf/utils/messages.h>
+#include <neosurf/utils/utils.h>
 #include "desktop/bitmap.h"
 
 #include "content/handlers/image/bmp.h"
 #include "content/handlers/image/gif.h"
 #include "content/handlers/image/ico.h"
+#include "content/handlers/image/image.h"
 #include "content/handlers/image/jpeg.h"
 #include "content/handlers/image/jpegxl.h"
 #include "content/handlers/image/nssprite.h"
@@ -38,7 +39,6 @@
 #include "content/handlers/image/rsvg.h"
 #include "content/handlers/image/svg.h"
 #include "content/handlers/image/webp.h"
-#include "content/handlers/image/image.h"
 
 /**
  * Initialise image content handlers
@@ -47,135 +47,123 @@
  */
 nserror image_init(void)
 {
-	nserror error = NSERROR_OK;
+    nserror error = NSERROR_OK;
 
 #ifdef WITH_BMP
-	error = nsbmp_init();
-	if (error != NSERROR_OK)
-		return error;
+    error = nsbmp_init();
+    if (error != NSERROR_OK)
+        return error;
 #endif
 
 #ifdef WITH_GIF
-	error = nsgif_init();
-	if (error != NSERROR_OK)
-		return error;
+    error = nsgif_init();
+    if (error != NSERROR_OK)
+        return error;
 #endif
 
 #ifdef WITH_BMP
-	error = nsico_init();
-	if (error != NSERROR_OK)
-		return error;
+    error = nsico_init();
+    if (error != NSERROR_OK)
+        return error;
 #endif
 
 #ifdef WITH_JPEG
-	error = nsjpeg_init();
-	if (error != NSERROR_OK)
-		return error;
+    error = nsjpeg_init();
+    if (error != NSERROR_OK)
+        return error;
 #endif
 
 #ifdef WITH_JPEGXL
-	error = nsjpegxl_init();
-	if (error != NSERROR_OK)
-		return error;
+    error = nsjpegxl_init();
+    if (error != NSERROR_OK)
+        return error;
 #endif
 
 #ifdef WITH_PNG
-	error = nspng_init();
-	if (error != NSERROR_OK)
-		return error;
+    error = nspng_init();
+    if (error != NSERROR_OK)
+        return error;
 #endif
 
 #ifdef WITH_NSSPRITE
-	error = nssprite_init();
-	if (error != NSERROR_OK)
-		return error;
+    error = nssprite_init();
+    if (error != NSERROR_OK)
+        return error;
 #endif
 
-	/* Prefer rsvg over libsvgtiny for svgs */
+    /* Prefer rsvg over libsvgtiny for svgs */
 #ifdef WITH_NS_SVG
-	error = svg_init();
-	if (error != NSERROR_OK)
-		return error;
+    error = svg_init();
+    if (error != NSERROR_OK)
+        return error;
 #endif
 #ifdef WITH_RSVG
-	error = nsrsvg_init();
-	if (error != NSERROR_OK)
-		return error;
+    error = nsrsvg_init();
+    if (error != NSERROR_OK)
+        return error;
 #endif
 
 #ifdef WITH_WEBP
-	error = nswebp_init();
-	if (error != NSERROR_OK)
-		return error;
+    error = nswebp_init();
+    if (error != NSERROR_OK)
+        return error;
 #endif
 
-	return error;
+    return error;
 }
 
 
-bool image_bitmap_plot(struct bitmap *bitmap,
-		       struct content_redraw_data *data,
-		       const struct rect *clip,
-		       const struct redraw_context *ctx)
+bool image_bitmap_plot(
+    struct bitmap *bitmap, struct content_redraw_data *data, const struct rect *clip, const struct redraw_context *ctx)
 {
-	bitmap_flags_t flags = BITMAPF_NONE;
+    bitmap_flags_t flags = BITMAPF_NONE;
 
-	int width;
-	int height;
-	unsigned char *pixel;
-	plot_style_t fill_style;
-	struct rect area;
+    int width;
+    int height;
+    unsigned char *pixel;
+    plot_style_t fill_style;
+    struct rect area;
 
-	width = guit->bitmap->get_width(bitmap);
-	if (width == 1) {
-		height = guit->bitmap->get_height(bitmap);
-		if (height == 1) {
-			/* optimise 1x1 bitmap plot */
-			pixel = guit->bitmap->get_buffer(bitmap);
-			fill_style.fill_colour = bitmap_pixel_to_colour(pixel);
+    width = guit->bitmap->get_width(bitmap);
+    if (width == 1) {
+        height = guit->bitmap->get_height(bitmap);
+        if (height == 1) {
+            /* optimise 1x1 bitmap plot */
+            pixel = guit->bitmap->get_buffer(bitmap);
+            fill_style.fill_colour = bitmap_pixel_to_colour(pixel);
 
-			if (guit->bitmap->get_opaque(bitmap) ||
-			    ((fill_style.fill_colour & 0xff000000) ==
-			     0xff000000)) {
+            if (guit->bitmap->get_opaque(bitmap) || ((fill_style.fill_colour & 0xff000000) == 0xff000000)) {
 
-				area = *clip;
+                area = *clip;
 
-				if (data->repeat_x != true) {
-					area.x0 = data->x;
-					area.x1 = data->x + data->width;
-				}
+                if (data->repeat_x != true) {
+                    area.x0 = data->x;
+                    area.x1 = data->x + data->width;
+                }
 
-				if (data->repeat_y != true) {
-					area.y0 = data->y;
-					area.y1 = data->y + data->height;
-				}
+                if (data->repeat_y != true) {
+                    area.y0 = data->y;
+                    area.y1 = data->y + data->height;
+                }
 
-				fill_style.stroke_type = PLOT_OP_TYPE_NONE;
-				fill_style.fill_type = PLOT_OP_TYPE_SOLID;
+                fill_style.stroke_type = PLOT_OP_TYPE_NONE;
+                fill_style.fill_type = PLOT_OP_TYPE_SOLID;
 
-				return (ctx->plot->rectangle(
-						ctx, &fill_style, &area) ==
-					NSERROR_OK);
+                return (ctx->plot->rectangle(ctx, &fill_style, &area) == NSERROR_OK);
 
-			} else if ((fill_style.fill_colour & 0xff000000) == 0) {
-				/* transparent pixel used as spacer, skip it */
-				return true;
-			}
-		}
-	}
+            } else if ((fill_style.fill_colour & 0xff000000) == 0) {
+                /* transparent pixel used as spacer, skip it */
+                return true;
+            }
+        }
+    }
 
-	/* do the plot */
-	if (data->repeat_x)
-		flags |= BITMAPF_REPEAT_X;
-	if (data->repeat_y)
-		flags |= BITMAPF_REPEAT_Y;
+    /* do the plot */
+    if (data->repeat_x)
+        flags |= BITMAPF_REPEAT_X;
+    if (data->repeat_y)
+        flags |= BITMAPF_REPEAT_Y;
 
-	return (ctx->plot->bitmap(ctx,
-				  bitmap,
-				  data->x,
-				  data->y,
-				  data->width,
-				  data->height,
-				  data->background_colour,
-				  flags) == NSERROR_OK);
+    return (ctx->plot->bitmap(ctx, bitmap, data->x, data->y, data->width, data->height, data->background_colour,
+                flags) == NSERROR_OK);
 }

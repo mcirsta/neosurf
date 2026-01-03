@@ -32,8 +32,7 @@ typedef struct http_cache_control http_cache_control;
  *         NSERROR_NOMEM on memory exhaustion,
  *         appropriate error otherwise
  */
-nserror
-http_parse_cache_control(const char *header_value, http_cache_control **result);
+nserror http_parse_cache_control(const char *header_value, http_cache_control **result);
 
 /**
  * Destroy a cache_control object

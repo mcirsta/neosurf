@@ -27,28 +27,21 @@
 
 #include <dom/dom.h>
 
+#include <neosurf/content/handlers/html/box.h>
+#include <neosurf/content/handlers/html/html_save.h>
 #include <neosurf/utils/config.h>
 #include <neosurf/utils/log.h>
 #include <neosurf/utils/utf8.h>
 #include <neosurf/utils/utils.h>
 #include "neosurf/content.h"
-#include <neosurf/content/handlers/html/box.h>
-#include <neosurf/content/handlers/html/html_save.h>
 
-#include "neosurf/utf8.h"
 #include <neosurf/desktop/gui_internal.h>
 #include <neosurf/desktop/save_text.h>
+#include "neosurf/utf8.h"
 
-static void extract_text(struct box *box,
-			 bool *first,
-			 save_text_whitespace *before,
-			 struct save_text_state *save);
-static bool save_text_add_to_buffer(const char *text,
-				    size_t length,
-				    struct box *box,
-				    const char *whitespace_text,
-				    size_t whitespace_length,
-				    struct save_text_state *save);
+static void extract_text(struct box *box, bool *first, save_text_whitespace *before, struct save_text_state *save);
+static bool save_text_add_to_buffer(const char *text, size_t length, struct box *box, const char *whitespace_text,
+    size_t whitespace_length, struct save_text_state *save);
 
 
 /**
@@ -61,51 +54,46 @@ static bool save_text_add_to_buffer(const char *text,
 
 void save_as_text(struct hlcache_handle *c, char *path)
 {
-	FILE *out;
-	struct save_text_state save = {NULL, 0, 0};
-	save_text_whitespace before = WHITESPACE_NONE;
-	bool first = true;
-	nserror ret;
-	char *result;
+    FILE *out;
+    struct save_text_state save = {NULL, 0, 0};
+    save_text_whitespace before = WHITESPACE_NONE;
+    bool first = true;
+    nserror ret;
+    char *result;
 
-	if (!c || content_get_type(c) != CONTENT_HTML) {
-		return;
-	}
+    if (!c || content_get_type(c) != CONTENT_HTML) {
+        return;
+    }
 
-	extract_text(html_get_box_tree(c), &first, &before, &save);
-	if (!save.block)
-		return;
+    extract_text(html_get_box_tree(c), &first, &before, &save);
+    if (!save.block)
+        return;
 
-	ret = guit->utf8->utf8_to_local(save.block, save.length, &result);
-	free(save.block);
+    ret = guit->utf8->utf8_to_local(save.block, save.length, &result);
+    free(save.block);
 
-	if (ret != NSERROR_OK) {
-		NSLOG(neosurf,
-		      INFO,
-		      "failed to convert to local encoding, return %d",
-		      ret);
-		return;
-	}
+    if (ret != NSERROR_OK) {
+        NSLOG(neosurf, INFO, "failed to convert to local encoding, return %d", ret);
+        return;
+    }
 
-	out = fopen(path, "w");
-	if (out) {
-		int res = fputs(result, out);
+    out = fopen(path, "w");
+    if (out) {
+        int res = fputs(result, out);
 
-		if (res < 0) {
-			NSLOG(neosurf, INFO, "Warning: write failed");
-		}
+        if (res < 0) {
+            NSLOG(neosurf, INFO, "Warning: write failed");
+        }
 
-		res = fputs("\n", out);
-		if (res < 0) {
-			NSLOG(neosurf,
-			      INFO,
-			      "Warning: failed writing trailing newline");
-		}
+        res = fputs("\n", out);
+        if (res < 0) {
+            NSLOG(neosurf, INFO, "Warning: failed writing trailing newline");
+        }
 
-		fclose(out);
-	}
+        fclose(out);
+    }
 
-	free(result);
+    free(result);
 }
 
 
@@ -130,75 +118,67 @@ void save_as_text(struct hlcache_handle *c, char *path)
  *			      whitespace.
  */
 
-void save_text_solve_whitespace(struct box *box,
-				bool *first,
-				save_text_whitespace *before,
-				const char **whitespace_text,
-				size_t *whitespace_length)
+void save_text_solve_whitespace(
+    struct box *box, bool *first, save_text_whitespace *before, const char **whitespace_text, size_t *whitespace_length)
 {
-	/* work out what whitespace should be placed before the next bit of
-	 * text */
-	if (*before < WHITESPACE_TWO_NEW_LINES &&
-	    /* significant box type */
-	    (box->type == BOX_BLOCK || box->type == BOX_TABLE ||
-	     box->type == BOX_FLOAT_LEFT || box->type == BOX_FLOAT_RIGHT) &&
-	    /* and not a list element */
-	    !box->list_marker &&
-	    /* and not a marker... */
-	    (!(box->parent && box->parent->list_marker == box) ||
-	     /* ...unless marker follows WHITESPACE_TAB */
-	     ((box->parent && box->parent->list_marker == box) &&
-	      *before == WHITESPACE_TAB))) {
-		*before = WHITESPACE_TWO_NEW_LINES;
-	} else if (*before <= WHITESPACE_ONE_NEW_LINE &&
-		   (box->type == BOX_TABLE_ROW || box->type == BOX_BR ||
-		    (box->type != BOX_INLINE &&
-		     (box->parent && box->parent->list_marker == box)) ||
-		    (box->parent && box->parent->style &&
-		     (css_computed_white_space(box->parent->style) ==
-			      CSS_WHITE_SPACE_PRE ||
-		      css_computed_white_space(box->parent->style) ==
-			      CSS_WHITE_SPACE_PRE_WRAP) &&
-		     box->type == BOX_INLINE_CONTAINER))) {
-		if (*before == WHITESPACE_ONE_NEW_LINE)
-			*before = WHITESPACE_TWO_NEW_LINES;
-		else
-			*before = WHITESPACE_ONE_NEW_LINE;
-	} else if (*before < WHITESPACE_TAB &&
-		   (box->type == BOX_TABLE_CELL || box->list_marker)) {
-		*before = WHITESPACE_TAB;
-	}
+    /* work out what whitespace should be placed before the next bit of
+     * text */
+    if (*before < WHITESPACE_TWO_NEW_LINES &&
+        /* significant box type */
+        (box->type == BOX_BLOCK || box->type == BOX_TABLE || box->type == BOX_FLOAT_LEFT ||
+            box->type == BOX_FLOAT_RIGHT) &&
+        /* and not a list element */
+        !box->list_marker &&
+        /* and not a marker... */
+        (!(box->parent && box->parent->list_marker == box) ||
+            /* ...unless marker follows WHITESPACE_TAB */
+            ((box->parent && box->parent->list_marker == box) && *before == WHITESPACE_TAB))) {
+        *before = WHITESPACE_TWO_NEW_LINES;
+    } else if (*before <= WHITESPACE_ONE_NEW_LINE &&
+        (box->type == BOX_TABLE_ROW || box->type == BOX_BR ||
+            (box->type != BOX_INLINE && (box->parent && box->parent->list_marker == box)) ||
+            (box->parent && box->parent->style &&
+                (css_computed_white_space(box->parent->style) == CSS_WHITE_SPACE_PRE ||
+                    css_computed_white_space(box->parent->style) == CSS_WHITE_SPACE_PRE_WRAP) &&
+                box->type == BOX_INLINE_CONTAINER))) {
+        if (*before == WHITESPACE_ONE_NEW_LINE)
+            *before = WHITESPACE_TWO_NEW_LINES;
+        else
+            *before = WHITESPACE_ONE_NEW_LINE;
+    } else if (*before < WHITESPACE_TAB && (box->type == BOX_TABLE_CELL || box->list_marker)) {
+        *before = WHITESPACE_TAB;
+    }
 
-	if (*first) {
-		/* before the first bit of text to be saved; there is
-		 * no preceding whitespace */
-		*whitespace_text = "";
-		*whitespace_length = 0;
-	} else {
-		/* set the whitespace that has been decided on */
-		switch (*before) {
-		case WHITESPACE_TWO_NEW_LINES:
-			*whitespace_text = "\n\n";
-			*whitespace_length = 2;
-			break;
-		case WHITESPACE_ONE_NEW_LINE:
-			*whitespace_text = "\n";
-			*whitespace_length = 1;
-			break;
-		case WHITESPACE_TAB:
-			*whitespace_text = "\t";
-			*whitespace_length = 1;
-			break;
-		case WHITESPACE_NONE:
-			*whitespace_text = "";
-			*whitespace_length = 0;
-			break;
-		default:
-			*whitespace_text = "";
-			*whitespace_length = 0;
-			break;
-		}
-	}
+    if (*first) {
+        /* before the first bit of text to be saved; there is
+         * no preceding whitespace */
+        *whitespace_text = "";
+        *whitespace_length = 0;
+    } else {
+        /* set the whitespace that has been decided on */
+        switch (*before) {
+        case WHITESPACE_TWO_NEW_LINES:
+            *whitespace_text = "\n\n";
+            *whitespace_length = 2;
+            break;
+        case WHITESPACE_ONE_NEW_LINE:
+            *whitespace_text = "\n";
+            *whitespace_length = 1;
+            break;
+        case WHITESPACE_TAB:
+            *whitespace_text = "\t";
+            *whitespace_length = 1;
+            break;
+        case WHITESPACE_NONE:
+            *whitespace_text = "";
+            *whitespace_length = 0;
+            break;
+        default:
+            *whitespace_text = "";
+            *whitespace_length = 0;
+            break;
+        }
+    }
 }
 
 
@@ -216,52 +196,41 @@ void save_text_solve_whitespace(struct box *box,
  * \return true iff the file writing succeeded and traversal should continue.
  */
 
-void extract_text(struct box *box,
-		  bool *first,
-		  save_text_whitespace *before,
-		  struct save_text_state *save)
+void extract_text(struct box *box, bool *first, save_text_whitespace *before, struct save_text_state *save)
 {
-	struct box *child;
-	const char *whitespace_text = "";
-	size_t whitespace_length = 0;
+    struct box *child;
+    const char *whitespace_text = "";
+    size_t whitespace_length = 0;
 
-	assert(box);
+    assert(box);
 
-	/* If box has a list marker */
-	if (box->list_marker) {
-		/* do the marker box before continuing with the rest of the
-		 * list element */
-		extract_text(box->list_marker, first, before, save);
-	}
+    /* If box has a list marker */
+    if (box->list_marker) {
+        /* do the marker box before continuing with the rest of the
+         * list element */
+        extract_text(box->list_marker, first, before, save);
+    }
 
-	/* read before calling the handler in case it modifies the tree */
-	child = box->children;
+    /* read before calling the handler in case it modifies the tree */
+    child = box->children;
 
-	save_text_solve_whitespace(
-		box, first, before, &whitespace_text, &whitespace_length);
+    save_text_solve_whitespace(box, first, before, &whitespace_text, &whitespace_length);
 
-	if (box->type != BOX_BR &&
-	    !((box->type == BOX_FLOAT_LEFT || box->type == BOX_FLOAT_RIGHT) &&
-	      !box->text) &&
-	    box->length > 0 && box->text) {
-		/* Box meets criteria for export; add text to buffer */
-		save_text_add_to_buffer(box->text,
-					box->length,
-					box,
-					whitespace_text,
-					whitespace_length,
-					save);
-		*first = false;
-		*before = WHITESPACE_NONE;
-	}
+    if (box->type != BOX_BR && !((box->type == BOX_FLOAT_LEFT || box->type == BOX_FLOAT_RIGHT) && !box->text) &&
+        box->length > 0 && box->text) {
+        /* Box meets criteria for export; add text to buffer */
+        save_text_add_to_buffer(box->text, box->length, box, whitespace_text, whitespace_length, save);
+        *first = false;
+        *before = WHITESPACE_NONE;
+    }
 
-	/* Work though the children of this box, extracting any text */
-	while (child) {
-		extract_text(child, first, before, save);
-		child = child->next;
-	}
+    /* Work though the children of this box, extracting any text */
+    while (child) {
+        extract_text(child, first, before, save);
+        child = child->next;
+    }
 
-	return;
+    return;
 }
 
 
@@ -279,49 +248,43 @@ void extract_text(struct box *box,
  * \return true iff the file writing succeeded and traversal should continue.
  */
 
-bool save_text_add_to_buffer(const char *text,
-			     size_t length,
-			     struct box *box,
-			     const char *whitespace_text,
-			     size_t whitespace_length,
-			     struct save_text_state *save)
+bool save_text_add_to_buffer(const char *text, size_t length, struct box *box, const char *whitespace_text,
+    size_t whitespace_length, struct save_text_state *save)
 {
-	size_t new_length;
-	int space = 0;
+    size_t new_length;
+    int space = 0;
 
-	assert(save);
+    assert(save);
 
-	if (box->space > 0)
-		space = 1;
+    if (box->space > 0)
+        space = 1;
 
-	if (whitespace_text)
-		length += whitespace_length;
+    if (whitespace_text)
+        length += whitespace_length;
 
-	new_length = save->length + whitespace_length + length + space;
-	if (new_length >= save->alloc) {
-		size_t new_alloc = save->alloc + (save->alloc / 4);
-		char *new_block;
+    new_length = save->length + whitespace_length + length + space;
+    if (new_length >= save->alloc) {
+        size_t new_alloc = save->alloc + (save->alloc / 4);
+        char *new_block;
 
-		if (new_alloc < new_length)
-			new_alloc = new_length;
+        if (new_alloc < new_length)
+            new_alloc = new_length;
 
-		new_block = realloc(save->block, new_alloc);
-		if (!new_block)
-			return false;
+        new_block = realloc(save->block, new_alloc);
+        if (!new_block)
+            return false;
 
-		save->block = new_block;
-		save->alloc = new_alloc;
-	}
-	if (whitespace_text) {
-		memcpy(save->block + save->length,
-		       whitespace_text,
-		       whitespace_length);
-	}
-	memcpy(save->block + save->length + whitespace_length, text, length);
-	save->length += length;
+        save->block = new_block;
+        save->alloc = new_alloc;
+    }
+    if (whitespace_text) {
+        memcpy(save->block + save->length, whitespace_text, whitespace_length);
+    }
+    memcpy(save->block + save->length + whitespace_length, text, length);
+    save->length += length;
 
-	if (space == 1)
-		save->block[save->length++] = ' ';
+    if (space == 1)
+        save->block[save->length++] = ' ';
 
-	return true;
+    return true;
 }

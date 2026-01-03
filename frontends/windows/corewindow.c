@@ -32,21 +32,21 @@
  */
 
 #include <assert.h>
-#include <string.h>
 #include <math.h>
+#include <string.h>
 #include <windows.h>
 #include <windowsx.h>
 
+#include "neosurf/keypress.h"
+#include "neosurf/mouse.h"
+#include "neosurf/types.h"
 #include "neosurf/utils/log.h"
 #include "neosurf/utils/messages.h"
 #include "neosurf/utils/utf8.h"
-#include "neosurf/types.h"
-#include "neosurf/keypress.h"
-#include "neosurf/mouse.h"
 
-#include "windows/windbg.h"
 #include "windows/corewindow.h"
 #include "windows/plot.h"
+#include "windows/windbg.h"
 
 static const char windowclassname_corewindow[] = "nswscorewindowwindow";
 
@@ -55,275 +55,250 @@ static const char windowclassname_corewindow[] = "nswscorewindowwindow";
  */
 static void update_scrollbars(struct nsw32_corewindow *nsw32_cw)
 {
-	RECT rc;
-	SCROLLINFO si;
+    RECT rc;
+    SCROLLINFO si;
 
-	GetClientRect(nsw32_cw->hWnd, &rc);
+    GetClientRect(nsw32_cw->hWnd, &rc);
 
-	if (nsw32_cw->content_width > rc.right) {
-		/* content wider than window area */
-		if (nsw32_cw->content_height > rc.bottom) {
-			/* content higher than window area */
-			ShowScrollBar(nsw32_cw->hWnd, SB_BOTH, TRUE);
-			si.cbSize = sizeof(SCROLLINFO);
-			si.fMask = SIF_RANGE | SIF_PAGE;
-			si.nMin = 0;
-			si.nMax = nsw32_cw->content_width;
-			si.nPage = rc.right;
-			SetScrollInfo(nsw32_cw->hWnd, SB_HORZ, &si, TRUE);
-			si.cbSize = sizeof(SCROLLINFO);
-			si.fMask = SIF_RANGE | SIF_PAGE;
-			si.nMin = 0;
-			si.nMax = nsw32_cw->content_height;
-			si.nPage = rc.bottom;
-			SetScrollInfo(nsw32_cw->hWnd, SB_VERT, &si, TRUE);
-		} else {
-			/* content shorter than window area */
-			ShowScrollBar(nsw32_cw->hWnd, SB_VERT, FALSE);
-			ShowScrollBar(nsw32_cw->hWnd, SB_HORZ, TRUE);
-			si.cbSize = sizeof(SCROLLINFO);
-			si.fMask = SIF_RANGE | SIF_PAGE;
-			si.nMin = 0;
-			si.nMax = nsw32_cw->content_width;
-			si.nPage = rc.right;
-			SetScrollInfo(nsw32_cw->hWnd, SB_HORZ, &si, TRUE);
-		}
-	} else {
-		/* content narrower than window area */
-		if (nsw32_cw->content_height > rc.bottom) {
-			/* content higher than window area */
-			ShowScrollBar(nsw32_cw->hWnd, SB_HORZ, FALSE);
-			ShowScrollBar(nsw32_cw->hWnd, SB_VERT, TRUE);
-			si.cbSize = sizeof(SCROLLINFO);
-			si.fMask = SIF_RANGE | SIF_PAGE;
-			si.nMin = 0;
-			si.nMax = nsw32_cw->content_height;
-			si.nPage = rc.bottom;
-			SetScrollInfo(nsw32_cw->hWnd, SB_VERT, &si, TRUE);
-		} else {
-			/* content shorter than window area */
-			ShowScrollBar(nsw32_cw->hWnd, SB_BOTH, FALSE);
-		}
-	}
+    if (nsw32_cw->content_width > rc.right) {
+        /* content wider than window area */
+        if (nsw32_cw->content_height > rc.bottom) {
+            /* content higher than window area */
+            ShowScrollBar(nsw32_cw->hWnd, SB_BOTH, TRUE);
+            si.cbSize = sizeof(SCROLLINFO);
+            si.fMask = SIF_RANGE | SIF_PAGE;
+            si.nMin = 0;
+            si.nMax = nsw32_cw->content_width;
+            si.nPage = rc.right;
+            SetScrollInfo(nsw32_cw->hWnd, SB_HORZ, &si, TRUE);
+            si.cbSize = sizeof(SCROLLINFO);
+            si.fMask = SIF_RANGE | SIF_PAGE;
+            si.nMin = 0;
+            si.nMax = nsw32_cw->content_height;
+            si.nPage = rc.bottom;
+            SetScrollInfo(nsw32_cw->hWnd, SB_VERT, &si, TRUE);
+        } else {
+            /* content shorter than window area */
+            ShowScrollBar(nsw32_cw->hWnd, SB_VERT, FALSE);
+            ShowScrollBar(nsw32_cw->hWnd, SB_HORZ, TRUE);
+            si.cbSize = sizeof(SCROLLINFO);
+            si.fMask = SIF_RANGE | SIF_PAGE;
+            si.nMin = 0;
+            si.nMax = nsw32_cw->content_width;
+            si.nPage = rc.right;
+            SetScrollInfo(nsw32_cw->hWnd, SB_HORZ, &si, TRUE);
+        }
+    } else {
+        /* content narrower than window area */
+        if (nsw32_cw->content_height > rc.bottom) {
+            /* content higher than window area */
+            ShowScrollBar(nsw32_cw->hWnd, SB_HORZ, FALSE);
+            ShowScrollBar(nsw32_cw->hWnd, SB_VERT, TRUE);
+            si.cbSize = sizeof(SCROLLINFO);
+            si.fMask = SIF_RANGE | SIF_PAGE;
+            si.nMin = 0;
+            si.nMax = nsw32_cw->content_height;
+            si.nPage = rc.bottom;
+            SetScrollInfo(nsw32_cw->hWnd, SB_VERT, &si, TRUE);
+        } else {
+            /* content shorter than window area */
+            ShowScrollBar(nsw32_cw->hWnd, SB_BOTH, FALSE);
+        }
+    }
 }
 
 
 /**
  * Handle paint messages.
  */
+static LRESULT nsw32_corewindow_paint(struct nsw32_corewindow *nsw32_cw, HWND hwnd)
+{
+    struct rect clip;
+    PAINTSTRUCT ps;
+    SCROLLINFO si; /* scroll information */
+    int scrollx;
+    int scrolly;
+
+    /* get scroll positions */
+    si.cbSize = sizeof(si);
+    si.fMask = SIF_POS;
+    GetScrollInfo(hwnd, SB_HORZ, &si);
+    scrollx = si.nPos;
+    GetScrollInfo(hwnd, SB_VERT, &si);
+    scrolly = si.nPos;
+
+    BeginPaint(hwnd, &ps);
+
+    plot_hdc = ps.hdc;
+
+    /* content clip rectangle setup */
+    clip.x0 = ps.rcPaint.left + scrollx;
+    clip.y0 = ps.rcPaint.top + scrolly;
+    clip.x1 = ps.rcPaint.right + scrollx;
+    clip.y1 = ps.rcPaint.bottom + scrolly;
+
+    nsw32_cw->draw(nsw32_cw, scrollx, scrolly, &clip);
+
+    EndPaint(hwnd, &ps);
+
+    return 0;
+}
+
+static LRESULT nsw32_corewindow_vscroll(struct nsw32_corewindow *nsw32_cw, HWND hwnd, WPARAM wparam)
+{
+    SCROLLINFO si; /* current scroll information */
+    SCROLLINFO usi; /* updated scroll infomation for scrollwindowex */
+
+    NSLOG(neosurf, INFO, "VSCROLL");
+
+    si.cbSize = sizeof(si);
+    si.fMask = SIF_ALL;
+    GetScrollInfo(hwnd, SB_VERT, &si);
+    usi = si;
+
+    switch (LOWORD(wparam)) {
+    case SB_TOP:
+        usi.nPos = si.nMin;
+        break;
+
+    case SB_BOTTOM:
+        usi.nPos = si.nMax;
+        break;
+
+    case SB_LINEUP:
+        usi.nPos -= 30;
+        break;
+
+    case SB_LINEDOWN:
+        usi.nPos += 30;
+        break;
+
+    case SB_PAGEUP:
+        usi.nPos -= si.nPage;
+        break;
+
+    case SB_PAGEDOWN:
+        usi.nPos += si.nPage;
+        break;
+
+    case SB_THUMBTRACK:
+        usi.nPos = si.nTrackPos;
+        break;
+
+    default:
+        break;
+    }
+
+    if (usi.nPos < si.nMin) {
+        usi.nPos = si.nMin;
+    }
+    if (usi.nPos > si.nMax) {
+        usi.nPos = si.nMax;
+    }
+
+    SetScrollInfo(hwnd, SB_VERT, &usi, TRUE);
+
+    ScrollWindowEx(hwnd, 0, si.nPos - usi.nPos, NULL, NULL, NULL, NULL, SW_INVALIDATE);
+
+    /**
+     * /todo win32 corewindow vertical scrolling needs us to
+     * compute scroll values and call scrollwindowex()
+     */
+
+    return 0;
+}
+
+
+static LRESULT nsw32_corewindow_hscroll(struct nsw32_corewindow *nsw32_cw, HWND hwnd, WPARAM wparam)
+{
+    SCROLLINFO si; /* current scroll information */
+    SCROLLINFO usi; /* updated scroll infomation for scrollwindowex */
+
+    NSLOG(neosurf, INFO, "VSCROLL");
+
+    si.cbSize = sizeof(si);
+    si.fMask = SIF_ALL;
+    GetScrollInfo(hwnd, SB_HORZ, &si);
+    usi = si;
+
+    switch (LOWORD(wparam)) {
+    case SB_LINELEFT:
+        usi.nPos -= 30;
+        break;
+
+    case SB_LINERIGHT:
+        usi.nPos += 30;
+        break;
+
+    case SB_PAGELEFT:
+        usi.nPos -= si.nPage;
+        break;
+
+    case SB_PAGERIGHT:
+        usi.nPos += si.nPage;
+        break;
+
+    case SB_THUMBTRACK:
+        usi.nPos = si.nTrackPos;
+        break;
+
+    default:
+        break;
+    }
+
+    if (usi.nPos < si.nMin) {
+        usi.nPos = si.nMin;
+    }
+    if (usi.nPos > si.nMax) {
+        usi.nPos = si.nMax;
+    }
+
+    SetScrollInfo(hwnd, SB_HORZ, &usi, TRUE);
+
+    ScrollWindowEx(hwnd, si.nPos - usi.nPos, 0, NULL, NULL, NULL, NULL, SW_INVALIDATE);
+
+    return 0;
+}
+
+
 static LRESULT
-nsw32_corewindow_paint(struct nsw32_corewindow *nsw32_cw, HWND hwnd)
+nsw32_corewindow_mousedown(struct nsw32_corewindow *nsw32_cw, HWND hwnd, int x, int y, browser_mouse_state button)
 {
-	struct rect clip;
-	PAINTSTRUCT ps;
-	SCROLLINFO si; /* scroll information */
-	int scrollx;
-	int scrolly;
+    SCROLLINFO si; /* scroll information */
 
-	/* get scroll positions */
-	si.cbSize = sizeof(si);
-	si.fMask = SIF_POS;
-	GetScrollInfo(hwnd, SB_HORZ, &si);
-	scrollx = si.nPos;
-	GetScrollInfo(hwnd, SB_VERT, &si);
-	scrolly = si.nPos;
+    /* get scroll positions */
+    si.cbSize = sizeof(si);
+    si.fMask = SIF_POS;
+    GetScrollInfo(hwnd, SB_HORZ, &si);
+    x += si.nPos;
+    GetScrollInfo(hwnd, SB_VERT, &si);
+    y += si.nPos;
 
-	BeginPaint(hwnd, &ps);
-
-	plot_hdc = ps.hdc;
-
-	/* content clip rectangle setup */
-	clip.x0 = ps.rcPaint.left + scrollx;
-	clip.y0 = ps.rcPaint.top + scrolly;
-	clip.x1 = ps.rcPaint.right + scrollx;
-	clip.y1 = ps.rcPaint.bottom + scrolly;
-
-	nsw32_cw->draw(nsw32_cw, scrollx, scrolly, &clip);
-
-	EndPaint(hwnd, &ps);
-
-	return 0;
+    nsw32_cw->mouse(nsw32_cw, button, x, y);
+    return 0;
 }
 
-static LRESULT nsw32_corewindow_vscroll(struct nsw32_corewindow *nsw32_cw,
-					HWND hwnd,
-					WPARAM wparam)
+static LRESULT
+nsw32_corewindow_mouseup(struct nsw32_corewindow *nsw32_cw, HWND hwnd, int x, int y, browser_mouse_state button)
 {
-	SCROLLINFO si; /* current scroll information */
-	SCROLLINFO usi; /* updated scroll infomation for scrollwindowex */
+    SCROLLINFO si; /* scroll information */
 
-	NSLOG(neosurf, INFO, "VSCROLL");
+    /* get scroll positions */
+    si.cbSize = sizeof(si);
+    si.fMask = SIF_POS;
+    GetScrollInfo(hwnd, SB_HORZ, &si);
+    x += si.nPos;
+    GetScrollInfo(hwnd, SB_VERT, &si);
+    y += si.nPos;
 
-	si.cbSize = sizeof(si);
-	si.fMask = SIF_ALL;
-	GetScrollInfo(hwnd, SB_VERT, &si);
-	usi = si;
-
-	switch (LOWORD(wparam)) {
-	case SB_TOP:
-		usi.nPos = si.nMin;
-		break;
-
-	case SB_BOTTOM:
-		usi.nPos = si.nMax;
-		break;
-
-	case SB_LINEUP:
-		usi.nPos -= 30;
-		break;
-
-	case SB_LINEDOWN:
-		usi.nPos += 30;
-		break;
-
-	case SB_PAGEUP:
-		usi.nPos -= si.nPage;
-		break;
-
-	case SB_PAGEDOWN:
-		usi.nPos += si.nPage;
-		break;
-
-	case SB_THUMBTRACK:
-		usi.nPos = si.nTrackPos;
-		break;
-
-	default:
-		break;
-	}
-
-	if (usi.nPos < si.nMin) {
-		usi.nPos = si.nMin;
-	}
-	if (usi.nPos > si.nMax) {
-		usi.nPos = si.nMax;
-	}
-
-	SetScrollInfo(hwnd, SB_VERT, &usi, TRUE);
-
-	ScrollWindowEx(hwnd,
-		       0,
-		       si.nPos - usi.nPos,
-		       NULL,
-		       NULL,
-		       NULL,
-		       NULL,
-		       SW_INVALIDATE);
-
-	/**
-	 * /todo win32 corewindow vertical scrolling needs us to
-	 * compute scroll values and call scrollwindowex()
-	 */
-
-	return 0;
-}
-
-
-static LRESULT nsw32_corewindow_hscroll(struct nsw32_corewindow *nsw32_cw,
-					HWND hwnd,
-					WPARAM wparam)
-{
-	SCROLLINFO si; /* current scroll information */
-	SCROLLINFO usi; /* updated scroll infomation for scrollwindowex */
-
-	NSLOG(neosurf, INFO, "VSCROLL");
-
-	si.cbSize = sizeof(si);
-	si.fMask = SIF_ALL;
-	GetScrollInfo(hwnd, SB_HORZ, &si);
-	usi = si;
-
-	switch (LOWORD(wparam)) {
-	case SB_LINELEFT:
-		usi.nPos -= 30;
-		break;
-
-	case SB_LINERIGHT:
-		usi.nPos += 30;
-		break;
-
-	case SB_PAGELEFT:
-		usi.nPos -= si.nPage;
-		break;
-
-	case SB_PAGERIGHT:
-		usi.nPos += si.nPage;
-		break;
-
-	case SB_THUMBTRACK:
-		usi.nPos = si.nTrackPos;
-		break;
-
-	default:
-		break;
-	}
-
-	if (usi.nPos < si.nMin) {
-		usi.nPos = si.nMin;
-	}
-	if (usi.nPos > si.nMax) {
-		usi.nPos = si.nMax;
-	}
-
-	SetScrollInfo(hwnd, SB_HORZ, &usi, TRUE);
-
-	ScrollWindowEx(hwnd,
-		       si.nPos - usi.nPos,
-		       0,
-		       NULL,
-		       NULL,
-		       NULL,
-		       NULL,
-		       SW_INVALIDATE);
-
-	return 0;
-}
-
-
-static LRESULT nsw32_corewindow_mousedown(struct nsw32_corewindow *nsw32_cw,
-					  HWND hwnd,
-					  int x,
-					  int y,
-					  browser_mouse_state button)
-{
-	SCROLLINFO si; /* scroll information */
-
-	/* get scroll positions */
-	si.cbSize = sizeof(si);
-	si.fMask = SIF_POS;
-	GetScrollInfo(hwnd, SB_HORZ, &si);
-	x += si.nPos;
-	GetScrollInfo(hwnd, SB_VERT, &si);
-	y += si.nPos;
-
-	nsw32_cw->mouse(nsw32_cw, button, x, y);
-	return 0;
-}
-
-static LRESULT nsw32_corewindow_mouseup(struct nsw32_corewindow *nsw32_cw,
-					HWND hwnd,
-					int x,
-					int y,
-					browser_mouse_state button)
-{
-	SCROLLINFO si; /* scroll information */
-
-	/* get scroll positions */
-	si.cbSize = sizeof(si);
-	si.fMask = SIF_POS;
-	GetScrollInfo(hwnd, SB_HORZ, &si);
-	x += si.nPos;
-	GetScrollInfo(hwnd, SB_VERT, &si);
-	y += si.nPos;
-
-	nsw32_cw->mouse(nsw32_cw, button, x, y);
-	return 0;
+    nsw32_cw->mouse(nsw32_cw, button, x, y);
+    return 0;
 }
 
 static LRESULT nsw32_corewindow_close(struct nsw32_corewindow *nsw32_cw)
 {
-	nsw32_cw->close(nsw32_cw);
-	return 0;
+    nsw32_cw->close(nsw32_cw);
+    return 0;
 }
 
 /**
@@ -334,65 +309,48 @@ static LRESULT nsw32_corewindow_close(struct nsw32_corewindow *nsw32_cw)
  * \param wparam The w win32 parameter
  * \param lparam The l win32 parameter
  */
-static LRESULT CALLBACK nsw32_window_corewindow_event_callback(HWND hwnd,
-							       UINT msg,
-							       WPARAM wparam,
-							       LPARAM lparam)
+static LRESULT CALLBACK nsw32_window_corewindow_event_callback(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-	struct nsw32_corewindow *nsw32_cw;
+    struct nsw32_corewindow *nsw32_cw;
 
-	nsw32_cw = GetProp(hwnd, TEXT("CoreWnd"));
-	if (nsw32_cw != NULL) {
-		switch (msg) {
-		case WM_PAINT: /* redraw the exposed part of the window */
-			return nsw32_corewindow_paint(nsw32_cw, hwnd);
+    nsw32_cw = GetProp(hwnd, TEXT("CoreWnd"));
+    if (nsw32_cw != NULL) {
+        switch (msg) {
+        case WM_PAINT: /* redraw the exposed part of the window */
+            return nsw32_corewindow_paint(nsw32_cw, hwnd);
 
-		case WM_SIZE:
-			update_scrollbars(nsw32_cw);
-			break;
+        case WM_SIZE:
+            update_scrollbars(nsw32_cw);
+            break;
 
-		case WM_VSCROLL:
-			return nsw32_corewindow_vscroll(nsw32_cw, hwnd, wparam);
+        case WM_VSCROLL:
+            return nsw32_corewindow_vscroll(nsw32_cw, hwnd, wparam);
 
-		case WM_HSCROLL:
-			return nsw32_corewindow_hscroll(nsw32_cw, hwnd, wparam);
+        case WM_HSCROLL:
+            return nsw32_corewindow_hscroll(nsw32_cw, hwnd, wparam);
 
-		case WM_LBUTTONDOWN:
-			return nsw32_corewindow_mousedown(
-				nsw32_cw,
-				hwnd,
-				GET_X_LPARAM(lparam),
-				GET_Y_LPARAM(lparam),
-				BROWSER_MOUSE_PRESS_1);
+        case WM_LBUTTONDOWN:
+            return nsw32_corewindow_mousedown(
+                nsw32_cw, hwnd, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam), BROWSER_MOUSE_PRESS_1);
 
-		case WM_RBUTTONDOWN:
-			return nsw32_corewindow_mousedown(
-				nsw32_cw,
-				hwnd,
-				GET_X_LPARAM(lparam),
-				GET_Y_LPARAM(lparam),
-				BROWSER_MOUSE_PRESS_2);
+        case WM_RBUTTONDOWN:
+            return nsw32_corewindow_mousedown(
+                nsw32_cw, hwnd, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam), BROWSER_MOUSE_PRESS_2);
 
-		case WM_LBUTTONUP:
-			return nsw32_corewindow_mouseup(nsw32_cw,
-							hwnd,
-							GET_X_LPARAM(lparam),
-							GET_Y_LPARAM(lparam),
-							BROWSER_MOUSE_CLICK_1);
+        case WM_LBUTTONUP:
+            return nsw32_corewindow_mouseup(
+                nsw32_cw, hwnd, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam), BROWSER_MOUSE_CLICK_1);
 
-		case WM_RBUTTONUP:
-			return nsw32_corewindow_mouseup(nsw32_cw,
-							hwnd,
-							GET_X_LPARAM(lparam),
-							GET_Y_LPARAM(lparam),
-							BROWSER_MOUSE_CLICK_2);
+        case WM_RBUTTONUP:
+            return nsw32_corewindow_mouseup(
+                nsw32_cw, hwnd, GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam), BROWSER_MOUSE_CLICK_2);
 
-		case WM_CLOSE:
-			return nsw32_corewindow_close(nsw32_cw);
-		}
-	}
+        case WM_CLOSE:
+            return nsw32_corewindow_close(nsw32_cw);
+        }
+    }
 
-	return DefWindowProc(hwnd, msg, wparam, lparam);
+    return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
 
@@ -407,67 +365,62 @@ static LRESULT CALLBACK nsw32_window_corewindow_event_callback(HWND hwnd,
  * \param[in] rect area to redraw or NULL for the entire window area.
  * \return NSERROR_OK on success or appropriate error code.
  */
-static nserror
-nsw32_cw_invalidate_area(struct core_window *cw, const struct rect *rect)
+static nserror nsw32_cw_invalidate_area(struct core_window *cw, const struct rect *rect)
 {
-	struct nsw32_corewindow *nsw32_cw = (struct nsw32_corewindow *)cw;
-	RECT *redrawrectp = NULL;
-	RECT redrawrect;
+    struct nsw32_corewindow *nsw32_cw = (struct nsw32_corewindow *)cw;
+    RECT *redrawrectp = NULL;
+    RECT redrawrect;
 
-	if (rect != NULL) {
-		SCROLLINFO si; /* scroll information */
+    if (rect != NULL) {
+        SCROLLINFO si; /* scroll information */
 
-		/* get scroll positions */
-		si.cbSize = sizeof(si);
-		si.fMask = SIF_POS;
-		GetScrollInfo(nsw32_cw->hWnd, SB_HORZ, &si);
-		redrawrect.left = (long)rect->x0 - si.nPos;
-		redrawrect.right = (long)rect->x1 - si.nPos;
+        /* get scroll positions */
+        si.cbSize = sizeof(si);
+        si.fMask = SIF_POS;
+        GetScrollInfo(nsw32_cw->hWnd, SB_HORZ, &si);
+        redrawrect.left = (long)rect->x0 - si.nPos;
+        redrawrect.right = (long)rect->x1 - si.nPos;
 
-		GetScrollInfo(nsw32_cw->hWnd, SB_VERT, &si);
-		redrawrect.top = (long)rect->y0 - si.nPos;
-		redrawrect.bottom = (long)rect->y1 - si.nPos;
+        GetScrollInfo(nsw32_cw->hWnd, SB_VERT, &si);
+        redrawrect.top = (long)rect->y0 - si.nPos;
+        redrawrect.bottom = (long)rect->y1 - si.nPos;
 
-		redrawrectp = &redrawrect;
-	}
+        redrawrectp = &redrawrect;
+    }
 
-	RedrawWindow(nsw32_cw->hWnd,
-		     redrawrectp,
-		     NULL,
-		     RDW_INVALIDATE | RDW_NOERASE);
+    RedrawWindow(nsw32_cw->hWnd, redrawrectp, NULL, RDW_INVALIDATE | RDW_NOERASE);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
 /**
  * Callback from the core to update the content area size
  */
-static nserror
-nsw32_cw_update_size(struct core_window *cw, int width, int height)
+static nserror nsw32_cw_update_size(struct core_window *cw, int width, int height)
 {
-	struct nsw32_corewindow *nsw32_cw = (struct nsw32_corewindow *)cw;
+    struct nsw32_corewindow *nsw32_cw = (struct nsw32_corewindow *)cw;
 
-	nsw32_cw->content_width = width;
-	nsw32_cw->content_height = height;
-	NSLOG(neosurf, INFO, "new content size w:%d h:%d", width, height);
+    nsw32_cw->content_width = width;
+    nsw32_cw->content_height = height;
+    NSLOG(neosurf, INFO, "new content size w:%d h:%d", width, height);
 
-	update_scrollbars(nsw32_cw);
-	return NSERROR_OK;
+    update_scrollbars(nsw32_cw);
+    return NSERROR_OK;
 }
 
 
 static nserror nsw32_cw_set_scroll(struct core_window *cw, int x, int y)
 {
-	/** /todo call setscroll apropriately */
-	return NSERROR_OK;
+    /** /todo call setscroll apropriately */
+    return NSERROR_OK;
 }
 
 
 static nserror nsw32_cw_get_scroll(const struct core_window *cw, int *x, int *y)
 {
-	/** /todo call getscroll apropriately */
-	return NSERROR_NOT_IMPLEMENTED;
+    /** /todo call getscroll apropriately */
+    return NSERROR_NOT_IMPLEMENTED;
 }
 
 
@@ -478,122 +431,105 @@ static nserror nsw32_cw_get_scroll(const struct core_window *cw, int *x, int *y)
  * \param[out] width to be set to viewport width in px
  * \param[out] height to be set to viewport height in px
  */
-static nserror nsw32_cw_get_window_dimensions(const struct core_window *cw,
-					      int *width,
-					      int *height)
+static nserror nsw32_cw_get_window_dimensions(const struct core_window *cw, int *width, int *height)
 {
-	struct nsw32_corewindow *nsw32_cw = (struct nsw32_corewindow *)cw;
+    struct nsw32_corewindow *nsw32_cw = (struct nsw32_corewindow *)cw;
 
-	RECT rc;
-	GetClientRect(nsw32_cw->hWnd, &rc);
-	*width = rc.right;
-	*height = rc.bottom;
-	return NSERROR_OK;
+    RECT rc;
+    GetClientRect(nsw32_cw->hWnd, &rc);
+    *width = rc.right;
+    *height = rc.bottom;
+    return NSERROR_OK;
 }
 
 
-static nserror
-nsw32_cw_drag_status(struct core_window *cw, core_window_drag_status ds)
+static nserror nsw32_cw_drag_status(struct core_window *cw, core_window_drag_status ds)
 {
-	struct nsw32_corewindow *nsw32_cw = (struct nsw32_corewindow *)cw;
-	nsw32_cw->drag_status = ds;
-	return NSERROR_OK;
+    struct nsw32_corewindow *nsw32_cw = (struct nsw32_corewindow *)cw;
+    nsw32_cw->drag_status = ds;
+    return NSERROR_OK;
 }
 
 
-struct core_window_table nsw32_cw_cb_table = {
-	.invalidate = nsw32_cw_invalidate_area,
-	.set_extent = nsw32_cw_update_size,
-	.set_scroll = nsw32_cw_set_scroll,
-	.get_scroll = nsw32_cw_get_scroll,
-	.get_dimensions = nsw32_cw_get_window_dimensions,
-	.drag_status = nsw32_cw_drag_status};
+struct core_window_table nsw32_cw_cb_table = {.invalidate = nsw32_cw_invalidate_area,
+    .set_extent = nsw32_cw_update_size,
+    .set_scroll = nsw32_cw_set_scroll,
+    .get_scroll = nsw32_cw_get_scroll,
+    .get_dimensions = nsw32_cw_get_window_dimensions,
+    .drag_status = nsw32_cw_drag_status};
 
 struct core_window_table *win32_core_window_table = &nsw32_cw_cb_table;
 
 /* exported function documented nsw32/corewindow.h */
-nserror nsw32_corewindow_init(HINSTANCE hInstance,
-			      HWND hWndParent,
-			      struct nsw32_corewindow *nsw32_cw)
+nserror nsw32_corewindow_init(HINSTANCE hInstance, HWND hWndParent, struct nsw32_corewindow *nsw32_cw)
 {
-	DWORD dwStyle;
+    DWORD dwStyle;
 
-	/* setup the core window callback table */
-	nsw32_cw->drag_status = CORE_WINDOW_DRAG_NONE;
+    /* setup the core window callback table */
+    nsw32_cw->drag_status = CORE_WINDOW_DRAG_NONE;
 
-	/* start with the content area being as small as possible */
-	nsw32_cw->content_width = -1;
-	nsw32_cw->content_height = -1;
+    /* start with the content area being as small as possible */
+    nsw32_cw->content_width = -1;
+    nsw32_cw->content_height = -1;
 
-	if (hWndParent != NULL) {
-		dwStyle = WS_CHILDWINDOW | WS_VISIBLE | CS_DBLCLKS;
-	} else {
-		dwStyle = WS_OVERLAPPEDWINDOW | WS_HSCROLL | WS_VSCROLL |
-			  WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CS_DBLCLKS;
-	}
+    if (hWndParent != NULL) {
+        dwStyle = WS_CHILDWINDOW | WS_VISIBLE | CS_DBLCLKS;
+    } else {
+        dwStyle = WS_OVERLAPPEDWINDOW | WS_HSCROLL | WS_VSCROLL | WS_CLIPSIBLINGS | WS_CLIPCHILDREN | CS_DBLCLKS;
+    }
 
-	NSLOG(neosurf, INFO, "creating hInstance %p core window", hInstance);
-	nsw32_cw->hWnd = CreateWindowEx(0,
-					windowclassname_corewindow,
-					nsw32_cw->title,
-					dwStyle,
-					CW_USEDEFAULT,
-					CW_USEDEFAULT,
-					500,
-					400,
-					hWndParent,
-					NULL,
-					hInstance,
-					NULL);
-	if (nsw32_cw->hWnd == NULL) {
-		NSLOG(neosurf, INFO, "Window create failed");
-		return NSERROR_NOMEM;
-	}
+    NSLOG(neosurf, INFO, "creating hInstance %p core window", hInstance);
+    nsw32_cw->hWnd = CreateWindowEx(0, windowclassname_corewindow, nsw32_cw->title, dwStyle, CW_USEDEFAULT,
+        CW_USEDEFAULT, 500, 400, hWndParent, NULL, hInstance, NULL);
+    if (nsw32_cw->hWnd == NULL) {
+        NSLOG(neosurf, INFO, "Window create failed");
+        return NSERROR_NOMEM;
+    }
 
-	SetProp(nsw32_cw->hWnd, TEXT("CoreWnd"), (HANDLE)nsw32_cw);
+    SetProp(nsw32_cw->hWnd, TEXT("CoreWnd"), (HANDLE)nsw32_cw);
 
-	/* zero scroll offsets */
-	SCROLLINFO si;
-	si.cbSize = sizeof(si);
-	si.fMask = SIF_POS;
-	si.nPos = 0;
-	SetScrollInfo(nsw32_cw->hWnd, SB_VERT, &si, FALSE);
-	SetScrollInfo(nsw32_cw->hWnd, SB_HORZ, &si, FALSE);
+    /* zero scroll offsets */
+    SCROLLINFO si;
+    si.cbSize = sizeof(si);
+    si.fMask = SIF_POS;
+    si.nPos = 0;
+    SetScrollInfo(nsw32_cw->hWnd, SB_VERT, &si, FALSE);
+    SetScrollInfo(nsw32_cw->hWnd, SB_HORZ, &si, FALSE);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /* exported interface documented in nsw32/corewindow.h */
 nserror nsw32_corewindow_fini(struct nsw32_corewindow *nsw32_cw)
 {
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
 /* exported interface documented in windows/corewindow.h */
 nserror nsw32_create_corewindow_class(HINSTANCE hInstance)
 {
-	nserror ret = NSERROR_OK;
-	WNDCLASSEX wc;
+    nserror ret = NSERROR_OK;
+    WNDCLASSEX wc;
 
-	/* drawable area */
-	wc.cbSize = sizeof(WNDCLASSEX);
-	wc.style = 0;
-	wc.lpfnWndProc = nsw32_window_corewindow_event_callback;
-	wc.cbClsExtra = 0;
-	wc.cbWndExtra = 0;
-	wc.hInstance = hInstance;
-	wc.hIcon = NULL;
-	wc.hCursor = NULL;
-	wc.hbrBackground = (HBRUSH)(COLOR_MENU + 1);
-	wc.lpszMenuName = NULL;
-	wc.lpszClassName = windowclassname_corewindow;
-	wc.hIconSm = NULL;
+    /* drawable area */
+    wc.cbSize = sizeof(WNDCLASSEX);
+    wc.style = 0;
+    wc.lpfnWndProc = nsw32_window_corewindow_event_callback;
+    wc.cbClsExtra = 0;
+    wc.cbWndExtra = 0;
+    wc.hInstance = hInstance;
+    wc.hIcon = NULL;
+    wc.hCursor = NULL;
+    wc.hbrBackground = (HBRUSH)(COLOR_MENU + 1);
+    wc.lpszMenuName = NULL;
+    wc.lpszClassName = windowclassname_corewindow;
+    wc.hIconSm = NULL;
 
-	if (RegisterClassEx(&wc) == 0) {
-		win_perror("CorewindowClass");
-		ret = NSERROR_INIT_FAILED;
-	}
+    if (RegisterClassEx(&wc) == 0) {
+        win_perror("CorewindowClass");
+        ret = NSERROR_INIT_FAILED;
+    }
 
-	return ret;
+    return ret;
 }

@@ -23,10 +23,10 @@
  * Status splitter.
  */
 
-#include <QSplitter>
 #include <QLabel>
-#include <QScrollBar>
 #include <QResizeEvent>
+#include <QScrollBar>
+#include <QSplitter>
 
 /**
  * splitter widget for status line
@@ -36,17 +36,15 @@
  */
 class NS_StatusSplitter : public QSplitter
 {
-	Q_OBJECT
+    Q_OBJECT
 
-      public:
-	NS_StatusSplitter(QLabel *status,
-			  QScrollBar *scrollbar,
-			  QWidget *parent = nullptr);
+public:
+    NS_StatusSplitter(QLabel *status, QScrollBar *scrollbar, QWidget *parent = nullptr);
 
-      private slots:
-	void moved_slot(int pos, int index);
+private slots:
+    void moved_slot(int pos, int index);
 
-      private:
-	void resizeEvent(QResizeEvent *event);
-	bool m_resize_move;
+private:
+    void resizeEvent(QResizeEvent *event);
+    bool m_resize_move;
 };

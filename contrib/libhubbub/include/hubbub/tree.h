@@ -24,9 +24,7 @@ extern "C" {
  *
  * Postcondition: if successful, result's reference count must be 1.
  */
-typedef hubbub_error (*hubbub_tree_create_comment)(void *ctx,
-						   const hubbub_string *data,
-						   void **result);
+typedef hubbub_error (*hubbub_tree_create_comment)(void *ctx, const hubbub_string *data, void **result);
 
 /**
  * Create a doctype node
@@ -38,10 +36,7 @@ typedef hubbub_error (*hubbub_tree_create_comment)(void *ctx,
  *
  * Postcondition: if successful, result's reference count must be 1.
  */
-typedef hubbub_error (*hubbub_tree_create_doctype)(
-	void *ctx,
-	const hubbub_doctype *doctype,
-	void **result);
+typedef hubbub_error (*hubbub_tree_create_doctype)(void *ctx, const hubbub_doctype *doctype, void **result);
 
 /**
  * Create an element node
@@ -53,9 +48,7 @@ typedef hubbub_error (*hubbub_tree_create_doctype)(
  *
  * Postcondition: if successful, result's reference count must be 1.
  */
-typedef hubbub_error (*hubbub_tree_create_element)(void *ctx,
-						   const hubbub_tag *tag,
-						   void **result);
+typedef hubbub_error (*hubbub_tree_create_element)(void *ctx, const hubbub_tag *tag, void **result);
 
 /**
  * Create a text node
@@ -67,9 +60,7 @@ typedef hubbub_error (*hubbub_tree_create_element)(void *ctx,
  *
  * Postcondition: if successful, result's reference count must be 1.
  */
-typedef hubbub_error (*hubbub_tree_create_text)(void *ctx,
-						const hubbub_string *data,
-						void **result);
+typedef hubbub_error (*hubbub_tree_create_text)(void *ctx, const hubbub_string *data, void **result);
 
 /**
  * Increase a node's reference count
@@ -108,10 +99,7 @@ typedef hubbub_error (*hubbub_tree_unref_node)(void *ctx, void *node);
  *
  * Important: *result may not == child (e.g. if text nodes got coalesced)
  */
-typedef hubbub_error (*hubbub_tree_append_child)(void *ctx,
-						 void *parent,
-						 void *child,
-						 void **result);
+typedef hubbub_error (*hubbub_tree_append_child)(void *ctx, void *parent, void *child, void **result);
 
 /**
  * Insert a node into another's child list
@@ -127,11 +115,7 @@ typedef hubbub_error (*hubbub_tree_append_child)(void *ctx,
  *
  * Important: *result may not == child (e.g. if text nodes got coalesced)
  */
-typedef hubbub_error (*hubbub_tree_insert_before)(void *ctx,
-						  void *parent,
-						  void *child,
-						  void *ref_child,
-						  void **result);
+typedef hubbub_error (*hubbub_tree_insert_before)(void *ctx, void *parent, void *child, void *ref_child, void **result);
 
 /**
  * Remove a node from another's child list
@@ -144,10 +128,7 @@ typedef hubbub_error (*hubbub_tree_insert_before)(void *ctx,
  *
  * Postcondition: if successful, result's reference count is increased by 1
  */
-typedef hubbub_error (*hubbub_tree_remove_child)(void *ctx,
-						 void *parent,
-						 void *child,
-						 void **result);
+typedef hubbub_error (*hubbub_tree_remove_child)(void *ctx, void *parent, void *child, void **result);
 
 /**
  * Clone a node
@@ -160,10 +141,7 @@ typedef hubbub_error (*hubbub_tree_remove_child)(void *ctx,
  *
  * Postcondition: if successful, result's reference count must be 1.
  */
-typedef hubbub_error (*hubbub_tree_clone_node)(void *ctx,
-					       void *node,
-					       bool deep,
-					       void **result);
+typedef hubbub_error (*hubbub_tree_clone_node)(void *ctx, void *node, bool deep, void **result);
 
 /**
  * Move all the children of one node to another
@@ -173,9 +151,7 @@ typedef hubbub_error (*hubbub_tree_clone_node)(void *ctx,
  * \param new_parent  The new parent node
  * \return HUBBUB_OK on success, appropriate error otherwise.
  */
-typedef hubbub_error (*hubbub_tree_reparent_children)(void *ctx,
-						      void *node,
-						      void *new_parent);
+typedef hubbub_error (*hubbub_tree_reparent_children)(void *ctx, void *node, void *new_parent);
 
 /**
  * Retrieve the parent of a node
@@ -192,10 +168,7 @@ typedef hubbub_error (*hubbub_tree_reparent_children)(void *ctx,
  * Postcondition: if there is a parent, then result's reference count must be
  * increased.
  */
-typedef hubbub_error (*hubbub_tree_get_parent)(void *ctx,
-					       void *node,
-					       bool element_only,
-					       void **result);
+typedef hubbub_error (*hubbub_tree_get_parent)(void *ctx, void *node, bool element_only, void **result);
 
 /**
  * Determine if a node has children
@@ -205,9 +178,7 @@ typedef hubbub_error (*hubbub_tree_get_parent)(void *ctx,
  * \param result  Location to receive result
  * \return HUBBUB_OK on success, appropriate error otherwise.
  */
-typedef hubbub_error (*hubbub_tree_has_children)(void *ctx,
-						 void *node,
-						 bool *result);
+typedef hubbub_error (*hubbub_tree_has_children)(void *ctx, void *node, bool *result);
 
 /**
  * Associate a node with a form
@@ -217,9 +188,7 @@ typedef hubbub_error (*hubbub_tree_has_children)(void *ctx,
  * \param node  The node to associate
  * \return HUBBUB_OK on success, appropriate error otherwise.
  */
-typedef hubbub_error (*hubbub_tree_form_associate)(void *ctx,
-						   void *form,
-						   void *node);
+typedef hubbub_error (*hubbub_tree_form_associate)(void *ctx, void *form, void *node);
 
 /**
  * Add attributes to a node
@@ -231,10 +200,7 @@ typedef hubbub_error (*hubbub_tree_form_associate)(void *ctx,
  * \return HUBBUB_OK on success, appropriate error otherwise.
  */
 typedef hubbub_error (*hubbub_tree_add_attributes)(
-	void *ctx,
-	void *node,
-	const hubbub_attribute *attributes,
-	uint32_t n_attributes);
+    void *ctx, void *node, const hubbub_attribute *attributes, uint32_t n_attributes);
 
 /**
  * Notification of the quirks mode of a document
@@ -243,8 +209,7 @@ typedef hubbub_error (*hubbub_tree_add_attributes)(
  * \param mode  The quirks mode
  * \return HUBBUB_OK on success, appropriate error otherwise.
  */
-typedef hubbub_error (*hubbub_tree_set_quirks_mode)(void *ctx,
-						    hubbub_quirks_mode mode);
+typedef hubbub_error (*hubbub_tree_set_quirks_mode)(void *ctx, hubbub_quirks_mode mode);
 
 /**
  * Notification that a potential encoding change is required
@@ -256,8 +221,7 @@ typedef hubbub_error (*hubbub_tree_set_quirks_mode)(void *ctx,
  *                               return control to the client,
  *         appropriate error otherwise.
  */
-typedef hubbub_error (*hubbub_tree_encoding_change)(void *ctx,
-						    const char *encname);
+typedef hubbub_error (*hubbub_tree_encoding_change)(void *ctx, const char *encname);
 
 /**
  * Complete script processing
@@ -272,26 +236,25 @@ typedef hubbub_error (*hubbub_tree_complete_script)(void *ctx, void *script);
  * Hubbub tree handler
  */
 typedef struct hubbub_tree_handler {
-	hubbub_tree_create_comment create_comment; /**< Create comment */
-	hubbub_tree_create_doctype create_doctype; /**< Create doctype */
-	hubbub_tree_create_element create_element; /**< Create element */
-	hubbub_tree_create_text create_text; /**< Create text */
-	hubbub_tree_ref_node ref_node; /**< Reference node */
-	hubbub_tree_unref_node unref_node; /**< Unreference node */
-	hubbub_tree_append_child append_child; /**< Append child */
-	hubbub_tree_insert_before insert_before; /**< Insert before */
-	hubbub_tree_remove_child remove_child; /**< Remove child */
-	hubbub_tree_clone_node clone_node; /**< Clone node */
-	hubbub_tree_reparent_children
-		reparent_children; /**< Reparent children*/
-	hubbub_tree_get_parent get_parent; /**< Get parent */
-	hubbub_tree_has_children has_children; /**< Has children? */
-	hubbub_tree_form_associate form_associate; /**< Form associate */
-	hubbub_tree_add_attributes add_attributes; /**< Add attributes */
-	hubbub_tree_set_quirks_mode set_quirks_mode; /**< Set quirks mode */
-	hubbub_tree_encoding_change encoding_change; /**< Change encoding */
-	hubbub_tree_complete_script complete_script; /**< Script Complete */
-	void *ctx; /**< Context pointer */
+    hubbub_tree_create_comment create_comment; /**< Create comment */
+    hubbub_tree_create_doctype create_doctype; /**< Create doctype */
+    hubbub_tree_create_element create_element; /**< Create element */
+    hubbub_tree_create_text create_text; /**< Create text */
+    hubbub_tree_ref_node ref_node; /**< Reference node */
+    hubbub_tree_unref_node unref_node; /**< Unreference node */
+    hubbub_tree_append_child append_child; /**< Append child */
+    hubbub_tree_insert_before insert_before; /**< Insert before */
+    hubbub_tree_remove_child remove_child; /**< Remove child */
+    hubbub_tree_clone_node clone_node; /**< Clone node */
+    hubbub_tree_reparent_children reparent_children; /**< Reparent children*/
+    hubbub_tree_get_parent get_parent; /**< Get parent */
+    hubbub_tree_has_children has_children; /**< Has children? */
+    hubbub_tree_form_associate form_associate; /**< Form associate */
+    hubbub_tree_add_attributes add_attributes; /**< Add attributes */
+    hubbub_tree_set_quirks_mode set_quirks_mode; /**< Set quirks mode */
+    hubbub_tree_encoding_change encoding_change; /**< Change encoding */
+    hubbub_tree_complete_script complete_script; /**< Script Complete */
+    void *ctx; /**< Context pointer */
 } hubbub_tree_handler;
 
 #ifdef __cplusplus

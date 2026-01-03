@@ -22,42 +22,40 @@
  * Implementation of GTK bookmark (hotlist) manager.
  */
 
+#include <gtk/gtk.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <gtk/gtk.h>
 
-#include <neosurf/utils/log.h>
-#include <neosurf/utils/nsoption.h>
+#include <neosurf/desktop/hotlist.h>
 #include <neosurf/keypress.h>
 #include <neosurf/plotters.h>
-#include <neosurf/desktop/hotlist.h>
+#include <neosurf/utils/log.h>
+#include <neosurf/utils/nsoption.h>
 
 #include "gtk/compat.h"
-#include "gtk/plotters.h"
-#include "gtk/resources.h"
 #include "gtk/corewindow.h"
 #include "gtk/hotlist.h"
+#include "gtk/plotters.h"
+#include "gtk/resources.h"
 
 /**
  * hotlist window container for gtk.
  */
 struct nsgtk_hotlist_window {
-	struct nsgtk_corewindow core;
-	GtkBuilder *builder;
-	GtkWindow *wnd;
+    struct nsgtk_corewindow core;
+    GtkBuilder *builder;
+    GtkWindow *wnd;
 };
 
 static struct nsgtk_hotlist_window *hotlist_window = NULL;
 
-#define MENUPROTO(x)                                                           \
-	static gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, gpointer g)
+#define MENUPROTO(x) static gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, gpointer g)
 #define MENUEVENT(x) {#x, G_CALLBACK(nsgtk_on_##x##_activate)}
-#define MENUHANDLER(x)                                                         \
-	gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, gpointer g)
+#define MENUHANDLER(x) gboolean nsgtk_on_##x##_activate(GtkMenuItem *widget, gpointer g)
 
 struct menu_events {
-	const char *widget;
-	GCallback handler;
+    const char *widget;
+    GCallback handler;
 };
 
 
@@ -84,147 +82,128 @@ MENUPROTO(launch);
 
 static struct menu_events menu_events[] = {
 
-	/* file menu*/
-	MENUEVENT(export),
-	MENUEVENT(new_folder),
-	MENUEVENT(new_entry),
+    /* file menu*/
+    MENUEVENT(export), MENUEVENT(new_folder), MENUEVENT(new_entry),
 
-	/* edit menu */
-	MENUEVENT(edit_selected),
-	MENUEVENT(delete_selected),
-	MENUEVENT(select_all),
-	MENUEVENT(clear_selection),
+    /* edit menu */
+    MENUEVENT(edit_selected), MENUEVENT(delete_selected), MENUEVENT(select_all), MENUEVENT(clear_selection),
 
-	/* view menu*/
-	MENUEVENT(expand_all),
-	MENUEVENT(expand_directories),
-	MENUEVENT(expand_addresses),
-	MENUEVENT(collapse_all),
-	MENUEVENT(collapse_directories),
-	MENUEVENT(collapse_addresses),
+    /* view menu*/
+    MENUEVENT(expand_all), MENUEVENT(expand_directories), MENUEVENT(expand_addresses), MENUEVENT(collapse_all),
+    MENUEVENT(collapse_directories), MENUEVENT(collapse_addresses),
 
-	MENUEVENT(launch),
+    MENUEVENT(launch),
 
-	{NULL, NULL}};
+    {NULL, NULL}};
 
 
 /* file menu*/
 MENUHANDLER(export)
 {
-	struct nsgtk_hotlist_window *hlwin;
-	GtkWidget *save_dialog;
+    struct nsgtk_hotlist_window *hlwin;
+    GtkWidget *save_dialog;
 
-	hlwin = (struct nsgtk_hotlist_window *)g;
+    hlwin = (struct nsgtk_hotlist_window *)g;
 
-	save_dialog = gtk_file_chooser_dialog_new("Save File",
-						  hlwin->wnd,
-						  GTK_FILE_CHOOSER_ACTION_SAVE,
-						  NSGTK_STOCK_CANCEL,
-						  GTK_RESPONSE_CANCEL,
-						  NSGTK_STOCK_SAVE,
-						  GTK_RESPONSE_ACCEPT,
-						  NULL);
+    save_dialog = gtk_file_chooser_dialog_new("Save File", hlwin->wnd, GTK_FILE_CHOOSER_ACTION_SAVE, NSGTK_STOCK_CANCEL,
+        GTK_RESPONSE_CANCEL, NSGTK_STOCK_SAVE, GTK_RESPONSE_ACCEPT, NULL);
 
-	gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(save_dialog),
-					    getenv("HOME") ? getenv("HOME")
-							   : "/");
+    gtk_file_chooser_set_current_folder(GTK_FILE_CHOOSER(save_dialog), getenv("HOME") ? getenv("HOME") : "/");
 
-	gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(save_dialog),
-					  "hotlist.html");
+    gtk_file_chooser_set_current_name(GTK_FILE_CHOOSER(save_dialog), "hotlist.html");
 
-	if (gtk_dialog_run(GTK_DIALOG(save_dialog)) == GTK_RESPONSE_ACCEPT) {
-		gchar *filename = gtk_file_chooser_get_filename(
-			GTK_FILE_CHOOSER(save_dialog));
+    if (gtk_dialog_run(GTK_DIALOG(save_dialog)) == GTK_RESPONSE_ACCEPT) {
+        gchar *filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(save_dialog));
 
-		hotlist_export(filename, NULL);
-		g_free(filename);
-	}
+        hotlist_export(filename, NULL);
+        g_free(filename);
+    }
 
-	gtk_widget_destroy(save_dialog);
+    gtk_widget_destroy(save_dialog);
 
-	return TRUE;
+    return TRUE;
 }
 
 MENUHANDLER(new_folder)
 {
-	hotlist_add_folder(NULL, false, 0);
-	return TRUE;
+    hotlist_add_folder(NULL, false, 0);
+    return TRUE;
 }
 
 MENUHANDLER(new_entry)
 {
-	hotlist_add_entry(NULL, NULL, false, 0);
-	return TRUE;
+    hotlist_add_entry(NULL, NULL, false, 0);
+    return TRUE;
 }
 
 /* edit menu */
 MENUHANDLER(edit_selected)
 {
-	hotlist_edit_selection();
-	return TRUE;
+    hotlist_edit_selection();
+    return TRUE;
 }
 
 MENUHANDLER(delete_selected)
 {
-	hotlist_keypress(NS_KEY_DELETE_LEFT);
-	return TRUE;
+    hotlist_keypress(NS_KEY_DELETE_LEFT);
+    return TRUE;
 }
 
 MENUHANDLER(select_all)
 {
-	hotlist_keypress(NS_KEY_ESCAPE);
-	hotlist_keypress(NS_KEY_ESCAPE);
-	hotlist_keypress(NS_KEY_SELECT_ALL);
-	return TRUE;
+    hotlist_keypress(NS_KEY_ESCAPE);
+    hotlist_keypress(NS_KEY_ESCAPE);
+    hotlist_keypress(NS_KEY_SELECT_ALL);
+    return TRUE;
 }
 
 MENUHANDLER(clear_selection)
 {
-	hotlist_keypress(NS_KEY_CLEAR_SELECTION);
-	return TRUE;
+    hotlist_keypress(NS_KEY_CLEAR_SELECTION);
+    return TRUE;
 }
 
 /* view menu*/
 MENUHANDLER(expand_all)
 {
-	hotlist_expand(false);
-	return TRUE;
+    hotlist_expand(false);
+    return TRUE;
 }
 
 MENUHANDLER(expand_directories)
 {
-	hotlist_expand(true);
-	return TRUE;
+    hotlist_expand(true);
+    return TRUE;
 }
 
 MENUHANDLER(expand_addresses)
 {
-	hotlist_expand(false);
-	return TRUE;
+    hotlist_expand(false);
+    return TRUE;
 }
 
 MENUHANDLER(collapse_all)
 {
-	hotlist_contract(true);
-	return TRUE;
+    hotlist_contract(true);
+    return TRUE;
 }
 
 MENUHANDLER(collapse_directories)
 {
-	hotlist_contract(true);
-	return TRUE;
+    hotlist_contract(true);
+    return TRUE;
 }
 
 MENUHANDLER(collapse_addresses)
 {
-	hotlist_contract(false);
-	return TRUE;
+    hotlist_contract(false);
+    return TRUE;
 }
 
 MENUHANDLER(launch)
 {
-	hotlist_keypress(NS_KEY_CR);
-	return TRUE;
+    hotlist_keypress(NS_KEY_CR);
+    return TRUE;
 }
 
 
@@ -233,25 +212,22 @@ MENUHANDLER(launch)
  */
 static void nsgtk_hotlist_init_menu(struct nsgtk_hotlist_window *hlwin)
 {
-	struct menu_events *event = menu_events;
-	GtkWidget *w;
+    struct menu_events *event = menu_events;
+    GtkWidget *w;
 
-	while (event->widget != NULL) {
-		w = GTK_WIDGET(
-			gtk_builder_get_object(hlwin->builder, event->widget));
-		if (w == NULL) {
-			NSLOG(neosurf,
-			      INFO,
-			      "Unable to connect menu widget "
-			      "%s"
-			      "",
-			      event->widget);
-		} else {
-			g_signal_connect(
-				G_OBJECT(w), "activate", event->handler, hlwin);
-		}
-		event++;
-	}
+    while (event->widget != NULL) {
+        w = GTK_WIDGET(gtk_builder_get_object(hlwin->builder, event->widget));
+        if (w == NULL) {
+            NSLOG(neosurf, INFO,
+                "Unable to connect menu widget "
+                "%s"
+                "",
+                event->widget);
+        } else {
+            g_signal_connect(G_OBJECT(w), "activate", event->handler, hlwin);
+        }
+        event++;
+    }
 }
 
 
@@ -264,14 +240,11 @@ static void nsgtk_hotlist_init_menu(struct nsgtk_hotlist_window *hlwin)
  * \param y location of event
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror nsgtk_hotlist_mouse(struct nsgtk_corewindow *nsgtk_cw,
-				   browser_mouse_state mouse_state,
-				   int x,
-				   int y)
+static nserror nsgtk_hotlist_mouse(struct nsgtk_corewindow *nsgtk_cw, browser_mouse_state mouse_state, int x, int y)
 {
-	hotlist_mouse_action(mouse_state, x, y);
+    hotlist_mouse_action(mouse_state, x, y);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /**
@@ -281,13 +254,12 @@ static nserror nsgtk_hotlist_mouse(struct nsgtk_corewindow *nsgtk_cw,
  * \param nskey The netsurf key code
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror
-nsgtk_hotlist_key(struct nsgtk_corewindow *nsgtk_cw, uint32_t nskey)
+static nserror nsgtk_hotlist_key(struct nsgtk_corewindow *nsgtk_cw, uint32_t nskey)
 {
-	if (hotlist_keypress(nskey)) {
-		return NSERROR_OK;
-	}
-	return NSERROR_NOT_IMPLEMENTED;
+    if (hotlist_keypress(nskey)) {
+        return NSERROR_OK;
+    }
+    return NSERROR_NOT_IMPLEMENTED;
 }
 
 /**
@@ -297,16 +269,13 @@ nsgtk_hotlist_key(struct nsgtk_corewindow *nsgtk_cw, uint32_t nskey)
  * \param r The rectangle of the window that needs updating.
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror
-nsgtk_hotlist_draw(struct nsgtk_corewindow *nsgtk_cw, struct rect *r)
+static nserror nsgtk_hotlist_draw(struct nsgtk_corewindow *nsgtk_cw, struct rect *r)
 {
-	struct redraw_context ctx = {.interactive = true,
-				     .background_images = true,
-				     .plot = &nsgtk_plotters};
+    struct redraw_context ctx = {.interactive = true, .background_images = true, .plot = &nsgtk_plotters};
 
-	hotlist_redraw(0, 0, r, &ctx);
+    hotlist_redraw(0, 0, r, &ctx);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /**
@@ -316,99 +285,93 @@ nsgtk_hotlist_draw(struct nsgtk_corewindow *nsgtk_cw, struct rect *r)
  */
 static nserror nsgtk_hotlist_init(void)
 {
-	struct nsgtk_hotlist_window *ncwin;
-	nserror res;
+    struct nsgtk_hotlist_window *ncwin;
+    nserror res;
 
-	if (hotlist_window != NULL) {
-		return NSERROR_OK;
-	}
+    if (hotlist_window != NULL) {
+        return NSERROR_OK;
+    }
 
-	ncwin = calloc(1, sizeof(*ncwin));
-	if (ncwin == NULL) {
-		return NSERROR_NOMEM;
-	}
+    ncwin = calloc(1, sizeof(*ncwin));
+    if (ncwin == NULL) {
+        return NSERROR_NOMEM;
+    }
 
-	res = nsgtk_builder_new_from_resname("hotlist", &ncwin->builder);
-	if (res != NSERROR_OK) {
-		NSLOG(neosurf, INFO, "Hotlist UI builder init failed");
-		free(ncwin);
-		return res;
-	}
+    res = nsgtk_builder_new_from_resname("hotlist", &ncwin->builder);
+    if (res != NSERROR_OK) {
+        NSLOG(neosurf, INFO, "Hotlist UI builder init failed");
+        free(ncwin);
+        return res;
+    }
 
-	gtk_builder_connect_signals(ncwin->builder, NULL);
+    gtk_builder_connect_signals(ncwin->builder, NULL);
 
-	ncwin->wnd = GTK_WINDOW(
-		gtk_builder_get_object(ncwin->builder, "wndHotlist"));
+    ncwin->wnd = GTK_WINDOW(gtk_builder_get_object(ncwin->builder, "wndHotlist"));
 
-	ncwin->core.scrolled = GTK_SCROLLED_WINDOW(
-		gtk_builder_get_object(ncwin->builder, "hotlistScrolled"));
+    ncwin->core.scrolled = GTK_SCROLLED_WINDOW(gtk_builder_get_object(ncwin->builder, "hotlistScrolled"));
 
-	ncwin->core.drawing_area = GTK_DRAWING_AREA(
-		gtk_builder_get_object(ncwin->builder, "hotlistDrawingArea"));
+    ncwin->core.drawing_area = GTK_DRAWING_AREA(gtk_builder_get_object(ncwin->builder, "hotlistDrawingArea"));
 
-	/* make the delete event hide the window */
-	g_signal_connect(G_OBJECT(ncwin->wnd),
-			 "delete_event",
-			 G_CALLBACK(gtk_widget_hide_on_delete),
-			 NULL);
+    /* make the delete event hide the window */
+    g_signal_connect(G_OBJECT(ncwin->wnd), "delete_event", G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 
-	nsgtk_hotlist_init_menu(ncwin);
+    nsgtk_hotlist_init_menu(ncwin);
 
-	ncwin->core.draw = nsgtk_hotlist_draw;
-	ncwin->core.key = nsgtk_hotlist_key;
-	ncwin->core.mouse = nsgtk_hotlist_mouse;
+    ncwin->core.draw = nsgtk_hotlist_draw;
+    ncwin->core.key = nsgtk_hotlist_key;
+    ncwin->core.mouse = nsgtk_hotlist_mouse;
 
-	res = nsgtk_corewindow_init(&ncwin->core);
-	if (res != NSERROR_OK) {
-		free(ncwin);
-		return res;
-	}
+    res = nsgtk_corewindow_init(&ncwin->core);
+    if (res != NSERROR_OK) {
+        free(ncwin);
+        return res;
+    }
 
-	res = hotlist_manager_init((struct core_window *)ncwin);
-	if (res != NSERROR_OK) {
-		free(ncwin);
-		return res;
-	}
+    res = hotlist_manager_init((struct core_window *)ncwin);
+    if (res != NSERROR_OK) {
+        free(ncwin);
+        return res;
+    }
 
-	/* memoise window so it can be represented when necessary
-	 * instead of recreating every time.
-	 */
-	hotlist_window = ncwin;
+    /* memoise window so it can be represented when necessary
+     * instead of recreating every time.
+     */
+    hotlist_window = ncwin;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
 /* exported function documented gtk/hotlist.h */
 nserror nsgtk_hotlist_present(void)
 {
-	nserror res;
+    nserror res;
 
-	res = nsgtk_hotlist_init();
-	if (res == NSERROR_OK) {
-		gtk_window_present(hotlist_window->wnd);
-	}
-	return res;
+    res = nsgtk_hotlist_init();
+    if (res == NSERROR_OK) {
+        gtk_window_present(hotlist_window->wnd);
+    }
+    return res;
 }
 
 
 /* exported function documented gtk/hotlist.h */
 nserror nsgtk_hotlist_destroy(void)
 {
-	nserror res;
+    nserror res;
 
-	if (hotlist_window == NULL) {
-		return NSERROR_OK;
-	}
+    if (hotlist_window == NULL) {
+        return NSERROR_OK;
+    }
 
-	res = hotlist_manager_fini();
-	if (res == NSERROR_OK) {
-		res = nsgtk_corewindow_fini(&hotlist_window->core);
-		gtk_widget_destroy(GTK_WIDGET(hotlist_window->wnd));
-		g_object_unref(G_OBJECT(hotlist_window->builder));
-		free(hotlist_window);
-		hotlist_window = NULL;
-	}
+    res = hotlist_manager_fini();
+    if (res == NSERROR_OK) {
+        res = nsgtk_corewindow_fini(&hotlist_window->core);
+        gtk_widget_destroy(GTK_WIDGET(hotlist_window->wnd));
+        g_object_unref(G_OBJECT(hotlist_window->builder));
+        free(hotlist_window);
+        hotlist_window = NULL;
+    }
 
-	return res;
+    return res;
 }

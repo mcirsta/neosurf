@@ -13,30 +13,29 @@
 #include <dom/core/string.h>
 #include <dom/events/events.h>
 
+#include "utils/utils.h"
 #include "core/characterdata.h"
 #include "core/document.h"
 #include "core/node.h"
-#include "utils/utils.h"
 #include "events/mutation_event.h"
 
 /* The virtual functions for dom_characterdata, we make this vtable
  * public to each child class */
 const struct dom_characterdata_vtable characterdata_vtable = {
-	{{DOM_NODE_EVENT_TARGET_VTABLE}, DOM_NODE_VTABLE_CHARACTERDATA},
-	DOM_CHARACTERDATA_VTABLE};
+    {{DOM_NODE_EVENT_TARGET_VTABLE}, DOM_NODE_VTABLE_CHARACTERDATA}, DOM_CHARACTERDATA_VTABLE};
 
 
 /* Create a DOM characterdata node and compose the vtable */
 dom_characterdata *_dom_characterdata_create(void)
 {
-	dom_characterdata *cdata = malloc(sizeof(struct dom_characterdata));
-	if (cdata == NULL)
-		return NULL;
+    dom_characterdata *cdata = malloc(sizeof(struct dom_characterdata));
+    if (cdata == NULL)
+        return NULL;
 
-	cdata->base.base.vtable = &characterdata_vtable;
-	cdata->base.vtable = NULL;
+    cdata->base.base.vtable = &characterdata_vtable;
+    cdata->base.vtable = NULL;
 
-	return cdata;
+    return cdata;
 }
 
 /**
@@ -51,14 +50,10 @@ dom_characterdata *_dom_characterdata_create(void)
  *
  * \p doc, \p name and \p value will have their reference counts increased.
  */
-dom_exception _dom_characterdata_initialise(struct dom_characterdata *cdata,
-					    struct dom_document *doc,
-					    dom_node_type type,
-					    dom_string *name,
-					    dom_string *value)
+dom_exception _dom_characterdata_initialise(
+    struct dom_characterdata *cdata, struct dom_document *doc, dom_node_type type, dom_string *name, dom_string *value)
 {
-	return _dom_node_initialise(
-		&cdata->base, doc, type, name, value, NULL, NULL);
+    return _dom_node_initialise(&cdata->base, doc, type, name, value, NULL, NULL);
 }
 
 /**
@@ -70,7 +65,7 @@ dom_exception _dom_characterdata_initialise(struct dom_characterdata *cdata,
  */
 void _dom_characterdata_finalise(struct dom_characterdata *cdata)
 {
-	_dom_node_finalise(&cdata->base);
+    _dom_node_finalise(&cdata->base);
 }
 
 
@@ -92,17 +87,16 @@ void _dom_characterdata_finalise(struct dom_characterdata *cdata)
  * DOM3Core states that this can raise DOMSTRING_SIZE_ERR. It will not in
  * this implementation; dom_strings are unbounded.
  */
-dom_exception
-_dom_characterdata_get_data(struct dom_characterdata *cdata, dom_string **data)
+dom_exception _dom_characterdata_get_data(struct dom_characterdata *cdata, dom_string **data)
 {
-	struct dom_node_internal *c = (struct dom_node_internal *)cdata;
+    struct dom_node_internal *c = (struct dom_node_internal *)cdata;
 
-	if (c->value != NULL) {
-		dom_string_ref(c->value);
-	}
-	*data = c->value;
+    if (c->value != NULL) {
+        dom_string_ref(c->value);
+    }
+    *data = c->value;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -117,34 +111,32 @@ _dom_characterdata_get_data(struct dom_characterdata *cdata, dom_string **data)
  * should unref it after the call (as the caller should have already claimed
  * a reference on the string). The node's existing content will be unrefed.
  */
-dom_exception
-_dom_characterdata_set_data(struct dom_characterdata *cdata, dom_string *data)
+dom_exception _dom_characterdata_set_data(struct dom_characterdata *cdata, dom_string *data)
 {
-	struct dom_node_internal *c = (struct dom_node_internal *)cdata;
-	dom_exception err;
-	struct dom_document *doc;
-	bool success = true;
+    struct dom_node_internal *c = (struct dom_node_internal *)cdata;
+    dom_exception err;
+    struct dom_document *doc;
+    bool success = true;
 
-	if (_dom_node_readonly(c)) {
-		return DOM_NO_MODIFICATION_ALLOWED_ERR;
-	}
+    if (_dom_node_readonly(c)) {
+        return DOM_NO_MODIFICATION_ALLOWED_ERR;
+    }
 
-	/* Dispatch a DOMCharacterDataModified event */
-	doc = dom_node_get_owner(cdata);
-	err = _dom_dispatch_characterdata_modified_event(
-		doc, c, c->value, data, &success);
-	if (err != DOM_NO_ERR)
-		return err;
+    /* Dispatch a DOMCharacterDataModified event */
+    doc = dom_node_get_owner(cdata);
+    err = _dom_dispatch_characterdata_modified_event(doc, c, c->value, data, &success);
+    if (err != DOM_NO_ERR)
+        return err;
 
-	if (c->value != NULL) {
-		dom_string_unref(c->value);
-	}
+    if (c->value != NULL) {
+        dom_string_unref(c->value);
+    }
 
-	dom_string_ref(data);
-	c->value = data;
+    dom_string_ref(data);
+    c->value = data;
 
-	success = true;
-	return _dom_dispatch_subtree_modified_event(doc, c->parent, &success);
+    success = true;
+    return _dom_dispatch_subtree_modified_event(doc, c->parent, &success);
 }
 
 /**
@@ -154,18 +146,17 @@ _dom_characterdata_set_data(struct dom_characterdata *cdata, dom_string *data)
  * \param length  Pointer to location to receive character length of content
  * \return DOM_NO_ERR.
  */
-dom_exception
-_dom_characterdata_get_length(struct dom_characterdata *cdata, uint32_t *length)
+dom_exception _dom_characterdata_get_length(struct dom_characterdata *cdata, uint32_t *length)
 {
-	struct dom_node_internal *c = (struct dom_node_internal *)cdata;
+    struct dom_node_internal *c = (struct dom_node_internal *)cdata;
 
-	if (c->value != NULL) {
-		*length = dom_string_length(c->value);
-	} else {
-		*length = 0;
-	}
+    if (c->value != NULL) {
+        *length = dom_string_length(c->value);
+    } else {
+        *length = 0;
+    }
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -187,31 +178,29 @@ _dom_characterdata_get_length(struct dom_characterdata *cdata, uint32_t *length)
  * DOM3Core states that this can raise DOMSTRING_SIZE_ERR. It will not in
  * this implementation; dom_strings are unbounded.
  */
-dom_exception _dom_characterdata_substring_data(struct dom_characterdata *cdata,
-						uint32_t offset,
-						uint32_t count,
-						dom_string **data)
+dom_exception
+_dom_characterdata_substring_data(struct dom_characterdata *cdata, uint32_t offset, uint32_t count, dom_string **data)
 {
-	struct dom_node_internal *c = (struct dom_node_internal *)cdata;
-	uint32_t len, end;
+    struct dom_node_internal *c = (struct dom_node_internal *)cdata;
+    uint32_t len, end;
 
-	if ((int32_t)offset < 0 || (int32_t)count < 0) {
-		return DOM_INDEX_SIZE_ERR;
-	}
+    if ((int32_t)offset < 0 || (int32_t)count < 0) {
+        return DOM_INDEX_SIZE_ERR;
+    }
 
-	if (c->value != NULL) {
-		len = dom_string_length(c->value);
-	} else {
-		len = 0;
-	}
+    if (c->value != NULL) {
+        len = dom_string_length(c->value);
+    } else {
+        len = 0;
+    }
 
-	if (offset > len) {
-		return DOM_INDEX_SIZE_ERR;
-	}
+    if (offset > len) {
+        return DOM_INDEX_SIZE_ERR;
+    }
 
-	end = (offset + count) >= len ? len : offset + count;
+    end = (offset + count) >= len ? len : offset + count;
 
-	return dom_string_substr(c->value, offset, end, data);
+    return dom_string_substr(c->value, offset, end, data);
 }
 
 /**
@@ -222,41 +211,39 @@ dom_exception _dom_characterdata_substring_data(struct dom_characterdata *cdata,
  * \return DOM_NO_ERR                      on success,
  *         DOM_NO_MODIFICATION_ALLOWED_ERR if \p cdata is readonly.
  */
-dom_exception _dom_characterdata_append_data(struct dom_characterdata *cdata,
-					     dom_string *data)
+dom_exception _dom_characterdata_append_data(struct dom_characterdata *cdata, dom_string *data)
 {
-	struct dom_node_internal *c = (struct dom_node_internal *)cdata;
-	dom_string *temp;
-	dom_exception err;
-	struct dom_document *doc;
-	bool success = true;
+    struct dom_node_internal *c = (struct dom_node_internal *)cdata;
+    dom_string *temp;
+    dom_exception err;
+    struct dom_document *doc;
+    bool success = true;
 
-	if (_dom_node_readonly(c)) {
-		return DOM_NO_MODIFICATION_ALLOWED_ERR;
-	}
+    if (_dom_node_readonly(c)) {
+        return DOM_NO_MODIFICATION_ALLOWED_ERR;
+    }
 
-	err = dom_string_concat(c->value, data, &temp);
-	if (err != DOM_NO_ERR) {
-		return err;
-	}
+    err = dom_string_concat(c->value, data, &temp);
+    if (err != DOM_NO_ERR) {
+        return err;
+    }
 
-	/* Dispatch a DOMCharacterDataModified event */
-	doc = dom_node_get_owner(cdata);
-	err = _dom_dispatch_characterdata_modified_event(
-		doc, c, c->value, temp, &success);
-	if (err != DOM_NO_ERR) {
-		dom_string_unref(temp);
-		return err;
-	}
+    /* Dispatch a DOMCharacterDataModified event */
+    doc = dom_node_get_owner(cdata);
+    err = _dom_dispatch_characterdata_modified_event(doc, c, c->value, temp, &success);
+    if (err != DOM_NO_ERR) {
+        dom_string_unref(temp);
+        return err;
+    }
 
-	if (c->value != NULL) {
-		dom_string_unref(c->value);
-	}
+    if (c->value != NULL) {
+        dom_string_unref(c->value);
+    }
 
-	c->value = temp;
+    c->value = temp;
 
-	success = true;
-	return _dom_dispatch_subtree_modified_event(doc, c->parent, &success);
+    success = true;
+    return _dom_dispatch_subtree_modified_event(doc, c->parent, &success);
 }
 
 /**
@@ -271,55 +258,52 @@ dom_exception _dom_characterdata_append_data(struct dom_characterdata *cdata,
  *                                         \p cdata,
  *         DOM_NO_MODIFICATION_ALLOWED_ERR if \p cdata is readonly.
  */
-dom_exception _dom_characterdata_insert_data(struct dom_characterdata *cdata,
-					     uint32_t offset,
-					     dom_string *data)
+dom_exception _dom_characterdata_insert_data(struct dom_characterdata *cdata, uint32_t offset, dom_string *data)
 {
-	struct dom_node_internal *c = (struct dom_node_internal *)cdata;
-	dom_string *temp;
-	uint32_t len;
-	dom_exception err;
-	struct dom_document *doc;
-	bool success = true;
+    struct dom_node_internal *c = (struct dom_node_internal *)cdata;
+    dom_string *temp;
+    uint32_t len;
+    dom_exception err;
+    struct dom_document *doc;
+    bool success = true;
 
-	if (_dom_node_readonly(c)) {
-		return DOM_NO_MODIFICATION_ALLOWED_ERR;
-	}
+    if (_dom_node_readonly(c)) {
+        return DOM_NO_MODIFICATION_ALLOWED_ERR;
+    }
 
-	if ((int32_t)offset < 0) {
-		return DOM_INDEX_SIZE_ERR;
-	}
+    if ((int32_t)offset < 0) {
+        return DOM_INDEX_SIZE_ERR;
+    }
 
-	if (c->value != NULL) {
-		len = dom_string_length(c->value);
-	} else {
-		len = 0;
-	}
+    if (c->value != NULL) {
+        len = dom_string_length(c->value);
+    } else {
+        len = 0;
+    }
 
-	if (offset > len) {
-		return DOM_INDEX_SIZE_ERR;
-	}
+    if (offset > len) {
+        return DOM_INDEX_SIZE_ERR;
+    }
 
-	err = dom_string_insert(c->value, data, offset, &temp);
-	if (err != DOM_NO_ERR) {
-		return err;
-	}
+    err = dom_string_insert(c->value, data, offset, &temp);
+    if (err != DOM_NO_ERR) {
+        return err;
+    }
 
-	/* Dispatch a DOMCharacterDataModified event */
-	doc = dom_node_get_owner(cdata);
-	err = _dom_dispatch_characterdata_modified_event(
-		doc, c, c->value, temp, &success);
-	if (err != DOM_NO_ERR)
-		return err;
+    /* Dispatch a DOMCharacterDataModified event */
+    doc = dom_node_get_owner(cdata);
+    err = _dom_dispatch_characterdata_modified_event(doc, c, c->value, temp, &success);
+    if (err != DOM_NO_ERR)
+        return err;
 
-	if (c->value != NULL) {
-		dom_string_unref(c->value);
-	}
+    if (c->value != NULL) {
+        dom_string_unref(c->value);
+    }
 
-	c->value = temp;
+    c->value = temp;
 
-	success = true;
-	return _dom_dispatch_subtree_modified_event(doc, c->parent, &success);
+    success = true;
+    return _dom_dispatch_subtree_modified_event(doc, c->parent, &success);
 }
 
 /**
@@ -334,61 +318,57 @@ dom_exception _dom_characterdata_insert_data(struct dom_characterdata *cdata,
  *                                         \p cdata or \p count is negative,
  *         DOM_NO_MODIFICATION_ALLOWED_ERR if \p cdata is readonly.
  */
-dom_exception _dom_characterdata_delete_data(struct dom_characterdata *cdata,
-					     uint32_t offset,
-					     uint32_t count)
+dom_exception _dom_characterdata_delete_data(struct dom_characterdata *cdata, uint32_t offset, uint32_t count)
 {
-	struct dom_node_internal *c = (struct dom_node_internal *)cdata;
-	dom_string *temp;
-	uint32_t len, end;
-	dom_exception err;
-	struct dom_document *doc;
-	bool success = true;
-	dom_string *empty;
+    struct dom_node_internal *c = (struct dom_node_internal *)cdata;
+    dom_string *temp;
+    uint32_t len, end;
+    dom_exception err;
+    struct dom_document *doc;
+    bool success = true;
+    dom_string *empty;
 
-	if (_dom_node_readonly(c)) {
-		return DOM_NO_MODIFICATION_ALLOWED_ERR;
-	}
+    if (_dom_node_readonly(c)) {
+        return DOM_NO_MODIFICATION_ALLOWED_ERR;
+    }
 
-	if ((int32_t)offset < 0 || (int32_t)count < 0) {
-		return DOM_INDEX_SIZE_ERR;
-	}
+    if ((int32_t)offset < 0 || (int32_t)count < 0) {
+        return DOM_INDEX_SIZE_ERR;
+    }
 
-	if (c->value != NULL) {
-		len = dom_string_length(c->value);
-	} else {
-		len = 0;
-	}
+    if (c->value != NULL) {
+        len = dom_string_length(c->value);
+    } else {
+        len = 0;
+    }
 
-	if (offset > len) {
-		return DOM_INDEX_SIZE_ERR;
-	}
+    if (offset > len) {
+        return DOM_INDEX_SIZE_ERR;
+    }
 
-	end = (offset + count) >= len ? len : offset + count;
+    end = (offset + count) >= len ? len : offset + count;
 
-	empty = ((struct dom_document *)((struct dom_node_internal *)c)->owner)
-			->_memo_empty;
+    empty = ((struct dom_document *)((struct dom_node_internal *)c)->owner)->_memo_empty;
 
-	err = dom_string_replace(c->value, empty, offset, end, &temp);
-	if (err != DOM_NO_ERR) {
-		return err;
-	}
+    err = dom_string_replace(c->value, empty, offset, end, &temp);
+    if (err != DOM_NO_ERR) {
+        return err;
+    }
 
-	/* Dispatch a DOMCharacterDataModified event */
-	doc = dom_node_get_owner(cdata);
-	err = _dom_dispatch_characterdata_modified_event(
-		doc, c, c->value, temp, &success);
-	if (err != DOM_NO_ERR)
-		return err;
+    /* Dispatch a DOMCharacterDataModified event */
+    doc = dom_node_get_owner(cdata);
+    err = _dom_dispatch_characterdata_modified_event(doc, c, c->value, temp, &success);
+    if (err != DOM_NO_ERR)
+        return err;
 
-	if (c->value != NULL) {
-		dom_string_unref(c->value);
-	}
+    if (c->value != NULL) {
+        dom_string_unref(c->value);
+    }
 
-	c->value = temp;
+    c->value = temp;
 
-	success = true;
-	return _dom_dispatch_subtree_modified_event(doc, c->parent, &success);
+    success = true;
+    return _dom_dispatch_subtree_modified_event(doc, c->parent, &success);
 }
 
 /**
@@ -404,74 +384,69 @@ dom_exception _dom_characterdata_delete_data(struct dom_characterdata *cdata,
  *                                         \p cdata or \p count is negative,
  *         DOM_NO_MODIFICATION_ALLOWED_ERR if \p cdata is readonly.
  */
-dom_exception _dom_characterdata_replace_data(struct dom_characterdata *cdata,
-					      uint32_t offset,
-					      uint32_t count,
-					      dom_string *data)
+dom_exception
+_dom_characterdata_replace_data(struct dom_characterdata *cdata, uint32_t offset, uint32_t count, dom_string *data)
 {
-	struct dom_node_internal *c = (struct dom_node_internal *)cdata;
-	dom_string *temp;
-	uint32_t len, end;
-	dom_exception err;
-	struct dom_document *doc;
-	bool success = true;
+    struct dom_node_internal *c = (struct dom_node_internal *)cdata;
+    dom_string *temp;
+    uint32_t len, end;
+    dom_exception err;
+    struct dom_document *doc;
+    bool success = true;
 
-	if (_dom_node_readonly(c)) {
-		return DOM_NO_MODIFICATION_ALLOWED_ERR;
-	}
+    if (_dom_node_readonly(c)) {
+        return DOM_NO_MODIFICATION_ALLOWED_ERR;
+    }
 
-	if ((int32_t)offset < 0 || (int32_t)count < 0) {
-		return DOM_INDEX_SIZE_ERR;
-	}
+    if ((int32_t)offset < 0 || (int32_t)count < 0) {
+        return DOM_INDEX_SIZE_ERR;
+    }
 
-	if (c->value != NULL) {
-		len = dom_string_length(c->value);
-	} else {
-		len = 0;
-	}
+    if (c->value != NULL) {
+        len = dom_string_length(c->value);
+    } else {
+        len = 0;
+    }
 
-	if (offset > len) {
-		return DOM_INDEX_SIZE_ERR;
-	}
+    if (offset > len) {
+        return DOM_INDEX_SIZE_ERR;
+    }
 
-	end = (offset + count) >= len ? len : offset + count;
+    end = (offset + count) >= len ? len : offset + count;
 
-	err = dom_string_replace(c->value, data, offset, end, &temp);
-	if (err != DOM_NO_ERR) {
-		return err;
-	}
+    err = dom_string_replace(c->value, data, offset, end, &temp);
+    if (err != DOM_NO_ERR) {
+        return err;
+    }
 
-	/* Dispatch a DOMCharacterDataModified event */
-	doc = dom_node_get_owner(cdata);
-	err = _dom_dispatch_characterdata_modified_event(
-		doc, c, c->value, temp, &success);
-	if (err != DOM_NO_ERR)
-		return err;
+    /* Dispatch a DOMCharacterDataModified event */
+    doc = dom_node_get_owner(cdata);
+    err = _dom_dispatch_characterdata_modified_event(doc, c, c->value, temp, &success);
+    if (err != DOM_NO_ERR)
+        return err;
 
-	if (c->value != NULL) {
-		dom_string_unref(c->value);
-	}
+    if (c->value != NULL) {
+        dom_string_unref(c->value);
+    }
 
-	c->value = temp;
+    c->value = temp;
 
-	success = true;
-	return _dom_dispatch_subtree_modified_event(doc, c->parent, &success);
+    success = true;
+    return _dom_dispatch_subtree_modified_event(doc, c->parent, &success);
 }
 
-dom_exception _dom_characterdata_get_text_content(dom_node_internal *node,
-						  dom_string **result)
+dom_exception _dom_characterdata_get_text_content(dom_node_internal *node, dom_string **result)
 {
-	dom_characterdata *cdata = (dom_characterdata *)node;
+    dom_characterdata *cdata = (dom_characterdata *)node;
 
-	return dom_characterdata_get_data(cdata, result);
+    return dom_characterdata_get_data(cdata, result);
 }
 
-dom_exception _dom_characterdata_set_text_content(dom_node_internal *node,
-						  dom_string *content)
+dom_exception _dom_characterdata_set_text_content(dom_node_internal *node, dom_string *content)
 {
-	dom_characterdata *cdata = (dom_characterdata *)node;
+    dom_characterdata *cdata = (dom_characterdata *)node;
 
-	return dom_characterdata_set_data(cdata, content);
+    return dom_characterdata_set_data(cdata, content);
 }
 
 /*----------------------------------------------------------------------*/
@@ -479,34 +454,32 @@ dom_exception _dom_characterdata_set_text_content(dom_node_internal *node,
 /* The protected virtual functions of Node, see core/node.h for details */
 void _dom_characterdata_destroy(struct dom_node_internal *node)
 {
-	assert("Should never be here" == NULL);
-	UNUSED(node);
+    assert("Should never be here" == NULL);
+    UNUSED(node);
 }
 
 /* The copy constructor of this class */
-dom_exception
-_dom_characterdata_copy(dom_node_internal *old, dom_node_internal **copy)
+dom_exception _dom_characterdata_copy(dom_node_internal *old, dom_node_internal **copy)
 {
-	dom_characterdata *new_node;
-	dom_exception err;
+    dom_characterdata *new_node;
+    dom_exception err;
 
-	new_node = malloc(sizeof(dom_characterdata));
-	if (new_node == NULL)
-		return DOM_NO_MEM_ERR;
+    new_node = malloc(sizeof(dom_characterdata));
+    if (new_node == NULL)
+        return DOM_NO_MEM_ERR;
 
-	err = dom_characterdata_copy_internal(old, new_node);
-	if (err != DOM_NO_ERR) {
-		free(new_node);
-		return err;
-	}
+    err = dom_characterdata_copy_internal(old, new_node);
+    if (err != DOM_NO_ERR) {
+        free(new_node);
+        return err;
+    }
 
-	*copy = (dom_node_internal *)new_node;
+    *copy = (dom_node_internal *)new_node;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
-dom_exception
-_dom_characterdata_copy_internal(dom_characterdata *old, dom_characterdata *new)
+dom_exception _dom_characterdata_copy_internal(dom_characterdata *old, dom_characterdata *new)
 {
-	return dom_node_copy_internal(old, new);
+    return dom_node_copy_internal(old, new);
 }
