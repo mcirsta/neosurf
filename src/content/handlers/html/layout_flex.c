@@ -182,14 +182,16 @@ static struct flex_ctx *layout_flex_ctx__create(html_content *content, const str
     ctx->horizontal = lh__flex_main_is_horizontal(flex);
     ctx->main_reversed = lh__flex_direction_reversed(flex);
 
-    /* Read CSS gap properties - column-gap is main for row, row-gap is main for column */
+    /* Read CSS gap properties per flexbox spec:
+     * - For row direction (horizontal): column-gap is main, row-gap is cross
+     * - For column direction (vertical): row-gap is main, column-gap is cross */
     ctx->main_gap = 0;
     ctx->cross_gap = 0;
     if (flex->style != NULL) {
         css_fixed gap_len = 0;
         css_unit gap_unit = CSS_UNIT_PX;
 
-        /* Main gap: column-gap for row direction, row-gap for column direction */
+        /* Main gap */
         if (ctx->horizontal) {
             if (css_computed_column_gap(flex->style, &gap_len, &gap_unit) == CSS_COLUMN_GAP_SET) {
                 ctx->main_gap = FIXTOINT(css_unit_len2device_px(flex->style, ctx->unit_len_ctx, gap_len, gap_unit));
@@ -200,7 +202,7 @@ static struct flex_ctx *layout_flex_ctx__create(html_content *content, const str
             }
         }
 
-        /* Cross gap: row-gap for row direction, column-gap for column direction */
+        /* Cross gap */
         if (ctx->horizontal) {
             if (css_computed_row_gap(flex->style, &gap_len, &gap_unit) == CSS_ROW_GAP_SET) {
                 ctx->cross_gap = FIXTOINT(css_unit_len2device_px(flex->style, ctx->unit_len_ctx, gap_len, gap_unit));
@@ -210,7 +212,11 @@ static struct flex_ctx *layout_flex_ctx__create(html_content *content, const str
                 ctx->cross_gap = FIXTOINT(css_unit_len2device_px(flex->style, ctx->unit_len_ctx, gap_len, gap_unit));
             }
         }
-        NSLOG(flex, DEEPDEBUG, "Flex gap: main=%d cross=%d", ctx->main_gap, ctx->cross_gap);
+        NSLOG(
+            flex, WARNING, "Flex gap: main=%d cross=%d horizontal=%d", ctx->main_gap, ctx->cross_gap, ctx->horizontal);
+        // fprintf(
+        //     stderr, "FLEX GAP DEBUG: main=%d cross=%d horizontal=%d\n", ctx->main_gap, ctx->cross_gap,
+        //     ctx->horizontal);
     }
 
     return ctx;
@@ -307,6 +313,19 @@ layout_flex__base_and_main_sizes(const struct flex_ctx *ctx, struct flex_item_da
     int content_max_width = b->max_width;
     int delta_outer_main = lh__delta_outer_main(ctx->flex, b);
 
+    /* Per CSS Flexbox spec §4.5, for flex items:
+     * - min-width/height: auto computes to min-content IF overflow is visible
+     * - If overflow is NOT visible (hidden/auto/scroll), min-width:auto = 0
+     * This allows flex items to shrink below their content size when overflow
+     * is set to hide/clip the overflowing content. */
+    if (ctx->horizontal && b->style != NULL) {
+        enum css_overflow_e overflow_x = css_computed_overflow_x(b->style);
+        if (overflow_x != CSS_OVERFLOW_VISIBLE) {
+            content_min_width = 0;
+            NSLOG(flex, DEEPDEBUG, "box %p: overflow_x=%d != visible, setting content_min_width=0", b, overflow_x);
+        }
+    }
+
     NSLOG(flex, DEEPDEBUG, "box %p: delta_outer_main: %i", b, delta_outer_main);
 
     if (item->basis == CSS_FLEX_BASIS_SET) {
@@ -351,6 +370,18 @@ layout_flex__base_and_main_sizes(const struct flex_ctx *ctx, struct flex_item_da
     }
 
     item->base_size += delta_outer_main;
+
+    /* Per CSS Flexbox spec §4.5: automatic minimum size is capped by
+     * the item's specified size (width/height) when it's definite.
+     * automatic_min = min(content_min, specified_size) */
+    if (ctx->horizontal && b->width != AUTO) {
+        int specified_main = b->width + delta_outer_main;
+        if (content_min_width > specified_main) {
+            NSLOG(flex, WARNING, "AUTO-MIN CAP: content_min_width %d -> %d (specified width=%d)", content_min_width,
+                specified_main, b->width);
+            content_min_width = specified_main;
+        }
+    }
 
     if (ctx->horizontal) {
         int before_clamp = item->base_size;
@@ -506,14 +537,19 @@ static struct flex_line_data *layout_flex__build_line(struct flex_ctx *ctx, size
         struct flex_item_data *item = &ctx->item.data[item_index];
         struct box *b = item->box;
         int pos_main;
+        int gap_for_item;
 
         pos_main = ctx->horizontal ? item->main_size : b->height + lh__delta_outer_main(ctx->flex, b);
 
-        if (ctx->wrap == CSS_FLEX_WRAP_NOWRAP || pos_main + used_main <= ctx->available_main ||
+        /* Account for gap: if this item is added, we need line->count gaps total
+         * (one gap between each pair of items) */
+        gap_for_item = (line->count > 0) ? ctx->main_gap : 0;
+
+        if (ctx->wrap == CSS_FLEX_WRAP_NOWRAP || pos_main + used_main + gap_for_item <= ctx->available_main ||
             lh__box_is_absolute(item->box) || ctx->available_main == AUTO || line->count == 0 || pos_main == 0) {
             if (lh__box_is_absolute(item->box) == false) {
                 line->main_size += item->main_size;
-                used_main += pos_main;
+                used_main += pos_main + gap_for_item;
 
                 if (b->margin[start_side] == AUTO) {
                     line->main_auto_margin_count++;
@@ -759,6 +795,15 @@ static bool layout_flex__resolve_line(struct flex_ctx *ctx, struct flex_line_dat
         available_main = line->main_size;
     }
 
+    /* Subtract gap space from available main - gaps are fixed gutters per CSS spec */
+    if (line->count > 1 && ctx->main_gap > 0) {
+        int gap_total = (int)(line->count - 1) * ctx->main_gap;
+        NSLOG(flex, WARNING, "GAP DEDUCT: available_main_before=%d gap_total=%d line->count=%zu", available_main,
+            gap_total, line->count);
+        available_main -= gap_total;
+        NSLOG(flex, WARNING, "GAP DEDUCT: available_main_after=%d", available_main);
+    }
+
     grow = (line->main_size < available_main);
     initial_free_main = available_main;
 
@@ -923,10 +968,8 @@ static bool layout_flex__place_line_items_main(struct flex_ctx *ctx, struct flex
 
         if (ctx->horizontal) {
             b->width = item->target_main_size - lh__delta_outer_width(b);
-
-            /* DIAG: Log before layout */
-            NSLOG(flex, DEEPDEBUG, "DIAG: before layout_flex_item box=%p target_main=%d b->width=%d", b,
-                item->target_main_size, b->width);
+            NSLOG(flex, WARNING, "ITEM[%zu]: width=%d target_main=%d delta_outer=%d", i, b->width,
+                item->target_main_size, lh__delta_outer_width(b));
 
             if (!layout_flex_item(ctx, item, b->width)) {
                 return false;
@@ -935,6 +978,8 @@ static bool layout_flex__place_line_items_main(struct flex_ctx *ctx, struct flex
 
         box_size_main = lh__box_size_main(ctx->horizontal, b);
         box_pos_main = ctx->horizontal ? &b->x : &b->y;
+
+        NSLOG(flex, WARNING, "ITEM[%zu]: main_pos_entry=%d box_size_main=%d", i, main_pos, box_size_main);
 
         if (!lh__box_is_absolute(b)) {
             if (b->margin[main_start] == AUTO) {
@@ -946,18 +991,18 @@ static bool layout_flex__place_line_items_main(struct flex_ctx *ctx, struct flex
             extra_total = extra_pre + extra_post;
 
             main_pos += pre_multiplier * (extra_total + box_size_main + lh__delta_outer_main(ctx->flex, b));
+            NSLOG(flex, WARNING, "ITEM[%zu]: after pre_mult main_pos=%d (pre_mult=%d)", i, main_pos, pre_multiplier);
         }
 
         *box_pos_main = main_pos + lh__non_auto_margin(b, main_start) + extra_pre + b->border[main_start].width;
-
-        /* DIAG: Log item final position */
-        NSLOG(flex, DEEPDEBUG, "DIAG: flex item box=%p pos_main=%d size_main=%d", b, *box_pos_main, box_size_main);
+        NSLOG(flex, WARNING, "ITEM[%zu]: POSITIONED at %d (main_pos=%d)", i, *box_pos_main, main_pos);
 
         if (!lh__box_is_absolute(b)) {
             int cross_size;
             int box_size_cross = lh__box_size_cross(ctx->horizontal, b);
 
             main_pos += post_multiplier * (extra_total + box_size_main + lh__delta_outer_main(ctx->flex, b));
+            NSLOG(flex, WARNING, "ITEM[%zu]: after post_mult main_pos=%d (post_mult=%d)", i, main_pos, post_multiplier);
 
             if (jc_gap_between > 0 || jc_gap_between_rem > 0) {
                 int extra_between_for_item = 0;
@@ -979,6 +1024,14 @@ static bool layout_flex__place_line_items_main(struct flex_ctx *ctx, struct flex
                 }
 
                 main_pos += (!ctx->main_reversed ? 1 : -1) * (jc_gap_between + extra_between_for_item);
+                NSLOG(flex, WARNING, "ITEM[%zu]: after jc_gap main_pos=%d (jc_gap=%d)", i, main_pos, jc_gap_between);
+            }
+
+            /* Add CSS gap property spacing between items (not after the last item) */
+            if (i < item_count - 1 && ctx->main_gap > 0) {
+                NSLOG(flex, WARNING, "ITEM[%zu]: ADDING CSS GAP main_pos_before=%d gap=%d", i, main_pos, ctx->main_gap);
+                main_pos += (!ctx->main_reversed ? 1 : -1) * ctx->main_gap;
+                NSLOG(flex, WARNING, "ITEM[%zu]: ADDING CSS GAP main_pos_after=%d", i, main_pos);
             }
 
             cross_size = box_size_cross + lh__delta_outer_cross(ctx->flex, b);
@@ -1028,6 +1081,11 @@ static bool layout_flex__collect_items_into_lines(struct flex_ctx *ctx)
         if (ctx->main_size < line->main_size) {
             ctx->main_size = line->main_size;
         }
+    }
+
+    /* Add total cross_gap to container's cross_size (one gap between each pair of lines) */
+    if (ctx->line.count > 1 && ctx->cross_gap > 0) {
+        ctx->cross_size += (ctx->line.count - 1) * ctx->cross_gap;
     }
 
     return true;
@@ -1118,9 +1176,15 @@ static void layout_flex__place_lines(struct flex_ctx *ctx)
         line->pos = line_pos;
         line_pos += post_multiplier * line->cross_size + extra + extra_remainder;
 
+        /* Add cross_gap between lines (not after the last line) */
+        if (i < ctx->line.count - 1 && ctx->cross_gap > 0) {
+            line_pos += (!reversed ? 1 : -1) * ctx->cross_gap;
+        }
+
         layout_flex__place_line_items_cross(ctx, line, extra + extra_remainder);
 
         if (extra_remainder > 0) {
+
             extra_remainder--;
         }
     }
