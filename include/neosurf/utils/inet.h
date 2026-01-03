@@ -35,10 +35,10 @@
 
 #ifdef HAVE_POSIX_INET_HEADERS
 
-#include <sys/socket.h>
-#include <netinet/in.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <sys/select.h>
+#include <sys/socket.h>
 
 #define ns_close_socket close
 

@@ -18,45 +18,45 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <dom/dom.h>
+#include <libwapcaplet/libwapcaplet.h>
 #include <locale.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <libwapcaplet/libwapcaplet.h>
-#include <dom/dom.h>
 
+#include <neosurf/content/handlers/css/css.h>
+#include <neosurf/content/handlers/html/html.h>
+#include <neosurf/content/hlcache.h>
 #include <neosurf/inttypes.h>
 #include <neosurf/utils/config.h>
-#include <utils/errors.h>
-#include "utils/nscolour.h"
-#include <neosurf/utils/nsoption.h>
 #include <neosurf/utils/corestrings.h>
 #include <neosurf/utils/log.h>
+#include <neosurf/utils/messages.h>
+#include <neosurf/utils/nsoption.h>
 #include <neosurf/utils/string.h>
 #include <neosurf/utils/utf8.h>
-#include <neosurf/utils/messages.h>
+#include <utils/errors.h>
+#include "utils/nscolour.h"
 #include "utils/useragent.h"
 #include "content/content_factory.h"
 #include "content/fetchers.h"
-#include <neosurf/content/hlcache.h>
-#include "content/mimesniff.h"
-#include "content/urldb.h"
-#include <neosurf/content/handlers/css/css.h>
 #include "content/handlers/image/image.h"
 #include "content/handlers/image/image_cache.h"
-#include "content/handlers/javascript/js.h"
-#include <neosurf/content/handlers/html/html.h>
-#include "content/handlers/text/textplain.h"
 #include "content/handlers/javascript/content.h"
+#include "content/handlers/javascript/js.h"
+#include "content/handlers/text/textplain.h"
+#include "content/mimesniff.h"
+#include "content/urldb.h"
 
 #include <neosurf/browser_window.h>
-#include "desktop/system_colour.h"
+#include <neosurf/desktop/gui_internal.h>
 #include <neosurf/desktop/page-info.h>
 #include <neosurf/desktop/searchweb.h>
 #include <neosurf/misc.h>
-#include <neosurf/desktop/gui_internal.h>
 #include <neosurf/neosurf.h>
+#include "desktop/system_colour.h"
 
 
 /** \todo QUERY - Remove this import later */
@@ -100,247 +100,179 @@
 
 static void neosurf_lwc_iterator(lwc_string *str, void *pw)
 {
-	unsigned *count = (unsigned *)pw;
-	if (count != NULL) {
-		(*count)++;
-	}
-	NSLOG(neosurf,
-	      WARNING,
-	      "[%3u] %.*s",
-	      str->refcnt,
-	      (int)lwc_string_length(str),
-	      lwc_string_data(str));
+    unsigned *count = (unsigned *)pw;
+    if (count != NULL) {
+        (*count)++;
+    }
+    NSLOG(neosurf, WARNING, "[%3u] %.*s", str->refcnt, (int)lwc_string_length(str), lwc_string_data(str));
 }
 
 /* exported interface documented in neosurf/neosurf.h */
 nserror neosurf_init(const char *store_path)
 {
-	nserror ret;
-	struct hlcache_parameters hlcache_parameters = {
-		.bg_clean_time = HL_CACHE_CLEAN_TIME,
-		.llcache = {
-			.minimum_lifetime = LLCACHE_STORE_MIN_LIFETIME,
-			.minimum_bandwidth = LLCACHE_STORE_MIN_BANDWIDTH,
-			.maximum_bandwidth = LLCACHE_STORE_MAX_BANDWIDTH,
-			.time_quantum = LLCACHE_STORE_TIME_QUANTUM,
-		}};
-	struct image_cache_parameters image_cache_parameters = {
-		.bg_clean_time = IMAGE_CACHE_CLEAN_TIME,
-		.speculative_small = SPECULATE_SMALL};
+    nserror ret;
+    struct hlcache_parameters hlcache_parameters = {.bg_clean_time = HL_CACHE_CLEAN_TIME,
+        .llcache = {
+            .minimum_lifetime = LLCACHE_STORE_MIN_LIFETIME,
+            .minimum_bandwidth = LLCACHE_STORE_MIN_BANDWIDTH,
+            .maximum_bandwidth = LLCACHE_STORE_MAX_BANDWIDTH,
+            .time_quantum = LLCACHE_STORE_TIME_QUANTUM,
+        }};
+    struct image_cache_parameters image_cache_parameters = {
+        .bg_clean_time = IMAGE_CACHE_CLEAN_TIME, .speculative_small = SPECULATE_SMALL};
 
 #ifdef HAVE_SIGPIPE
-	/* Ignore SIGPIPE - this is necessary as OpenSSL can generate these
-	 * and the default action is to terminate the app. There's no easy
-	 * way of determining the cause of the SIGPIPE (other than using
-	 * sigaction() and some mechanism for getting the file descriptor
-	 * out of libcurl). However, we expect nothing else to generate a
-	 * SIGPIPE, anyway, so may as well just ignore them all.
-	 */
-	signal(SIGPIPE, SIG_IGN);
+    /* Ignore SIGPIPE - this is necessary as OpenSSL can generate these
+     * and the default action is to terminate the app. There's no easy
+     * way of determining the cause of the SIGPIPE (other than using
+     * sigaction() and some mechanism for getting the file descriptor
+     * out of libcurl). However, we expect nothing else to generate a
+     * SIGPIPE, anyway, so may as well just ignore them all.
+     */
+    signal(SIGPIPE, SIG_IGN);
 #endif
 
-	NSLOG(neosurf, INFO, "neosurf_init: start");
-	/* corestrings init */
-	NSLOG(neosurf, INFO, "init corestrings");
-	ret = corestrings_init();
-	if (ret != NSERROR_OK) {
-		NSLOG(neosurf,
-		      ERROR,
-		      "corestrings_init failed (%s)",
-		      messages_get_errorcode(ret));
-		return ret;
-	}
+    NSLOG(neosurf, INFO, "neosurf_init: start");
+    /* corestrings init */
+    NSLOG(neosurf, INFO, "init corestrings");
+    ret = corestrings_init();
+    if (ret != NSERROR_OK) {
+        NSLOG(neosurf, ERROR, "corestrings_init failed (%s)", messages_get_errorcode(ret));
+        return ret;
+    }
 
-	/* Initialize urldb */
-	NSLOG(neosurf, INFO, "init urldb");
-	ret = urldb_init();
-	if (ret != NSERROR_OK) {
-		NSLOG(neosurf,
-		      ERROR,
-		      "urldb_init failed (%s)",
-		      messages_get_errorcode(ret));
-		return ret;
-	}
+    /* Initialize urldb */
+    NSLOG(neosurf, INFO, "init urldb");
+    ret = urldb_init();
+    if (ret != NSERROR_OK) {
+        NSLOG(neosurf, ERROR, "urldb_init failed (%s)", messages_get_errorcode(ret));
+        return ret;
+    }
 
-	NSLOG(neosurf, INFO, "update nscolour");
-	ret = nscolour_update();
-	if (ret != NSERROR_OK) {
-		NSLOG(neosurf,
-		      ERROR,
-		      "nscolour_update failed (%s)",
-		      messages_get_errorcode(ret));
-		return ret;
-	}
+    NSLOG(neosurf, INFO, "update nscolour");
+    ret = nscolour_update();
+    if (ret != NSERROR_OK) {
+        NSLOG(neosurf, ERROR, "nscolour_update failed (%s)", messages_get_errorcode(ret));
+        return ret;
+    }
 
-	/* set up cache limits based on the memory cache size option */
-	NSLOG(neosurf,
-	      INFO,
-	      "init cache params: mem=%d store_path=%s disc_cache_path=%s",
-	      nsoption_int(memory_cache_size),
-	      store_path ? store_path : "(null)",
-	      nsoption_charp(disc_cache_path) ? nsoption_charp(disc_cache_path)
-					      : "(null)");
-	hlcache_parameters.llcache.limit = nsoption_int(memory_cache_size);
+    /* set up cache limits based on the memory cache size option */
+    NSLOG(neosurf, INFO, "init cache params: mem=%d store_path=%s disc_cache_path=%s", nsoption_int(memory_cache_size),
+        store_path ? store_path : "(null)",
+        nsoption_charp(disc_cache_path) ? nsoption_charp(disc_cache_path) : "(null)");
+    hlcache_parameters.llcache.limit = nsoption_int(memory_cache_size);
 
-	if (hlcache_parameters.llcache.limit < MINIMUM_MEMORY_CACHE_SIZE) {
-		hlcache_parameters.llcache.limit = MINIMUM_MEMORY_CACHE_SIZE;
-		NSLOG(neosurf,
-		      INFO,
-		      "Setting minimum memory cache size %" PRIsizet,
-		      hlcache_parameters.llcache.limit);
-	}
+    if (hlcache_parameters.llcache.limit < MINIMUM_MEMORY_CACHE_SIZE) {
+        hlcache_parameters.llcache.limit = MINIMUM_MEMORY_CACHE_SIZE;
+        NSLOG(neosurf, INFO, "Setting minimum memory cache size %" PRIsizet, hlcache_parameters.llcache.limit);
+    }
 
-	/* Set up the max attempts made to fetch a timing out resource */
-	hlcache_parameters.llcache.fetch_attempts = nsoption_uint(
-		max_retried_fetches);
+    /* Set up the max attempts made to fetch a timing out resource */
+    hlcache_parameters.llcache.fetch_attempts = nsoption_uint(max_retried_fetches);
 
-	/* image cache is 25% of total memory cache size */
-	image_cache_parameters.limit = hlcache_parameters.llcache.limit / 4;
+    /* image cache is 25% of total memory cache size */
+    image_cache_parameters.limit = hlcache_parameters.llcache.limit / 4;
 
-	/* image cache hysteresis is 20% of the image cache size */
-	image_cache_parameters.hysteresis = image_cache_parameters.limit / 5;
+    /* image cache hysteresis is 20% of the image cache size */
+    image_cache_parameters.hysteresis = image_cache_parameters.limit / 5;
 
-	/* account for image cache use from total */
-	hlcache_parameters.llcache.limit -= image_cache_parameters.limit;
+    /* account for image cache use from total */
+    hlcache_parameters.llcache.limit -= image_cache_parameters.limit;
 
-	/* set backing store target limit */
-	hlcache_parameters.llcache.store.limit = nsoption_uint(disc_cache_size);
+    /* set backing store target limit */
+    hlcache_parameters.llcache.store.limit = nsoption_uint(disc_cache_size);
 
-	/* set backing store hysterissi to 20% */
-	hlcache_parameters.llcache.store.hysteresis =
-		hlcache_parameters.llcache.store.limit / 5;
+    /* set backing store hysterissi to 20% */
+    hlcache_parameters.llcache.store.hysteresis = hlcache_parameters.llcache.store.limit / 5;
 
-	/* set the path to the backing store */
-	hlcache_parameters.llcache.store.path =
-		nsoption_charp(disc_cache_path)
-			? nsoption_charp(disc_cache_path)
-			: store_path;
+    /* set the path to the backing store */
+    hlcache_parameters.llcache.store.path = nsoption_charp(disc_cache_path) ? nsoption_charp(disc_cache_path)
+                                                                            : store_path;
 
-	/* image handler bitmap cache */
-	NSLOG(neosurf,
-	      INFO,
-	      "init image_cache limit %" PRIsizet " hyst %" PRIsizet
-	      " speculate %" PRIsizet,
-	      image_cache_parameters.limit,
-	      image_cache_parameters.hysteresis,
-	      image_cache_parameters.speculative_small);
-	ret = image_cache_init(&image_cache_parameters);
-	if (ret != NSERROR_OK) {
-		NSLOG(neosurf,
-		      ERROR,
-		      "image_cache_init failed (%s)",
-		      messages_get_errorcode(ret));
-		return ret;
-	}
+    /* image handler bitmap cache */
+    NSLOG(neosurf, INFO, "init image_cache limit %" PRIsizet " hyst %" PRIsizet " speculate %" PRIsizet,
+        image_cache_parameters.limit, image_cache_parameters.hysteresis, image_cache_parameters.speculative_small);
+    ret = image_cache_init(&image_cache_parameters);
+    if (ret != NSERROR_OK) {
+        NSLOG(neosurf, ERROR, "image_cache_init failed (%s)", messages_get_errorcode(ret));
+        return ret;
+    }
 
-	/* content handler initialisation */
-	NSLOG(neosurf, INFO, "init CSS");
-	ret = nscss_init();
-	if (ret != NSERROR_OK) {
-		NSLOG(neosurf,
-		      ERROR,
-		      "nscss_init failed (%s)",
-		      messages_get_errorcode(ret));
-		return ret;
-	}
+    /* content handler initialisation */
+    NSLOG(neosurf, INFO, "init CSS");
+    ret = nscss_init();
+    if (ret != NSERROR_OK) {
+        NSLOG(neosurf, ERROR, "nscss_init failed (%s)", messages_get_errorcode(ret));
+        return ret;
+    }
 
-	NSLOG(neosurf, INFO, "init HTML");
-	ret = html_init();
-	if (ret != NSERROR_OK) {
-		NSLOG(neosurf,
-		      ERROR,
-		      "html_init failed (%s)",
-		      messages_get_errorcode(ret));
-		return ret;
-	}
+    NSLOG(neosurf, INFO, "init HTML");
+    ret = html_init();
+    if (ret != NSERROR_OK) {
+        NSLOG(neosurf, ERROR, "html_init failed (%s)", messages_get_errorcode(ret));
+        return ret;
+    }
 
-	NSLOG(neosurf, INFO, "init image handlers");
-	ret = image_init();
-	if (ret != NSERROR_OK) {
-		NSLOG(neosurf,
-		      ERROR,
-		      "image_init failed (%s)",
-		      messages_get_errorcode(ret));
-		return ret;
-	}
+    NSLOG(neosurf, INFO, "init image handlers");
+    ret = image_init();
+    if (ret != NSERROR_OK) {
+        NSLOG(neosurf, ERROR, "image_init failed (%s)", messages_get_errorcode(ret));
+        return ret;
+    }
 
-	NSLOG(neosurf, INFO, "init textplain");
-	ret = textplain_init();
-	if (ret != NSERROR_OK) {
-		NSLOG(neosurf,
-		      ERROR,
-		      "textplain_init failed (%s)",
-		      messages_get_errorcode(ret));
-		return ret;
-	}
+    NSLOG(neosurf, INFO, "init textplain");
+    ret = textplain_init();
+    if (ret != NSERROR_OK) {
+        NSLOG(neosurf, ERROR, "textplain_init failed (%s)", messages_get_errorcode(ret));
+        return ret;
+    }
 
-	setlocale(LC_ALL, "");
+    setlocale(LC_ALL, "");
 
-	/* initialise the fetchers */
-	NSLOG(neosurf, INFO, "init fetchers");
-	ret = fetcher_init();
-	if (ret != NSERROR_OK) {
-		NSLOG(neosurf,
-		      ERROR,
-		      "fetcher_init failed (%s)",
-		      messages_get_errorcode(ret));
-		return ret;
-	}
+    /* initialise the fetchers */
+    NSLOG(neosurf, INFO, "init fetchers");
+    ret = fetcher_init();
+    if (ret != NSERROR_OK) {
+        NSLOG(neosurf, ERROR, "fetcher_init failed (%s)", messages_get_errorcode(ret));
+        return ret;
+    }
 
-	/* Initialise the hlcache and allow it to init the llcache for us */
-	NSLOG(neosurf,
-	      INFO,
-	      "init hlcache: limit %" PRIsizet " store.limit %" PRIsizet
-	      " hyst %" PRIsizet " path %s",
-	      hlcache_parameters.llcache.limit,
-	      hlcache_parameters.llcache.store.limit,
-	      hlcache_parameters.llcache.store.hysteresis,
-	      hlcache_parameters.llcache.store.path
-		      ? hlcache_parameters.llcache.store.path
-		      : "(null)");
-	ret = hlcache_initialise(&hlcache_parameters);
-	if (ret != NSERROR_OK) {
-		NSLOG(neosurf,
-		      ERROR,
-		      "hlcache_initialise failed (%s)",
-		      messages_get_errorcode(ret));
-		return ret;
-	}
+    /* Initialise the hlcache and allow it to init the llcache for us */
+    NSLOG(neosurf, INFO, "init hlcache: limit %" PRIsizet " store.limit %" PRIsizet " hyst %" PRIsizet " path %s",
+        hlcache_parameters.llcache.limit, hlcache_parameters.llcache.store.limit,
+        hlcache_parameters.llcache.store.hysteresis,
+        hlcache_parameters.llcache.store.path ? hlcache_parameters.llcache.store.path : "(null)");
+    ret = hlcache_initialise(&hlcache_parameters);
+    if (ret != NSERROR_OK) {
+        NSLOG(neosurf, ERROR, "hlcache_initialise failed (%s)", messages_get_errorcode(ret));
+        return ret;
+    }
 
-	/* Initialize system colours */
-	NSLOG(neosurf, INFO, "init system colours");
-	ret = ns_system_colour_init();
-	if (ret != NSERROR_OK) {
-		NSLOG(neosurf,
-		      ERROR,
-		      "ns_system_colour_init failed (%s)",
-		      messages_get_errorcode(ret));
-		return ret;
-	}
+    /* Initialize system colours */
+    NSLOG(neosurf, INFO, "init system colours");
+    ret = ns_system_colour_init();
+    if (ret != NSERROR_OK) {
+        NSLOG(neosurf, ERROR, "ns_system_colour_init failed (%s)", messages_get_errorcode(ret));
+        return ret;
+    }
 
-	js_initialise();
-	ret = javascript_init();
-	if (ret != NSERROR_OK) {
-		NSLOG(neosurf,
-		      ERROR,
-		      "javascript_init failed (%s)",
-		      messages_get_errorcode(ret));
-		return ret;
-	}
+    js_initialise();
+    ret = javascript_init();
+    if (ret != NSERROR_OK) {
+        NSLOG(neosurf, ERROR, "javascript_init failed (%s)", messages_get_errorcode(ret));
+        return ret;
+    }
 
-	NSLOG(neosurf, INFO, "init page-info");
-	ret = page_info_init();
-	if (ret != NSERROR_OK) {
-		NSLOG(neosurf,
-		      ERROR,
-		      "page_info_init failed (%s)",
-		      messages_get_errorcode(ret));
-		return ret;
-	}
+    NSLOG(neosurf, INFO, "init page-info");
+    ret = page_info_init();
+    if (ret != NSERROR_OK) {
+        NSLOG(neosurf, ERROR, "page_info_init failed (%s)", messages_get_errorcode(ret));
+        return ret;
+    }
 
-	NSLOG(neosurf, INFO, "neosurf_init: success");
+    NSLOG(neosurf, INFO, "neosurf_init: success");
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
@@ -350,56 +282,54 @@ nserror neosurf_init(const char *store_path)
 
 void neosurf_exit(void)
 {
-	hlcache_stop();
+    hlcache_stop();
 
-	NSLOG(neosurf, INFO, "Closing GUI");
-	guit->misc->quit();
+    NSLOG(neosurf, INFO, "Closing GUI");
+    guit->misc->quit();
 
-	NSLOG(neosurf, INFO, "Finalising page-info module");
-	page_info_fini();
+    NSLOG(neosurf, INFO, "Finalising page-info module");
+    page_info_fini();
 
-	NSLOG(neosurf, INFO, "Finalising JavaScript");
-	js_finalise();
+    NSLOG(neosurf, INFO, "Finalising JavaScript");
+    js_finalise();
 
-	NSLOG(neosurf, INFO, "Finalising Web Search");
-	search_web_finalise();
+    NSLOG(neosurf, INFO, "Finalising Web Search");
+    search_web_finalise();
 
-	NSLOG(neosurf, INFO, "Finalising high-level cache");
-	hlcache_finalise();
+    NSLOG(neosurf, INFO, "Finalising high-level cache");
+    hlcache_finalise();
 
-	NSLOG(neosurf, INFO, "Closing fetches");
-	fetcher_quit();
-	/* Now the fetchers are done, our user-agent string can go */
-	free_user_agent_string();
+    NSLOG(neosurf, INFO, "Closing fetches");
+    fetcher_quit();
+    /* Now the fetchers are done, our user-agent string can go */
+    free_user_agent_string();
 
-	/* dump any remaining cache entries */
-	image_cache_fini();
+    /* dump any remaining cache entries */
+    image_cache_fini();
 
-	/* Clean up after content handlers */
-	content_factory_fini();
+    /* Clean up after content handlers */
+    content_factory_fini();
 
-	NSLOG(neosurf, INFO, "Closing utf8");
-	utf8_finalise();
+    NSLOG(neosurf, INFO, "Closing utf8");
+    utf8_finalise();
 
-	NSLOG(neosurf, INFO, "Destroying URLdb");
-	urldb_destroy();
+    NSLOG(neosurf, INFO, "Destroying URLdb");
+    urldb_destroy();
 
-	NSLOG(neosurf, INFO, "Destroying System colours");
-	ns_system_colour_finalize();
+    NSLOG(neosurf, INFO, "Destroying System colours");
+    ns_system_colour_finalize();
 
-	NSLOG(neosurf, INFO, "Destroying Messages");
-	messages_destroy();
+    NSLOG(neosurf, INFO, "Destroying Messages");
+    messages_destroy();
 
-	corestrings_fini();
-	if (dom_namespace_finalise() != DOM_NO_ERR) {
-		NSLOG(neosurf,
-		      WARNING,
-		      "Unable to finalise DOM namespace strings");
-	}
-	NSLOG(neosurf, INFO, "Remaining lwc strings:");
-	unsigned lwc_count = 0;
-	lwc_iterate_strings(neosurf_lwc_iterator, &lwc_count);
-	NSLOG(neosurf, INFO, "Remaining lwc strings count: %u", lwc_count);
+    corestrings_fini();
+    if (dom_namespace_finalise() != DOM_NO_ERR) {
+        NSLOG(neosurf, WARNING, "Unable to finalise DOM namespace strings");
+    }
+    NSLOG(neosurf, INFO, "Remaining lwc strings:");
+    unsigned lwc_count = 0;
+    lwc_iterate_strings(neosurf_lwc_iterator, &lwc_count);
+    NSLOG(neosurf, INFO, "Remaining lwc strings count: %u", lwc_count);
 
-	NSLOG(neosurf, INFO, "Exited successfully");
+    NSLOG(neosurf, INFO, "Exited successfully");
 }

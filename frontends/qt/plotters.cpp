@@ -21,23 +21,23 @@
  * Implementation of plotters for qt.
  */
 
-#include <stddef.h>
 #include <QPainter>
 #include <QPainterPath>
+#include <stddef.h>
 
 extern "C" {
 
-#include "utils/log.h"
 #include "utils/errors.h"
-#include "neosurf/types.h"
+#include "utils/log.h"
 #include "neosurf/mouse.h"
-#include "neosurf/window.h"
 #include "neosurf/plotters.h"
+#include "neosurf/types.h"
+#include "neosurf/window.h"
 }
 
-#include "qt/window.h"
 #include "qt/layout.h"
 #include "qt/plotters.h"
+#include "qt/window.h"
 
 
 /**
@@ -45,34 +45,32 @@ extern "C" {
  */
 static nserror nsqt_set_style(QPainter *painter, const plot_style_t *style)
 {
-	QColor fillcolour(style->fill_colour & 0xFF,
-			  (style->fill_colour & 0xFF00) >> 8,
-			  (style->fill_colour & 0xFF0000) >> 16);
-	/*NSLOG(netsurf, WARNING,"fill_colour %x -> %d,%d,%d",
-	      style->fill_colour,
-	      style->fill_colour & 0xFF,
-	      (style->fill_colour & 0xFF00) >>8,
-	      (style->fill_colour & 0xFF0000) >>16);*/
-	Qt::BrushStyle brushstyle = Qt::NoBrush;
-	if (style->fill_type != PLOT_OP_TYPE_NONE) {
-		brushstyle = Qt::SolidPattern;
-	}
-	QBrush brush(fillcolour, brushstyle);
-	painter->setBrush(brush);
+    QColor fillcolour(
+        style->fill_colour & 0xFF, (style->fill_colour & 0xFF00) >> 8, (style->fill_colour & 0xFF0000) >> 16);
+    /*NSLOG(netsurf, WARNING,"fill_colour %x -> %d,%d,%d",
+          style->fill_colour,
+          style->fill_colour & 0xFF,
+          (style->fill_colour & 0xFF00) >>8,
+          (style->fill_colour & 0xFF0000) >>16);*/
+    Qt::BrushStyle brushstyle = Qt::NoBrush;
+    if (style->fill_type != PLOT_OP_TYPE_NONE) {
+        brushstyle = Qt::SolidPattern;
+    }
+    QBrush brush(fillcolour, brushstyle);
+    painter->setBrush(brush);
 
-	QColor strokecolour(style->stroke_colour & 0xFF,
-			    (style->stroke_colour & 0xFF00) >> 8,
-			    (style->stroke_colour & 0xFF0000) >> 16);
-	QPen pen(strokecolour);
-	Qt::PenStyle penstyle = Qt::NoPen;
-	if (style->stroke_type != PLOT_OP_TYPE_NONE) {
-		penstyle = Qt::SolidLine;
-	}
-	pen.setStyle(penstyle);
+    QColor strokecolour(
+        style->stroke_colour & 0xFF, (style->stroke_colour & 0xFF00) >> 8, (style->stroke_colour & 0xFF0000) >> 16);
+    QPen pen(strokecolour);
+    Qt::PenStyle penstyle = Qt::NoPen;
+    if (style->stroke_type != PLOT_OP_TYPE_NONE) {
+        penstyle = Qt::SolidLine;
+    }
+    pen.setStyle(penstyle);
 
-	painter->setPen(pen);
+    painter->setPen(pen);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
@@ -84,14 +82,12 @@ static nserror nsqt_set_style(QPainter *painter, const plot_style_t *style)
  *              operations within.
  * \return NSERROR_OK on success else error code.
  */
-static nserror
-nsqt_plot_clip(const struct redraw_context *ctx, const struct rect *clip)
+static nserror nsqt_plot_clip(const struct redraw_context *ctx, const struct rect *clip)
 {
-	QPainter *painter = (QPainter *)ctx->priv;
+    QPainter *painter = (QPainter *)ctx->priv;
 
-	painter->setClipRect(
-		clip->x0, clip->y0, clip->x1 - clip->x0, clip->y1 - clip->y0);
-	return NSERROR_OK;
+    painter->setClipRect(clip->x0, clip->y0, clip->x1 - clip->x0, clip->y1 - clip->y0);
+    return NSERROR_OK;
 }
 
 
@@ -111,15 +107,10 @@ nsqt_plot_clip(const struct redraw_context *ctx, const struct rect *clip)
  * \param angle2 The finish angle of the arc.
  * \return NSERROR_OK on success else error code.
  */
-static nserror nsqt_plot_arc(const struct redraw_context *ctx,
-			     const plot_style_t *style,
-			     int x,
-			     int y,
-			     int radius,
-			     int angle1,
-			     int angle2)
+static nserror nsqt_plot_arc(
+    const struct redraw_context *ctx, const plot_style_t *style, int x, int y, int radius, int angle1, int angle2)
 {
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
@@ -135,13 +126,9 @@ static nserror nsqt_plot_arc(const struct redraw_context *ctx,
  * \param radius circle radius.
  * \return NSERROR_OK on success else error code.
  */
-static nserror nsqt_plot_disc(const struct redraw_context *ctx,
-			      const plot_style_t *style,
-			      int x,
-			      int y,
-			      int radius)
+static nserror nsqt_plot_disc(const struct redraw_context *ctx, const plot_style_t *style, int x, int y, int radius)
 {
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
@@ -156,16 +143,14 @@ static nserror nsqt_plot_disc(const struct redraw_context *ctx,
  * \param line A rectangle defining the line to be drawn
  * \return NSERROR_OK on success else error code.
  */
-static nserror nsqt_plot_line(const struct redraw_context *ctx,
-			      const plot_style_t *style,
-			      const struct rect *line)
+static nserror nsqt_plot_line(const struct redraw_context *ctx, const plot_style_t *style, const struct rect *line)
 {
-	QPainter *painter = (QPainter *)ctx->priv;
-	nsqt_set_style(painter, style);
+    QPainter *painter = (QPainter *)ctx->priv;
+    nsqt_set_style(painter, style);
 
-	painter->drawLine(line->x0, line->y0, line->x1, line->y1);
+    painter->drawLine(line->x0, line->y0, line->x1, line->y1);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
@@ -182,15 +167,12 @@ static nserror nsqt_plot_line(const struct redraw_context *ctx,
  * \param rect A rectangle defining the line to be drawn
  * \return NSERROR_OK on success else error code.
  */
-static nserror nsqt_plot_rectangle(const struct redraw_context *ctx,
-				   const plot_style_t *style,
-				   const struct rect *rect)
+static nserror nsqt_plot_rectangle(const struct redraw_context *ctx, const plot_style_t *style, const struct rect *rect)
 {
-	QPainter *painter = (QPainter *)ctx->priv;
-	nsqt_set_style(painter, style);
-	painter->drawRect(
-		rect->x0, rect->y0, rect->x1 - rect->x0, rect->y1 - rect->y0);
-	return NSERROR_OK;
+    QPainter *painter = (QPainter *)ctx->priv;
+    nsqt_set_style(painter, style);
+    painter->drawRect(rect->x0, rect->y0, rect->x1 - rect->x0, rect->y1 - rect->y0);
+    return NSERROR_OK;
 }
 
 
@@ -208,12 +190,10 @@ static nserror nsqt_plot_rectangle(const struct redraw_context *ctx,
  * \param n number of verticies.
  * \return NSERROR_OK on success else error code.
  */
-static nserror nsqt_plot_polygon(const struct redraw_context *ctx,
-				 const plot_style_t *style,
-				 const int *p,
-				 unsigned int n)
+static nserror
+nsqt_plot_polygon(const struct redraw_context *ctx, const plot_style_t *style, const int *p, unsigned int n)
 {
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
@@ -242,72 +222,57 @@ static nserror nsqt_plot_polygon(const struct redraw_context *ctx,
  * \param transform A transform to apply to the path.
  * \return NSERROR_OK on success else error code.
  */
-static nserror nsqt_plot_path(const struct redraw_context *ctx,
-			      const plot_style_t *pstyle,
-			      const float *p,
-			      unsigned int pn,
-			      const float transform[6])
+static nserror nsqt_plot_path(const struct redraw_context *ctx, const plot_style_t *pstyle, const float *p,
+    unsigned int pn, const float transform[6])
 {
-	unsigned int idx = 0;
-	QPainter *painter = (QPainter *)ctx->priv;
+    unsigned int idx = 0;
+    QPainter *painter = (QPainter *)ctx->priv;
 
-	if (pn < 3) {
-		/* path does not have enough points for initial move */
-		return NSERROR_OK;
-	}
-	if (p[0] != PLOTTER_PATH_MOVE) {
-		NSLOG(netsurf, INFO, "Path does not start with move");
-		return NSERROR_INVALID;
-	}
+    if (pn < 3) {
+        /* path does not have enough points for initial move */
+        return NSERROR_OK;
+    }
+    if (p[0] != PLOTTER_PATH_MOVE) {
+        NSLOG(netsurf, INFO, "Path does not start with move");
+        return NSERROR_INVALID;
+    }
 
-	QPainterPath qtpath(QPointF(p[1], p[2]));
-	for (idx = 3; idx < pn;) {
-		switch ((int)p[idx]) {
-		case PLOTTER_PATH_MOVE:
-			qtpath.moveTo(p[idx + 1], p[idx + 2]);
-			idx += 3;
-			break;
-		case PLOTTER_PATH_CLOSE:
-			qtpath.closeSubpath();
-			idx += 1;
-			break;
-		case PLOTTER_PATH_LINE:
-			qtpath.lineTo(p[idx + 1], p[idx + 2]);
-			idx += 3;
-			break;
-		case PLOTTER_PATH_BEZIER:
-			qtpath.cubicTo(p[idx + 1],
-				       p[idx + 2],
-				       p[idx + 3],
-				       p[idx + 4],
-				       p[idx + 5],
-				       p[idx + 6]);
-			idx += 7;
-			break;
+    QPainterPath qtpath(QPointF(p[1], p[2]));
+    for (idx = 3; idx < pn;) {
+        switch ((int)p[idx]) {
+        case PLOTTER_PATH_MOVE:
+            qtpath.moveTo(p[idx + 1], p[idx + 2]);
+            idx += 3;
+            break;
+        case PLOTTER_PATH_CLOSE:
+            qtpath.closeSubpath();
+            idx += 1;
+            break;
+        case PLOTTER_PATH_LINE:
+            qtpath.lineTo(p[idx + 1], p[idx + 2]);
+            idx += 3;
+            break;
+        case PLOTTER_PATH_BEZIER:
+            qtpath.cubicTo(p[idx + 1], p[idx + 2], p[idx + 3], p[idx + 4], p[idx + 5], p[idx + 6]);
+            idx += 7;
+            break;
 
-		default:
-			NSLOG(netsurf, INFO, "bad path command %f", p[idx]);
-			return NSERROR_INVALID;
-		}
-	}
-	qtpath.setFillRule(Qt::WindingFill);
+        default:
+            NSLOG(netsurf, INFO, "bad path command %f", p[idx]);
+            return NSERROR_INVALID;
+        }
+    }
+    qtpath.setFillRule(Qt::WindingFill);
 
-	nsqt_set_style(painter, pstyle);
-	const QTransform orig_transform = painter->transform();
-	painter->setTransform(QTransform(transform[0],
-					 transform[1],
-					 0.0,
-					 transform[2],
-					 transform[3],
-					 0.0,
-					 transform[4],
-					 transform[5],
-					 1.0),
-			      true);
-	painter->drawPath(qtpath);
+    nsqt_set_style(painter, pstyle);
+    const QTransform orig_transform = painter->transform();
+    painter->setTransform(
+        QTransform(transform[0], transform[1], 0.0, transform[2], transform[3], 0.0, transform[4], transform[5], 1.0),
+        true);
+    painter->drawPath(qtpath);
 
-	painter->setTransform(orig_transform);
-	return NSERROR_OK;
+    painter->setTransform(orig_transform);
+    return NSERROR_OK;
 }
 
 
@@ -335,21 +300,15 @@ static nserror nsqt_plot_path(const struct redraw_context *ctx,
  * \param flags the flags controlling the type of plot operation
  * \return NSERROR_OK on success else error code.
  */
-static nserror nsqt_plot_bitmap(const struct redraw_context *ctx,
-				struct bitmap *bitmap,
-				int x,
-				int y,
-				int width,
-				int height,
-				colour bg,
-				bitmap_flags_t flags)
+static nserror nsqt_plot_bitmap(const struct redraw_context *ctx, struct bitmap *bitmap, int x, int y, int width,
+    int height, colour bg, bitmap_flags_t flags)
 {
-	QImage *img = (QImage *)bitmap;
-	QPainter *painter = (QPainter *)ctx->priv;
-	QRectF source(0, 0, img->width(), img->height());
-	QRectF target(x, y, width, height);
-	painter->drawImage(target, *img, source);
-	return NSERROR_OK;
+    QImage *img = (QImage *)bitmap;
+    QPainter *painter = (QPainter *)ctx->priv;
+    QRectF source(0, 0, img->width(), img->height());
+    QRectF target(x, y, width, height);
+    painter->drawImage(target, *img, source);
+    return NSERROR_OK;
 }
 
 
@@ -364,15 +323,10 @@ static nserror nsqt_plot_bitmap(const struct redraw_context *ctx,
  * \param length length of string, in bytes
  * \return NSERROR_OK on success else error code.
  */
-static nserror nsqt_plot_text(const struct redraw_context *ctx,
-			      const struct plot_font_style *fstyle,
-			      int x,
-			      int y,
-			      const char *text,
-			      size_t length)
+static nserror nsqt_plot_text(const struct redraw_context *ctx, const struct plot_font_style *fstyle, int x, int y,
+    const char *text, size_t length)
 {
-	return nsqt_layout_plot(
-		(QPainter *)ctx->priv, fstyle, x, y, text, length);
+    return nsqt_layout_plot((QPainter *)ctx->priv, fstyle, x, y, text, length);
 }
 
 
@@ -380,15 +334,15 @@ static nserror nsqt_plot_text(const struct redraw_context *ctx,
  * QT plotter table
  */
 const struct plotter_table nsqt_plotters = {.clip = nsqt_plot_clip,
-					    .arc = nsqt_plot_arc,
-					    .disc = nsqt_plot_disc,
-					    .line = nsqt_plot_line,
-					    .rectangle = nsqt_plot_rectangle,
-					    .polygon = nsqt_plot_polygon,
-					    .path = nsqt_plot_path,
-					    .bitmap = nsqt_plot_bitmap,
-					    .text = nsqt_plot_text,
-					    .group_start = NULL,
-					    .group_end = NULL,
-					    .flush = NULL,
-					    .option_knockout = true};
+    .arc = nsqt_plot_arc,
+    .disc = nsqt_plot_disc,
+    .line = nsqt_plot_line,
+    .rectangle = nsqt_plot_rectangle,
+    .polygon = nsqt_plot_polygon,
+    .path = nsqt_plot_path,
+    .bitmap = nsqt_plot_bitmap,
+    .text = nsqt_plot_text,
+    .group_start = NULL,
+    .group_end = NULL,
+    .flush = NULL,
+    .option_knockout = true};

@@ -15,8 +15,8 @@
 #include <stddef.h>
 
 struct list_entry {
-	struct list_entry *prev;
-	struct list_entry *next;
+    struct list_entry *prev;
+    struct list_entry *next;
 };
 
 /**
@@ -26,8 +26,8 @@ struct list_entry {
  */
 static inline void list_init(struct list_entry *ent)
 {
-	ent->prev = ent;
-	ent->next = ent;
+    ent->prev = ent;
+    ent->next = ent;
 }
 
 /**
@@ -38,10 +38,10 @@ static inline void list_init(struct list_entry *ent)
  */
 static inline void list_append(struct list_entry *head, struct list_entry *new)
 {
-	new->next = head;
-	new->prev = head->prev;
-	head->prev->next = new;
-	head->prev = new;
+    new->next = head;
+    new->prev = head->prev;
+    head->prev->next = new;
+    head->prev = new;
 }
 
 /**
@@ -51,11 +51,11 @@ static inline void list_append(struct list_entry *head, struct list_entry *new)
  */
 static inline void list_del(struct list_entry *ent)
 {
-	ent->prev->next = ent->next;
-	ent->next->prev = ent->prev;
+    ent->prev->next = ent->next;
+    ent->next->prev = ent->prev;
 
-	ent->prev = ent;
-	ent->next = ent;
+    ent->prev = ent;
+    ent->next = ent;
 }
 
 #endif

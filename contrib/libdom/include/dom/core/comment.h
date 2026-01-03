@@ -10,8 +10,8 @@
 
 #include <stdbool.h>
 
-#include <dom/core/exceptions.h>
 #include <dom/core/characterdata.h>
+#include <dom/core/exceptions.h>
 
 typedef struct dom_comment dom_comment;
 

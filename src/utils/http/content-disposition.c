@@ -25,53 +25,51 @@
 #include "utils/http/primitives.h"
 
 /* See content-disposition.h for documentation */
-nserror http_parse_content_disposition(const char *header_value,
-				       http_content_disposition **result)
+nserror http_parse_content_disposition(const char *header_value, http_content_disposition **result)
 {
-	const char *pos = header_value;
-	lwc_string *mtype;
-	http_parameter *params = NULL;
-	http_content_disposition *cd;
-	nserror error;
+    const char *pos = header_value;
+    lwc_string *mtype;
+    http_parameter *params = NULL;
+    http_content_disposition *cd;
+    nserror error;
 
-	/* disposition-type *( ";" parameter ) */
+    /* disposition-type *( ";" parameter ) */
 
-	http__skip_LWS(&pos);
+    http__skip_LWS(&pos);
 
-	error = http__parse_token(&pos, &mtype);
-	if (error != NSERROR_OK)
-		return error;
+    error = http__parse_token(&pos, &mtype);
+    if (error != NSERROR_OK)
+        return error;
 
-	http__skip_LWS(&pos);
+    http__skip_LWS(&pos);
 
-	if (*pos == ';') {
-		error = http__item_list_parse(
-			&pos, http__parse_parameter, NULL, &params);
-		if (error != NSERROR_OK && error != NSERROR_NOT_FOUND) {
-			lwc_string_unref(mtype);
-			return error;
-		}
-	}
+    if (*pos == ';') {
+        error = http__item_list_parse(&pos, http__parse_parameter, NULL, &params);
+        if (error != NSERROR_OK && error != NSERROR_NOT_FOUND) {
+            lwc_string_unref(mtype);
+            return error;
+        }
+    }
 
-	cd = malloc(sizeof(*cd));
-	if (cd == NULL) {
-		http_parameter_list_destroy(params);
-		lwc_string_unref(mtype);
-		return NSERROR_NOMEM;
-	}
+    cd = malloc(sizeof(*cd));
+    if (cd == NULL) {
+        http_parameter_list_destroy(params);
+        lwc_string_unref(mtype);
+        return NSERROR_NOMEM;
+    }
 
-	cd->disposition_type = mtype;
-	cd->parameters = params;
+    cd->disposition_type = mtype;
+    cd->parameters = params;
 
-	*result = cd;
+    *result = cd;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /* See content-disposition.h for documentation */
 void http_content_disposition_destroy(http_content_disposition *victim)
 {
-	lwc_string_unref(victim->disposition_type);
-	http_parameter_list_destroy(victim->parameters);
-	free(victim);
+    lwc_string_unref(victim->disposition_type);
+    http_parameter_list_destroy(victim->parameters);
+    free(victim);
 }

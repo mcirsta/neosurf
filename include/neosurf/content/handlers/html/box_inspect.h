@@ -67,12 +67,8 @@ void box_bounds(struct box *box, struct rect *r);
  *	}
  * \endcode
  */
-struct box *box_at_point(const css_unit_ctx *unit_len_ctx,
-			 struct box *box,
-			 const int x,
-			 const int y,
-			 int *box_x,
-			 int *box_y);
+struct box *
+box_at_point(const css_unit_ctx *unit_len_ctx, struct box *box, const int x, const int y, int *box_x, int *box_y);
 
 
 /**
@@ -130,12 +126,7 @@ bool box_hscrollbar_present(const struct box *box);
  * \param dx	receives x ordinate of mouse relative to text box
  * \param dy	receives y ordinate of mouse relative to text box
  */
-struct box *box_pick_text_box(struct html_content *html,
-			      int x,
-			      int y,
-			      int dir,
-			      int *dx,
-			      int *dy);
+struct box *box_pick_text_box(struct html_content *html, int x, int y, int dir, int *dx, int *dy);
 
 
 /**
@@ -146,20 +137,20 @@ struct box *box_pick_text_box(struct html_content *html,
  */
 static inline bool box_is_first_child(struct box *b)
 {
-	return (b->parent == NULL || b == b->parent->children);
+    return (b->parent == NULL || b == b->parent->children);
 }
 
 static inline unsigned box_count_children(const struct box *b)
 {
-	const struct box *c = b->children;
-	unsigned count = 0;
+    const struct box *c = b->children;
+    unsigned count = 0;
 
-	while (c != NULL) {
-		count++;
-		c = c->next;
-	}
+    while (c != NULL) {
+        count++;
+        c = c->next;
+    }
 
-	return count;
+    return count;
 }
 
 #endif

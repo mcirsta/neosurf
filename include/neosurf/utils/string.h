@@ -24,8 +24,8 @@
 #ifndef _NETSURF_UTILS_STRING_H_
 #define _NETSURF_UTILS_STRING_H_
 
-#include <stdlib.h>
 #include <stdarg.h>
+#include <stdlib.h>
 
 #include <neosurf/utils/errors.h>
 

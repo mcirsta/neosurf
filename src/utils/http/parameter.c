@@ -29,10 +29,10 @@
  * Representation of an HTTP parameter
  */
 struct http_parameter {
-	http__item base;
+    http__item base;
 
-	lwc_string *name; /**< Parameter name */
-	lwc_string *value; /**< Parameter value */
+    lwc_string *name; /**< Parameter name */
+    lwc_string *value; /**< Parameter value */
 };
 
 /**
@@ -42,11 +42,11 @@ struct http_parameter {
  */
 static void http_destroy_parameter(http__item *item)
 {
-	http_parameter *self = (http_parameter *)item;
+    http_parameter *self = (http_parameter *)item;
 
-	lwc_string_unref(self->name);
-	lwc_string_unref(self->value);
-	free(self);
+    lwc_string_unref(self->name);
+    lwc_string_unref(self->value);
+    free(self);
 }
 
 /**
@@ -62,96 +62,90 @@ static void http_destroy_parameter(http__item *item)
  */
 nserror http__parse_parameter(const char **input, http__item **parameter)
 {
-	const char *pos = *input;
-	lwc_string *name;
-	lwc_string *value;
-	http_parameter *param;
-	nserror error;
+    const char *pos = *input;
+    lwc_string *name;
+    lwc_string *value;
+    http_parameter *param;
+    nserror error;
 
-	/* token "=" ( token | quoted-string ) */
+    /* token "=" ( token | quoted-string ) */
 
-	error = http__parse_token(&pos, &name);
-	if (error != NSERROR_OK)
-		return error;
+    error = http__parse_token(&pos, &name);
+    if (error != NSERROR_OK)
+        return error;
 
-	http__skip_LWS(&pos);
+    http__skip_LWS(&pos);
 
-	if (*pos != '=') {
-		lwc_string_unref(name);
-		return NSERROR_NOT_FOUND;
-	}
+    if (*pos != '=') {
+        lwc_string_unref(name);
+        return NSERROR_NOT_FOUND;
+    }
 
-	pos++;
+    pos++;
 
-	http__skip_LWS(&pos);
+    http__skip_LWS(&pos);
 
-	if (*pos == '"')
-		error = http__parse_quoted_string(&pos, &value);
-	else
-		error = http__parse_token(&pos, &value);
+    if (*pos == '"')
+        error = http__parse_quoted_string(&pos, &value);
+    else
+        error = http__parse_token(&pos, &value);
 
-	if (error != NSERROR_OK) {
-		lwc_string_unref(name);
-		return error;
-	}
+    if (error != NSERROR_OK) {
+        lwc_string_unref(name);
+        return error;
+    }
 
-	param = malloc(sizeof(*param));
-	if (param == NULL) {
-		lwc_string_unref(value);
-		lwc_string_unref(name);
-		return NSERROR_NOMEM;
-	}
+    param = malloc(sizeof(*param));
+    if (param == NULL) {
+        lwc_string_unref(value);
+        lwc_string_unref(name);
+        return NSERROR_NOMEM;
+    }
 
-	HTTP__ITEM_INIT(param, NULL, http_destroy_parameter);
-	param->name = name;
-	param->value = value;
+    HTTP__ITEM_INIT(param, NULL, http_destroy_parameter);
+    param->name = name;
+    param->value = value;
 
-	*parameter = (http__item *)param;
-	*input = pos;
+    *parameter = (http__item *)param;
+    *input = pos;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /* See parameter.h for documentation */
-nserror http_parameter_list_find_item(const http_parameter *list,
-				      lwc_string *name,
-				      lwc_string **value)
+nserror http_parameter_list_find_item(const http_parameter *list, lwc_string *name, lwc_string **value)
 {
-	bool match;
+    bool match;
 
-	while (list != NULL) {
-		if (lwc_string_caseless_isequal(name, list->name, &match) ==
-			    lwc_error_ok &&
-		    match)
-			break;
+    while (list != NULL) {
+        if (lwc_string_caseless_isequal(name, list->name, &match) == lwc_error_ok && match)
+            break;
 
-		list = (http_parameter *)list->base.next;
-	}
+        list = (http_parameter *)list->base.next;
+    }
 
-	if (list == NULL)
-		return NSERROR_NOT_FOUND;
+    if (list == NULL)
+        return NSERROR_NOT_FOUND;
 
-	*value = lwc_string_ref(list->value);
+    *value = lwc_string_ref(list->value);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /* See parameter.h for documentation */
-const http_parameter *http_parameter_list_iterate(const http_parameter *cur,
-						  lwc_string **name,
-						  lwc_string **value)
+const http_parameter *http_parameter_list_iterate(const http_parameter *cur, lwc_string **name, lwc_string **value)
 {
-	if (cur == NULL)
-		return NULL;
+    if (cur == NULL)
+        return NULL;
 
-	*name = lwc_string_ref(cur->name);
-	*value = lwc_string_ref(cur->value);
+    *name = lwc_string_ref(cur->name);
+    *value = lwc_string_ref(cur->value);
 
-	return (http_parameter *)cur->base.next;
+    return (http_parameter *)cur->base.next;
 }
 
 /* See parameter.h for documentation */
 void http_parameter_list_destroy(http_parameter *list)
 {
-	http__item_list_destroy(list);
+    http__item_list_destroy(list);
 }

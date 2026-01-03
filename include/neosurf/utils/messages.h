@@ -36,8 +36,8 @@
 
 #include <stdint.h>
 
-#include <neosurf/utils/errors.h>
 #include <neosurf/ssl_certs.h>
+#include <neosurf/utils/errors.h>
 
 /**
  * Read keys and values from messages file into the standard Messages hash.

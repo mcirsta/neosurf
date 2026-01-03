@@ -12,69 +12,62 @@
 struct options;
 
 struct binding_interface {
-	const char *name; /**< name of interface */
-	struct genbind_node *node; /**< node of interface in binding */
-	struct webidl_node *widl_node; /**< node of interface in webidl */
-	const char *inherit_name; /**< name of interface this inherits from */
-	int own_properties; /**< the number of properties the interface has */
-	int own_functions; /**< the number of functions the interface has */
+    const char *name; /**< name of interface */
+    struct genbind_node *node; /**< node of interface in binding */
+    struct webidl_node *widl_node; /**< node of interface in webidl */
+    const char *inherit_name; /**< name of interface this inherits from */
+    int own_properties; /**< the number of properties the interface has */
+    int own_functions; /**< the number of functions the interface has */
 
-	bool has_type_properties; /**< some of the properties on the
-				   * interface have a type handler
-				   */
+    bool has_type_properties; /**< some of the properties on the
+                               * interface have a type handler
+                               */
 
-	int inherit_idx; /**< index into binding map of inherited
-			  * interface or -1 for not in map
-			  */
-	int refcount; /**< number of entries in map that refer to this
-		       * interface
-		       */
-	int output_idx; /**< for interfaces that will be output (node
-			 * is valid) this is the output array index
-			 */
+    int inherit_idx; /**< index into binding map of inherited
+                      * interface or -1 for not in map
+                      */
+    int refcount; /**< number of entries in map that refer to this
+                   * interface
+                   */
+    int output_idx; /**< for interfaces that will be output (node
+                     * is valid) this is the output array index
+                     */
 };
 
 struct binding {
-	struct genbind_node *gb_ast; /* root node of binding AST */
-	struct webidl_node *wi_ast; /* root node of webidl AST */
+    struct genbind_node *gb_ast; /* root node of binding AST */
+    struct webidl_node *wi_ast; /* root node of webidl AST */
 
-	const char
-		*name; /* Name of binding (first interface name by default) */
-	int interfacec; /* numer of interfaces in the interface map */
-	struct binding_interface *interfaces; /* binding interface map */
+    const char *name; /* Name of binding (first interface name by default) */
+    int interfacec; /* numer of interfaces in the interface map */
+    struct binding_interface *interfaces; /* binding interface map */
 
-	const char *interface; /* webidl interface binding is for */
+    const char *interface; /* webidl interface binding is for */
 
-	bool has_private; /* true if the binding requires a private structure */
-	struct genbind_node *binding_list; /* node list of the binding */
+    bool has_private; /* true if the binding requires a private structure */
+    struct genbind_node *binding_list; /* node list of the binding */
 
-	struct genbind_node
-		*addproperty; /* binding api add property node or NULL */
-	struct genbind_node
-		*delproperty; /* binding api delete property node or NULL */
-	struct genbind_node
-		*getproperty; /* binding api get property node or NULL */
-	struct genbind_node
-		*setproperty; /* binding api set property node or NULL */
-	struct genbind_node *enumerate; /* binding api enumerate node or NULL */
-	struct genbind_node *resolve; /* binding api resolve node or NULL */
-	struct genbind_node *finalise; /* binding api finalise node or NULL */
-	struct genbind_node *mark; /* binding api mark node or NULL */
+    struct genbind_node *addproperty; /* binding api add property node or NULL */
+    struct genbind_node *delproperty; /* binding api delete property node or NULL */
+    struct genbind_node *getproperty; /* binding api get property node or NULL */
+    struct genbind_node *setproperty; /* binding api set property node or NULL */
+    struct genbind_node *enumerate; /* binding api enumerate node or NULL */
+    struct genbind_node *resolve; /* binding api resolve node or NULL */
+    struct genbind_node *finalise; /* binding api finalise node or NULL */
+    struct genbind_node *mark; /* binding api mark node or NULL */
 
-	const char *hdrguard; /* header file guard name */
+    const char *hdrguard; /* header file guard name */
 
-	FILE *outfile; /* file handle output should be written to,
-			* allows reuse of callback routines to output
-			* to headers and source files
-			*/
-	FILE *srcfile; /* output source file */
-	FILE *hdrfile; /* output header file */
+    FILE *outfile; /* file handle output should be written to,
+                    * allows reuse of callback routines to output
+                    * to headers and source files
+                    */
+    FILE *srcfile; /* output source file */
+    FILE *hdrfile; /* output header file */
 };
 
 /** Generate binding between jsapi and netsurf libdom */
-int jsapi_libdom_output(struct options *options,
-			struct genbind_node *genbind_ast,
-			struct genbind_node *binding_node);
+int jsapi_libdom_output(struct options *options, struct genbind_node *genbind_ast, struct genbind_node *binding_node);
 
 /** Build interface map.
  *
@@ -90,10 +83,8 @@ int jsapi_libdom_output(struct options *options,
  * The map contains an monotinicaly incrementing index for all
  * interfaces referenced in the binding (i.e. those to be exported).
  */
-int build_interface_map(struct genbind_node *binding_node,
-			struct webidl_node *webidl_ast,
-			int *interfacec_out,
-			struct binding_interface **interfaces_out);
+int build_interface_map(struct genbind_node *binding_node, struct webidl_node *webidl_ast, int *interfacec_out,
+    struct binding_interface **interfaces_out);
 
 
 /** output code block from a node */

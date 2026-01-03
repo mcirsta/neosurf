@@ -7,60 +7,57 @@
 
 #include <stdlib.h>
 
-#include "events/mutation_name_event.h"
 #include "core/document.h"
+#include "events/mutation_name_event.h"
 
 #include "utils/utils.h"
 
 static void _virtual_dom_mutation_name_event_destroy(struct dom_event *evt);
 
-static const struct dom_event_private_vtable _event_vtable = {
-	_virtual_dom_mutation_name_event_destroy};
+static const struct dom_event_private_vtable _event_vtable = {_virtual_dom_mutation_name_event_destroy};
 
 /* Constructor */
-dom_exception
-_dom_mutation_name_event_create(struct dom_mutation_name_event **evt)
+dom_exception _dom_mutation_name_event_create(struct dom_mutation_name_event **evt)
 {
-	*evt = malloc(sizeof(dom_mutation_name_event));
-	if (*evt == NULL)
-		return DOM_NO_MEM_ERR;
+    *evt = malloc(sizeof(dom_mutation_name_event));
+    if (*evt == NULL)
+        return DOM_NO_MEM_ERR;
 
-	((struct dom_event *)*evt)->vtable = &_event_vtable;
+    ((struct dom_event *)*evt)->vtable = &_event_vtable;
 
-	return _dom_mutation_name_event_initialise(*evt);
+    return _dom_mutation_name_event_initialise(*evt);
 }
 
 /* Destructor */
 void _dom_mutation_name_event_destroy(struct dom_mutation_name_event *evt)
 {
-	_dom_mutation_name_event_finalise(evt);
+    _dom_mutation_name_event_finalise(evt);
 
-	free(evt);
+    free(evt);
 }
 
 /* Initialise function */
-dom_exception
-_dom_mutation_name_event_initialise(struct dom_mutation_name_event *evt)
+dom_exception _dom_mutation_name_event_initialise(struct dom_mutation_name_event *evt)
 {
-	evt->prev_namespace = NULL;
-	evt->prev_nodename = NULL;
+    evt->prev_namespace = NULL;
+    evt->prev_nodename = NULL;
 
-	return _dom_event_initialise((dom_event *)evt);
+    return _dom_event_initialise((dom_event *)evt);
 }
 
 /* Finalise function */
 void _dom_mutation_name_event_finalise(struct dom_mutation_name_event *evt)
 {
-	dom_string_unref(evt->prev_namespace);
-	dom_string_unref(evt->prev_nodename);
+    dom_string_unref(evt->prev_namespace);
+    dom_string_unref(evt->prev_nodename);
 
-	_dom_event_finalise((dom_event *)evt);
+    _dom_event_finalise((dom_event *)evt);
 }
 
 /* The virtual destroy function */
 void _virtual_dom_mutation_name_event_destroy(struct dom_event *evt)
 {
-	_dom_mutation_name_event_destroy((dom_mutation_name_event *)evt);
+    _dom_mutation_name_event_destroy((dom_mutation_name_event *)evt);
 }
 
 /*----------------------------------------------------------------------*/
@@ -73,14 +70,12 @@ void _virtual_dom_mutation_name_event_destroy(struct dom_event *evt)
  * \param namespace  The previous namespace of this event
  * \return DOM_NO_ERR.
  */
-dom_exception
-_dom_mutation_name_event_get_prev_namespace(dom_mutation_name_event *evt,
-					    dom_string **namespace)
+dom_exception _dom_mutation_name_event_get_prev_namespace(dom_mutation_name_event *evt, dom_string **namespace)
 {
-	*namespace = evt->prev_namespace;
-	dom_string_ref(*namespace);
+    *namespace = evt->prev_namespace;
+    dom_string_ref(*namespace);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -90,14 +85,12 @@ _dom_mutation_name_event_get_prev_namespace(dom_mutation_name_event *evt,
  * \param name  The previous node name
  * \return DOM_NO_ERR.
  */
-dom_exception
-_dom_mutation_name_event_get_prev_node_name(dom_mutation_name_event *evt,
-					    dom_string **name)
+dom_exception _dom_mutation_name_event_get_prev_node_name(dom_mutation_name_event *evt, dom_string **name)
 {
-	*name = evt->prev_nodename;
-	dom_string_ref(*name);
+    *name = evt->prev_nodename;
+    dom_string_ref(*name);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -112,29 +105,17 @@ _dom_mutation_name_event_get_prev_node_name(dom_mutation_name_event *evt,
  * \param prev_name   The old name
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_mutation_name_event_init(dom_mutation_name_event *evt,
-					    dom_string *type,
-					    bool bubble,
-					    bool cancelable,
-					    struct dom_node *node,
-					    dom_string *prev_ns,
-					    dom_string *prev_name)
+dom_exception _dom_mutation_name_event_init(dom_mutation_name_event *evt, dom_string *type, bool bubble,
+    bool cancelable, struct dom_node *node, dom_string *prev_ns, dom_string *prev_name)
 {
-	evt->prev_namespace = prev_ns;
-	dom_string_ref(prev_ns);
+    evt->prev_namespace = prev_ns;
+    dom_string_ref(prev_ns);
 
-	evt->prev_nodename = prev_name;
-	dom_string_ref(prev_name);
+    evt->prev_nodename = prev_name;
+    dom_string_ref(prev_name);
 
-	return _dom_mutation_event_init((dom_mutation_event *)evt,
-					type,
-					bubble,
-					cancelable,
-					node,
-					NULL,
-					NULL,
-					NULL,
-					DOM_MUTATION_MODIFICATION);
+    return _dom_mutation_event_init(
+        (dom_mutation_event *)evt, type, bubble, cancelable, node, NULL, NULL, NULL, DOM_MUTATION_MODIFICATION);
 }
 
 /**
@@ -150,29 +131,15 @@ dom_exception _dom_mutation_name_event_init(dom_mutation_name_event *evt,
  * \param prev_name   The old name
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_mutation_name_event_init_ns(dom_mutation_name_event *evt,
-					       dom_string *namespace,
-					       dom_string *type,
-					       bool bubble,
-					       bool cancelable,
-					       struct dom_node *node,
-					       dom_string *prev_ns,
-					       dom_string *prev_name)
+dom_exception _dom_mutation_name_event_init_ns(dom_mutation_name_event *evt, dom_string *namespace, dom_string *type,
+    bool bubble, bool cancelable, struct dom_node *node, dom_string *prev_ns, dom_string *prev_name)
 {
-	evt->prev_namespace = prev_ns;
-	dom_string_ref(prev_ns);
+    evt->prev_namespace = prev_ns;
+    dom_string_ref(prev_ns);
 
-	evt->prev_nodename = prev_name;
-	dom_string_ref(prev_name);
+    evt->prev_nodename = prev_name;
+    dom_string_ref(prev_name);
 
-	return _dom_mutation_event_init_ns((dom_mutation_event *)evt,
-					   namespace,
-					   type,
-					   bubble,
-					   cancelable,
-					   node,
-					   NULL,
-					   NULL,
-					   NULL,
-					   DOM_MUTATION_MODIFICATION);
+    return _dom_mutation_event_init_ns((dom_mutation_event *)evt, namespace, type, bubble, cancelable, node, NULL, NULL,
+        NULL, DOM_MUTATION_MODIFICATION);
 }

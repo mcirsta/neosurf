@@ -23,26 +23,25 @@
 extern struct gui_bitmap_table *win32_bitmap_table;
 
 struct bitmap {
-	HBITMAP windib;
-	BITMAPV5HEADER *pbmi;
-	int width;
-	int height;
-	uint8_t *pixdata;
-	bool opaque;
+    HBITMAP windib;
+    BITMAPV5HEADER *pbmi;
+    int width;
+    int height;
+    uint8_t *pixdata;
+    bool opaque;
 
-	HBITMAP scaled_windib;
-	BITMAPV5HEADER *scaled_pbmi;
-	uint8_t *scaled_pixdata;
-	int scaled_width;
-	int scaled_height;
+    HBITMAP scaled_windib;
+    BITMAPV5HEADER *scaled_pbmi;
+    uint8_t *scaled_pixdata;
+    int scaled_width;
+    int scaled_height;
 };
 
 struct bitmap *bitmap_scale(struct bitmap *prescale, int width, int height);
 
 void win32_bitmap_destroy(void *bitmap);
 
-nserror
-win32_bitmap_ensure_scaled(struct bitmap *bitmap, int width, int height);
+nserror win32_bitmap_ensure_scaled(struct bitmap *bitmap, int width, int height);
 void win32_bitmap_flush_scaled(struct bitmap *bitmap);
 
 #endif

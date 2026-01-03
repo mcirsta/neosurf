@@ -40,10 +40,7 @@ struct box;
  * \param[in] The string being searched for.
  * \retun NSERROR_OK on success else error code on faliure
  */
-nserror content_textsearch(struct hlcache_handle *h,
-			   void *context,
-			   search_flags_t flags,
-			   const char *string);
+nserror content_textsearch(struct hlcache_handle *h, void *context, search_flags_t flags, const char *string);
 
 /**
  * Clear a search
@@ -70,11 +67,8 @@ nserror content_textsearch_destroy(struct textsearch_context *textsearch);
  * \param end_idx      byte offset of highlight end
  * \return true iff part of the box should be highlighted
  */
-bool content_textsearch_ishighlighted(struct textsearch_context *textsearch,
-				      unsigned start_offset,
-				      unsigned end_offset,
-				      unsigned *start_idx,
-				      unsigned *end_idx);
+bool content_textsearch_ishighlighted(struct textsearch_context *textsearch, unsigned start_offset, unsigned end_offset,
+    unsigned *start_idx, unsigned *end_idx);
 
 /**
  * Find the first occurrence of 'match' in 'string' and return its index
@@ -87,12 +81,8 @@ bool content_textsearch_ishighlighted(struct textsearch_context *textsearch,
  * \param  m_len      accepts length of match in bytes
  * \return pointer to first match, NULL if none
  */
-const char *content_textsearch_find_pattern(const char *string,
-					    int s_len,
-					    const char *pattern,
-					    int p_len,
-					    bool case_sens,
-					    unsigned int *m_len);
+const char *content_textsearch_find_pattern(
+    const char *string, int s_len, const char *pattern, int p_len, bool case_sens, unsigned int *m_len);
 
 /**
  * Add a new entry to the list of matches
@@ -104,10 +94,7 @@ const char *content_textsearch_find_pattern(const char *string,
  * \param end A pointer for the end
  * \return NSERROR_OK on sucess else error code on faliure
  */
-nserror content_textsearch_add_match(struct textsearch_context *context,
-				     unsigned start_idx,
-				     unsigned end_idx,
-				     struct box *start_ptr,
-				     struct box *end_ptr);
+nserror content_textsearch_add_match(struct textsearch_context *context, unsigned start_idx, unsigned end_idx,
+    struct box *start_ptr, struct box *end_ptr);
 
 #endif

@@ -20,199 +20,194 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
 #include <strings.h>
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <unistd.h>
 
-#include <neosurf/utils/messages.h>
-#include "utils/dirent.h"
 #include <neosurf/utils/inet.h>
+#include <neosurf/utils/messages.h>
 #include <neosurf/utils/string.h>
 #include <neosurf/utils/utils.h>
+#include "utils/dirent.h"
 
 /* exported interface documented in utils/string.h */
 char *squash_whitespace(const char *s)
 {
-	char *c;
-	int i = 0, j = 0;
+    char *c;
+    int i = 0, j = 0;
 
-	/* assert(s != NULL); */
-	if (s == NULL)
-		abort();
+    /* assert(s != NULL); */
+    if (s == NULL)
+        abort();
 
-	c = malloc(strlen(s) + 1);
-	if (c != NULL) {
-		do {
-			if (s[i] == ' ' || s[i] == '\n' || s[i] == '\r' ||
-			    s[i] == '\t') {
-				c[j++] = ' ';
-				while (s[i] == ' ' || s[i] == '\n' ||
-				       s[i] == '\r' || s[i] == '\t')
-					i++;
-			}
-			c[j++] = s[i++];
-		} while (s[i - 1] != 0);
-	}
-	return c;
+    c = malloc(strlen(s) + 1);
+    if (c != NULL) {
+        do {
+            if (s[i] == ' ' || s[i] == '\n' || s[i] == '\r' || s[i] == '\t') {
+                c[j++] = ' ';
+                while (s[i] == ' ' || s[i] == '\n' || s[i] == '\r' || s[i] == '\t')
+                    i++;
+            }
+            c[j++] = s[i++];
+        } while (s[i - 1] != 0);
+    }
+    return c;
 }
 
 
 /* exported interface documented in utils/utils.h */
 char *cnv_space2nbsp(const char *s)
 {
-	const char *srcP;
-	char *d, *d0;
-	unsigned int numNBS;
-	/* Convert space & TAB into non breaking space character (0xA0) */
-	for (numNBS = 0, srcP = (const char *)s; *srcP != '\0'; ++srcP) {
-		if (*srcP == ' ' || *srcP == '\t') {
-			++numNBS;
-		}
-	}
-	if ((d = (char *)malloc((srcP - s) + numNBS + 1)) == NULL) {
-		return NULL;
-	}
-	for (d0 = d, srcP = (const char *)s; *srcP != '\0'; ++srcP) {
-		if (*srcP == ' ' || *srcP == '\t') {
-			*d0++ = 0xC2;
-			*d0++ = 0xA0;
-		} else
-			*d0++ = *srcP;
-	}
-	*d0 = '\0';
-	return d;
+    const char *srcP;
+    char *d, *d0;
+    unsigned int numNBS;
+    /* Convert space & TAB into non breaking space character (0xA0) */
+    for (numNBS = 0, srcP = (const char *)s; *srcP != '\0'; ++srcP) {
+        if (*srcP == ' ' || *srcP == '\t') {
+            ++numNBS;
+        }
+    }
+    if ((d = (char *)malloc((srcP - s) + numNBS + 1)) == NULL) {
+        return NULL;
+    }
+    for (d0 = d, srcP = (const char *)s; *srcP != '\0'; ++srcP) {
+        if (*srcP == ' ' || *srcP == '\t') {
+            *d0++ = 0xC2;
+            *d0++ = 0xA0;
+        } else
+            *d0++ = *srcP;
+    }
+    *d0 = '\0';
+    return d;
 }
 
 
 /* exported interface documented in utils/utils.h */
-void stable_sort(void *base,
-		 size_t nmemb,
-		 size_t size,
-		 int (*compar)(const void *, const void *))
+void stable_sort(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *))
 {
-	unsigned char *arr = (unsigned char *)base;
-	unsigned char *key = malloc(size);
+    unsigned char *arr = (unsigned char *)base;
+    unsigned char *key = malloc(size);
 
-	if (key == NULL || nmemb <= 1) {
-		free(key);
-		return;
-	}
+    if (key == NULL || nmemb <= 1) {
+        free(key);
+        return;
+    }
 
-	for (size_t i = 1; i < nmemb; i++) {
-		memcpy(key, arr + i * size, size);
+    for (size_t i = 1; i < nmemb; i++) {
+        memcpy(key, arr + i * size, size);
 
-		size_t j = i;
-		while (j > 0 && compar(arr + (j - 1) * size, key) > 0) {
-			memcpy(arr + j * size, arr + (j - 1) * size, size);
-			j--;
-		}
-		memcpy(arr + j * size, key, size);
-	}
+        size_t j = i;
+        while (j > 0 && compar(arr + (j - 1) * size, key) > 0) {
+            memcpy(arr + j * size, arr + (j - 1) * size, size);
+            j--;
+        }
+        memcpy(arr + j * size, key, size);
+    }
 
-	free(key);
+    free(key);
 }
 
 
 /* exported interface documented in utils/utils.h */
 bool is_dir(const char *path)
 {
-	struct stat s;
+    struct stat s;
 
-	if (stat(path, &s)) {
-		return false;
-	}
+    if (stat(path, &s)) {
+        return false;
+    }
 
-	return S_ISDIR(s.st_mode) ? true : false;
+    return S_ISDIR(s.st_mode) ? true : false;
 }
 
 
 /* exported interface documented in utils/utils.h */
 nserror vsnstrjoin(char **str, size_t *size, char sep, size_t nelm, va_list ap)
 {
-	const char *elm[16];
-	size_t elm_len[16];
-	size_t elm_idx;
-	char *fname;
-	size_t fname_len = 0;
-	char *curp;
+    const char *elm[16];
+    size_t elm_len[16];
+    size_t elm_idx;
+    char *fname;
+    size_t fname_len = 0;
+    char *curp;
 
-	/* check the parameters are all sensible */
-	if ((nelm == 0) || (nelm > 16)) {
-		return NSERROR_BAD_PARAMETER;
-	}
-	if ((*str != NULL) && (size == NULL)) {
-		/* if the caller is providing the buffer they must say
-		 * how much space is available.
-		 */
-		return NSERROR_BAD_PARAMETER;
-	}
+    /* check the parameters are all sensible */
+    if ((nelm == 0) || (nelm > 16)) {
+        return NSERROR_BAD_PARAMETER;
+    }
+    if ((*str != NULL) && (size == NULL)) {
+        /* if the caller is providing the buffer they must say
+         * how much space is available.
+         */
+        return NSERROR_BAD_PARAMETER;
+    }
 
-	/* calculate how much storage we need for the complete path
-	 * with all the elements.
-	 */
-	for (elm_idx = 0; elm_idx < nelm; elm_idx++) {
-		elm[elm_idx] = va_arg(ap, const char *);
-		/* check the argument is not NULL */
-		if (elm[elm_idx] == NULL) {
-			return NSERROR_BAD_PARAMETER;
-		}
-		elm_len[elm_idx] = strlen(elm[elm_idx]);
-		fname_len += elm_len[elm_idx];
-	}
-	fname_len += nelm; /* allow for separators and terminator */
+    /* calculate how much storage we need for the complete path
+     * with all the elements.
+     */
+    for (elm_idx = 0; elm_idx < nelm; elm_idx++) {
+        elm[elm_idx] = va_arg(ap, const char *);
+        /* check the argument is not NULL */
+        if (elm[elm_idx] == NULL) {
+            return NSERROR_BAD_PARAMETER;
+        }
+        elm_len[elm_idx] = strlen(elm[elm_idx]);
+        fname_len += elm_len[elm_idx];
+    }
+    fname_len += nelm; /* allow for separators and terminator */
 
-	/* ensure there is enough space */
-	fname = *str;
-	if (fname != NULL) {
-		if (fname_len > *size) {
-			return NSERROR_NOSPACE;
-		}
-	} else {
-		fname = malloc(fname_len);
-		if (fname == NULL) {
-			return NSERROR_NOMEM;
-		}
-	}
+    /* ensure there is enough space */
+    fname = *str;
+    if (fname != NULL) {
+        if (fname_len > *size) {
+            return NSERROR_NOSPACE;
+        }
+    } else {
+        fname = malloc(fname_len);
+        if (fname == NULL) {
+            return NSERROR_NOMEM;
+        }
+    }
 
-	/* copy the elements in with apropriate separator */
-	curp = fname;
-	for (elm_idx = 0; elm_idx < nelm; elm_idx++) {
-		memmove(curp, elm[elm_idx], elm_len[elm_idx]);
-		curp += elm_len[elm_idx];
-		/* ensure string are separated */
-		if (curp[-1] != sep) {
-			*curp = sep;
-			curp++;
-		}
-	}
-	curp[-1] = 0; /* NULL terminate */
+    /* copy the elements in with apropriate separator */
+    curp = fname;
+    for (elm_idx = 0; elm_idx < nelm; elm_idx++) {
+        memmove(curp, elm[elm_idx], elm_len[elm_idx]);
+        curp += elm_len[elm_idx];
+        /* ensure string are separated */
+        if (curp[-1] != sep) {
+            *curp = sep;
+            curp++;
+        }
+    }
+    curp[-1] = 0; /* NULL terminate */
 
-	assert((curp - fname) <= (int)fname_len);
+    assert((curp - fname) <= (int)fname_len);
 
-	*str = fname;
-	if (size != NULL) {
-		*size = fname_len;
-	}
+    *str = fname;
+    if (size != NULL) {
+        *size = fname_len;
+    }
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
 /* exported interface documented in utils/utils.h */
 nserror snstrjoin(char **str, size_t *size, char sep, size_t nelm, ...)
 {
-	va_list ap;
-	nserror ret;
+    va_list ap;
+    nserror ret;
 
-	va_start(ap, nelm);
-	ret = vsnstrjoin(str, size, sep, nelm, ap);
-	va_end(ap);
+    va_start(ap, nelm);
+    ret = vsnstrjoin(str, size, sep, nelm, ap);
+    va_end(ap);
 
-	return ret;
+    return ret;
 }
 
 
@@ -235,79 +230,61 @@ nserror snstrjoin(char **str, size_t *size, char sep, size_t nelm, ...)
 /* exported interface documented in utils/string.h */
 char *human_friendly_bytesize(unsigned long long int bsize)
 {
-	static char buffer1[BYTESIZE_BUFFER_SIZE];
-	static char buffer2[BYTESIZE_BUFFER_SIZE];
-	static char buffer3[BYTESIZE_BUFFER_SIZE];
-	static char *curbuffer = buffer3;
-	enum {
-		bytes,
-		kilobytes,
-		megabytes,
-		gibibytes,
-		tebibytes,
-		pebibytes,
-		exbibytes
-	} unit = bytes;
-	static const char *const units[] = {"Bytes",
-					    "KiBytes",
-					    "MiBytes",
-					    "GiBytes",
-					    "TiBytes",
-					    "PiBytes",
-					    "EiBytes"};
-	double bytesize = (double)bsize;
-	const char *fmt;
+    static char buffer1[BYTESIZE_BUFFER_SIZE];
+    static char buffer2[BYTESIZE_BUFFER_SIZE];
+    static char buffer3[BYTESIZE_BUFFER_SIZE];
+    static char *curbuffer = buffer3;
+    enum { bytes, kilobytes, megabytes, gibibytes, tebibytes, pebibytes, exbibytes } unit = bytes;
+    static const char *const units[] = {"Bytes", "KiBytes", "MiBytes", "GiBytes", "TiBytes", "PiBytes", "EiBytes"};
+    double bytesize = (double)bsize;
+    const char *fmt;
 
-	if (curbuffer == buffer1)
-		curbuffer = buffer2;
-	else if (curbuffer == buffer2)
-		curbuffer = buffer3;
-	else
-		curbuffer = buffer1;
+    if (curbuffer == buffer1)
+        curbuffer = buffer2;
+    else if (curbuffer == buffer2)
+        curbuffer = buffer3;
+    else
+        curbuffer = buffer1;
 
-	if (bytesize > 1024) {
-		bytesize /= 1024;
-		unit = kilobytes;
-	}
+    if (bytesize > 1024) {
+        bytesize /= 1024;
+        unit = kilobytes;
+    }
 
-	if (bytesize > 1024) {
-		bytesize /= 1024;
-		unit = megabytes;
-	}
+    if (bytesize > 1024) {
+        bytesize /= 1024;
+        unit = megabytes;
+    }
 
-	if (bytesize > 1024) {
-		bytesize /= 1024;
-		unit = gibibytes;
-	}
+    if (bytesize > 1024) {
+        bytesize /= 1024;
+        unit = gibibytes;
+    }
 
-	if (bytesize > 1024) {
-		bytesize /= 1024;
-		unit = tebibytes;
-	}
+    if (bytesize > 1024) {
+        bytesize /= 1024;
+        unit = tebibytes;
+    }
 
-	if (bytesize > 1024) {
-		bytesize /= 1024;
-		unit = pebibytes;
-	}
+    if (bytesize > 1024) {
+        bytesize /= 1024;
+        unit = pebibytes;
+    }
 
-	if (bytesize > 1024) {
-		bytesize /= 1024;
-		unit = exbibytes;
-	}
+    if (bytesize > 1024) {
+        bytesize /= 1024;
+        unit = exbibytes;
+    }
 
-	if (unit == bytes) {
-		fmt = "%.0f%s";
-	} else {
-		fmt = "%3.2f%s";
-	}
+    if (unit == bytes) {
+        fmt = "%.0f%s";
+    } else {
+        fmt = "%3.2f%s";
+    }
 
-	snprintf(curbuffer,
-		 BYTESIZE_BUFFER_SIZE,
-		 fmt,
-		 bytesize,
-		 messages_get(units[unit]));
+    snprintf(curbuffer, BYTESIZE_BUFFER_SIZE, fmt, bytesize, messages_get(units[unit]));
 
-	return curbuffer;
+    return curbuffer;
 }
 
 
@@ -320,7 +297,7 @@ char *human_friendly_bytesize(unsigned long long int bsize)
  */
 unsigned long long int strtoull(const char *nptr, char **endptr, int base)
 {
-	return (unsigned long long int)strtoul(nptr, endptr, base);
+    return (unsigned long long int)strtoul(nptr, endptr, base);
 }
 
 #endif
@@ -337,22 +314,22 @@ unsigned long long int strtoull(const char *nptr, char **endptr, int base)
  */
 char *strcasestr(const char *haystack, const char *needle)
 {
-	size_t needle_len = strlen(needle);
-	size_t haystack_len = strlen(haystack);
-	const char *last_start;
+    size_t needle_len = strlen(needle);
+    size_t haystack_len = strlen(haystack);
+    const char *last_start;
 
-	if (needle_len > haystack_len)
-		return NULL;
+    if (needle_len > haystack_len)
+        return NULL;
 
-	last_start = haystack + (haystack_len - needle_len);
+    last_start = haystack + (haystack_len - needle_len);
 
-	while (haystack <= last_start) {
-		if (strncasecmp(haystack, needle, needle_len) == 0)
-			return (char *)haystack;
-		haystack++;
-	}
+    while (haystack <= last_start) {
+        if (strncasecmp(haystack, needle, needle_len) == 0)
+            return (char *)haystack;
+        haystack++;
+    }
 
-	return NULL;
+    return NULL;
 }
 
 #endif
@@ -365,19 +342,19 @@ char *strcasestr(const char *haystack, const char *needle)
  */
 char *strndup(const char *s, size_t n)
 {
-	size_t len;
-	char *s2;
+    size_t len;
+    char *s2;
 
-	for (len = 0; len != n && s[len]; len++)
-		continue;
+    for (len = 0; len != n && s[len]; len++)
+        continue;
 
-	s2 = malloc(len + 1);
-	if (!s2)
-		return 0;
+    s2 = malloc(len + 1);
+    if (!s2)
+        return 0;
 
-	memcpy(s2, s, len);
-	s2[len] = 0;
-	return s2;
+    memcpy(s2, s, len);
+    s2[len] = 0;
+    return s2;
 }
 
 #endif
@@ -388,85 +365,79 @@ char *strndup(const char *s, size_t n)
 /* exported function documented in utils/dirent.h */
 int alphasort(const struct dirent **d1, const struct dirent **d2)
 {
-	return strcasecmp((*d1)->d_name, (*d2)->d_name);
+    return strcasecmp((*d1)->d_name, (*d2)->d_name);
 }
 
 /* exported function documented in utils/dirent.h */
-int scandir(const char *dir,
-	    struct dirent ***namelist,
-	    int (*sel)(const struct dirent *),
-	    int (*compar)(const struct dirent **, const struct dirent **))
+int scandir(const char *dir, struct dirent ***namelist, int (*sel)(const struct dirent *),
+    int (*compar)(const struct dirent **, const struct dirent **))
 {
-	struct dirent **entlist = NULL;
-	struct dirent **entlist_temp = NULL;
-	struct dirent *ent = NULL, *new_ent;
-	int alloc_n = 0;
-	int n = 0;
-	DIR *d;
+    struct dirent **entlist = NULL;
+    struct dirent **entlist_temp = NULL;
+    struct dirent *ent = NULL, *new_ent;
+    int alloc_n = 0;
+    int n = 0;
+    DIR *d;
 
-	d = opendir(dir);
-	if (d == NULL) {
-		goto error;
-	}
+    d = opendir(dir);
+    if (d == NULL) {
+        goto error;
+    }
 
-	while ((ent = readdir(d)) != NULL) {
-		/* Avoid entries that caller doesn't want */
-		if (sel && (*sel)(ent) == 0)
-			continue;
+    while ((ent = readdir(d)) != NULL) {
+        /* Avoid entries that caller doesn't want */
+        if (sel && (*sel)(ent) == 0)
+            continue;
 
-		/* Ensure buffer is big enough to list this entry */
-		if (n == alloc_n) {
-			alloc_n *= 4;
-			if (alloc_n == 0) {
-				alloc_n = 32;
-			}
-			entlist_temp = realloc(entlist,
-					       sizeof(*entlist) * alloc_n);
-			if (entlist_temp == NULL) {
-				goto error;
-			}
-			entlist = entlist_temp;
-		}
+        /* Ensure buffer is big enough to list this entry */
+        if (n == alloc_n) {
+            alloc_n *= 4;
+            if (alloc_n == 0) {
+                alloc_n = 32;
+            }
+            entlist_temp = realloc(entlist, sizeof(*entlist) * alloc_n);
+            if (entlist_temp == NULL) {
+                goto error;
+            }
+            entlist = entlist_temp;
+        }
 
-		/* Make copy of ent */
-		new_ent = malloc(sizeof(*new_ent));
-		if (new_ent == NULL) {
-			goto error;
-		}
-		memcpy(new_ent, ent, sizeof(struct dirent));
+        /* Make copy of ent */
+        new_ent = malloc(sizeof(*new_ent));
+        if (new_ent == NULL) {
+            goto error;
+        }
+        memcpy(new_ent, ent, sizeof(struct dirent));
 
-		/* Make list entry point to this copy of ent */
-		entlist[n] = new_ent;
+        /* Make list entry point to this copy of ent */
+        entlist[n] = new_ent;
 
-		n++;
-	}
+        n++;
+    }
 
-	closedir(d);
+    closedir(d);
 
-	/* Sort */
-	if (compar != NULL && n > 1)
-		qsort(entlist,
-		      n,
-		      sizeof(*entlist),
-		      (int (*)(const void *, const void *))compar);
-	*namelist = entlist;
-	return n;
+    /* Sort */
+    if (compar != NULL && n > 1)
+        qsort(entlist, n, sizeof(*entlist), (int (*)(const void *, const void *))compar);
+    *namelist = entlist;
+    return n;
 
 error:
 
-	if (entlist != NULL) {
-		int i;
-		for (i = 0; i < n; i++) {
-			free(entlist[i]);
-		}
-		free(entlist);
-	}
+    if (entlist != NULL) {
+        int i;
+        for (i = 0; i < n; i++) {
+            free(entlist[i]);
+        }
+        free(entlist);
+    }
 
-	if (d != NULL) {
-		closedir(d);
-	}
+    if (d != NULL) {
+        closedir(d);
+    }
 
-	return -1;
+    return -1;
 }
 
 #endif
@@ -479,12 +450,12 @@ error:
  */
 char *strchrnul(const char *s, int c_in)
 {
-	const unsigned char *us = (const unsigned char *)s;
+    const unsigned char *us = (const unsigned char *)s;
 
-	while (*us != c_in && *us != '\0')
-		us++;
+    while (*us != c_in && *us != '\0')
+        us++;
 
-	return (void *)us;
+    return (void *)us;
 }
 
 #endif
@@ -495,13 +466,13 @@ char *strchrnul(const char *s, int c_in)
 
 int uname(struct utsname *buf)
 {
-	strcpy(buf->sysname, "windows");
-	strcpy(buf->nodename, "nodename");
-	strcpy(buf->release, "release");
-	strcpy(buf->version, "version");
-	strcpy(buf->machine, "pc");
+    strcpy(buf->sysname, "windows");
+    strcpy(buf->nodename, "nodename");
+    strcpy(buf->release, "release");
+    strcpy(buf->version, "version");
+    strcpy(buf->machine, "pc");
 
-	return 0;
+    return 0;
 }
 
 #endif
@@ -510,14 +481,14 @@ int uname(struct utsname *buf)
 
 char *realpath(const char *path, char *resolved_path)
 {
-	char *ret;
-	if (resolved_path == NULL) {
-		ret = strdup(path);
-	} else {
-		ret = resolved_path;
-		strcpy(resolved_path, path);
-	}
-	return ret;
+    char *ret;
+    if (resolved_path == NULL) {
+        ret = strdup(path);
+    } else {
+        ret = resolved_path;
+        strcpy(resolved_path, path);
+    }
+    return ret;
 }
 
 #endif
@@ -526,21 +497,21 @@ char *realpath(const char *path, char *resolved_path)
 
 int inet_aton(const char *cp, struct in_addr *inp)
 {
-	unsigned int b1, b2, b3, b4;
-	unsigned char c;
+    unsigned int b1, b2, b3, b4;
+    unsigned char c;
 
-	if (strspn(cp, "0123456789.") < strlen(cp))
-		return 0;
+    if (strspn(cp, "0123456789.") < strlen(cp))
+        return 0;
 
-	if (sscanf(cp, "%3u.%3u.%3u.%3u%c", &b1, &b2, &b3, &b4, &c) != 4)
-		return 0;
+    if (sscanf(cp, "%3u.%3u.%3u.%3u%c", &b1, &b2, &b3, &b4, &c) != 4)
+        return 0;
 
-	if ((b1 > 255) || (b2 > 255) || (b3 > 255) || (b4 > 255))
-		return 0;
+    if ((b1 > 255) || (b2 > 255) || (b3 > 255) || (b4 > 255))
+        return 0;
 
-	inp->s_addr = b4 << 24 | b3 << 16 | b2 << 8 | b1;
+    inp->s_addr = b4 << 24 | b3 << 16 | b2 << 8 | b1;
 
-	return 1;
+    return 1;
 }
 
 #endif
@@ -549,24 +520,24 @@ int inet_aton(const char *cp, struct in_addr *inp)
 
 int inet_pton(int af, const char *src, void *dst)
 {
-	int ret;
+    int ret;
 
-	if (af == AF_INET) {
-		ret = inet_aton(src, dst);
-	}
+    if (af == AF_INET) {
+        ret = inet_aton(src, dst);
+    }
 #if !defined(NO_IPV6)
-	else if (af == AF_INET6) {
-		/* TODO: implement v6 address support */
-		ret = -1;
-		errno = EAFNOSUPPORT;
-	}
+    else if (af == AF_INET6) {
+        /* TODO: implement v6 address support */
+        ret = -1;
+        errno = EAFNOSUPPORT;
+    }
 #endif
-	else {
-		ret = -1;
-		errno = EAFNOSUPPORT;
-	}
+    else {
+        ret = -1;
+        errno = EAFNOSUPPORT;
+    }
 
-	return ret;
+    return ret;
 }
 
 #endif
@@ -578,27 +549,21 @@ int inet_pton(int af, const char *src, void *dst)
 
 int regcomp(regex_t *restrict preg, const char *restrictregex, int cflags)
 {
-	return 0;
+    return 0;
 }
 
-size_t regerror(int errorcode,
-		const regex_t *restrict preg,
-		char *restrict errbuf,
-		size_t errbuf_size)
+size_t regerror(int errorcode, const regex_t *restrict preg, char *restrict errbuf, size_t errbuf_size)
 {
-	if ((errbuf != NULL) && (errbuf_size != 0)) {
-		*errbuf = 0;
-	}
-	return 0;
+    if ((errbuf != NULL) && (errbuf_size != 0)) {
+        *errbuf = 0;
+    }
+    return 0;
 }
 
-int regexec(const regex_t *restrict preg,
-	    const char *restrict string,
-	    size_t nmatch,
-	    regmatch_t pmatch[restrict],
-	    int eflags)
+int regexec(
+    const regex_t *restrict preg, const char *restrict string, size_t nmatch, regmatch_t pmatch[restrict], int eflags)
 {
-	return REG_NOMATCH;
+    return REG_NOMATCH;
 }
 
 void regfree(regex_t *preg)

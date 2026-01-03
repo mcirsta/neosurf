@@ -23,16 +23,9 @@
 
 struct nsurl;
 
-nserror gui_401login_open(struct nsurl *url,
-			  const char *realm,
-			  const char *username,
-			  const char *password,
-			  nserror (*cb)(struct nsurl *url,
-					const char *realm,
-					const char *username,
-					const char *password,
-					void *pw),
-			  void *cbpw);
+nserror gui_401login_open(struct nsurl *url, const char *realm, const char *username, const char *password,
+    nserror (*cb)(struct nsurl *url, const char *realm, const char *username, const char *password, void *pw),
+    void *cbpw);
 
 void monkey_login_handle_command(int argc, char **argv);
 

@@ -20,8 +20,8 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "neosurf/inttypes.h"
 #include "utils/http/primitives.h"
+#include "neosurf/inttypes.h"
 
 /**
  * Skip past linear whitespace in input
@@ -30,12 +30,12 @@
  */
 void http__skip_LWS(const char **input)
 {
-	const char *pos = *input;
+    const char *pos = *input;
 
-	while (*pos == ' ' || *pos == '\t')
-		pos++;
+    while (*pos == ' ' || *pos == '\t')
+        pos++;
 
-	*input = pos;
+    *input = pos;
 }
 
 /**
@@ -46,12 +46,12 @@ void http__skip_LWS(const char **input)
  */
 static bool http_is_token_char(uint8_t c)
 {
-	/* [ 32 - 126 ] except ()<>@,;:\"/[]?={} SP HT */
+    /* [ 32 - 126 ] except ()<>@,;:\"/[]?={} SP HT */
 
-	if (c <= ' ' || 126 < c)
-		return false;
+    if (c <= ' ' || 126 < c)
+        return false;
 
-	return (strchr("()<>@,;:\\\"/[]?={}", c) == NULL);
+    return (strchr("()<>@,;:\\\"/[]?={}", c) == NULL);
 }
 
 /**
@@ -67,25 +67,24 @@ static bool http_is_token_char(uint8_t c)
  */
 nserror http__parse_token(const char **input, lwc_string **value)
 {
-	const uint8_t *start = (const uint8_t *)*input;
-	const uint8_t *end;
-	lwc_string *token;
+    const uint8_t *start = (const uint8_t *)*input;
+    const uint8_t *end;
+    lwc_string *token;
 
-	end = start;
-	while (http_is_token_char(*end))
-		end++;
+    end = start;
+    while (http_is_token_char(*end))
+        end++;
 
-	if (end == start)
-		return NSERROR_NOT_FOUND;
+    if (end == start)
+        return NSERROR_NOT_FOUND;
 
-	if (lwc_intern_string((const char *)start, end - start, &token) !=
-	    lwc_error_ok)
-		return NSERROR_NOMEM;
+    if (lwc_intern_string((const char *)start, end - start, &token) != lwc_error_ok)
+        return NSERROR_NOMEM;
 
-	*value = token;
-	*input = (const char *)end;
+    *value = token;
+    *input = (const char *)end;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /**
@@ -101,44 +100,41 @@ nserror http__parse_token(const char **input, lwc_string **value)
  */
 nserror http__parse_quoted_string(const char **input, lwc_string **value)
 {
-	const uint8_t *start = (const uint8_t *)*input;
-	const uint8_t *end;
-	uint8_t c;
-	lwc_string *string_value;
+    const uint8_t *start = (const uint8_t *)*input;
+    const uint8_t *end;
+    uint8_t c;
+    lwc_string *string_value;
 
-	/* <"> *( qdtext | quoted-pair ) <">
-	 * qdtext = any TEXT except <">
-	 * quoted-pair = "\" CHAR
-	 * TEXT = [ HT, CR, LF, 32-126, 128-255 ]
-	 * CHAR = [ 0 - 127 ]
-	 *
-	 * \todo TEXT may contain non 8859-1 chars encoded per RFC 2047
-	 * \todo Support quoted-pairs
-	 */
+    /* <"> *( qdtext | quoted-pair ) <">
+     * qdtext = any TEXT except <">
+     * quoted-pair = "\" CHAR
+     * TEXT = [ HT, CR, LF, 32-126, 128-255 ]
+     * CHAR = [ 0 - 127 ]
+     *
+     * \todo TEXT may contain non 8859-1 chars encoded per RFC 2047
+     * \todo Support quoted-pairs
+     */
 
-	if (*start != '"')
-		return NSERROR_NOT_FOUND;
+    if (*start != '"')
+        return NSERROR_NOT_FOUND;
 
-	end = start = start + 1;
+    end = start = start + 1;
 
-	c = *end;
-	while (c == '\t' || c == '\r' || c == '\n' || c == ' ' || c == '!' ||
-	       ('#' <= c && c <= 126) || c > 127) {
-		end++;
-		c = *end;
-	}
+    c = *end;
+    while (c == '\t' || c == '\r' || c == '\n' || c == ' ' || c == '!' || ('#' <= c && c <= 126) || c > 127) {
+        end++;
+        c = *end;
+    }
 
-	if (*end != '"')
-		return NSERROR_NOT_FOUND;
+    if (*end != '"')
+        return NSERROR_NOT_FOUND;
 
-	if (lwc_intern_string((const char *)start,
-			      end - start,
-			      &string_value) != lwc_error_ok)
-		return NSERROR_NOMEM;
+    if (lwc_intern_string((const char *)start, end - start, &string_value) != lwc_error_ok)
+        return NSERROR_NOMEM;
 
-	*value = string_value;
+    *value = string_value;
 
-	*input = (const char *)end + 1;
+    *input = (const char *)end + 1;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }

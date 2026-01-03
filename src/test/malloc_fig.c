@@ -25,10 +25,10 @@
  */
 
 #define _GNU_SOURCE
-#include <stdio.h>
-#include <stdint.h>
-#include <limits.h>
 #include <dlfcn.h>
+#include <limits.h>
+#include <stdint.h>
+#include <stdio.h>
 
 #include "test/malloc_fig.h"
 
@@ -36,23 +36,23 @@ static unsigned int count = UINT_MAX;
 
 void malloc_limit(unsigned int newcount)
 {
-	count = newcount;
-	// fprintf(stderr, "malloc_limit %d\n", count);
+    count = newcount;
+    // fprintf(stderr, "malloc_limit %d\n", count);
 }
 
 void *malloc(size_t size)
 {
-	static void *(*real_malloc)(size_t) = NULL;
-	void *p = NULL;
+    static void *(*real_malloc)(size_t) = NULL;
+    void *p = NULL;
 
-	if (real_malloc == NULL) {
-		real_malloc = dlsym(RTLD_NEXT, "malloc");
-	}
+    if (real_malloc == NULL) {
+        real_malloc = dlsym(RTLD_NEXT, "malloc");
+    }
 
-	if (count > 0) {
-		p = real_malloc(size);
-		count--;
-	}
-	// fprintf(stderr, "malloc(%d) = %p remian:%d\n", size, p, count);
-	return p;
+    if (count > 0) {
+        p = real_malloc(size);
+        count--;
+    }
+    // fprintf(stderr, "malloc(%d) = %p remian:%d\n", size, p, count);
+    return p;
 }

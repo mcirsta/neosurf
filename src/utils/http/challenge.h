@@ -33,9 +33,8 @@ typedef struct http_challenge http_challenge;
  * \param parameters  Pointer to location to receive challenge parameters
  * \return Pointer to next iteration position, or NULL for end of iteration
  */
-const http_challenge *http_challenge_list_iterate(const http_challenge *cur,
-						  lwc_string **scheme,
-						  http_parameter **parameters);
+const http_challenge *
+http_challenge_list_iterate(const http_challenge *cur, lwc_string **scheme, http_parameter **parameters);
 
 /**
  * Destroy a list of HTTP challenges

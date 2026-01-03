@@ -28,26 +28,26 @@ extern "C" {
 
 NS_Bookmarks::NS_Bookmarks(QWidget *parent) : NS_Corewindow(parent)
 {
-	hotlist_manager_init((struct core_window *)m_core_window);
+    hotlist_manager_init((struct core_window *)m_core_window);
 }
 
 NS_Bookmarks::~NS_Bookmarks()
 {
-	hotlist_manager_fini();
+    hotlist_manager_fini();
 }
 
 
 void NS_Bookmarks::draw(struct rect *clip, struct redraw_context *ctx)
 {
-	hotlist_redraw(0, 0, clip, ctx);
+    hotlist_redraw(0, 0, clip, ctx);
 }
 
 bool NS_Bookmarks::key_press(uint32_t nskey)
 {
-	return hotlist_keypress(nskey);
+    return hotlist_keypress(nskey);
 }
 
 void NS_Bookmarks::mouse_action(browser_mouse_state mouse_state, int x, int y)
 {
-	hotlist_mouse_action(mouse_state, x, y);
+    hotlist_mouse_action(mouse_state, x, y);
 }

@@ -24,11 +24,11 @@
 #ifndef NETSURF_DESKTOP_PAGE_INFO_H
 #define NETSURF_DESKTOP_PAGE_INFO_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
-#include "utils/errors.h"
 #include <neosurf/mouse.h>
+#include "utils/errors.h"
 
 struct rect;
 struct nsurl;
@@ -63,9 +63,7 @@ nserror page_info_fini(void);
  * \param[out] pi_out  The created page info window handle.
  * \return NSERROR_OK on success, appropriate error code otherwise.
  */
-nserror page_info_create(struct core_window *cw_h,
-			 struct browser_window *bw,
-			 struct page_info **pi_out);
+nserror page_info_create(struct core_window *cw_h, struct browser_window *bw, struct page_info **pi_out);
 
 /**
  * Destroy a page info corewindow.
@@ -96,11 +94,8 @@ nserror page_info_set(struct page_info *pgi, struct browser_window *bw);
  * \param[in] ctx   Current redraw context.
  * \return NSERROR_OK on success, appropriate error code otherwise.
  */
-nserror page_info_redraw(const struct page_info *pi,
-			 int x,
-			 int y,
-			 const struct rect *clip,
-			 const struct redraw_context *ctx);
+nserror
+page_info_redraw(const struct page_info *pi, int x, int y, const struct rect *clip, const struct redraw_context *ctx);
 
 /**
  * Mouse action handling.
@@ -112,11 +107,7 @@ nserror page_info_redraw(const struct page_info *pi,
  * \param[out] did_something Set to true if this resulted in some action
  * \return NSERROR_OK on success, appropriate error code otherwise.
  */
-nserror page_info_mouse_action(struct page_info *pi,
-			       enum browser_mouse_state mouse,
-			       int x,
-			       int y,
-			       bool *did_something);
+nserror page_info_mouse_action(struct page_info *pi, enum browser_mouse_state mouse, int x, int y, bool *did_something);
 
 /**
  * Key press handling.

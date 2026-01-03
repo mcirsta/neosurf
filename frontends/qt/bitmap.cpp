@@ -28,16 +28,16 @@
 
 extern "C" {
 
-#include "utils/utils.h"
 #include "utils/errors.h"
+#include "utils/utils.h"
 
-#include "neosurf/content.h"
 #include "neosurf/bitmap.h"
+#include "neosurf/content.h"
 #include "neosurf/plotters.h"
 }
 
-#include "qt/plotters.h"
 #include "qt/bitmap.h"
+#include "qt/plotters.h"
 
 
 /**
@@ -48,17 +48,16 @@ extern "C" {
  * \param state The state to create the bitmap in.
  * \return A bitmap structure or NULL on error.
  */
-static void *
-nsqt_bitmap_create(int width, int height, enum gui_bitmap_flags flags)
+static void *nsqt_bitmap_create(int width, int height, enum gui_bitmap_flags flags)
 {
-	enum QImage::Format qfmt;
-	if (flags & BITMAP_OPAQUE) {
-		qfmt = QImage::Format_RGB32;
-	} else {
-		qfmt = QImage::Format_ARGB32;
-	}
+    enum QImage::Format qfmt;
+    if (flags & BITMAP_OPAQUE) {
+        qfmt = QImage::Format_RGB32;
+    } else {
+        qfmt = QImage::Format_ARGB32;
+    }
 
-	return new QImage(width, height, qfmt);
+    return new QImage(width, height, qfmt);
 }
 
 
@@ -69,8 +68,8 @@ nsqt_bitmap_create(int width, int height, enum gui_bitmap_flags flags)
  */
 static void nsqt_bitmap_destroy(void *bitmap)
 {
-	QImage *img = (QImage *)bitmap;
-	delete img;
+    QImage *img = (QImage *)bitmap;
+    delete img;
 }
 
 
@@ -93,7 +92,7 @@ static void nsqt_bitmap_set_opaque(void *bitmap, bool opaque)
  */
 static bool nsqt_bitmap_get_opaque(void *bitmap)
 {
-	return false;
+    return false;
 }
 
 
@@ -105,8 +104,8 @@ static bool nsqt_bitmap_get_opaque(void *bitmap)
  */
 static unsigned char *nsqt_bitmap_get_buffer(void *bitmap)
 {
-	QImage *img = (QImage *)bitmap;
-	return img->bits();
+    QImage *img = (QImage *)bitmap;
+    return img->bits();
 }
 
 
@@ -118,8 +117,8 @@ static unsigned char *nsqt_bitmap_get_buffer(void *bitmap)
  */
 static size_t nsqt_bitmap_get_rowstride(void *bitmap)
 {
-	QImage *img = (QImage *)bitmap;
-	return img->bytesPerLine();
+    QImage *img = (QImage *)bitmap;
+    return img->bytesPerLine();
 }
 
 
@@ -131,8 +130,8 @@ static size_t nsqt_bitmap_get_rowstride(void *bitmap)
  */
 static int nsqt_bitmap_get_width(void *bitmap)
 {
-	QImage *img = (QImage *)bitmap;
-	return img->width();
+    QImage *img = (QImage *)bitmap;
+    return img->width();
 }
 
 
@@ -144,8 +143,8 @@ static int nsqt_bitmap_get_width(void *bitmap)
  */
 static int nsqt_bitmap_get_height(void *bitmap)
 {
-	QImage *img = (QImage *)bitmap;
-	return img->height();
+    QImage *img = (QImage *)bitmap;
+    return img->height();
 }
 
 
@@ -173,68 +172,64 @@ static void nsqt_bitmap_modified(void *bitmap)
  * \param bitmap The bitmap to render into.
  * \param content The content to render.
  */
-static nserror
-nsqt_bitmap_render(struct bitmap *bitmap, struct hlcache_handle *content)
+static nserror nsqt_bitmap_render(struct bitmap *bitmap, struct hlcache_handle *content)
 {
-	QImage *dimg = (QImage *)bitmap;
-	QPainter *painter;
-	struct redraw_context ctx = {
-		.interactive = false,
-		.background_images = true,
-		.plot = &nsqt_plotters,
-		.priv = NULL,
-	};
-	int dwidth, dheight; /* destination bitmap width and height */
-	int cwidth, cheight; /* width and height for temporary render */
+    QImage *dimg = (QImage *)bitmap;
+    QPainter *painter;
+    struct redraw_context ctx = {
+        .interactive = false,
+        .background_images = true,
+        .plot = &nsqt_plotters,
+        .priv = NULL,
+    };
+    int dwidth, dheight; /* destination bitmap width and height */
+    int cwidth, cheight; /* width and height for temporary render */
 
-	dwidth = dimg->width();
-	dheight = dimg->height();
-	/* Get the width from the content, unless it exceeds 1024,
-	 * in which case we use 1024.
-	 */
-	cwidth = std::min(std::max(content_get_width(content), dwidth), 1024);
-	/* The height is set in proportion with the width, according to the
-	 * aspect ratio of the required thumbnail. */
-	cheight = ((cwidth * dheight) + (dwidth / 2)) / dwidth;
+    dwidth = dimg->width();
+    dheight = dimg->height();
+    /* Get the width from the content, unless it exceeds 1024,
+     * in which case we use 1024.
+     */
+    cwidth = std::min(std::max(content_get_width(content), dwidth), 1024);
+    /* The height is set in proportion with the width, according to the
+     * aspect ratio of the required thumbnail. */
+    cheight = ((cwidth * dheight) + (dwidth / 2)) / dwidth;
 
-	QImage iimg(cwidth, cheight, dimg->format());
+    QImage iimg(cwidth, cheight, dimg->format());
 
-	painter = new QPainter(&iimg);
-	ctx.priv = painter;
+    painter = new QPainter(&iimg);
+    ctx.priv = painter;
 
-	content_scaled_redraw(content, cwidth, cheight, &ctx);
+    content_scaled_redraw(content, cwidth, cheight, &ctx);
 
-	delete painter;
+    delete painter;
 
-	/* we create a scaled bitmap here using qimage smooth transform as the
-	 * qpainter scaled draw image (even with
-	 * QPainter::SmoothPixmapTransformset) yields poor quality results.
-	 */
-	QImage siimg = iimg.scaled(dwidth,
-				   dheight,
-				   Qt::IgnoreAspectRatio,
-				   Qt::SmoothTransformation);
+    /* we create a scaled bitmap here using qimage smooth transform as the
+     * qpainter scaled draw image (even with
+     * QPainter::SmoothPixmapTransformset) yields poor quality results.
+     */
+    QImage siimg = iimg.scaled(dwidth, dheight, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
 
-	/* plot the scaled intermediate image into the destination image */
-	painter = new QPainter(dimg);
-	painter->drawImage(QPoint(0, 0), siimg);
-	delete painter;
+    /* plot the scaled intermediate image into the destination image */
+    painter = new QPainter(dimg);
+    painter->drawImage(QPoint(0, 0), siimg);
+    delete painter;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
 static struct gui_bitmap_table bitmap_table = {
-	.create = nsqt_bitmap_create,
-	.destroy = nsqt_bitmap_destroy,
-	.set_opaque = nsqt_bitmap_set_opaque,
-	.get_opaque = nsqt_bitmap_get_opaque,
-	.get_buffer = nsqt_bitmap_get_buffer,
-	.get_rowstride = nsqt_bitmap_get_rowstride,
-	.get_width = nsqt_bitmap_get_width,
-	.get_height = nsqt_bitmap_get_height,
-	.modified = nsqt_bitmap_modified,
-	.render = nsqt_bitmap_render,
+    .create = nsqt_bitmap_create,
+    .destroy = nsqt_bitmap_destroy,
+    .set_opaque = nsqt_bitmap_set_opaque,
+    .get_opaque = nsqt_bitmap_get_opaque,
+    .get_buffer = nsqt_bitmap_get_buffer,
+    .get_rowstride = nsqt_bitmap_get_rowstride,
+    .get_width = nsqt_bitmap_get_width,
+    .get_height = nsqt_bitmap_get_height,
+    .modified = nsqt_bitmap_modified,
+    .render = nsqt_bitmap_render,
 };
 
 struct gui_bitmap_table *nsqt_bitmap_table = &bitmap_table;

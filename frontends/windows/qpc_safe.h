@@ -7,18 +7,18 @@
 #ifndef WINDOWS_QPC_SAFE_H
 #define WINDOWS_QPC_SAFE_H
 
-#include <windows.h>
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
+#include <windows.h>
 
 /**
  * QPC reliability test results
  */
 enum qpc_reliability {
-	QPC_RELIABILITY_UNKNOWN = 0,
-	QPC_RELIABILITY_GOOD,
-	QPC_RELIABILITY_BAD,
-	QPC_RELIABILITY_UNSTABLE
+    QPC_RELIABILITY_UNKNOWN = 0,
+    QPC_RELIABILITY_GOOD,
+    QPC_RELIABILITY_BAD,
+    QPC_RELIABILITY_UNSTABLE
 };
 
 /**

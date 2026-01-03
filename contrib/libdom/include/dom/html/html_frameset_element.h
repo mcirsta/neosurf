@@ -8,26 +8,18 @@
 #ifndef dom_html_frame_set_element_h_
 #define dom_html_frame_set_element_h_
 
-#include <stdbool.h>
 #include <dom/core/exceptions.h>
 #include <dom/core/string.h>
+#include <stdbool.h>
 
 typedef struct dom_html_frame_set_element dom_html_frame_set_element;
 
-dom_exception
-dom_html_frame_set_element_get_rows(dom_html_frame_set_element *element,
-				    dom_string **rows);
+dom_exception dom_html_frame_set_element_get_rows(dom_html_frame_set_element *element, dom_string **rows);
 
-dom_exception
-dom_html_frame_set_element_set_rows(dom_html_frame_set_element *element,
-				    dom_string *rows);
+dom_exception dom_html_frame_set_element_set_rows(dom_html_frame_set_element *element, dom_string *rows);
 
-dom_exception
-dom_html_frame_set_element_set_cols(dom_html_frame_set_element *ele,
-				    dom_string *cols);
+dom_exception dom_html_frame_set_element_set_cols(dom_html_frame_set_element *ele, dom_string *cols);
 
-dom_exception
-dom_html_frame_set_element_get_cols(dom_html_frame_set_element *ele,
-				    dom_string **cols);
+dom_exception dom_html_frame_set_element_get_cols(dom_html_frame_set_element *ele, dom_string **cols);
 
 #endif

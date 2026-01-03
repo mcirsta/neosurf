@@ -40,8 +40,6 @@ gboolean nsgtk_completion_update(GtkEntry *entry);
  * connect signals on entry completion
  */
 nserror
-nsgtk_completion_connect_signals(GtkEntry *entry,
-				 struct browser_window *(*get_bw)(void *ctx),
-				 void *get_bw_ctx);
+nsgtk_completion_connect_signals(GtkEntry *entry, struct browser_window *(*get_bw)(void *ctx), void *get_bw_ctx);
 
 #endif

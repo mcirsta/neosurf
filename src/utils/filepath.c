@@ -24,20 +24,20 @@
  *  straightforward.
  */
 
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <stdarg.h>
+#include <sys/types.h>
 #include <limits.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <unistd.h>
 #include <string.h>
+#include <unistd.h>
 
-#include "utils/dirent.h" /** \todo why is this necessary for atari to get PATH_MAX and is there a better way */
-#include <neosurf/utils/utils.h>
 #include <neosurf/utils/config.h>
 #include <neosurf/utils/filepath.h>
 #include <neosurf/utils/log.h>
+#include <neosurf/utils/utils.h>
+#include "utils/dirent.h" /** \todo why is this necessary for atari to get PATH_MAX and is there a better way */
 
 /** maximum number of elements in the resource vector */
 #define MAX_RESPATH 128
@@ -45,204 +45,181 @@
 /* exported interface documented in filepath.h */
 char *filepath_vsfindfile(char *str, const char *format, va_list ap)
 {
-	char *realpathname;
-	char *pathname;
-	int len;
+    char *realpathname;
+    char *pathname;
+    int len;
 
-	pathname = malloc(PATH_MAX);
-	if (pathname == NULL)
-		return NULL; /* unable to allocate memory */
+    pathname = malloc(PATH_MAX);
+    if (pathname == NULL)
+        return NULL; /* unable to allocate memory */
 
-	len = vsnprintf(pathname, PATH_MAX, format, ap);
+    len = vsnprintf(pathname, PATH_MAX, format, ap);
 
-	if ((len < 0) || (len >= PATH_MAX)) {
-		/* error or output exceeded PATH_MAX length so
-		 * operation is doomed to fail.
-		 */
-		free(pathname);
-		return NULL;
-	}
+    if ((len < 0) || (len >= PATH_MAX)) {
+        /* error or output exceeded PATH_MAX length so
+         * operation is doomed to fail.
+         */
+        free(pathname);
+        return NULL;
+    }
 
-	realpathname = realpath(pathname, str);
+    realpathname = realpath(pathname, str);
 
-	free(pathname);
+    free(pathname);
 
-	if (realpathname != NULL) {
-		/* sucessfully expanded pathname */
-		if (access(realpathname, R_OK) != 0) {
-			/* unable to read the file */
-			return NULL;
-		}
-	}
+    if (realpathname != NULL) {
+        /* sucessfully expanded pathname */
+        if (access(realpathname, R_OK) != 0) {
+            /* unable to read the file */
+            return NULL;
+        }
+    }
 
-	return realpathname;
+    return realpathname;
 }
 
 
 /* exported interface documented in filepath.h */
 char *filepath_sfindfile(char *str, const char *format, ...)
 {
-	va_list ap;
-	char *ret;
+    va_list ap;
+    char *ret;
 
-	va_start(ap, format);
-	ret = filepath_vsfindfile(str, format, ap);
-	va_end(ap);
+    va_start(ap, format);
+    ret = filepath_vsfindfile(str, format, ap);
+    va_end(ap);
 
-	return ret;
+    return ret;
 }
 
 
 /* exported interface documented in filepath.h */
 char *filepath_findfile(const char *format, ...)
 {
-	char *ret;
-	va_list ap;
+    char *ret;
+    va_list ap;
 
-	va_start(ap, format);
-	ret = filepath_vsfindfile(NULL, format, ap);
-	va_end(ap);
+    va_start(ap, format);
+    ret = filepath_vsfindfile(NULL, format, ap);
+    va_end(ap);
 
-	return ret;
+    return ret;
 }
 
 /* exported interface documented in filepath.h */
 char *filepath_sfind(char **respathv, char *filepath, const char *filename)
 {
-	int respathc = 0;
+    int respathc = 0;
 
-	NSLOG(neosurf, INFO, "Looking for resource: '%s'", filename);
+    NSLOG(neosurf, INFO, "Looking for resource: '%s'", filename);
 
-	if ((respathv == NULL) || (respathv[0] == NULL) || (filepath == NULL)) {
-		NSLOG(neosurf,
-		      INFO,
-		      "Resource '%s' not found (search path empty)",
-		      filename);
-		return NULL;
-	}
+    if ((respathv == NULL) || (respathv[0] == NULL) || (filepath == NULL)) {
+        NSLOG(neosurf, INFO, "Resource '%s' not found (search path empty)", filename);
+        return NULL;
+    }
 
-	while (respathv[respathc] != NULL) {
-		if (filepath_sfindfile(
-			    filepath, "%s/%s", respathv[respathc], filename) !=
-		    NULL) {
-			return filepath;
-		}
+    while (respathv[respathc] != NULL) {
+        if (filepath_sfindfile(filepath, "%s/%s", respathv[respathc], filename) != NULL) {
+            return filepath;
+        }
 
-		respathc++;
-	}
+        respathc++;
+    }
 
-	NSLOG(neosurf, ERROR, "FATAL: Resource '%s' not found", filename);
-	return NULL;
+    NSLOG(neosurf, ERROR, "FATAL: Resource '%s' not found", filename);
+    return NULL;
 }
 
 
 /* exported interface documented in filepath.h */
 char *filepath_find(char **respathv, const char *filename)
 {
-	char *ret;
-	char *filepath;
+    char *ret;
+    char *filepath;
 
-	if ((respathv == NULL) || (respathv[0] == NULL))
-		return NULL;
+    if ((respathv == NULL) || (respathv[0] == NULL))
+        return NULL;
 
-	filepath = malloc(PATH_MAX);
-	if (filepath == NULL)
-		return NULL;
+    filepath = malloc(PATH_MAX);
+    if (filepath == NULL)
+        return NULL;
 
-	ret = filepath_sfind(respathv, filepath, filename);
+    ret = filepath_sfind(respathv, filepath, filename);
 
-	if (ret == NULL)
-		free(filepath);
+    if (ret == NULL)
+        free(filepath);
 
-	return ret;
+    return ret;
 }
 
 
 /* exported interface documented in filepath.h */
-char *filepath_sfinddef(char **respathv,
-			char *filepath,
-			const char *filename,
-			const char *def)
+char *filepath_sfinddef(char **respathv, char *filepath, const char *filename, const char *def)
 {
-	char t[PATH_MAX];
-	char *ret;
+    char t[PATH_MAX];
+    char *ret;
 
-	if ((respathv == NULL) || (respathv[0] == NULL) || (filepath == NULL))
-		return NULL;
+    if ((respathv == NULL) || (respathv[0] == NULL) || (filepath == NULL))
+        return NULL;
 
-	ret = filepath_sfind(respathv, filepath, filename);
+    ret = filepath_sfind(respathv, filepath, filename);
 
-	if ((ret == NULL) && (def != NULL)) {
-		/* search failed, return the path specified */
-		ret = filepath;
-		if (def[0] == '~') {
-			snprintf(t,
-				 PATH_MAX,
-				 "%s/%s/%s",
-				 getenv("HOME"),
-				 def + 1,
-				 filename);
-		} else {
-			snprintf(t, PATH_MAX, "%s/%s", def, filename);
-		}
-		if (realpath(t, ret) == NULL) {
-			strncpy(ret, t, PATH_MAX);
-		}
-	}
-	return ret;
+    if ((ret == NULL) && (def != NULL)) {
+        /* search failed, return the path specified */
+        ret = filepath;
+        if (def[0] == '~') {
+            snprintf(t, PATH_MAX, "%s/%s/%s", getenv("HOME"), def + 1, filename);
+        } else {
+            snprintf(t, PATH_MAX, "%s/%s", def, filename);
+        }
+        if (realpath(t, ret) == NULL) {
+            strncpy(ret, t, PATH_MAX);
+        }
+    }
+    return ret;
 }
 
 
 /* exported interface documented in filepath.h */
 char **filepath_generate(char *const *pathv, const char *const *langv)
 {
-	char **respath; /* resource paths vector */
-	int pathc = 0;
-	int langc = 0;
-	int respathc = 0;
-	struct stat dstat;
-	char *tmppath;
-	int tmppathlen;
+    char **respath; /* resource paths vector */
+    int pathc = 0;
+    int langc = 0;
+    int respathc = 0;
+    struct stat dstat;
+    char *tmppath;
+    int tmppathlen;
 
-	respath = calloc(MAX_RESPATH, sizeof(char *));
+    respath = calloc(MAX_RESPATH, sizeof(char *));
 
-	while ((respath != NULL) && (pathv[pathc] != NULL)) {
-		if ((stat(pathv[pathc], &dstat) == 0) &&
-		    S_ISDIR(dstat.st_mode)) {
-			/* path element exists and is a directory */
-			langc = 0;
-			while (langv[langc] != NULL) {
-				tmppathlen = snprintf(NULL,
-						      0,
-						      "%s/%s",
-						      pathv[pathc],
-						      langv[langc]);
-				tmppath = malloc(tmppathlen + 1);
-				if (tmppath == NULL) {
-					break;
-				}
-				snprintf(tmppath,
-					 tmppathlen + 1,
-					 "%s/%s",
-					 pathv[pathc],
-					 langv[langc]);
+    while ((respath != NULL) && (pathv[pathc] != NULL)) {
+        if ((stat(pathv[pathc], &dstat) == 0) && S_ISDIR(dstat.st_mode)) {
+            /* path element exists and is a directory */
+            langc = 0;
+            while (langv[langc] != NULL) {
+                tmppathlen = snprintf(NULL, 0, "%s/%s", pathv[pathc], langv[langc]);
+                tmppath = malloc(tmppathlen + 1);
+                if (tmppath == NULL) {
+                    break;
+                }
+                snprintf(tmppath, tmppathlen + 1, "%s/%s", pathv[pathc], langv[langc]);
 
-				if ((stat(tmppath, &dstat) == 0) &&
-				    S_ISDIR(dstat.st_mode)) {
-					/* path element exists and is a
-					 * directory */
-					respath[respathc++] = tmppath;
-				} else {
-					free(tmppath);
-				}
+                if ((stat(tmppath, &dstat) == 0) && S_ISDIR(dstat.st_mode)) {
+                    /* path element exists and is a
+                     * directory */
+                    respath[respathc++] = tmppath;
+                } else {
+                    free(tmppath);
+                }
 
-				langc++;
-			}
-			respath[respathc++] = strdup(pathv[pathc]);
-		}
-		pathc++;
-	}
-	return respath;
+                langc++;
+            }
+            respath[respathc++] = strdup(pathv[pathc]);
+        }
+        pathc++;
+    }
+    return respath;
 }
 
 
@@ -255,119 +232,115 @@ char **filepath_generate(char *const *pathv, const char *const *langv)
  */
 static char *expand_path(const char *path, int pathlen)
 {
-	char *exp;
-	int explen;
-	int cstart = -1;
-	int cloop = 0;
-	char *envv;
-	int envlen;
-	int replen; /* length of replacement */
+    char *exp;
+    int explen;
+    int cstart = -1;
+    int cloop = 0;
+    char *envv;
+    int envlen;
+    int replen; /* length of replacement */
 
-	exp = malloc(pathlen + 1);
-	if (exp == NULL)
-		return NULL;
+    exp = malloc(pathlen + 1);
+    if (exp == NULL)
+        return NULL;
 
-	memcpy(exp, path, pathlen);
-	exp[pathlen] = 0;
+    memcpy(exp, path, pathlen);
+    exp[pathlen] = 0;
 
-	explen = pathlen;
+    explen = pathlen;
 
-	while (exp[cloop] != 0) {
-		if ((exp[cloop] == '$') && (exp[cloop + 1] == '{')) {
-			cstart = cloop;
-			cloop++;
-		}
+    while (exp[cloop] != 0) {
+        if ((exp[cloop] == '$') && (exp[cloop + 1] == '{')) {
+            cstart = cloop;
+            cloop++;
+        }
 
-		if ((cstart != -1) && (exp[cloop] == '}')) {
-			replen = cloop - cstart;
-			exp[cloop] = 0;
-			envv = getenv(exp + cstart + 2);
-			if (envv == NULL) {
-				memmove(exp + cstart,
-					exp + cloop + 1,
-					explen - cloop);
-				explen -= replen;
-			} else {
-				char *tmp;
-				envlen = strlen(envv);
-				tmp = realloc(exp, explen + envlen - replen);
-				if (tmp == NULL) {
-					free(exp);
-					return NULL;
-				}
-				exp = tmp;
-				memmove(exp + cstart + envlen,
-					exp + cloop + 1,
-					explen - cloop);
-				memmove(exp + cstart, envv, envlen);
-				explen += envlen - replen;
-			}
-			cloop -= replen;
-			cstart = -1;
-		}
+        if ((cstart != -1) && (exp[cloop] == '}')) {
+            replen = cloop - cstart;
+            exp[cloop] = 0;
+            envv = getenv(exp + cstart + 2);
+            if (envv == NULL) {
+                memmove(exp + cstart, exp + cloop + 1, explen - cloop);
+                explen -= replen;
+            } else {
+                char *tmp;
+                envlen = strlen(envv);
+                tmp = realloc(exp, explen + envlen - replen);
+                if (tmp == NULL) {
+                    free(exp);
+                    return NULL;
+                }
+                exp = tmp;
+                memmove(exp + cstart + envlen, exp + cloop + 1, explen - cloop);
+                memmove(exp + cstart, envv, envlen);
+                explen += envlen - replen;
+            }
+            cloop -= replen;
+            cstart = -1;
+        }
 
-		cloop++;
-	}
+        cloop++;
+    }
 
-	if (explen == 1) {
-		free(exp);
-		exp = NULL;
-	}
+    if (explen == 1) {
+        free(exp);
+        exp = NULL;
+    }
 
-	return exp;
+    return exp;
 }
 
 
 /* exported interface documented in filepath.h */
 char **filepath_path_to_strvec(const char *path)
 {
-	char **strvec;
-	int strc = 0;
-	const char *estart; /* path element start */
-	const char *eend; /* path element end */
-	int elen;
+    char **strvec;
+    int strc = 0;
+    const char *estart; /* path element start */
+    const char *eend; /* path element end */
+    int elen;
 
-	strvec = calloc(MAX_RESPATH, sizeof(char *));
-	if (strvec == NULL)
-		return NULL;
+    strvec = calloc(MAX_RESPATH, sizeof(char *));
+    if (strvec == NULL)
+        return NULL;
 
-	estart = eend = path;
+    estart = eend = path;
 
-	while (strc < (MAX_RESPATH - 2)) {
-		while ((*eend != 0) && (*eend != ':'))
-			eend++;
-		elen = eend - estart;
+    while (strc < (MAX_RESPATH - 2)) {
+        while ((*eend != 0) && (*eend != ':'))
+            eend++;
+        elen = eend - estart;
 
-		if (elen > 1) {
-			/* more than an empty colon */
-			strvec[strc] = expand_path(estart, elen);
-			if (strvec[strc] != NULL) {
-				/* successfully expanded an element */
-				strc++;
-			}
-		}
+        if (elen > 1) {
+            /* more than an empty colon */
+            strvec[strc] = expand_path(estart, elen);
+            if (strvec[strc] != NULL) {
+                /* successfully expanded an element */
+                strc++;
+            }
+        }
 
-		/* skip colons */
-		while (*eend == ':')
-			eend++;
+        /* skip colons */
+        while (*eend == ':')
+            eend++;
 
-		/* check for termination */
-		if (*eend == 0)
-			break;
+        /* check for termination */
+        if (*eend == 0)
+            break;
 
-		estart = eend;
-	}
-	return strvec;
+        estart = eend;
+    }
+    return strvec;
 }
 
 
 /* exported interface documented in filepath.h */
 void filepath_free_strvec(char **pathv)
 {
-	int p = 0;
+    int p = 0;
 
-	while (pathv[p] != NULL) {
-		free(pathv[p++]);
-	}
-	free(pathv);
+    while (pathv[p] != NULL) {
+        free(pathv[p++]);
+    }
+    free(pathv);
 }

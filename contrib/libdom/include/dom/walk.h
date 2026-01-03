@@ -13,21 +13,21 @@
 #define dom_walk_h_
 
 enum dom_walk_stage {
-	DOM_WALK_STAGE_ENTER,
-	DOM_WALK_STAGE_LEAVE,
+    DOM_WALK_STAGE_ENTER,
+    DOM_WALK_STAGE_LEAVE,
 };
 
 enum dom_walk_enable {
-	DOM_WALK_ENABLE_ENTER = (1 << DOM_WALK_STAGE_ENTER),
-	DOM_WALK_ENABLE_LEAVE = (1 << DOM_WALK_STAGE_LEAVE),
-	DOM_WALK_ENABLE_ALL = DOM_WALK_ENABLE_ENTER | DOM_WALK_ENABLE_LEAVE,
+    DOM_WALK_ENABLE_ENTER = (1 << DOM_WALK_STAGE_ENTER),
+    DOM_WALK_ENABLE_LEAVE = (1 << DOM_WALK_STAGE_LEAVE),
+    DOM_WALK_ENABLE_ALL = DOM_WALK_ENABLE_ENTER | DOM_WALK_ENABLE_LEAVE,
 };
 
 enum dom_walk_cmd {
-	DOM_WALK_CMD_CONTINUE, /**< Continue the tree walk. */
-	DOM_WALK_CMD_ABORT, /**< Early termination of the tree walk. */
-	DOM_WALK_CMD_SKIP, /**< Skip children (only for \ref
-			      DOM_WALK_ENABLE_ENTER). */
+    DOM_WALK_CMD_CONTINUE, /**< Continue the tree walk. */
+    DOM_WALK_CMD_ABORT, /**< Early termination of the tree walk. */
+    DOM_WALK_CMD_SKIP, /**< Skip children (only for \ref
+                  DOM_WALK_ENABLE_ENTER). */
 };
 
 /**
@@ -41,10 +41,7 @@ enum dom_walk_cmd {
  * \param[in] pw     Client private data.
  * \return Tree walking client command.
  */
-typedef enum dom_walk_cmd (*dom_walk_cb)(enum dom_walk_stage stage,
-					 dom_node_type type,
-					 dom_node *node,
-					 void *pw);
+typedef enum dom_walk_cmd (*dom_walk_cb)(enum dom_walk_stage stage, dom_node_type type, dom_node *node, void *pw);
 
 
 /**
@@ -56,9 +53,6 @@ typedef enum dom_walk_cmd (*dom_walk_cb)(enum dom_walk_stage stage,
  * \param[in] pw    The client's private data.
  * \return false for early termination of walk, true otherwise.
  */
-dom_exception libdom_treewalk(enum dom_walk_enable mask,
-			      dom_walk_cb cb,
-			      dom_node *root,
-			      void *pw);
+dom_exception libdom_treewalk(enum dom_walk_enable mask, dom_walk_cb cb, dom_node *root, void *pw);
 
 #endif

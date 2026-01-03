@@ -35,9 +35,7 @@ struct box;
  * \param box     box with gadget to be given textarea widget
  * \param node    DOM node for form element
  */
-bool box_textarea_create_textarea(struct html_content *html,
-				  struct box *box,
-				  struct dom_node *node);
+bool box_textarea_create_textarea(struct html_content *html, struct box *box, struct dom_node *node);
 
 
 /**
@@ -48,7 +46,6 @@ bool box_textarea_create_textarea(struct html_content *html,
  * \param key     keypress
  * \return NSERROR_OK iff keypress handled
  */
-nserror
-box_textarea_keypress(struct html_content *html, struct box *box, uint32_t key);
+nserror box_textarea_keypress(struct html_content *html, struct box *box, uint32_t key);
 
 #endif

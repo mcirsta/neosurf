@@ -14,12 +14,11 @@
 #include "html/html_document.h"
 #include "html/html_select_element.h"
 
-#include "core/node.h"
 #include "utils/utils.h"
+#include "core/node.h"
 
 static const struct dom_element_protected_vtable _protect_vtable = {
-	{DOM_NODE_PROTECT_VTABLE_HTML_SELECT_ELEMENT},
-	DOM_HTML_SELECT_ELEMENT_PROTECT_VTABLE};
+    {DOM_NODE_PROTECT_VTABLE_HTML_SELECT_ELEMENT}, DOM_HTML_SELECT_ELEMENT_PROTECT_VTABLE};
 
 static bool is_option(struct dom_node_internal *node, void *ctx);
 
@@ -31,21 +30,20 @@ static bool is_option(struct dom_node_internal *node, void *ctx);
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
 dom_exception
-_dom_html_select_element_create(struct dom_html_element_create_params *params,
-				struct dom_html_select_element **ele)
+_dom_html_select_element_create(struct dom_html_element_create_params *params, struct dom_html_select_element **ele)
 {
-	struct dom_node_internal *node;
+    struct dom_node_internal *node;
 
-	*ele = malloc(sizeof(dom_html_select_element));
-	if (*ele == NULL)
-		return DOM_NO_MEM_ERR;
+    *ele = malloc(sizeof(dom_html_select_element));
+    if (*ele == NULL)
+        return DOM_NO_MEM_ERR;
 
-	/* Set up vtables */
-	node = (struct dom_node_internal *)*ele;
-	node->base.vtable = &_dom_html_element_vtable;
-	node->vtable = &_protect_vtable;
+    /* Set up vtables */
+    node = (struct dom_node_internal *)*ele;
+    node->base.vtable = &_dom_html_element_vtable;
+    node->vtable = &_protect_vtable;
 
-	return _dom_html_select_element_initialise(params, *ele);
+    return _dom_html_select_element_initialise(params, *ele);
 }
 
 /**
@@ -55,13 +53,12 @@ _dom_html_select_element_create(struct dom_html_element_create_params *params,
  * \param ele     The dom_html_select_element object
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_html_select_element_initialise(
-	struct dom_html_element_create_params *params,
-	struct dom_html_select_element *ele)
+dom_exception
+_dom_html_select_element_initialise(struct dom_html_element_create_params *params, struct dom_html_select_element *ele)
 {
-	ele->form = NULL;
+    ele->form = NULL;
 
-	return _dom_html_element_initialise(params, &ele->base);
+    return _dom_html_element_initialise(params, &ele->base);
 }
 
 /**
@@ -71,7 +68,7 @@ dom_exception _dom_html_select_element_initialise(
  */
 void _dom_html_select_element_finalise(struct dom_html_select_element *ele)
 {
-	_dom_html_element_finalise(&ele->base);
+    _dom_html_element_finalise(&ele->base);
 }
 
 /**
@@ -81,8 +78,8 @@ void _dom_html_select_element_finalise(struct dom_html_select_element *ele)
  */
 void _dom_html_select_element_destroy(struct dom_html_select_element *ele)
 {
-	_dom_html_select_element_finalise(ele);
-	free(ele);
+    _dom_html_select_element_finalise(ele);
+    free(ele);
 }
 
 /*------------------------------------------------------------------------*/
@@ -90,82 +87,74 @@ void _dom_html_select_element_destroy(struct dom_html_select_element *ele)
 
 /* The virtual function used to parse attribute value, see src/core/element.c
  * for detail */
-dom_exception _dom_html_select_element_parse_attribute(dom_element *ele,
-						       dom_string *name,
-						       dom_string *value,
-						       dom_string **parsed)
+dom_exception
+_dom_html_select_element_parse_attribute(dom_element *ele, dom_string *name, dom_string *value, dom_string **parsed)
 {
-	UNUSED(ele);
-	UNUSED(name);
+    UNUSED(ele);
+    UNUSED(name);
 
-	dom_string_ref(value);
-	*parsed = value;
+    dom_string_ref(value);
+    *parsed = value;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /* The virtual destroy function, see src/core/node.c for detail */
 void _dom_virtual_html_select_element_destroy(dom_node_internal *node)
 {
-	_dom_html_select_element_destroy(
-		(struct dom_html_select_element *)node);
+    _dom_html_select_element_destroy((struct dom_html_select_element *)node);
 }
 
 /* The virtual copy function, see src/core/node.c for detail */
-dom_exception
-_dom_html_select_element_copy(dom_node_internal *old, dom_node_internal **copy)
+dom_exception _dom_html_select_element_copy(dom_node_internal *old, dom_node_internal **copy)
 {
-	dom_html_select_element *new_node;
-	dom_exception err;
+    dom_html_select_element *new_node;
+    dom_exception err;
 
-	new_node = malloc(sizeof(dom_html_select_element));
-	if (new_node == NULL)
-		return DOM_NO_MEM_ERR;
+    new_node = malloc(sizeof(dom_html_select_element));
+    if (new_node == NULL)
+        return DOM_NO_MEM_ERR;
 
-	err = dom_html_select_element_copy_internal(old, new_node);
-	if (err != DOM_NO_ERR) {
-		free(new_node);
-		return err;
-	}
+    err = dom_html_select_element_copy_internal(old, new_node);
+    if (err != DOM_NO_ERR) {
+        free(new_node);
+        return err;
+    }
 
-	*copy = (dom_node_internal *)new_node;
+    *copy = (dom_node_internal *)new_node;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
-dom_exception
-_dom_html_select_element_copy_internal(dom_html_select_element *old,
-				       dom_html_select_element *new)
+dom_exception _dom_html_select_element_copy_internal(dom_html_select_element *old, dom_html_select_element *new)
 {
-	dom_exception err;
+    dom_exception err;
 
-	err = dom_html_element_copy_internal(old, new);
-	if (err != DOM_NO_ERR) {
-		return err;
-	}
+    err = dom_html_element_copy_internal(old, new);
+    if (err != DOM_NO_ERR) {
+        return err;
+    }
 
-	/* TODO: We don't seem to keep a ref to form element, so just
-	 *       copy the pointer for now. */
-	new->form = old->form;
+    /* TODO: We don't seem to keep a ref to form element, so just
+     *       copy the pointer for now. */
+    new->form = old->form;
 
-	new->selected = old->selected;
+    new->selected = old->selected;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /*-----------------------------------------------------------------------*/
 /* Public APIs */
 
 static dom_exception
-_dom_html_select_element_make_collection(dom_html_select_element *ele,
-					 dom_html_options_collection **col)
+_dom_html_select_element_make_collection(dom_html_select_element *ele, dom_html_options_collection **col)
 {
-	dom_html_document *doc = (dom_html_document *)dom_node_get_owner(ele);
+    dom_html_document *doc = (dom_html_document *)dom_node_get_owner(ele);
 
-	assert(doc != NULL);
+    assert(doc != NULL);
 
-	return _dom_html_options_collection_create(
-		doc, (dom_node_internal *)ele, is_option, ele, col);
+    return _dom_html_options_collection_create(doc, (dom_node_internal *)ele, is_option, ele, col);
 }
 
 /**
@@ -175,23 +164,22 @@ _dom_html_select_element_make_collection(dom_html_select_element *ele,
  * \param type  Pointer to location to receive type
  * \return DOM_NO_ERR on success, appropriate error otherwise.
  */
-dom_exception dom_html_select_element_get_type(dom_html_select_element *ele,
-					       dom_string **type)
+dom_exception dom_html_select_element_get_type(dom_html_select_element *ele, dom_string **type)
 {
-	dom_html_document *doc = (dom_html_document *)dom_node_get_owner(ele);
-	dom_exception err;
-	bool multiple;
+    dom_html_document *doc = (dom_html_document *)dom_node_get_owner(ele);
+    dom_exception err;
+    bool multiple;
 
-	err = dom_html_select_element_get_multiple(ele, &multiple);
-	if (err != DOM_NO_ERR)
-		return err;
+    err = dom_html_select_element_get_multiple(ele, &multiple);
+    if (err != DOM_NO_ERR)
+        return err;
 
-	if (multiple)
-		*type = dom_string_ref(doc->memoised[hds_select_multiple]);
-	else
-		*type = dom_string_ref(doc->memoised[hds_select_one]);
+    if (multiple)
+        *type = dom_string_ref(doc->memoised[hds_select_multiple]);
+    else
+        *type = dom_string_ref(doc->memoised[hds_select_one]);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -201,55 +189,52 @@ dom_exception dom_html_select_element_get_type(dom_html_select_element *ele,
  * \param index  The returned index
  * \return DOM_NO_ERR on success.
  */
-dom_exception
-dom_html_select_element_get_selected_index(dom_html_select_element *ele,
-					   int32_t *index)
+dom_exception dom_html_select_element_get_selected_index(dom_html_select_element *ele, int32_t *index)
 {
-	dom_exception err;
-	uint32_t idx, len;
-	dom_node *option;
-	bool selected;
-	dom_html_options_collection *col;
+    dom_exception err;
+    uint32_t idx, len;
+    dom_node *option;
+    bool selected;
+    dom_html_options_collection *col;
 
-	err = _dom_html_select_element_make_collection(ele, &col);
-	if (err != DOM_NO_ERR) {
-		return err;
-	}
+    err = _dom_html_select_element_make_collection(ele, &col);
+    if (err != DOM_NO_ERR) {
+        return err;
+    }
 
-	err = dom_html_options_collection_get_length(col, &len);
-	if (err != DOM_NO_ERR) {
-		dom_html_options_collection_unref(col);
-		return err;
-	}
+    err = dom_html_options_collection_get_length(col, &len);
+    if (err != DOM_NO_ERR) {
+        dom_html_options_collection_unref(col);
+        return err;
+    }
 
-	for (idx = 0; idx < len; idx++) {
-		err = dom_html_options_collection_item(col, idx, &option);
-		if (err != DOM_NO_ERR) {
-			dom_html_options_collection_unref(col);
-			return err;
-		}
+    for (idx = 0; idx < len; idx++) {
+        err = dom_html_options_collection_item(col, idx, &option);
+        if (err != DOM_NO_ERR) {
+            dom_html_options_collection_unref(col);
+            return err;
+        }
 
-		err = dom_html_option_element_get_selected(
-			(dom_html_option_element *)option, &selected);
+        err = dom_html_option_element_get_selected((dom_html_option_element *)option, &selected);
 
-		dom_node_unref(option);
+        dom_node_unref(option);
 
-		if (err != DOM_NO_ERR) {
-			dom_html_options_collection_unref(col);
-			return err;
-		}
+        if (err != DOM_NO_ERR) {
+            dom_html_options_collection_unref(col);
+            return err;
+        }
 
-		if (selected) {
-			*index = idx;
-			dom_html_options_collection_unref(col);
-			return DOM_NO_ERR;
-		}
-	}
+        if (selected) {
+            *index = idx;
+            dom_html_options_collection_unref(col);
+            return DOM_NO_ERR;
+        }
+    }
 
-	*index = -1;
+    *index = -1;
 
-	dom_html_options_collection_unref(col);
-	return DOM_NO_ERR;
+    dom_html_options_collection_unref(col);
+    return DOM_NO_ERR;
 }
 
 /**
@@ -259,36 +244,33 @@ dom_html_select_element_get_selected_index(dom_html_select_element *ele,
  * \param index  The new index
  * \return DOM_NO_ERR on success.
  */
-dom_exception
-dom_html_select_element_set_selected_index(dom_html_select_element *ele,
-					   int32_t index)
+dom_exception dom_html_select_element_set_selected_index(dom_html_select_element *ele, int32_t index)
 {
-	dom_exception err;
-	dom_node *option;
-	dom_html_options_collection *col;
+    dom_exception err;
+    dom_node *option;
+    dom_html_options_collection *col;
 
-	err = _dom_html_select_element_make_collection(ele, &col);
-	if (err != DOM_NO_ERR) {
-		return err;
-	}
+    err = _dom_html_select_element_make_collection(ele, &col);
+    if (err != DOM_NO_ERR) {
+        return err;
+    }
 
-	err = dom_html_options_collection_item(col, index, &option);
-	if (err != DOM_NO_ERR) {
-		dom_html_options_collection_unref(col);
-		return err;
-	}
+    err = dom_html_options_collection_item(col, index, &option);
+    if (err != DOM_NO_ERR) {
+        dom_html_options_collection_unref(col);
+        return err;
+    }
 
-	err = dom_html_option_element_set_selected(
-		(dom_html_option_element *)option, true);
+    err = dom_html_option_element_set_selected((dom_html_option_element *)option, true);
 
-	dom_node_unref(option);
+    dom_node_unref(option);
 
-	dom_html_options_collection_unref(col);
-	if (err != DOM_NO_ERR) {
-		return err;
-	}
+    dom_html_options_collection_unref(col);
+    if (err != DOM_NO_ERR) {
+        return err;
+    }
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -298,55 +280,52 @@ dom_html_select_element_set_selected_index(dom_html_select_element *ele,
  * \param value  Pointer to location to receive value
  * \return DOM_NO_ERR on success, appropriate error otherwise.
  */
-dom_exception dom_html_select_element_get_value(dom_html_select_element *ele,
-						dom_string **value)
+dom_exception dom_html_select_element_get_value(dom_html_select_element *ele, dom_string **value)
 {
-	dom_exception err;
-	uint32_t idx, len;
-	dom_node *option;
-	bool selected;
-	dom_html_options_collection *col;
+    dom_exception err;
+    uint32_t idx, len;
+    dom_node *option;
+    bool selected;
+    dom_html_options_collection *col;
 
-	err = _dom_html_select_element_make_collection(ele, &col);
-	if (err != DOM_NO_ERR)
-		return err;
+    err = _dom_html_select_element_make_collection(ele, &col);
+    if (err != DOM_NO_ERR)
+        return err;
 
-	err = dom_html_select_element_get_length(ele, &len);
-	if (err != DOM_NO_ERR) {
-		dom_html_options_collection_unref(col);
-		return err;
-	}
+    err = dom_html_select_element_get_length(ele, &len);
+    if (err != DOM_NO_ERR) {
+        dom_html_options_collection_unref(col);
+        return err;
+    }
 
-	for (idx = 0; idx < len; idx++) {
-		err = dom_html_options_collection_item(col, idx, &option);
-		if (err != DOM_NO_ERR) {
-			dom_html_options_collection_unref(col);
-			return err;
-		}
+    for (idx = 0; idx < len; idx++) {
+        err = dom_html_options_collection_item(col, idx, &option);
+        if (err != DOM_NO_ERR) {
+            dom_html_options_collection_unref(col);
+            return err;
+        }
 
-		err = dom_html_option_element_get_selected(
-			(dom_html_option_element *)option, &selected);
-		if (err != DOM_NO_ERR) {
-			dom_html_options_collection_unref(col);
-			dom_node_unref(option);
-			return err;
-		}
+        err = dom_html_option_element_get_selected((dom_html_option_element *)option, &selected);
+        if (err != DOM_NO_ERR) {
+            dom_html_options_collection_unref(col);
+            dom_node_unref(option);
+            return err;
+        }
 
-		if (selected) {
-			err = dom_html_option_element_get_value(
-				(dom_html_option_element *)option, value);
+        if (selected) {
+            err = dom_html_option_element_get_value((dom_html_option_element *)option, value);
 
-			dom_html_options_collection_unref(col);
-			dom_node_unref(option);
+            dom_html_options_collection_unref(col);
+            dom_node_unref(option);
 
-			return err;
-		}
-	}
+            return err;
+        }
+    }
 
-	*value = NULL;
-	dom_html_options_collection_unref(col);
+    *value = NULL;
+    dom_html_options_collection_unref(col);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -356,54 +335,51 @@ dom_exception dom_html_select_element_get_value(dom_html_select_element *ele,
  * \param value  New value
  * \return DOM_NO_ERR on success, appropriate error otherwise.
  */
-dom_exception dom_html_select_element_set_value(dom_html_select_element *ele,
-						dom_string *value)
+dom_exception dom_html_select_element_set_value(dom_html_select_element *ele, dom_string *value)
 {
-	dom_exception err;
-	uint32_t idx, len;
-	dom_node *option;
-	bool selected;
-	dom_html_options_collection *col;
+    dom_exception err;
+    uint32_t idx, len;
+    dom_node *option;
+    bool selected;
+    dom_html_options_collection *col;
 
-	err = _dom_html_select_element_make_collection(ele, &col);
-	if (err != DOM_NO_ERR)
-		return err;
+    err = _dom_html_select_element_make_collection(ele, &col);
+    if (err != DOM_NO_ERR)
+        return err;
 
-	err = dom_html_select_element_get_length(ele, &len);
-	if (err != DOM_NO_ERR) {
-		dom_html_options_collection_unref(col);
-		return err;
-	}
+    err = dom_html_select_element_get_length(ele, &len);
+    if (err != DOM_NO_ERR) {
+        dom_html_options_collection_unref(col);
+        return err;
+    }
 
-	for (idx = 0; idx < len; idx++) {
-		err = dom_html_options_collection_item(col, idx, &option);
-		if (err != DOM_NO_ERR) {
-			dom_html_options_collection_unref(col);
-			return err;
-		}
+    for (idx = 0; idx < len; idx++) {
+        err = dom_html_options_collection_item(col, idx, &option);
+        if (err != DOM_NO_ERR) {
+            dom_html_options_collection_unref(col);
+            return err;
+        }
 
-		err = dom_html_option_element_get_selected(
-			(dom_html_option_element *)option, &selected);
-		if (err != DOM_NO_ERR) {
-			dom_html_options_collection_unref(col);
-			dom_node_unref(option);
-			return err;
-		}
+        err = dom_html_option_element_get_selected((dom_html_option_element *)option, &selected);
+        if (err != DOM_NO_ERR) {
+            dom_html_options_collection_unref(col);
+            dom_node_unref(option);
+            return err;
+        }
 
-		if (selected) {
-			err = dom_html_option_element_set_value(
-				(dom_html_option_element *)option, value);
+        if (selected) {
+            err = dom_html_option_element_set_value((dom_html_option_element *)option, value);
 
-			dom_html_options_collection_unref(col);
-			dom_node_unref(option);
+            dom_html_options_collection_unref(col);
+            dom_node_unref(option);
 
-			return err;
-		}
-	}
+            return err;
+        }
+    }
 
-	dom_html_options_collection_unref(col);
+    dom_html_options_collection_unref(col);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -413,21 +389,20 @@ dom_exception dom_html_select_element_set_value(dom_html_select_element *ele,
  * \param len  The returned len
  * \return DOM_NO_ERR on success.
  */
-dom_exception
-dom_html_select_element_get_length(dom_html_select_element *ele, uint32_t *len)
+dom_exception dom_html_select_element_get_length(dom_html_select_element *ele, uint32_t *len)
 {
-	dom_exception err;
-	dom_html_options_collection *col;
+    dom_exception err;
+    dom_html_options_collection *col;
 
-	err = _dom_html_select_element_make_collection(ele, &col);
-	if (err != DOM_NO_ERR)
-		return err;
+    err = _dom_html_select_element_make_collection(ele, &col);
+    if (err != DOM_NO_ERR)
+        return err;
 
-	err = dom_html_options_collection_get_length(col, len);
+    err = dom_html_options_collection_get_length(col, len);
 
-	dom_html_options_collection_unref(col);
+    dom_html_options_collection_unref(col);
 
-	return err;
+    return err;
 }
 
 /**
@@ -439,13 +414,12 @@ dom_html_select_element_get_length(dom_html_select_element *ele, uint32_t *len)
  *
  * todo: how to deal with set the len of the children option objects?
  */
-dom_exception
-dom_html_select_element_set_length(dom_html_select_element *ele, uint32_t len)
+dom_exception dom_html_select_element_set_length(dom_html_select_element *ele, uint32_t len)
 {
-	UNUSED(ele);
-	UNUSED(len);
+    UNUSED(ele);
+    UNUSED(len);
 
-	return DOM_NOT_SUPPORTED_ERR;
+    return DOM_NOT_SUPPORTED_ERR;
 }
 
 /**
@@ -455,15 +429,14 @@ dom_html_select_element_set_length(dom_html_select_element *ele, uint32_t len)
  * \param form    Pointer to location to receive form
  * \return DOM_NO_ERR on success, appropriate error otherwise.
  */
-dom_exception dom_html_select_element_get_form(dom_html_select_element *select,
-					       dom_html_form_element **form)
+dom_exception dom_html_select_element_get_form(dom_html_select_element *select, dom_html_form_element **form)
 {
-	*form = select->form;
+    *form = select->form;
 
-	if (*form != NULL)
-		dom_node_ref(*form);
+    if (*form != NULL)
+        dom_node_ref(*form);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -474,10 +447,9 @@ dom_exception dom_html_select_element_get_form(dom_html_select_element *select,
  * \return DOM_NO_ERR on success.
  */
 dom_exception
-dom__html_select_element_get_options(dom_html_select_element *ele,
-				     struct dom_html_options_collection **col)
+dom__html_select_element_get_options(dom_html_select_element *ele, struct dom_html_options_collection **col)
 {
-	return _dom_html_select_element_make_collection(ele, col);
+    return _dom_html_select_element_make_collection(ele, col);
 }
 
 /**
@@ -487,11 +459,9 @@ dom__html_select_element_get_options(dom_html_select_element *ele,
  * \param disabled  The returned status
  * \return DOM_NO_ERR on success.
  */
-dom_exception dom_html_select_element_get_disabled(dom_html_select_element *ele,
-						   bool *disabled)
+dom_exception dom_html_select_element_get_disabled(dom_html_select_element *ele, bool *disabled)
 {
-	return dom_html_element_get_bool_property(
-		&ele->base, "disabled", SLEN("disabled"), disabled);
+    return dom_html_element_get_bool_property(&ele->base, "disabled", SLEN("disabled"), disabled);
 }
 
 /**
@@ -501,11 +471,9 @@ dom_exception dom_html_select_element_get_disabled(dom_html_select_element *ele,
  * \param disabled  The disabled status
  * \return DOM_NO_ERR on success.
  */
-dom_exception dom_html_select_element_set_disabled(dom_html_select_element *ele,
-						   bool disabled)
+dom_exception dom_html_select_element_set_disabled(dom_html_select_element *ele, bool disabled)
 {
-	return dom_html_element_set_bool_property(
-		&ele->base, "disabled", SLEN("disabled"), disabled);
+    return dom_html_element_set_bool_property(&ele->base, "disabled", SLEN("disabled"), disabled);
 }
 
 /**
@@ -515,11 +483,9 @@ dom_exception dom_html_select_element_set_disabled(dom_html_select_element *ele,
  * \param multiple  The returned status
  * \return DOM_NO_ERR on success.
  */
-dom_exception dom_html_select_element_get_multiple(dom_html_select_element *ele,
-						   bool *multiple)
+dom_exception dom_html_select_element_get_multiple(dom_html_select_element *ele, bool *multiple)
 {
-	return dom_html_element_get_bool_property(
-		&ele->base, "multiple", SLEN("multiple"), multiple);
+    return dom_html_element_get_bool_property(&ele->base, "multiple", SLEN("multiple"), multiple);
 }
 
 /**
@@ -529,11 +495,9 @@ dom_exception dom_html_select_element_get_multiple(dom_html_select_element *ele,
  * \param multiple  The status
  * \return DOM_NO_ERR on success.
  */
-dom_exception dom_html_select_element_set_multiple(dom_html_select_element *ele,
-						   bool multiple)
+dom_exception dom_html_select_element_set_multiple(dom_html_select_element *ele, bool multiple)
 {
-	return dom_html_element_set_bool_property(
-		&ele->base, "multiple", SLEN("multiple"), multiple);
+    return dom_html_element_set_bool_property(&ele->base, "multiple", SLEN("multiple"), multiple);
 }
 
 /**
@@ -543,12 +507,11 @@ dom_exception dom_html_select_element_set_multiple(dom_html_select_element *ele,
  * \param name  Pointer to location to receive name
  * \return DOM_NO_ERR on success, appropriate error otherwise.
  */
-dom_exception dom_html_select_element_get_name(dom_html_select_element *ele,
-					       dom_string **name)
+dom_exception dom_html_select_element_get_name(dom_html_select_element *ele, dom_string **name)
 {
-	dom_html_document *doc = (dom_html_document *)dom_node_get_owner(ele);
+    dom_html_document *doc = (dom_html_document *)dom_node_get_owner(ele);
 
-	return dom_element_get_attribute(ele, doc->memoised[hds_name], name);
+    return dom_element_get_attribute(ele, doc->memoised[hds_name], name);
 }
 
 /**
@@ -558,12 +521,11 @@ dom_exception dom_html_select_element_get_name(dom_html_select_element *ele,
  * \param name  New name
  * \return DOM_NO_ERR on success, appropriate error otherwise.
  */
-dom_exception
-dom_html_select_element_set_name(dom_html_select_element *ele, dom_string *name)
+dom_exception dom_html_select_element_set_name(dom_html_select_element *ele, dom_string *name)
 {
-	dom_html_document *doc = (dom_html_document *)dom_node_get_owner(ele);
+    dom_html_document *doc = (dom_html_document *)dom_node_get_owner(ele);
 
-	return dom_element_set_attribute(ele, doc->memoised[hds_name], name);
+    return dom_element_set_attribute(ele, doc->memoised[hds_name], name);
 }
 
 /**
@@ -573,11 +535,9 @@ dom_html_select_element_set_name(dom_html_select_element *ele, dom_string *name)
  * \param size  Pointer to location to receive size
  * \return DOM_NO_ERR on success, appropriate error otherwise.
  */
-dom_exception
-dom_html_select_element_get_size(dom_html_select_element *ele, int32_t *size)
+dom_exception dom_html_select_element_get_size(dom_html_select_element *ele, int32_t *size)
 {
-	return dom_html_element_get_int32_t_property(
-		&ele->base, "size", SLEN("size"), size);
+    return dom_html_element_get_int32_t_property(&ele->base, "size", SLEN("size"), size);
 }
 
 /**
@@ -587,11 +547,9 @@ dom_html_select_element_get_size(dom_html_select_element *ele, int32_t *size)
  * \param size  New size
  * \return DOM_NO_ERR on success, appropriate error otherwise.
  */
-dom_exception
-dom_html_select_element_set_size(dom_html_select_element *ele, int32_t size)
+dom_exception dom_html_select_element_set_size(dom_html_select_element *ele, int32_t size)
 {
-	return dom_html_element_set_int32_t_property(
-		&ele->base, "size", SLEN("size"), size);
+    return dom_html_element_set_int32_t_property(&ele->base, "size", SLEN("size"), size);
 }
 
 /**
@@ -601,12 +559,9 @@ dom_html_select_element_set_size(dom_html_select_element *ele, int32_t size)
  * \param tab_index  Pointer to location to receive tab index
  * \return DOM_NO_ERR on success, appropriate error otherwise.
  */
-dom_exception
-dom_html_select_element_get_tab_index(dom_html_select_element *ele,
-				      int32_t *tab_index)
+dom_exception dom_html_select_element_get_tab_index(dom_html_select_element *ele, int32_t *tab_index)
 {
-	return dom_html_element_get_int32_t_property(
-		&ele->base, "tabindex", SLEN("tabindex"), tab_index);
+    return dom_html_element_get_int32_t_property(&ele->base, "tabindex", SLEN("tabindex"), tab_index);
 }
 
 /**
@@ -616,66 +571,59 @@ dom_html_select_element_get_tab_index(dom_html_select_element *ele,
  * \param tab_index  New tab index
  * \return DOM_NO_ERR on success, appropriate error otherwise.
  */
-dom_exception
-dom_html_select_element_set_tab_index(dom_html_select_element *ele,
-				      int32_t tab_index)
+dom_exception dom_html_select_element_set_tab_index(dom_html_select_element *ele, int32_t tab_index)
 {
-	return dom_html_element_set_int32_t_property(
-		&ele->base, "tabindex", SLEN("tabindex"), tab_index);
+    return dom_html_element_set_int32_t_property(&ele->base, "tabindex", SLEN("tabindex"), tab_index);
 }
 
 
 /* Functions */
-dom_exception dom__html_select_element_add(dom_html_select_element *select,
-					   struct dom_html_element *ele,
-					   struct dom_html_element *before)
+dom_exception dom__html_select_element_add(
+    dom_html_select_element *select, struct dom_html_element *ele, struct dom_html_element *before)
 {
-	dom_exception err;
-	dom_node *inserted;
+    dom_exception err;
+    dom_node *inserted;
 
-	err = dom_node_insert_before(select, ele, before, &inserted);
-	if (err == DOM_NO_ERR)
-		dom_node_unref(inserted);
+    err = dom_node_insert_before(select, ele, before, &inserted);
+    if (err == DOM_NO_ERR)
+        dom_node_unref(inserted);
 
-	return err;
+    return err;
 }
 
-dom_exception
-dom_html_select_element_remove(dom_html_select_element *ele, int32_t index)
+dom_exception dom_html_select_element_remove(dom_html_select_element *ele, int32_t index)
 {
-	dom_exception err;
-	uint32_t len;
-	dom_node *option, *old_option;
-	dom_html_options_collection *col;
+    dom_exception err;
+    uint32_t len;
+    dom_node *option, *old_option;
+    dom_html_options_collection *col;
 
-	err = dom_html_select_element_get_length(ele, &len);
-	if (err != DOM_NO_ERR)
-		return err;
+    err = dom_html_select_element_get_length(ele, &len);
+    if (err != DOM_NO_ERR)
+        return err;
 
-	/* Ensure index is in range */
-	if (index < 0 || index >= (int32_t)len)
-		return DOM_NO_ERR;
+    /* Ensure index is in range */
+    if (index < 0 || index >= (int32_t)len)
+        return DOM_NO_ERR;
 
-	err = _dom_html_select_element_make_collection(ele, &col);
-	if (err != DOM_NO_ERR)
-		return err;
+    err = _dom_html_select_element_make_collection(ele, &col);
+    if (err != DOM_NO_ERR)
+        return err;
 
-	err = dom_html_options_collection_item(col, index, &option);
-	if (err != DOM_NO_ERR) {
-		dom_html_options_collection_unref(col);
-		return err;
-	}
+    err = dom_html_options_collection_item(col, index, &option);
+    if (err != DOM_NO_ERR) {
+        dom_html_options_collection_unref(col);
+        return err;
+    }
 
-	err = dom_node_remove_child(dom_node_get_parent(option),
-				    option,
-				    &old_option);
-	if (err == DOM_NO_ERR)
-		dom_node_unref(old_option);
+    err = dom_node_remove_child(dom_node_get_parent(option), option, &old_option);
+    if (err == DOM_NO_ERR)
+        dom_node_unref(old_option);
 
-	dom_node_unref(option);
-	dom_html_options_collection_unref(col);
+    dom_node_unref(option);
+    dom_html_options_collection_unref(col);
 
-	return err;
+    return err;
 }
 
 /**
@@ -686,18 +634,13 @@ dom_html_select_element_remove(dom_html_select_element *ele, int32_t index)
  */
 dom_exception dom_html_select_element_blur(struct dom_html_select_element *ele)
 {
-	struct dom_html_document *doc = (dom_html_document *)dom_node_get_owner(
-		ele);
-	bool success = false;
-	assert(doc != NULL);
+    struct dom_html_document *doc = (dom_html_document *)dom_node_get_owner(ele);
+    bool success = false;
+    assert(doc != NULL);
 
-	/** \todo Is this event (a) default (b) bubbling and (c) cancelable? */
-	return _dom_dispatch_generic_event((dom_document *)doc,
-					   (dom_event_target *)ele,
-					   doc->memoised[hds_blur],
-					   true,
-					   true,
-					   &success);
+    /** \todo Is this event (a) default (b) bubbling and (c) cancelable? */
+    return _dom_dispatch_generic_event(
+        (dom_document *)doc, (dom_event_target *)ele, doc->memoised[hds_blur], true, true, &success);
 }
 
 /**
@@ -708,18 +651,13 @@ dom_exception dom_html_select_element_blur(struct dom_html_select_element *ele)
  */
 dom_exception dom_html_select_element_focus(struct dom_html_select_element *ele)
 {
-	struct dom_html_document *doc = (dom_html_document *)dom_node_get_owner(
-		ele);
-	bool success = false;
-	assert(doc != NULL);
+    struct dom_html_document *doc = (dom_html_document *)dom_node_get_owner(ele);
+    bool success = false;
+    assert(doc != NULL);
 
-	/** \todo Is this event (a) default (b) bubbling and (c) cancelable? */
-	return _dom_dispatch_generic_event((dom_document *)doc,
-					   (dom_event_target *)ele,
-					   doc->memoised[hds_focus],
-					   true,
-					   true,
-					   &success);
+    /** \todo Is this event (a) default (b) bubbling and (c) cancelable? */
+    return _dom_dispatch_generic_event(
+        (dom_document *)doc, (dom_event_target *)ele, doc->memoised[hds_focus], true, true, &success);
 }
 
 
@@ -729,20 +667,18 @@ dom_exception dom_html_select_element_focus(struct dom_html_select_element *ele)
 /* Test whether certain node is an option node */
 bool is_option(struct dom_node_internal *node, void *ctx)
 {
-	dom_html_select_element *ele = ctx;
-	dom_html_document *doc = (dom_html_document *)dom_node_get_owner(ele);
+    dom_html_select_element *ele = ctx;
+    dom_html_document *doc = (dom_html_document *)dom_node_get_owner(ele);
 
-	if (dom_string_isequal(node->name,
-			       doc->elements[DOM_HTML_ELEMENT_TYPE_OPTION]))
-		return true;
+    if (dom_string_isequal(node->name, doc->elements[DOM_HTML_ELEMENT_TYPE_OPTION]))
+        return true;
 
-	return false;
+    return false;
 }
 
-dom_exception _dom_html_select_element_set_form(dom_html_select_element *select,
-						dom_html_form_element *form)
+dom_exception _dom_html_select_element_set_form(dom_html_select_element *select, dom_html_form_element *form)
 {
-	select->form = form;
+    select->form = form;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }

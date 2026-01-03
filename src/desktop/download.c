@@ -26,26 +26,26 @@
 #include <string.h>
 
 #include <neosurf/content/llcache.h>
-#include <neosurf/utils/corestrings.h>
-#include "utils/http.h"
-#include <neosurf/utils/utils.h>
-#include <neosurf/utils/log.h>
 #include <neosurf/desktop/download.h>
-#include "neosurf/download.h"
 #include <neosurf/desktop/gui_internal.h>
+#include <neosurf/utils/corestrings.h>
+#include <neosurf/utils/log.h>
+#include <neosurf/utils/utils.h>
+#include "utils/http.h"
+#include "neosurf/download.h"
 
 /**
  * A context for a download
  */
 struct download_context {
-	llcache_handle *llcache; /**< Low-level cache handle */
-	struct gui_window *parent; /**< Parent window */
+    llcache_handle *llcache; /**< Low-level cache handle */
+    struct gui_window *parent; /**< Parent window */
 
-	lwc_string *mime_type; /**< MIME type of download */
-	unsigned long long int total_length; /**< Length of data, in bytes */
-	char *filename; /**< Suggested filename */
+    lwc_string *mime_type; /**< MIME type of download */
+    unsigned long long int total_length; /**< Length of data, in bytes */
+    char *filename; /**< Suggested filename */
 
-	struct gui_download_window *window; /**< GUI download window */
+    struct gui_download_window *window; /**< GUI download window */
 };
 
 /**
@@ -56,14 +56,14 @@ struct download_context {
  */
 static char *download_parse_filename(const char *filename)
 {
-	const char *slash = strrchr(filename, '/');
+    const char *slash = strrchr(filename, '/');
 
-	if (slash != NULL)
-		slash++;
-	else
-		slash = filename;
+    if (slash != NULL)
+        slash++;
+    else
+        slash = filename;
 
-	return strdup(slash);
+    return strdup(slash);
 }
 
 /**
@@ -74,13 +74,13 @@ static char *download_parse_filename(const char *filename)
  */
 static char *download_default_filename(nsurl *url)
 {
-	char *nice;
+    char *nice;
 
-	if (nsurl_nice(url, &nice, false) == NSERROR_OK) {
-		return nice;
-	}
+    if (nsurl_nice(url, &nice, false) == NSERROR_OK) {
+        return nice;
+    }
 
-	return NULL;
+    return NULL;
 }
 
 /**
@@ -92,80 +92,74 @@ static char *download_default_filename(nsurl *url)
  */
 static nserror download_context_process_headers(download_context *ctx)
 {
-	const char *http_header;
-	http_content_type *content_type;
-	unsigned long long int length;
-	nserror error;
+    const char *http_header;
+    http_content_type *content_type;
+    unsigned long long int length;
+    nserror error;
 
-	/* Retrieve and parse Content-Type */
-	http_header = llcache_handle_get_header(ctx->llcache, "Content-Type");
-	if (http_header == NULL)
-		http_header = "text/plain";
+    /* Retrieve and parse Content-Type */
+    http_header = llcache_handle_get_header(ctx->llcache, "Content-Type");
+    if (http_header == NULL)
+        http_header = "text/plain";
 
-	error = http_parse_content_type(http_header, &content_type);
-	if (error != NSERROR_OK)
-		return error;
+    error = http_parse_content_type(http_header, &content_type);
+    if (error != NSERROR_OK)
+        return error;
 
-	/* Retrieve and parse Content-Length */
-	http_header = llcache_handle_get_header(ctx->llcache, "Content-Length");
-	if (http_header == NULL) {
-		length = 0;
-	} else {
-		length = strtoull(http_header, NULL, 10);
-	}
+    /* Retrieve and parse Content-Length */
+    http_header = llcache_handle_get_header(ctx->llcache, "Content-Length");
+    if (http_header == NULL) {
+        length = 0;
+    } else {
+        length = strtoull(http_header, NULL, 10);
+    }
 
-	/* Retrieve and parse Content-Disposition */
-	http_header = llcache_handle_get_header(ctx->llcache,
-						"Content-Disposition");
-	if (http_header != NULL) {
-		lwc_string *filename_value;
-		http_content_disposition *disposition;
+    /* Retrieve and parse Content-Disposition */
+    http_header = llcache_handle_get_header(ctx->llcache, "Content-Disposition");
+    if (http_header != NULL) {
+        lwc_string *filename_value;
+        http_content_disposition *disposition;
 
-		error = http_parse_content_disposition(http_header,
-						       &disposition);
-		if (error != NSERROR_OK) {
-			http_content_type_destroy(content_type);
-			return error;
-		}
+        error = http_parse_content_disposition(http_header, &disposition);
+        if (error != NSERROR_OK) {
+            http_content_type_destroy(content_type);
+            return error;
+        }
 
-		error = http_parameter_list_find_item(disposition->parameters,
-						      corestring_lwc_filename,
-						      &filename_value);
-		if (error == NSERROR_OK) {
-			ctx->filename = download_parse_filename(
-				lwc_string_data(filename_value));
-			lwc_string_unref(filename_value);
-		}
+        error = http_parameter_list_find_item(disposition->parameters, corestring_lwc_filename, &filename_value);
+        if (error == NSERROR_OK) {
+            ctx->filename = download_parse_filename(lwc_string_data(filename_value));
+            lwc_string_unref(filename_value);
+        }
 
-		http_content_disposition_destroy(disposition);
-	}
+        http_content_disposition_destroy(disposition);
+    }
 
-	ctx->mime_type = lwc_string_ref(content_type->media_type);
-	ctx->total_length = length;
-	if (ctx->filename == NULL) {
-		ctx->filename = download_default_filename(
-			llcache_handle_get_url(ctx->llcache));
-	}
+    ctx->mime_type = lwc_string_ref(content_type->media_type);
+    ctx->total_length = length;
+    if (ctx->filename == NULL) {
+        ctx->filename = download_default_filename(llcache_handle_get_url(ctx->llcache));
+    }
 
-	http_content_type_destroy(content_type);
+    http_content_type_destroy(content_type);
 
-	if (ctx->filename == NULL) {
-		lwc_string_unref(ctx->mime_type);
-		ctx->mime_type = NULL;
-		return NSERROR_NOMEM;
-	}
+    if (ctx->filename == NULL) {
+        lwc_string_unref(ctx->mime_type);
+        ctx->mime_type = NULL;
+        return NSERROR_NOMEM;
+    }
 
-	/* Create the frontend window */
-	ctx->window = guit->download->create(ctx, ctx->parent);
-	if (ctx->window == NULL) {
-		free(ctx->filename);
-		ctx->filename = NULL;
-		lwc_string_unref(ctx->mime_type);
-		ctx->mime_type = NULL;
-		return NSERROR_NOMEM;
-	}
+    /* Create the frontend window */
+    ctx->window = guit->download->create(ctx, ctx->parent);
+    if (ctx->window == NULL) {
+        free(ctx->filename);
+        ctx->filename = NULL;
+        lwc_string_unref(ctx->mime_type);
+        ctx->mime_type = NULL;
+        return NSERROR_NOMEM;
+    }
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /**
@@ -176,142 +170,135 @@ static nserror download_context_process_headers(download_context *ctx)
  * \param pw      Our context
  * \return NSERROR_OK on success, appropriate error otherwise
  */
-static nserror
-download_callback(llcache_handle *handle, const llcache_event *event, void *pw)
+static nserror download_callback(llcache_handle *handle, const llcache_event *event, void *pw)
 {
-	download_context *ctx = pw;
-	nserror error = NSERROR_OK;
+    download_context *ctx = pw;
+    nserror error = NSERROR_OK;
 
-	switch (event->type) {
-	case LLCACHE_EVENT_GOT_CERTS:
-		/* Nominally not interested in these */
-		break;
-	case LLCACHE_EVENT_HAD_HEADERS:
-		error = download_context_process_headers(ctx);
-		if (error != NSERROR_OK) {
-			llcache_handle_abort(handle);
-			download_context_destroy(ctx);
-		}
+    switch (event->type) {
+    case LLCACHE_EVENT_GOT_CERTS:
+        /* Nominally not interested in these */
+        break;
+    case LLCACHE_EVENT_HAD_HEADERS:
+        error = download_context_process_headers(ctx);
+        if (error != NSERROR_OK) {
+            llcache_handle_abort(handle);
+            download_context_destroy(ctx);
+        }
 
-		break;
+        break;
 
-	case LLCACHE_EVENT_HAD_DATA:
-		/* If we didn't know up-front that this fetch was for download,
-		 * then we won't receive the HAD_HEADERS event. Catch up now.
-		 */
-		if (ctx->window == NULL) {
-			error = download_context_process_headers(ctx);
-			if (error != NSERROR_OK) {
-				llcache_handle_abort(handle);
-				download_context_destroy(ctx);
-			}
-		}
+    case LLCACHE_EVENT_HAD_DATA:
+        /* If we didn't know up-front that this fetch was for download,
+         * then we won't receive the HAD_HEADERS event. Catch up now.
+         */
+        if (ctx->window == NULL) {
+            error = download_context_process_headers(ctx);
+            if (error != NSERROR_OK) {
+                llcache_handle_abort(handle);
+                download_context_destroy(ctx);
+            }
+        }
 
-		if (error == NSERROR_OK) {
-			/** \todo Lose ugly cast */
-			error = guit->download->data(
-				ctx->window,
-				(char *)event->data.data.buf,
-				event->data.data.len);
-			if (error != NSERROR_OK)
-				llcache_handle_abort(handle);
-		}
+        if (error == NSERROR_OK) {
+            /** \todo Lose ugly cast */
+            error = guit->download->data(ctx->window, (char *)event->data.data.buf, event->data.data.len);
+            if (error != NSERROR_OK)
+                llcache_handle_abort(handle);
+        }
 
-		break;
+        break;
 
-	case LLCACHE_EVENT_DONE:
-		/* There may be no associated window if there was no data or
-		 * headers */
-		if (ctx->window != NULL)
-			guit->download->done(ctx->window);
-		else
-			download_context_destroy(ctx);
+    case LLCACHE_EVENT_DONE:
+        /* There may be no associated window if there was no data or
+         * headers */
+        if (ctx->window != NULL)
+            guit->download->done(ctx->window);
+        else
+            download_context_destroy(ctx);
 
-		break;
+        break;
 
-	case LLCACHE_EVENT_ERROR:
-		if (ctx->window != NULL)
-			guit->download->error(ctx->window,
-					      event->data.error.msg);
-		else
-			download_context_destroy(ctx);
+    case LLCACHE_EVENT_ERROR:
+        if (ctx->window != NULL)
+            guit->download->error(ctx->window, event->data.error.msg);
+        else
+            download_context_destroy(ctx);
 
-		break;
+        break;
 
-	case LLCACHE_EVENT_PROGRESS:
-		break;
+    case LLCACHE_EVENT_PROGRESS:
+        break;
 
-	case LLCACHE_EVENT_REDIRECT:
-		break;
-	}
+    case LLCACHE_EVENT_REDIRECT:
+        break;
+    }
 
-	return error;
+    return error;
 }
 
 /* See download.h for documentation */
-nserror
-download_context_create(llcache_handle *llcache, struct gui_window *parent)
+nserror download_context_create(llcache_handle *llcache, struct gui_window *parent)
 {
-	download_context *ctx;
+    download_context *ctx;
 
-	ctx = malloc(sizeof(*ctx));
-	if (ctx == NULL)
-		return NSERROR_NOMEM;
+    ctx = malloc(sizeof(*ctx));
+    if (ctx == NULL)
+        return NSERROR_NOMEM;
 
-	ctx->llcache = llcache;
-	ctx->parent = parent;
-	ctx->mime_type = NULL;
-	ctx->total_length = 0;
-	ctx->filename = NULL;
-	ctx->window = NULL;
+    ctx->llcache = llcache;
+    ctx->parent = parent;
+    ctx->mime_type = NULL;
+    ctx->total_length = 0;
+    ctx->filename = NULL;
+    ctx->window = NULL;
 
-	llcache_handle_change_callback(llcache, download_callback, ctx);
+    llcache_handle_change_callback(llcache, download_callback, ctx);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /* See download.h for documentation */
 void download_context_destroy(download_context *ctx)
 {
-	llcache_handle_release(ctx->llcache);
+    llcache_handle_release(ctx->llcache);
 
-	if (ctx->mime_type != NULL)
-		lwc_string_unref(ctx->mime_type);
+    if (ctx->mime_type != NULL)
+        lwc_string_unref(ctx->mime_type);
 
-	free(ctx->filename);
+    free(ctx->filename);
 
-	/* Window is not owned by us, so don't attempt to destroy it */
+    /* Window is not owned by us, so don't attempt to destroy it */
 
-	free(ctx);
+    free(ctx);
 }
 
 /* See download.h for documentation */
 void download_context_abort(download_context *ctx)
 {
-	llcache_handle_abort(ctx->llcache);
+    llcache_handle_abort(ctx->llcache);
 }
 
 /* See download.h for documentation */
 nsurl *download_context_get_url(const download_context *ctx)
 {
-	return llcache_handle_get_url(ctx->llcache);
+    return llcache_handle_get_url(ctx->llcache);
 }
 
 /* See download.h for documentation */
 const char *download_context_get_mime_type(const download_context *ctx)
 {
-	return lwc_string_data(ctx->mime_type);
+    return lwc_string_data(ctx->mime_type);
 }
 
 /* See download.h for documentation */
-unsigned long long int
-download_context_get_total_length(const download_context *ctx)
+unsigned long long int download_context_get_total_length(const download_context *ctx)
 {
-	return ctx->total_length;
+    return ctx->total_length;
 }
 
 /* See download.h for documentation */
 const char *download_context_get_filename(const download_context *ctx)
 {
-	return ctx->filename;
+    return ctx->filename;
 }

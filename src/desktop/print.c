@@ -22,19 +22,19 @@
 
 #include <neosurf/utils/config.h>
 
+#include <dom/dom.h>
 #include <assert.h>
 #include <string.h>
-#include <dom/dom.h>
 
-#include <neosurf/utils/utils.h>
-#include <neosurf/utils/nsoption.h>
+#include <neosurf/content/handlers/css/utils.h>
+#include <neosurf/content/handlers/html/box.h>
+#include <neosurf/content/hlcache.h>
 #include <neosurf/utils/log.h>
+#include <neosurf/utils/nsoption.h>
+#include <neosurf/utils/utils.h>
 #include "utils/talloc.h"
 #include "neosurf/content.h"
 #include "neosurf/plotters.h"
-#include <neosurf/content/hlcache.h>
-#include <neosurf/content/handlers/css/utils.h>
-#include <neosurf/content/handlers/html/box.h>
 
 #include <neosurf/desktop/print.h>
 #include <neosurf/desktop/printer.h>
@@ -61,24 +61,22 @@ int html_redraw_printing_top_cropped = 0;
  * \param settings The settings for printing to use
  * \return true if successful, false otherwise
  */
-bool print_basic_run(hlcache_handle *content,
-		     const struct printer *printer,
-		     struct print_settings *settings)
+bool print_basic_run(hlcache_handle *content, const struct printer *printer, struct print_settings *settings)
 {
-	bool ret = true;
+    bool ret = true;
 
-	assert(content != NULL && printer != NULL && settings != NULL);
+    assert(content != NULL && printer != NULL && settings != NULL);
 
-	if (print_set_up(content, printer, settings, NULL))
-		return false;
+    if (print_set_up(content, printer, settings, NULL))
+        return false;
 
-	while (ret && (done_height < content_get_height(printed_content))) {
-		ret = print_draw_next_page(printer, settings);
-	}
+    while (ret && (done_height < content_get_height(printed_content))) {
+        ret = print_draw_next_page(printer, settings);
+    }
 
-	print_cleanup(content, printer, settings);
+    print_cleanup(content, printer, settings);
 
-	return ret;
+    return ret;
 }
 
 
@@ -90,14 +88,13 @@ bool print_basic_run(hlcache_handle *content,
  * \param settings The settings for printing to use
  * \return true if successful, false otherwise
  */
-static struct hlcache_handle *
-print_init(struct hlcache_handle *content, struct print_settings *settings)
+static struct hlcache_handle *print_init(struct hlcache_handle *content, struct print_settings *settings)
 {
-	struct hlcache_handle *printed_content;
+    struct hlcache_handle *printed_content;
 
-	hlcache_handle_clone(content, &printed_content);
+    hlcache_handle_clone(content, &printed_content);
 
-	return printed_content;
+    return printed_content;
 }
 
 
@@ -108,34 +105,27 @@ print_init(struct hlcache_handle *content, struct print_settings *settings)
  * \param settings The settings for printing to use
  * \return true if successful, false otherwise
  */
-static bool
-print_apply_settings(hlcache_handle *content, struct print_settings *settings)
+static bool print_apply_settings(hlcache_handle *content, struct print_settings *settings)
 {
-	if (settings == NULL)
-		return false;
+    if (settings == NULL)
+        return false;
 
-	/* Apply settings - adjust page size etc */
+    /* Apply settings - adjust page size etc */
 
-	page_content_width = (settings->page_width -
-			      FIXTOFLT(FSUB(settings->margins[MARGINLEFT],
-					    settings->margins[MARGINRIGHT]))) /
-			     settings->scale;
+    page_content_width = (settings->page_width -
+                             FIXTOFLT(FSUB(settings->margins[MARGINLEFT], settings->margins[MARGINRIGHT]))) /
+        settings->scale;
 
-	page_content_height = (settings->page_height -
-			       FIXTOFLT(
-				       FSUB(settings->margins[MARGINTOP],
-					    settings->margins[MARGINBOTTOM]))) /
-			      settings->scale;
+    page_content_height = (settings->page_height -
+                              FIXTOFLT(FSUB(settings->margins[MARGINTOP], settings->margins[MARGINBOTTOM]))) /
+        settings->scale;
 
-	content_reformat(content, false, page_content_width, 0);
+    content_reformat(content, false, page_content_width, 0);
 
-	NSLOG(neosurf,
-	      INFO,
-	      "New layout applied.New height = %d ; New width = %d ",
-	      content_get_height(content),
-	      content_get_width(content));
+    NSLOG(neosurf, INFO, "New layout applied.New height = %d ; New width = %d ", content_get_height(content),
+        content_get_width(content));
 
-	return true;
+    return true;
 }
 
 
@@ -149,26 +139,24 @@ print_apply_settings(hlcache_handle *content, struct print_settings *settings)
  * \param height updated to the height of the printed content
  * \return true if successful, false otherwise
  */
-bool print_set_up(hlcache_handle *content,
-		  const struct printer *printer,
-		  struct print_settings *settings,
-		  double *height)
+bool print_set_up(
+    hlcache_handle *content, const struct printer *printer, struct print_settings *settings, double *height)
 {
-	printed_content = print_init(content, settings);
+    printed_content = print_init(content, settings);
 
-	if (printed_content == NULL)
-		return false;
+    if (printed_content == NULL)
+        return false;
 
-	print_apply_settings(printed_content, settings);
+    print_apply_settings(printed_content, settings);
 
-	if (height)
-		*height = content_get_height(printed_content);
+    if (height)
+        *height = content_get_height(printed_content);
 
-	printer->print_begin(settings);
+    printer->print_begin(settings);
 
-	done_height = 0;
+    done_height = 0;
 
-	return true;
+    return true;
 }
 
 /**
@@ -178,47 +166,43 @@ bool print_set_up(hlcache_handle *content,
  * \param settings The settings for printing to use
  * \return true if successful, false otherwise
  */
-bool print_draw_next_page(const struct printer *printer,
-			  struct print_settings *settings)
+bool print_draw_next_page(const struct printer *printer, struct print_settings *settings)
 {
-	struct rect clip;
-	struct content_redraw_data data;
-	struct redraw_context ctx = {.interactive = false,
-				     .background_images = !nsoption_bool(
-					     remove_backgrounds),
-				     .plot = printer->plotter,
-				     .priv = settings->priv};
+    struct rect clip;
+    struct content_redraw_data data;
+    struct redraw_context ctx = {.interactive = false,
+        .background_images = !nsoption_bool(remove_backgrounds),
+        .plot = printer->plotter,
+        .priv = settings->priv};
 
-	html_redraw_printing_top_cropped = INT_MAX;
+    html_redraw_printing_top_cropped = INT_MAX;
 
-	clip.x0 = 0;
-	clip.y0 = 0;
-	clip.x1 = page_content_width * settings->scale;
-	clip.y1 = page_content_height * settings->scale;
+    clip.x0 = 0;
+    clip.y0 = 0;
+    clip.x1 = page_content_width * settings->scale;
+    clip.y1 = page_content_height * settings->scale;
 
-	data.x = 0;
-	data.y = -done_height;
-	data.width = 0;
-	data.height = 0;
-	data.background_colour = 0xFFFFFF;
-	data.scale = settings->scale;
-	data.repeat_x = false;
-	data.repeat_y = false;
+    data.x = 0;
+    data.y = -done_height;
+    data.width = 0;
+    data.height = 0;
+    data.background_colour = 0xFFFFFF;
+    data.scale = settings->scale;
+    data.repeat_x = false;
+    data.repeat_y = false;
 
-	html_redraw_printing = true;
-	html_redraw_printing_border = clip.y1;
+    html_redraw_printing = true;
+    html_redraw_printing_border = clip.y1;
 
-	printer->print_next_page();
-	if (!content_redraw(printed_content, &data, &clip, &ctx))
-		return false;
+    printer->print_next_page();
+    if (!content_redraw(printed_content, &data, &clip, &ctx))
+        return false;
 
-	done_height += page_content_height -
-		       (html_redraw_printing_top_cropped != INT_MAX
-				? clip.y1 - html_redraw_printing_top_cropped
-				: 0) /
-			       settings->scale;
+    done_height += page_content_height -
+        (html_redraw_printing_top_cropped != INT_MAX ? clip.y1 - html_redraw_printing_top_cropped : 0) /
+            settings->scale;
 
-	return true;
+    return true;
 }
 
 
@@ -230,22 +214,20 @@ bool print_draw_next_page(const struct printer *printer,
  * \param settings The print settings to use.
  * \return true if successful, false otherwise
  */
-bool print_cleanup(hlcache_handle *content,
-		   const struct printer *printer,
-		   struct print_settings *settings)
+bool print_cleanup(hlcache_handle *content, const struct printer *printer, struct print_settings *settings)
 {
-	printer->print_end();
+    printer->print_end();
 
-	html_redraw_printing = false;
+    html_redraw_printing = false;
 
-	if (printed_content) {
-		hlcache_handle_release(printed_content);
-	}
+    if (printed_content) {
+        hlcache_handle_release(printed_content);
+    }
 
-	free((void *)settings->output);
-	free(settings);
+    free((void *)settings->output);
+    free(settings);
 
-	return true;
+    return true;
 }
 
 /**
@@ -258,88 +240,76 @@ bool print_cleanup(hlcache_handle *content,
  *                        configuration or lack of memory.
  */
 struct print_settings *
-print_make_settings(print_configuration configuration,
-		    const char *filename,
-		    const struct gui_layout_table *font_func)
+print_make_settings(print_configuration configuration, const char *filename, const struct gui_layout_table *font_func)
 {
-	struct print_settings *settings;
-	css_fixed length = 0;
-	css_unit unit = CSS_UNIT_MM;
-	css_unit_ctx unit_len_ctx = {
-		.viewport_width = DEFAULT_PAGE_WIDTH,
-		.viewport_height = DEFAULT_PAGE_HEIGHT,
-		.root_style = NULL,
-	};
+    struct print_settings *settings;
+    css_fixed length = 0;
+    css_unit unit = CSS_UNIT_MM;
+    css_unit_ctx unit_len_ctx = {
+        .viewport_width = DEFAULT_PAGE_WIDTH,
+        .viewport_height = DEFAULT_PAGE_HEIGHT,
+        .root_style = NULL,
+    };
 
-	switch (configuration) {
-	case PRINT_DEFAULT:
-		settings = (struct print_settings *)malloc(
-			sizeof(struct print_settings));
-		if (settings == NULL)
-			return NULL;
+    switch (configuration) {
+    case PRINT_DEFAULT:
+        settings = (struct print_settings *)malloc(sizeof(struct print_settings));
+        if (settings == NULL)
+            return NULL;
 
-		settings->page_width = DEFAULT_PAGE_WIDTH;
-		settings->page_height = DEFAULT_PAGE_HEIGHT;
-		settings->copies = DEFAULT_COPIES;
+        settings->page_width = DEFAULT_PAGE_WIDTH;
+        settings->page_height = DEFAULT_PAGE_HEIGHT;
+        settings->copies = DEFAULT_COPIES;
 
-		settings->scale = DEFAULT_EXPORT_SCALE;
+        settings->scale = DEFAULT_EXPORT_SCALE;
 
-		length = INTTOFIX(DEFAULT_MARGIN_LEFT_MM);
-		settings->margins[MARGINLEFT] = css_unit_len2device_px(
-			NULL, &unit_len_ctx, length, unit);
-		length = INTTOFIX(DEFAULT_MARGIN_RIGHT_MM);
-		settings->margins[MARGINRIGHT] = css_unit_len2device_px(
-			NULL, &unit_len_ctx, length, unit);
-		length = INTTOFIX(DEFAULT_MARGIN_TOP_MM);
-		settings->margins[MARGINTOP] = css_unit_len2device_px(
-			NULL, &unit_len_ctx, length, unit);
-		length = INTTOFIX(DEFAULT_MARGIN_BOTTOM_MM);
-		settings->margins[MARGINBOTTOM] = css_unit_len2device_px(
-			NULL, &unit_len_ctx, length, unit);
-		break;
-	/* use settings from the Export options tab */
-	case PRINT_OPTIONS:
-		settings = (struct print_settings *)malloc(
-			sizeof(struct print_settings));
-		if (settings == NULL)
-			return NULL;
+        length = INTTOFIX(DEFAULT_MARGIN_LEFT_MM);
+        settings->margins[MARGINLEFT] = css_unit_len2device_px(NULL, &unit_len_ctx, length, unit);
+        length = INTTOFIX(DEFAULT_MARGIN_RIGHT_MM);
+        settings->margins[MARGINRIGHT] = css_unit_len2device_px(NULL, &unit_len_ctx, length, unit);
+        length = INTTOFIX(DEFAULT_MARGIN_TOP_MM);
+        settings->margins[MARGINTOP] = css_unit_len2device_px(NULL, &unit_len_ctx, length, unit);
+        length = INTTOFIX(DEFAULT_MARGIN_BOTTOM_MM);
+        settings->margins[MARGINBOTTOM] = css_unit_len2device_px(NULL, &unit_len_ctx, length, unit);
+        break;
+    /* use settings from the Export options tab */
+    case PRINT_OPTIONS:
+        settings = (struct print_settings *)malloc(sizeof(struct print_settings));
+        if (settings == NULL)
+            return NULL;
 
-		settings->page_width = DEFAULT_PAGE_WIDTH;
-		settings->page_height = DEFAULT_PAGE_HEIGHT;
-		settings->copies = DEFAULT_COPIES;
+        settings->page_width = DEFAULT_PAGE_WIDTH;
+        settings->page_height = DEFAULT_PAGE_HEIGHT;
+        settings->copies = DEFAULT_COPIES;
 
-		settings->scale = (float)nsoption_int(export_scale) / 100;
+        settings->scale = (float)nsoption_int(export_scale) / 100;
 
-		length = INTTOFIX(nsoption_int(margin_left));
-		settings->margins[MARGINLEFT] = css_unit_len2device_px(
-			NULL, &unit_len_ctx, length, unit);
-		length = INTTOFIX(nsoption_int(margin_right));
-		settings->margins[MARGINRIGHT] = css_unit_len2device_px(
-			NULL, &unit_len_ctx, length, unit);
-		length = INTTOFIX(nsoption_int(margin_top));
-		settings->margins[MARGINTOP] = css_unit_len2device_px(
-			NULL, &unit_len_ctx, length, unit);
-		length = INTTOFIX(nsoption_int(margin_bottom));
-		settings->margins[MARGINBOTTOM] = css_unit_len2device_px(
-			NULL, &unit_len_ctx, length, unit);
-		break;
-	default:
-		return NULL;
-	}
+        length = INTTOFIX(nsoption_int(margin_left));
+        settings->margins[MARGINLEFT] = css_unit_len2device_px(NULL, &unit_len_ctx, length, unit);
+        length = INTTOFIX(nsoption_int(margin_right));
+        settings->margins[MARGINRIGHT] = css_unit_len2device_px(NULL, &unit_len_ctx, length, unit);
+        length = INTTOFIX(nsoption_int(margin_top));
+        settings->margins[MARGINTOP] = css_unit_len2device_px(NULL, &unit_len_ctx, length, unit);
+        length = INTTOFIX(nsoption_int(margin_bottom));
+        settings->margins[MARGINBOTTOM] = css_unit_len2device_px(NULL, &unit_len_ctx, length, unit);
+        break;
+    default:
+        return NULL;
+    }
 
-	/* Set font functions */
-	settings->font_func = font_func;
+    /* Set font functions */
+    settings->font_func = font_func;
 
-	/* Output filename, or NULL if printing */
-	if (filename != NULL) {
-		settings->output = strdup(filename);
-		if (settings->output == NULL) {
-			free(settings);
-			return NULL;
-		}
-	} else {
-		settings->output = NULL;
-	}
+    /* Output filename, or NULL if printing */
+    if (filename != NULL) {
+        settings->output = strdup(filename);
+        if (settings->output == NULL) {
+            free(settings);
+            return NULL;
+        }
+    } else {
+        settings->output = NULL;
+    }
 
-	return settings;
+    return settings;
 }

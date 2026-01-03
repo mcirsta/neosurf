@@ -21,30 +21,30 @@
  * Processing for html content object operations.
  */
 
+#include <nsutils/time.h>
 #include <assert.h>
 #include <ctype.h>
 #include <stdint.h>
+#include <stdlib.h>
 #include <string.h>
 #include <strings.h>
-#include <stdlib.h>
-#include <nsutils/time.h>
 
-#include <neosurf/utils/corestrings.h>
+#include <neosurf/content.h>
+#include <neosurf/content/handlers/css/utils.h>
+#include <neosurf/content/hlcache.h>
+#include <neosurf/desktop/gui_internal.h>
+#include <neosurf/misc.h>
 #include <neosurf/utils/config.h>
+#include <neosurf/utils/corestrings.h>
 #include <neosurf/utils/log.h>
 #include <neosurf/utils/nsoption.h>
-#include <neosurf/content.h>
-#include <neosurf/misc.h>
-#include <neosurf/content/hlcache.h>
-#include <neosurf/content/handlers/css/utils.h>
 #include "desktop/scrollbar.h"
-#include <neosurf/desktop/gui_internal.h>
 
-#include <neosurf/content/handlers/html/html.h>
-#include <neosurf/content/handlers/html/private.h>
-#include <neosurf/content/handlers/html/interaction.h>
 #include <neosurf/content/handlers/html/box.h>
 #include <neosurf/content/handlers/html/box_inspect.h>
+#include <neosurf/content/handlers/html/html.h>
+#include <neosurf/content/handlers/html/interaction.h>
+#include <neosurf/content/handlers/html/private.h>
 #include "content/handlers/html/object.h"
 
 /* break reference loop */
@@ -59,14 +59,14 @@ static void html_object_refresh(void *p);
  */
 struct content_html_object *html_get_objects(hlcache_handle *h, unsigned int *n)
 {
-	html_content *c = (html_content *)hlcache_handle_get_content(h);
+    html_content *c = (html_content *)hlcache_handle_get_content(h);
 
-	assert(c != NULL);
-	assert(n != NULL);
+    assert(c != NULL);
+    assert(n != NULL);
 
-	*n = c->num_objects;
+    *n = c->num_objects;
 
-	return c->object_list;
+    return c->object_list;
 }
 
 /**
@@ -77,529 +77,447 @@ struct content_html_object *html_get_objects(hlcache_handle *h, unsigned int *n)
  * \param  background  the object was the background image for the box
  */
 
-static void
-html_object_failed(struct box *box, html_content *content, bool background)
+static void html_object_failed(struct box *box, html_content *content, bool background)
 {
-	/* Nothing to do */
-	return;
+    /* Nothing to do */
+    return;
 }
 
 /**
  * Update a box whose content has completed rendering.
  */
 
-static void
-html_object_done(struct box *box, hlcache_handle *object, bool background)
+static void html_object_done(struct box *box, hlcache_handle *object, bool background)
 {
-	struct box *b;
+    struct box *b;
 
-	if (background) {
-		box->background = object;
-		return;
-	}
+    if (background) {
+        box->background = object;
+        return;
+    }
 
-	box->object = object;
+    box->object = object;
 
-	/* Normalise the box type, now it has been replaced. */
-	switch (box->type) {
-	case BOX_TABLE:
-		box->type = BOX_BLOCK;
-		break;
-	default:
-		/* TODO: Any other box types need mapping? */
-		break;
-	}
+    /* Normalise the box type, now it has been replaced. */
+    switch (box->type) {
+    case BOX_TABLE:
+        box->type = BOX_BLOCK;
+        break;
+    default:
+        /* TODO: Any other box types need mapping? */
+        break;
+    }
 
-	if (!(box->flags & REPLACE_DIM)) {
-		/* invalidate parent min, max widths */
-		for (b = box; b; b = b->parent)
-			b->max_width = UNKNOWN_MAX_WIDTH;
+    if (!(box->flags & REPLACE_DIM)) {
+        /* invalidate parent min, max widths */
+        for (b = box; b; b = b->parent)
+            b->max_width = UNKNOWN_MAX_WIDTH;
 
-		/* delete any clones of this box */
-		while (box->next && (box->next->flags & CLONE)) {
-			/* box_free_box(box->next); */
-			box->next = box->next->next;
-		}
-	}
+        /* delete any clones of this box */
+        while (box->next && (box->next->flags & CLONE)) {
+            /* box_free_box(box->next); */
+            box->next = box->next->next;
+        }
+    }
 }
 
 
 /**
  * Callback for hlcache_handle_retrieve() for objects with no box.
  */
-static nserror html_object_nobox_callback(hlcache_handle *object,
-					  const hlcache_event *event,
-					  void *pw)
+static nserror html_object_nobox_callback(hlcache_handle *object, const hlcache_event *event, void *pw)
 {
-	struct content_html_object *chobject = pw;
+    struct content_html_object *chobject = pw;
 
-	switch (event->type) {
-	case CONTENT_MSG_ERROR:
-		hlcache_handle_release(object);
+    switch (event->type) {
+    case CONTENT_MSG_ERROR:
+        hlcache_handle_release(object);
 
-		chobject->content = NULL;
-		break;
+        chobject->content = NULL;
+        break;
 
-	default:
-		break;
-	}
+    default:
+        break;
+    }
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 void html_deferred_reformat(void *p)
 {
-	html_content *c = p;
-	c->pending_reformat = false;
+    html_content *c = p;
+    c->pending_reformat = false;
 
-	/* We cannot use content__reformat() here because it has an optimization
-	 * that returns early if the width/height haven't changed. For
-	 * incremental reflows, the width/height of the viewport hasn't changed,
-	 * but the content inside has.
-	 */
-	if (c->had_initial_layout && c->base.handler->reformat) {
-		c->base.locked = true;
-		c->base.handler->reformat(&c->base,
-					  c->base.available_width,
-					  c->base.available_height);
-		c->base.locked = false;
+    /* We cannot use content__reformat() here because it has an optimization
+     * that returns early if the width/height haven't changed. For
+     * incremental reflows, the width/height of the viewport hasn't changed,
+     * but the content inside has.
+     */
+    if (c->had_initial_layout && c->base.handler->reformat) {
+        c->base.locked = true;
+        c->base.handler->reformat(&c->base, c->base.available_width, c->base.available_height);
+        c->base.locked = false;
 
-		union content_msg_data data = {.background = false};
-		content_broadcast(&c->base, CONTENT_MSG_REFORMAT, &data);
-	}
+        union content_msg_data data = {.background = false};
+        content_broadcast(&c->base, CONTENT_MSG_REFORMAT, &data);
+    }
 }
 
 
 /**
  * Callback for hlcache_handle_retrieve() for objects with a box.
  */
-static nserror html_object_callback(hlcache_handle *object,
-				    const hlcache_event *event,
-				    void *pw)
+static nserror html_object_callback(hlcache_handle *object, const hlcache_event *event, void *pw)
 {
-	struct content_html_object *o = pw;
-	html_content *c = (html_content *)o->parent;
-	int x, y;
-	struct box *box;
+    struct content_html_object *o = pw;
+    html_content *c = (html_content *)o->parent;
+    int x, y;
+    struct box *box;
 
-	box = o->box;
+    box = o->box;
 
-	switch (event->type) {
-	case CONTENT_MSG_LOADING:
-		if (c->base.status != CONTENT_STATUS_LOADING && c->bw != NULL)
-			content_open(
-				object, c->bw, &c->base, box->object_params);
-		break;
+    switch (event->type) {
+    case CONTENT_MSG_LOADING:
+        if (c->base.status != CONTENT_STATUS_LOADING && c->bw != NULL)
+            content_open(object, c->bw, &c->base, box->object_params);
+        break;
 
-	case CONTENT_MSG_READY:
-		if (content_can_reformat(object)) {
-			/* TODO: avoid knowledge of box internals here */
-			content_reformat(object,
-					 false,
-					 box->max_width != UNKNOWN_MAX_WIDTH
-						 ? box->width
-						 : 0,
-					 box->max_width != UNKNOWN_MAX_WIDTH
-						 ? box->height
-						 : 0);
+    case CONTENT_MSG_READY:
+        if (content_can_reformat(object)) {
+            /* TODO: avoid knowledge of box internals here */
+            content_reformat(object, false, box->max_width != UNKNOWN_MAX_WIDTH ? box->width : 0,
+                box->max_width != UNKNOWN_MAX_WIDTH ? box->height : 0);
 
-			/* Adjust parent content for new object size */
-			html_object_done(box, object, o->background);
-			if (c->base.status == CONTENT_STATUS_READY ||
-			    c->base.status == CONTENT_STATUS_DONE) {
-				uint64_t ms_now;
-				nsu_getmonotonic_ms(&ms_now);
+            /* Adjust parent content for new object size */
+            html_object_done(box, object, o->background);
+            if (c->base.status == CONTENT_STATUS_READY || c->base.status == CONTENT_STATUS_DONE) {
+                uint64_t ms_now;
+                nsu_getmonotonic_ms(&ms_now);
 
-				if (ms_now > c->base.reformat_time) {
-					content__reformat(
-						&c->base,
-						false,
-						c->base.available_width,
-						c->base.available_height);
-				} else if (c->pending_reformat == false) {
-					uint64_t delay = c->base.reformat_time -
-							 ms_now;
-					c->pending_reformat = true;
-					guit->misc->schedule(
-						delay,
-						html_deferred_reformat,
-						c);
-				}
-			}
-		}
-		break;
+                if (ms_now > c->base.reformat_time) {
+                    content__reformat(&c->base, false, c->base.available_width, c->base.available_height);
+                } else if (c->pending_reformat == false) {
+                    uint64_t delay = c->base.reformat_time - ms_now;
+                    c->pending_reformat = true;
+                    guit->misc->schedule(delay, html_deferred_reformat, c);
+                }
+            }
+        }
+        break;
 
-	case CONTENT_MSG_DONE:
-		if (c->base.active == 0) {
-			NSLOG(neosurf,
-			      CRITICAL,
-			      "ACTIVE UNDERFLOW! object_cb DONE decrement when 0 "
-			      "[content=%p object=%p]",
-			      c,
-			      object);
-		}
-		c->base.active--;
-		NSLOG(neosurf, INFO, "%d fetches active", c->base.active);
+    case CONTENT_MSG_DONE:
+        if (c->base.active == 0) {
+            NSLOG(neosurf, CRITICAL,
+                "ACTIVE UNDERFLOW! object_cb DONE decrement when 0 "
+                "[content=%p object=%p]",
+                c, object);
+        }
+        c->base.active--;
+        NSLOG(neosurf, INFO, "%d fetches active", c->base.active);
 
-		html_object_done(box, object, o->background);
+        html_object_done(box, object, o->background);
 
-		/*
-		 * Broadcast a redraw for the box area.
-		 *
-		 * For REPLACE_DIM boxes (fixed dimensions from HTML/CSS),
-		 * we can redraw immediately if the parent is ready.
-		 *
-		 * For dynamic-size boxes (no REPLACE_DIM), the box dimensions
-		 * may not be correct yet if we haven't had initial layout.
-		 * In that case, the reformat triggered below will handle it.
-		 * If we HAVE had initial layout, we need to trigger a reformat
-		 * so layout picks up the new intrinsic dimensions, and then
-		 * the CONTENT_MSG_REFORMAT broadcast will cause a full redraw.
-		 */
-		if (c->base.status != CONTENT_STATUS_LOADING &&
-		    c->had_initial_layout) {
-			union content_msg_data data;
+        /*
+         * Broadcast a redraw for the box area.
+         *
+         * For REPLACE_DIM boxes (fixed dimensions from HTML/CSS),
+         * we can redraw immediately if the parent is ready.
+         *
+         * For dynamic-size boxes (no REPLACE_DIM), the box dimensions
+         * may not be correct yet if we haven't had initial layout.
+         * In that case, the reformat triggered below will handle it.
+         * If we HAVE had initial layout, we need to trigger a reformat
+         * so layout picks up the new intrinsic dimensions, and then
+         * the CONTENT_MSG_REFORMAT broadcast will cause a full redraw.
+         */
+        if (c->base.status != CONTENT_STATUS_LOADING && c->had_initial_layout) {
+            union content_msg_data data;
 
-			if (!box_visible(box))
-				break;
+            if (!box_visible(box))
+                break;
 
-			if (!(box->flags & REPLACE_DIM)) {
-				/*
-				 * Dynamic-size image completed after initial
-				 * layout. We need to trigger a reformat so the
-				 * layout engine picks up the new intrinsic
-				 * dimensions. The CONTENT_MSG_REFORMAT
-				 * broadcast will cause a full redraw.
-				 */
-				if (c->pending_reformat == false) {
-					c->pending_reformat = true;
-					guit->misc->schedule(
-						0, html_deferred_reformat, c);
-				}
-				break;
-			}
+            if (!(box->flags & REPLACE_DIM)) {
+                /*
+                 * Dynamic-size image completed after initial
+                 * layout. We need to trigger a reformat so the
+                 * layout engine picks up the new intrinsic
+                 * dimensions. The CONTENT_MSG_REFORMAT
+                 * broadcast will cause a full redraw.
+                 */
+                if (c->pending_reformat == false) {
+                    c->pending_reformat = true;
+                    guit->misc->schedule(0, html_deferred_reformat, c);
+                }
+                break;
+            }
 
-			/* Fixed-size image - just redraw the box area */
-			box_coords(box, &x, &y);
+            /* Fixed-size image - just redraw the box area */
+            box_coords(box, &x, &y);
 
-			data.redraw.x = x + box->padding[LEFT];
-			data.redraw.y = y + box->padding[TOP];
-			data.redraw.width = box->width;
-			data.redraw.height = box->height;
+            data.redraw.x = x + box->padding[LEFT];
+            data.redraw.y = y + box->padding[TOP];
+            data.redraw.width = box->width;
+            data.redraw.height = box->height;
 
-			content_broadcast(&c->base, CONTENT_MSG_REDRAW, &data);
-		}
-		break;
+            content_broadcast(&c->base, CONTENT_MSG_REDRAW, &data);
+        }
+        break;
 
-	case CONTENT_MSG_ERROR:
-		hlcache_handle_release(object);
+    case CONTENT_MSG_ERROR:
+        hlcache_handle_release(object);
 
-		o->content = NULL;
+        o->content = NULL;
 
-		if (c->base.active == 0) {
-			NSLOG(neosurf,
-			      CRITICAL,
-			      "ACTIVE UNDERFLOW! object_cb ERROR decrement when 0 "
-			      "[content=%p object=%p]",
-			      c,
-			      object);
-		}
-		c->base.active--;
-		NSLOG(neosurf, INFO, "%d fetches active", c->base.active);
+        if (c->base.active == 0) {
+            NSLOG(neosurf, CRITICAL,
+                "ACTIVE UNDERFLOW! object_cb ERROR decrement when 0 "
+                "[content=%p object=%p]",
+                c, object);
+        }
+        c->base.active--;
+        NSLOG(neosurf, INFO, "%d fetches active", c->base.active);
 
-		html_object_failed(box, c, o->background);
+        html_object_failed(box, c, o->background);
 
-		break;
+        break;
 
-	case CONTENT_MSG_REDRAW:
-		if (c->base.status != CONTENT_STATUS_LOADING) {
-			union content_msg_data data = event->data;
+    case CONTENT_MSG_REDRAW:
+        if (c->base.status != CONTENT_STATUS_LOADING) {
+            union content_msg_data data = event->data;
 
-			if (c->had_initial_layout == false) {
-				break;
-			}
+            if (c->had_initial_layout == false) {
+                break;
+            }
 
-			if (!box_visible(box))
-				break;
+            if (!box_visible(box))
+                break;
 
-			box_coords(box, &x, &y);
+            box_coords(box, &x, &y);
 
-			if (object == box->background) {
-				/* Redraw request is for background */
-				css_fixed hpos = 0, vpos = 0;
-				css_unit hunit = CSS_UNIT_PX;
-				css_unit vunit = CSS_UNIT_PX;
-				int width = box->padding[LEFT] + box->width +
-					    box->padding[RIGHT];
-				int height = box->padding[TOP] + box->height +
-					     box->padding[BOTTOM];
-				int t, h, l, w;
+            if (object == box->background) {
+                /* Redraw request is for background */
+                css_fixed hpos = 0, vpos = 0;
+                css_unit hunit = CSS_UNIT_PX;
+                css_unit vunit = CSS_UNIT_PX;
+                int width = box->padding[LEFT] + box->width + box->padding[RIGHT];
+                int height = box->padding[TOP] + box->height + box->padding[BOTTOM];
+                int t, h, l, w;
 
-				/* Need to know background-position */
-				css_computed_background_position(box->style,
-								 &hpos,
-								 &hunit,
-								 &vpos,
-								 &vunit);
+                /* Need to know background-position */
+                css_computed_background_position(box->style, &hpos, &hunit, &vpos, &vunit);
 
-				w = content_get_width(box->background);
-				if (hunit == CSS_UNIT_PCT) {
-					l = (width - w) * hpos / INTTOFIX(100);
-				} else {
-					l = FIXTOINT(css_unit_len2device_px(
-						box->style,
-						&c->unit_len_ctx,
-						hpos,
-						hunit));
-				}
+                w = content_get_width(box->background);
+                if (hunit == CSS_UNIT_PCT) {
+                    l = (width - w) * hpos / INTTOFIX(100);
+                } else {
+                    l = FIXTOINT(css_unit_len2device_px(box->style, &c->unit_len_ctx, hpos, hunit));
+                }
 
-				h = content_get_height(box->background);
-				if (vunit == CSS_UNIT_PCT) {
-					t = (height - h) * vpos / INTTOFIX(100);
-				} else {
-					t = FIXTOINT(css_unit_len2device_px(
-						box->style,
-						&c->unit_len_ctx,
-						vpos,
-						vunit));
-				}
+                h = content_get_height(box->background);
+                if (vunit == CSS_UNIT_PCT) {
+                    t = (height - h) * vpos / INTTOFIX(100);
+                } else {
+                    t = FIXTOINT(css_unit_len2device_px(box->style, &c->unit_len_ctx, vpos, vunit));
+                }
 
-				/* Redraw area depends on background-repeat */
-				switch (css_computed_background_repeat(
-					box->style)) {
-				case CSS_BACKGROUND_REPEAT_REPEAT:
-					data.redraw.x = 0;
-					data.redraw.y = 0;
-					data.redraw.width = box->width;
-					data.redraw.height = box->height;
-					break;
+                /* Redraw area depends on background-repeat */
+                switch (css_computed_background_repeat(box->style)) {
+                case CSS_BACKGROUND_REPEAT_REPEAT:
+                    data.redraw.x = 0;
+                    data.redraw.y = 0;
+                    data.redraw.width = box->width;
+                    data.redraw.height = box->height;
+                    break;
 
-				case CSS_BACKGROUND_REPEAT_REPEAT_X:
-					data.redraw.x = 0;
-					data.redraw.y += t;
-					data.redraw.width = box->width;
-					break;
+                case CSS_BACKGROUND_REPEAT_REPEAT_X:
+                    data.redraw.x = 0;
+                    data.redraw.y += t;
+                    data.redraw.width = box->width;
+                    break;
 
-				case CSS_BACKGROUND_REPEAT_REPEAT_Y:
-					data.redraw.x += l;
-					data.redraw.y = 0;
-					data.redraw.height = box->height;
-					break;
+                case CSS_BACKGROUND_REPEAT_REPEAT_Y:
+                    data.redraw.x += l;
+                    data.redraw.y = 0;
+                    data.redraw.height = box->height;
+                    break;
 
-				case CSS_BACKGROUND_REPEAT_NO_REPEAT:
-					data.redraw.x += l;
-					data.redraw.y += t;
-					break;
+                case CSS_BACKGROUND_REPEAT_NO_REPEAT:
+                    data.redraw.x += l;
+                    data.redraw.y += t;
+                    break;
 
-				default:
-					break;
-				}
+                default:
+                    break;
+                }
 
-				/* Add offset to box */
-				data.redraw.x += x;
-				data.redraw.y += y;
+                /* Add offset to box */
+                data.redraw.x += x;
+                data.redraw.y += y;
 
-			} else {
-				/* Non-background case */
-				int w = content_get_width(object);
-				int h = content_get_height(object);
+            } else {
+                /* Non-background case */
+                int w = content_get_width(object);
+                int h = content_get_height(object);
 
-				if (w != 0 && box->width != w) {
-					/* Not showing image at intrinsic
-					 * width; need to scale the redraw
-					 * request area. */
-					data.redraw.x = data.redraw.x *
-							box->width / w;
-					data.redraw.width = data.redraw.width *
-							    box->width / w;
-				}
+                if (w != 0 && box->width != w) {
+                    /* Not showing image at intrinsic
+                     * width; need to scale the redraw
+                     * request area. */
+                    data.redraw.x = data.redraw.x * box->width / w;
+                    data.redraw.width = data.redraw.width * box->width / w;
+                }
 
-				if (h != 0 && box->height != w) {
-					/* Not showing image at intrinsic
-					 * height; need to scale the redraw
-					 * request area. */
-					data.redraw.y = data.redraw.y *
-							box->height / h;
-					data.redraw.height =
-						data.redraw.height *
-						box->height / h;
-				}
+                if (h != 0 && box->height != w) {
+                    /* Not showing image at intrinsic
+                     * height; need to scale the redraw
+                     * request area. */
+                    data.redraw.y = data.redraw.y * box->height / h;
+                    data.redraw.height = data.redraw.height * box->height / h;
+                }
 
-				data.redraw.x += x + box->padding[LEFT];
-				data.redraw.y += y + box->padding[TOP];
-			}
+                data.redraw.x += x + box->padding[LEFT];
+                data.redraw.y += y + box->padding[TOP];
+            }
 
-			content_broadcast(&c->base, CONTENT_MSG_REDRAW, &data);
-		}
-		break;
+            content_broadcast(&c->base, CONTENT_MSG_REDRAW, &data);
+        }
+        break;
 
-	case CONTENT_MSG_REFRESH:
-		if (content_get_type(object) == CONTENT_HTML) {
-			/* only for HTML objects */
-			guit->misc->schedule(event->data.delay * 1000,
-					     html_object_refresh,
-					     o);
-		}
+    case CONTENT_MSG_REFRESH:
+        if (content_get_type(object) == CONTENT_HTML) {
+            /* only for HTML objects */
+            guit->misc->schedule(event->data.delay * 1000, html_object_refresh, o);
+        }
 
-		break;
+        break;
 
-	case CONTENT_MSG_LINK:
-		/* Don't care about favicons that aren't on top level content */
-		break;
+    case CONTENT_MSG_LINK:
+        /* Don't care about favicons that aren't on top level content */
+        break;
 
-	case CONTENT_MSG_GETTHREAD:
-		/* Objects don't have JS threads */
-		*(event->data.jsthread) = NULL;
-		break;
+    case CONTENT_MSG_GETTHREAD:
+        /* Objects don't have JS threads */
+        *(event->data.jsthread) = NULL;
+        break;
 
-	case CONTENT_MSG_GETDIMS:
-		*(event->data.getdims.viewport_width) = content__get_width(
-			&c->base);
-		*(event->data.getdims.viewport_height) = content__get_height(
-			&c->base);
-		break;
+    case CONTENT_MSG_GETDIMS:
+        *(event->data.getdims.viewport_width) = content__get_width(&c->base);
+        *(event->data.getdims.viewport_height) = content__get_height(&c->base);
+        break;
 
-	case CONTENT_MSG_SCROLL:
-		if (box->scroll_x != NULL)
-			scrollbar_set(box->scroll_x,
-				      event->data.scroll.x0,
-				      false);
-		if (box->scroll_y != NULL)
-			scrollbar_set(box->scroll_y,
-				      event->data.scroll.y0,
-				      false);
-		break;
+    case CONTENT_MSG_SCROLL:
+        if (box->scroll_x != NULL)
+            scrollbar_set(box->scroll_x, event->data.scroll.x0, false);
+        if (box->scroll_y != NULL)
+            scrollbar_set(box->scroll_y, event->data.scroll.y0, false);
+        break;
 
-	case CONTENT_MSG_DRAGSAVE: {
-		union content_msg_data msg_data;
-		if (event->data.dragsave.content == NULL)
-			msg_data.dragsave.content = object;
-		else
-			msg_data.dragsave.content =
-				event->data.dragsave.content;
+    case CONTENT_MSG_DRAGSAVE: {
+        union content_msg_data msg_data;
+        if (event->data.dragsave.content == NULL)
+            msg_data.dragsave.content = object;
+        else
+            msg_data.dragsave.content = event->data.dragsave.content;
 
-		content_broadcast(&c->base, CONTENT_MSG_DRAGSAVE, &msg_data);
-	} break;
+        content_broadcast(&c->base, CONTENT_MSG_DRAGSAVE, &msg_data);
+    } break;
 
-	case CONTENT_MSG_SAVELINK:
-	case CONTENT_MSG_POINTER:
-	case CONTENT_MSG_SELECTMENU:
-	case CONTENT_MSG_GADGETCLICK:
-		/* These messages are for browser window layer.
-		 * we're not interested, so pass them on. */
-		content_broadcast(&c->base, event->type, &event->data);
-		break;
+    case CONTENT_MSG_SAVELINK:
+    case CONTENT_MSG_POINTER:
+    case CONTENT_MSG_SELECTMENU:
+    case CONTENT_MSG_GADGETCLICK:
+        /* These messages are for browser window layer.
+         * we're not interested, so pass them on. */
+        content_broadcast(&c->base, event->type, &event->data);
+        break;
 
-	case CONTENT_MSG_CARET: {
-		union html_focus_owner focus_owner;
-		focus_owner.content = box;
+    case CONTENT_MSG_CARET: {
+        union html_focus_owner focus_owner;
+        focus_owner.content = box;
 
-		switch (event->data.caret.type) {
-		case CONTENT_CARET_REMOVE:
-		case CONTENT_CARET_HIDE:
-			html_set_focus(c,
-				       HTML_FOCUS_CONTENT,
-				       focus_owner,
-				       true,
-				       0,
-				       0,
-				       0,
-				       NULL);
-			break;
-		case CONTENT_CARET_SET_POS:
-			html_set_focus(c,
-				       HTML_FOCUS_CONTENT,
-				       focus_owner,
-				       false,
-				       event->data.caret.pos.x,
-				       event->data.caret.pos.y,
-				       event->data.caret.pos.height,
-				       event->data.caret.pos.clip);
-			break;
-		}
-	} break;
+        switch (event->data.caret.type) {
+        case CONTENT_CARET_REMOVE:
+        case CONTENT_CARET_HIDE:
+            html_set_focus(c, HTML_FOCUS_CONTENT, focus_owner, true, 0, 0, 0, NULL);
+            break;
+        case CONTENT_CARET_SET_POS:
+            html_set_focus(c, HTML_FOCUS_CONTENT, focus_owner, false, event->data.caret.pos.x, event->data.caret.pos.y,
+                event->data.caret.pos.height, event->data.caret.pos.clip);
+            break;
+        }
+    } break;
 
-	case CONTENT_MSG_DRAG: {
-		html_drag_type drag_type = HTML_DRAG_NONE;
-		union html_drag_owner drag_owner;
-		drag_owner.content = box;
+    case CONTENT_MSG_DRAG: {
+        html_drag_type drag_type = HTML_DRAG_NONE;
+        union html_drag_owner drag_owner;
+        drag_owner.content = box;
 
-		switch (event->data.drag.type) {
-		case CONTENT_DRAG_NONE:
-			drag_type = HTML_DRAG_NONE;
-			drag_owner.no_owner = true;
-			break;
-		case CONTENT_DRAG_SCROLL:
-			drag_type = HTML_DRAG_CONTENT_SCROLL;
-			break;
-		case CONTENT_DRAG_SELECTION:
-			drag_type = HTML_DRAG_CONTENT_SELECTION;
-			break;
-		}
-		html_set_drag_type(
-			c, drag_type, drag_owner, event->data.drag.rect);
-	} break;
+        switch (event->data.drag.type) {
+        case CONTENT_DRAG_NONE:
+            drag_type = HTML_DRAG_NONE;
+            drag_owner.no_owner = true;
+            break;
+        case CONTENT_DRAG_SCROLL:
+            drag_type = HTML_DRAG_CONTENT_SCROLL;
+            break;
+        case CONTENT_DRAG_SELECTION:
+            drag_type = HTML_DRAG_CONTENT_SELECTION;
+            break;
+        }
+        html_set_drag_type(c, drag_type, drag_owner, event->data.drag.rect);
+    } break;
 
-	case CONTENT_MSG_SELECTION: {
-		html_selection_type sel_type;
-		union html_selection_owner sel_owner;
+    case CONTENT_MSG_SELECTION: {
+        html_selection_type sel_type;
+        union html_selection_owner sel_owner;
 
-		if (event->data.selection.selection) {
-			sel_type = HTML_SELECTION_CONTENT;
-			sel_owner.content = box;
-		} else {
-			sel_type = HTML_SELECTION_NONE;
-			sel_owner.none = true;
-		}
-		html_set_selection(c,
-				   sel_type,
-				   sel_owner,
-				   event->data.selection.read_only);
-	} break;
+        if (event->data.selection.selection) {
+            sel_type = HTML_SELECTION_CONTENT;
+            sel_owner.content = box;
+        } else {
+            sel_type = HTML_SELECTION_NONE;
+            sel_owner.none = true;
+        }
+        html_set_selection(c, sel_type, sel_owner, event->data.selection.read_only);
+    } break;
 
-	default:
-		break;
-	}
+    default:
+        break;
+    }
 
-	if (c->base.status == CONTENT_STATUS_READY && c->base.active == 0 &&
-	    (event->type == CONTENT_MSG_LOADING ||
-	     event->type == CONTENT_MSG_DONE ||
-	     event->type == CONTENT_MSG_ERROR)) {
-		/* all objects have arrived */
-		content__reformat(&c->base,
-				  false,
-				  c->base.available_width,
-				  c->base.available_height);
-		content_set_done(&c->base);
-	} else if (nsoption_bool(incremental_reflow) &&
-		   event->type == CONTENT_MSG_DONE && box != NULL &&
-		   !(box->flags & REPLACE_DIM)) {
+    if (c->base.status == CONTENT_STATUS_READY && c->base.active == 0 &&
+        (event->type == CONTENT_MSG_LOADING || event->type == CONTENT_MSG_DONE || event->type == CONTENT_MSG_ERROR)) {
+        /* all objects have arrived */
+        content__reformat(&c->base, false, c->base.available_width, c->base.available_height);
+        content_set_done(&c->base);
+    } else if (nsoption_bool(incremental_reflow) && event->type == CONTENT_MSG_DONE && box != NULL &&
+        !(box->flags & REPLACE_DIM)) {
 
-		/* 1) the configuration option to reflow pages while
-		 *      objects are fetched is set
-		 * 2) an object is newly fetched & converted,
-		 * 3) the box's dimensions need to change due to
-		 * being replaced 4) the object's parent HTML is
-		 * ready for reformat,
-		 */
-		uint64_t ms_now;
-		nsu_getmonotonic_ms(&ms_now);
+        /* 1) the configuration option to reflow pages while
+         *      objects are fetched is set
+         * 2) an object is newly fetched & converted,
+         * 3) the box's dimensions need to change due to
+         * being replaced 4) the object's parent HTML is
+         * ready for reformat,
+         */
+        uint64_t ms_now;
+        nsu_getmonotonic_ms(&ms_now);
 
-		/* Always defer the reformat to allow coalescing of multiple
-		 * image loads. If pending_reformat is true, we do nothing
-		 * (the scheduled callback will handle it).
-		 */
-		if (c->pending_reformat == false) {
-			uint64_t delay = 0;
-			if (ms_now < c->base.reformat_time) {
-				delay = c->base.reformat_time - ms_now;
-			}
-			c->pending_reformat = true;
-			guit->misc->schedule(0, html_deferred_reformat, c);
-		}
-	}
+        /* Always defer the reformat to allow coalescing of multiple
+         * image loads. If pending_reformat is true, we do nothing
+         * (the scheduled callback will handle it).
+         */
+        if (c->pending_reformat == false) {
+            uint64_t delay = 0;
+            if (ms_now < c->base.reformat_time) {
+                delay = c->base.reformat_time - ms_now;
+            }
+            c->pending_reformat = true;
+            guit->misc->schedule(0, html_deferred_reformat, c);
+        }
+    }
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
@@ -613,74 +531,57 @@ static nserror html_object_callback(hlcache_handle *object,
  */
 static bool html_replace_object(struct content_html_object *object, nsurl *url)
 {
-	html_content *c;
-	hlcache_child_context child;
-	html_content *page;
-	nserror error;
+    html_content *c;
+    hlcache_child_context child;
+    html_content *page;
+    nserror error;
 
-	assert(object != NULL);
-	assert(object->box != NULL);
+    assert(object != NULL);
+    assert(object->box != NULL);
 
-	c = (html_content *)object->parent;
+    c = (html_content *)object->parent;
 
-	child.charset = c->encoding;
-	child.quirks = c->base.quirks;
+    child.charset = c->encoding;
+    child.quirks = c->base.quirks;
 
-	if (object->content != NULL) {
-		/* remove existing object */
-		if (content_get_status(object->content) !=
-		    CONTENT_STATUS_DONE) {
-			c->base.active--;
-			NSLOG(neosurf,
-			      INFO,
-			      "%d fetches active",
-			      c->base.active);
-		}
+    if (object->content != NULL) {
+        /* remove existing object */
+        if (content_get_status(object->content) != CONTENT_STATUS_DONE) {
+            c->base.active--;
+            NSLOG(neosurf, INFO, "%d fetches active", c->base.active);
+        }
 
-		hlcache_handle_release(object->content);
-		object->content = NULL;
+        hlcache_handle_release(object->content);
+        object->content = NULL;
 
-		object->box->object = NULL;
-	}
+        object->box->object = NULL;
+    }
 
-	/* Pre-increment active for all pages in the chain BEFORE retrieve.
-	 * Callbacks can fire synchronously for cached content,
-	 * so we must have the counter incremented before the callback
-	 * tries to decrement it.
-	 */
-	for (page = c; page != NULL; page = page->page) {
-		page->base.active++;
-		NSLOG(neosurf,
-		      INFO,
-		      "%d fetches active (pre-retrieve)",
-		      page->base.active);
-		page->base.status = CONTENT_STATUS_READY;
-	}
+    /* Pre-increment active for all pages in the chain BEFORE retrieve.
+     * Callbacks can fire synchronously for cached content,
+     * so we must have the counter incremented before the callback
+     * tries to decrement it.
+     */
+    for (page = c; page != NULL; page = page->page) {
+        page->base.active++;
+        NSLOG(neosurf, INFO, "%d fetches active (pre-retrieve)", page->base.active);
+        page->base.status = CONTENT_STATUS_READY;
+    }
 
-	/* initialise fetch */
-	error = hlcache_handle_retrieve(url,
-					HLCACHE_RETRIEVE_SNIFF_TYPE,
-					content_get_url(&c->base),
-					NULL,
-					html_object_callback,
-					object,
-					&child,
-					object->permitted_types,
-					&object->content);
+    /* initialise fetch */
+    error = hlcache_handle_retrieve(url, HLCACHE_RETRIEVE_SNIFF_TYPE, content_get_url(&c->base), NULL,
+        html_object_callback, object, &child, object->permitted_types, &object->content);
 
-	if (error != NSERROR_OK) {
-		/* Decrement the counters we just incremented */
-		for (page = c; page != NULL; page = page->page) {
-			page->base.active--;
-			NSLOG(neosurf,
-			      INFO,
-			      "%d fetches active (retrieve failed)",
-			      page->base.active);
-		}
-		return false;
-	}
+    if (error != NSERROR_OK) {
+        /* Decrement the counters we just incremented */
+        for (page = c; page != NULL; page = page->page) {
+            page->base.active--;
+            NSLOG(neosurf, INFO, "%d fetches active (retrieve failed)", page->base.active);
+        }
+        return false;
+    }
 
-	return true;
+    return true;
 }
 
 /**
@@ -688,216 +589,190 @@ static bool html_replace_object(struct content_html_object *object, nsurl *url)
  */
 static void html_object_refresh(void *p)
 {
-	struct content_html_object *object = p;
-	nsurl *refresh_url;
+    struct content_html_object *object = p;
+    nsurl *refresh_url;
 
-	assert(content_get_type(object->content) == CONTENT_HTML);
+    assert(content_get_type(object->content) == CONTENT_HTML);
 
-	refresh_url = content_get_refresh_url(object->content);
+    refresh_url = content_get_refresh_url(object->content);
 
-	/* Ignore if refresh URL has gone
-	 * (may happen if fetch errored) */
-	if (refresh_url == NULL)
-		return;
+    /* Ignore if refresh URL has gone
+     * (may happen if fetch errored) */
+    if (refresh_url == NULL)
+        return;
 
-	content_invalidate_reuse_data(object->content);
+    content_invalidate_reuse_data(object->content);
 
-	if (!html_replace_object(object, refresh_url)) {
-		/** \todo handle memory exhaustion */
-	}
+    if (!html_replace_object(object, refresh_url)) {
+        /** \todo handle memory exhaustion */
+    }
 }
 
 
 /* exported interface documented in html/object.h */
 nserror html_object_open_objects(html_content *html, struct browser_window *bw)
 {
-	struct content_html_object *object, *next;
+    struct content_html_object *object, *next;
 
-	for (object = html->object_list; object != NULL; object = next) {
-		next = object->next;
+    for (object = html->object_list; object != NULL; object = next) {
+        next = object->next;
 
-		if (object->content == NULL || object->box == NULL)
-			continue;
+        if (object->content == NULL || object->box == NULL)
+            continue;
 
-		if (content_get_type(object->content) == CONTENT_NONE)
-			continue;
+        if (content_get_type(object->content) == CONTENT_NONE)
+            continue;
 
-		content_open(object->content,
-			     bw,
-			     &html->base,
-			     object->box->object_params);
-	}
-	return NSERROR_OK;
+        content_open(object->content, bw, &html->base, object->box->object_params);
+    }
+    return NSERROR_OK;
 }
 
 
 /* exported interface documented in html/object.h */
 nserror html_object_abort_objects(html_content *htmlc)
 {
-	struct content_html_object *object;
+    struct content_html_object *object;
 
-	for (object = htmlc->object_list; object != NULL;
-	     object = object->next) {
-		if (object->content == NULL)
-			continue;
+    for (object = htmlc->object_list; object != NULL; object = object->next) {
+        if (object->content == NULL)
+            continue;
 
-		switch (content_get_status(object->content)) {
-		case CONTENT_STATUS_DONE:
-			/* already loaded: do nothing */
-			break;
+        switch (content_get_status(object->content)) {
+        case CONTENT_STATUS_DONE:
+            /* already loaded: do nothing */
+            break;
 
-		case CONTENT_STATUS_READY:
-			hlcache_handle_abort(object->content);
-			/* Active count will be updated when
-			 * html_object_callback receives
-			 * CONTENT_MSG_DONE from this object
-			 */
-			break;
+        case CONTENT_STATUS_READY:
+            hlcache_handle_abort(object->content);
+            /* Active count will be updated when
+             * html_object_callback receives
+             * CONTENT_MSG_DONE from this object
+             */
+            break;
 
-		default:
-			hlcache_handle_abort(object->content);
-			hlcache_handle_release(object->content);
-			object->content = NULL;
-			if (object->box != NULL) {
-				htmlc->base.active--;
-				NSLOG(neosurf,
-				      INFO,
-				      "%d fetches active",
-				      htmlc->base.active);
-			}
-			break;
-		}
-	}
+        default:
+            hlcache_handle_abort(object->content);
+            hlcache_handle_release(object->content);
+            object->content = NULL;
+            if (object->box != NULL) {
+                htmlc->base.active--;
+                NSLOG(neosurf, INFO, "%d fetches active", htmlc->base.active);
+            }
+            break;
+        }
+    }
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
 /* exported interface documented in html/object.h */
 nserror html_object_close_objects(html_content *html)
 {
-	struct content_html_object *object, *next;
+    struct content_html_object *object, *next;
 
-	for (object = html->object_list; object != NULL; object = next) {
-		next = object->next;
+    for (object = html->object_list; object != NULL; object = next) {
+        next = object->next;
 
-		if (object->content == NULL || object->box == NULL)
-			continue;
+        if (object->content == NULL || object->box == NULL)
+            continue;
 
-		if (content_get_type(object->content) == CONTENT_NONE)
-			continue;
+        if (content_get_type(object->content) == CONTENT_NONE)
+            continue;
 
-		if (content_get_type(object->content) == CONTENT_HTML) {
-			guit->misc->schedule(-1, html_object_refresh, object);
-		}
+        if (content_get_type(object->content) == CONTENT_HTML) {
+            guit->misc->schedule(-1, html_object_refresh, object);
+        }
 
-		content_close(object->content);
-	}
-	return NSERROR_OK;
+        content_close(object->content);
+    }
+    return NSERROR_OK;
 }
 
 
 /* exported interface documented in html/object.h */
 nserror html_object_free_objects(html_content *html)
 {
-	while (html->object_list != NULL) {
-		struct content_html_object *victim = html->object_list;
+    while (html->object_list != NULL) {
+        struct content_html_object *victim = html->object_list;
 
-		if (victim->content != NULL) {
-			NSLOG(neosurf, INFO, "object %p", victim->content);
+        if (victim->content != NULL) {
+            NSLOG(neosurf, INFO, "object %p", victim->content);
 
-			if (content_get_type(victim->content) == CONTENT_HTML) {
-				guit->misc->schedule(-1,
-						     html_object_refresh,
-						     victim);
-			}
-			hlcache_handle_release(victim->content);
-		}
+            if (content_get_type(victim->content) == CONTENT_HTML) {
+                guit->misc->schedule(-1, html_object_refresh, victim);
+            }
+            hlcache_handle_release(victim->content);
+        }
 
-		html->object_list = victim->next;
-		free(victim);
-	}
-	return NSERROR_OK;
+        html->object_list = victim->next;
+        free(victim);
+    }
+    return NSERROR_OK;
 }
 
 
 /* exported interface documented in html/object.h */
-bool html_fetch_object(html_content *c,
-		       nsurl *url,
-		       struct box *box,
-		       content_type permitted_types,
-		       bool background)
+bool html_fetch_object(html_content *c, nsurl *url, struct box *box, content_type permitted_types, bool background)
 {
-	struct content_html_object *object;
-	hlcache_handle_callback object_callback;
-	hlcache_child_context child;
-	nserror error;
+    struct content_html_object *object;
+    hlcache_handle_callback object_callback;
+    hlcache_child_context child;
+    nserror error;
 
-	/* If we've already been aborted, don't bother attempting the
-	 * fetch */
-	if (c->aborted)
-		return true;
+    /* If we've already been aborted, don't bother attempting the
+     * fetch */
+    if (c->aborted)
+        return true;
 
-	child.charset = c->encoding;
-	child.quirks = c->base.quirks;
+    child.charset = c->encoding;
+    child.quirks = c->base.quirks;
 
-	object = calloc(1, sizeof(struct content_html_object));
-	if (object == NULL) {
-		return false;
-	}
+    object = calloc(1, sizeof(struct content_html_object));
+    if (object == NULL) {
+        return false;
+    }
 
-	if (box == NULL) {
-		object_callback = html_object_nobox_callback;
-	} else {
-		object_callback = html_object_callback;
-	}
+    if (box == NULL) {
+        object_callback = html_object_nobox_callback;
+    } else {
+        object_callback = html_object_callback;
+    }
 
-	object->parent = (struct content *)c;
-	object->next = NULL;
-	object->content = NULL;
-	object->box = box;
-	object->permitted_types = permitted_types;
-	object->background = background;
+    object->parent = (struct content *)c;
+    object->next = NULL;
+    object->content = NULL;
+    object->box = box;
+    object->permitted_types = permitted_types;
+    object->background = background;
 
-	/* Increment active BEFORE hlcache_handle_retrieve.
-	 * Callbacks can fire synchronously for cached content,
-	 * so we must have the counter incremented before the callback
-	 * tries to decrement it.
-	 */
-	if (box != NULL) {
-		c->base.active++;
-		NSLOG(neosurf,
-		      INFO,
-		      "%d fetches active (pre-retrieve)",
-		      c->base.active);
-	}
+    /* Increment active BEFORE hlcache_handle_retrieve.
+     * Callbacks can fire synchronously for cached content,
+     * so we must have the counter incremented before the callback
+     * tries to decrement it.
+     */
+    if (box != NULL) {
+        c->base.active++;
+        NSLOG(neosurf, INFO, "%d fetches active (pre-retrieve)", c->base.active);
+    }
 
-	error = hlcache_handle_retrieve(url,
-					HLCACHE_RETRIEVE_SNIFF_TYPE,
-					content_get_url(&c->base),
-					NULL,
-					object_callback,
-					object,
-					&child,
-					object->permitted_types,
-					&object->content);
-	if (error != NSERROR_OK) {
-		if (box != NULL) {
-			c->base.active--;
-			NSLOG(neosurf,
-			      INFO,
-			      "%d fetches active (retrieve failed)",
-			      c->base.active);
-		}
-		free(object);
-		return error != NSERROR_NOMEM;
-	}
+    error = hlcache_handle_retrieve(url, HLCACHE_RETRIEVE_SNIFF_TYPE, content_get_url(&c->base), NULL, object_callback,
+        object, &child, object->permitted_types, &object->content);
+    if (error != NSERROR_OK) {
+        if (box != NULL) {
+            c->base.active--;
+            NSLOG(neosurf, INFO, "%d fetches active (retrieve failed)", c->base.active);
+        }
+        free(object);
+        return error != NSERROR_NOMEM;
+    }
 
-	/* add to content object list */
-	object->next = c->object_list;
-	c->object_list = object;
+    /* add to content object list */
+    object->next = c->object_list;
+    c->object_list = object;
 
-	c->num_objects++;
+    c->num_objects++;
 
-	return true;
+    return true;
 }

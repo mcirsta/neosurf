@@ -29,25 +29,25 @@
  * User interface utf8 characterset conversion routines.
  */
 struct gui_utf8_table {
-	/**
-	 * Convert a UTF-8 encoded string into the system local encoding
-	 *
-	 * \param string The string to convert
-	 * \param len The length (in bytes) of the string, or 0
-	 * \param result Pointer to location in which to store result
-	 * \return An nserror code
-	 */
-	nserror (*utf8_to_local)(const char *string, size_t len, char **result);
+    /**
+     * Convert a UTF-8 encoded string into the system local encoding
+     *
+     * \param string The string to convert
+     * \param len The length (in bytes) of the string, or 0
+     * \param result Pointer to location in which to store result
+     * \return An nserror code
+     */
+    nserror (*utf8_to_local)(const char *string, size_t len, char **result);
 
-	/**
-	 * Convert a string encoded in the system local encoding to UTF-8
-	 *
-	 * \param string The string to convert
-	 * \param len The length (in bytes) of the string, or 0
-	 * \param result Pointer to location in which to store result
-	 * \return An nserror code
-	 */
-	nserror (*local_to_utf8)(const char *string, size_t len, char **result);
+    /**
+     * Convert a string encoded in the system local encoding to UTF-8
+     *
+     * \param string The string to convert
+     * \param len The length (in bytes) of the string, or 0
+     * \param result Pointer to location in which to store result
+     * \return An nserror code
+     */
+    nserror (*local_to_utf8)(const char *string, size_t len, char **result);
 };
 
 #endif

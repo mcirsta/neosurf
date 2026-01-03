@@ -20,9 +20,9 @@
 #ifndef NETSURF_BEOS_SCAFFOLDING_H
 #define NETSURF_BEOS_SCAFFOLDING_H 1
 
+#include <NetPositive.h>
 #include <View.h>
 #include <Window.h>
-#include <NetPositive.h>
 
 extern "C" {
 struct hlcache_handle;
@@ -33,160 +33,159 @@ typedef struct beos_scaffolding nsbeos_scaffolding;
 
 class NSBaseView : public BView
 {
-      public:
-	NSBaseView(BRect frame);
-	NSBaseView(BMessage *archive);
-	virtual ~NSBaseView();
+public:
+    NSBaseView(BRect frame);
+    NSBaseView(BMessage *archive);
+    virtual ~NSBaseView();
 
-	virtual void MessageReceived(BMessage *message);
-	// virtual void	Draw(BRect updateRect);
+    virtual void MessageReceived(BMessage *message);
+    // virtual void	Draw(BRect updateRect);
 
-	// virtual void	FrameMoved(BPoint new_location);
-	// virtual void	FrameResized(float new_width, float new_height);
+    // virtual void	FrameMoved(BPoint new_location);
+    // virtual void	FrameResized(float new_width, float new_height);
 
-	virtual void AllAttached(void);
+    virtual void AllAttached(void);
 
-	virtual status_t Archive(BMessage *archive, bool deep = true) const;
-	static BArchivable *Instantiate(BMessage *archive);
+    virtual status_t Archive(BMessage *archive, bool deep = true) const;
+    static BArchivable *Instantiate(BMessage *archive);
 
-	void SetScaffolding(struct beos_scaffolding *scaf);
+    void SetScaffolding(struct beos_scaffolding *scaf);
 
-      private:
-	struct beos_scaffolding *fScaffolding;
+private:
+    struct beos_scaffolding *fScaffolding;
 };
 
 class NSBrowserWindow : public BWindow
 {
-      public:
-	NSBrowserWindow(BRect frame, struct beos_scaffolding *scaf);
-	virtual ~NSBrowserWindow();
+public:
+    NSBrowserWindow(BRect frame, struct beos_scaffolding *scaf);
+    virtual ~NSBrowserWindow();
 
-	virtual void DispatchMessage(BMessage *message, BHandler *handler);
-	virtual void MessageReceived(BMessage *message);
-	virtual bool QuitRequested(void);
-	void WindowActivated(bool active);
+    virtual void DispatchMessage(BMessage *message, BHandler *handler);
+    virtual void MessageReceived(BMessage *message);
+    virtual bool QuitRequested(void);
+    void WindowActivated(bool active);
 
-	struct beos_scaffolding *Scaffolding() const
-	{
-		return fScaffolding;
-	};
+    struct beos_scaffolding *Scaffolding() const
+    {
+        return fScaffolding;
+    };
 
-	static BWindow *activeWindow;
+    static BWindow *activeWindow;
 
-      private:
-	struct beos_scaffolding *fScaffolding;
+private:
+    struct beos_scaffolding *fScaffolding;
 };
 
 
 // XXX: clean up
 typedef enum {
 
-	/* no/unknown actions */
-	NO_ACTION = 'nsMA',
+    /* no/unknown actions */
+    NO_ACTION = 'nsMA',
 
-	/* help actions */
-	HELP_OPEN_CONTENTS,
-	HELP_OPEN_GUIDE,
-	HELP_OPEN_INFORMATION,
-	HELP_OPEN_ABOUT,
-	HELP_OPEN_LICENCE,
-	HELP_LAUNCH_INTERACTIVE,
+    /* help actions */
+    HELP_OPEN_CONTENTS,
+    HELP_OPEN_GUIDE,
+    HELP_OPEN_INFORMATION,
+    HELP_OPEN_ABOUT,
+    HELP_OPEN_LICENCE,
+    HELP_LAUNCH_INTERACTIVE,
 
-	/* history actions */
-	HISTORY_SHOW_LOCAL,
-	HISTORY_SHOW_GLOBAL,
+    /* history actions */
+    HISTORY_SHOW_LOCAL,
+    HISTORY_SHOW_GLOBAL,
 
-	/* hotlist actions */
-	HOTLIST_ADD_URL,
-	HOTLIST_SHOW,
+    /* hotlist actions */
+    HOTLIST_ADD_URL,
+    HOTLIST_SHOW,
 
-	/* cookie actions */
-	COOKIES_SHOW,
-	COOKIES_DELETE,
+    /* cookie actions */
+    COOKIES_SHOW,
+    COOKIES_DELETE,
 
-	/* page actions */
-	BROWSER_PAGE,
-	BROWSER_PAGE_INFO,
-	BROWSER_PRINT,
-	BROWSER_NEW_WINDOW,
-	BROWSER_VIEW_SOURCE,
+    /* page actions */
+    BROWSER_PAGE,
+    BROWSER_PAGE_INFO,
+    BROWSER_PRINT,
+    BROWSER_NEW_WINDOW,
+    BROWSER_VIEW_SOURCE,
 
-	/* object actions */
-	BROWSER_OBJECT,
-	BROWSER_OBJECT_INFO,
-	BROWSER_OBJECT_RELOAD,
+    /* object actions */
+    BROWSER_OBJECT,
+    BROWSER_OBJECT_INFO,
+    BROWSER_OBJECT_RELOAD,
 
-	/* save actions */
-	BROWSER_OBJECT_SAVE,
-	BROWSER_OBJECT_EXPORT_SPRITE,
-	BROWSER_OBJECT_SAVE_URL_URI,
-	BROWSER_OBJECT_SAVE_URL_URL,
-	BROWSER_OBJECT_SAVE_URL_TEXT,
-	BROWSER_SAVE,
-	BROWSER_SAVE_COMPLETE,
-	BROWSER_EXPORT_DRAW,
-	BROWSER_EXPORT_TEXT,
-	BROWSER_SAVE_URL_URI,
-	BROWSER_SAVE_URL_URL,
-	BROWSER_SAVE_URL_TEXT,
-	HOTLIST_EXPORT,
-	HISTORY_EXPORT,
+    /* save actions */
+    BROWSER_OBJECT_SAVE,
+    BROWSER_OBJECT_EXPORT_SPRITE,
+    BROWSER_OBJECT_SAVE_URL_URI,
+    BROWSER_OBJECT_SAVE_URL_URL,
+    BROWSER_OBJECT_SAVE_URL_TEXT,
+    BROWSER_SAVE,
+    BROWSER_SAVE_COMPLETE,
+    BROWSER_EXPORT_DRAW,
+    BROWSER_EXPORT_TEXT,
+    BROWSER_SAVE_URL_URI,
+    BROWSER_SAVE_URL_URL,
+    BROWSER_SAVE_URL_TEXT,
+    HOTLIST_EXPORT,
+    HISTORY_EXPORT,
 
-	/* navigation actions */
-	BROWSER_NAVIGATE_HOME,
-	BROWSER_NAVIGATE_BACK,
-	BROWSER_NAVIGATE_FORWARD,
-	BROWSER_NAVIGATE_UP,
-	BROWSER_NAVIGATE_RELOAD,
-	BROWSER_NAVIGATE_RELOAD_ALL,
-	BROWSER_NAVIGATE_STOP,
-	BROWSER_NAVIGATE_URL,
+    /* navigation actions */
+    BROWSER_NAVIGATE_HOME,
+    BROWSER_NAVIGATE_BACK,
+    BROWSER_NAVIGATE_FORWARD,
+    BROWSER_NAVIGATE_UP,
+    BROWSER_NAVIGATE_RELOAD,
+    BROWSER_NAVIGATE_RELOAD_ALL,
+    BROWSER_NAVIGATE_STOP,
+    BROWSER_NAVIGATE_URL,
 
-	/* browser window/display actions */
-	BROWSER_SCALE_VIEW,
-	BROWSER_FIND_TEXT,
-	BROWSER_IMAGES_FOREGROUND,
-	BROWSER_IMAGES_BACKGROUND,
-	BROWSER_BUFFER_ANIMS,
-	BROWSER_BUFFER_ALL,
-	BROWSER_SAVE_VIEW,
-	BROWSER_WINDOW_DEFAULT,
-	BROWSER_WINDOW_STAGGER,
-	BROWSER_WINDOW_COPY,
-	BROWSER_WINDOW_RESET,
+    /* browser window/display actions */
+    BROWSER_SCALE_VIEW,
+    BROWSER_FIND_TEXT,
+    BROWSER_IMAGES_FOREGROUND,
+    BROWSER_IMAGES_BACKGROUND,
+    BROWSER_BUFFER_ANIMS,
+    BROWSER_BUFFER_ALL,
+    BROWSER_SAVE_VIEW,
+    BROWSER_WINDOW_DEFAULT,
+    BROWSER_WINDOW_STAGGER,
+    BROWSER_WINDOW_COPY,
+    BROWSER_WINDOW_RESET,
 
-	/* tree actions */
-	TREE_NEW_FOLDER,
-	TREE_NEW_LINK,
-	TREE_EXPAND_ALL,
-	TREE_EXPAND_FOLDERS,
-	TREE_EXPAND_LINKS,
-	TREE_COLLAPSE_ALL,
-	TREE_COLLAPSE_FOLDERS,
-	TREE_COLLAPSE_LINKS,
-	TREE_SELECTION,
-	TREE_SELECTION_EDIT,
-	TREE_SELECTION_LAUNCH,
-	TREE_SELECTION_DELETE,
-	TREE_SELECT_ALL,
-	TREE_CLEAR_SELECTION,
+    /* tree actions */
+    TREE_NEW_FOLDER,
+    TREE_NEW_LINK,
+    TREE_EXPAND_ALL,
+    TREE_EXPAND_FOLDERS,
+    TREE_EXPAND_LINKS,
+    TREE_COLLAPSE_ALL,
+    TREE_COLLAPSE_FOLDERS,
+    TREE_COLLAPSE_LINKS,
+    TREE_SELECTION,
+    TREE_SELECTION_EDIT,
+    TREE_SELECTION_LAUNCH,
+    TREE_SELECTION_DELETE,
+    TREE_SELECT_ALL,
+    TREE_CLEAR_SELECTION,
 
-	/* toolbar actions */
-	TOOLBAR_BUTTONS,
-	TOOLBAR_ADDRESS_BAR,
-	TOOLBAR_THROBBER,
-	TOOLBAR_EDIT,
+    /* toolbar actions */
+    TOOLBAR_BUTTONS,
+    TOOLBAR_ADDRESS_BAR,
+    TOOLBAR_THROBBER,
+    TOOLBAR_EDIT,
 
-	/* misc actions */
-	CHOICES_SHOW,
-	APPLICATION_QUIT,
+    /* misc actions */
+    CHOICES_SHOW,
+    APPLICATION_QUIT,
 } menu_action;
 
 
 NSBrowserWindow *nsbeos_find_last_window(void);
 
-NSBrowserWindow *
-nsbeos_get_bwindow_for_scaffolding(nsbeos_scaffolding *scaffold);
+NSBrowserWindow *nsbeos_get_bwindow_for_scaffolding(nsbeos_scaffolding *scaffold);
 
 NSBaseView *nsbeos_get_baseview_for_scaffolding(nsbeos_scaffolding *scaffold);
 
@@ -197,8 +196,7 @@ bool nsbeos_scaffolding_is_busy(nsbeos_scaffolding *scaffold);
 void nsbeos_attach_toplevel_view(nsbeos_scaffolding *g, BView *view);
 
 
-void nsbeos_scaffolding_dispatch_event(nsbeos_scaffolding *scaffold,
-				       BMessage *message);
+void nsbeos_scaffolding_dispatch_event(nsbeos_scaffolding *scaffold, BMessage *message);
 
 void nsbeos_scaffolding_destroy(nsbeos_scaffolding *scaffold);
 
@@ -206,10 +204,8 @@ void nsbeos_scaffolding_destroy(nsbeos_scaffolding *scaffold);
 // *g, BMessage *event);
 
 
-void nsbeos_scaffolding_popup_menu(nsbeos_scaffolding *scaffold,
-				   struct browser_window *bw,
-				   BPoint where,
-				   BPoint screenWhere);
+void nsbeos_scaffolding_popup_menu(
+    nsbeos_scaffolding *scaffold, struct browser_window *bw, BPoint where, BPoint screenWhere);
 
 void gui_window_set_title(struct gui_window *_g, const char *title);
 nserror gui_window_set_url(struct gui_window *_g, struct nsurl *url);

@@ -22,9 +22,7 @@ extern "C" {
  * \param[in]  unit   Either CSS_UNIT_EX, CSS_UNIT_CH, or CSS_UNIT_IC.
  * \return length in CSS pixels.
  */
-typedef css_fixed (*css_unit_len_measure)(void *pw,
-					  const css_computed_style *style,
-					  const css_unit unit);
+typedef css_fixed (*css_unit_len_measure)(void *pw, const css_computed_style *style, const css_unit unit);
 
 /**
  * LibCSS unit conversion context.
@@ -35,42 +33,42 @@ typedef css_fixed (*css_unit_len_measure)(void *pw,
  * the "em" unit.
  */
 typedef struct css_unit_ctx {
-	/**
-	 * Viewport width in CSS pixels.
-	 * Used if unit is vh, vw, vi, vb, vmin, or vmax.
-	 */
-	css_fixed viewport_width;
-	/**
-	 * Viewport height in CSS pixels.
-	 * Used if unit is vh, vw, vi, vb, vmin, or vmax.
-	 */
-	css_fixed viewport_height;
-	/**
-	 * Client default font size in CSS pixels.
-	 */
-	css_fixed font_size_default;
-	/**
-	 * Client minimum font size in CSS pixels.  May be zero.
-	 */
-	css_fixed font_size_minimum;
-	/**
-	 * DPI of the device the style is selected for.
-	 */
-	css_fixed device_dpi;
-	/**
-	 * Computed style for the document root element, needed for rem units.
-	 * May be NULL, in which case font_size_default is used instead, as
-	 * would be the case if rem unit is used on the root element.
-	 */
-	const css_computed_style *root_style;
-	/**
-	 * Optional client private word for measure callback.
-	 */
-	void *pw;
-	/**
-	 * Optional client callback for font measuring.
-	 */
-	const css_unit_len_measure measure;
+    /**
+     * Viewport width in CSS pixels.
+     * Used if unit is vh, vw, vi, vb, vmin, or vmax.
+     */
+    css_fixed viewport_width;
+    /**
+     * Viewport height in CSS pixels.
+     * Used if unit is vh, vw, vi, vb, vmin, or vmax.
+     */
+    css_fixed viewport_height;
+    /**
+     * Client default font size in CSS pixels.
+     */
+    css_fixed font_size_default;
+    /**
+     * Client minimum font size in CSS pixels.  May be zero.
+     */
+    css_fixed font_size_minimum;
+    /**
+     * DPI of the device the style is selected for.
+     */
+    css_fixed device_dpi;
+    /**
+     * Computed style for the document root element, needed for rem units.
+     * May be NULL, in which case font_size_default is used instead, as
+     * would be the case if rem unit is used on the root element.
+     */
+    const css_computed_style *root_style;
+    /**
+     * Optional client private word for measure callback.
+     */
+    void *pw;
+    /**
+     * Optional client callback for font measuring.
+     */
+    const css_unit_len_measure measure;
 } css_unit_ctx;
 
 /**
@@ -80,10 +78,9 @@ typedef struct css_unit_ctx {
  * \param[in] device_dpi  Device dots per inch.
  * \return Length in device pixels.
  */
-static inline css_fixed
-css_unit_css2device_px(const css_fixed css_pixels, const css_fixed device_dpi)
+static inline css_fixed css_unit_css2device_px(const css_fixed css_pixels, const css_fixed device_dpi)
 {
-	return FDIV(FMUL(css_pixels, device_dpi), F_96);
+    return FDIV(FMUL(css_pixels, device_dpi), F_96);
 }
 
 /**
@@ -93,10 +90,9 @@ css_unit_css2device_px(const css_fixed css_pixels, const css_fixed device_dpi)
  * \param[in] device_dpi     Device dots per inch.
  * \return Length in css pixels.
  */
-static inline css_fixed css_unit_device2css_px(const css_fixed device_pixels,
-					       const css_fixed device_dpi)
+static inline css_fixed css_unit_device2css_px(const css_fixed device_pixels, const css_fixed device_dpi)
 {
-	return FDIV(FMUL(device_pixels, F_96), device_dpi);
+    return FDIV(FMUL(device_pixels, F_96), device_dpi);
 }
 
 /**
@@ -108,10 +104,8 @@ static inline css_fixed css_unit_device2css_px(const css_fixed device_pixels,
  * \param[in]  unit    Current unit of length.
  * \return A length in points.
  */
-css_fixed css_unit_font_size_len2pt(const css_computed_style *style,
-				    const css_unit_ctx *ctx,
-				    const css_fixed length,
-				    const css_unit unit);
+css_fixed css_unit_font_size_len2pt(
+    const css_computed_style *style, const css_unit_ctx *ctx, const css_fixed length, const css_unit unit);
 
 /**
  * Convert a length to CSS pixels.
@@ -122,10 +116,8 @@ css_fixed css_unit_font_size_len2pt(const css_computed_style *style,
  * \param[in]  unit    Current unit of length.
  * \return A length in CSS pixels.
  */
-css_fixed css_unit_len2css_px(const css_computed_style *style,
-			      const css_unit_ctx *ctx,
-			      const css_fixed length,
-			      const css_unit unit);
+css_fixed css_unit_len2css_px(
+    const css_computed_style *style, const css_unit_ctx *ctx, const css_fixed length, const css_unit unit);
 
 /**
  * Convert a length to device pixels.
@@ -136,10 +128,8 @@ css_fixed css_unit_len2css_px(const css_computed_style *style,
  * \param[in]  unit    Current unit of length.
  * \return A length in device pixels.
  */
-css_fixed css_unit_len2device_px(const css_computed_style *style,
-				 const css_unit_ctx *ctx,
-				 const css_fixed length,
-				 const css_unit unit);
+css_fixed css_unit_len2device_px(
+    const css_computed_style *style, const css_unit_ctx *ctx, const css_fixed length, const css_unit unit);
 
 #ifdef __cplusplus
 }

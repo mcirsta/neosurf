@@ -35,32 +35,28 @@
  * are now obsoleted by RFC6265 which completely removes the
  * alternative versions.
  */
-enum cookie_version {
-	COOKIE_NETSCAPE = 0,
-	COOKIE_RFC2109 = 1,
-	COOKIE_RFC2965 = 2
-};
+enum cookie_version { COOKIE_NETSCAPE = 0, COOKIE_RFC2109 = 1, COOKIE_RFC2965 = 2 };
 
 struct cookie_data {
-	const struct cookie_data *prev; /**< Previous in list */
-	const struct cookie_data *next; /**< Next in list */
+    const struct cookie_data *prev; /**< Previous in list */
+    const struct cookie_data *next; /**< Next in list */
 
-	const char *name; /**< Cookie name */
-	const char *value; /**< Cookie value */
-	const bool value_was_quoted; /**< Value was quoted in Set-Cookie: */
-	const char *comment; /**< Cookie comment */
-	const bool domain_from_set; /**< Domain came from Set-Cookie: header */
-	const char *domain; /**< Domain */
-	const bool path_from_set; /**< Path came from Set-Cookie: header */
-	const char *path; /**< Path */
-	const time_t expires; /**< Expiry timestamp, or 1 for session */
-	const time_t last_used; /**< Last used time */
-	const bool secure; /**< Only send for HTTPS requests */
-	const bool http_only; /**< Only expose to HTTP(S) requests */
-	enum cookie_version version; /**< Specification compliance */
+    const char *name; /**< Cookie name */
+    const char *value; /**< Cookie value */
+    const bool value_was_quoted; /**< Value was quoted in Set-Cookie: */
+    const char *comment; /**< Cookie comment */
+    const bool domain_from_set; /**< Domain came from Set-Cookie: header */
+    const char *domain; /**< Domain */
+    const bool path_from_set; /**< Path came from Set-Cookie: header */
+    const char *path; /**< Path */
+    const time_t expires; /**< Expiry timestamp, or 1 for session */
+    const time_t last_used; /**< Last used time */
+    const bool secure; /**< Only send for HTTPS requests */
+    const bool http_only; /**< Only expose to HTTP(S) requests */
+    enum cookie_version version; /**< Specification compliance */
 
-	/** Never destroy this cookie, unless it's expired */
-	const bool no_destroy;
+    /** Never destroy this cookie, unless it's expired */
+    const bool no_destroy;
 };
 
 /**
@@ -77,9 +73,7 @@ void urldb_iterate_cookies(bool (*callback)(const struct cookie_data *cookie));
  * \param path The cookie's path
  * \param name The cookie's name
  */
-void urldb_delete_cookie(const char *domain,
-			 const char *path,
-			 const char *name);
+void urldb_delete_cookie(const char *domain, const char *path, const char *name);
 
 /**
  * Load a cookie file into the database

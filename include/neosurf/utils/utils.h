@@ -99,10 +99,7 @@
  * \param size   Size of each element in bytes
  * \param compar Comparison function (same signature as qsort)
  */
-void stable_sort(void *base,
-		 size_t nmemb,
-		 size_t size,
-		 int (*compar)(const void *, const void *));
+void stable_sort(void *base, size_t nmemb, size_t size, int (*compar)(const void *, const void *));
 
 /**
  * Check if a directory exists.
@@ -113,19 +110,15 @@ bool is_dir(const char *path);
  * switch fall through
  */
 #if defined __cplusplus && defined __has_cpp_attribute
-#if __has_cpp_attribute(fallthrough) &&                                        \
-	__cplusplus >= __has_cpp_attribute(fallthrough)
+#if __has_cpp_attribute(fallthrough) && __cplusplus >= __has_cpp_attribute(fallthrough)
 #define fallthrough [[fallthrough]]
-#elif __has_cpp_attribute(gnu::fallthrough) &&                                 \
-	__STDC_VERSION__ >= __has_cpp_attribute(gnu::fallthrough)
+#elif __has_cpp_attribute(gnu::fallthrough) && __STDC_VERSION__ >= __has_cpp_attribute(gnu::fallthrough)
 #define fallthrough [[gnu::fallthrough]]
-#elif __has_cpp_attribute(clang::fallthrough) &&                               \
-	__STDC_VERSION__ >= __has_cpp_attribute(clang::fallthrough)
+#elif __has_cpp_attribute(clang::fallthrough) && __STDC_VERSION__ >= __has_cpp_attribute(clang::fallthrough)
 #define fallthrough [[clang::fallthrough]]
 #endif
 #elif defined __STDC_VERSION__ && defined __has_c_attribute
-#if __has_c_attribute(fallthrough) &&                                          \
-	__STDC_VERSION__ >= __has_c_attribute(fallthrough)
+#if __has_c_attribute(fallthrough) && __STDC_VERSION__ >= __has_c_attribute(fallthrough)
 #define fallthrough [[fallthrough]]
 #endif
 #endif
@@ -136,9 +129,9 @@ bool is_dir(const char *path);
 #endif
 #if !defined fallthrough
 /*  early gcc and clang have no implicit fallthrough warning */
-#define fallthrough                                                            \
-	do {                                                                   \
-	} while (0)
+#define fallthrough                                                                                                    \
+    do {                                                                                                               \
+    } while (0)
 #endif
 
 

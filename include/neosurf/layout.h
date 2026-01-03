@@ -35,74 +35,63 @@
 struct plot_font_style;
 
 struct gui_layout_table {
-	/**
-	 * Measure the width of a string.
-	 *
-	 * \param[in] fstyle plot style for this text
-	 * \param[in] string UTF-8 string to measure
-	 * \param[in] length length of string, in bytes
-	 * \param[out] width updated to width of string[0..length)
-	 * \return NSERROR_OK and width updated or appropriate error
-	 *          code on faliure
-	 */
-	nserror (*width)(const struct plot_font_style *fstyle,
-			 const char *string,
-			 size_t length,
-			 int *width);
+    /**
+     * Measure the width of a string.
+     *
+     * \param[in] fstyle plot style for this text
+     * \param[in] string UTF-8 string to measure
+     * \param[in] length length of string, in bytes
+     * \param[out] width updated to width of string[0..length)
+     * \return NSERROR_OK and width updated or appropriate error
+     *          code on faliure
+     */
+    nserror (*width)(const struct plot_font_style *fstyle, const char *string, size_t length, int *width);
 
 
-	/**
-	 * Find the position in a string where an x coordinate falls.
-	 *
-	 * \param[in] fstyle style for this text
-	 * \param[in] string UTF-8 string to measure
-	 * \param[in] length length of string, in bytes
-	 * \param[in] x coordinate to search for
-	 * \param[out] char_offset updated to offset in string of actual_x,
-	 * [0..length]
-	 * \param[out] actual_x updated to x coordinate of character closest to
-	 * x
-	 * \return NSERROR_OK and char_offset and actual_x updated or
-	 * appropriate error code on faliure
-	 */
-	nserror (*position)(const struct plot_font_style *fstyle,
-			    const char *string,
-			    size_t length,
-			    int x,
-			    size_t *char_offset,
-			    int *actual_x);
+    /**
+     * Find the position in a string where an x coordinate falls.
+     *
+     * \param[in] fstyle style for this text
+     * \param[in] string UTF-8 string to measure
+     * \param[in] length length of string, in bytes
+     * \param[in] x coordinate to search for
+     * \param[out] char_offset updated to offset in string of actual_x,
+     * [0..length]
+     * \param[out] actual_x updated to x coordinate of character closest to
+     * x
+     * \return NSERROR_OK and char_offset and actual_x updated or
+     * appropriate error code on faliure
+     */
+    nserror (*position)(const struct plot_font_style *fstyle, const char *string, size_t length, int x,
+        size_t *char_offset, int *actual_x);
 
 
-	/**
-	 * Find where to split a string to make it fit a width.
-	 *
-	 * \param[in] fstyle       style for this text
-	 * \param[in] string       UTF-8 string to measure
-	 * \param[in] length       length of string, in bytes
-	 * \param[in] x            width available
-	 * \param[out] char_offset updated to offset in string of actual_x,
-	 * [1..length]
-	 * \param[out] actual_x updated to x coordinate of character closest to
-	 * x
-	 * \return NSERROR_OK or appropriate error code on faliure
-	 *
-	 * On exit, char_offset indicates first character after split point.
-	 *
-	 * \note char_offset of 0 must never be returned.
-	 *
-	 *   Returns:
-	 *     char_offset giving split point closest to x, where actual_x <= x
-	 *   else
-	 *     char_offset giving split point closest to x, where actual_x > x
-	 *
-	 * Returning char_offset == length means no split possible
-	 */
-	nserror (*split)(const struct plot_font_style *fstyle,
-			 const char *string,
-			 size_t length,
-			 int x,
-			 size_t *char_offset,
-			 int *actual_x);
+    /**
+     * Find where to split a string to make it fit a width.
+     *
+     * \param[in] fstyle       style for this text
+     * \param[in] string       UTF-8 string to measure
+     * \param[in] length       length of string, in bytes
+     * \param[in] x            width available
+     * \param[out] char_offset updated to offset in string of actual_x,
+     * [1..length]
+     * \param[out] actual_x updated to x coordinate of character closest to
+     * x
+     * \return NSERROR_OK or appropriate error code on faliure
+     *
+     * On exit, char_offset indicates first character after split point.
+     *
+     * \note char_offset of 0 must never be returned.
+     *
+     *   Returns:
+     *     char_offset giving split point closest to x, where actual_x <= x
+     *   else
+     *     char_offset giving split point closest to x, where actual_x > x
+     *
+     * Returning char_offset == length means no split possible
+     */
+    nserror (*split)(const struct plot_font_style *fstyle, const char *string, size_t length, int x,
+        size_t *char_offset, int *actual_x);
 };
 
 #endif

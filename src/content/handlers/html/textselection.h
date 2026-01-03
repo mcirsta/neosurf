@@ -27,14 +27,10 @@
 struct content;
 struct selection;
 
-nserror html_textselection_redraw(struct content *c,
-				  unsigned start_idx,
-				  unsigned end_idx);
+nserror html_textselection_redraw(struct content *c, unsigned start_idx, unsigned end_idx);
 
-nserror html_textselection_copy(struct content *c,
-				unsigned start_idx,
-				unsigned end_idx,
-				struct selection_string *selstr);
+nserror
+html_textselection_copy(struct content *c, unsigned start_idx, unsigned end_idx, struct selection_string *selstr);
 
 /**
  * get maximum index of text section.

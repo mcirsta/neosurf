@@ -36,20 +36,14 @@ nserror nsgtk_notebook_create(GtkBuilder *builder, GtkNotebook **notebook_out);
 /**
  * Add new gui window page to notebook.
  */
-void nsgtk_tab_add(struct gui_window *window,
-		   GtkWidget *tab_contents,
-		   bool background,
-		   const char *title,
-		   GdkPixbuf *icon_pixbuf);
+void nsgtk_tab_add(
+    struct gui_window *window, GtkWidget *tab_contents, bool background, const char *title, GdkPixbuf *icon_pixbuf);
 
 /**
  * Add new page to a notebook
  */
-nserror nsgtk_tab_add_page(GtkNotebook *notebook,
-			   GtkWidget *tab_contents,
-			   bool background,
-			   const char *title,
-			   GdkPixbuf *icon_pixbuf);
+nserror nsgtk_tab_add_page(
+    GtkNotebook *notebook, GtkWidget *tab_contents, bool background, const char *title, GdkPixbuf *icon_pixbuf);
 
 
 /**

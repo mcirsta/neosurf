@@ -25,12 +25,12 @@
 #include <stddef.h>
 #include <stdio.h>
 
-#include "neosurf/types.h"
 #include "utils/errors.h"
 #include "utils/nsoption.h"
+#include "neosurf/types.h"
 
-#include "private.h"
 #include "choices.h"
+#include "private.h"
 
 /**
  * Generate the text of a Choices file which represents the current
@@ -41,57 +41,49 @@
  */
 bool fetch_about_choices_handler(struct fetch_about_context *ctx)
 {
-	char buffer[1024];
-	int code = 200;
-	int slen;
-	unsigned int opt_loop = 0;
-	int res = 0;
+    char buffer[1024];
+    int code = 200;
+    int slen;
+    unsigned int opt_loop = 0;
+    int res = 0;
 
-	/* content is going to return ok */
-	fetch_about_set_http_code(ctx, code);
+    /* content is going to return ok */
+    fetch_about_set_http_code(ctx, code);
 
-	/* content type */
-	if (fetch_about_send_header(ctx, "Content-Type: text/plain"))
-		goto fetch_about_choices_handler_aborted;
+    /* content type */
+    if (fetch_about_send_header(ctx, "Content-Type: text/plain"))
+        goto fetch_about_choices_handler_aborted;
 
-	slen = snprintf(
-		buffer,
-		sizeof buffer,
-		"# Automatically generated current NetSurf browser Choices\n");
+    slen = snprintf(buffer, sizeof buffer, "# Automatically generated current NetSurf browser Choices\n");
 
-	do {
-		res = nsoption_snoptionf(buffer + slen,
-					 sizeof buffer - slen,
-					 opt_loop,
-					 "%k:%v\n");
-		if (res <= 0)
-			break; /* last option */
+    do {
+        res = nsoption_snoptionf(buffer + slen, sizeof buffer - slen, opt_loop, "%k:%v\n");
+        if (res <= 0)
+            break; /* last option */
 
-		if (res >= (int)(sizeof buffer - slen)) {
-			/* last entry would not fit in buffer, submit buffer */
-			res = fetch_about_senddata(ctx,
-						   (const uint8_t *)buffer,
-						   slen);
-			if (res != NSERROR_OK) {
-				goto fetch_about_choices_handler_aborted;
-			}
-			slen = 0;
-		} else {
-			/* normal addition */
-			slen += res;
-			opt_loop++;
-		}
-	} while (res > 0);
+        if (res >= (int)(sizeof buffer - slen)) {
+            /* last entry would not fit in buffer, submit buffer */
+            res = fetch_about_senddata(ctx, (const uint8_t *)buffer, slen);
+            if (res != NSERROR_OK) {
+                goto fetch_about_choices_handler_aborted;
+            }
+            slen = 0;
+        } else {
+            /* normal addition */
+            slen += res;
+            opt_loop++;
+        }
+    } while (res > 0);
 
-	res = fetch_about_senddata(ctx, (const uint8_t *)buffer, slen);
-	if (res != NSERROR_OK) {
-		goto fetch_about_choices_handler_aborted;
-	}
+    res = fetch_about_senddata(ctx, (const uint8_t *)buffer, slen);
+    if (res != NSERROR_OK) {
+        goto fetch_about_choices_handler_aborted;
+    }
 
-	fetch_about_send_finished(ctx);
+    fetch_about_send_finished(ctx);
 
-	return true;
+    return true;
 
 fetch_about_choices_handler_aborted:
-	return false;
+    return false;
 }

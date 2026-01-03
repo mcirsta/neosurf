@@ -34,9 +34,7 @@ typedef struct http_parameter http_parameter;
  * \return NSERROR_OK on success,
  *         NSERROR_NOT_FOUND if requested item does not exist
  */
-nserror http_parameter_list_find_item(const http_parameter *list,
-				      lwc_string *name,
-				      lwc_string **value);
+nserror http_parameter_list_find_item(const http_parameter *list, lwc_string *name, lwc_string **value);
 
 /**
  * Iterate over a parameter list
@@ -46,9 +44,7 @@ nserror http_parameter_list_find_item(const http_parameter *list,
  * \param value  Pointer to location to receive item value
  * \return Pointer to next iteration position, or NULL for end of iteration
  */
-const http_parameter *http_parameter_list_iterate(const http_parameter *cur,
-						  lwc_string **name,
-						  lwc_string **value);
+const http_parameter *http_parameter_list_iterate(const http_parameter *cur, lwc_string **name, lwc_string **value);
 
 /**
  * Destroy a list of HTTP parameters

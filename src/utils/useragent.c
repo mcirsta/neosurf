@@ -21,11 +21,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <neosurf/utils/config.h>
-#include "utils/utsname.h"
 #include <neosurf/desktop/version.h>
+#include <neosurf/utils/config.h>
 #include <neosurf/utils/log.h>
 #include "utils/useragent.h"
+#include "utils/utsname.h"
 
 static const char *core_user_agent_string = NULL;
 
@@ -39,51 +39,46 @@ static const char *core_user_agent_string = NULL;
  */
 static void user_agent_build_string(void)
 {
-	struct utsname un;
-	const char *sysname = "Unknown";
-	char *ua_string;
-	int len;
+    struct utsname un;
+    const char *sysname = "Unknown";
+    char *ua_string;
+    int len;
 
-	if (uname(&un) >= 0) {
-		sysname = un.sysname;
-		if (strcmp(sysname, "Linux") == 0) {
-			/* Force desktop, not mobile */
-			sysname = "X11; Linux";
-		}
-	}
+    if (uname(&un) >= 0) {
+        sysname = un.sysname;
+        if (strcmp(sysname, "Linux") == 0) {
+            /* Force desktop, not mobile */
+            sysname = "X11; Linux";
+        }
+    }
 
-	len = snprintf(
-		NULL, 0, NEOSURF_UA_FORMAT_STRING, sysname, neosurf_version);
-	ua_string = malloc(len + 1);
-	if (!ua_string) {
-		/** \todo this needs handling better */
-		return;
-	}
-	snprintf(ua_string,
-		 len + 1,
-		 NEOSURF_UA_FORMAT_STRING,
-		 sysname,
-		 neosurf_version);
+    len = snprintf(NULL, 0, NEOSURF_UA_FORMAT_STRING, sysname, neosurf_version);
+    ua_string = malloc(len + 1);
+    if (!ua_string) {
+        /** \todo this needs handling better */
+        return;
+    }
+    snprintf(ua_string, len + 1, NEOSURF_UA_FORMAT_STRING, sysname, neosurf_version);
 
-	core_user_agent_string = ua_string;
+    core_user_agent_string = ua_string;
 
-	NSLOG(neosurf, INFO, "Built user agent \"%s\"", core_user_agent_string);
+    NSLOG(neosurf, INFO, "Built user agent \"%s\"", core_user_agent_string);
 }
 
 /* This is a function so that later we can override it trivially */
 const char *user_agent_string(void)
 {
-	if (core_user_agent_string == NULL)
-		user_agent_build_string();
-	return core_user_agent_string;
+    if (core_user_agent_string == NULL)
+        user_agent_build_string();
+    return core_user_agent_string;
 }
 
 /* Public API documented in useragent.h */
 void free_user_agent_string(void)
 {
-	if (core_user_agent_string != NULL) {
-		/* Nasty cast because we need to de-const it to free it */
-		free((void *)core_user_agent_string);
-		core_user_agent_string = NULL;
-	}
+    if (core_user_agent_string != NULL) {
+        /* Nasty cast because we need to de-const it to free it */
+        free((void *)core_user_agent_string);
+        core_user_agent_string = NULL;
+    }
 }

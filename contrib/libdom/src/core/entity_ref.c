@@ -8,23 +8,21 @@
 
 #include <stdlib.h>
 
+#include "utils/utils.h"
 #include "core/document.h"
 #include "core/entity_ref.h"
 #include "core/node.h"
-#include "utils/utils.h"
 
 /**
  * A DOM entity reference
  */
 struct dom_entity_reference {
-	dom_node_internal base; /**< Base node */
+    dom_node_internal base; /**< Base node */
 };
 
-static const struct dom_node_vtable er_vtable = {{DOM_NODE_EVENT_TARGET_VTABLE},
-						 DOM_NODE_VTABLE};
+static const struct dom_node_vtable er_vtable = {{DOM_NODE_EVENT_TARGET_VTABLE}, DOM_NODE_VTABLE};
 
-static const struct dom_node_protect_vtable er_protect_vtable = {
-	DOM_ER_PROTECT_VTABLE};
+static const struct dom_node_protect_vtable er_protect_vtable = {DOM_ER_PROTECT_VTABLE};
 
 /**
  * Create an entity reference
@@ -40,38 +38,30 @@ static const struct dom_node_protect_vtable er_protect_vtable = {
  *
  * The returned node will already be referenced.
  */
-dom_exception _dom_entity_reference_create(dom_document *doc,
-					   dom_string *name,
-					   dom_string *value,
-					   dom_entity_reference **result)
+dom_exception
+_dom_entity_reference_create(dom_document *doc, dom_string *name, dom_string *value, dom_entity_reference **result)
 {
-	dom_entity_reference *e;
-	dom_exception err;
+    dom_entity_reference *e;
+    dom_exception err;
 
-	/* Allocate the comment node */
-	e = malloc(sizeof(dom_entity_reference));
-	if (e == NULL)
-		return DOM_NO_MEM_ERR;
+    /* Allocate the comment node */
+    e = malloc(sizeof(dom_entity_reference));
+    if (e == NULL)
+        return DOM_NO_MEM_ERR;
 
-	e->base.base.vtable = &er_vtable;
-	e->base.vtable = &er_protect_vtable;
+    e->base.base.vtable = &er_vtable;
+    e->base.vtable = &er_protect_vtable;
 
-	/* And initialise the node */
-	err = _dom_entity_reference_initialise(&e->base,
-					       doc,
-					       DOM_ENTITY_REFERENCE_NODE,
-					       name,
-					       value,
-					       NULL,
-					       NULL);
-	if (err != DOM_NO_ERR) {
-		free(e);
-		return err;
-	}
+    /* And initialise the node */
+    err = _dom_entity_reference_initialise(&e->base, doc, DOM_ENTITY_REFERENCE_NODE, name, value, NULL, NULL);
+    if (err != DOM_NO_ERR) {
+        free(e);
+        return err;
+    }
 
-	*result = e;
+    *result = e;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -83,11 +73,11 @@ dom_exception _dom_entity_reference_create(dom_document *doc,
  */
 void _dom_entity_reference_destroy(dom_entity_reference *entity)
 {
-	/* Finalise base class */
-	_dom_entity_reference_finalise(&entity->base);
+    /* Finalise base class */
+    _dom_entity_reference_finalise(&entity->base);
 
-	/* Destroy fragment */
-	free(entity);
+    /* Destroy fragment */
+    free(entity);
 }
 
 /**
@@ -101,14 +91,12 @@ void _dom_entity_reference_destroy(dom_entity_reference *entity)
  * the responsibility of the caller to unrer the string once it has
  * finished with it.
  */
-dom_exception
-_dom_entity_reference_get_textual_representation(dom_entity_reference *entity,
-						 dom_string **result)
+dom_exception _dom_entity_reference_get_textual_representation(dom_entity_reference *entity, dom_string **result)
 {
-	UNUSED(entity);
-	UNUSED(result);
+    UNUSED(entity);
+    UNUSED(result);
 
-	return DOM_NOT_SUPPORTED_ERR;
+    return DOM_NOT_SUPPORTED_ERR;
 }
 
 /*-----------------------------------------------------------------------*/
@@ -118,26 +106,26 @@ _dom_entity_reference_get_textual_representation(dom_entity_reference *entity,
 /* The virtual destroy function of this class */
 void _dom_er_destroy(dom_node_internal *node)
 {
-	_dom_entity_reference_destroy((dom_entity_reference *)node);
+    _dom_entity_reference_destroy((dom_entity_reference *)node);
 }
 
 /* The copy constructor of this class */
 dom_exception _dom_er_copy(dom_node_internal *old, dom_node_internal **copy)
 {
-	dom_entity_reference *new_er;
-	dom_exception err;
+    dom_entity_reference *new_er;
+    dom_exception err;
 
-	new_er = malloc(sizeof(dom_entity_reference));
-	if (new_er == NULL)
-		return DOM_NO_MEM_ERR;
+    new_er = malloc(sizeof(dom_entity_reference));
+    if (new_er == NULL)
+        return DOM_NO_MEM_ERR;
 
-	err = dom_node_copy_internal(old, new_er);
-	if (err != DOM_NO_ERR) {
-		free(new_er);
-		return err;
-	}
+    err = dom_node_copy_internal(old, new_er);
+    if (err != DOM_NO_ERR) {
+        free(new_er);
+        return err;
+    }
 
-	*copy = (dom_node_internal *)new_er;
+    *copy = (dom_node_internal *)new_er;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }

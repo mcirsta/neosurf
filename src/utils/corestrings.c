@@ -39,29 +39,29 @@
 /* exported interface documented in utils/corestrings.h */
 nserror corestrings_fini(void)
 {
-#define CORESTRING_LWC_VALUE(NAME, VALUE)                                      \
-	do {                                                                   \
-		if (corestring_lwc_##NAME != NULL) {                           \
-			lwc_string_unref(corestring_lwc_##NAME);               \
-			corestring_lwc_##NAME = NULL;                          \
-		}                                                              \
-	} while (0)
+#define CORESTRING_LWC_VALUE(NAME, VALUE)                                                                              \
+    do {                                                                                                               \
+        if (corestring_lwc_##NAME != NULL) {                                                                           \
+            lwc_string_unref(corestring_lwc_##NAME);                                                                   \
+            corestring_lwc_##NAME = NULL;                                                                              \
+        }                                                                                                              \
+    } while (0)
 
-#define CORESTRING_DOM_VALUE(NAME, VALUE)                                      \
-	do {                                                                   \
-		if (corestring_dom_##NAME != NULL) {                           \
-			dom_string_unref(corestring_dom_##NAME);               \
-			corestring_dom_##NAME = NULL;                          \
-		}                                                              \
-	} while (0)
+#define CORESTRING_DOM_VALUE(NAME, VALUE)                                                                              \
+    do {                                                                                                               \
+        if (corestring_dom_##NAME != NULL) {                                                                           \
+            dom_string_unref(corestring_dom_##NAME);                                                                   \
+            corestring_dom_##NAME = NULL;                                                                              \
+        }                                                                                                              \
+    } while (0)
 
-#define CORESTRING_NSURL(NAME, VALUE)                                          \
-	do {                                                                   \
-		if (corestring_nsurl_##NAME != NULL) {                         \
-			nsurl_unref(corestring_nsurl_##NAME);                  \
-			corestring_nsurl_##NAME = NULL;                        \
-		}                                                              \
-	} while (0)
+#define CORESTRING_NSURL(NAME, VALUE)                                                                                  \
+    do {                                                                                                               \
+        if (corestring_nsurl_##NAME != NULL) {                                                                         \
+            nsurl_unref(corestring_nsurl_##NAME);                                                                      \
+            corestring_nsurl_##NAME = NULL;                                                                            \
+        }                                                                                                              \
+    } while (0)
 
 
 #include <neosurf/utils/corestringlist.h>
@@ -70,51 +70,46 @@ nserror corestrings_fini(void)
 #undef CORESTRING_DOM_VALUE
 #undef CORESTRING_NSURL
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
 /* exported interface documented in utils/corestrings.h */
 nserror corestrings_init(void)
 {
-	lwc_error lerror;
-	nserror error;
-	dom_exception exc;
+    lwc_error lerror;
+    nserror error;
+    dom_exception exc;
 
-	if (corestring_lwc_a != NULL) {
-		return NSERROR_OK;
-	}
+    if (corestring_lwc_a != NULL) {
+        return NSERROR_OK;
+    }
 
-#define CORESTRING_LWC_VALUE(NAME, VALUE)                                      \
-	do {                                                                   \
-		lerror = lwc_intern_string((const char *)VALUE,                \
-					   sizeof(VALUE) - 1,                  \
-					   &corestring_lwc_##NAME);            \
-		if ((lerror != lwc_error_ok) ||                                \
-		    (corestring_lwc_##NAME == NULL)) {                         \
-			error = NSERROR_NOMEM;                                 \
-			goto error;                                            \
-		}                                                              \
-	} while (0)
+#define CORESTRING_LWC_VALUE(NAME, VALUE)                                                                              \
+    do {                                                                                                               \
+        lerror = lwc_intern_string((const char *)VALUE, sizeof(VALUE) - 1, &corestring_lwc_##NAME);                    \
+        if ((lerror != lwc_error_ok) || (corestring_lwc_##NAME == NULL)) {                                             \
+            error = NSERROR_NOMEM;                                                                                     \
+            goto error;                                                                                                \
+        }                                                                                                              \
+    } while (0)
 
-#define CORESTRING_DOM_VALUE(NAME, VALUE)                                      \
-	do {                                                                   \
-		exc = dom_string_create_interned((const uint8_t *)VALUE,       \
-						 sizeof(VALUE) - 1,            \
-						 &corestring_dom_##NAME);      \
-		if ((exc != DOM_NO_ERR) || (corestring_dom_##NAME == NULL)) {  \
-			error = NSERROR_NOMEM;                                 \
-			goto error;                                            \
-		}                                                              \
-	} while (0)
+#define CORESTRING_DOM_VALUE(NAME, VALUE)                                                                              \
+    do {                                                                                                               \
+        exc = dom_string_create_interned((const uint8_t *)VALUE, sizeof(VALUE) - 1, &corestring_dom_##NAME);           \
+        if ((exc != DOM_NO_ERR) || (corestring_dom_##NAME == NULL)) {                                                  \
+            error = NSERROR_NOMEM;                                                                                     \
+            goto error;                                                                                                \
+        }                                                                                                              \
+    } while (0)
 
-#define CORESTRING_NSURL(NAME, VALUE)                                          \
-	do {                                                                   \
-		error = nsurl_create(VALUE, &corestring_nsurl_##NAME);         \
-		if (error != NSERROR_OK) {                                     \
-			goto error;                                            \
-		}                                                              \
-	} while (0)
+#define CORESTRING_NSURL(NAME, VALUE)                                                                                  \
+    do {                                                                                                               \
+        error = nsurl_create(VALUE, &corestring_nsurl_##NAME);                                                         \
+        if (error != NSERROR_OK) {                                                                                     \
+            goto error;                                                                                                \
+        }                                                                                                              \
+    } while (0)
 
 #include <neosurf/utils/corestringlist.h>
 
@@ -122,10 +117,10 @@ nserror corestrings_init(void)
 #undef CORESTRING_DOM_VALUE
 #undef CORESTRING_NSURL
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 
 error:
-	corestrings_fini();
+    corestrings_fini();
 
-	return error;
+    return error;
 }

@@ -16,49 +16,46 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
 #include <libcss/libcss.h>
+#include <string.h>
 
 #include <neosurf/utils/nsurl.h>
 
 #include "content/handlers/css/internal.h"
 
 /* exported interface documented in content/handlers/css/internal.h */
-css_error
-nscss_resolve_url(void *pw, const char *base, lwc_string *rel, lwc_string **abs)
+css_error nscss_resolve_url(void *pw, const char *base, lwc_string *rel, lwc_string **abs)
 {
-	lwc_error lerror;
-	nserror error;
-	nsurl *nsbase;
-	nsurl *nsabs;
+    lwc_error lerror;
+    nserror error;
+    nsurl *nsbase;
+    nsurl *nsabs;
 
-	/* Create nsurl from base */
-	/* TODO: avoid this */
-	error = nsurl_create(base, &nsbase);
-	if (error != NSERROR_OK) {
-		return error == NSERROR_NOMEM ? CSS_NOMEM : CSS_INVALID;
-	}
+    /* Create nsurl from base */
+    /* TODO: avoid this */
+    error = nsurl_create(base, &nsbase);
+    if (error != NSERROR_OK) {
+        return error == NSERROR_NOMEM ? CSS_NOMEM : CSS_INVALID;
+    }
 
-	/* Resolve URI */
-	error = nsurl_join(nsbase, lwc_string_data(rel), &nsabs);
-	if (error != NSERROR_OK) {
-		nsurl_unref(nsbase);
-		return error == NSERROR_NOMEM ? CSS_NOMEM : CSS_INVALID;
-	}
+    /* Resolve URI */
+    error = nsurl_join(nsbase, lwc_string_data(rel), &nsabs);
+    if (error != NSERROR_OK) {
+        nsurl_unref(nsbase);
+        return error == NSERROR_NOMEM ? CSS_NOMEM : CSS_INVALID;
+    }
 
-	nsurl_unref(nsbase);
+    nsurl_unref(nsbase);
 
-	/* Intern it */
-	lerror = lwc_intern_string(nsurl_access(nsabs),
-				   nsurl_length(nsabs),
-				   abs);
-	if (lerror != lwc_error_ok) {
-		*abs = NULL;
-		nsurl_unref(nsabs);
-		return lerror == lwc_error_oom ? CSS_NOMEM : CSS_INVALID;
-	}
+    /* Intern it */
+    lerror = lwc_intern_string(nsurl_access(nsabs), nsurl_length(nsabs), abs);
+    if (lerror != lwc_error_ok) {
+        *abs = NULL;
+        nsurl_unref(nsabs);
+        return lerror == lwc_error_oom ? CSS_NOMEM : CSS_INVALID;
+    }
 
-	nsurl_unref(nsabs);
+    nsurl_unref(nsabs);
 
-	return CSS_OK;
+    return CSS_OK;
 }

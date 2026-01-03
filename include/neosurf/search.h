@@ -29,47 +29,47 @@
  * function table for page text search.
  */
 struct gui_search_table {
-	/**
-	 * Change the displayed search status.
-	 *
-	 * \param found search pattern matched in text
-	 * \param p gui private data pointer provided with search callbacks
-	 */
-	void (*status)(bool found, void *p);
+    /**
+     * Change the displayed search status.
+     *
+     * \param found search pattern matched in text
+     * \param p gui private data pointer provided with search callbacks
+     */
+    void (*status)(bool found, void *p);
 
-	/**
-	 * display hourglass while searching.
-	 *
-	 * \param active start/stop indicator
-	 * \param p gui private data pointer provided with search callbacks
-	 */
-	void (*hourglass)(bool active, void *p);
+    /**
+     * display hourglass while searching.
+     *
+     * \param active start/stop indicator
+     * \param p gui private data pointer provided with search callbacks
+     */
+    void (*hourglass)(bool active, void *p);
 
-	/**
-	 * add search string to recent searches list
-	 * front has full liberty how to implement the bare notification;
-	 * core gives no guarantee of the integrity of the string
-	 *
-	 * \param string search pattern
-	 * \param p gui private data pointer provided with search callbacks
-	 */
-	void (*add_recent)(const char *string, void *p);
+    /**
+     * add search string to recent searches list
+     * front has full liberty how to implement the bare notification;
+     * core gives no guarantee of the integrity of the string
+     *
+     * \param string search pattern
+     * \param p gui private data pointer provided with search callbacks
+     */
+    void (*add_recent)(const char *string, void *p);
 
-	/**
-	 * activate search forwards button in gui
-	 *
-	 * \param active activate/inactivate
-	 * \param p gui private data pointer provided with search callbacks
-	 */
-	void (*forward_state)(bool active, void *p);
+    /**
+     * activate search forwards button in gui
+     *
+     * \param active activate/inactivate
+     * \param p gui private data pointer provided with search callbacks
+     */
+    void (*forward_state)(bool active, void *p);
 
-	/**
-	 * activate search back button in gui
-	 *
-	 * \param active activate/inactivate
-	 * \param p gui private data pointer provided with search callbacks
-	 */
-	void (*back_state)(bool active, void *p);
+    /**
+     * activate search back button in gui
+     *
+     * \param active activate/inactivate
+     * \param p gui private data pointer provided with search callbacks
+     */
+    void (*back_state)(bool active, void *p);
 };
 
 #endif

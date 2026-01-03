@@ -1,11 +1,11 @@
 #ifndef test_testutils_h_
 #define test_testutils_h_
 
+#include <sys/types.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 
 #ifndef UNUSED
 #define UNUSED(x) ((x) = (x))
@@ -14,27 +14,20 @@
 /* Redefine assert, so we can simply use the standard assert mechanism
  * within testcases and exit with the right output for the testrunner
  * to do the right thing. */
-void __assert2(const char *expr,
-	       const char *function,
-	       const char *file,
-	       int line);
+void __assert2(const char *expr, const char *function, const char *file, int line);
 
-void __assert2(const char *expr,
-	       const char *function,
-	       const char *file,
-	       int line)
+void __assert2(const char *expr, const char *function, const char *file, int line)
 {
-	UNUSED(function);
-	UNUSED(file);
+    UNUSED(function);
+    UNUSED(file);
 
-	printf("FAIL - %s at line %d\n", expr, line);
+    printf("FAIL - %s at line %d\n", expr, line);
 
-	exit(EXIT_FAILURE);
+    exit(EXIT_FAILURE);
 }
 
 #undef assert
-#define assert(expr)                                                           \
-	((void)((expr) || (__assert2(#expr, __func__, __FILE__, __LINE__), 0)))
+#define assert(expr) ((void)((expr) || (__assert2(#expr, __func__, __FILE__, __LINE__), 0)))
 
 
 typedef bool (*line_func)(const char *data, size_t datalen, void *pw);
@@ -54,36 +47,34 @@ size_t css__parse_filesize(const char *filename);
  */
 bool css__parse_testfile(const char *filename, line_func callback, void *pw)
 {
-	FILE *fp;
-	char buf[300];
+    FILE *fp;
+    char buf[300];
 
-	fp = fopen(filename, "rb");
-	if (fp == NULL) {
-		printf("Failed opening %s\n", filename);
-		return false;
-	}
+    fp = fopen(filename, "rb");
+    if (fp == NULL) {
+        printf("Failed opening %s\n", filename);
+        return false;
+    }
 
-	while (fgets(buf, sizeof buf, fp)) {
-		if (buf[0] == '\n')
-			continue;
-		{
-			size_t l = strlen(buf);
-			if (l >= 2 && buf[l - 2] == '\r' &&
-			    buf[l - 1] == '\n') {
-				buf[l - 2] = '\n';
-				buf[l - 1] = '\0';
-			}
-		}
-		if (!callback(
-			    buf, css__parse_strlen(buf, sizeof buf - 1), pw)) {
-			fclose(fp);
-			return false;
-		}
-	}
+    while (fgets(buf, sizeof buf, fp)) {
+        if (buf[0] == '\n')
+            continue;
+        {
+            size_t l = strlen(buf);
+            if (l >= 2 && buf[l - 2] == '\r' && buf[l - 1] == '\n') {
+                buf[l - 2] = '\n';
+                buf[l - 1] = '\0';
+            }
+        }
+        if (!callback(buf, css__parse_strlen(buf, sizeof buf - 1), pw)) {
+            fclose(fp);
+            return false;
+        }
+    }
 
-	fclose(fp);
+    fclose(fp);
 
-	return true;
+    return true;
 }
 
 /**
@@ -95,19 +86,19 @@ bool css__parse_testfile(const char *filename, line_func callback, void *pw)
  */
 size_t css__parse_strlen(const char *str, size_t limit)
 {
-	size_t len = 0;
+    size_t len = 0;
 
-	if (str == NULL)
-		return 0;
+    if (str == NULL)
+        return 0;
 
-	while (len < limit - 1 && *str != '\n') {
-		len++;
-		str++;
-	}
+    while (len < limit - 1 && *str != '\n') {
+        len++;
+        str++;
+    }
 
-	len++;
+    len++;
 
-	return len;
+    return len;
 }
 
 /**
@@ -120,20 +111,20 @@ size_t css__parse_strlen(const char *str, size_t limit)
  */
 char *css__parse_strnchr(const char *str, size_t len, int chr)
 {
-	size_t i;
+    size_t i;
 
-	if (str == NULL)
-		return NULL;
+    if (str == NULL)
+        return NULL;
 
-	for (i = 0; i < len; i++) {
-		if (str[i] == chr)
-			break;
-	}
+    for (i = 0; i < len; i++) {
+        if (str[i] == chr)
+            break;
+    }
 
-	if (i == len)
-		return NULL;
+    if (i == len)
+        return NULL;
 
-	return (char *)str + i;
+    return (char *)str + i;
 }
 
 /**
@@ -144,21 +135,21 @@ char *css__parse_strnchr(const char *str, size_t len, int chr)
  */
 size_t css__parse_filesize(const char *filename)
 {
-	FILE *fp;
-	size_t len = 0;
+    FILE *fp;
+    size_t len = 0;
 
-	fp = fopen(filename, "rb");
-	if (fp == NULL) {
-		printf("Failed opening %s\n", filename);
-		return 0;
-	}
+    fp = fopen(filename, "rb");
+    if (fp == NULL) {
+        printf("Failed opening %s\n", filename);
+        return 0;
+    }
 
-	fseek(fp, 0, SEEK_END);
-	len = ftell(fp);
+    fseek(fp, 0, SEEK_END);
+    len = ftell(fp);
 
-	fclose(fp);
+    fclose(fp);
 
-	return len;
+    return len;
 }
 
 
@@ -172,25 +163,25 @@ size_t css__parse_filesize(const char *filename)
 css_error css_error_from_string(const char *str, size_t len);
 css_error css_error_from_string(const char *str, size_t len)
 {
-	if (strncmp(str, "CSS_OK", len) == 0) {
-		return CSS_OK;
-	} else if (strncmp(str, "CSS_NOMEM", len) == 0) {
-		return CSS_NOMEM;
-	} else if (strncmp(str, "CSS_BADPARM", len) == 0) {
-		return CSS_BADPARM;
-	} else if (strncmp(str, "CSS_INVALID", len) == 0) {
-		return CSS_INVALID;
-	} else if (strncmp(str, "CSS_FILENOTFOUND", len) == 0) {
-		return CSS_FILENOTFOUND;
-	} else if (strncmp(str, "CSS_NEEDDATA", len) == 0) {
-		return CSS_NEEDDATA;
-	} else if (strncmp(str, "CSS_BADCHARSET", len) == 0) {
-		return CSS_BADCHARSET;
-	} else if (strncmp(str, "CSS_EOF", len) == 0) {
-		return CSS_EOF;
-	}
+    if (strncmp(str, "CSS_OK", len) == 0) {
+        return CSS_OK;
+    } else if (strncmp(str, "CSS_NOMEM", len) == 0) {
+        return CSS_NOMEM;
+    } else if (strncmp(str, "CSS_BADPARM", len) == 0) {
+        return CSS_BADPARM;
+    } else if (strncmp(str, "CSS_INVALID", len) == 0) {
+        return CSS_INVALID;
+    } else if (strncmp(str, "CSS_FILENOTFOUND", len) == 0) {
+        return CSS_FILENOTFOUND;
+    } else if (strncmp(str, "CSS_NEEDDATA", len) == 0) {
+        return CSS_NEEDDATA;
+    } else if (strncmp(str, "CSS_BADCHARSET", len) == 0) {
+        return CSS_BADCHARSET;
+    } else if (strncmp(str, "CSS_EOF", len) == 0) {
+        return CSS_EOF;
+    }
 
-	return CSS_OK;
+    return CSS_OK;
 }
 
 #endif

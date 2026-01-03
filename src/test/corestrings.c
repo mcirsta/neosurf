@@ -24,12 +24,12 @@
 #include "utils/config.h"
 
 #include <assert.h>
+#include <check.h>
+#include <limits.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <check.h>
-#include <limits.h>
 
 #include "utils/corestrings.h"
 
@@ -44,37 +44,34 @@
 
 START_TEST(corestrings_test)
 {
-	nserror ires;
-	nserror res;
+    nserror ires;
+    nserror res;
 
-	malloc_limit(_i);
+    malloc_limit(_i);
 
-	ires = corestrings_init();
-	res = corestrings_fini();
+    ires = corestrings_init();
+    res = corestrings_fini();
 
-	malloc_limit(UINT_MAX);
+    malloc_limit(UINT_MAX);
 
-	if (_i < CORESTRING_TEST_COUNT) {
-		ck_assert_int_eq(ires, NSERROR_NOMEM);
-	} else {
-		ck_assert_int_eq(ires, NSERROR_OK);
-	}
-	ck_assert_int_eq(res, NSERROR_OK);
+    if (_i < CORESTRING_TEST_COUNT) {
+        ck_assert_int_eq(ires, NSERROR_NOMEM);
+    } else {
+        ck_assert_int_eq(ires, NSERROR_OK);
+    }
+    ck_assert_int_eq(res, NSERROR_OK);
 }
 END_TEST
 
 
 static TCase *corestrings_case_create(void)
 {
-	TCase *tc;
-	tc = tcase_create("corestrings");
+    TCase *tc;
+    tc = tcase_create("corestrings");
 
-	tcase_add_loop_test(tc,
-			    corestrings_test,
-			    CORESTRING_TEST_COUNT,
-			    CORESTRING_TEST_COUNT + 1);
+    tcase_add_loop_test(tc, corestrings_test, CORESTRING_TEST_COUNT, CORESTRING_TEST_COUNT + 1);
 
-	return tc;
+    return tc;
 }
 
 
@@ -83,25 +80,25 @@ static TCase *corestrings_case_create(void)
  */
 static Suite *corestrings_suite_create(void)
 {
-	Suite *s;
-	s = suite_create("Corestrings API");
+    Suite *s;
+    s = suite_create("Corestrings API");
 
-	suite_add_tcase(s, corestrings_case_create());
+    suite_add_tcase(s, corestrings_case_create());
 
-	return s;
+    return s;
 }
 
 int main(int argc, char **argv)
 {
-	int number_failed;
-	SRunner *sr;
+    int number_failed;
+    SRunner *sr;
 
-	sr = srunner_create(corestrings_suite_create());
+    sr = srunner_create(corestrings_suite_create());
 
-	srunner_run_all(sr, CK_ENV);
+    srunner_run_all(sr, CK_ENV);
 
-	number_failed = srunner_ntests_failed(sr);
-	srunner_free(sr);
+    number_failed = srunner_ntests_failed(sr);
+    srunner_free(sr);
 
-	return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
+    return (number_failed == 0) ? EXIT_SUCCESS : EXIT_FAILURE;
 }

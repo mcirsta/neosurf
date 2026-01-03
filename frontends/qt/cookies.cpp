@@ -28,30 +28,30 @@ extern "C" {
 
 NS_Cookies::NS_Cookies(QWidget *parent) : NS_Corewindow(parent)
 {
-	cookie_manager_init((struct core_window *)m_core_window);
+    cookie_manager_init((struct core_window *)m_core_window);
 }
 
 NS_Cookies::~NS_Cookies()
 {
-	cookie_manager_fini();
+    cookie_manager_fini();
 }
 
 nserror NS_Cookies::setSearch(const char *search_term)
 {
-	return cookie_manager_set_search_string(search_term);
+    return cookie_manager_set_search_string(search_term);
 }
 
 void NS_Cookies::draw(struct rect *clip, struct redraw_context *ctx)
 {
-	cookie_manager_redraw(0, 0, clip, ctx);
+    cookie_manager_redraw(0, 0, clip, ctx);
 }
 
 bool NS_Cookies::key_press(uint32_t nskey)
 {
-	return cookie_manager_keypress(nskey);
+    return cookie_manager_keypress(nskey);
 }
 
 void NS_Cookies::mouse_action(browser_mouse_state mouse_state, int x, int y)
 {
-	cookie_manager_mouse_action(mouse_state, x, y);
+    cookie_manager_mouse_action(mouse_state, x, y);
 }

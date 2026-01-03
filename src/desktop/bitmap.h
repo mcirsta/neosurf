@@ -25,15 +25,15 @@
 
 #include <nsutils/endian.h>
 
-#include "neosurf/types.h"
 #include "neosurf/bitmap.h"
+#include "neosurf/types.h"
 
 /** Pixel format: colour component order. */
 struct bitmap_colour_layout {
-	uint8_t r; /**< Byte offset within pixel to red component. */
-	uint8_t g; /**< Byte offset within pixel to green component. */
-	uint8_t b; /**< Byte offset within pixel to blue component. */
-	uint8_t a; /**< Byte offset within pixel to alpha component. */
+    uint8_t r; /**< Byte offset within pixel to red component. */
+    uint8_t g; /**< Byte offset within pixel to green component. */
+    uint8_t b; /**< Byte offset within pixel to blue component. */
+    uint8_t a; /**< Byte offset within pixel to alpha component. */
 };
 
 /** The client bitmap format. */
@@ -52,10 +52,8 @@ extern struct bitmap_colour_layout bitmap_layout;
  */
 static inline colour bitmap_pixel_to_colour(const uint8_t *pixel)
 {
-	return ((uint32_t)pixel[bitmap_layout.r] << 0) |
-	       ((uint32_t)pixel[bitmap_layout.g] << 8) |
-	       ((uint32_t)pixel[bitmap_layout.b] << 16) |
-	       ((uint32_t)pixel[bitmap_layout.a] << 24);
+    return ((uint32_t)pixel[bitmap_layout.r] << 0) | ((uint32_t)pixel[bitmap_layout.g] << 8) |
+        ((uint32_t)pixel[bitmap_layout.b] << 16) | ((uint32_t)pixel[bitmap_layout.a] << 24);
 }
 
 /**
@@ -66,29 +64,28 @@ static inline colour bitmap_pixel_to_colour(const uint8_t *pixel)
  * \param[in]  layout  Layout to convert.
  * \return sanitised layout.
  */
-static inline enum bitmap_layout
-bitmap_sanitise_bitmap_layout(enum bitmap_layout layout)
+static inline enum bitmap_layout bitmap_sanitise_bitmap_layout(enum bitmap_layout layout)
 {
-	bool le = endian_host_is_le();
+    bool le = endian_host_is_le();
 
-	switch (layout) {
-	case BITMAP_LAYOUT_RGBA8888:
-		layout = (le) ? BITMAP_LAYOUT_A8B8G8R8 : BITMAP_LAYOUT_R8G8B8A8;
-		break;
-	case BITMAP_LAYOUT_BGRA8888:
-		layout = (le) ? BITMAP_LAYOUT_A8R8G8B8 : BITMAP_LAYOUT_B8G8R8A8;
-		break;
-	case BITMAP_LAYOUT_ARGB8888:
-		layout = (le) ? BITMAP_LAYOUT_B8G8R8A8 : BITMAP_LAYOUT_A8R8G8B8;
-		break;
-	case BITMAP_LAYOUT_ABGR8888:
-		layout = (le) ? BITMAP_LAYOUT_R8G8B8A8 : BITMAP_LAYOUT_A8B8G8R8;
-		break;
-	default:
-		break;
-	}
+    switch (layout) {
+    case BITMAP_LAYOUT_RGBA8888:
+        layout = (le) ? BITMAP_LAYOUT_A8B8G8R8 : BITMAP_LAYOUT_R8G8B8A8;
+        break;
+    case BITMAP_LAYOUT_BGRA8888:
+        layout = (le) ? BITMAP_LAYOUT_A8R8G8B8 : BITMAP_LAYOUT_B8G8R8A8;
+        break;
+    case BITMAP_LAYOUT_ARGB8888:
+        layout = (le) ? BITMAP_LAYOUT_B8G8R8A8 : BITMAP_LAYOUT_A8R8G8B8;
+        break;
+    case BITMAP_LAYOUT_ABGR8888:
+        layout = (le) ? BITMAP_LAYOUT_R8G8B8A8 : BITMAP_LAYOUT_A8B8G8R8;
+        break;
+    default:
+        break;
+    }
 
-	return layout;
+    return layout;
 }
 
 /**
@@ -100,9 +97,7 @@ bitmap_sanitise_bitmap_layout(enum bitmap_layout layout)
  * \param[in]  from    The current bitmap format specifier.
  * \param[in]  to      The bitmap format to convert to.
  */
-void bitmap_format_convert(void *bitmap,
-			   const bitmap_fmt_t *from,
-			   const bitmap_fmt_t *to);
+void bitmap_format_convert(void *bitmap, const bitmap_fmt_t *from, const bitmap_fmt_t *to);
 
 /**
  * Convert a bitmap to the client bitmap format.
@@ -110,15 +105,14 @@ void bitmap_format_convert(void *bitmap,
  * \param[in]  bitmap       The bitmap to convert.
  * \param[in]  current_fmt  The current bitmap format specifier.
  */
-static inline void
-bitmap_format_to_client(void *bitmap, const bitmap_fmt_t *current_fmt)
+static inline void bitmap_format_to_client(void *bitmap, const bitmap_fmt_t *current_fmt)
 {
-	bitmap_fmt_t from = *current_fmt;
+    bitmap_fmt_t from = *current_fmt;
 
-	from.layout = bitmap_sanitise_bitmap_layout(from.layout);
-	if (from.layout != bitmap_fmt.layout || from.pma != bitmap_fmt.pma) {
-		bitmap_format_convert(bitmap, &from, &bitmap_fmt);
-	}
+    from.layout = bitmap_sanitise_bitmap_layout(from.layout);
+    if (from.layout != bitmap_fmt.layout || from.pma != bitmap_fmt.pma) {
+        bitmap_format_convert(bitmap, &from, &bitmap_fmt);
+    }
 }
 
 /**
@@ -127,15 +121,14 @@ bitmap_format_to_client(void *bitmap, const bitmap_fmt_t *current_fmt)
  * \param[in]  bitmap      The bitmap to convert.
  * \param[in]  target_fmt  The target bitmap format specifier.
  */
-static inline void
-bitmap_format_from_client(void *bitmap, const bitmap_fmt_t *target_fmt)
+static inline void bitmap_format_from_client(void *bitmap, const bitmap_fmt_t *target_fmt)
 {
-	bitmap_fmt_t to = *target_fmt;
+    bitmap_fmt_t to = *target_fmt;
 
-	to.layout = bitmap_sanitise_bitmap_layout(to.layout);
-	if (to.layout != bitmap_fmt.layout || to.pma != bitmap_fmt.pma) {
-		bitmap_format_convert(bitmap, &bitmap_fmt, &to);
-	}
+    to.layout = bitmap_sanitise_bitmap_layout(to.layout);
+    if (to.layout != bitmap_fmt.layout || to.pma != bitmap_fmt.pma) {
+        bitmap_format_convert(bitmap, &bitmap_fmt, &to);
+    }
 }
 
 #endif

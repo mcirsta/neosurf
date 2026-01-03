@@ -23,18 +23,18 @@
 
 #include <stdbool.h>
 #include <stddef.h>
-#include <stdio.h>
-#include <string.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "neosurf/plot_style.h"
 
 #include <neosurf/utils/errors.h>
 #include "utils/nscolour.h"
 
-#include "private.h"
 #include "nscolours.h"
+#include "private.h"
 
 /**
  * Handler to generate the nscolours stylesheet
@@ -44,40 +44,37 @@
  */
 bool fetch_about_nscolours_handler(struct fetch_about_context *ctx)
 {
-	nserror res;
-	const char *stylesheet;
+    nserror res;
+    const char *stylesheet;
 
-	/* content is going to return ok */
-	fetch_about_set_http_code(ctx, 200);
+    /* content is going to return ok */
+    fetch_about_set_http_code(ctx, 200);
 
-	/* content type */
-	if (fetch_about_send_header(ctx,
-				    "Content-Type: text/css; charset=utf-8")) {
-		goto aborted;
-	}
+    /* content type */
+    if (fetch_about_send_header(ctx, "Content-Type: text/css; charset=utf-8")) {
+        goto aborted;
+    }
 
-	res = nscolour_get_stylesheet(&stylesheet);
-	if (res != NSERROR_OK) {
-		goto aborted;
-	}
+    res = nscolour_get_stylesheet(&stylesheet);
+    if (res != NSERROR_OK) {
+        goto aborted;
+    }
 
-	res = fetch_about_ssenddataf(ctx,
-				     "html {\n"
-				     "\tbackground-color: #%06x;\n"
-				     "}\n"
-				     "%s",
-				     colour_rb_swap(
-					     nscolours[NSCOLOUR_WIN_ODD_BG]),
-				     stylesheet);
-	if (res != NSERROR_OK) {
-		goto aborted;
-	}
+    res = fetch_about_ssenddataf(ctx,
+        "html {\n"
+        "\tbackground-color: #%06x;\n"
+        "}\n"
+        "%s",
+        colour_rb_swap(nscolours[NSCOLOUR_WIN_ODD_BG]), stylesheet);
+    if (res != NSERROR_OK) {
+        goto aborted;
+    }
 
-	fetch_about_send_finished(ctx);
+    fetch_about_send_finished(ctx);
 
-	return true;
+    return true;
 
 aborted:
 
-	return false;
+    return false;
 }

@@ -28,8 +28,8 @@
 
 #include <libwapcaplet/libwapcaplet.h>
 
-#include "neosurf/types.h"
 #include "neosurf/content_type.h"
+#include "neosurf/types.h"
 
 struct bitmap;
 struct hlcache_handle;
@@ -38,29 +38,29 @@ struct redraw_context;
 
 /** parameters to content redraw */
 struct content_redraw_data {
-	int x; /**< coordinate for top-left of redraw */
-	int y; /**< coordinate for top-left of redraw */
+    int x; /**< coordinate for top-left of redraw */
+    int y; /**< coordinate for top-left of redraw */
 
-	/** dimensions to render content at (for scaling contents with
-	 *  intrinsic dimensions)
-	 */
-	int width; /**< horizontal dimension */
-	int height; /**< vertical dimension */
+    /** dimensions to render content at (for scaling contents with
+     *  intrinsic dimensions)
+     */
+    int width; /**< horizontal dimension */
+    int height; /**< vertical dimension */
 
-	/** The background colour */
-	colour background_colour;
+    /** The background colour */
+    colour background_colour;
 
-	/** Scale for redraw
-	 *  (for scaling contents without intrinsic dimensions)
-	 */
-	float scale; /**< Scale factor for redraw */
+    /** Scale for redraw
+     *  (for scaling contents without intrinsic dimensions)
+     */
+    float scale; /**< Scale factor for redraw */
 
-	bool repeat_x; /**< whether content is tiled in x direction */
-	bool repeat_y; /**< whether content is tiled in y direction */
-	int root_width;
-	int root_height;
-	int viewport_x;
-	int viewport_y;
+    bool repeat_x; /**< whether content is tiled in x direction */
+    bool repeat_y; /**< whether content is tiled in y direction */
+    int root_width;
+    int root_height;
+    int viewport_x;
+    int viewport_y;
 };
 
 /**
@@ -79,8 +79,7 @@ struct bitmap *content_get_bitmap(struct hlcache_handle *h);
  * \param op encoding operation.
  * \return Pointer to content info or NULL if none.
  */
-const char *
-content_get_encoding(struct hlcache_handle *h, enum content_encoding_type op);
+const char *content_get_encoding(struct hlcache_handle *h, enum content_encoding_type op);
 
 
 /**
@@ -161,10 +160,8 @@ void content_invalidate_reuse_data(struct hlcache_handle *h);
  *
  * Calls the redraw function for the content.
  */
-bool content_redraw(struct hlcache_handle *h,
-		    struct content_redraw_data *data,
-		    const struct rect *clip,
-		    const struct redraw_context *ctx);
+bool content_redraw(struct hlcache_handle *h, struct content_redraw_data *data, const struct rect *clip,
+    const struct redraw_context *ctx);
 
 
 /**
@@ -184,10 +181,7 @@ bool content_redraw(struct hlcache_handle *h,
  *
  * Units for width and height are pixels.
  */
-bool content_scaled_redraw(struct hlcache_handle *h,
-			   int width,
-			   int height,
-			   const struct redraw_context *ctx);
+bool content_scaled_redraw(struct hlcache_handle *h, int width, int height, const struct redraw_context *ctx);
 
 
 /**

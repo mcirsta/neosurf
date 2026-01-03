@@ -64,8 +64,7 @@ bool html_font_face_is_available(const char *family_name);
  * \param base_url    Base URL for resolving relative font URLs
  * \return NSERROR_OK on success, or error code
  */
-nserror
-html_font_face_process(const css_font_face *font_face, const char *base_url);
+nserror html_font_face_process(const css_font_face *font_face, const char *base_url);
 
 /**
  * Load font data into the system font database.
@@ -76,9 +75,7 @@ html_font_face_process(const css_font_face *font_face, const char *base_url);
  * \param size        Size of font data in bytes
  * \return NSERROR_OK on success, or error code
  */
-nserror html_font_face_load_data(const char *family_name,
-				 const uint8_t *data,
-				 size_t size);
+nserror html_font_face_load_data(const char *family_name, const uint8_t *data, size_t size);
 
 /**
  * Callback invoked when all pending font downloads have completed.

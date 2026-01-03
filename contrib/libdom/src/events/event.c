@@ -12,77 +12,76 @@
 
 #include "events/event.h"
 
-#include "core/string.h"
-#include "core/node.h"
-#include "core/document.h"
 #include "utils/utils.h"
+#include "core/document.h"
+#include "core/node.h"
+#include "core/string.h"
 
 static void _virtual_dom_event_destroy(dom_event *evt);
 
-static const struct dom_event_private_vtable _event_vtable = {
-	_virtual_dom_event_destroy};
+static const struct dom_event_private_vtable _event_vtable = {_virtual_dom_event_destroy};
 
 /* Constructor */
 dom_exception _dom_event_create(dom_event **evt)
 {
-	*evt = (dom_event *)malloc(sizeof(dom_event));
-	if (*evt == NULL)
-		return DOM_NO_MEM_ERR;
+    *evt = (dom_event *)malloc(sizeof(dom_event));
+    if (*evt == NULL)
+        return DOM_NO_MEM_ERR;
 
-	(*evt)->vtable = &_event_vtable;
+    (*evt)->vtable = &_event_vtable;
 
-	return _dom_event_initialise(*evt);
+    return _dom_event_initialise(*evt);
 }
 
 /* Destructor */
 void _dom_event_destroy(dom_event *evt)
 {
-	_dom_event_finalise(evt);
+    _dom_event_finalise(evt);
 
-	free(evt);
+    free(evt);
 }
 
 /* Initialise function */
 dom_exception _dom_event_initialise(dom_event *evt)
 {
-	/* Extract what should be retained. */
-	const struct dom_event_private_vtable *vtable = evt->vtable;
+    /* Extract what should be retained. */
+    const struct dom_event_private_vtable *vtable = evt->vtable;
 
-	/* Clear everything */
-	memset(evt, 0, sizeof(*evt));
+    /* Clear everything */
+    memset(evt, 0, sizeof(*evt));
 
-	/* Set initial values */
-	evt->refcnt = 1;
-	evt->vtable = vtable;
-	evt->is_trusted = true;
+    /* Set initial values */
+    evt->refcnt = 1;
+    evt->vtable = vtable;
+    evt->is_trusted = true;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /* Finalise function */
 void _dom_event_finalise(dom_event *evt)
 {
-	if (evt->type != NULL)
-		dom_string_unref(evt->type);
-	if (evt->namespace != NULL)
-		dom_string_unref(evt->namespace);
+    if (evt->type != NULL)
+        dom_string_unref(evt->type);
+    if (evt->namespace != NULL)
+        dom_string_unref(evt->namespace);
 
-	evt->stop = false;
-	evt->stop_now = false;
-	evt->prevent_default = false;
-	evt->custom = false;
+    evt->stop = false;
+    evt->stop_now = false;
+    evt->prevent_default = false;
+    evt->custom = false;
 
-	evt->type = NULL;
+    evt->type = NULL;
 
-	evt->namespace = NULL;
+    evt->namespace = NULL;
 
-	evt->in_dispatch = false;
+    evt->in_dispatch = false;
 }
 
 /* The virtual destroy function */
 void _virtual_dom_event_destroy(dom_event *evt)
 {
-	_dom_event_destroy(evt);
+    _dom_event_destroy(evt);
 }
 
 /*----------------------------------------------------------------------*/
@@ -95,7 +94,7 @@ void _virtual_dom_event_destroy(dom_event *evt)
  */
 void _dom_event_ref(dom_event *evt)
 {
-	evt->refcnt++;
+    evt->refcnt++;
 }
 
 /**
@@ -105,11 +104,11 @@ void _dom_event_ref(dom_event *evt)
  */
 void _dom_event_unref(dom_event *evt)
 {
-	if (evt->refcnt > 0)
-		evt->refcnt--;
+    if (evt->refcnt > 0)
+        evt->refcnt--;
 
-	if (evt->refcnt == 0)
-		dom_event_destroy(evt);
+    if (evt->refcnt == 0)
+        dom_event_destroy(evt);
 }
 
 
@@ -122,9 +121,9 @@ void _dom_event_unref(dom_event *evt)
  */
 dom_exception _dom_event_get_type(dom_event *evt, dom_string **type)
 {
-	*type = dom_string_ref(evt->type);
+    *type = dom_string_ref(evt->type);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -136,10 +135,10 @@ dom_exception _dom_event_get_type(dom_event *evt, dom_string **type)
  */
 dom_exception _dom_event_get_target(dom_event *evt, dom_event_target **target)
 {
-	*target = evt->target;
-	dom_node_ref(*target);
+    *target = evt->target;
+    dom_node_ref(*target);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -149,13 +148,12 @@ dom_exception _dom_event_get_target(dom_event *evt, dom_event_target **target)
  * \param current  The current event target node
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception
-_dom_event_get_current_target(dom_event *evt, dom_event_target **current)
+dom_exception _dom_event_get_current_target(dom_event *evt, dom_event_target **current)
 {
-	*current = evt->current;
-	dom_node_ref(*current);
+    *current = evt->current;
+    dom_node_ref(*current);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -165,11 +163,10 @@ _dom_event_get_current_target(dom_event *evt, dom_event_target **current)
  * \param phase  The returned value
  * \return DOM_NO_ERR.
  */
-dom_exception
-_dom_event_get_event_phase(dom_event *evt, dom_event_flow_phase *phase)
+dom_exception _dom_event_get_event_phase(dom_event *evt, dom_event_flow_phase *phase)
 {
-	*phase = evt->phase;
-	return DOM_NO_ERR;
+    *phase = evt->phase;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -181,8 +178,8 @@ _dom_event_get_event_phase(dom_event *evt, dom_event_flow_phase *phase)
  */
 dom_exception _dom_event_get_bubbles(dom_event *evt, bool *bubbles)
 {
-	*bubbles = evt->bubble;
-	return DOM_NO_ERR;
+    *bubbles = evt->bubble;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -194,8 +191,8 @@ dom_exception _dom_event_get_bubbles(dom_event *evt, bool *bubbles)
  */
 dom_exception _dom_event_get_cancelable(dom_event *evt, bool *cancelable)
 {
-	*cancelable = evt->cancelable;
-	return DOM_NO_ERR;
+    *cancelable = evt->cancelable;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -207,8 +204,8 @@ dom_exception _dom_event_get_cancelable(dom_event *evt, bool *cancelable)
  */
 dom_exception _dom_event_get_timestamp(dom_event *evt, unsigned int *timestamp)
 {
-	*timestamp = evt->timestamp;
-	return DOM_NO_ERR;
+    *timestamp = evt->timestamp;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -219,9 +216,9 @@ dom_exception _dom_event_get_timestamp(dom_event *evt, unsigned int *timestamp)
  */
 dom_exception _dom_event_stop_propagation(dom_event *evt)
 {
-	evt->stop = true;
+    evt->stop = true;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -232,8 +229,8 @@ dom_exception _dom_event_stop_propagation(dom_event *evt)
  */
 dom_exception _dom_event_prevent_default(dom_event *evt)
 {
-	evt->prevent_default = true;
-	return DOM_NO_ERR;
+    evt->prevent_default = true;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -245,17 +242,16 @@ dom_exception _dom_event_prevent_default(dom_event *evt)
  * \param cancelable  Whether this event is cancelable
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception
-_dom_event_init(dom_event *evt, dom_string *type, bool bubble, bool cancelable)
+dom_exception _dom_event_init(dom_event *evt, dom_string *type, bool bubble, bool cancelable)
 {
-	evt->type = dom_string_ref(type);
-	evt->bubble = bubble;
-	evt->cancelable = cancelable;
-	evt->is_initialised = true;
+    evt->type = dom_string_ref(type);
+    evt->bubble = bubble;
+    evt->cancelable = cancelable;
+    evt->is_initialised = true;
 
-	evt->timestamp = time(NULL);
+    evt->timestamp = time(NULL);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -267,9 +263,9 @@ _dom_event_init(dom_event *evt, dom_string *type, bool bubble, bool cancelable)
  */
 dom_exception _dom_event_get_namespace(dom_event *evt, dom_string **namespace)
 {
-	*namespace = dom_string_ref(evt->namespace);
+    *namespace = dom_string_ref(evt->namespace);
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -281,9 +277,9 @@ dom_exception _dom_event_get_namespace(dom_event *evt, dom_string **namespace)
  */
 dom_exception _dom_event_is_custom(dom_event *evt, bool *custom)
 {
-	*custom = evt->custom;
+    *custom = evt->custom;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -294,9 +290,9 @@ dom_exception _dom_event_is_custom(dom_event *evt, bool *custom)
  */
 dom_exception _dom_event_stop_immediate_propagation(dom_event *evt)
 {
-	evt->stop_now = true;
+    evt->stop_now = true;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -308,9 +304,9 @@ dom_exception _dom_event_stop_immediate_propagation(dom_event *evt)
  */
 dom_exception _dom_event_is_default_prevented(dom_event *evt, bool *prevented)
 {
-	*prevented = evt->prevent_default;
+    *prevented = evt->prevent_default;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -323,21 +319,17 @@ dom_exception _dom_event_is_default_prevented(dom_event *evt, bool *prevented)
  * \param cancelable  Whether this event is cancelable
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_event_init_ns(dom_event *evt,
-				 dom_string *namespace,
-				 dom_string *type,
-				 bool bubble,
-				 bool cancelable)
+dom_exception _dom_event_init_ns(dom_event *evt, dom_string *namespace, dom_string *type, bool bubble, bool cancelable)
 {
-	evt->type = dom_string_ref(type);
+    evt->type = dom_string_ref(type);
 
-	evt->namespace = dom_string_ref(namespace);
+    evt->namespace = dom_string_ref(namespace);
 
-	evt->bubble = bubble;
-	evt->cancelable = cancelable;
-	evt->is_initialised = true;
+    evt->bubble = bubble;
+    evt->cancelable = cancelable;
+    evt->is_initialised = true;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -349,9 +341,9 @@ dom_exception _dom_event_init_ns(dom_event *evt,
  */
 dom_exception _dom_event_in_dispatch(dom_event *evt, bool *result)
 {
-	*result = evt->in_dispatch;
+    *result = evt->in_dispatch;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -363,9 +355,9 @@ dom_exception _dom_event_in_dispatch(dom_event *evt, bool *result)
  */
 dom_exception _dom_event_is_initialised(dom_event *evt, bool *result)
 {
-	*result = evt->is_initialised;
+    *result = evt->is_initialised;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -377,9 +369,9 @@ dom_exception _dom_event_is_initialised(dom_event *evt, bool *result)
  */
 dom_exception _dom_event_get_is_trusted(dom_event *evt, bool *result)
 {
-	*result = evt->is_trusted;
+    *result = evt->is_trusted;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -391,7 +383,7 @@ dom_exception _dom_event_get_is_trusted(dom_event *evt, bool *result)
  */
 dom_exception _dom_event_set_is_trusted(dom_event *evt, bool trusted)
 {
-	evt->is_trusted = trusted;
+    evt->is_trusted = trusted;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }

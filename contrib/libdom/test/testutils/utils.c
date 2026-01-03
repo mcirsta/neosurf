@@ -14,28 +14,28 @@
 
 void *myrealloc(void *ptr, size_t len, void *pw)
 {
-	UNUSED(pw);
+    UNUSED(pw);
 
-	return realloc(ptr, len);
+    return realloc(ptr, len);
 }
 
 void mymsg(uint32_t severity, void *ctx, const char *msg, ...)
 {
-	va_list l;
+    va_list l;
 
-	UNUSED(ctx);
+    UNUSED(ctx);
 
-	va_start(l, msg);
+    va_start(l, msg);
 
-	fprintf(stderr, "%" PRIu32 ": ", severity);
-	vfprintf(stderr, msg, l);
-	fprintf(stderr, "\n");
+    fprintf(stderr, "%" PRIu32 ": ", severity);
+    vfprintf(stderr, msg, l);
+    fprintf(stderr, "\n");
 }
 
 char *domts_strndup(const char *s, size_t len)
 {
-	size_t retlen = min(strlen(s), len);
-	char *ret = calloc(retlen + 1, 1);
-	memcpy(ret, s, retlen);
-	return ret;
+    size_t retlen = min(strlen(s), len);
+    char *ret = calloc(retlen + 1, 1);
+    memcpy(ret, s, retlen);
+    return ret;
 }

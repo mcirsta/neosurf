@@ -29,15 +29,8 @@ void win_perror(const char *lpszFunction);
  *
  * log a windows message with symbols converted to human redable
  */
-#define LOG_WIN_MSG(h, m, w, l)                                                \
-	if (((m) != WM_SETCURSOR) && ((m) != WM_MOUSEMOVE) &&                  \
-	    ((m) != WM_NCHITTEST) && ((m) != WM_ENTERIDLE))                    \
-	NSLOG(neosurf,                                                         \
-	      DEBUG,                                                           \
-	      "%s, hwnd %p, w 0x%Ix, l 0x%Ix",                                 \
-	      msg_num_to_name(m),                                              \
-	      h,                                                               \
-	      w,                                                               \
-	      l)
+#define LOG_WIN_MSG(h, m, w, l)                                                                                        \
+    if (((m) != WM_SETCURSOR) && ((m) != WM_MOUSEMOVE) && ((m) != WM_NCHITTEST) && ((m) != WM_ENTERIDLE))              \
+    NSLOG(neosurf, DEBUG, "%s, hwnd %p, w 0x%Ix, l 0x%Ix", msg_num_to_name(m), h, w, l)
 
 #endif

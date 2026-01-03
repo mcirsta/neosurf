@@ -18,23 +18,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QWidget>
-#include <QLabel>
-#include <QListWidget>
-#include <QStackedWidget>
-#include <QSpinBox>
 #include <QDialogButtonBox>
+#include <QLabel>
 #include <QLineEdit>
+#include <QListWidget>
+#include <QSpinBox>
+#include <QStackedWidget>
+#include <QWidget>
 
 class AbstractSettingsCategory : public QWidget
 {
-      public:
-	AbstractSettingsCategory(QWidget *parent) : QWidget(parent)
-	{
-	}
-	virtual const char *categoryName() = 0;
-	virtual void categoryRealize() = 0;
-	virtual void categoryApply() = 0;
+public:
+    AbstractSettingsCategory(QWidget *parent) : QWidget(parent)
+    {
+    }
+    virtual const char *categoryName() = 0;
+    virtual void categoryRealize() = 0;
+    virtual void categoryApply() = 0;
 };
 
 /**
@@ -42,23 +42,23 @@ class AbstractSettingsCategory : public QWidget
  */
 class NS_Settings : public QWidget
 {
-	Q_OBJECT
+    Q_OBJECT
 
-      public:
-	NS_Settings(QWidget *parent);
+public:
+    NS_Settings(QWidget *parent);
 
-      public slots:
-	void categorychanged_slot(const QString &currentText);
-	void clicked_slot(QAbstractButton *button);
+public slots:
+    void categorychanged_slot(const QString &currentText);
+    void clicked_slot(QAbstractButton *button);
 
-      protected:
-	void showEvent(QShowEvent *event);
+protected:
+    void showEvent(QShowEvent *event);
 
-      private:
-	void addCategory(AbstractSettingsCategory *widget);
+private:
+    void addCategory(AbstractSettingsCategory *widget);
 
-	QLabel *m_headerlabel;
-	QListWidget *m_categorylist;
-	QStackedWidget *m_categories;
-	QDialogButtonBox *m_buttonbox;
+    QLabel *m_headerlabel;
+    QListWidget *m_categorylist;
+    QStackedWidget *m_categories;
+    QDialogButtonBox *m_buttonbox;
 };

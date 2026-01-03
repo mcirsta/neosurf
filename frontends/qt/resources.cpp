@@ -44,29 +44,29 @@ char **respaths;
  */
 static const char *get_language(void)
 {
-	const char *lang;
+    const char *lang;
 
-	lang = getenv("LANGUAGE");
-	if ((lang != NULL) && (lang[0] != '\0')) {
-		return lang;
-	}
+    lang = getenv("LANGUAGE");
+    if ((lang != NULL) && (lang[0] != '\0')) {
+        return lang;
+    }
 
-	lang = getenv("LC_ALL");
-	if ((lang != NULL) && (lang[0] != '\0')) {
-		return lang;
-	}
+    lang = getenv("LC_ALL");
+    if ((lang != NULL) && (lang[0] != '\0')) {
+        return lang;
+    }
 
-	lang = getenv("LC_MESSAGES");
-	if ((lang != NULL) && (lang[0] != '\0')) {
-		return lang;
-	}
+    lang = getenv("LC_MESSAGES");
+    if ((lang != NULL) && (lang[0] != '\0')) {
+        return lang;
+    }
 
-	lang = getenv("LANG");
-	if ((lang != NULL) && (lang[0] != '\0')) {
-		return lang;
-	}
+    lang = getenv("LANG");
+    if ((lang != NULL) && (lang[0] != '\0')) {
+        return lang;
+    }
 
-	return NULL;
+    return NULL;
 }
 
 
@@ -86,72 +86,72 @@ static const char *get_language(void)
  */
 static const char *const *get_languagev(void)
 {
-	static const char *langv[LANGV_SIZE];
-	int langidx = 0; /* index of next entry in vector */
-	static char langs[LANGS_SIZE];
-	char *curp; /* next language parameter in langs string */
-	const char *lange; /* language from environment variable */
-	int lang_len;
-	char *cln; /* colon in lange */
+    static const char *langv[LANGV_SIZE];
+    int langidx = 0; /* index of next entry in vector */
+    static char langs[LANGS_SIZE];
+    char *curp; /* next language parameter in langs string */
+    const char *lange; /* language from environment variable */
+    int lang_len;
+    char *cln; /* colon in lange */
 
-	/* return cached vector */
-	if (langv[0] != NULL) {
-		return &langv[0];
-	}
+    /* return cached vector */
+    if (langv[0] != NULL) {
+        return &langv[0];
+    }
 
-	curp = &langs[0];
+    curp = &langs[0];
 
-	lange = get_language();
+    lange = get_language();
 
-	if (lange != NULL) {
-		lang_len = strlen(lange) + 1;
-		if (lang_len < (LANGS_SIZE - 2)) {
-			memcpy(curp, lange, lang_len);
-			while ((curp[0] != 0) && (langidx < (LANGV_SIZE - 2))) {
-				/* avoid using strchrnul as it is not portable
-				 */
-				cln = strchr(curp, ':');
-				if (cln == NULL) {
-					langv[langidx++] = curp;
-					curp += lang_len;
-					break;
-				} else {
-					if ((cln - curp) > 1) {
-						/* only place non empty entries
-						 * in vector */
-						langv[langidx++] = curp;
-					}
-					*cln++ = 0; /* null terminate */
-					lang_len -= (cln - curp);
-					curp = cln;
-				}
-			}
-		}
-	}
+    if (lange != NULL) {
+        lang_len = strlen(lange) + 1;
+        if (lang_len < (LANGS_SIZE - 2)) {
+            memcpy(curp, lange, lang_len);
+            while ((curp[0] != 0) && (langidx < (LANGV_SIZE - 2))) {
+                /* avoid using strchrnul as it is not portable
+                 */
+                cln = strchr(curp, ':');
+                if (cln == NULL) {
+                    langv[langidx++] = curp;
+                    curp += lang_len;
+                    break;
+                } else {
+                    if ((cln - curp) > 1) {
+                        /* only place non empty entries
+                         * in vector */
+                        langv[langidx++] = curp;
+                    }
+                    *cln++ = 0; /* null terminate */
+                    lang_len -= (cln - curp);
+                    curp = cln;
+                }
+            }
+        }
+    }
 
-	/* ensure C language is present */
-	langv[langidx++] = curp;
-	*curp++ = 'C';
-	*curp++ = 0;
-	langv[langidx] = NULL;
+    /* ensure C language is present */
+    langv[langidx++] = curp;
+    *curp++ = 'C';
+    *curp++ = 0;
+    langv[langidx] = NULL;
 
-	return &langv[0];
+    return &langv[0];
 }
 
 
 /* exported interface documented in qt/resources.h */
 nserror nsqt_init_resource_path(const char *resource_path)
 {
-	const char *const *langv;
-	char **pathv; /* resource path string vector */
+    const char *const *langv;
+    char **pathv; /* resource path string vector */
 
-	pathv = filepath_path_to_strvec(resource_path);
+    pathv = filepath_path_to_strvec(resource_path);
 
-	langv = get_languagev();
+    langv = get_languagev();
 
-	respaths = filepath_generate(pathv, langv);
+    respaths = filepath_generate(pathv, langv);
 
-	filepath_free_strvec(pathv);
+    filepath_free_strvec(pathv);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }

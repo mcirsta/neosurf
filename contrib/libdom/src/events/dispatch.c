@@ -23,44 +23,40 @@
  * \param success  Whether this event's default action get called
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception __dom_dispatch_node_change_event(dom_document *doc,
-					       dom_event_target *et,
-					       dom_event_target *related,
-					       dom_mutation_type change,
-					       bool *success)
+dom_exception __dom_dispatch_node_change_event(
+    dom_document *doc, dom_event_target *et, dom_event_target *related, dom_mutation_type change, bool *success)
 {
-	struct dom_mutation_event *evt;
-	dom_string *type = NULL;
-	dom_exception err;
+    struct dom_mutation_event *evt;
+    dom_string *type = NULL;
+    dom_exception err;
 
-	err = _dom_mutation_event_create(&evt);
-	if (err != DOM_NO_ERR)
-		return err;
+    err = _dom_mutation_event_create(&evt);
+    if (err != DOM_NO_ERR)
+        return err;
 
-	if (change == DOM_MUTATION_ADDITION) {
-		type = dom_string_ref(doc->_memo_domnodeinserted);
-	} else if (change == DOM_MUTATION_REMOVAL) {
-		type = dom_string_ref(doc->_memo_domnoderemoved);
-	} else {
-		assert("Should never be here" == NULL);
-	}
+    if (change == DOM_MUTATION_ADDITION) {
+        type = dom_string_ref(doc->_memo_domnodeinserted);
+    } else if (change == DOM_MUTATION_REMOVAL) {
+        type = dom_string_ref(doc->_memo_domnoderemoved);
+    } else {
+        assert("Should never be here" == NULL);
+    }
 
-	/* Initialise the event with corresponding parameters */
-	err = dom_mutation_event_init(
-		evt, type, true, false, related, NULL, NULL, NULL, change);
-	dom_string_unref(type);
-	if (err != DOM_NO_ERR) {
-		goto cleanup;
-	}
+    /* Initialise the event with corresponding parameters */
+    err = dom_mutation_event_init(evt, type, true, false, related, NULL, NULL, NULL, change);
+    dom_string_unref(type);
+    if (err != DOM_NO_ERR) {
+        goto cleanup;
+    }
 
-	err = dom_event_target_dispatch_event(et, evt, success);
-	if (err != DOM_NO_ERR)
-		goto cleanup;
+    err = dom_event_target_dispatch_event(et, evt, success);
+    if (err != DOM_NO_ERR)
+        goto cleanup;
 
 cleanup:
-	dom_event_unref(evt);
+    dom_event_unref(evt);
 
-	return err;
+    return err;
 }
 
 /**
@@ -72,43 +68,39 @@ cleanup:
  * \param success  Whether this event's default action get called
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception
-__dom_dispatch_node_change_document_event(dom_document *doc,
-					  dom_event_target *et,
-					  dom_mutation_type change,
-					  bool *success)
+dom_exception __dom_dispatch_node_change_document_event(
+    dom_document *doc, dom_event_target *et, dom_mutation_type change, bool *success)
 {
-	struct dom_mutation_event *evt;
-	dom_string *type = NULL;
-	dom_exception err;
+    struct dom_mutation_event *evt;
+    dom_string *type = NULL;
+    dom_exception err;
 
-	err = _dom_mutation_event_create(&evt);
-	if (err != DOM_NO_ERR)
-		return err;
+    err = _dom_mutation_event_create(&evt);
+    if (err != DOM_NO_ERR)
+        return err;
 
-	if (change == DOM_MUTATION_ADDITION) {
-		type = dom_string_ref(doc->_memo_domnodeinsertedintodocument);
-	} else if (change == DOM_MUTATION_REMOVAL) {
-		type = dom_string_ref(doc->_memo_domnoderemovedfromdocument);
-	} else {
-		assert("Should never be here" == NULL);
-	}
+    if (change == DOM_MUTATION_ADDITION) {
+        type = dom_string_ref(doc->_memo_domnodeinsertedintodocument);
+    } else if (change == DOM_MUTATION_REMOVAL) {
+        type = dom_string_ref(doc->_memo_domnoderemovedfromdocument);
+    } else {
+        assert("Should never be here" == NULL);
+    }
 
-	/* Initialise the event with corresponding parameters */
-	err = dom_mutation_event_init(
-		evt, type, true, false, NULL, NULL, NULL, NULL, change);
-	dom_string_unref(type);
-	if (err != DOM_NO_ERR)
-		goto cleanup;
+    /* Initialise the event with corresponding parameters */
+    err = dom_mutation_event_init(evt, type, true, false, NULL, NULL, NULL, NULL, change);
+    dom_string_unref(type);
+    if (err != DOM_NO_ERR)
+        goto cleanup;
 
-	err = dom_event_target_dispatch_event(et, evt, success);
-	if (err != DOM_NO_ERR)
-		goto cleanup;
+    err = dom_event_target_dispatch_event(et, evt, success);
+    if (err != DOM_NO_ERR)
+        goto cleanup;
 
 cleanup:
-	dom_event_unref(evt);
+    dom_event_unref(evt);
 
-	return err;
+    return err;
 }
 
 /**
@@ -124,39 +116,32 @@ cleanup:
  * \param success    Whether this event's default handler get called
  * \return DOM_NO_ERR on success, appropirate dom_exception on failure.
  */
-dom_exception __dom_dispatch_attr_modified_event(dom_document *doc,
-						 dom_event_target *et,
-						 dom_string *prev,
-						 dom_string *new,
-						 dom_event_target *related,
-						 dom_string *attr_name,
-						 dom_mutation_type change,
-						 bool *success)
+dom_exception __dom_dispatch_attr_modified_event(dom_document *doc, dom_event_target *et, dom_string *prev,
+    dom_string *new, dom_event_target *related, dom_string *attr_name, dom_mutation_type change, bool *success)
 {
-	struct dom_mutation_event *evt;
-	dom_string *type = NULL;
-	dom_exception err;
+    struct dom_mutation_event *evt;
+    dom_string *type = NULL;
+    dom_exception err;
 
-	err = _dom_mutation_event_create(&evt);
-	if (err != DOM_NO_ERR)
-		return err;
+    err = _dom_mutation_event_create(&evt);
+    if (err != DOM_NO_ERR)
+        return err;
 
-	type = dom_string_ref(doc->_memo_domattrmodified);
+    type = dom_string_ref(doc->_memo_domattrmodified);
 
-	/* Initialise the event with corresponding parameters */
-	err = dom_mutation_event_init(
-		evt, type, true, false, related, prev, new, attr_name, change);
-	dom_string_unref(type);
-	if (err != DOM_NO_ERR) {
-		goto cleanup;
-	}
+    /* Initialise the event with corresponding parameters */
+    err = dom_mutation_event_init(evt, type, true, false, related, prev, new, attr_name, change);
+    dom_string_unref(type);
+    if (err != DOM_NO_ERR) {
+        goto cleanup;
+    }
 
-	err = dom_event_target_dispatch_event(et, evt, success);
+    err = dom_event_target_dispatch_event(et, evt, success);
 
 cleanup:
-	dom_event_unref(evt);
+    dom_event_unref(evt);
 
-	return err;
+    return err;
 }
 
 /**
@@ -173,42 +158,31 @@ cleanup:
  * DOMAttrModified event should be dispatched, too. But for now, we did not
  * support any XML feature, so just leave it as this.
  */
-dom_exception __dom_dispatch_characterdata_modified_event(dom_document *doc,
-							  dom_event_target *et,
-							  dom_string *prev,
-							  dom_string *new,
-							  bool *success)
+dom_exception __dom_dispatch_characterdata_modified_event(
+    dom_document *doc, dom_event_target *et, dom_string *prev, dom_string *new, bool *success)
 {
-	struct dom_mutation_event *evt;
-	dom_string *type = NULL;
-	dom_exception err;
+    struct dom_mutation_event *evt;
+    dom_string *type = NULL;
+    dom_exception err;
 
-	err = _dom_mutation_event_create(&evt);
-	if (err != DOM_NO_ERR)
-		return err;
+    err = _dom_mutation_event_create(&evt);
+    if (err != DOM_NO_ERR)
+        return err;
 
-	type = dom_string_ref(doc->_memo_domcharacterdatamodified);
+    type = dom_string_ref(doc->_memo_domcharacterdatamodified);
 
-	err = dom_mutation_event_init(evt,
-				      type,
-				      true,
-				      false,
-				      et,
-				      prev,
-				      new,
-				      NULL,
-				      DOM_MUTATION_MODIFICATION);
-	dom_string_unref(type);
-	if (err != DOM_NO_ERR) {
-		goto cleanup;
-	}
+    err = dom_mutation_event_init(evt, type, true, false, et, prev, new, NULL, DOM_MUTATION_MODIFICATION);
+    dom_string_unref(type);
+    if (err != DOM_NO_ERR) {
+        goto cleanup;
+    }
 
-	err = dom_event_target_dispatch_event(et, evt, success);
+    err = dom_event_target_dispatch_event(et, evt, success);
 
 cleanup:
-	dom_event_unref(evt);
+    dom_event_unref(evt);
 
-	return err;
+    return err;
 }
 
 /**
@@ -219,40 +193,30 @@ cleanup:
  * \param success  Whether this event's default handler get called
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception __dom_dispatch_subtree_modified_event(dom_document *doc,
-						    dom_event_target *et,
-						    bool *success)
+dom_exception __dom_dispatch_subtree_modified_event(dom_document *doc, dom_event_target *et, bool *success)
 {
-	struct dom_mutation_event *evt;
-	dom_string *type = NULL;
-	dom_exception err;
+    struct dom_mutation_event *evt;
+    dom_string *type = NULL;
+    dom_exception err;
 
-	err = _dom_mutation_event_create(&evt);
-	if (err != DOM_NO_ERR)
-		return err;
+    err = _dom_mutation_event_create(&evt);
+    if (err != DOM_NO_ERR)
+        return err;
 
-	type = dom_string_ref(doc->_memo_domsubtreemodified);
+    type = dom_string_ref(doc->_memo_domsubtreemodified);
 
-	err = dom_mutation_event_init(evt,
-				      type,
-				      true,
-				      false,
-				      et,
-				      NULL,
-				      NULL,
-				      NULL,
-				      DOM_MUTATION_MODIFICATION);
-	dom_string_unref(type);
-	if (err != DOM_NO_ERR) {
-		goto cleanup;
-	}
+    err = dom_mutation_event_init(evt, type, true, false, et, NULL, NULL, NULL, DOM_MUTATION_MODIFICATION);
+    dom_string_unref(type);
+    if (err != DOM_NO_ERR) {
+        goto cleanup;
+    }
 
-	err = dom_event_target_dispatch_event(et, evt, success);
+    err = dom_event_target_dispatch_event(et, evt, success);
 
 cleanup:
-	dom_event_unref(evt);
+    dom_event_unref(evt);
 
-	return err;
+    return err;
 }
 
 /**
@@ -267,32 +231,28 @@ cleanup:
  * \param success     Whether this event's default handler get called
  * \return DOM_NO_ERR on success, appropriate dom_exception on failure.
  */
-dom_exception _dom_dispatch_generic_event(dom_document *doc,
-					  dom_event_target *et,
-					  dom_string *event_name,
-					  bool bubble,
-					  bool cancelable,
-					  bool *success)
+dom_exception _dom_dispatch_generic_event(
+    dom_document *doc, dom_event_target *et, dom_string *event_name, bool bubble, bool cancelable, bool *success)
 {
-	struct dom_event *evt;
-	dom_exception err;
+    struct dom_event *evt;
+    dom_exception err;
 
-	UNUSED(doc);
+    UNUSED(doc);
 
-	err = _dom_event_create(&evt);
-	if (err != DOM_NO_ERR)
-		return err;
+    err = _dom_event_create(&evt);
+    if (err != DOM_NO_ERR)
+        return err;
 
-	err = dom_event_init(evt, event_name, bubble, cancelable);
+    err = dom_event_init(evt, event_name, bubble, cancelable);
 
-	if (err != DOM_NO_ERR) {
-		goto cleanup;
-	}
+    if (err != DOM_NO_ERR) {
+        goto cleanup;
+    }
 
-	err = dom_event_target_dispatch_event(et, evt, success);
+    err = dom_event_target_dispatch_event(et, evt, success);
 
 cleanup:
-	dom_event_unref(evt);
+    dom_event_unref(evt);
 
-	return err;
+    return err;
 }

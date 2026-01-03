@@ -38,10 +38,8 @@
 #ifndef HAVE_SCANDIR
 
 int alphasort(const struct dirent **d1, const struct dirent **d2);
-int scandir(const char *dir,
-	    struct dirent ***namelist,
-	    int (*sel)(const struct dirent *),
-	    int (*compar)(const struct dirent **, const struct dirent **));
+int scandir(const char *dir, struct dirent ***namelist, int (*sel)(const struct dirent *),
+    int (*compar)(const struct dirent **, const struct dirent **));
 #endif
 
 #endif

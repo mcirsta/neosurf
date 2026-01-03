@@ -43,8 +43,7 @@ void html_css_fini(void);
  * \param select_ctx A pointer to receive the new context.
  * \return NSERROR_OK on success and \a select_ctx updated else error code
  */
-nserror html_css_new_selection_context(struct html_content *c,
-				       css_select_ctx **select_ctx);
+nserror html_css_new_selection_context(struct html_content *c, css_select_ctx **select_ctx);
 
 /**
  * Initialise core stylesheets for a content

@@ -17,28 +17,28 @@
  */
 
 #define __STDBOOL_H__ 1
-#include <stdlib.h>
-#include <stdbool.h>
-#include <OS.h>
 #include <List.h>
+#include <OS.h>
+#include <stdbool.h>
+#include <stdlib.h>
 
 extern "C" {
 #include "utils/errors.h"
-#include "beos/schedule.h"
-#include "netsurf/inttypes.h"
-#include "netsurf/content_type.h"
 #include "netsurf/browser_window.h"
+#include "netsurf/content_type.h"
+#include "netsurf/inttypes.h"
+#include "beos/schedule.h"
 
 #include "utils/log.h"
 }
 
 /** Killable callback closure embodiment. */
 typedef struct {
-	void (*callback)(void *); /**< The callback function. */
-	void *context; /**< The context for the callback. */
-	bool callback_killed; /**< Whether or not this was killed. */
-	bool callback_fired; /**< Whether or not this has fired yet. */
-	bigtime_t timeout;
+    void (*callback)(void *); /**< The callback function. */
+    void *context; /**< The context for the callback. */
+    bool callback_killed; /**< Whether or not this was killed. */
+    bool callback_fired; /**< Whether or not this has fired yet. */
+    bigtime_t timeout;
 } _nsbeos_callback_t;
 
 /** List of all callbacks. */
@@ -50,101 +50,87 @@ bigtime_t earliest_callback_timeout = B_INFINITE_TIMEOUT;
 
 static bool nsbeos_schedule_kill_callback(void *_target, void *_match)
 {
-	_nsbeos_callback_t *target = (_nsbeos_callback_t *)_target;
-	_nsbeos_callback_t *match = (_nsbeos_callback_t *)_match;
-	if ((target->callback == match->callback) &&
-	    (target->context == match->context)) {
-		NSLOG(schedule,
-		      DEBUG,
-		      "Found match for %p(%p), killing.",
-		      target->callback,
-		      target->context);
-		target->callback = NULL;
-		target->context = NULL;
-		target->callback_killed = true;
-	}
-	return false;
+    _nsbeos_callback_t *target = (_nsbeos_callback_t *)_target;
+    _nsbeos_callback_t *match = (_nsbeos_callback_t *)_match;
+    if ((target->callback == match->callback) && (target->context == match->context)) {
+        NSLOG(schedule, DEBUG, "Found match for %p(%p), killing.", target->callback, target->context);
+        target->callback = NULL;
+        target->context = NULL;
+        target->callback_killed = true;
+    }
+    return false;
 }
 
 static void schedule_remove(void (*callback)(void *p), void *p)
 {
-	NSLOG(schedule, DEBUG, "schedule_remove() for %p(%p)", callback, p);
-	if (callbacks == NULL)
-		return;
-	_nsbeos_callback_t cb_match;
-	cb_match.callback = callback;
-	cb_match.context = p;
+    NSLOG(schedule, DEBUG, "schedule_remove() for %p(%p)", callback, p);
+    if (callbacks == NULL)
+        return;
+    _nsbeos_callback_t cb_match;
+    cb_match.callback = callback;
+    cb_match.context = p;
 
-	callbacks->DoForEach(nsbeos_schedule_kill_callback, &cb_match);
+    callbacks->DoForEach(nsbeos_schedule_kill_callback, &cb_match);
 }
 
 nserror beos_schedule(int t, void (*callback)(void *p), void *p)
 {
-	NSLOG(schedule, DEBUG, "t:%d cb:%p p:%p", t, callback, p);
+    NSLOG(schedule, DEBUG, "t:%d cb:%p p:%p", t, callback, p);
 
-	if (callbacks == NULL) {
-		callbacks = new BList;
-	}
+    if (callbacks == NULL) {
+        callbacks = new BList;
+    }
 
-	/* Kill any pending schedule of this kind. */
-	schedule_remove(callback, p);
+    /* Kill any pending schedule of this kind. */
+    schedule_remove(callback, p);
 
-	if (t < 0) {
-		return NSERROR_OK;
-	}
+    if (t < 0) {
+        return NSERROR_OK;
+    }
 
-	bigtime_t timeout = system_time() + t * 1000LL;
-	_nsbeos_callback_t *cb = (_nsbeos_callback_t *)malloc(
-		sizeof(_nsbeos_callback_t));
-	cb->callback = callback;
-	cb->context = p;
-	cb->callback_killed = cb->callback_fired = false;
-	cb->timeout = timeout;
-	if (earliest_callback_timeout > timeout) {
-		earliest_callback_timeout = timeout;
-	}
-	callbacks->AddItem(cb);
+    bigtime_t timeout = system_time() + t * 1000LL;
+    _nsbeos_callback_t *cb = (_nsbeos_callback_t *)malloc(sizeof(_nsbeos_callback_t));
+    cb->callback = callback;
+    cb->context = p;
+    cb->callback_killed = cb->callback_fired = false;
+    cb->timeout = timeout;
+    if (earliest_callback_timeout > timeout) {
+        earliest_callback_timeout = timeout;
+    }
+    callbacks->AddItem(cb);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 bool schedule_run(void)
 {
-	NSLOG(schedule, DEBUG, "schedule_run()");
+    NSLOG(schedule, DEBUG, "schedule_run()");
 
-	earliest_callback_timeout = B_INFINITE_TIMEOUT;
-	if (callbacks == NULL)
-		return false; /* Nothing to do */
+    earliest_callback_timeout = B_INFINITE_TIMEOUT;
+    if (callbacks == NULL)
+        return false; /* Nothing to do */
 
-	bigtime_t now = system_time();
-	int32 i;
+    bigtime_t now = system_time();
+    int32 i;
 
-	NSLOG(schedule,
-	      DEBUG,
-	      "Checking %" PRId32 " callbacks to for deadline.",
-	      callbacks->CountItems());
+    NSLOG(schedule, DEBUG, "Checking %" PRId32 " callbacks to for deadline.", callbacks->CountItems());
 
-	/* Run all the callbacks which made it this far. */
-	for (i = 0; i < callbacks->CountItems();) {
-		_nsbeos_callback_t *cb =
-			(_nsbeos_callback_t *)(callbacks->ItemAt(i));
-		if (cb->timeout > now) {
-			// update next deadline
-			if (earliest_callback_timeout > cb->timeout)
-				earliest_callback_timeout = cb->timeout;
-			i++;
-			continue;
-		}
-		NSLOG(schedule,
-		      DEBUG,
-		      "Running callbacks %p(%p).",
-		      cb->callback,
-		      cb->context);
+    /* Run all the callbacks which made it this far. */
+    for (i = 0; i < callbacks->CountItems();) {
+        _nsbeos_callback_t *cb = (_nsbeos_callback_t *)(callbacks->ItemAt(i));
+        if (cb->timeout > now) {
+            // update next deadline
+            if (earliest_callback_timeout > cb->timeout)
+                earliest_callback_timeout = cb->timeout;
+            i++;
+            continue;
+        }
+        NSLOG(schedule, DEBUG, "Running callbacks %p(%p).", cb->callback, cb->context);
 
-		if (!cb->callback_killed)
-			cb->callback(cb->context);
-		callbacks->RemoveItem(cb);
-		free(cb);
-	}
-	return true;
+        if (!cb->callback_killed)
+            cb->callback(cb->context);
+        callbacks->RemoveItem(cb);
+        free(cb);
+    }
+    return true;
 }

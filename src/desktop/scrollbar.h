@@ -26,8 +26,8 @@
 #ifndef NETSURF_DESKTOP_SCROLLBAR_H
 #define NETSURF_DESKTOP_SCROLLBAR_H
 
-#include <stdbool.h>
 #include <limits.h>
+#include <stdbool.h>
 
 #define SCROLLBAR_WIDTH 16
 
@@ -44,23 +44,23 @@ struct redraw_context;
  * scrollbar message types
  */
 typedef enum {
-	SCROLLBAR_MSG_MOVED, /**< the scroll value has changed */
-	SCROLLBAR_MSG_SCROLL_START, /**< a scrollbar drag has started, all
-				     * mouse events should be passed to
-				     * the scrollbar regardless of the
-				     * coordinates
-				     */
-	SCROLLBAR_MSG_SCROLL_FINISHED, /**< cancel a scrollbar drag */
+    SCROLLBAR_MSG_MOVED, /**< the scroll value has changed */
+    SCROLLBAR_MSG_SCROLL_START, /**< a scrollbar drag has started, all
+                                 * mouse events should be passed to
+                                 * the scrollbar regardless of the
+                                 * coordinates
+                                 */
+    SCROLLBAR_MSG_SCROLL_FINISHED, /**< cancel a scrollbar drag */
 } scrollbar_msg;
 
 /**
  * scrollbar message context data
  */
 struct scrollbar_msg_data {
-	struct scrollbar *scrollbar;
-	scrollbar_msg msg;
-	int scroll_offset;
-	int x0, y0, x1, y1;
+    struct scrollbar *scrollbar;
+    scrollbar_msg msg;
+    int scroll_offset;
+    int x0, y0, x1, y1;
 };
 
 
@@ -68,19 +68,19 @@ struct scrollbar_msg_data {
  * Scrollbar mouse input status flags
  */
 typedef enum {
-	SCROLLBAR_MOUSE_NONE = 0, /**< Not relevant */
-	SCROLLBAR_MOUSE_USED = (1 << 0), /**< Took action with input */
-	SCROLLBAR_MOUSE_BOTH = (1 << 1), /**< Scrolling both bars */
-	SCROLLBAR_MOUSE_UP = (1 << 2), /**< Hover: scroll up */
-	SCROLLBAR_MOUSE_PUP = (1 << 3), /**< Hover: scroll page up */
-	SCROLLBAR_MOUSE_VRT = (1 << 4), /**< Hover: vert. drag bar */
-	SCROLLBAR_MOUSE_PDWN = (1 << 5), /**< Hover: scroll page down */
-	SCROLLBAR_MOUSE_DWN = (1 << 6), /**< Hover: scroll down */
-	SCROLLBAR_MOUSE_LFT = (1 << 7), /**< Hover: scroll left */
-	SCROLLBAR_MOUSE_PLFT = (1 << 8), /**< Hover: scroll page left */
-	SCROLLBAR_MOUSE_HRZ = (1 << 9), /**< Hover: horiz. drag bar */
-	SCROLLBAR_MOUSE_PRGT = (1 << 10), /**< Hover: scroll page right */
-	SCROLLBAR_MOUSE_RGT = (1 << 11) /**< Hover: scroll right */
+    SCROLLBAR_MOUSE_NONE = 0, /**< Not relevant */
+    SCROLLBAR_MOUSE_USED = (1 << 0), /**< Took action with input */
+    SCROLLBAR_MOUSE_BOTH = (1 << 1), /**< Scrolling both bars */
+    SCROLLBAR_MOUSE_UP = (1 << 2), /**< Hover: scroll up */
+    SCROLLBAR_MOUSE_PUP = (1 << 3), /**< Hover: scroll page up */
+    SCROLLBAR_MOUSE_VRT = (1 << 4), /**< Hover: vert. drag bar */
+    SCROLLBAR_MOUSE_PDWN = (1 << 5), /**< Hover: scroll page down */
+    SCROLLBAR_MOUSE_DWN = (1 << 6), /**< Hover: scroll down */
+    SCROLLBAR_MOUSE_LFT = (1 << 7), /**< Hover: scroll left */
+    SCROLLBAR_MOUSE_PLFT = (1 << 8), /**< Hover: scroll page left */
+    SCROLLBAR_MOUSE_HRZ = (1 << 9), /**< Hover: horiz. drag bar */
+    SCROLLBAR_MOUSE_PRGT = (1 << 10), /**< Hover: scroll page right */
+    SCROLLBAR_MOUSE_RGT = (1 << 11) /**< Hover: scroll right */
 } scrollbar_mouse_status;
 
 
@@ -90,9 +90,7 @@ typedef enum {
  * \param client_data		user data passed at scroll creation
  * \param scrollbar_data	scrollbar message data
  */
-typedef void (*scrollbar_client_callback)(
-	void *client_data,
-	struct scrollbar_msg_data *scrollbar_data);
+typedef void (*scrollbar_client_callback)(void *client_data, struct scrollbar_msg_data *scrollbar_data);
 
 
 /**
@@ -108,13 +106,8 @@ typedef void (*scrollbar_client_callback)(
  * \return NSERROR_OK and s updated if scrollbar has been created
  *           succesfully or eror code and s set to NULL on faliure;
  */
-nserror scrollbar_create(bool horizontal,
-			 int length,
-			 int full_size,
-			 int visible_size,
-			 void *client_data,
-			 scrollbar_client_callback client_callback,
-			 struct scrollbar **s);
+nserror scrollbar_create(bool horizontal, int length, int full_size, int visible_size, void *client_data,
+    scrollbar_client_callback client_callback, struct scrollbar **s);
 
 /**
  * Destroy a scrollbar.
@@ -134,12 +127,8 @@ void scrollbar_destroy(struct scrollbar *s);
  * \param ctx	current redraw context
  * \return	NSERROR_OK on success otherwise error code
  */
-nserror scrollbar_redraw(struct scrollbar *s,
-			 int x,
-			 int y,
-			 const struct rect *clip,
-			 float scale,
-			 const struct redraw_context *ctx);
+nserror scrollbar_redraw(
+    struct scrollbar *s, int x, int y, const struct rect *clip, float scale, const struct redraw_context *ctx);
 
 /**
  * Set the scroll value of the scrollbar.
@@ -177,10 +166,7 @@ int scrollbar_get_offset(struct scrollbar *s);
  * \param visible_size	-1 or the new size of the visible area
  * \param full_size	-1 or the new size of the full contained area
  */
-void scrollbar_set_extents(struct scrollbar *s,
-			   int length,
-			   int visible_size,
-			   int full_size);
+void scrollbar_set_extents(struct scrollbar *s, int length, int visible_size, int full_size);
 
 /**
  * Check orientation of the scrollbar.
@@ -200,10 +186,7 @@ bool scrollbar_is_horizontal(struct scrollbar *s);
  * \param y	Y coordinate of the mouse
  * \return	the scrollbar mouse status
  */
-scrollbar_mouse_status scrollbar_mouse_action(struct scrollbar *s,
-					      browser_mouse_state mouse,
-					      int x,
-					      int y);
+scrollbar_mouse_status scrollbar_mouse_action(struct scrollbar *s, browser_mouse_state mouse, int x, int y);
 
 
 /**
@@ -223,10 +206,7 @@ const char *scrollbar_mouse_status_to_message(scrollbar_mouse_status status);
  * \param x	X coordinate of the mouse
  * \param y	Y coordinate of the mouse
  */
-void scrollbar_mouse_drag_end(struct scrollbar *s,
-			      browser_mouse_state mouse,
-			      int x,
-			      int y);
+void scrollbar_mouse_drag_end(struct scrollbar *s, browser_mouse_state mouse, int x, int y);
 
 
 /**
@@ -250,8 +230,7 @@ void scrollbar_start_content_drag(struct scrollbar *s, int x, int y);
  * \param horizontal	the scrollbar used for horizontal scrolling
  * \param vertical	the scrollbar used for vertical scrolling
  */
-void scrollbar_make_pair(struct scrollbar *horizontal,
-			 struct scrollbar *vertical);
+void scrollbar_make_pair(struct scrollbar *horizontal, struct scrollbar *vertical);
 
 
 /**

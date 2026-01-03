@@ -15,14 +15,14 @@
  * QuickJS-ng Window interface binding.
  */
 
-#include <stdlib.h>
-#include <string.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdlib.h>
+#include <string.h>
 
+#include <neosurf/browser_window.h>
 #include <neosurf/utils/errors.h>
 #include <neosurf/utils/log.h>
-#include <neosurf/browser_window.h>
 #include <nsutils/time.h>
 
 #include "quickjs.h"
@@ -39,8 +39,7 @@ static JSClassID js_window_class_id;
 
 
 /* Window class finalizer */
-static void
-js_window_finalizer(JSRuntime *rt, JSValue val)
+static void js_window_finalizer(JSRuntime *rt, JSValue val)
 {
     WindowPrivate *priv = JS_GetOpaque(val, js_window_class_id);
     if (priv) {
@@ -55,53 +54,49 @@ static JSClassDef js_window_class = {
 };
 
 /* Window method list */
-static const JSCFunctionListEntry js_window_proto_funcs[] = {
-};
+static const JSCFunctionListEntry js_window_proto_funcs[] = {};
 
 /**
  * Initialize Window class and properties.
  */
-int
-qjs_init_window(JSContext *ctx)
+int qjs_init_window(JSContext *ctx)
 {
     JSValue proto;
     JSValue obj;
     WindowPrivate *priv;
     JSRuntime *rt = JS_GetRuntime(ctx);
-    
+
     if (js_window_class_id == 0) {
         JS_NewClassID(rt, &js_window_class_id);
     }
-    
+
     if (JS_NewClass(rt, js_window_class_id, &js_window_class) < 0) {
         return -1;
     }
-    
+
     proto = JS_NewObject(ctx);
-    JS_SetPropertyFunctionList(ctx, proto, 
-                               js_window_proto_funcs, 
-                               sizeof(js_window_proto_funcs) / sizeof(js_window_proto_funcs[0]));
-    
+    JS_SetPropertyFunctionList(
+        ctx, proto, js_window_proto_funcs, sizeof(js_window_proto_funcs) / sizeof(js_window_proto_funcs[0]));
+
     JS_SetClassProto(ctx, js_window_class_id, proto);
-    
+
     /* Specific initialization for global objects like Window */
     if (strcmp("Window", "Window") == 0) {
         JSValue global_obj = JS_GetGlobalObject(ctx);
-        /* 
-         * For Window, we mixin our prototype into the global object 
+        /*
+         * For Window, we mixin our prototype into the global object
          * or define properties on it.
          * For now, simpler approach: Copy functions to global object
          */
-        JS_SetPropertyFunctionList(ctx, global_obj, 
-                                   js_window_proto_funcs, 
-                                   sizeof(js_window_proto_funcs) / sizeof(js_window_proto_funcs[0]));
-                                   
+        JS_SetPropertyFunctionList(
+            ctx, global_obj, js_window_proto_funcs, sizeof(js_window_proto_funcs) / sizeof(js_window_proto_funcs[0]));
+
         /* Set self-references */
         JS_SetPropertyStr(ctx, global_obj, "window", JS_DupValue(ctx, global_obj));
         JS_SetPropertyStr(ctx, global_obj, "self", JS_DupValue(ctx, global_obj));
-        
+
         JS_FreeValue(ctx, global_obj);
     }
-    
+
     return 0;
 }

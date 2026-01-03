@@ -28,13 +28,13 @@
  */
 void http___item_list_destroy(http__item *list)
 {
-	while (list != NULL) {
-		http__item *victim = list;
+    while (list != NULL) {
+        http__item *victim = list;
 
-		list = victim->next;
+        list = victim->next;
 
-		victim->free(victim);
-	}
+        victim->free(victim);
+    }
 }
 
 /**
@@ -52,47 +52,44 @@ void http___item_list_destroy(http__item *list)
  *
  * \note Ownership of the \a first item is passed to this function.
  */
-nserror http___item_list_parse(const char **input,
-			       http__itemparser itemparser,
-			       http__item *first,
-			       http__item **items)
+nserror http___item_list_parse(const char **input, http__itemparser itemparser, http__item *first, http__item **items)
 {
-	const char *pos = *input;
-	const char separator = *pos;
-	http__item *item;
-	http__item *list = first;
-	nserror error = NSERROR_OK;
+    const char *pos = *input;
+    const char separator = *pos;
+    http__item *item;
+    http__item *list = first;
+    nserror error = NSERROR_OK;
 
-	/* 1*( <separator> <item> ) */
+    /* 1*( <separator> <item> ) */
 
-	while (*pos == separator) {
-		pos++;
+    while (*pos == separator) {
+        pos++;
 
-		http__skip_LWS(&pos);
+        http__skip_LWS(&pos);
 
-		error = itemparser(&pos, &item);
-		if (error == NSERROR_OK) {
-			if (list != NULL)
-				item->next = list;
+        error = itemparser(&pos, &item);
+        if (error == NSERROR_OK) {
+            if (list != NULL)
+                item->next = list;
 
-			list = item;
+            list = item;
 
-			http__skip_LWS(&pos);
-		} else if (error != NSERROR_NOT_FOUND) {
-			/* Permit <separator> LWS <separator> */
-			break;
-		}
-	}
+            http__skip_LWS(&pos);
+        } else if (error != NSERROR_NOT_FOUND) {
+            /* Permit <separator> LWS <separator> */
+            break;
+        }
+    }
 
-	if (error != NSERROR_OK && error != NSERROR_NOT_FOUND) {
-		http__item_list_destroy(list);
-	} else if (list == NULL) {
-		error = NSERROR_NOT_FOUND;
-	} else {
-		error = NSERROR_OK;
-		*items = list;
-		*input = pos;
-	}
+    if (error != NSERROR_OK && error != NSERROR_NOT_FOUND) {
+        http__item_list_destroy(list);
+    } else if (list == NULL) {
+        error = NSERROR_NOT_FOUND;
+    } else {
+        error = NSERROR_OK;
+        *items = list;
+        *input = pos;
+    }
 
-	return error;
+    return error;
 }

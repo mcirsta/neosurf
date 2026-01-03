@@ -27,67 +27,64 @@ extern struct core_window_table *nsgtk_core_window_table;
  * nsgtk core window mouse state
  */
 struct nsgtk_corewindow_mouse {
-	browser_mouse_state state; /**< last event status */
-	bool pressed;
-	int pressed_x;
-	int pressed_y;
-	int last_x;
-	int last_y;
+    browser_mouse_state state; /**< last event status */
+    bool pressed;
+    int pressed_x;
+    int pressed_y;
+    int last_x;
+    int last_y;
 };
 
 /**
  * nsgtk core window state
  */
 struct nsgtk_corewindow {
-	/* public variables */
-	/** GTK drawable widget */
-	GtkDrawingArea *drawing_area;
-	/** scrollable area drawing area is within */
-	GtkScrolledWindow *scrolled;
+    /* public variables */
+    /** GTK drawable widget */
+    GtkDrawingArea *drawing_area;
+    /** scrollable area drawing area is within */
+    GtkScrolledWindow *scrolled;
 
-	/* private variables */
-	/** Input method */
-	GtkIMContext *input_method;
+    /* private variables */
+    /** Input method */
+    GtkIMContext *input_method;
 
-	/** mouse state */
-	struct nsgtk_corewindow_mouse mouse_state;
+    /** mouse state */
+    struct nsgtk_corewindow_mouse mouse_state;
 
-	/** drag status set by core */
-	core_window_drag_status drag_status;
+    /** drag status set by core */
+    core_window_drag_status drag_status;
 
-	/**
-	 * callback to draw on drawable area of nsgtk core window
-	 *
-	 * \param nsgtk_cw The nsgtk core window structure.
-	 * \param r The rectangle of the window that needs updating.
-	 * \return NSERROR_OK on success otherwise appropriate error code
-	 */
-	nserror (*draw)(struct nsgtk_corewindow *nsgtk_cw, struct rect *r);
+    /**
+     * callback to draw on drawable area of nsgtk core window
+     *
+     * \param nsgtk_cw The nsgtk core window structure.
+     * \param r The rectangle of the window that needs updating.
+     * \return NSERROR_OK on success otherwise appropriate error code
+     */
+    nserror (*draw)(struct nsgtk_corewindow *nsgtk_cw, struct rect *r);
 
-	/**
-	 * callback for keypress on nsgtk core window
-	 *
-	 * \param nsgtk_cw The nsgtk core window structure.
-	 * \param nskey The netsurf key code.
-	 * \return NSERROR_OK if key processed,
-	 *         NSERROR_NOT_IMPLEMENTED if key not processed
-	 *         otherwise appropriate error code
-	 */
-	nserror (*key)(struct nsgtk_corewindow *nsgtk_cw, uint32_t nskey);
+    /**
+     * callback for keypress on nsgtk core window
+     *
+     * \param nsgtk_cw The nsgtk core window structure.
+     * \param nskey The netsurf key code.
+     * \return NSERROR_OK if key processed,
+     *         NSERROR_NOT_IMPLEMENTED if key not processed
+     *         otherwise appropriate error code
+     */
+    nserror (*key)(struct nsgtk_corewindow *nsgtk_cw, uint32_t nskey);
 
-	/**
-	 * callback for mouse event on nsgtk core window
-	 *
-	 * \param nsgtk_cw The nsgtk core window structure.
-	 * \param mouse_state mouse state
-	 * \param x location of event
-	 * \param y location of event
-	 * \return NSERROR_OK on success otherwise appropriate error code.
-	 */
-	nserror (*mouse)(struct nsgtk_corewindow *nsgtk_cw,
-			 browser_mouse_state mouse_state,
-			 int x,
-			 int y);
+    /**
+     * callback for mouse event on nsgtk core window
+     *
+     * \param nsgtk_cw The nsgtk core window structure.
+     * \param mouse_state mouse state
+     * \param x location of event
+     * \param y location of event
+     * \return NSERROR_OK on success otherwise appropriate error code.
+     */
+    nserror (*mouse)(struct nsgtk_corewindow *nsgtk_cw, browser_mouse_state mouse_state, int x, int y);
 };
 
 /**

@@ -21,13 +21,7 @@
 
 extern struct gui_download_table *win32_download_table;
 
-typedef enum {
-	DOWNLOAD_NONE,
-	DOWNLOAD_WORKING,
-	DOWNLOAD_ERROR,
-	DOWNLOAD_COMPLETE,
-	DOWNLOAD_CANCELED
-} download_status;
+typedef enum { DOWNLOAD_NONE, DOWNLOAD_WORKING, DOWNLOAD_ERROR, DOWNLOAD_COMPLETE, DOWNLOAD_CANCELED } download_status;
 
 /**
  * Initialise the win32 window class for the download window

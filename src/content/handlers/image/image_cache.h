@@ -47,25 +47,24 @@ struct redraw_context;
 typedef struct bitmap *(image_cache_convert_fn)(struct content * content);
 
 struct image_cache_parameters {
-	/** How frequently the background cache clean process is run (ms) */
-	unsigned int bg_clean_time;
+    /** How frequently the background cache clean process is run (ms) */
+    unsigned int bg_clean_time;
 
-	/** The target upper bound for the image cache size */
-	size_t limit;
+    /** The target upper bound for the image cache size */
+    size_t limit;
 
-	/** The hysteresis allowed round the target size */
-	size_t hysteresis;
+    /** The hysteresis allowed round the target size */
+    size_t hysteresis;
 
-	/** The speculative conversion "small" size */
-	size_t speculative_small;
+    /** The speculative conversion "small" size */
+    size_t speculative_small;
 };
 
 /** Initialise the image cache
  *
  * @param image_cache_parameters The control parameters for the image cache
  */
-nserror
-image_cache_init(const struct image_cache_parameters *image_cache_parameters);
+nserror image_cache_init(const struct image_cache_parameters *image_cache_parameters);
 nserror image_cache_fini(void);
 
 void image_cache_purge_bitmaps(void);
@@ -78,9 +77,7 @@ void image_cache_purge_bitmaps(void);
  * NULL.
  * @return A netsurf error code.
  */
-nserror image_cache_add(struct content *content,
-			struct bitmap *bitmap,
-			image_cache_convert_fn *convert);
+nserror image_cache_add(struct content *content, struct bitmap *bitmap, image_cache_convert_fn *convert);
 
 nserror image_cache_remove(struct content *content);
 
@@ -120,10 +117,7 @@ bool image_cache_speculate(struct content *c);
  * \param fmt     The format string.
  * \return The number of bytes written to \a string or -1 on error
  */
-int image_cache_snentryf(char *string,
-			 size_t size,
-			 unsigned int entryn,
-			 const char *fmt);
+int image_cache_snentryf(char *string, size_t size, unsigned int entryn, const char *fmt);
 
 /**
  * Fill a buffer with information about the image cache using a format.
@@ -184,10 +178,8 @@ int image_cache_snsummaryf(char *string, size_t size, const char *fmt);
  * callback. Performs all neccissary cache lookups and conversions and
  * calls the bitmap plot function in the redraw context.
  */
-bool image_cache_redraw(struct content *c,
-			struct content_redraw_data *data,
-			const struct rect *clip,
-			const struct redraw_context *ctx);
+bool image_cache_redraw(
+    struct content *c, struct content_redraw_data *data, const struct rect *clip, const struct redraw_context *ctx);
 
 void image_cache_destroy(struct content *c);
 

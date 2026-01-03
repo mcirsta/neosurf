@@ -23,16 +23,16 @@
  * Ineterface of netsurf window for qt.
  */
 
-#include <QToolBar>
 #include <QLineEdit>
 #include <QMenu>
+#include <QToolBar>
 #include <QToolButton>
 
 extern "C" {
 
-#include "neosurf/types.h"
-#include "neosurf/content_type.h"
 #include "neosurf/browser_window.h"
+#include "neosurf/content_type.h"
+#include "neosurf/types.h"
 }
 
 #include "qt/actions.cls.h"
@@ -52,20 +52,18 @@ extern "C" {
 
 class NS_URLBar : public QToolBar
 {
-	Q_OBJECT
+    Q_OBJECT
 
-      public:
-	NS_URLBar(QWidget *parent,
-		  NS_Actions *actions,
-		  struct browser_window *bw);
-	nserror set_url(struct nsurl *url);
+public:
+    NS_URLBar(QWidget *parent, NS_Actions *actions, struct browser_window *bw);
+    nserror set_url(struct nsurl *url);
 
-      public slots:
-	void input_pressed();
+public slots:
+    void input_pressed();
 
-      private:
-	struct browser_window *m_bw;
-	QLineEdit *m_input;
-	QMenu *m_burgermenu;
-	QToolButton *m_burgerbutton;
+private:
+    struct browser_window *m_bw;
+    QLineEdit *m_input;
+    QMenu *m_burgermenu;
+    QToolButton *m_burgerbutton;
 };

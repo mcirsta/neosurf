@@ -25,11 +25,11 @@
 #ifndef NETSURF_DESKTOP_TEXTAREA_H
 #define NETSURF_DESKTOP_TEXTAREA_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
-#include "neosurf/plot_style.h"
 #include "neosurf/mouse.h"
+#include "neosurf/plot_style.h"
 
 struct textarea;
 struct redraw_context;
@@ -38,33 +38,29 @@ struct redraw_context;
  * Text area flags
  */
 typedef enum {
-	TEXTAREA_DEFAULT = (1 << 0), /**< Standard input */
-	TEXTAREA_MULTILINE = (1 << 1), /**< Multiline area */
-	TEXTAREA_READONLY = (1 << 2), /**< Non-editable */
-	TEXTAREA_INTERNAL_CARET = (1 << 3), /**< Render own caret */
-	TEXTAREA_PASSWORD = (1 << 4) /**< Obscured display */
+    TEXTAREA_DEFAULT = (1 << 0), /**< Standard input */
+    TEXTAREA_MULTILINE = (1 << 1), /**< Multiline area */
+    TEXTAREA_READONLY = (1 << 2), /**< Non-editable */
+    TEXTAREA_INTERNAL_CARET = (1 << 3), /**< Render own caret */
+    TEXTAREA_PASSWORD = (1 << 4) /**< Obscured display */
 } textarea_flags;
 
 
 /**
  * Textarea drag status
  */
-typedef enum {
-	TEXTAREA_DRAG_NONE,
-	TEXTAREA_DRAG_SCROLLBAR,
-	TEXTAREA_DRAG_SELECTION
-} textarea_drag_type;
+typedef enum { TEXTAREA_DRAG_NONE, TEXTAREA_DRAG_SCROLLBAR, TEXTAREA_DRAG_SELECTION } textarea_drag_type;
 
 
 /**
  * textarea message types
  */
 typedef enum {
-	TEXTAREA_MSG_DRAG_REPORT, /**< Textarea drag start/end report */
-	TEXTAREA_MSG_SELECTION_REPORT, /**< Textarea text selection presence */
-	TEXTAREA_MSG_REDRAW_REQUEST, /**< Textarea redraw request */
-	TEXTAREA_MSG_CARET_UPDATE, /**< Textarea caret */
-	TEXTAREA_MSG_TEXT_MODIFIED /**< Textarea text modified */
+    TEXTAREA_MSG_DRAG_REPORT, /**< Textarea drag start/end report */
+    TEXTAREA_MSG_SELECTION_REPORT, /**< Textarea text selection presence */
+    TEXTAREA_MSG_REDRAW_REQUEST, /**< Textarea redraw request */
+    TEXTAREA_MSG_CARET_UPDATE, /**< Textarea caret */
+    TEXTAREA_MSG_TEXT_MODIFIED /**< Textarea text modified */
 } textarea_msg_type;
 
 
@@ -72,33 +68,33 @@ typedef enum {
  * textarea message
  */
 struct textarea_msg {
-	struct textarea *ta; /**< The textarea widget */
+    struct textarea *ta; /**< The textarea widget */
 
-	textarea_msg_type type; /**< Indicates message data type */
-	union {
-		textarea_drag_type drag; /**< With _DRAG_REPORT */
-		struct {
-			bool have_selection; /**< Selection exists */
-			bool read_only; /**< Selection can't be cut */
-		} selection; /**< With _SELECTION_REPORT */
-		struct rect redraw; /**< With _REDRAW_REQUEST */
-		struct {
-			enum {
-				TEXTAREA_CARET_SET_POS, /**< Set coord/height */
-				TEXTAREA_CARET_HIDE /**< Hide */
-			} type;
-			struct {
-				int x; /**< Caret x-coord */
-				int y; /**< Caret y-coord */
-				int height; /**< Caret height */
-				struct rect *clip; /**< Caret clip rect */
-			} pos; /**< With _CARET_SET_POS */
-		} caret; /**< With _CARET_UPDATE */
-		struct {
-			const char *text; /**< UTF8 text */
-			unsigned int len; /**< Byte length of text */
-		} modified; /**< With _TEXT_MODIFIED */
-	} data; /**< Depends on msg type */
+    textarea_msg_type type; /**< Indicates message data type */
+    union {
+        textarea_drag_type drag; /**< With _DRAG_REPORT */
+        struct {
+            bool have_selection; /**< Selection exists */
+            bool read_only; /**< Selection can't be cut */
+        } selection; /**< With _SELECTION_REPORT */
+        struct rect redraw; /**< With _REDRAW_REQUEST */
+        struct {
+            enum {
+                TEXTAREA_CARET_SET_POS, /**< Set coord/height */
+                TEXTAREA_CARET_HIDE /**< Hide */
+            } type;
+            struct {
+                int x; /**< Caret x-coord */
+                int y; /**< Caret y-coord */
+                int height; /**< Caret height */
+                struct rect *clip; /**< Caret clip rect */
+            } pos; /**< With _CARET_SET_POS */
+        } caret; /**< With _CARET_UPDATE */
+        struct {
+            const char *text; /**< UTF8 text */
+            unsigned int len; /**< Byte length of text */
+        } modified; /**< With _TEXT_MODIFIED */
+    } data; /**< Depends on msg type */
 };
 
 
@@ -106,20 +102,20 @@ struct textarea_msg {
  * textarea setup parameters
  */
 typedef struct textarea_setup {
-	int width; /**< Textarea width */
-	int height; /**< Textarea height */
+    int width; /**< Textarea width */
+    int height; /**< Textarea height */
 
-	int pad_top; /**< Textarea top padding */
-	int pad_right; /**< Textarea right padding */
-	int pad_bottom; /**< Textarea bottom padding */
-	int pad_left; /**< Textarea left padding */
+    int pad_top; /**< Textarea top padding */
+    int pad_right; /**< Textarea right padding */
+    int pad_bottom; /**< Textarea bottom padding */
+    int pad_left; /**< Textarea left padding */
 
-	int border_width; /**< Textarea border width */
-	colour border_col; /**< Textarea border colour */
+    int border_width; /**< Textarea border width */
+    colour border_col; /**< Textarea border colour */
 
-	colour selected_text; /**< Textarea selected text colour */
-	colour selected_bg; /**< Textarea selection background colour */
-	plot_font_style_t text; /**< Textarea background colour and font */
+    colour selected_text; /**< Textarea selected text colour */
+    colour selected_bg; /**< Textarea selection background colour */
+    plot_font_style_t text; /**< Textarea background colour and font */
 
 } textarea_setup;
 
@@ -128,22 +124,22 @@ typedef struct textarea_setup {
  * Text area mouse input status flags
  */
 typedef enum {
-	TEXTAREA_MOUSE_NONE = 0, /**< Not relevant */
-	TEXTAREA_MOUSE_USED = (1 << 0), /**< Took action with input */
-	TEXTAREA_MOUSE_EDITOR = (1 << 1), /**< Hover: caret pointer */
-	TEXTAREA_MOUSE_SELECTION = (1 << 2), /**< Hover: selection */
-	TEXTAREA_MOUSE_SCR_USED = (1 << 3), /**< Scrollbar action */
-	TEXTAREA_MOUSE_SCR_BOTH = (1 << 4), /**< Scrolling both bars */
-	TEXTAREA_MOUSE_SCR_UP = (1 << 5), /**< Hover: scroll up */
-	TEXTAREA_MOUSE_SCR_PUP = (1 << 6), /**< Hover: scroll page up */
-	TEXTAREA_MOUSE_SCR_VRT = (1 << 7), /**< Hover: vert. drag bar */
-	TEXTAREA_MOUSE_SCR_PDWN = (1 << 8), /**< Hover: scroll page down */
-	TEXTAREA_MOUSE_SCR_DWN = (1 << 9), /**< Hover: scroll down */
-	TEXTAREA_MOUSE_SCR_LFT = (1 << 10), /**< Hover: scroll left */
-	TEXTAREA_MOUSE_SCR_PLFT = (1 << 11), /**< Hover: scroll page left */
-	TEXTAREA_MOUSE_SCR_HRZ = (1 << 12), /**< Hover: horiz. drag bar */
-	TEXTAREA_MOUSE_SCR_PRGT = (1 << 13), /**< Hover: scroll page right */
-	TEXTAREA_MOUSE_SCR_RGT = (1 << 14) /**< Hover: scroll right */
+    TEXTAREA_MOUSE_NONE = 0, /**< Not relevant */
+    TEXTAREA_MOUSE_USED = (1 << 0), /**< Took action with input */
+    TEXTAREA_MOUSE_EDITOR = (1 << 1), /**< Hover: caret pointer */
+    TEXTAREA_MOUSE_SELECTION = (1 << 2), /**< Hover: selection */
+    TEXTAREA_MOUSE_SCR_USED = (1 << 3), /**< Scrollbar action */
+    TEXTAREA_MOUSE_SCR_BOTH = (1 << 4), /**< Scrolling both bars */
+    TEXTAREA_MOUSE_SCR_UP = (1 << 5), /**< Hover: scroll up */
+    TEXTAREA_MOUSE_SCR_PUP = (1 << 6), /**< Hover: scroll page up */
+    TEXTAREA_MOUSE_SCR_VRT = (1 << 7), /**< Hover: vert. drag bar */
+    TEXTAREA_MOUSE_SCR_PDWN = (1 << 8), /**< Hover: scroll page down */
+    TEXTAREA_MOUSE_SCR_DWN = (1 << 9), /**< Hover: scroll down */
+    TEXTAREA_MOUSE_SCR_LFT = (1 << 10), /**< Hover: scroll left */
+    TEXTAREA_MOUSE_SCR_PLFT = (1 << 11), /**< Hover: scroll page left */
+    TEXTAREA_MOUSE_SCR_HRZ = (1 << 12), /**< Hover: horiz. drag bar */
+    TEXTAREA_MOUSE_SCR_PRGT = (1 << 13), /**< Hover: scroll page right */
+    TEXTAREA_MOUSE_SCR_RGT = (1 << 14) /**< Hover: scroll right */
 } textarea_mouse_status;
 
 
@@ -165,10 +161,8 @@ typedef void (*textarea_client_callback)(void *data, struct textarea_msg *msg);
  * \param data	user specified data which will be passed to callbacks
  * \return Opaque handle for textarea or 0 on error
  */
-struct textarea *textarea_create(const textarea_flags flags,
-				 const textarea_setup *setup,
-				 textarea_client_callback callback,
-				 void *data);
+struct textarea *
+textarea_create(const textarea_flags flags, const textarea_setup *setup, textarea_client_callback callback, void *data);
 
 
 /**
@@ -197,9 +191,7 @@ bool textarea_set_text(struct textarea *ta, const char *text);
  * \param text_length length of text.
  * \return true on success, false on memory exhaustion or if ta lacks caret
  */
-bool textarea_drop_text(struct textarea *ta,
-			const char *text,
-			size_t text_length);
+bool textarea_drop_text(struct textarea *ta, const char *text, size_t text_length);
 
 
 /**
@@ -246,13 +238,8 @@ bool textarea_set_caret(struct textarea *ta, int caret);
  * \param clip	clip rectangle
  * \param ctx	current redraw context
  */
-void textarea_redraw(struct textarea *ta,
-		     int x,
-		     int y,
-		     colour bg,
-		     float scale,
-		     const struct rect *clip,
-		     const struct redraw_context *ctx);
+void textarea_redraw(struct textarea *ta, int x, int y, colour bg, float scale, const struct rect *clip,
+    const struct redraw_context *ctx);
 
 
 /**
@@ -274,10 +261,7 @@ bool textarea_keypress(struct textarea *ta, uint32_t key);
  * \param y	Y coordinate
  * \return the textarea mouse status
  */
-textarea_mouse_status textarea_mouse_action(struct textarea *ta,
-					    browser_mouse_state mouse,
-					    int x,
-					    int y);
+textarea_mouse_status textarea_mouse_action(struct textarea *ta, browser_mouse_state mouse, int x, int y);
 
 
 /**
@@ -338,14 +322,8 @@ void textarea_set_dimensions(struct textarea *ta, int width, int height);
  * \param bottom	the new bottom padding of the textarea
  * \param left		the new left padding of the textarea
  */
-void textarea_set_layout(struct textarea *ta,
-			 const plot_font_style_t *fstyle,
-			 int width,
-			 int height,
-			 int top,
-			 int right,
-			 int bottom,
-			 int left);
+void textarea_set_layout(struct textarea *ta, const plot_font_style_t *fstyle, int width, int height, int top,
+    int right, int bottom, int left);
 
 
 /**

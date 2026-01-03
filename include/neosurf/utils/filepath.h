@@ -101,10 +101,7 @@ char *filepath_find(char **respathv, const char *filename);
  * \param def The default path to use
  * \return A pointer to filepath if a target is found or the default if not
  */
-char *filepath_sfinddef(char **respathv,
-			char *filepath,
-			const char *filename,
-			const char *def);
+char *filepath_sfinddef(char **respathv, char *filepath, const char *filename, const char *def);
 
 
 /**

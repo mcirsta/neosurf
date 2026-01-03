@@ -17,7 +17,7 @@
  */
 
 /** \file
-	PDF Plotting
+    PDF Plotting
 */
 
 #ifndef NETSURF_PDF_PLOTTERS_H

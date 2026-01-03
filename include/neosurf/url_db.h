@@ -34,10 +34,10 @@ struct nsurl;
 struct bitmap;
 
 struct url_data {
-	const char *title; /**< Resource title */
-	unsigned int visits; /**< Visit count */
-	time_t last_visit; /**< Last visit time */
-	content_type type; /**< Type of resource */
+    const char *title; /**< Resource title */
+    unsigned int visits; /**< Visit count */
+    time_t last_visit; /**< Last visit time */
+    content_type type; /**< Type of resource */
 };
 
 
@@ -63,9 +63,7 @@ nserror urldb_save(const char *filename);
  * \param prefix Prefix to match
  * \param callback Callback function
  */
-void urldb_iterate_partial(const char *prefix,
-			   bool (*callback)(struct nsurl *url,
-					    const struct url_data *data));
+void urldb_iterate_partial(const char *prefix, bool (*callback)(struct nsurl *url, const struct url_data *data));
 
 
 /**
@@ -73,8 +71,7 @@ void urldb_iterate_partial(const char *prefix,
  *
  * \param callback Function to callback for each entry
  */
-void urldb_iterate_entries(bool (*callback)(struct nsurl *url,
-					    const struct url_data *data));
+void urldb_iterate_entries(bool (*callback)(struct nsurl *url, const struct url_data *data));
 
 
 /**

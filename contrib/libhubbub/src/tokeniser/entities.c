@@ -5,17 +5,17 @@
  * Copyright 2007 John-Mark Bell <jmb@netsurf-browser.org>
  */
 
-#include "utils/utils.h"
 #include "tokeniser/entities.h"
+#include "utils/utils.h"
 
 /** Node in our entity tree */
 typedef struct hubbub_entity_node {
-	/* Do not reorder this without fixing make-entities.pl */
-	uint8_t split; /**< Data to split on */
-	int32_t lt; /**< Subtree for data less than split */
-	int32_t eq; /**< Subtree for data equal to split */
-	int32_t gt; /**< Subtree for data greater than split */
-	uint32_t value; /**< Data for this node */
+    /* Do not reorder this without fixing make-entities.pl */
+    uint8_t split; /**< Data to split on */
+    int32_t lt; /**< Subtree for data less than split */
+    int32_t eq; /**< Subtree for data equal to split */
+    int32_t gt; /**< Subtree for data greater than split */
+    uint32_t value; /**< Data for this node */
 } hubbub_entity_node;
 
 #include "entities.inc"
@@ -37,52 +37,48 @@ typedef struct hubbub_entity_node {
  * The location pointed to by \p result will be set to NULL unless a match
  * is found.
  */
-static hubbub_error
-hubbub_entity_tree_search_step(uint8_t c, uint32_t *result, int32_t *context)
+static hubbub_error hubbub_entity_tree_search_step(uint8_t c, uint32_t *result, int32_t *context)
 {
-	bool match = false;
-	int32_t p;
+    bool match = false;
+    int32_t p;
 
-	if (result == NULL || context == NULL)
-		return HUBBUB_BADPARM;
+    if (result == NULL || context == NULL)
+        return HUBBUB_BADPARM;
 
-	if (*context == -1) {
-		p = dict_root;
-	} else {
-		p = *context;
-	}
+    if (*context == -1) {
+        p = dict_root;
+    } else {
+        p = *context;
+    }
 
-	while (p != -1) {
-		if (c < dict[p].split) {
-			p = dict[p].lt;
-		} else if (c == dict[p].split) {
-			if (dict[p].split == '\0') {
-				match = true;
-				p = -1;
-			} else if (dict[p].eq != -1 &&
-				   dict[dict[p].eq].split == '\0') {
-				match = true;
-				*result = dict[dict[p].eq].value;
-				p = dict[p].eq;
-			} else if (dict[p].value != 0) {
-				match = true;
-				*result = dict[p].value;
-				p = dict[p].eq;
-			} else {
-				p = dict[p].eq;
-			}
+    while (p != -1) {
+        if (c < dict[p].split) {
+            p = dict[p].lt;
+        } else if (c == dict[p].split) {
+            if (dict[p].split == '\0') {
+                match = true;
+                p = -1;
+            } else if (dict[p].eq != -1 && dict[dict[p].eq].split == '\0') {
+                match = true;
+                *result = dict[dict[p].eq].value;
+                p = dict[p].eq;
+            } else if (dict[p].value != 0) {
+                match = true;
+                *result = dict[p].value;
+                p = dict[p].eq;
+            } else {
+                p = dict[p].eq;
+            }
 
-			break;
-		} else {
-			p = dict[p].gt;
-		}
-	}
+            break;
+        } else {
+            p = dict[p].gt;
+        }
+    }
 
-	*context = p;
+    *context = p;
 
-	return (match)	   ? HUBBUB_OK
-	       : (p == -1) ? HUBBUB_INVALID
-			   : HUBBUB_NEEDDATA;
+    return (match) ? HUBBUB_OK : (p == -1) ? HUBBUB_INVALID : HUBBUB_NEEDDATA;
 }
 
 /**
@@ -102,13 +98,12 @@ hubbub_entity_tree_search_step(uint8_t c, uint32_t *result, int32_t *context)
  * The location pointed to by \p result will be set to U+FFFD unless a match
  * is found.
  */
-hubbub_error
-hubbub_entities_search_step(uint8_t c, uint32_t *result, int32_t *context)
+hubbub_error hubbub_entities_search_step(uint8_t c, uint32_t *result, int32_t *context)
 {
-	if (result == NULL)
-		return HUBBUB_BADPARM;
+    if (result == NULL)
+        return HUBBUB_BADPARM;
 
-	*result = 0xFFFD;
+    *result = 0xFFFD;
 
-	return hubbub_entity_tree_search_step(c, result, context);
+    return hubbub_entity_tree_search_step(c, result, context);
 }

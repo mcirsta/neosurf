@@ -7,10 +7,10 @@
  * Copyright 2009 Bo Yang <struggleyb.nku@gmail.com>
  */
 
+#include <assert.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
-#include <assert.h>
 #ifdef TEST_RIG
 #include <stdio.h>
 #endif
@@ -20,18 +20,18 @@
 
 /* The hash table entry */
 struct _dom_hash_entry {
-	void *key; /**< The key pointer */
-	void *value; /**< The value pointer */
-	struct _dom_hash_entry *next; /**< Next entry */
+    void *key; /**< The key pointer */
+    void *value; /**< The value pointer */
+    struct _dom_hash_entry *next; /**< Next entry */
 };
 
 /* The hash table */
 struct dom_hash_table {
-	const dom_hash_vtable *vtable; /**< Vtable */
-	void *pw; /**< Client data */
-	unsigned int nchains; /**< Number of chains */
-	struct _dom_hash_entry **chain; /**< The chain head */
-	uint32_t nentries; /**< The entries in this table */
+    const dom_hash_vtable *vtable; /**< Vtable */
+    void *pw; /**< Client data */
+    unsigned int nchains; /**< Number of chains */
+    struct _dom_hash_entry **chain; /**< The chain head */
+    uint32_t nentries; /**< The entries in this table */
 };
 
 
@@ -47,25 +47,24 @@ struct dom_hash_table {
  * \return struct dom_hash_table containing the context of this hash table or
  *         NULL if there is insufficent memory to create it and its chains.
  */
-dom_hash_table *
-_dom_hash_create(unsigned int chains, const dom_hash_vtable *vtable, void *pw)
+dom_hash_table *_dom_hash_create(unsigned int chains, const dom_hash_vtable *vtable, void *pw)
 {
-	dom_hash_table *r = malloc(sizeof(struct dom_hash_table));
-	if (r == NULL) {
-		return NULL;
-	}
+    dom_hash_table *r = malloc(sizeof(struct dom_hash_table));
+    if (r == NULL) {
+        return NULL;
+    }
 
-	r->vtable = vtable;
-	r->pw = pw;
-	r->nentries = 0;
-	r->nchains = chains;
-	r->chain = calloc(chains, sizeof(struct _dom_hash_entry *));
-	if (r->chain == NULL) {
-		free(r);
-		return NULL;
-	}
+    r->vtable = vtable;
+    r->pw = pw;
+    r->nentries = 0;
+    r->nchains = chains;
+    r->chain = calloc(chains, sizeof(struct _dom_hash_entry *));
+    if (r->chain == NULL) {
+        free(r);
+        return NULL;
+    }
 
-	return r;
+    return r;
 }
 
 /**
@@ -77,37 +76,37 @@ _dom_hash_create(unsigned int chains, const dom_hash_vtable *vtable, void *pw)
  */
 dom_hash_table *_dom_hash_clone(dom_hash_table *ht)
 {
-	void *key = NULL, *nkey = NULL;
-	void *value = NULL, *nvalue = NULL;
-	uintptr_t c1, *c2 = NULL;
-	struct dom_hash_table *ret;
+    void *key = NULL, *nkey = NULL;
+    void *value = NULL, *nvalue = NULL;
+    uintptr_t c1, *c2 = NULL;
+    struct dom_hash_table *ret;
 
-	ret = _dom_hash_create(ht->nchains, ht->vtable, ht->pw);
-	if (ret == NULL)
-		return NULL;
+    ret = _dom_hash_create(ht->nchains, ht->vtable, ht->pw);
+    if (ret == NULL)
+        return NULL;
 
-	while ((key = _dom_hash_iterate(ht, &c1, &c2)) != NULL) {
-		nkey = ht->vtable->clone_key(key, ht->pw);
-		if (nkey == NULL) {
-			_dom_hash_destroy(ret);
-			return NULL;
-		}
+    while ((key = _dom_hash_iterate(ht, &c1, &c2)) != NULL) {
+        nkey = ht->vtable->clone_key(key, ht->pw);
+        if (nkey == NULL) {
+            _dom_hash_destroy(ret);
+            return NULL;
+        }
 
-		value = _dom_hash_get(ht, key);
-		nvalue = ht->vtable->clone_value(value, ht->pw);
-		if (nvalue == NULL) {
-			ht->vtable->destroy_key(nkey, ht->pw);
-			_dom_hash_destroy(ret);
-			return NULL;
-		}
+        value = _dom_hash_get(ht, key);
+        nvalue = ht->vtable->clone_value(value, ht->pw);
+        if (nvalue == NULL) {
+            ht->vtable->destroy_key(nkey, ht->pw);
+            _dom_hash_destroy(ret);
+            return NULL;
+        }
 
-		if (_dom_hash_add(ret, nkey, nvalue, false) == false) {
-			_dom_hash_destroy(ret);
-			return NULL;
-		}
-	}
+        if (_dom_hash_add(ret, nkey, nvalue, false) == false) {
+            _dom_hash_destroy(ret);
+            return NULL;
+        }
+    }
 
-	return ret;
+    return ret;
 }
 
 /**
@@ -118,26 +117,26 @@ dom_hash_table *_dom_hash_clone(dom_hash_table *ht)
  */
 void _dom_hash_destroy(dom_hash_table *ht)
 {
-	unsigned int i;
+    unsigned int i;
 
-	if (ht == NULL)
-		return;
+    if (ht == NULL)
+        return;
 
-	for (i = 0; i < ht->nchains; i++) {
-		if (ht->chain[i] != NULL) {
-			struct _dom_hash_entry *e = ht->chain[i];
-			while (e) {
-				struct _dom_hash_entry *n = e->next;
-				ht->vtable->destroy_key(e->key, ht->pw);
-				ht->vtable->destroy_value(e->value, ht->pw);
-				free(e);
-				e = n;
-			}
-		}
-	}
+    for (i = 0; i < ht->nchains; i++) {
+        if (ht->chain[i] != NULL) {
+            struct _dom_hash_entry *e = ht->chain[i];
+            while (e) {
+                struct _dom_hash_entry *n = e->next;
+                ht->vtable->destroy_key(e->key, ht->pw);
+                ht->vtable->destroy_value(e->value, ht->pw);
+                free(e);
+                e = n;
+            }
+        }
+    }
 
-	free(ht->chain);
-	free(ht);
+    free(ht->chain);
+    free(ht);
 }
 
 /**
@@ -151,39 +150,39 @@ void _dom_hash_destroy(dom_hash_table *ht)
  */
 bool _dom_hash_add(dom_hash_table *ht, void *key, void *value, bool replace)
 {
-	unsigned int h, c;
-	struct _dom_hash_entry *e;
+    unsigned int h, c;
+    struct _dom_hash_entry *e;
 
-	if (ht == NULL || key == NULL || value == NULL)
-		return false;
+    if (ht == NULL || key == NULL || value == NULL)
+        return false;
 
-	h = ht->vtable->hash(key, ht->pw);
-	c = h % ht->nchains;
+    h = ht->vtable->hash(key, ht->pw);
+    c = h % ht->nchains;
 
-	for (e = ht->chain[c]; e; e = e->next) {
-		if (ht->vtable->key_isequal(key, e->key, ht->pw)) {
-			if (replace == true) {
-				e->value = value;
-				return true;
-			} else {
-				return false;
-			}
-		}
-	}
+    for (e = ht->chain[c]; e; e = e->next) {
+        if (ht->vtable->key_isequal(key, e->key, ht->pw)) {
+            if (replace == true) {
+                e->value = value;
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
 
-	e = malloc(sizeof(struct _dom_hash_entry));
-	if (e == NULL) {
-		return false;
-	}
+    e = malloc(sizeof(struct _dom_hash_entry));
+    if (e == NULL) {
+        return false;
+    }
 
-	e->key = key;
-	e->value = value;
+    e->key = key;
+    e->value = value;
 
-	e->next = ht->chain[c];
-	ht->chain[c] = e;
-	ht->nentries++;
+    e->next = ht->chain[c];
+    ht->chain[c] = e;
+    ht->nentries++;
 
-	return true;
+    return true;
 }
 
 /**
@@ -195,21 +194,21 @@ bool _dom_hash_add(dom_hash_table *ht, void *key, void *value, bool replace)
  */
 void *_dom_hash_get(struct dom_hash_table *ht, void *key)
 {
-	unsigned int h, c;
-	struct _dom_hash_entry *e;
+    unsigned int h, c;
+    struct _dom_hash_entry *e;
 
-	if (ht == NULL || key == NULL)
-		return NULL;
+    if (ht == NULL || key == NULL)
+        return NULL;
 
-	h = ht->vtable->hash(key, ht->pw);
-	c = h % ht->nchains;
+    h = ht->vtable->hash(key, ht->pw);
+    c = h % ht->nchains;
 
-	for (e = ht->chain[c]; e; e = e->next) {
-		if (ht->vtable->key_isequal(key, e->key, ht->pw))
-			return e->value;
-	}
+    for (e = ht->chain[c]; e; e = e->next) {
+        if (ht->vtable->key_isequal(key, e->key, ht->pw))
+            return e->value;
+    }
 
-	return NULL;
+    return NULL;
 }
 
 /**
@@ -221,34 +220,34 @@ void *_dom_hash_get(struct dom_hash_table *ht, void *key)
  */
 void *_dom_hash_del(struct dom_hash_table *ht, void *key)
 {
-	unsigned int h, c;
-	struct _dom_hash_entry *e, *p;
-	void *ret;
+    unsigned int h, c;
+    struct _dom_hash_entry *e, *p;
+    void *ret;
 
-	if (ht == NULL || key == NULL)
-		return NULL;
+    if (ht == NULL || key == NULL)
+        return NULL;
 
-	h = ht->vtable->hash(key, ht->pw);
-	c = h % ht->nchains;
+    h = ht->vtable->hash(key, ht->pw);
+    c = h % ht->nchains;
 
-	p = ht->chain[c];
-	for (e = p; e; p = e, e = e->next) {
-		if (ht->vtable->key_isequal(key, e->key, ht->pw)) {
-			if (p != e) {
-				p->next = e->next;
-			} else {
-				/* The first item in this chain is target*/
-				ht->chain[c] = e->next;
-			}
+    p = ht->chain[c];
+    for (e = p; e; p = e, e = e->next) {
+        if (ht->vtable->key_isequal(key, e->key, ht->pw)) {
+            if (p != e) {
+                p->next = e->next;
+            } else {
+                /* The first item in this chain is target*/
+                ht->chain[c] = e->next;
+            }
 
-			ret = e->value;
-			free(e);
-			ht->nentries--;
-			return ret;
-		}
-	}
+            ret = e->value;
+            free(e);
+            ht->nentries--;
+            return ret;
+        }
+    }
 
-	return NULL;
+    return NULL;
 }
 
 /**
@@ -259,29 +258,28 @@ void *_dom_hash_del(struct dom_hash_table *ht, void *key)
  * \param  c2  Pointer to second context (set to 0 on first call)
  * \return The next hash key, or NULL for no more keys
  */
-void *
-_dom_hash_iterate(struct dom_hash_table *ht, uintptr_t *c1, uintptr_t **c2)
+void *_dom_hash_iterate(struct dom_hash_table *ht, uintptr_t *c1, uintptr_t **c2)
 {
-	struct _dom_hash_entry **he = (struct _dom_hash_entry **)c2;
+    struct _dom_hash_entry **he = (struct _dom_hash_entry **)c2;
 
-	if (ht == NULL)
-		return NULL;
+    if (ht == NULL)
+        return NULL;
 
-	if (!*he)
-		*c1 = -1;
-	else
-		*he = (*he)->next;
+    if (!*he)
+        *c1 = -1;
+    else
+        *he = (*he)->next;
 
-	if (*he)
-		return (*he)->key;
+    if (*he)
+        return (*he)->key;
 
-	while (!*he) {
-		(*c1)++;
-		if (*c1 >= ht->nchains)
-			return NULL;
-		*he = ht->chain[*c1];
-	}
-	return (*he)->key;
+    while (!*he) {
+        (*c1)++;
+        if (*c1 >= ht->nchains)
+            return NULL;
+        *he = ht->chain[*c1];
+    }
+    return (*he)->key;
 }
 
 /**
@@ -293,7 +291,7 @@ _dom_hash_iterate(struct dom_hash_table *ht, uintptr_t *c1, uintptr_t **c2)
  */
 uint32_t _dom_hash_get_length(struct dom_hash_table *ht)
 {
-	return ht->nentries;
+    return ht->nentries;
 }
 
 /*-----------------------------------------------------------------------*/
@@ -319,119 +317,118 @@ uint32_t _dom_hash_get_length(struct dom_hash_table *ht)
 
 static inline unsigned int _dom_hash_pointer_fnv(void *ptr)
 {
-	return (unsigned int)ptr;
+    return (unsigned int)ptr;
 }
 
 static void *test_alloc(void *p, size_t size, void *ptr)
 {
-	if (p != NULL) {
-		free(p);
-		return NULL;
-	}
+    if (p != NULL) {
+        free(p);
+        return NULL;
+    }
 
-	if (p == NULL) {
-		return malloc(size);
-	}
+    if (p == NULL) {
+        return malloc(size);
+    }
 }
 
 int main(int argc, char *argv[])
 {
-	struct dom_hash_table *a, *b;
-	FILE *dict;
-	char keybuf[BUFSIZ], valbuf[BUFSIZ];
-	int i;
-	char *cow = "cow", *moo = "moo", *pig = "pig", *oink = "oink",
-	     *chicken = "chikcken", *cluck = "cluck", *dog = "dog",
-	     *woof = "woof", *cat = "cat", *meow = "meow";
-	void *ret;
+    struct dom_hash_table *a, *b;
+    FILE *dict;
+    char keybuf[BUFSIZ], valbuf[BUFSIZ];
+    int i;
+    char *cow = "cow", *moo = "moo", *pig = "pig", *oink = "oink", *chicken = "chikcken", *cluck = "cluck",
+         *dog = "dog", *woof = "woof", *cat = "cat", *meow = "meow";
+    void *ret;
 
-	a = _dom_hash_create(79, _dom_hash_pointer_fnv, test_alloc, NULL);
-	assert(a != NULL);
+    a = _dom_hash_create(79, _dom_hash_pointer_fnv, test_alloc, NULL);
+    assert(a != NULL);
 
-	b = _dom_hash_create(103, _dom_hash_pointer_fnv, test_alloc, NULL);
-	assert(b != NULL);
+    b = _dom_hash_create(103, _dom_hash_pointer_fnv, test_alloc, NULL);
+    assert(b != NULL);
 
-	_dom_hash_add(a, cow, moo, true);
-	_dom_hash_add(b, moo, cow, true);
+    _dom_hash_add(a, cow, moo, true);
+    _dom_hash_add(b, moo, cow, true);
 
-	_dom_hash_add(a, pig, oink, true);
-	_dom_hash_add(b, oink, pig, true);
+    _dom_hash_add(a, pig, oink, true);
+    _dom_hash_add(b, oink, pig, true);
 
-	_dom_hash_add(a, chicken, cluck, true);
-	_dom_hash_add(b, cluck, chicken, true);
+    _dom_hash_add(a, chicken, cluck, true);
+    _dom_hash_add(b, cluck, chicken, true);
 
-	_dom_hash_add(a, dog, woof, true);
-	_dom_hash_add(b, woof, dog, true);
+    _dom_hash_add(a, dog, woof, true);
+    _dom_hash_add(b, woof, dog, true);
 
-	_dom_hash_add(a, cat, meow, true);
-	_dom_hash_add(b, meow, cat, true);
+    _dom_hash_add(a, cat, meow, true);
+    _dom_hash_add(b, meow, cat, true);
 
-#define MATCH(x, y)                                                            \
-	assert(!strcmp((char *)hash_get(a, x), (char *)y));                    \
-	assert(!strcmp((char *)hash_get(b, y), (char *)x))
-	MATCH(cow, moo);
-	MATCH(pig, oink);
-	MATCH(chicken, cluck);
-	MATCH(dog, woof);
-	MATCH(cat, meow);
+#define MATCH(x, y)                                                                                                    \
+    assert(!strcmp((char *)hash_get(a, x), (char *)y));                                                                \
+    assert(!strcmp((char *)hash_get(b, y), (char *)x))
+    MATCH(cow, moo);
+    MATCH(pig, oink);
+    MATCH(chicken, cluck);
+    MATCH(dog, woof);
+    MATCH(cat, meow);
 
-	assert(hash_get_length(a) == 5);
-	assert(hash_get_length(b) == 5);
+    assert(hash_get_length(a) == 5);
+    assert(hash_get_length(b) == 5);
 
-	_dom_hash_del(a, cat);
-	_dom_hash_del(b, meow);
-	assert(hash_get(a, cat) == NULL);
-	assert(hash_get(b, meow) == NULL);
+    _dom_hash_del(a, cat);
+    _dom_hash_del(b, meow);
+    assert(hash_get(a, cat) == NULL);
+    assert(hash_get(b, meow) == NULL);
 
-	assert(hash_get_length(a) == 4);
-	assert(hash_get_length(b) == 4);
+    assert(hash_get_length(a) == 4);
+    assert(hash_get_length(b) == 4);
 
-	_dom_hash_destroy(a, NULL, NULL);
-	_dom_hash_destroy(b, NULL, NULL);
+    _dom_hash_destroy(a, NULL, NULL);
+    _dom_hash_destroy(b, NULL, NULL);
 
-	/* This test requires /usr/share/dict/words - a large list of English
-	 * words.  We load the entire file - odd lines are used as keys, and
-	 * even lines are used as the values for the previous line.  we then
-	 * work through it again making sure everything matches.
-	 *
-	 * We do this twice - once in a hash table with many chains, and once
-	 * with a hash table with fewer chains.
-	 */
+    /* This test requires /usr/share/dict/words - a large list of English
+     * words.  We load the entire file - odd lines are used as keys, and
+     * even lines are used as the values for the previous line.  we then
+     * work through it again making sure everything matches.
+     *
+     * We do this twice - once in a hash table with many chains, and once
+     * with a hash table with fewer chains.
+     */
 
-	a = _dom_hash_create(1031, _dom_hash_pointer_fnv, test_alloc, NULL);
-	b = _dom_hash_create(7919, _dom_hash_pointer_fnv, test_alloc, NULL);
+    a = _dom_hash_create(1031, _dom_hash_pointer_fnv, test_alloc, NULL);
+    b = _dom_hash_create(7919, _dom_hash_pointer_fnv, test_alloc, NULL);
 
-	dict = fopen("/usr/share/dict/words", "r");
-	if (dict == NULL) {
-		fprintf(stderr, "Unable to open /usr/share/dict/words - \
+    dict = fopen("/usr/share/dict/words", "r");
+    if (dict == NULL) {
+        fprintf(stderr, "Unable to open /usr/share/dict/words - \
 				extensive testing skipped.\n");
-		exit(0);
-	}
+        exit(0);
+    }
 
-	while (!feof(dict)) {
-		fscanf(dict, "%s", keybuf);
-		fscanf(dict, "%s", valbuf);
-		_dom_hash_add(a, keybuf, valbuf, true);
-		_dom_hash_add(b, keybuf, valbuf, true);
-	}
+    while (!feof(dict)) {
+        fscanf(dict, "%s", keybuf);
+        fscanf(dict, "%s", valbuf);
+        _dom_hash_add(a, keybuf, valbuf, true);
+        _dom_hash_add(b, keybuf, valbuf, true);
+    }
 
-	for (i = 0; i < 5; i++) {
-		fseek(dict, 0, SEEK_SET);
+    for (i = 0; i < 5; i++) {
+        fseek(dict, 0, SEEK_SET);
 
-		while (!feof(dict)) {
-			fscanf(dict, "%s", keybuf);
-			fscanf(dict, "%s", valbuf);
-			assert(strcmp(hash_get(a, keybuf), valbuf) == 0);
-			assert(strcmp(hash_get(b, keybuf), valbuf) == 0);
-		}
-	}
+        while (!feof(dict)) {
+            fscanf(dict, "%s", keybuf);
+            fscanf(dict, "%s", valbuf);
+            assert(strcmp(hash_get(a, keybuf), valbuf) == 0);
+            assert(strcmp(hash_get(b, keybuf), valbuf) == 0);
+        }
+    }
 
-	_dom_hash_destroy(a, NULL, NULL);
-	_dom_hash_destroy(b, NULL, NULL);
+    _dom_hash_destroy(a, NULL, NULL);
+    _dom_hash_destroy(b, NULL, NULL);
 
-	fclose(dict);
+    fclose(dict);
 
-	return 0;
+    return 0;
 }
 
 #endif

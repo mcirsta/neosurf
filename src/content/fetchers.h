@@ -25,8 +25,8 @@
 #ifndef _NETSURF_DESKTOP_FETCHERS_H_
 #define _NETSURF_DESKTOP_FETCHERS_H_
 
-#include <neosurf/utils/inet.h> /* this is necessary for the fd_set definition */
 #include <libwapcaplet/libwapcaplet.h>
+#include <neosurf/utils/inet.h> /* this is necessary for the fd_set definition */
 
 struct nsurl;
 struct fetch_multipart_data;
@@ -48,63 +48,56 @@ struct fetch;
  *
  */
 struct fetcher_operation_table {
-	/**
-	 * The initialiser for the fetcher.
-	 *
-	 * Called once to initialise the fetcher.
-	 */
-	bool (*initialise)(lwc_string *scheme);
+    /**
+     * The initialiser for the fetcher.
+     *
+     * Called once to initialise the fetcher.
+     */
+    bool (*initialise)(lwc_string *scheme);
 
-	/**
-	 * Can this fetcher accept a url.
-	 *
-	 * \param url the URL to check
-	 * \return true if the fetcher can handle the url else false.
-	 */
-	bool (*acceptable)(const struct nsurl *url);
+    /**
+     * Can this fetcher accept a url.
+     *
+     * \param url the URL to check
+     * \return true if the fetcher can handle the url else false.
+     */
+    bool (*acceptable)(const struct nsurl *url);
 
-	/**
-	 * Setup a fetch
-	 */
-	void *(*setup)(struct fetch *parent_fetch,
-		       struct nsurl *url,
-		       bool only_2xx,
-		       bool downgrade_tls,
-		       const struct fetch_postdata *postdata,
-		       const char **headers);
+    /**
+     * Setup a fetch
+     */
+    void *(*setup)(struct fetch *parent_fetch, struct nsurl *url, bool only_2xx, bool downgrade_tls,
+        const struct fetch_postdata *postdata, const char **headers);
 
-	/**
-	 * start a fetch.
-	 */
-	bool (*start)(void *fetch);
+    /**
+     * start a fetch.
+     */
+    bool (*start)(void *fetch);
 
-	/**
-	 * abort a fetch.
-	 */
-	void (*abort)(void *fetch);
+    /**
+     * abort a fetch.
+     */
+    void (*abort)(void *fetch);
 
-	/**
-	 * free a fetch allocated through the setup method.
-	 */
-	void (*free)(void *fetch);
+    /**
+     * free a fetch allocated through the setup method.
+     */
+    void (*free)(void *fetch);
 
-	/**
-	 * poll a fetcher to let it make progress.
-	 */
-	void (*poll)(lwc_string *scheme);
+    /**
+     * poll a fetcher to let it make progress.
+     */
+    void (*poll)(lwc_string *scheme);
 
-	/**
-	 * update an fdset with the FDs needed to poll cleanly
-	 */
-	int (*fdset)(lwc_string *scheme,
-		     fd_set *read_set,
-		     fd_set *write_set,
-		     fd_set *error_set);
+    /**
+     * update an fdset with the FDs needed to poll cleanly
+     */
+    int (*fdset)(lwc_string *scheme, fd_set *read_set, fd_set *write_set, fd_set *error_set);
 
-	/**
-	 * Finalise the fetcher.
-	 */
-	void (*finalise)(lwc_string *scheme);
+    /**
+     * Finalise the fetcher.
+     */
+    void (*finalise)(lwc_string *scheme);
 };
 
 
@@ -115,8 +108,7 @@ struct fetcher_operation_table {
  * \param ops The operations for the fetcher.
  * \return NSERROR_OK or appropriate error code.
  */
-nserror
-fetcher_add(lwc_string *scheme, const struct fetcher_operation_table *ops);
+nserror fetcher_add(lwc_string *scheme, const struct fetcher_operation_table *ops);
 
 
 /**

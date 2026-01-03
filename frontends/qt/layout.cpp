@@ -21,18 +21,18 @@
  * Implementation of netsurf layout operations for qt.
  */
 
-#include <stddef.h>
-#include <QPainter>
-#include <QFontDatabase>
 #include <QApplication>
+#include <QFontDatabase>
+#include <QPainter>
 #include <QWidget>
+#include <stddef.h>
 
 extern "C" {
 
-#include "utils/log.h"
 #include "utils/errors.h"
-#include "utils/utf8.h"
+#include "utils/log.h"
 #include "utils/nsoption.h"
+#include "utils/utf8.h"
 #include "neosurf/inttypes.h"
 #include "neosurf/layout.h"
 #include "neosurf/plot_style.h"
@@ -55,99 +55,87 @@ extern "C" {
  */
 static QFont *new_qfont_fstyle(const struct plot_font_style *fstyle)
 {
-	QFont *nfont;
-	const char *family = NULL;
-	bool italic = false;
-	QFontDatabase fontdb;
+    QFont *nfont;
+    const char *family = NULL;
+    bool italic = false;
+    QFontDatabase fontdb;
 
-	/* First, try to find a matching font from the CSS font-family list */
-	if (fstyle->families != NULL) {
-		lwc_string *const *families = fstyle->families;
-		while (*families != NULL) {
-			const char *family_name = lwc_string_data(*families);
-			QString qfamily = QString::fromUtf8(family_name);
+    /* First, try to find a matching font from the CSS font-family list */
+    if (fstyle->families != NULL) {
+        lwc_string *const *families = fstyle->families;
+        while (*families != NULL) {
+            const char *family_name = lwc_string_data(*families);
+            QString qfamily = QString::fromUtf8(family_name);
 
-			/* Check if this font has a substitution registered
-			 * (for web fonts loaded via @font-face)
-			 */
-			QStringList subs = QFont::substitutes(qfamily);
-			if (!subs.isEmpty()) {
-				family = family_name;
-				NSLOG(netsurf,
-				      INFO,
-				      "Rendering text: web font '%s' -> '%s' (AVAILABLE)",
-				      family_name,
-				      subs.first().toUtf8().constData());
-				break;
-			}
+            /* Check if this font has a substitution registered
+             * (for web fonts loaded via @font-face)
+             */
+            QStringList subs = QFont::substitutes(qfamily);
+            if (!subs.isEmpty()) {
+                family = family_name;
+                NSLOG(netsurf, INFO, "Rendering text: web font '%s' -> '%s' (AVAILABLE)", family_name,
+                    subs.first().toUtf8().constData());
+                break;
+            }
 
-			/* Check if this font family is available in the system
-			 */
-			if (QFontDatabase::hasFamily(qfamily) ||
-			    QFontDatabase::families().contains(
-				    qfamily, Qt::CaseInsensitive)) {
-				family = family_name;
-				NSLOG(netsurf,
-				      DEBUG,
-				      "Using CSS font-family: %s",
-				      family_name);
-				break;
-			}
+            /* Check if this font family is available in the system
+             */
+            if (QFontDatabase::hasFamily(qfamily) || QFontDatabase::families().contains(qfamily, Qt::CaseInsensitive)) {
+                family = family_name;
+                NSLOG(netsurf, DEBUG, "Using CSS font-family: %s", family_name);
+                break;
+            }
 
-			/* Font not found - log at INFO for web font debugging
-			 */
-			NSLOG(netsurf,
-			      INFO,
-			      "Rendering text: font '%s' NOT FOUND, trying next",
-			      family_name);
-			/* Mark that we had a font miss - repaint needed when
-			 * font loads */
-			extern bool font_miss_occurred;
-			font_miss_occurred = true;
-			families++;
-		}
-	}
+            /* Font not found - log at INFO for web font debugging
+             */
+            NSLOG(netsurf, INFO, "Rendering text: font '%s' NOT FOUND, trying next", family_name);
+            /* Mark that we had a font miss - repaint needed when
+             * font loads */
+            extern bool font_miss_occurred;
+            font_miss_occurred = true;
+            families++;
+        }
+    }
 
-	/* Fall back to generic families if no specific font was found */
-	if (family == NULL) {
-		switch (fstyle->family) {
-		case PLOT_FONT_FAMILY_SERIF:
-			family = nsoption_charp(font_serif);
-			break;
+    /* Fall back to generic families if no specific font was found */
+    if (family == NULL) {
+        switch (fstyle->family) {
+        case PLOT_FONT_FAMILY_SERIF:
+            family = nsoption_charp(font_serif);
+            break;
 
-		case PLOT_FONT_FAMILY_MONOSPACE:
-			family = nsoption_charp(font_mono);
-			break;
+        case PLOT_FONT_FAMILY_MONOSPACE:
+            family = nsoption_charp(font_mono);
+            break;
 
-		case PLOT_FONT_FAMILY_CURSIVE:
-			family = nsoption_charp(font_cursive);
-			break;
+        case PLOT_FONT_FAMILY_CURSIVE:
+            family = nsoption_charp(font_cursive);
+            break;
 
-		case PLOT_FONT_FAMILY_FANTASY:
-			family = nsoption_charp(font_fantasy);
-			break;
+        case PLOT_FONT_FAMILY_FANTASY:
+            family = nsoption_charp(font_fantasy);
+            break;
 
-		case PLOT_FONT_FAMILY_SANS_SERIF:
-		default:
-			family = nsoption_charp(font_sans);
-			break;
-		}
-	}
+        case PLOT_FONT_FAMILY_SANS_SERIF:
+        default:
+            family = nsoption_charp(font_sans);
+            break;
+        }
+    }
 
-	if (fstyle->flags & FONTF_ITALIC) {
-		italic = true;
-	}
+    if (fstyle->flags & FONTF_ITALIC) {
+        italic = true;
+    }
 
-	nfont = new QFont(family, -1, fstyle->weight, italic);
+    nfont = new QFont(family, -1, fstyle->weight, italic);
 
-	nfont->setPixelSize((fstyle->size * 100) /
-			    (PLOT_STYLE_SCALE * MAGIC_SCALING_DENOMINATOR));
+    nfont->setPixelSize((fstyle->size * 100) / (PLOT_STYLE_SCALE * MAGIC_SCALING_DENOMINATOR));
 
-	if (fstyle->flags & FONTF_SMALLCAPS) {
-		nfont->setCapitalization(QFont::SmallCaps);
-	}
+    if (fstyle->flags & FONTF_SMALLCAPS) {
+        nfont->setCapitalization(QFont::SmallCaps);
+    }
 
-	return nfont;
+    return nfont;
 }
 
 
@@ -155,10 +143,10 @@ static QFont *new_qfont_fstyle(const struct plot_font_style *fstyle)
 
 /* cached font entry*/
 struct pfcache_entry {
-	struct plot_font_style style;
-	QFont *qfont;
-	unsigned int age;
-	int hit;
+    struct plot_font_style style;
+    QFont *qfont;
+    unsigned int age;
+    int hit;
 };
 
 /**
@@ -168,54 +156,48 @@ struct pfcache_entry {
  */
 static QFont *nsfont_style_to_font(const struct plot_font_style *fstyle)
 {
-	int idx;
-	int oldest_idx = 0;
-	static struct {
-		unsigned int age;
-		struct pfcache_entry entries[PFCACHE_ENTRIES];
-	} pfcache;
+    int idx;
+    int oldest_idx = 0;
+    static struct {
+        unsigned int age;
+        struct pfcache_entry entries[PFCACHE_ENTRIES];
+    } pfcache;
 
-	for (idx = 0; idx < PFCACHE_ENTRIES; idx++) {
-		if ((pfcache.entries[idx].qfont != NULL) &&
-		    (pfcache.entries[idx].style.family == fstyle->family) &&
-		    (pfcache.entries[idx].style.size == fstyle->size) &&
-		    (pfcache.entries[idx].style.weight == fstyle->weight) &&
-		    (pfcache.entries[idx].style.flags == fstyle->flags)) {
-			/* found matching existing font */
-			pfcache.entries[idx].hit++;
-			pfcache.entries[idx].age = ++pfcache.age;
-			return new QFont(*pfcache.entries[idx].qfont);
-		}
-		if (pfcache.entries[idx].age <
-		    pfcache.entries[oldest_idx].age) {
-			oldest_idx = idx;
-		}
-	}
+    for (idx = 0; idx < PFCACHE_ENTRIES; idx++) {
+        if ((pfcache.entries[idx].qfont != NULL) && (pfcache.entries[idx].style.family == fstyle->family) &&
+            (pfcache.entries[idx].style.size == fstyle->size) &&
+            (pfcache.entries[idx].style.weight == fstyle->weight) &&
+            (pfcache.entries[idx].style.flags == fstyle->flags)) {
+            /* found matching existing font */
+            pfcache.entries[idx].hit++;
+            pfcache.entries[idx].age = ++pfcache.age;
+            return new QFont(*pfcache.entries[idx].qfont);
+        }
+        if (pfcache.entries[idx].age < pfcache.entries[oldest_idx].age) {
+            oldest_idx = idx;
+        }
+    }
 
-	/* no existing entry, replace oldest */
+    /* no existing entry, replace oldest */
 
-	NSLOG(netsurf,
-	      DEEPDEBUG,
-	      "evicting slot %d age %d after %d hits",
-	      oldest_idx,
-	      pfcache.entries[oldest_idx].age,
-	      pfcache.entries[oldest_idx].hit);
+    NSLOG(netsurf, DEEPDEBUG, "evicting slot %d age %d after %d hits", oldest_idx, pfcache.entries[oldest_idx].age,
+        pfcache.entries[oldest_idx].hit);
 
-	if (pfcache.entries[oldest_idx].qfont != NULL) {
-		delete pfcache.entries[oldest_idx].qfont;
-	}
+    if (pfcache.entries[oldest_idx].qfont != NULL) {
+        delete pfcache.entries[oldest_idx].qfont;
+    }
 
-	pfcache.entries[oldest_idx].qfont = new_qfont_fstyle(fstyle);
+    pfcache.entries[oldest_idx].qfont = new_qfont_fstyle(fstyle);
 
-	pfcache.entries[oldest_idx].style.family = fstyle->family;
-	pfcache.entries[oldest_idx].style.size = fstyle->size;
-	pfcache.entries[oldest_idx].style.weight = fstyle->weight;
-	pfcache.entries[oldest_idx].style.flags = fstyle->flags;
+    pfcache.entries[oldest_idx].style.family = fstyle->family;
+    pfcache.entries[oldest_idx].style.size = fstyle->size;
+    pfcache.entries[oldest_idx].style.weight = fstyle->weight;
+    pfcache.entries[oldest_idx].style.flags = fstyle->flags;
 
-	pfcache.entries[oldest_idx].hit = 0;
-	pfcache.entries[oldest_idx].age = ++pfcache.age;
+    pfcache.entries[oldest_idx].hit = 0;
+    pfcache.entries[oldest_idx].age = ++pfcache.age;
 
-	return new QFont(*pfcache.entries[oldest_idx].qfont);
+    return new QFont(*pfcache.entries[oldest_idx].qfont);
 }
 
 /**
@@ -231,85 +213,80 @@ static QFont *nsfont_style_to_font(const struct plot_font_style *fstyle)
  * \return NSERROR_OK and string_idx and actual_x updated or appropriate error
  * code on faliure
  */
-static nserror layout_position(QFontMetrics &metrics,
-			       const char *string,
-			       size_t length,
-			       int x,
-			       size_t *string_idx,
-			       int *actual_x)
+static nserror
+layout_position(QFontMetrics &metrics, const char *string, size_t length, int x, size_t *string_idx, int *actual_x)
 {
-	int full_x;
-	int measured_x;
-	size_t str_len;
+    int full_x;
+    int measured_x;
+    size_t str_len;
 
-	/* deal with empty string */
-	if (length == 0) {
-		*string_idx = 0;
-		*actual_x = 0;
-		return NSERROR_OK;
-	}
+    /* deal with empty string */
+    if (length == 0) {
+        *string_idx = 0;
+        *actual_x = 0;
+        return NSERROR_OK;
+    }
 
-	/* deal with negative or zero available width  */
-	if (x <= 0) {
-		*string_idx = 0;
-		*actual_x = metrics.horizontalAdvance(string, length);
-		return NSERROR_OK;
-	}
+    /* deal with negative or zero available width  */
+    if (x <= 0) {
+        *string_idx = 0;
+        *actual_x = metrics.horizontalAdvance(string, length);
+        return NSERROR_OK;
+    }
 
-	/* if it is assumed each character of the string will occupy more than a
-	 * pixel then do not attempt measure excessively long strings
-	 */
-	if ((x > 0) && (length > (size_t)x)) {
-		str_len = x;
-	} else {
-		str_len = length;
-	}
+    /* if it is assumed each character of the string will occupy more than a
+     * pixel then do not attempt measure excessively long strings
+     */
+    if ((x > 0) && (length > (size_t)x)) {
+        str_len = x;
+    } else {
+        str_len = length;
+    }
 
-	full_x = metrics.horizontalAdvance(string, str_len);
-	if (full_x < x) {
-		/* whole string fits */
-		*string_idx = length;
-		*actual_x = full_x;
-		return NSERROR_OK;
-	}
+    full_x = metrics.horizontalAdvance(string, str_len);
+    if (full_x < x) {
+        /* whole string fits */
+        *string_idx = length;
+        *actual_x = full_x;
+        return NSERROR_OK;
+    }
 
-	/* initial string offset if every char was the same width */
-	str_len = x / (full_x / str_len);
-	measured_x = metrics.horizontalAdvance(string, str_len);
-	if (measured_x == 0) {
-		*string_idx = 0;
-		*actual_x = full_x;
-		return NSERROR_OK;
-	}
+    /* initial string offset if every char was the same width */
+    str_len = x / (full_x / str_len);
+    measured_x = metrics.horizontalAdvance(string, str_len);
+    if (measured_x == 0) {
+        *string_idx = 0;
+        *actual_x = full_x;
+        return NSERROR_OK;
+    }
 
-	if (measured_x >= x) {
-		/* too long try fewer chars */
-		while (measured_x >= x) {
-			str_len--;
-			if (str_len == 0) {
-				/* cannot fit a single character */
-				measured_x = full_x;
-				break;
-			}
-			measured_x = metrics.horizontalAdvance(string, str_len);
-		}
-	} else if (measured_x < x) {
-		/* too short try more chars untill overflowing */
-		int n_measured_x = measured_x;
-		while (n_measured_x < x) {
-			n_measured_x = metrics.horizontalAdvance(string,
-								 str_len + 1);
-			if (n_measured_x < x) {
-				measured_x = n_measured_x;
-				str_len++;
-			}
-		}
-	}
+    if (measured_x >= x) {
+        /* too long try fewer chars */
+        while (measured_x >= x) {
+            str_len--;
+            if (str_len == 0) {
+                /* cannot fit a single character */
+                measured_x = full_x;
+                break;
+            }
+            measured_x = metrics.horizontalAdvance(string, str_len);
+        }
+    } else if (measured_x < x) {
+        /* too short try more chars untill overflowing */
+        int n_measured_x = measured_x;
+        while (n_measured_x < x) {
+            n_measured_x = metrics.horizontalAdvance(string, str_len + 1);
+            if (n_measured_x < x) {
+                measured_x = n_measured_x;
+                str_len++;
+            }
+        }
+    }
 
-	*string_idx = str_len;
-	*actual_x = measured_x;
+    *string_idx = str_len;
+    *actual_x = measured_x;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
@@ -323,24 +300,15 @@ static nserror layout_position(QFontMetrics &metrics,
  * \return NSERROR_OK and width updated or appropriate error
  *          code on faliure
  */
-static nserror nsqt_layout_width(const struct plot_font_style *fstyle,
-				 const char *string,
-				 size_t length,
-				 int *width)
+static nserror nsqt_layout_width(const struct plot_font_style *fstyle, const char *string, size_t length, int *width)
 {
-	QFont *font = nsfont_style_to_font(fstyle);
-	QFontMetrics metrics(*font);
-	*width = metrics.horizontalAdvance(string, length);
-	delete font;
-	NSLOG(netsurf,
-	      DEEPDEBUG,
-	      "fstyle: %p string:\"%.*s\", length: %" PRIsizet ", width: %dpx",
-	      fstyle,
-	      (int)length,
-	      string,
-	      length,
-	      *width);
-	return NSERROR_OK;
+    QFont *font = nsfont_style_to_font(fstyle);
+    QFontMetrics metrics(*font);
+    *width = metrics.horizontalAdvance(string, length);
+    delete font;
+    NSLOG(netsurf, DEEPDEBUG, "fstyle: %p string:\"%.*s\", length: %" PRIsizet ", width: %dpx", fstyle, (int)length,
+        string, length, *width);
+    return NSERROR_OK;
 }
 
 
@@ -356,33 +324,22 @@ static nserror nsqt_layout_width(const struct plot_font_style *fstyle,
  * \return NSERROR_OK and string_idx and actual_x updated or appropriate error
  * code on faliure
  */
-static nserror nsqt_layout_position(const struct plot_font_style *fstyle,
-				    const char *string,
-				    size_t length,
-				    int x,
-				    size_t *string_idx,
-				    int *actual_x)
+static nserror nsqt_layout_position(
+    const struct plot_font_style *fstyle, const char *string, size_t length, int x, size_t *string_idx, int *actual_x)
 {
-	QFont *font = nsfont_style_to_font(fstyle);
-	QFontMetrics metrics(*font);
-	nserror res;
+    QFont *font = nsfont_style_to_font(fstyle);
+    QFontMetrics metrics(*font);
+    nserror res;
 
-	res = layout_position(metrics, string, length, x, string_idx, actual_x);
+    res = layout_position(metrics, string, length, x, string_idx, actual_x);
 
-	delete font;
+    delete font;
 
-	NSLOG(netsurf,
-	      DEEPDEBUG,
-	      "fstyle: %p string:\"%.*s\", length: %" PRIsizet ", "
-	      "search_x: %dpx, offset: %" PRIsizet ", actual_x: %dpx",
-	      fstyle,
-	      (int)*string_idx,
-	      string,
-	      length,
-	      x,
-	      *string_idx,
-	      *actual_x);
-	return res;
+    NSLOG(netsurf, DEEPDEBUG,
+        "fstyle: %p string:\"%.*s\", length: %" PRIsizet ", "
+        "search_x: %dpx, offset: %" PRIsizet ", actual_x: %dpx",
+        fstyle, (int)*string_idx, string, length, x, *string_idx, *actual_x);
+    return res;
 }
 
 
@@ -408,111 +365,87 @@ static nserror nsqt_layout_position(const struct plot_font_style *fstyle,
  *
  * Returning string_idx == length means no split possible
  */
-static nserror nsqt_layout_split(const struct plot_font_style *fstyle,
-				 const char *string,
-				 size_t length,
-				 int split,
-				 size_t *string_idx,
-				 int *actual_x)
+static nserror nsqt_layout_split(const struct plot_font_style *fstyle, const char *string, size_t length, int split,
+    size_t *string_idx, int *actual_x)
 {
-	nserror res;
-	QFont *font = nsfont_style_to_font(fstyle);
-	QFontMetrics metrics(*font);
-	size_t split_len;
-	int split_x;
-	size_t str_len;
+    nserror res;
+    QFont *font = nsfont_style_to_font(fstyle);
+    QFontMetrics metrics(*font);
+    size_t split_len;
+    int split_x;
+    size_t str_len;
 
-	res = layout_position(
-		metrics, string, length, split, &split_len, &split_x);
-	if (res != NSERROR_OK) {
-		delete font;
-		return res;
-	}
+    res = layout_position(metrics, string, length, split, &split_len, &split_x);
+    if (res != NSERROR_OK) {
+        delete font;
+        return res;
+    }
 
-	if ((split_len < 1) || (split_len >= length)) {
-		*string_idx = length;
-		*actual_x = split_x;
-		goto nsqt_layout_split_done;
-	}
+    if ((split_len < 1) || (split_len >= length)) {
+        *string_idx = length;
+        *actual_x = split_x;
+        goto nsqt_layout_split_done;
+    }
 
-	if (string[split_len] == ' ') {
-		/* string broke on boundary do not attempt to adjust */
-		*string_idx = split_len;
-		*actual_x = split_x;
-		goto nsqt_layout_split_done;
-	}
+    if (string[split_len] == ' ') {
+        /* string broke on boundary do not attempt to adjust */
+        *string_idx = split_len;
+        *actual_x = split_x;
+        goto nsqt_layout_split_done;
+    }
 
-	/* attempt to break string */
-	str_len = split_len;
+    /* attempt to break string */
+    str_len = split_len;
 
-	/* walk backwards through string looking for space to break on */
-	while ((string[str_len] != ' ') && (str_len > 0)) {
-		str_len--;
-	}
+    /* walk backwards through string looking for space to break on */
+    while ((string[str_len] != ' ') && (str_len > 0)) {
+        str_len--;
+    }
 
-	/* walk forwards through string looking for space if back failed */
-	if (str_len == 0) {
-		str_len = split_len;
-		while ((str_len < length) && (string[str_len] != ' ')) {
-			str_len++;
-		}
-	}
-	/* include breaking character in match */
-	if ((str_len < length) && (string[str_len] == ' ')) {
-		str_len++;
-	}
-	*string_idx = str_len;
-	*actual_x = metrics.horizontalAdvance(string, str_len);
+    /* walk forwards through string looking for space if back failed */
+    if (str_len == 0) {
+        str_len = split_len;
+        while ((str_len < length) && (string[str_len] != ' ')) {
+            str_len++;
+        }
+    }
+    /* include breaking character in match */
+    if ((str_len < length) && (string[str_len] == ' ')) {
+        str_len++;
+    }
+    *string_idx = str_len;
+    *actual_x = metrics.horizontalAdvance(string, str_len);
 
 nsqt_layout_split_done:
-	delete font;
-	NSLOG(netsurf,
-	      DEEPDEBUG,
-	      "fstyle: %p string:\"%.*s\", length: %" PRIsizet ", "
-	      "split: %dpx, offset: %" PRIsizet ", actual_x: %dpx",
-	      fstyle,
-	      (int)*string_idx,
-	      string,
-	      length,
-	      split,
-	      *string_idx,
-	      *actual_x);
+    delete font;
+    NSLOG(netsurf, DEEPDEBUG,
+        "fstyle: %p string:\"%.*s\", length: %" PRIsizet ", "
+        "split: %dpx, offset: %" PRIsizet ", actual_x: %dpx",
+        fstyle, (int)*string_idx, string, length, split, *string_idx, *actual_x);
 
-	return res;
+    return res;
 }
 
 
 /* exported interface documented in qt/layout.h */
-nserror nsqt_layout_plot(QPainter *painter,
-			 const struct plot_font_style *fstyle,
-			 int x,
-			 int y,
-			 const char *text,
-			 size_t length)
+nserror
+nsqt_layout_plot(QPainter *painter, const struct plot_font_style *fstyle, int x, int y, const char *text, size_t length)
 {
-	QColor strokecolour(fstyle->foreground & 0xFF,
-			    (fstyle->foreground & 0xFF00) >> 8,
-			    (fstyle->foreground & 0xFF0000) >> 16);
-	QPen pen(strokecolour);
-	QFont *font = nsfont_style_to_font(fstyle);
+    QColor strokecolour(
+        fstyle->foreground & 0xFF, (fstyle->foreground & 0xFF00) >> 8, (fstyle->foreground & 0xFF0000) >> 16);
+    QPen pen(strokecolour);
+    QFont *font = nsfont_style_to_font(fstyle);
 
-	NSLOG(netsurf,
-	      DEEPDEBUG,
-	      "fstyle: %p string:\"%.*s\", length: %" PRIsizet ", width: %dpx",
-	      fstyle,
-	      (int)length,
-	      text,
-	      length,
-	      QFontMetrics(*font, painter->device())
-		      .horizontalAdvance(text, length));
+    NSLOG(netsurf, DEEPDEBUG, "fstyle: %p string:\"%.*s\", length: %" PRIsizet ", width: %dpx", fstyle, (int)length,
+        text, length, QFontMetrics(*font, painter->device()).horizontalAdvance(text, length));
 
-	painter->setPen(pen);
-	painter->setFont(*font);
+    painter->setPen(pen);
+    painter->setFont(*font);
 
-	painter->drawText(x, y, QString::fromUtf8(text, length));
+    painter->drawText(x, y, QString::fromUtf8(text, length));
 
-	delete font;
-	return NSERROR_OK;
+    delete font;
+    return NSERROR_OK;
 }
 
 
@@ -533,13 +466,13 @@ bool font_miss_occurred = false;
  */
 static void font_repaint_callback(void *p)
 {
-	(void)p;
-	font_repaint_pending = false;
-	font_miss_occurred = false;
-	NSLOG(netsurf, INFO, "Font loaded, triggering global repaint");
-	for (QWidget *w : QApplication::topLevelWidgets()) {
-		w->update();
-	}
+    (void)p;
+    font_repaint_pending = false;
+    font_miss_occurred = false;
+    NSLOG(netsurf, INFO, "Font loaded, triggering global repaint");
+    for (QWidget *w : QApplication::topLevelWidgets()) {
+        w->update();
+    }
 }
 
 /**
@@ -548,66 +481,51 @@ static void font_repaint_callback(void *p)
  * This function is called from the core when a web font is downloaded.
  * It overrides the weak symbol in font_face.c.
  */
-extern "C" nserror html_font_face_load_data(const char *family_name,
-					    const uint8_t *data,
-					    size_t size)
+extern "C" nserror html_font_face_load_data(const char *family_name, const uint8_t *data, size_t size)
 {
-	QByteArray fontData(reinterpret_cast<const char *>(data), size);
+    QByteArray fontData(reinterpret_cast<const char *>(data), size);
 
-	int fontId = QFontDatabase::addApplicationFontFromData(fontData);
-	if (fontId == -1) {
-		NSLOG(netsurf,
-		      WARNING,
-		      "Failed to load font '%s' into Qt",
-		      family_name);
-		return NSERROR_INVALID;
-	}
+    int fontId = QFontDatabase::addApplicationFontFromData(fontData);
+    if (fontId == -1) {
+        NSLOG(netsurf, WARNING, "Failed to load font '%s' into Qt", family_name);
+        return NSERROR_INVALID;
+    }
 
-	QStringList families = QFontDatabase::applicationFontFamilies(fontId);
-	NSLOG(netsurf,
-	      INFO,
-	      "Loaded font '%s' into Qt as font ID %d (families: %s)",
-	      family_name,
-	      fontId,
-	      families.join(", ").toUtf8().constData());
+    QStringList families = QFontDatabase::applicationFontFamilies(fontId);
+    NSLOG(netsurf, INFO, "Loaded font '%s' into Qt as font ID %d (families: %s)", family_name, fontId,
+        families.join(", ").toUtf8().constData());
 
-	/* Register CSS→Qt font name substitution using Qt's built-in system */
-	if (!families.isEmpty()) {
-		QString cssName = QString::fromUtf8(family_name);
-		QString qtName = families.first();
+    /* Register CSS→Qt font name substitution using Qt's built-in system */
+    if (!families.isEmpty()) {
+        QString cssName = QString::fromUtf8(family_name);
+        QString qtName = families.first();
 
-		/* Tell Qt: when asked for CSS name, use Qt name instead */
-		QFont::insertSubstitution(cssName, qtName);
-		NSLOG(netsurf,
-		      INFO,
-		      "Registered font substitution: '%s' -> '%s'",
-		      family_name,
-		      qtName.toUtf8().constData());
+        /* Tell Qt: when asked for CSS name, use Qt name instead */
+        QFont::insertSubstitution(cssName, qtName);
+        NSLOG(netsurf, INFO, "Registered font substitution: '%s' -> '%s'", family_name, qtName.toUtf8().constData());
 
-		/* FOUT: Schedule a global repaint so text re-renders with new
-		 * font. Only schedule if:
-		 * 1. A font miss occurred (text was rendered with fallback)
-		 * 2. Not already pending (to coalesce multiple font loads)
-		 */
-		if (font_miss_occurred && !font_repaint_pending) {
-			font_repaint_pending = true;
-			nsqt_schedule(100, font_repaint_callback, NULL);
-			NSLOG(netsurf,
-			      INFO,
-			      "Font miss detected, scheduling repaint");
-		} else if (!font_miss_occurred) {
-			NSLOG(netsurf, INFO, "No font miss - skipping repaint");
-		}
-	}
+        /* FOUT: Schedule a global repaint so text re-renders with new
+         * font. Only schedule if:
+         * 1. A font miss occurred (text was rendered with fallback)
+         * 2. Not already pending (to coalesce multiple font loads)
+         */
+        if (font_miss_occurred && !font_repaint_pending) {
+            font_repaint_pending = true;
+            nsqt_schedule(100, font_repaint_callback, NULL);
+            NSLOG(netsurf, INFO, "Font miss detected, scheduling repaint");
+        } else if (!font_miss_occurred) {
+            NSLOG(netsurf, INFO, "No font miss - skipping repaint");
+        }
+    }
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
 static struct gui_layout_table layout_table = {
-	.width = nsqt_layout_width,
-	.position = nsqt_layout_position,
-	.split = nsqt_layout_split,
+    .width = nsqt_layout_width,
+    .position = nsqt_layout_position,
+    .split = nsqt_layout_split,
 };
 
 struct gui_layout_table *nsqt_layout_table = &layout_table;

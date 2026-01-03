@@ -48,72 +48,72 @@ struct nsurl;
  * system specific changes.
  */
 struct gui_file_table {
-	/* Mandantory entries */
+    /* Mandantory entries */
 
-	/**
-	 * Generate a path from one or more component elemnts.
-	 *
-	 * If a string is allocated it must be freed by the caller.
-	 *
-	 * @param[in,out] str pointer to string pointer if this is NULL enough
-	 *                    storage will be allocated for the complete path.
-	 * @param[in,out] size The size of the space available if \a str not
-	 *                     NULL on input and if not NULL set to the total
-	 *                     output length on output.
-	 * @param[in] nemb The number of elements.
-	 * @param[in] ap The elements of the path as string pointers.
-	 * @return NSERROR_OK and the complete path is written to str
-	 *         or error code on faliure.
-	 */
-	nserror (*mkpath)(char **str, size_t *size, size_t nemb, va_list ap);
+    /**
+     * Generate a path from one or more component elemnts.
+     *
+     * If a string is allocated it must be freed by the caller.
+     *
+     * @param[in,out] str pointer to string pointer if this is NULL enough
+     *                    storage will be allocated for the complete path.
+     * @param[in,out] size The size of the space available if \a str not
+     *                     NULL on input and if not NULL set to the total
+     *                     output length on output.
+     * @param[in] nemb The number of elements.
+     * @param[in] ap The elements of the path as string pointers.
+     * @return NSERROR_OK and the complete path is written to str
+     *         or error code on faliure.
+     */
+    nserror (*mkpath)(char **str, size_t *size, size_t nemb, va_list ap);
 
-	/**
-	 * Get the basename of a file.
-	 *
-	 * This gets the last element of a path and returns it.
-	 *
-	 * @param[in] path The path to extract the name from.
-	 * @param[in,out] str Pointer to string pointer if this is NULL enough
-	 *                    storage will be allocated for the path element.
-	 * @param[in,out] size The size of the space available if \a
-	 *                     str not NULL on input and set to the total
-	 *                     output length on output.
-	 * @return NSERROR_OK and the complete path is written to \a str
-	 *         or error code on faliure.
-	 */
-	nserror (*basename)(const char *path, char **str, size_t *size);
+    /**
+     * Get the basename of a file.
+     *
+     * This gets the last element of a path and returns it.
+     *
+     * @param[in] path The path to extract the name from.
+     * @param[in,out] str Pointer to string pointer if this is NULL enough
+     *                    storage will be allocated for the path element.
+     * @param[in,out] size The size of the space available if \a
+     *                     str not NULL on input and set to the total
+     *                     output length on output.
+     * @return NSERROR_OK and the complete path is written to \a str
+     *         or error code on faliure.
+     */
+    nserror (*basename)(const char *path, char **str, size_t *size);
 
-	/**
-	 * Create a path from a nsurl.
-	 *
-	 * @param[in] url The url to encode.
-	 * @param[out] path A string containing the result path which
-	 *                  must be freed by the caller.
-	 * @return NSERROR_OK and the path is written to \a path
-	 *         or error code on faliure.
-	 */
-	nserror (*nsurl_to_path)(struct nsurl *url, char **path);
+    /**
+     * Create a path from a nsurl.
+     *
+     * @param[in] url The url to encode.
+     * @param[out] path A string containing the result path which
+     *                  must be freed by the caller.
+     * @return NSERROR_OK and the path is written to \a path
+     *         or error code on faliure.
+     */
+    nserror (*nsurl_to_path)(struct nsurl *url, char **path);
 
-	/**
-	 * Create a nsurl from a path.
-	 *
-	 * Perform the necessary operations on a path to generate a nsurl.
-	 *
-	 * @param[in] path The path to convert.
-	 * @param[out] url pointer to recive the nsurl, The returned
-	 *                 url should be unreferenced by the caller.
-	 * @return NSERROR_OK and the url is placed in \a url or error
-	 *         code on faliure.
-	 */
-	nserror (*path_to_nsurl)(const char *path, struct nsurl **url);
+    /**
+     * Create a nsurl from a path.
+     *
+     * Perform the necessary operations on a path to generate a nsurl.
+     *
+     * @param[in] path The path to convert.
+     * @param[out] url pointer to recive the nsurl, The returned
+     *                 url should be unreferenced by the caller.
+     * @return NSERROR_OK and the url is placed in \a url or error
+     *         code on faliure.
+     */
+    nserror (*path_to_nsurl)(const char *path, struct nsurl **url);
 
-	/**
-	 * Ensure that all directory elements needed to store a filename exist.
-	 *
-	 * @param[in] fname The filename to ensure the path to exists.
-	 * @return NSERROR_OK on success or error code on failure.
-	 */
-	nserror (*mkdir_all)(const char *fname);
+    /**
+     * Ensure that all directory elements needed to store a filename exist.
+     *
+     * @param[in] fname The filename to ensure the path to exists.
+     * @return NSERROR_OK on success or error code on failure.
+     */
+    nserror (*mkdir_all)(const char *fname);
 };
 
 /** Default (posix) file operation table. */

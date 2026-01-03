@@ -27,8 +27,8 @@ extern "C" {
 #include "utils/nsurl.h"
 }
 #include "beos/gui.h"
-#include "beos/scaffolding.h"
 #include "beos/gui_options.h"
+#include "beos/scaffolding.h"
 
 #include <View.h>
 #include <Window.h>
@@ -37,8 +37,8 @@ BWindow *wndPreferences;
 
 void nsbeos_options_init(void)
 {
-	/* set the widgets to reflect the current options */
-	nsbeos_options_load();
+    /* set the widgets to reflect the current options */
+    nsbeos_options_load();
 }
 
 void nsbeos_options_load(void)

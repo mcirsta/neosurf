@@ -5,71 +5,62 @@
  * Copyright 2012 Michael Drake <tlsa@netsurf-browser.org>
  */
 
+#include "utils/utils.h"
 #include "bytecode/bytecode.h"
 #include "bytecode/opcodes.h"
-#include "select/propset.h"
 #include "select/propget.h"
-#include "utils/utils.h"
+#include "select/propset.h"
 
-#include "select/properties/properties.h"
 #include "select/properties/helpers.h"
+#include "select/properties/properties.h"
 
-css_error css__cascade_column_fill(uint32_t opv,
-				   css_style *style,
-				   css_select_state *state)
+css_error css__cascade_column_fill(uint32_t opv, css_style *style, css_select_state *state)
 {
-	uint16_t value = CSS_COLUMN_FILL_INHERIT;
+    uint16_t value = CSS_COLUMN_FILL_INHERIT;
 
-	UNUSED(style);
+    UNUSED(style);
 
-	if (hasFlagValue(opv) == false) {
-		switch (getValue(opv)) {
-		case COLUMN_FILL_BALANCE:
-			value = CSS_COLUMN_FILL_BALANCE;
-			break;
-		case COLUMN_FILL_AUTO:
-			value = CSS_COLUMN_FILL_AUTO;
-			break;
-		}
-	}
+    if (hasFlagValue(opv) == false) {
+        switch (getValue(opv)) {
+        case COLUMN_FILL_BALANCE:
+            value = CSS_COLUMN_FILL_BALANCE;
+            break;
+        case COLUMN_FILL_AUTO:
+            value = CSS_COLUMN_FILL_AUTO;
+            break;
+        }
+    }
 
-	if (css__outranks_existing(getOpcode(opv),
-				   isImportant(opv),
-				   state,
-				   getFlagValue(opv))) {
-		return set_column_fill(state->computed, value);
-	}
+    if (css__outranks_existing(getOpcode(opv), isImportant(opv), state, getFlagValue(opv))) {
+        return set_column_fill(state->computed, value);
+    }
 
-	return CSS_OK;
+    return CSS_OK;
 }
 
-css_error
-css__set_column_fill_from_hint(const css_hint *hint, css_computed_style *style)
+css_error css__set_column_fill_from_hint(const css_hint *hint, css_computed_style *style)
 {
-	return set_column_fill(style, hint->status);
+    return set_column_fill(style, hint->status);
 }
 
 css_error css__initial_column_fill(css_select_state *state)
 {
-	return set_column_fill(state->computed, CSS_COLUMN_FILL_BALANCE);
+    return set_column_fill(state->computed, CSS_COLUMN_FILL_BALANCE);
+}
+
+css_error css__copy_column_fill(const css_computed_style *from, css_computed_style *to)
+{
+    if (from == to) {
+        return CSS_OK;
+    }
+
+    return set_column_fill(to, get_column_fill(from));
 }
 
 css_error
-css__copy_column_fill(const css_computed_style *from, css_computed_style *to)
+css__compose_column_fill(const css_computed_style *parent, const css_computed_style *child, css_computed_style *result)
 {
-	if (from == to) {
-		return CSS_OK;
-	}
+    uint8_t type = get_column_fill(child);
 
-	return set_column_fill(to, get_column_fill(from));
-}
-
-css_error css__compose_column_fill(const css_computed_style *parent,
-				   const css_computed_style *child,
-				   css_computed_style *result)
-{
-	uint8_t type = get_column_fill(child);
-
-	return css__copy_column_fill(
-		type == CSS_COLUMN_FILL_INHERIT ? parent : child, result);
+    return css__copy_column_fill(type == CSS_COLUMN_FILL_INHERIT ? parent : child, result);
 }

@@ -25,19 +25,19 @@
 #include <stdlib.h>
 #include <windows.h>
 
-#include "neosurf/utils/log.h"
-#include "neosurf/utils/nsoption.h"
+#include "neosurf/desktop/global_history.h"
 #include "neosurf/keypress.h"
 #include "neosurf/plotters.h"
-#include "neosurf/desktop/global_history.h"
+#include "neosurf/utils/log.h"
+#include "neosurf/utils/nsoption.h"
 
-#include "windows/plot.h"
 #include "windows/corewindow.h"
 #include "windows/global_history.h"
+#include "windows/plot.h"
 
 
 struct nsw32_global_history_window {
-	struct nsw32_corewindow core;
+    struct nsw32_corewindow core;
 };
 
 static struct nsw32_global_history_window *global_history_window = NULL;
@@ -49,13 +49,12 @@ static struct nsw32_global_history_window *global_history_window = NULL;
  * \param nskey The netsurf key code
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror
-nsw32_global_history_key(struct nsw32_corewindow *nsw32_cw, uint32_t nskey)
+static nserror nsw32_global_history_key(struct nsw32_corewindow *nsw32_cw, uint32_t nskey)
 {
-	if (global_history_keypress(nskey)) {
-		return NSERROR_OK;
-	}
-	return NSERROR_NOT_IMPLEMENTED;
+    if (global_history_keypress(nskey)) {
+        return NSERROR_OK;
+    }
+    return NSERROR_NOT_IMPLEMENTED;
 }
 
 /**
@@ -67,14 +66,12 @@ nsw32_global_history_key(struct nsw32_corewindow *nsw32_cw, uint32_t nskey)
  * \param y location of event
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror nsw32_global_history_mouse(struct nsw32_corewindow *nsw32_cw,
-					  browser_mouse_state mouse_state,
-					  int x,
-					  int y)
+static nserror
+nsw32_global_history_mouse(struct nsw32_corewindow *nsw32_cw, browser_mouse_state mouse_state, int x, int y)
 {
-	global_history_mouse_action(mouse_state, x, y);
+    global_history_mouse_action(mouse_state, x, y);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /**
@@ -86,26 +83,21 @@ static nserror nsw32_global_history_mouse(struct nsw32_corewindow *nsw32_cw,
  * \param r The rectangle of the window that needs updating.
  * \return NSERROR_OK on success otherwise apropriate error code
  */
-static nserror nsw32_global_history_draw(struct nsw32_corewindow *nsw32_cw,
-					 int scrollx,
-					 int scrolly,
-					 struct rect *r)
+static nserror nsw32_global_history_draw(struct nsw32_corewindow *nsw32_cw, int scrollx, int scrolly, struct rect *r)
 {
-	struct redraw_context ctx = {.interactive = true,
-				     .background_images = true,
-				     .plot = &win_plotters};
+    struct redraw_context ctx = {.interactive = true, .background_images = true, .plot = &win_plotters};
 
-	global_history_redraw(-scrollx, -scrolly, r, &ctx);
+    global_history_redraw(-scrollx, -scrolly, r, &ctx);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
 static nserror nsw32_global_history_close(struct nsw32_corewindow *nsw32_cw)
 {
-	ShowWindow(nsw32_cw->hWnd, SW_HIDE);
+    ShowWindow(nsw32_cw->hWnd, SW_HIDE);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /**
@@ -115,73 +107,73 @@ static nserror nsw32_global_history_close(struct nsw32_corewindow *nsw32_cw)
  */
 static nserror nsw32_global_history_init(HINSTANCE hInstance)
 {
-	struct nsw32_global_history_window *ncwin;
-	nserror res;
+    struct nsw32_global_history_window *ncwin;
+    nserror res;
 
-	if (global_history_window != NULL) {
-		return NSERROR_OK;
-	}
+    if (global_history_window != NULL) {
+        return NSERROR_OK;
+    }
 
-	ncwin = calloc(1, sizeof(*ncwin));
-	if (ncwin == NULL) {
-		return NSERROR_NOMEM;
-	}
+    ncwin = calloc(1, sizeof(*ncwin));
+    if (ncwin == NULL) {
+        return NSERROR_NOMEM;
+    }
 
-	ncwin->core.title = "NeoSurf Global History";
-	ncwin->core.draw = nsw32_global_history_draw;
-	ncwin->core.key = nsw32_global_history_key;
-	ncwin->core.mouse = nsw32_global_history_mouse;
-	ncwin->core.close = nsw32_global_history_close;
+    ncwin->core.title = "NeoSurf Global History";
+    ncwin->core.draw = nsw32_global_history_draw;
+    ncwin->core.key = nsw32_global_history_key;
+    ncwin->core.mouse = nsw32_global_history_mouse;
+    ncwin->core.close = nsw32_global_history_close;
 
-	res = nsw32_corewindow_init(hInstance, NULL, &ncwin->core);
-	if (res != NSERROR_OK) {
-		free(ncwin);
-		return res;
-	}
+    res = nsw32_corewindow_init(hInstance, NULL, &ncwin->core);
+    if (res != NSERROR_OK) {
+        free(ncwin);
+        return res;
+    }
 
-	res = global_history_init((struct core_window *)ncwin);
-	if (res != NSERROR_OK) {
-		free(ncwin);
-		return res;
-	}
+    res = global_history_init((struct core_window *)ncwin);
+    if (res != NSERROR_OK) {
+        free(ncwin);
+        return res;
+    }
 
-	/* memoise window so it can be represented when necessary
-	 * instead of recreating every time.
-	 */
-	global_history_window = ncwin;
+    /* memoise window so it can be represented when necessary
+     * instead of recreating every time.
+     */
+    global_history_window = ncwin;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
 /* exported interface documented in windows/global_history.h */
 nserror nsw32_global_history_present(HINSTANCE hInstance)
 {
-	nserror res;
+    nserror res;
 
-	res = nsw32_global_history_init(hInstance);
-	if (res == NSERROR_OK) {
-		ShowWindow(global_history_window->core.hWnd, SW_SHOWNORMAL);
-	}
-	return res;
+    res = nsw32_global_history_init(hInstance);
+    if (res == NSERROR_OK) {
+        ShowWindow(global_history_window->core.hWnd, SW_SHOWNORMAL);
+    }
+    return res;
 }
 
 /* exported interface documented in windows/global_history.h */
 nserror nsw32_global_history_finalise(void)
 {
-	nserror res;
+    nserror res;
 
-	if (global_history_window == NULL) {
-		return NSERROR_OK;
-	}
+    if (global_history_window == NULL) {
+        return NSERROR_OK;
+    }
 
-	res = global_history_fini();
-	if (res == NSERROR_OK) {
-		res = nsw32_corewindow_fini(&global_history_window->core);
-		DestroyWindow(global_history_window->core.hWnd);
-		free(global_history_window);
-		global_history_window = NULL;
-	}
+    res = global_history_fini();
+    if (res == NSERROR_OK) {
+        res = nsw32_corewindow_fini(&global_history_window->core);
+        DestroyWindow(global_history_window->core.hWnd);
+        free(global_history_window);
+        global_history_window = NULL;
+    }
 
-	return res;
+    return res;
 }

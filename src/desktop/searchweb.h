@@ -32,28 +32,27 @@ struct nsurl;
  *
  */
 struct gui_search_web_table {
-	/**
-	 * called when the search provider details are updated.
-	 *
-	 * \param provider_name The name of the provider.
-	 * \param ico_bitmap The bitmap of the search icon may be NULL
-	 * if no icon is yet available.
-	 */
-	nserror (*provider_update)(const char *provider_name,
-				   struct bitmap *ico_bitmap);
+    /**
+     * called when the search provider details are updated.
+     *
+     * \param provider_name The name of the provider.
+     * \param ico_bitmap The bitmap of the search icon may be NULL
+     * if no icon is yet available.
+     */
+    nserror (*provider_update)(const char *provider_name, struct bitmap *ico_bitmap);
 };
 
 /**
  * Flags which alter the behaviour of the omin search.
  */
 enum search_web_omni_flags {
-	/** no changes to default operation */
-	SEARCH_WEB_OMNI_NONE = 0,
+    /** no changes to default operation */
+    SEARCH_WEB_OMNI_NONE = 0,
 
-	/** The search does not attempt to interpret the url as a url
-	 * before using it as a search term.
-	 */
-	SEARCH_WEB_OMNI_SEARCHONLY = 1,
+    /** The search does not attempt to interpret the url as a url
+     * before using it as a search term.
+     */
+    SEARCH_WEB_OMNI_SEARCHONLY = 1,
 };
 
 /**
@@ -71,9 +70,7 @@ enum search_web_omni_flags {
  * \param url_out The ourput url on success.
  * \return NSERROR_OK on success or appropriate error code.
  */
-nserror search_web_omni(const char *term,
-			enum search_web_omni_flags flags,
-			struct nsurl **url_out);
+nserror search_web_omni(const char *term, enum search_web_omni_flags flags, struct nsurl **url_out);
 
 
 /**

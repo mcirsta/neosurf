@@ -26,8 +26,8 @@
 
 #include <libwapcaplet/libwapcaplet.h>
 
-#include "neosurf/url_db.h"
 #include "neosurf/cookie_db.h"
+#include "neosurf/url_db.h"
 
 /**
  * Initialize urldb
@@ -87,9 +87,7 @@ nserror urldb_set_url_content_type(struct nsurl *url, content_type type);
  * \param realm The authentication realm
  * \param auth The authentication details (in form username:password)
  */
-void urldb_set_auth_details(struct nsurl *url,
-			    const char *realm,
-			    const char *auth);
+void urldb_set_auth_details(struct nsurl *url, const char *realm, const char *auth);
 
 
 /**
@@ -147,9 +145,7 @@ bool urldb_get_cert_permissions(struct nsurl *url);
  * \param referrer Referring resource, or 0 for verifiable transaction
  * \return true on success, false otherwise
  */
-bool urldb_set_cookie(const char *header,
-		      struct nsurl *url,
-		      struct nsurl *referrer);
+bool urldb_set_cookie(const char *header, struct nsurl *url, struct nsurl *referrer);
 
 
 /**

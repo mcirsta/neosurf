@@ -28,8 +28,8 @@
 #define _NETSURF_UTILS_ASCII_H_
 
 #include <errno.h>
-#include <stdlib.h>
 #include <limits.h>
+#include <stdlib.h>
 
 /**
  * Test whether a character is a whitespace character.
@@ -39,8 +39,7 @@
  */
 static inline bool ascii_is_space(char c)
 {
-	return (c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' ||
-		c == '\r');
+    return (c == ' ' || c == '\t' || c == '\n' || c == '\v' || c == '\f' || c == '\r');
 }
 
 /**
@@ -51,7 +50,7 @@ static inline bool ascii_is_space(char c)
  */
 static inline bool ascii_is_alpha_lower(char c)
 {
-	return (c >= 'a' && c <= 'z');
+    return (c >= 'a' && c <= 'z');
 }
 
 /**
@@ -62,7 +61,7 @@ static inline bool ascii_is_alpha_lower(char c)
  */
 static inline bool ascii_is_alpha_upper(char c)
 {
-	return (c >= 'A' && c <= 'Z');
+    return (c >= 'A' && c <= 'Z');
 }
 
 /**
@@ -73,7 +72,7 @@ static inline bool ascii_is_alpha_upper(char c)
  */
 static inline bool ascii_is_alpha(char c)
 {
-	return (ascii_is_alpha_lower(c) || ascii_is_alpha_upper(c));
+    return (ascii_is_alpha_lower(c) || ascii_is_alpha_upper(c));
 }
 
 /**
@@ -84,7 +83,7 @@ static inline bool ascii_is_alpha(char c)
  */
 static inline bool ascii_is_digit(char c)
 {
-	return (c >= '0' && c <= '9');
+    return (c >= '0' && c <= '9');
 }
 
 /**
@@ -95,7 +94,7 @@ static inline bool ascii_is_digit(char c)
  */
 static inline bool ascii_is_sign(char c)
 {
-	return (c == '-' || c == '+');
+    return (c == '-' || c == '+');
 }
 
 /**
@@ -106,7 +105,7 @@ static inline bool ascii_is_sign(char c)
  */
 static inline bool ascii_is_alphanumerical(char c)
 {
-	return (ascii_is_alpha(c) || ascii_is_digit(c));
+    return (ascii_is_alpha(c) || ascii_is_digit(c));
 }
 
 /**
@@ -117,7 +116,7 @@ static inline bool ascii_is_alphanumerical(char c)
  */
 static inline bool ascii_is_af_lower(char c)
 {
-	return (c >= 'a' && c <= 'f');
+    return (c >= 'a' && c <= 'f');
 }
 
 /**
@@ -128,7 +127,7 @@ static inline bool ascii_is_af_lower(char c)
  */
 static inline bool ascii_is_hex_lower(char c)
 {
-	return (ascii_is_digit(c) || ascii_is_af_lower(c));
+    return (ascii_is_digit(c) || ascii_is_af_lower(c));
 }
 
 /**
@@ -139,7 +138,7 @@ static inline bool ascii_is_hex_lower(char c)
  */
 static inline bool ascii_is_af_upper(char c)
 {
-	return (c >= 'A' && c <= 'F');
+    return (c >= 'A' && c <= 'F');
 }
 
 /**
@@ -150,7 +149,7 @@ static inline bool ascii_is_af_upper(char c)
  */
 static inline bool ascii_is_hex_upper(char c)
 {
-	return (ascii_is_digit(c) || ascii_is_af_upper(c));
+    return (ascii_is_digit(c) || ascii_is_af_upper(c));
 }
 
 /**
@@ -161,8 +160,7 @@ static inline bool ascii_is_hex_upper(char c)
  */
 static inline bool ascii_is_hex(char c)
 {
-	return (ascii_is_digit(c) || ascii_is_af_upper(c) ||
-		ascii_is_af_lower(c));
+    return (ascii_is_digit(c) || ascii_is_af_upper(c) || ascii_is_af_lower(c));
 }
 
 /**
@@ -173,16 +171,16 @@ static inline bool ascii_is_hex(char c)
  */
 static inline int ascii_hex_to_value(char c)
 {
-	if (ascii_is_digit(c)) {
-		return c - '0';
-	} else if (ascii_is_af_lower(c)) {
-		return c - 'a' + 10;
-	} else if (ascii_is_af_upper(c)) {
-		return c - 'A' + 10;
-	}
+    if (ascii_is_digit(c)) {
+        return c - '0';
+    } else if (ascii_is_af_lower(c)) {
+        return c - 'a' + 10;
+    } else if (ascii_is_af_upper(c)) {
+        return c - 'A' + 10;
+    }
 
-	/* Invalid hex */
-	return -256;
+    /* Invalid hex */
+    return -256;
 }
 
 /**
@@ -195,7 +193,7 @@ static inline int ascii_hex_to_value(char c)
  */
 static inline int ascii_hex_to_value_2_chars(char c1, char c2)
 {
-	return 16 * ascii_hex_to_value(c1) + ascii_hex_to_value(c2);
+    return 16 * ascii_hex_to_value(c1) + ascii_hex_to_value(c2);
 }
 
 /**
@@ -209,7 +207,7 @@ static inline int ascii_hex_to_value_2_chars(char c1, char c2)
  */
 static inline char ascii_to_lower(char c)
 {
-	return (ascii_is_alpha_upper(c)) ? (c + 'a' - 'A') : c;
+    return (ascii_is_alpha_upper(c)) ? (c + 'a' - 'A') : c;
 }
 
 /**
@@ -223,7 +221,7 @@ static inline char ascii_to_lower(char c)
  */
 static inline char ascii_to_upper(char c)
 {
-	return (ascii_is_alpha_lower(c)) ? (c + 'A' - 'a') : c;
+    return (ascii_is_alpha_lower(c)) ? (c + 'A' - 'a') : c;
 }
 
 /**
@@ -234,11 +232,11 @@ static inline char ascii_to_upper(char c)
  */
 static inline size_t ascii_count_alpha_lower(const char *str)
 {
-	size_t count = 0;
-	while (ascii_is_alpha_lower(*(str++))) {
-		count++;
-	}
-	return count;
+    size_t count = 0;
+    while (ascii_is_alpha_lower(*(str++))) {
+        count++;
+    }
+    return count;
 }
 
 /**
@@ -249,11 +247,11 @@ static inline size_t ascii_count_alpha_lower(const char *str)
  */
 static inline size_t ascii_count_alpha_upper(const char *str)
 {
-	size_t count = 0;
-	while (ascii_is_alpha_upper(*(str++))) {
-		count++;
-	}
-	return count;
+    size_t count = 0;
+    while (ascii_is_alpha_upper(*(str++))) {
+        count++;
+    }
+    return count;
 }
 
 /**
@@ -264,11 +262,11 @@ static inline size_t ascii_count_alpha_upper(const char *str)
  */
 static inline size_t ascii_count_alpha(const char *str)
 {
-	size_t count = 0;
-	while (ascii_is_alpha(*(str++))) {
-		count++;
-	}
-	return count;
+    size_t count = 0;
+    while (ascii_is_alpha(*(str++))) {
+        count++;
+    }
+    return count;
 }
 
 /**
@@ -279,11 +277,11 @@ static inline size_t ascii_count_alpha(const char *str)
  */
 static inline size_t ascii_count_digit(const char *str)
 {
-	size_t count = 0;
-	while (ascii_is_digit(*(str++))) {
-		count++;
-	}
-	return count;
+    size_t count = 0;
+    while (ascii_is_digit(*(str++))) {
+        count++;
+    }
+    return count;
 }
 
 /**
@@ -294,12 +292,12 @@ static inline size_t ascii_count_digit(const char *str)
  */
 static inline size_t ascii_count_digit_or_colon(const char *str)
 {
-	size_t count = 0;
-	while (ascii_is_digit(*str) || *str == ':') {
-		count++;
-		str++;
-	}
-	return count;
+    size_t count = 0;
+    while (ascii_is_digit(*str) || *str == ':') {
+        count++;
+        str++;
+    }
+    return count;
 }
 
 /**
@@ -311,14 +309,14 @@ static inline size_t ascii_count_digit_or_colon(const char *str)
  */
 static inline bool ascii_strings_equal_caseless(const char *s1, const char *s2)
 {
-	while (*s1 != '\0') {
-		if (ascii_to_lower(*s1) != ascii_to_lower(*s2)) {
-			break;
-		}
-		s1++;
-		s2++;
-	}
-	return (ascii_to_lower(*s1) == ascii_to_lower(*s2));
+    while (*s1 != '\0') {
+        if (ascii_to_lower(*s1) != ascii_to_lower(*s2)) {
+            break;
+        }
+        s1++;
+        s2++;
+    }
+    return (ascii_to_lower(*s1) == ascii_to_lower(*s2));
 }
 
 /**
@@ -330,14 +328,14 @@ static inline bool ascii_strings_equal_caseless(const char *s1, const char *s2)
  */
 static inline bool ascii_strings_equal(const char *s1, const char *s2)
 {
-	while (*s1 != '\0') {
-		if (*s1 != *s2) {
-			break;
-		}
-		s1++;
-		s2++;
-	}
-	return (*s1 == *s2);
+    while (*s1 != '\0') {
+        if (*s1 != *s2) {
+            break;
+        }
+        s1++;
+        s2++;
+    }
+    return (*s1 == *s2);
 }
 
 /**
@@ -347,18 +345,17 @@ static inline bool ascii_strings_equal(const char *s1, const char *s2)
  * \param[in] s2  Second string to compare.
  * \return number of equivalent characters.
  */
-static inline size_t
-ascii_strings_count_equal_caseless(const char *s1, const char *s2)
+static inline size_t ascii_strings_count_equal_caseless(const char *s1, const char *s2)
 {
-	const char *s = s1;
-	while (*s1 != '\0') {
-		if (ascii_to_lower(*s1) != ascii_to_lower(*s2)) {
-			break;
-		}
-		s1++;
-		s2++;
-	}
-	return s1 - s;
+    const char *s = s1;
+    while (*s1 != '\0') {
+        if (ascii_to_lower(*s1) != ascii_to_lower(*s2)) {
+            break;
+        }
+        s1++;
+        s2++;
+    }
+    return s1 - s;
 }
 
 /**
@@ -370,15 +367,15 @@ ascii_strings_count_equal_caseless(const char *s1, const char *s2)
  */
 static inline size_t ascii_strings_count_equal(const char *s1, const char *s2)
 {
-	const char *s = s1;
-	while (*s1 != '\0') {
-		if (*s1 != *s2) {
-			break;
-		}
-		s1++;
-		s2++;
-	}
-	return s1 - s;
+    const char *s = s1;
+    while (*s1 != '\0') {
+        if (*s1 != *s2) {
+            break;
+        }
+        s1++;
+        s2++;
+    }
+    return s1 - s;
 }
 
 /**
@@ -391,15 +388,15 @@ static inline size_t ascii_strings_count_equal(const char *s1, const char *s2)
  */
 static inline size_t ascii_string_to_int(const char *str, int *res)
 {
-	char *end = NULL;
-	long long temp = strtoll(str, &end, 10);
+    char *end = NULL;
+    long long temp = strtoll(str, &end, 10);
 
-	if (end == str || errno == ERANGE || temp < INT_MIN || temp > INT_MAX) {
-		return 0;
-	}
+    if (end == str || errno == ERANGE || temp < INT_MIN || temp > INT_MAX) {
+        return 0;
+    }
 
-	*res = temp;
-	return end - str;
+    *res = temp;
+    return end - str;
 }
 
 #endif

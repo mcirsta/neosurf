@@ -43,8 +43,7 @@ typedef struct download_context download_context;
  * This must only be called by the core browser window fetch infrastructure.
  * Ownership of the download context object created is passed to the frontend.
  */
-nserror download_context_create(struct llcache_handle *llcache,
-				struct gui_window *parent);
+nserror download_context_create(struct llcache_handle *llcache, struct gui_window *parent);
 
 /**
  * Destroy a download context
@@ -91,8 +90,7 @@ const char *download_context_get_mime_type(const download_context *ctx);
  * \param ctx  Context to retrieve byte length from
  * \return Total length, in bytes, or 0 if unknown
  */
-unsigned long long int
-download_context_get_total_length(const download_context *ctx);
+unsigned long long int download_context_get_total_length(const download_context *ctx);
 
 /**
  * Retrieve the filename for a download

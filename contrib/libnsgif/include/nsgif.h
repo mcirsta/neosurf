@@ -16,9 +16,9 @@
 #ifndef NSNSGIF_H
 #define NSNSGIF_H
 
-#include <stdint.h>
-#include <stdbool.h>
 #include <inttypes.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 /** Representation of infinity. */
 #define NSGIF_INFINITE (UINT32_MAX)
@@ -40,65 +40,65 @@ typedef struct nsgif nsgif_t;
  * * Units are pixels.
  */
 typedef struct nsgif_rect {
-	/** x co-ordinate of redraw rectangle, left */
-	uint32_t x0;
-	/** y co-ordinate of redraw rectangle, top */
-	uint32_t y0;
-	/** x co-ordinate of redraw rectangle, right */
-	uint32_t x1;
-	/** y co-ordinate of redraw rectangle, bottom */
-	uint32_t y1;
+    /** x co-ordinate of redraw rectangle, left */
+    uint32_t x0;
+    /** y co-ordinate of redraw rectangle, top */
+    uint32_t y0;
+    /** x co-ordinate of redraw rectangle, right */
+    uint32_t x1;
+    /** y co-ordinate of redraw rectangle, bottom */
+    uint32_t y1;
 } nsgif_rect_t;
 
 /**
  * LibNSGIF return codes.
  */
 typedef enum {
-	/**
-	 * Success.
-	 */
-	NSGIF_OK,
+    /**
+     * Success.
+     */
+    NSGIF_OK,
 
-	/**
-	 * Out of memory error.
-	 */
-	NSGIF_ERR_OOM,
+    /**
+     * Out of memory error.
+     */
+    NSGIF_ERR_OOM,
 
-	/**
-	 * GIF source data is invalid, and no frames are recoverable.
-	 */
-	NSGIF_ERR_DATA,
+    /**
+     * GIF source data is invalid, and no frames are recoverable.
+     */
+    NSGIF_ERR_DATA,
 
-	/**
-	 * Frame number is not valid.
-	 */
-	NSGIF_ERR_BAD_FRAME,
+    /**
+     * Frame number is not valid.
+     */
+    NSGIF_ERR_BAD_FRAME,
 
-	/**
-	 * GIF source data contained an error in a frame.
-	 */
-	NSGIF_ERR_DATA_FRAME,
+    /**
+     * GIF source data contained an error in a frame.
+     */
+    NSGIF_ERR_DATA_FRAME,
 
-	/**
-	 * Unexpected end of GIF source data.
-	 */
-	NSGIF_ERR_END_OF_DATA,
+    /**
+     * Unexpected end of GIF source data.
+     */
+    NSGIF_ERR_END_OF_DATA,
 
-	/**
-	 * Can't supply more data after calling \ref nsgif_data_complete.
-	 */
-	NSGIF_ERR_DATA_COMPLETE,
+    /**
+     * Can't supply more data after calling \ref nsgif_data_complete.
+     */
+    NSGIF_ERR_DATA_COMPLETE,
 
-	/**
-	 * The current frame cannot be displayed.
-	 */
-	NSGIF_ERR_FRAME_DISPLAY,
+    /**
+     * The current frame cannot be displayed.
+     */
+    NSGIF_ERR_FRAME_DISPLAY,
 
-	/**
-	 * Indicates an animation is complete, and \ref nsgif_reset must be
-	 * called to restart the animation from the beginning.
-	 */
-	NSGIF_ERR_ANIMATION_END,
+    /**
+     * Indicates an animation is complete, and \ref nsgif_reset must be
+     * called to restart the animation from the beginning.
+     */
+    NSGIF_ERR_ANIMATION_END,
 } nsgif_error;
 
 /**
@@ -113,49 +113,49 @@ typedef enum {
  * transparent) or `255` (fully opaque).
  */
 typedef enum nsgif_bitmap_fmt {
-	/** Bite-wise RGBA: Byte order: 0xRR, 0xGG, 0xBB, 0xAA. */
-	NSGIF_BITMAP_FMT_R8G8B8A8,
+    /** Bite-wise RGBA: Byte order: 0xRR, 0xGG, 0xBB, 0xAA. */
+    NSGIF_BITMAP_FMT_R8G8B8A8,
 
-	/** Bite-wise BGRA: Byte order: 0xBB, 0xGG, 0xRR, 0xAA. */
-	NSGIF_BITMAP_FMT_B8G8R8A8,
+    /** Bite-wise BGRA: Byte order: 0xBB, 0xGG, 0xRR, 0xAA. */
+    NSGIF_BITMAP_FMT_B8G8R8A8,
 
-	/** Bite-wise ARGB: Byte order: 0xAA, 0xRR, 0xGG, 0xBB. */
-	NSGIF_BITMAP_FMT_A8R8G8B8,
+    /** Bite-wise ARGB: Byte order: 0xAA, 0xRR, 0xGG, 0xBB. */
+    NSGIF_BITMAP_FMT_A8R8G8B8,
 
-	/** Bite-wise ABGR: Byte order: 0xAA, 0xBB, 0xGG, 0xRR. */
-	NSGIF_BITMAP_FMT_A8B8G8R8,
+    /** Bite-wise ABGR: Byte order: 0xAA, 0xBB, 0xGG, 0xRR. */
+    NSGIF_BITMAP_FMT_A8B8G8R8,
 
-	/**
-	 * 32-bit RGBA (0xRRGGBBAA).
-	 *
-	 * * On little endian host, same as \ref NSGIF_BITMAP_FMT_A8B8G8R8.
-	 * * On big endian host, same as \ref NSGIF_BITMAP_FMT_R8G8B8A8.
-	 */
-	NSGIF_BITMAP_FMT_RGBA8888,
+    /**
+     * 32-bit RGBA (0xRRGGBBAA).
+     *
+     * * On little endian host, same as \ref NSGIF_BITMAP_FMT_A8B8G8R8.
+     * * On big endian host, same as \ref NSGIF_BITMAP_FMT_R8G8B8A8.
+     */
+    NSGIF_BITMAP_FMT_RGBA8888,
 
-	/**
-	 * 32-bit BGRA (0xBBGGRRAA).
-	 *
-	 * * On little endian host, same as \ref NSGIF_BITMAP_FMT_A8R8G8B8.
-	 * * On big endian host, same as \ref NSGIF_BITMAP_FMT_B8G8R8A8.
-	 */
-	NSGIF_BITMAP_FMT_BGRA8888,
+    /**
+     * 32-bit BGRA (0xBBGGRRAA).
+     *
+     * * On little endian host, same as \ref NSGIF_BITMAP_FMT_A8R8G8B8.
+     * * On big endian host, same as \ref NSGIF_BITMAP_FMT_B8G8R8A8.
+     */
+    NSGIF_BITMAP_FMT_BGRA8888,
 
-	/**
-	 * 32-bit ARGB (0xAARRGGBB).
-	 *
-	 * * On little endian host, same as \ref NSGIF_BITMAP_FMT_B8G8R8A8.
-	 * * On big endian host, same as \ref NSGIF_BITMAP_FMT_A8R8G8B8.
-	 */
-	NSGIF_BITMAP_FMT_ARGB8888,
+    /**
+     * 32-bit ARGB (0xAARRGGBB).
+     *
+     * * On little endian host, same as \ref NSGIF_BITMAP_FMT_B8G8R8A8.
+     * * On big endian host, same as \ref NSGIF_BITMAP_FMT_A8R8G8B8.
+     */
+    NSGIF_BITMAP_FMT_ARGB8888,
 
-	/**
-	 * 32-bit BGRA (0xAABBGGRR).
-	 *
-	 * * On little endian host, same as \ref NSGIF_BITMAP_FMT_R8G8B8A8.
-	 * * On big endian host, same as \ref NSGIF_BITMAP_FMT_A8B8G8R8.
-	 */
-	NSGIF_BITMAP_FMT_ABGR8888,
+    /**
+     * 32-bit BGRA (0xAABBGGRR).
+     *
+     * * On little endian host, same as \ref NSGIF_BITMAP_FMT_R8G8B8A8.
+     * * On big endian host, same as \ref NSGIF_BITMAP_FMT_A8B8G8R8.
+     */
+    NSGIF_BITMAP_FMT_ABGR8888,
 } nsgif_bitmap_fmt_t;
 
 /**
@@ -174,69 +174,69 @@ typedef void nsgif_bitmap_t;
 
 /** Bitmap callbacks function table */
 typedef struct nsgif_bitmap_cb_vt {
-	/**
-	 * Callback to create a bitmap with the given dimensions.
-	 *
-	 * \param[in]  width   Required bitmap width in pixels.
-	 * \param[in]  height  Required bitmap height in pixels.
-	 * \return pointer to client's bitmap structure or NULL on error.
-	 */
-	nsgif_bitmap_t *(*create)(int width, int height);
+    /**
+     * Callback to create a bitmap with the given dimensions.
+     *
+     * \param[in]  width   Required bitmap width in pixels.
+     * \param[in]  height  Required bitmap height in pixels.
+     * \return pointer to client's bitmap structure or NULL on error.
+     */
+    nsgif_bitmap_t *(*create)(int width, int height);
 
-	/**
-	 * Callback to free a bitmap.
-	 *
-	 * \param[in]  bitmap  The bitmap to destroy.
-	 */
-	void (*destroy)(nsgif_bitmap_t *bitmap);
+    /**
+     * Callback to free a bitmap.
+     *
+     * \param[in]  bitmap  The bitmap to destroy.
+     */
+    void (*destroy)(nsgif_bitmap_t *bitmap);
 
-	/**
-	 * Get pointer to pixel buffer in a bitmap.
-	 *
-	 * The pixel buffer must be `(width + N) * height * sizeof(uint32_t)`.
-	 * Where `N` is any number greater than or equal to 0.
-	 * Note that the returned pointer to uint8_t must be 4-byte aligned.
-	 *
-	 * \param[in]  bitmap  The bitmap.
-	 * \return pointer to bitmap's pixel buffer.
-	 */
-	uint8_t *(*get_buffer)(nsgif_bitmap_t *bitmap);
+    /**
+     * Get pointer to pixel buffer in a bitmap.
+     *
+     * The pixel buffer must be `(width + N) * height * sizeof(uint32_t)`.
+     * Where `N` is any number greater than or equal to 0.
+     * Note that the returned pointer to uint8_t must be 4-byte aligned.
+     *
+     * \param[in]  bitmap  The bitmap.
+     * \return pointer to bitmap's pixel buffer.
+     */
+    uint8_t *(*get_buffer)(nsgif_bitmap_t *bitmap);
 
-	/* The following functions are optional. */
+    /* The following functions are optional. */
 
-	/**
-	 * Set whether a bitmap can be plotted opaque.
-	 *
-	 * \param[in]  bitmap  The bitmap.
-	 * \param[in]  opaque  Whether the current frame is opaque.
-	 */
-	void (*set_opaque)(nsgif_bitmap_t *bitmap, bool opaque);
+    /**
+     * Set whether a bitmap can be plotted opaque.
+     *
+     * \param[in]  bitmap  The bitmap.
+     * \param[in]  opaque  Whether the current frame is opaque.
+     */
+    void (*set_opaque)(nsgif_bitmap_t *bitmap, bool opaque);
 
-	/**
-	 * Tests whether a bitmap has an opaque alpha channel.
-	 *
-	 * \param[in]  bitmap  The bitmap.
-	 * \return true if the bitmap is opaque, false otherwise.
-	 */
-	bool (*test_opaque)(nsgif_bitmap_t *bitmap);
+    /**
+     * Tests whether a bitmap has an opaque alpha channel.
+     *
+     * \param[in]  bitmap  The bitmap.
+     * \return true if the bitmap is opaque, false otherwise.
+     */
+    bool (*test_opaque)(nsgif_bitmap_t *bitmap);
 
-	/**
-	 * Bitmap modified notification.
-	 *
-	 * \param[in]  bitmap  The bitmap.
-	 */
-	void (*modified)(nsgif_bitmap_t *bitmap);
+    /**
+     * Bitmap modified notification.
+     *
+     * \param[in]  bitmap  The bitmap.
+     */
+    void (*modified)(nsgif_bitmap_t *bitmap);
 
-	/**
-	 * Get row span in pixels.
-	 *
-	 * If this callback is not provided, LibNSGIF will use the width.
-	 *
-	 * If row span is greater than width, this callback must be provided.
-	 *
-	 * \param[in]  bitmap  The bitmap.
-	 */
-	uint32_t (*get_rowspan)(nsgif_bitmap_t *bitmap);
+    /**
+     * Get row span in pixels.
+     *
+     * If this callback is not provided, LibNSGIF will use the width.
+     *
+     * If row span is greater than width, this callback must be provided.
+     *
+     * \param[in]  bitmap  The bitmap.
+     */
+    uint32_t (*get_rowspan)(nsgif_bitmap_t *bitmap);
 } nsgif_bitmap_cb_vt;
 
 /**
@@ -256,9 +256,7 @@ const char *nsgif_strerror(nsgif_error err);
  *
  * \return NSGIF_OK on success, or appropriate error otherwise.
  */
-nsgif_error nsgif_create(const nsgif_bitmap_cb_vt *bitmap_vt,
-			 nsgif_bitmap_fmt_t bitmap_fmt,
-			 nsgif_t **gif_out);
+nsgif_error nsgif_create(const nsgif_bitmap_cb_vt *bitmap_vt, nsgif_bitmap_fmt_t bitmap_fmt, nsgif_t **gif_out);
 
 /**
  * Free a NSGIF object.
@@ -333,10 +331,7 @@ void nsgif_data_complete(nsgif_t *gif);
  *
  * \return NSGIF_OK on success, or appropriate error otherwise.
  */
-nsgif_error nsgif_frame_prepare(nsgif_t *gif,
-				nsgif_rect_t *area,
-				uint32_t *delay_cs,
-				uint32_t *frame_new);
+nsgif_error nsgif_frame_prepare(nsgif_t *gif, nsgif_rect_t *area, uint32_t *delay_cs, uint32_t *frame_new);
 
 /**
  * Decodes a GIF frame.
@@ -348,8 +343,7 @@ nsgif_error nsgif_frame_prepare(nsgif_t *gif,
  *
  * \return NSGIF_OK on success, or appropriate error otherwise.
  */
-nsgif_error
-nsgif_frame_decode(nsgif_t *gif, uint32_t frame, nsgif_bitmap_t **bitmap);
+nsgif_error nsgif_frame_decode(nsgif_t *gif, uint32_t frame, nsgif_bitmap_t **bitmap);
 
 /**
  * Reset a GIF animation.
@@ -369,18 +363,18 @@ nsgif_error nsgif_reset(nsgif_t *gif);
  * Information about a GIF.
  */
 typedef struct nsgif_info {
-	/** width of GIF (may increase during decoding) */
-	uint32_t width;
-	/** height of GIF (may increase during decoding) */
-	uint32_t height;
-	/** number of frames decoded */
-	uint32_t frame_count;
-	/** number of times to play animation (zero means loop forever) */
-	int loop_max;
-	/** background colour in same pixel format as \ref nsgif_bitmap_t. */
-	uint32_t background;
-	/** whether the GIF has a global colour table */
-	bool global_palette;
+    /** width of GIF (may increase during decoding) */
+    uint32_t width;
+    /** height of GIF (may increase during decoding) */
+    uint32_t height;
+    /** number of frames decoded */
+    uint32_t frame_count;
+    /** number of times to play animation (zero means loop forever) */
+    int loop_max;
+    /** background colour in same pixel format as \ref nsgif_bitmap_t. */
+    uint32_t background;
+    /** whether the GIF has a global colour table */
+    bool global_palette;
 } nsgif_info_t;
 
 /**
@@ -390,12 +384,12 @@ typedef struct nsgif_info {
  * raw information about GIF frames.
  */
 enum nsgif_disposal {
-	NSGIF_DISPOSAL_UNSPECIFIED, /**< No disposal method specified. */
-	NSGIF_DISPOSAL_NONE, /**< Frame remains. */
-	NSGIF_DISPOSAL_RESTORE_BG, /**< Clear frame to background colour. */
-	NSGIF_DISPOSAL_RESTORE_PREV, /**< Restore previous frame. */
-	NSGIF_DISPOSAL_RESTORE_QUIRK, /**< Alias for
-					 NSGIF_DISPOSAL_RESTORE_PREV. */
+    NSGIF_DISPOSAL_UNSPECIFIED, /**< No disposal method specified. */
+    NSGIF_DISPOSAL_NONE, /**< Frame remains. */
+    NSGIF_DISPOSAL_RESTORE_BG, /**< Clear frame to background colour. */
+    NSGIF_DISPOSAL_RESTORE_PREV, /**< Restore previous frame. */
+    NSGIF_DISPOSAL_RESTORE_QUIRK, /**< Alias for
+                     NSGIF_DISPOSAL_RESTORE_PREV. */
 };
 
 /**
@@ -410,21 +404,21 @@ const char *nsgif_str_disposal(enum nsgif_disposal disposal);
  * Information about a GIF frame.
  */
 typedef struct nsgif_frame_info {
-	/** whether the frame should be displayed/animated */
-	bool display;
-	/** whether the frame may have transparency */
-	bool transparency;
-	/** whether the frame has a local colour table */
-	bool local_palette;
-	/** whether the frame is interlaced */
-	bool interlaced;
-	/** Disposal method for previous frame; affects plotting */
-	uint8_t disposal;
-	/** delay (in cs) before animating the frame */
-	uint32_t delay;
+    /** whether the frame should be displayed/animated */
+    bool display;
+    /** whether the frame may have transparency */
+    bool transparency;
+    /** whether the frame has a local colour table */
+    bool local_palette;
+    /** whether the frame is interlaced */
+    bool interlaced;
+    /** Disposal method for previous frame; affects plotting */
+    uint8_t disposal;
+    /** delay (in cs) before animating the frame */
+    uint32_t delay;
 
-	/** Frame's redraw rectangle. */
-	nsgif_rect_t rect;
+    /** Frame's redraw rectangle. */
+    nsgif_rect_t rect;
 } nsgif_frame_info_t;
 
 /**
@@ -444,8 +438,7 @@ const nsgif_info_t *nsgif_get_info(const nsgif_t *gif);
  *
  * \return The gif frame info, or NULL on error.
  */
-const nsgif_frame_info_t *
-nsgif_get_frame_info(const nsgif_t *gif, uint32_t frame);
+const nsgif_frame_info_t *nsgif_get_frame_info(const nsgif_t *gif, uint32_t frame);
 
 /**
  * Get the global colour palette.
@@ -459,9 +452,7 @@ nsgif_get_frame_info(const nsgif_t *gif, uint32_t frame);
  * \param[out] table    Client buffer to hold the colour table.
  * \param[out] entries  The number of used entries in the colour table.
  */
-void nsgif_global_palette(const nsgif_t *gif,
-			  uint32_t table[NSGIF_MAX_COLOURS],
-			  size_t *entries);
+void nsgif_global_palette(const nsgif_t *gif, uint32_t table[NSGIF_MAX_COLOURS], size_t *entries);
 
 /**
  * Get the local colour palette for a frame.
@@ -477,10 +468,7 @@ void nsgif_global_palette(const nsgif_t *gif,
  * \param[out] entries  The number of used entries in the colour table.
  * \return true if a palette is returned, false otherwise.
  */
-bool nsgif_local_palette(const nsgif_t *gif,
-			 uint32_t frame,
-			 uint32_t table[NSGIF_MAX_COLOURS],
-			 size_t *entries);
+bool nsgif_local_palette(const nsgif_t *gif, uint32_t frame, uint32_t table[NSGIF_MAX_COLOURS], size_t *entries);
 
 /**
  * Configure handling of small frame delays.
@@ -508,8 +496,6 @@ bool nsgif_local_palette(const nsgif_t *gif,
  * \param[in]  delay_default  The delay to use if a frame delay is less than
  *                            `delay_min`.
  */
-void nsgif_set_frame_delay_behaviour(nsgif_t *gif,
-				     uint16_t delay_min,
-				     uint16_t delay_default);
+void nsgif_set_frame_delay_behaviour(nsgif_t *gif, uint16_t delay_min, uint16_t delay_default);
 
 #endif

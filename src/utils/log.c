@@ -16,22 +16,22 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <sys/stat.h>
+#include <sys/types.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/stat.h>
-#include <sys/types.h>
 #ifdef _WIN32
 #include <direct.h>
-#include <windows.h>
 #include <process.h>
+#include <windows.h>
 #endif
 
+#include <neosurf/desktop/version.h>
 #include <neosurf/utils/config.h>
 #include <neosurf/utils/nsoption.h>
-#include "neosurf/utils/sys_time.h"
 #include "utils/utsname.h"
-#include <neosurf/desktop/version.h>
+#include "neosurf/utils/sys_time.h"
 
 #include <neosurf/utils/log.h>
 
@@ -48,9 +48,9 @@ static bool split_logging = false;
 #ifdef _WIN32
 static bool async_logging = false;
 struct log_entry {
-	char *text;
-	int level;
-	struct log_entry *next;
+    char *text;
+    int level;
+    struct log_entry *next;
 };
 static struct log_entry *log_head = NULL;
 static struct log_entry *log_tail = NULL;
@@ -62,159 +62,152 @@ static CRITICAL_SECTION log_queue_cs;
 
 static void log_enqueue(char *text, int level)
 {
-	if (!async_logging) {
-		if (text == NULL)
-			return;
+    if (!async_logging) {
+        if (text == NULL)
+            return;
 #ifdef WITH_NSLOG
-		if (logfile)
-			fprintf(logfile, "%s", text);
+        if (logfile)
+            fprintf(logfile, "%s", text);
 #else
-		if (verbose_log && logfile)
-			fprintf(logfile, "%s", text);
+        if (verbose_log && logfile)
+            fprintf(logfile, "%s", text);
 #endif
-		if (split_logging) {
-			int i;
-			for (i = 0; i < 7; i++) {
-				if (split_log_files[i] && level >= i) {
-					fprintf(split_log_files[i], "%s", text);
-					fflush(split_log_files[i]);
-				}
-			}
-		}
-		free(text);
-		return;
-	}
-	EnterCriticalSection(&log_queue_cs);
-	if (log_queue_len >= log_queue_max) {
-		LeaveCriticalSection(&log_queue_cs);
-		free(text);
-		return;
-	}
-	struct log_entry *node = (struct log_entry *)malloc(
-		sizeof(struct log_entry));
-	if (node == NULL) {
-		LeaveCriticalSection(&log_queue_cs);
-		free(text);
-		return;
-	}
-	node->text = text;
-	node->level = level;
-	node->next = NULL;
-	if (log_tail) {
-		log_tail->next = node;
-		log_tail = node;
-	} else {
-		log_head = log_tail = node;
-	}
-	log_queue_len++;
-	LeaveCriticalSection(&log_queue_cs);
-	if (log_event)
-		SetEvent(log_event);
+        if (split_logging) {
+            int i;
+            for (i = 0; i < 7; i++) {
+                if (split_log_files[i] && level >= i) {
+                    fprintf(split_log_files[i], "%s", text);
+                    fflush(split_log_files[i]);
+                }
+            }
+        }
+        free(text);
+        return;
+    }
+    EnterCriticalSection(&log_queue_cs);
+    if (log_queue_len >= log_queue_max) {
+        LeaveCriticalSection(&log_queue_cs);
+        free(text);
+        return;
+    }
+    struct log_entry *node = (struct log_entry *)malloc(sizeof(struct log_entry));
+    if (node == NULL) {
+        LeaveCriticalSection(&log_queue_cs);
+        free(text);
+        return;
+    }
+    node->text = text;
+    node->level = level;
+    node->next = NULL;
+    if (log_tail) {
+        log_tail->next = node;
+        log_tail = node;
+    } else {
+        log_head = log_tail = node;
+    }
+    log_queue_len++;
+    LeaveCriticalSection(&log_queue_cs);
+    if (log_event)
+        SetEvent(log_event);
 }
 
 static void log_drain_all(void)
 {
-	for (;;) {
-		struct log_entry *node = NULL;
-		EnterCriticalSection(&log_queue_cs);
-		if (log_head) {
-			node = log_head;
-			log_head = log_head->next;
-			if (log_head == NULL)
-				log_tail = NULL;
-			log_queue_len--;
-		}
-		LeaveCriticalSection(&log_queue_cs);
-		if (node == NULL)
-			break;
+    for (;;) {
+        struct log_entry *node = NULL;
+        EnterCriticalSection(&log_queue_cs);
+        if (log_head) {
+            node = log_head;
+            log_head = log_head->next;
+            if (log_head == NULL)
+                log_tail = NULL;
+            log_queue_len--;
+        }
+        LeaveCriticalSection(&log_queue_cs);
+        if (node == NULL)
+            break;
 #ifdef WITH_NSLOG
-		if (logfile)
-			fprintf(logfile, "%s", node->text);
+        if (logfile)
+            fprintf(logfile, "%s", node->text);
 #else
-		if (verbose_log && logfile)
-			fprintf(logfile, "%s", node->text);
+        if (verbose_log && logfile)
+            fprintf(logfile, "%s", node->text);
 #endif
-		if (split_logging) {
-			int i;
-			for (i = 0; i < 6; i++) {
-				if (split_log_files[i] && node->level >= i) {
-					fprintf(split_log_files[i],
-						"%s",
-						node->text);
-					fflush(split_log_files[i]);
-				}
-			}
-		}
-		free(node->text);
-		free(node);
-	}
+        if (split_logging) {
+            int i;
+            for (i = 0; i < 6; i++) {
+                if (split_log_files[i] && node->level >= i) {
+                    fprintf(split_log_files[i], "%s", node->text);
+                    fflush(split_log_files[i]);
+                }
+            }
+        }
+        free(node->text);
+        free(node);
+    }
 }
 
 static unsigned __stdcall log_thread_proc(void *arg)
 {
-	(void)arg;
-	while (async_logging) {
-		if (log_event)
-			WaitForSingleObject(log_event, INFINITE);
-		log_drain_all();
-	}
-	log_drain_all();
-	return 0;
+    (void)arg;
+    while (async_logging) {
+        if (log_event)
+            WaitForSingleObject(log_event, INFINITE);
+        log_drain_all();
+    }
+    log_drain_all();
+    return 0;
 }
 
 static void async_log_start(void)
 {
-	if (async_logging)
-		return;
-	InitializeCriticalSection(&log_queue_cs);
-	log_event = CreateEvent(NULL, FALSE, FALSE, NULL);
-	async_logging = true;
-	log_thread_handle = _beginthreadex(
-		NULL, 0, log_thread_proc, NULL, 0, NULL);
+    if (async_logging)
+        return;
+    InitializeCriticalSection(&log_queue_cs);
+    log_event = CreateEvent(NULL, FALSE, FALSE, NULL);
+    async_logging = true;
+    log_thread_handle = _beginthreadex(NULL, 0, log_thread_proc, NULL, 0, NULL);
 }
 
 static void async_log_stop(void)
 {
-	if (!async_logging)
-		return;
-	async_logging = false;
-	if (log_event)
-		SetEvent(log_event);
-	if (log_thread_handle) {
-		WaitForSingleObject((HANDLE)log_thread_handle, INFINITE);
-		CloseHandle((HANDLE)log_thread_handle);
-		log_thread_handle = 0;
-	}
-	if (log_event) {
-		CloseHandle(log_event);
-		log_event = NULL;
-	}
-	log_drain_all();
-	DeleteCriticalSection(&log_queue_cs);
+    if (!async_logging)
+        return;
+    async_logging = false;
+    if (log_event)
+        SetEvent(log_event);
+    if (log_thread_handle) {
+        WaitForSingleObject((HANDLE)log_thread_handle, INFINITE);
+        CloseHandle((HANDLE)log_thread_handle);
+        log_thread_handle = 0;
+    }
+    if (log_event) {
+        CloseHandle(log_event);
+        log_event = NULL;
+    }
+    log_drain_all();
+    DeleteCriticalSection(&log_queue_cs);
 }
 
-static void log_enqueue_formatted(int level,
-				  const char *prefix,
-				  const char *fmt,
-				  va_list args)
+static void log_enqueue_formatted(int level, const char *prefix, const char *fmt, va_list args)
 {
-	va_list ap;
-	va_copy(ap, args);
-	int msglen = vsnprintf(NULL, 0, fmt, ap);
-	va_end(ap);
-	if (msglen < 0)
-		return;
-	size_t plen = strlen(prefix);
-	char *buf = (char *)malloc(plen + (size_t)msglen + 2);
-	if (buf == NULL)
-		return;
-	memcpy(buf, prefix, plen);
-	va_copy(ap, args);
-	vsnprintf(buf + plen, (size_t)msglen + 1, fmt, ap);
-	va_end(ap);
-	buf[plen + (size_t)msglen] = '\n';
-	buf[plen + (size_t)msglen + 1] = '\0';
-	log_enqueue(buf, level);
+    va_list ap;
+    va_copy(ap, args);
+    int msglen = vsnprintf(NULL, 0, fmt, ap);
+    va_end(ap);
+    if (msglen < 0)
+        return;
+    size_t plen = strlen(prefix);
+    char *buf = (char *)malloc(plen + (size_t)msglen + 2);
+    if (buf == NULL)
+        return;
+    memcpy(buf, prefix, plen);
+    va_copy(ap, args);
+    vsnprintf(buf + plen, (size_t)msglen + 1, fmt, ap);
+    va_end(ap);
+    buf[plen + (size_t)msglen] = '\n';
+    buf[plen + (size_t)msglen + 1] = '\0';
+    log_enqueue(buf, level);
 }
 #endif
 
@@ -225,28 +218,27 @@ static void log_enqueue_formatted(int level,
  * \param y The second value
  * \return 1 if the difference is negative, otherwise 0.
  */
-static int
-timeval_subtract(struct timeval *result, struct timeval *x, struct timeval *y)
+static int timeval_subtract(struct timeval *result, struct timeval *x, struct timeval *y)
 {
-	/* Perform the carry for the later subtraction by updating y. */
-	if (x->tv_usec < y->tv_usec) {
-		int nsec = (int)(y->tv_usec - x->tv_usec) / 1000000 + 1;
-		y->tv_usec -= 1000000 * nsec;
-		y->tv_sec += nsec;
-	}
-	if ((int)(x->tv_usec - y->tv_usec) > 1000000) {
-		int nsec = (int)(x->tv_usec - y->tv_usec) / 1000000;
-		y->tv_usec += 1000000 * nsec;
-		y->tv_sec -= nsec;
-	}
+    /* Perform the carry for the later subtraction by updating y. */
+    if (x->tv_usec < y->tv_usec) {
+        int nsec = (int)(y->tv_usec - x->tv_usec) / 1000000 + 1;
+        y->tv_usec -= 1000000 * nsec;
+        y->tv_sec += nsec;
+    }
+    if ((int)(x->tv_usec - y->tv_usec) > 1000000) {
+        int nsec = (int)(x->tv_usec - y->tv_usec) / 1000000;
+        y->tv_usec += 1000000 * nsec;
+        y->tv_sec -= nsec;
+    }
 
-	/* Compute the time remaining to wait.
-	   tv_usec is certainly positive. */
-	result->tv_sec = x->tv_sec - y->tv_sec;
-	result->tv_usec = x->tv_usec - y->tv_usec;
+    /* Compute the time remaining to wait.
+       tv_usec is certainly positive. */
+    result->tv_sec = x->tv_sec - y->tv_sec;
+    result->tv_usec = x->tv_usec - y->tv_usec;
 
-	/* Return 1 if result is negative. */
-	return x->tv_sec < y->tv_sec;
+    /* Return 1 if result is negative. */
+    return x->tv_sec < y->tv_sec;
 }
 
 /**
@@ -256,26 +248,22 @@ timeval_subtract(struct timeval *result, struct timeval *x, struct timeval *y)
  */
 static const char *nslog_gettime(void)
 {
-	static struct timeval start_tv;
-	static char buff[32];
+    static struct timeval start_tv;
+    static char buff[32];
 
-	struct timeval tv;
-	struct timeval now_tv;
+    struct timeval tv;
+    struct timeval now_tv;
 
-	if (!timerisset(&start_tv)) {
-		gettimeofday(&start_tv, NULL);
-	}
-	gettimeofday(&now_tv, NULL);
+    if (!timerisset(&start_tv)) {
+        gettimeofday(&start_tv, NULL);
+    }
+    gettimeofday(&now_tv, NULL);
 
-	timeval_subtract(&tv, &now_tv, &start_tv);
+    timeval_subtract(&tv, &now_tv, &start_tv);
 
-	snprintf(buff,
-		 sizeof(buff),
-		 "(%ld.%06ld)",
-		 (long)tv.tv_sec,
-		 (long)tv.tv_usec);
+    snprintf(buff, sizeof(buff), "(%ld.%06ld)", (long)tv.tv_sec, (long)tv.tv_usec);
 
-	return buff;
+    return buff;
 }
 
 #ifdef WITH_NSLOG
@@ -291,175 +279,126 @@ NSLOG_DEFINE_CATEGORY(flex, "Flex");
 NSLOG_DEFINE_CATEGORY(dukky, "Duktape JavaScript Binding");
 NSLOG_DEFINE_CATEGORY(jserrors, "JavaScript error messages");
 
-static void neosurf_render_log(void *_ctx,
-			       nslog_entry_context_t *ctx,
-			       const char *fmt,
-			       va_list args)
+static void neosurf_render_log(void *_ctx, nslog_entry_context_t *ctx, const char *fmt, va_list args)
 {
 #ifdef _WIN32
-	if (async_logging) {
-		char prefix_buf[256];
-		int pre_len = snprintf(prefix_buf,
-				       sizeof(prefix_buf),
-				       "%s [%s %.*s] %.*s:%i %.*s: ",
-				       nslog_gettime(),
-				       nslog_short_level_name(ctx->level),
-				       ctx->category->namelen,
-				       ctx->category->name,
-				       ctx->filenamelen,
-				       ctx->filename,
-				       ctx->lineno,
-				       ctx->funcnamelen,
-				       ctx->funcname);
-		if (pre_len < 0)
-			return;
-		log_enqueue_formatted((int)ctx->level, prefix_buf, fmt, args);
-		return;
-	}
+    if (async_logging) {
+        char prefix_buf[256];
+        int pre_len = snprintf(prefix_buf, sizeof(prefix_buf), "%s [%s %.*s] %.*s:%i %.*s: ", nslog_gettime(),
+            nslog_short_level_name(ctx->level), ctx->category->namelen, ctx->category->name, ctx->filenamelen,
+            ctx->filename, ctx->lineno, ctx->funcnamelen, ctx->funcname);
+        if (pre_len < 0)
+            return;
+        log_enqueue_formatted((int)ctx->level, prefix_buf, fmt, args);
+        return;
+    }
 #endif
-	if (split_logging) {
-		int i;
-		for (i = 0; i < 7; i++) {
-			if (split_log_files[i] && (int)ctx->level >= i) {
-				va_list ap;
-				va_copy(ap, args);
-				fprintf(split_log_files[i],
-					"%s [%s %.*s] %.*s:%i %.*s: ",
-					nslog_gettime(),
-					nslog_short_level_name(ctx->level),
-					ctx->category->namelen,
-					ctx->category->name,
-					ctx->filenamelen,
-					ctx->filename,
-					ctx->lineno,
-					ctx->funcnamelen,
-					ctx->funcname);
+    if (split_logging) {
+        int i;
+        for (i = 0; i < 7; i++) {
+            if (split_log_files[i] && (int)ctx->level >= i) {
+                va_list ap;
+                va_copy(ap, args);
+                fprintf(split_log_files[i], "%s [%s %.*s] %.*s:%i %.*s: ", nslog_gettime(),
+                    nslog_short_level_name(ctx->level), ctx->category->namelen, ctx->category->name, ctx->filenamelen,
+                    ctx->filename, ctx->lineno, ctx->funcnamelen, ctx->funcname);
 
-				vfprintf(split_log_files[i], fmt, ap);
-				va_end(ap);
+                vfprintf(split_log_files[i], fmt, ap);
+                va_end(ap);
 
-				fputc('\n', split_log_files[i]);
-				fflush(split_log_files[i]);
-			}
-		}
-	}
+                fputc('\n', split_log_files[i]);
+                fflush(split_log_files[i]);
+            }
+        }
+    }
 
-	fprintf(logfile,
-		"%s [%s %.*s] %.*s:%i %.*s: ",
-		nslog_gettime(),
-		nslog_short_level_name(ctx->level),
-		ctx->category->namelen,
-		ctx->category->name,
-		ctx->filenamelen,
-		ctx->filename,
-		ctx->lineno,
-		ctx->funcnamelen,
-		ctx->funcname);
+    fprintf(logfile, "%s [%s %.*s] %.*s:%i %.*s: ", nslog_gettime(), nslog_short_level_name(ctx->level),
+        ctx->category->namelen, ctx->category->name, ctx->filenamelen, ctx->filename, ctx->lineno, ctx->funcnamelen,
+        ctx->funcname);
 
-	vfprintf(logfile, fmt, args);
+    vfprintf(logfile, fmt, args);
 
-	/* Log entries aren't newline terminated add one for clarity */
-	fputc('\n', logfile);
+    /* Log entries aren't newline terminated add one for clarity */
+    fputc('\n', logfile);
 }
 
 /* exported interface documented in utils/log.h */
 nserror nslog_set_filter(const char *filter)
 {
-	nslog_error err;
-	nslog_filter_t *filt = NULL;
+    nslog_error err;
+    nslog_filter_t *filt = NULL;
 
-	err = nslog_filter_from_text(filter, &filt);
-	if (err != NSLOG_NO_ERROR) {
-		if (err == NSLOG_NO_MEMORY)
-			return NSERROR_NOMEM;
-		else
-			return NSERROR_INVALID;
-	}
+    err = nslog_filter_from_text(filter, &filt);
+    if (err != NSLOG_NO_ERROR) {
+        if (err == NSLOG_NO_MEMORY)
+            return NSERROR_NOMEM;
+        else
+            return NSERROR_INVALID;
+    }
 
-	err = nslog_filter_set_active(filt, NULL);
-	filt = nslog_filter_unref(filt);
-	if (err != NSLOG_NO_ERROR) {
-		return NSERROR_NOSPACE;
-	}
+    err = nslog_filter_set_active(filt, NULL);
+    filt = nslog_filter_unref(filt);
+    if (err != NSLOG_NO_ERROR) {
+        return NSERROR_NOSPACE;
+    }
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 #else
 
-void nslog_log(enum nslog_level level,
-	       const char *file,
-	       const char *func,
-	       int ln,
-	       const char *format,
-	       ...)
+void nslog_log(enum nslog_level level, const char *file, const char *func, int ln, const char *format, ...)
 {
-	va_list ap;
-	int i;
+    va_list ap;
+    int i;
 #ifdef _WIN32
-	if (async_logging) {
-		char prefix_buf[256];
-		int pre_len = snprintf(prefix_buf,
-				       sizeof(prefix_buf),
-				       "%s %s:%i %s: ",
-				       nslog_gettime(),
-				       file,
-				       ln,
-				       func);
-		va_start(ap, format);
-		log_enqueue_formatted((int)level, prefix_buf, format, ap);
-		va_end(ap);
-		return;
-	}
+    if (async_logging) {
+        char prefix_buf[256];
+        int pre_len = snprintf(prefix_buf, sizeof(prefix_buf), "%s %s:%i %s: ", nslog_gettime(), file, ln, func);
+        va_start(ap, format);
+        log_enqueue_formatted((int)level, prefix_buf, format, ap);
+        va_end(ap);
+        return;
+    }
 #endif
 
-	if (verbose_log) {
-		fprintf(logfile,
-			"%s %s:%i %s: ",
-			nslog_gettime(),
-			file,
-			ln,
-			func);
+    if (verbose_log) {
+        fprintf(logfile, "%s %s:%i %s: ", nslog_gettime(), file, ln, func);
 
-		va_start(ap, format);
+        va_start(ap, format);
 
-		vfprintf(logfile, format, ap);
+        vfprintf(logfile, format, ap);
 
-		va_end(ap);
+        va_end(ap);
 
-		fputc('\n', logfile);
-	}
+        fputc('\n', logfile);
+    }
 
-	if (split_logging) {
-		const char *time_str = nslog_gettime();
-		/* Iterate over split files. */
-		for (i = 0; i < 7; i++) {
-			/* Check if file is open and level is sufficient for
-			 * this file */
-			if (split_log_files[i] && (int)level >= i) {
-				fprintf(split_log_files[i],
-					"%s %s:%i %s: ",
-					time_str,
-					file,
-					ln,
-					func);
+    if (split_logging) {
+        const char *time_str = nslog_gettime();
+        /* Iterate over split files. */
+        for (i = 0; i < 7; i++) {
+            /* Check if file is open and level is sufficient for
+             * this file */
+            if (split_log_files[i] && (int)level >= i) {
+                fprintf(split_log_files[i], "%s %s:%i %s: ", time_str, file, ln, func);
 
-				va_start(ap, format);
-				vfprintf(split_log_files[i], format, ap);
-				va_end(ap);
+                va_start(ap, format);
+                vfprintf(split_log_files[i], format, ap);
+                va_end(ap);
 
-				fputc('\n', split_log_files[i]);
-				fflush(split_log_files[i]);
-			}
-		}
-	}
+                fputc('\n', split_log_files[i]);
+                fflush(split_log_files[i]);
+            }
+        }
+    }
 }
 
 /* exported interface documented in utils/log.h */
 nserror nslog_set_filter(const char *filter)
 {
-	(void)(filter);
-	return NSERROR_OK;
+    (void)(filter);
+    return NSERROR_OK;
 }
 
 
@@ -467,174 +406,153 @@ nserror nslog_set_filter(const char *filter)
 
 nserror nslog_init(nslog_ensure_t *ensure, int *pargc, char **argv)
 {
-	struct utsname utsname;
-	nserror ret = NSERROR_OK;
-	int i;
+    struct utsname utsname;
+    nserror ret = NSERROR_OK;
+    int i;
 
-	/* Parse -split-logs */
-	for (i = 1; i < *pargc; i++) {
-		if (strcmp(argv[i], "-split-logs") == 0) {
-			split_logging = true;
-			/* Remove argument */
-			int j;
-			for (j = i + 1; j < *pargc; j++) {
-				argv[j - 1] = argv[j];
-			}
-			(*pargc)--;
-			i--;
-		}
-	}
+    /* Parse -split-logs */
+    for (i = 1; i < *pargc; i++) {
+        if (strcmp(argv[i], "-split-logs") == 0) {
+            split_logging = true;
+            /* Remove argument */
+            int j;
+            for (j = i + 1; j < *pargc; j++) {
+                argv[j - 1] = argv[j];
+            }
+            (*pargc)--;
+            i--;
+        }
+    }
 
-	if (((*pargc) > 1) && (argv[1][0] == '-') && (argv[1][1] == 'v') &&
-	    (argv[1][2] == 0)) {
-		int argcmv;
+    if (((*pargc) > 1) && (argv[1][0] == '-') && (argv[1][1] == 'v') && (argv[1][2] == 0)) {
+        int argcmv;
 
-		/* verbose logging to stderr */
-		logfile = stderr;
+        /* verbose logging to stderr */
+        logfile = stderr;
 
-		/* remove -v from argv list */
-		for (argcmv = 2; argcmv < (*pargc); argcmv++) {
-			argv[argcmv - 1] = argv[argcmv];
-		}
-		(*pargc)--;
+        /* remove -v from argv list */
+        for (argcmv = 2; argcmv < (*pargc); argcmv++) {
+            argv[argcmv - 1] = argv[argcmv];
+        }
+        (*pargc)--;
 
-		/* ensure we actually show logging */
-		verbose_log = true;
-	} else if (((*pargc) > 2) && (argv[1][0] == '-') &&
-		   (argv[1][1] == 'V') && (argv[1][2] == 0)) {
-		int argcmv;
+        /* ensure we actually show logging */
+        verbose_log = true;
+    } else if (((*pargc) > 2) && (argv[1][0] == '-') && (argv[1][1] == 'V') && (argv[1][2] == 0)) {
+        int argcmv;
 
-		/* verbose logging to file */
-		logfile = fopen(argv[2], "a+");
+        /* verbose logging to file */
+        logfile = fopen(argv[2], "a+");
 
-		/* remove -V and filename from argv list */
-		for (argcmv = 3; argcmv < (*pargc); argcmv++) {
-			argv[argcmv - 2] = argv[argcmv];
-		}
-		(*pargc) -= 2;
+        /* remove -V and filename from argv list */
+        for (argcmv = 3; argcmv < (*pargc); argcmv++) {
+            argv[argcmv - 2] = argv[argcmv];
+        }
+        (*pargc) -= 2;
 
-		if (logfile == NULL) {
-			/* could not open log file for output */
-			ret = NSERROR_NOT_FOUND;
-			verbose_log = false;
-		} else {
+        if (logfile == NULL) {
+            /* could not open log file for output */
+            ret = NSERROR_NOT_FOUND;
+            verbose_log = false;
+        } else {
 
-			/* ensure we actually show logging */
-			verbose_log = true;
-		}
-	} else {
-		/* default is logging to stderr */
-		logfile = stderr;
-	}
+            /* ensure we actually show logging */
+            verbose_log = true;
+        }
+    } else {
+        /* default is logging to stderr */
+        logfile = stderr;
+    }
 
-	/* ensure output file handle is correctly configured */
-	if ((verbose_log == true) && (ensure != NULL) &&
-	    (ensure(logfile) == false)) {
-		/* failed to ensure output configuration */
-		ret = NSERROR_INIT_FAILED;
-		verbose_log = false;
-	}
+    /* ensure output file handle is correctly configured */
+    if ((verbose_log == true) && (ensure != NULL) && (ensure(logfile) == false)) {
+        /* failed to ensure output configuration */
+        ret = NSERROR_INIT_FAILED;
+        verbose_log = false;
+    }
 
 #ifdef WITH_NSLOG
 
-	if (nslog_set_filter(verbose_log ? NEOSURF_BUILTIN_VERBOSE_FILTER
-					 : NEOSURF_BUILTIN_LOG_FILTER) !=
-	    NSERROR_OK) {
-		ret = NSERROR_INIT_FAILED;
-		verbose_log = false;
-	} else if (nslog_set_render_callback(neosurf_render_log, NULL) !=
-		   NSLOG_NO_ERROR) {
-		ret = NSERROR_INIT_FAILED;
-		verbose_log = false;
-	} else if (nslog_uncork() != NSLOG_NO_ERROR) {
-		ret = NSERROR_INIT_FAILED;
-		verbose_log = false;
-	}
+    if (nslog_set_filter(verbose_log ? NEOSURF_BUILTIN_VERBOSE_FILTER : NEOSURF_BUILTIN_LOG_FILTER) != NSERROR_OK) {
+        ret = NSERROR_INIT_FAILED;
+        verbose_log = false;
+    } else if (nslog_set_render_callback(neosurf_render_log, NULL) != NSLOG_NO_ERROR) {
+        ret = NSERROR_INIT_FAILED;
+        verbose_log = false;
+    } else if (nslog_uncork() != NSLOG_NO_ERROR) {
+        ret = NSERROR_INIT_FAILED;
+        verbose_log = false;
+    }
 
 #endif
 
-	/* sucessfull logging initialisation so log system info */
-	if (ret == NSERROR_OK) {
+    /* sucessfull logging initialisation so log system info */
+    if (ret == NSERROR_OK) {
 #ifdef _WIN32
-		if (verbose_log || split_logging)
-			async_log_start();
+        if (verbose_log || split_logging)
+            async_log_start();
 #endif
-		NSLOG(neosurf,
-		      INFO,
-		      "NeoSurf version '%d.%d'",
-		      neosurf_version_major,
-		      neosurf_version_minor);
-		if (uname(&utsname) < 0) {
-			NSLOG(neosurf,
-			      INFO,
-			      "Failed to extract machine information");
-		} else {
-			NSLOG(neosurf,
-			      INFO,
-			      "NeoSurf on <%s>, node <%s>, release <%s>, version <%s>, machine <%s>",
-			      utsname.sysname,
-			      utsname.nodename,
-			      utsname.release,
-			      utsname.version,
-			      utsname.machine);
-		}
-	}
+        NSLOG(neosurf, INFO, "NeoSurf version '%d.%d'", neosurf_version_major, neosurf_version_minor);
+        if (uname(&utsname) < 0) {
+            NSLOG(neosurf, INFO, "Failed to extract machine information");
+        } else {
+            NSLOG(neosurf, INFO, "NeoSurf on <%s>, node <%s>, release <%s>, version <%s>, machine <%s>",
+                utsname.sysname, utsname.nodename, utsname.release, utsname.version, utsname.machine);
+        }
+    }
 
-	if (split_logging && ret == NSERROR_OK) {
-		/* Create directory */
+    if (split_logging && ret == NSERROR_OK) {
+        /* Create directory */
 #ifdef _WIN32
-		_mkdir("neosurf-logs");
+        _mkdir("neosurf-logs");
 #else
-		mkdir("neosurf-logs", 0777);
+        mkdir("neosurf-logs", 0777);
 #endif
-		split_log_files[0] = fopen("neosurf-logs/ns-deepdebug.txt",
-					   "w");
-		split_log_files[1] = fopen("neosurf-logs/ns-debug.txt", "w");
-		split_log_files[2] = fopen("neosurf-logs/ns-verbose.txt", "w");
-		split_log_files[3] = fopen("neosurf-logs/ns-info.txt", "w");
-		split_log_files[4] = fopen("neosurf-logs/ns-warning.txt", "w");
-		split_log_files[5] = fopen("neosurf-logs/ns-error.txt", "w");
-		split_log_files[6] = fopen("neosurf-logs/ns-critical.txt", "w");
-	}
+        split_log_files[0] = fopen("neosurf-logs/ns-deepdebug.txt", "w");
+        split_log_files[1] = fopen("neosurf-logs/ns-debug.txt", "w");
+        split_log_files[2] = fopen("neosurf-logs/ns-verbose.txt", "w");
+        split_log_files[3] = fopen("neosurf-logs/ns-info.txt", "w");
+        split_log_files[4] = fopen("neosurf-logs/ns-warning.txt", "w");
+        split_log_files[5] = fopen("neosurf-logs/ns-error.txt", "w");
+        split_log_files[6] = fopen("neosurf-logs/ns-critical.txt", "w");
+    }
 
-	return ret;
+    return ret;
 }
 
 /* exported interface documented in utils/log.h */
 nserror nslog_set_filter_by_options(void)
 {
-	if (verbose_log)
-		return nslog_set_filter(nsoption_charp(verbose_filter));
-	else
-		return nslog_set_filter(nsoption_charp(log_filter));
+    if (verbose_log)
+        return nslog_set_filter(nsoption_charp(verbose_filter));
+    else
+        return nslog_set_filter(nsoption_charp(log_filter));
 }
 
 /* exported interface documented in utils/log.h */
 void nslog_finalise(void)
 {
-	NSLOG(neosurf,
-	      INFO,
-	      "Finalising logging, please report any further messages");
+    NSLOG(neosurf, INFO, "Finalising logging, please report any further messages");
 #ifdef _WIN32
-	async_log_stop();
+    async_log_stop();
 #endif
-	verbose_log = true;
-	if (logfile != stderr) {
-		fclose(logfile);
-		logfile = stderr;
-	}
+    verbose_log = true;
+    if (logfile != stderr) {
+        fclose(logfile);
+        logfile = stderr;
+    }
 
-	if (split_logging) {
-		int i;
-		for (i = 0; i < 7; i++) {
-			if (split_log_files[i]) {
-				fclose(split_log_files[i]);
-				split_log_files[i] = NULL;
-			}
-		}
-	}
+    if (split_logging) {
+        int i;
+        for (i = 0; i < 7; i++) {
+            if (split_log_files[i]) {
+                fclose(split_log_files[i]);
+                split_log_files[i] = NULL;
+            }
+        }
+    }
 
 #ifdef WITH_NSLOG
-	nslog_cleanup();
+    nslog_cleanup();
 #endif
 }

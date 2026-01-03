@@ -16,82 +16,71 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <stdio.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 #include "utils/errors.h"
 #include "utils/ring.h"
-#include "neosurf/download.h"
 #include "desktop/download.h"
+#include "neosurf/download.h"
 
-#include "monkey/output.h"
 #include "monkey/browser.h"
+#include "monkey/output.h"
 
 static uint32_t dwin_ctr = 0;
 
 struct gui_download_window {
-	struct gui_download_window *r_next;
-	struct gui_download_window *r_prev;
-	struct gui_window *g;
-	download_context *dlctx;
-	uint32_t dwin_num;
-	char *host; /* ignore */
+    struct gui_download_window *r_next;
+    struct gui_download_window *r_prev;
+    struct gui_window *g;
+    download_context *dlctx;
+    uint32_t dwin_num;
+    char *host; /* ignore */
 };
 
 static struct gui_download_window *dw_ring = NULL;
 
-static struct gui_download_window *
-gui_download_window_create(download_context *ctx, struct gui_window *parent)
+static struct gui_download_window *gui_download_window_create(download_context *ctx, struct gui_window *parent)
 {
-	struct gui_download_window *ret = calloc(1, sizeof(*ret));
-	if (ret == NULL)
-		return NULL;
-	ret->g = parent;
-	ret->dwin_num = dwin_ctr++;
-	ret->dlctx = ctx;
+    struct gui_download_window *ret = calloc(1, sizeof(*ret));
+    if (ret == NULL)
+        return NULL;
+    ret->g = parent;
+    ret->dwin_num = dwin_ctr++;
+    ret->dlctx = ctx;
 
-	RING_INSERT(dw_ring, ret);
+    RING_INSERT(dw_ring, ret);
 
-	moutf(MOUT_DOWNLOAD,
-	      "CREATE DWIN %u WIN %u",
-	      ret->dwin_num,
-	      parent->win_num);
+    moutf(MOUT_DOWNLOAD, "CREATE DWIN %u WIN %u", ret->dwin_num, parent->win_num);
 
-	return ret;
+    return ret;
 }
 
-static nserror gui_download_window_data(struct gui_download_window *dw,
-					const char *data,
-					unsigned int size)
+static nserror gui_download_window_data(struct gui_download_window *dw, const char *data, unsigned int size)
 {
-	moutf(MOUT_DOWNLOAD,
-	      "DATA DWIN %u SIZE %u DATA %s",
-	      dw->dwin_num,
-	      size,
-	      data);
-	return NSERROR_OK;
+    moutf(MOUT_DOWNLOAD, "DATA DWIN %u SIZE %u DATA %s", dw->dwin_num, size, data);
+    return NSERROR_OK;
 }
 
-static void
-gui_download_window_error(struct gui_download_window *dw, const char *error_msg)
+static void gui_download_window_error(struct gui_download_window *dw, const char *error_msg)
 {
-	moutf(MOUT_DOWNLOAD, "ERROR DWIN %u ERROR %s", dw->dwin_num, error_msg);
+    moutf(MOUT_DOWNLOAD, "ERROR DWIN %u ERROR %s", dw->dwin_num, error_msg);
 }
 
 static void gui_download_window_done(struct gui_download_window *dw)
 {
-	moutf(MOUT_DOWNLOAD, "DONE DWIN %u", dw->dwin_num);
-	RING_REMOVE(dw_ring, dw);
-	download_context_destroy(dw->dlctx);
-	free(dw);
+    moutf(MOUT_DOWNLOAD, "DONE DWIN %u", dw->dwin_num);
+    RING_REMOVE(dw_ring, dw);
+    download_context_destroy(dw->dlctx);
+    free(dw);
 }
 
 static struct gui_download_table download_table = {
-	.create = gui_download_window_create,
-	.data = gui_download_window_data,
-	.error = gui_download_window_error,
-	.done = gui_download_window_done,
+    .create = gui_download_window_create,
+    .data = gui_download_window_data,
+    .error = gui_download_window_error,
+    .done = gui_download_window_done,
 };
 
 struct gui_download_table *monkey_download_table = &download_table;

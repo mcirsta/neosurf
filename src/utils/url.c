@@ -31,11 +31,11 @@
  * as special so its handling is ambiguious
  */
 
-#include <ctype.h>
 #include <assert.h>
-#include <string.h>
-#include <stdlib.h>
+#include <ctype.h>
 #include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 #include <neosurf/utils/ascii.h>
 #include <neosurf/utils/config.h>
@@ -53,139 +53,133 @@
  */
 static inline char xdigit_to_hex(char c)
 {
-	if (c >= '0' && c <= '9') {
-		return c - '0';
-	} else if (c >= 'A' && c <= 'F') {
-		return c - 'A' + 10;
-	} else {
-		return c - 'a' + 10;
-	}
+    if (c >= '0' && c <= '9') {
+        return c - '0';
+    } else if (c >= 'A' && c <= 'F') {
+        return c - 'A' + 10;
+    } else {
+        return c - 'a' + 10;
+    }
 }
 
 
 /* exported interface documented in utils/url.h */
-nserror url_unescape(const char *str,
-		     size_t length,
-		     size_t *length_out,
-		     char **result_out)
+nserror url_unescape(const char *str, size_t length, size_t *length_out, char **result_out)
 {
-	const char *str_end;
-	size_t new_len;
-	char *res_pos;
-	char *result;
+    const char *str_end;
+    size_t new_len;
+    char *res_pos;
+    char *result;
 
-	if ((str == NULL) || (result_out == NULL)) {
-		return NSERROR_BAD_PARAMETER;
-	}
+    if ((str == NULL) || (result_out == NULL)) {
+        return NSERROR_BAD_PARAMETER;
+    }
 
-	if (length == 0) {
-		length = strlen(str);
-	}
+    if (length == 0) {
+        length = strlen(str);
+    }
 
-	result = malloc(length + 1);
-	if (result == NULL) {
-		return NSERROR_NOMEM;
-	}
+    result = malloc(length + 1);
+    if (result == NULL) {
+        return NSERROR_NOMEM;
+    }
 
-	res_pos = result;
-	str_end = str + length;
-	if (length >= 3) {
-		str_end -= 2;
-		while (str < str_end) {
-			char c = *str;
-			char c1 = *(str + 1);
-			char c2 = *(str + 2);
+    res_pos = result;
+    str_end = str + length;
+    if (length >= 3) {
+        str_end -= 2;
+        while (str < str_end) {
+            char c = *str;
+            char c1 = *(str + 1);
+            char c2 = *(str + 2);
 
-			if (c == '%' && ascii_is_hex(c1) && ascii_is_hex(c2)) {
-				c = xdigit_to_hex(c1) << 4 | xdigit_to_hex(c2);
-				str += 2;
-			}
-			*res_pos++ = c;
-			str++;
-		}
-		str_end += 2;
-	}
+            if (c == '%' && ascii_is_hex(c1) && ascii_is_hex(c2)) {
+                c = xdigit_to_hex(c1) << 4 | xdigit_to_hex(c2);
+                str += 2;
+            }
+            *res_pos++ = c;
+            str++;
+        }
+        str_end += 2;
+    }
 
-	while (str < str_end) {
-		*res_pos++ = *str++;
-	}
+    while (str < str_end) {
+        *res_pos++ = *str++;
+    }
 
-	*res_pos = '\0';
-	new_len = res_pos - result;
+    *res_pos = '\0';
+    new_len = res_pos - result;
 
-	if (new_len != length) {
-		/* Shrink wrap the allocation around the string */
-		char *tmp = realloc(result, new_len + 1);
-		if (tmp != NULL) {
-			result = tmp;
-		}
-	}
+    if (new_len != length) {
+        /* Shrink wrap the allocation around the string */
+        char *tmp = realloc(result, new_len + 1);
+        if (tmp != NULL) {
+            result = tmp;
+        }
+    }
 
-	if (length_out != NULL) {
-		*length_out = new_len;
-	}
-	*result_out = result;
-	return NSERROR_OK;
+    if (length_out != NULL) {
+        *length_out = new_len;
+    }
+    *result_out = result;
+    return NSERROR_OK;
 }
 
 
 /* exported interface documented in utils/url.h */
-nserror url_escape(const char *unescaped,
-		   bool sptoplus,
-		   const char *escexceptions,
-		   char **result)
+nserror url_escape(const char *unescaped, bool sptoplus, const char *escexceptions, char **result)
 {
-	size_t len, new_len;
-	char *escaped, *pos;
-	const char *c;
+    size_t len, new_len;
+    char *escaped, *pos;
+    const char *c;
 
-	if (unescaped == NULL || result == NULL) {
-		return NSERROR_BAD_PARAMETER;
-	}
+    if (unescaped == NULL || result == NULL) {
+        return NSERROR_BAD_PARAMETER;
+    }
 
-	len = strlen(unescaped);
+    len = strlen(unescaped);
 
-	escaped = malloc(len * 3 + 1);
-	if (escaped == NULL) {
-		return NSERROR_NOMEM;
-	}
-	pos = escaped;
+    escaped = malloc(len * 3 + 1);
+    if (escaped == NULL) {
+        return NSERROR_NOMEM;
+    }
+    pos = escaped;
 
-	for (c = unescaped; *c != '\0'; c++) {
-		/* Check if we should escape this byte.
-		 * '~' is unreserved and should not be percent encoded, if
-		 * you believe the spec; however, leaving it unescaped
-		 * breaks a bunch of websites, so we escape it anyway. */
-		if (!isascii(*c) ||
-		    (strchr(":/?#[]@" /* gen-delims */
-			    "!$&'()*+,;=" /* sub-delims */
-			    "<>%\"{}|\\^`~" /* others */,
-			    *c) &&
-		     (!escexceptions || !strchr(escexceptions, *c))) ||
-		    *c <= 0x20 || *c == 0x7f) {
-			if (*c == 0x20 && sptoplus) {
-				*pos++ = '+';
-			} else {
-				*pos++ = '%';
-				*pos++ = "0123456789ABCDEF"[(*c >> 4) & 0xf];
-				*pos++ = "0123456789ABCDEF"[*c & 0xf];
-			}
-		} else {
-			/* unreserved characters: [a-zA-Z0-9-._] */
-			*pos++ = *c;
-		}
-	}
-	*pos = '\0';
-	new_len = pos - escaped;
+    for (c = unescaped; *c != '\0'; c++) {
+        /* Check if we should escape this byte.
+         * '~' is unreserved and should not be percent encoded, if
+         * you believe the spec; however, leaving it unescaped
+         * breaks a bunch of websites, so we escape it anyway. */
+        if (!isascii(*c) ||
+            (strchr(":/?#[]@" /* gen-delims */
+                    "!$&'()*+,;=" /* sub-delims */
+                    "<>%\"{}|\\^`~" /* others */,
+                 *c) &&
+                (!escexceptions || !strchr(escexceptions, *c))) ||
+            *c <= 0x20 || *c == 0x7f) {
+            if (*c == 0x20 && sptoplus) {
+                *pos++ = '+';
+            } else {
+                *pos++ = '%';
+                *pos++ = "0123456789ABCDEF"[(*c >> 4) & 0xf];
+                *pos++ = "0123456789ABCDEF"[*c & 0xf];
+            }
+        } else {
+            /* unreserved characters: [a-zA-Z0-9-._] */
+            *pos++ = *c;
+        }
+    }
+    *pos = '\0';
+    new_len = pos - escaped;
 
-	if (new_len != len) {
-		/* Shrink wrap the allocation around the escaped string */
-		char *tmp = realloc(escaped, new_len + 1);
-		if (tmp != NULL) {
-			escaped = tmp;
-		}
-	}
+    if (new_len != len) {
+        /* Shrink wrap the allocation around the escaped string */
+        char *tmp = realloc(escaped, new_len + 1);
+        if (tmp != NULL) {
+            escaped = tmp;
+        }
+    }
 
-	*result = escaped;
-	return NSERROR_OK;
+    *result = escaped;
+    return NSERROR_OK;
 }

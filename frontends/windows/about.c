@@ -27,14 +27,14 @@
 
 #include <windows.h>
 
+#include "neosurf/desktop/version.h"
 #include "neosurf/utils/log.h"
 #include "neosurf/utils/messages.h"
-#include "neosurf/desktop/version.h"
 
-#include "windows/gui.h"
-#include "windows/window.h"
 #include "windows/about.h"
+#include "windows/gui.h"
 #include "windows/resourceid.h"
+#include "windows/window.h"
 
 #include "windbg.h"
 
@@ -43,53 +43,34 @@
  */
 static BOOL init_about_dialog(HWND hwnd)
 {
-	char ver_str[128];
-	HWND dlg_itm;
-	HFONT hFont;
+    char ver_str[128];
+    HWND dlg_itm;
+    HFONT hFont;
 
-	dlg_itm = GetDlgItem(hwnd, IDC_ABOUT_VERSION);
-	if (dlg_itm != NULL) {
+    dlg_itm = GetDlgItem(hwnd, IDC_ABOUT_VERSION);
+    if (dlg_itm != NULL) {
 
-		hFont = CreateFont(26,
-				   0,
-				   0,
-				   0,
-				   FW_BOLD,
-				   FALSE,
-				   FALSE,
-				   FALSE,
-				   ANSI_CHARSET,
-				   OUT_DEFAULT_PRECIS,
-				   CLIP_DEFAULT_PRECIS,
-				   DEFAULT_QUALITY,
-				   DEFAULT_PITCH | FF_SWISS,
-				   "Arial");
-		if (hFont != NULL) {
-			NSLOG(neosurf, INFO, "Setting font object");
-			SendMessage(dlg_itm, WM_SETFONT, (WPARAM)hFont, 0);
-		}
+        hFont = CreateFont(26, 0, 0, 0, FW_BOLD, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
+            CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, DEFAULT_PITCH | FF_SWISS, "Arial");
+        if (hFont != NULL) {
+            NSLOG(neosurf, INFO, "Setting font object");
+            SendMessage(dlg_itm, WM_SETFONT, (WPARAM)hFont, 0);
+        }
 
-		snprintf(ver_str,
-			 sizeof(ver_str),
-			 "%s %d.%d",
-			 messages_get("NeoSurf"),
-			 neosurf_version_major,
-			 neosurf_version_minor);
+        snprintf(ver_str, sizeof(ver_str), "%s %d.%d", messages_get("NeoSurf"), neosurf_version_major,
+            neosurf_version_minor);
 
-		SendMessage(dlg_itm, WM_SETTEXT, 0, (LPARAM)ver_str);
-	}
+        SendMessage(dlg_itm, WM_SETTEXT, 0, (LPARAM)ver_str);
+    }
 
-	dlg_itm = GetDlgItem(hwnd, IDC_ABOUT_COPYRIGHT);
-	if (dlg_itm != NULL) {
-		snprintf(ver_str,
-			 sizeof(ver_str),
-			 "%s",
-			 messages_get("NeoSurfCopyright"));
+    dlg_itm = GetDlgItem(hwnd, IDC_ABOUT_COPYRIGHT);
+    if (dlg_itm != NULL) {
+        snprintf(ver_str, sizeof(ver_str), "%s", messages_get("NeoSurfCopyright"));
 
-		SendMessage(dlg_itm, WM_SETTEXT, 0, (LPARAM)ver_str);
-	}
+        SendMessage(dlg_itm, WM_SETTEXT, 0, (LPARAM)ver_str);
+    }
 
-	return TRUE;
+    return TRUE;
 }
 
 /**
@@ -97,74 +78,68 @@ static BOOL init_about_dialog(HWND hwnd)
  */
 static BOOL destroy_about_dialog(HWND hwnd)
 {
-	HWND dlg_itm;
-	HFONT hFont;
+    HWND dlg_itm;
+    HFONT hFont;
 
-	dlg_itm = GetDlgItem(hwnd, IDC_ABOUT_VERSION);
-	if (dlg_itm != NULL) {
-		hFont = (HFONT)SendMessage(dlg_itm, WM_GETFONT, 0, 0);
-		if (hFont != NULL) {
-			NSLOG(neosurf, INFO, "Destroyed font object");
-			DeleteObject(hFont);
-		}
-	}
+    dlg_itm = GetDlgItem(hwnd, IDC_ABOUT_VERSION);
+    if (dlg_itm != NULL) {
+        hFont = (HFONT)SendMessage(dlg_itm, WM_GETFONT, 0, 0);
+        if (hFont != NULL) {
+            NSLOG(neosurf, INFO, "Destroyed font object");
+            DeleteObject(hFont);
+        }
+    }
 
-	return TRUE;
+    return TRUE;
 }
 
-static INT_PTR CALLBACK nsws_about_event_callback(HWND hwnd,
-						  UINT msg,
-						  WPARAM wparam,
-						  LPARAM lparam)
+static INT_PTR CALLBACK nsws_about_event_callback(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 
-	LOG_WIN_MSG(hwnd, msg, wparam, lparam);
+    LOG_WIN_MSG(hwnd, msg, wparam, lparam);
 
-	switch (msg) {
-	case WM_INITDIALOG:
-		return init_about_dialog(hwnd);
+    switch (msg) {
+    case WM_INITDIALOG:
+        return init_about_dialog(hwnd);
 
-	case WM_COMMAND:
-		switch (LOWORD(wparam)) {
-		case IDOK:
-			NSLOG(neosurf, INFO, "OK clicked");
-			EndDialog(hwnd, IDOK);
-			break;
+    case WM_COMMAND:
+        switch (LOWORD(wparam)) {
+        case IDOK:
+            NSLOG(neosurf, INFO, "OK clicked");
+            EndDialog(hwnd, IDOK);
+            break;
 
-		case IDCANCEL:
-			NSLOG(neosurf, INFO, "Cancel clicked");
-			EndDialog(hwnd, IDOK);
-			break;
+        case IDCANCEL:
+            NSLOG(neosurf, INFO, "Cancel clicked");
+            EndDialog(hwnd, IDOK);
+            break;
 
-		case IDC_BTN_CREDITS:
-			nsws_window_go(hwnd, "about:credits");
-			EndDialog(hwnd, IDOK);
-			break;
+        case IDC_BTN_CREDITS:
+            nsws_window_go(hwnd, "about:credits");
+            EndDialog(hwnd, IDOK);
+            break;
 
-		case IDC_BTN_LICENCE:
-			nsws_window_go(hwnd, "about:licence");
-			EndDialog(hwnd, IDOK);
-			break;
-		}
-		break;
+        case IDC_BTN_LICENCE:
+            nsws_window_go(hwnd, "about:licence");
+            EndDialog(hwnd, IDOK);
+            break;
+        }
+        break;
 
-	case WM_CREATE:
-		return TRUE;
+    case WM_CREATE:
+        return TRUE;
 
-	case WM_DESTROY:
-		return destroy_about_dialog(hwnd);
-	}
-	return FALSE;
+    case WM_DESTROY:
+        return destroy_about_dialog(hwnd);
+    }
+    return FALSE;
 }
 
 void nsw32_about_dialog_init(HINSTANCE hinst, HWND parent)
 {
-	int ret = DialogBox(hinst,
-			    MAKEINTRESOURCE(IDD_ABOUT),
-			    parent,
-			    nsws_about_event_callback);
-	if (ret == -1) {
-		win32_warning(messages_get("NoMemory"), 0);
-		return;
-	}
+    int ret = DialogBox(hinst, MAKEINTRESOURCE(IDD_ABOUT), parent, nsws_about_event_callback);
+    if (ret == -1) {
+        win32_warning(messages_get("NoMemory"), 0);
+        return;
+    }
 }

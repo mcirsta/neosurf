@@ -65,10 +65,10 @@ typedef void (*dom_default_action_callback)(struct dom_event *evt, void *pw);
  * of dom_default_action_callback function and their private data.
  */
 typedef enum {
-	DOM_DEFAULT_ACTION_STARTED = 0,
-	DOM_DEFAULT_ACTION_PREVENTED,
-	DOM_DEFAULT_ACTION_END,
-	DOM_DEFAULT_ACTION_FINISHED
+    DOM_DEFAULT_ACTION_STARTED = 0,
+    DOM_DEFAULT_ACTION_PREVENTED,
+    DOM_DEFAULT_ACTION_END,
+    DOM_DEFAULT_ACTION_FINISHED
 } dom_default_action_phase;
 
 /**
@@ -80,26 +80,15 @@ typedef enum {
  * \return a callback function, NULL if there is none.
  */
 typedef dom_default_action_callback (*dom_events_default_action_fetcher)(
-	dom_string *type,
-	dom_default_action_phase phase,
-	void **pw);
+    dom_string *type, dom_default_action_phase phase, void **pw);
 
-dom_exception _dom_document_event_create_event(dom_document_event *de,
-					       dom_string *type,
-					       struct dom_event **evt);
-#define dom_document_event_create_event(d, t, e)                               \
-	_dom_document_event_create_event((dom_document_event *)(d),            \
-					 (dom_string *)(t),                    \
-					 (struct dom_event **)(e))
+dom_exception _dom_document_event_create_event(dom_document_event *de, dom_string *type, struct dom_event **evt);
+#define dom_document_event_create_event(d, t, e)                                                                       \
+    _dom_document_event_create_event((dom_document_event *)(d), (dom_string *)(t), (struct dom_event **)(e))
 
-dom_exception _dom_document_event_can_dispatch(dom_document_event *de,
-					       dom_string *namespace,
-					       dom_string *type,
-					       bool *can);
-#define dom_document_event_can_dispatch(d, n, t, c)                            \
-	_dom_document_event_can_dispatch((dom_document_event *)(d),            \
-					 (dom_string *)(n),                    \
-					 (dom_string *)(t),                    \
-					 (bool *)(c))
+dom_exception
+_dom_document_event_can_dispatch(dom_document_event *de, dom_string *namespace, dom_string *type, bool *can);
+#define dom_document_event_can_dispatch(d, n, t, c)                                                                    \
+    _dom_document_event_can_dispatch((dom_document_event *)(d), (dom_string *)(n), (dom_string *)(t), (bool *)(c))
 
 #endif

@@ -19,9 +19,9 @@
 #ifndef NETSURF_BEOS_WINDOW_H
 #define NETSURF_BEOS_WINDOW_H 1
 
+#include <NetPositive.h>
 #include <View.h>
 #include <Window.h>
-#include <NetPositive.h>
 
 extern struct gui_window_table *beos_window_table;
 extern struct gui_clipboard_table *beos_clipboard_table;
@@ -32,24 +32,23 @@ struct beos_scaffolding;
 
 class NSBrowserFrameView : public BView
 {
-      public:
-	NSBrowserFrameView(BRect frame, struct gui_window *gui);
-	virtual ~NSBrowserFrameView();
+public:
+    NSBrowserFrameView(BRect frame, struct gui_window *gui);
+    virtual ~NSBrowserFrameView();
 
-	virtual void MessageReceived(BMessage *message);
-	virtual void Draw(BRect updateRect);
+    virtual void MessageReceived(BMessage *message);
+    virtual void Draw(BRect updateRect);
 
-	// virtual void FrameMoved(BPoint new_location);
-	virtual void FrameResized(float new_width, float new_height);
+    // virtual void FrameMoved(BPoint new_location);
+    virtual void FrameResized(float new_width, float new_height);
 
-	virtual void KeyDown(const char *bytes, int32 numBytes);
-	virtual void MouseDown(BPoint where);
-	virtual void MouseUp(BPoint where);
-	virtual void
-	MouseMoved(BPoint where, uint32 transit, const BMessage *msg);
+    virtual void KeyDown(const char *bytes, int32 numBytes);
+    virtual void MouseDown(BPoint where);
+    virtual void MouseUp(BPoint where);
+    virtual void MouseMoved(BPoint where, uint32 transit, const BMessage *msg);
 
-      private:
-	struct gui_window *fGuiWindow;
+private:
+    struct gui_window *fGuiWindow;
 };
 
 /**

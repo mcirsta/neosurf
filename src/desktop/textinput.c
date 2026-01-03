@@ -24,101 +24,96 @@
  * Textual input handling implementation
  */
 
+#include <dom/dom.h>
 #include <assert.h>
 #include <ctype.h>
 #include <string.h>
-#include <dom/dom.h>
 
+#include <neosurf/content/content.h>
 #include <neosurf/utils/log.h>
-#include "utils/talloc.h"
 #include <neosurf/utils/utf8.h>
 #include <neosurf/utils/utils.h>
-#include "neosurf/types.h"
-#include "neosurf/mouse.h"
-#include "neosurf/form.h"
-#include "neosurf/window.h"
+#include "utils/talloc.h"
 #include "neosurf/browser_window.h"
+#include "neosurf/form.h"
 #include "neosurf/keypress.h"
-#include <neosurf/content/content.h>
+#include "neosurf/mouse.h"
+#include "neosurf/types.h"
+#include "neosurf/window.h"
 
-#include "desktop/browser_private.h"
-#include <neosurf/desktop/textinput.h>
 #include <neosurf/desktop/gui_internal.h>
+#include <neosurf/desktop/textinput.h>
+#include "desktop/browser_private.h"
 
 /* Define to enable textinput debug */
 #undef TEXTINPUT_DEBUG
 
 
 /* exported interface documented in desktop/textinput.h */
-void browser_window_place_caret(struct browser_window *bw,
-				int x,
-				int y,
-				int height,
-				const struct rect *clip)
+void browser_window_place_caret(struct browser_window *bw, int x, int y, int height, const struct rect *clip)
 {
-	struct browser_window *root_bw;
-	int pos_x = 0;
-	int pos_y = 0;
-	struct rect cr;
-	struct rect *crp = NULL;
+    struct browser_window *root_bw;
+    int pos_x = 0;
+    int pos_y = 0;
+    struct rect cr;
+    struct rect *crp = NULL;
 
-	/* Find top level browser window */
-	root_bw = browser_window_get_root(bw);
-	browser_window_get_position(bw, true, &pos_x, &pos_y);
+    /* Find top level browser window */
+    root_bw = browser_window_get_root(bw);
+    browser_window_get_position(bw, true, &pos_x, &pos_y);
 
-	x = x * bw->scale + pos_x;
-	y = y * bw->scale + pos_y;
+    x = x * bw->scale + pos_x;
+    y = y * bw->scale + pos_y;
 
-	if (clip != NULL) {
-		cr = *clip;
-		cr.x0 += pos_x;
-		cr.y0 += pos_y;
-		cr.x1 += pos_x;
-		cr.y1 += pos_y;
-		crp = &cr;
-	}
+    if (clip != NULL) {
+        cr = *clip;
+        cr.x0 += pos_x;
+        cr.y0 += pos_y;
+        cr.x1 += pos_x;
+        cr.y1 += pos_y;
+        crp = &cr;
+    }
 
-	/** \todo intersect with bw viewport */
+    /** \todo intersect with bw viewport */
 
-	guit->window->place_caret(
-		root_bw->window, x, y, height * bw->scale, crp);
+    guit->window->place_caret(root_bw->window, x, y, height * bw->scale, crp);
 
-	/* Set focus browser window */
-	root_bw->focus = bw;
-	root_bw->can_edit = true;
+    /* Set focus browser window */
+    root_bw->focus = bw;
+    root_bw->can_edit = true;
 }
 
 /* exported interface documented in desktop/textinput.h */
 void browser_window_remove_caret(struct browser_window *bw, bool only_hide)
 {
-	struct browser_window *root_bw;
+    struct browser_window *root_bw;
 
-	root_bw = browser_window_get_root(bw);
-	assert(root_bw != NULL);
+    root_bw = browser_window_get_root(bw);
+    assert(root_bw != NULL);
 
-	if (only_hide) {
-		root_bw->can_edit = true;
-	} else {
-		root_bw->can_edit = false;
-	}
+    if (only_hide) {
+        root_bw->can_edit = true;
+    } else {
+        root_bw->can_edit = false;
+    }
 
-	if (root_bw->window) {
-		guit->window->event(root_bw->window, GW_EVENT_REMOVE_CARET);
-	}
+    if (root_bw->window) {
+        guit->window->event(root_bw->window, GW_EVENT_REMOVE_CARET);
+    }
 }
 
 /* exported interface documented in neosurf/keypress.h */
 bool browser_window_key_press(struct browser_window *bw, uint32_t key)
 {
-	struct browser_window *focus = bw->focus;
+    struct browser_window *focus = bw->focus;
 
-	assert(bw->window != NULL);
+    assert(bw->window != NULL);
 
-	if (focus == NULL)
-		focus = bw;
+    if (focus == NULL)
+        focus = bw;
 
-	if (focus->current_content == NULL)
-		return false;
+    if (focus->current_content == NULL)
+        return false;
 
-	return content_keypress(focus->current_content, key);
+    return content_keypress(focus->current_content, key);
 }

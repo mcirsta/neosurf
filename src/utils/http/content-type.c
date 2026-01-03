@@ -27,104 +27,98 @@
 #include "utils/http/primitives.h"
 
 /* See content-type.h for documentation */
-nserror
-http_parse_content_type(const char *header_value, http_content_type **result)
+nserror http_parse_content_type(const char *header_value, http_content_type **result)
 {
-	const char *pos = header_value;
-	lwc_string *type;
-	lwc_string *subtype = NULL;
-	http_parameter *params = NULL;
-	char *mime;
-	size_t mime_len;
-	lwc_string *imime;
-	http_content_type *ct;
-	nserror error;
+    const char *pos = header_value;
+    lwc_string *type;
+    lwc_string *subtype = NULL;
+    http_parameter *params = NULL;
+    char *mime;
+    size_t mime_len;
+    lwc_string *imime;
+    http_content_type *ct;
+    nserror error;
 
-	/* type "/" subtype *( ";" parameter ) */
+    /* type "/" subtype *( ";" parameter ) */
 
-	http__skip_LWS(&pos);
+    http__skip_LWS(&pos);
 
-	error = http__parse_token(&pos, &type);
-	if (error != NSERROR_OK)
-		return error;
+    error = http__parse_token(&pos, &type);
+    if (error != NSERROR_OK)
+        return error;
 
-	http__skip_LWS(&pos);
+    http__skip_LWS(&pos);
 
-	if (*pos != '/') {
-		lwc_string_unref(type);
-		return NSERROR_NOT_FOUND;
-	}
+    if (*pos != '/') {
+        lwc_string_unref(type);
+        return NSERROR_NOT_FOUND;
+    }
 
-	pos++;
+    pos++;
 
-	http__skip_LWS(&pos);
+    http__skip_LWS(&pos);
 
-	error = http__parse_token(&pos, &subtype);
-	if (error != NSERROR_OK) {
-		lwc_string_unref(type);
-		return error;
-	}
+    error = http__parse_token(&pos, &subtype);
+    if (error != NSERROR_OK) {
+        lwc_string_unref(type);
+        return error;
+    }
 
-	http__skip_LWS(&pos);
+    http__skip_LWS(&pos);
 
-	if (*pos == ';') {
-		error = http__item_list_parse(
-			&pos, http__parse_parameter, NULL, &params);
-		if (error != NSERROR_OK && error != NSERROR_NOT_FOUND) {
-			lwc_string_unref(subtype);
-			lwc_string_unref(type);
-			return error;
-		}
-	}
+    if (*pos == ';') {
+        error = http__item_list_parse(&pos, http__parse_parameter, NULL, &params);
+        if (error != NSERROR_OK && error != NSERROR_NOT_FOUND) {
+            lwc_string_unref(subtype);
+            lwc_string_unref(type);
+            return error;
+        }
+    }
 
-	/* <type> + <subtype> + '/' */
-	mime_len = lwc_string_length(type) + lwc_string_length(subtype) + 1;
+    /* <type> + <subtype> + '/' */
+    mime_len = lwc_string_length(type) + lwc_string_length(subtype) + 1;
 
-	mime = malloc(mime_len + 1);
-	if (mime == NULL) {
-		http_parameter_list_destroy(params);
-		lwc_string_unref(subtype);
-		lwc_string_unref(type);
-		return NSERROR_NOMEM;
-	}
+    mime = malloc(mime_len + 1);
+    if (mime == NULL) {
+        http_parameter_list_destroy(params);
+        lwc_string_unref(subtype);
+        lwc_string_unref(type);
+        return NSERROR_NOMEM;
+    }
 
-	sprintf(mime,
-		"%.*s/%.*s",
-		(int)lwc_string_length(type),
-		lwc_string_data(type),
-		(int)lwc_string_length(subtype),
-		lwc_string_data(subtype));
+    sprintf(mime, "%.*s/%.*s", (int)lwc_string_length(type), lwc_string_data(type), (int)lwc_string_length(subtype),
+        lwc_string_data(subtype));
 
-	lwc_string_unref(subtype);
-	lwc_string_unref(type);
+    lwc_string_unref(subtype);
+    lwc_string_unref(type);
 
-	if (lwc_intern_string(mime, mime_len, &imime) != lwc_error_ok) {
-		http_parameter_list_destroy(params);
-		free(mime);
-		return NSERROR_NOMEM;
-	}
+    if (lwc_intern_string(mime, mime_len, &imime) != lwc_error_ok) {
+        http_parameter_list_destroy(params);
+        free(mime);
+        return NSERROR_NOMEM;
+    }
 
-	free(mime);
+    free(mime);
 
-	ct = malloc(sizeof(*ct));
-	if (ct == NULL) {
-		lwc_string_unref(imime);
-		http_parameter_list_destroy(params);
-		return NSERROR_NOMEM;
-	}
+    ct = malloc(sizeof(*ct));
+    if (ct == NULL) {
+        lwc_string_unref(imime);
+        http_parameter_list_destroy(params);
+        return NSERROR_NOMEM;
+    }
 
-	ct->media_type = imime;
-	ct->parameters = params;
+    ct->media_type = imime;
+    ct->parameters = params;
 
-	*result = ct;
+    *result = ct;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /* See content-type.h for documentation */
 void http_content_type_destroy(http_content_type *victim)
 {
-	lwc_string_unref(victim->media_type);
-	http_parameter_list_destroy(victim->parameters);
-	free(victim);
+    lwc_string_unref(victim->media_type);
+    http_parameter_list_destroy(victim->parameters);
+    free(victim);
 }

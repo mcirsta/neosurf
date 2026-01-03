@@ -19,8 +19,8 @@
 #ifndef NETSURF_HASHMAP_H
 #define NETSURF_HASHMAP_H
 
-#include <stdint.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 /**
  * Generic hashmap.
@@ -75,39 +75,39 @@ typedef bool (*hashmap_iteration_cb_t)(void *, void *, void *);
  * Parameters for hashmaps
  */
 typedef struct {
-	/**
-	 * A function which when called will clone a key and give
-	 * ownership of the returned object to the hashmap
-	 */
-	hashmap_key_clone_t key_clone;
+    /**
+     * A function which when called will clone a key and give
+     * ownership of the returned object to the hashmap
+     */
+    hashmap_key_clone_t key_clone;
 
-	/**
-	 * A function which when given a key will return its hash.
-	 */
-	hashmap_key_hash_t key_hash;
+    /**
+     * A function which when given a key will return its hash.
+     */
+    hashmap_key_hash_t key_hash;
 
-	/**
-	 * A function to compare two keys and return if they are equal.
-	 * Note: identity is not necessary, nor strict equality, so long
-	 * as the function is a full equality model.
-	 * (i.e. key1 == key2 => key2 == key1)
-	 */
-	hashmap_key_eq_t key_eq;
+    /**
+     * A function to compare two keys and return if they are equal.
+     * Note: identity is not necessary, nor strict equality, so long
+     * as the function is a full equality model.
+     * (i.e. key1 == key2 => key2 == key1)
+     */
+    hashmap_key_eq_t key_eq;
 
-	/**
-	 * A function which when called will destroy a key object
-	 */
-	hashmap_key_destroy_t key_destroy;
+    /**
+     * A function which when called will destroy a key object
+     */
+    hashmap_key_destroy_t key_destroy;
 
-	/**
-	 * A function which when called will allocate a value object
-	 */
-	hashmap_value_alloc_t value_alloc;
+    /**
+     * A function which when called will allocate a value object
+     */
+    hashmap_value_alloc_t value_alloc;
 
-	/**
-	 * A function which when called will destroy a value object
-	 */
-	hashmap_value_destroy_t value_destroy;
+    /**
+     * A function which when called will destroy a value object
+     */
+    hashmap_value_destroy_t value_destroy;
 } hashmap_parameters_t;
 
 

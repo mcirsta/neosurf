@@ -20,24 +20,24 @@
  * Table operations for files with posix compliant path separator.
  */
 
-#include <stdarg.h>
-#include <string.h>
-#include <stdio.h>
-#include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
-#include <fcntl.h>
+#include <sys/types.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
 
 #include <neosurf/desktop/gui_internal.h>
 
-#include <neosurf/utils/utils.h>
 #include <neosurf/utils/corestrings.h>
-#include "utils/url.h"
+#include <neosurf/utils/file.h>
 #include <neosurf/utils/nsurl.h>
 #include <neosurf/utils/string.h>
-#include <neosurf/utils/file.h>
+#include <neosurf/utils/utils.h>
 #include "utils/dirent.h"
+#include "utils/url.h"
 
 /**
  * Generate a posix path from one or more component elemnts.
@@ -56,7 +56,7 @@
  */
 static nserror posix_vmkpath(char **str, size_t *size, size_t nelm, va_list ap)
 {
-	return vsnstrjoin(str, size, '/', nelm, ap);
+    return vsnstrjoin(str, size, '/', nelm, ap);
 }
 
 /**
@@ -75,30 +75,30 @@ static nserror posix_vmkpath(char **str, size_t *size, size_t nelm, va_list ap)
  */
 static nserror posix_basename(const char *path, char **str, size_t *size)
 {
-	const char *leafname;
-	char *fname;
+    const char *leafname;
+    char *fname;
 
-	if (path == NULL) {
-		return NSERROR_BAD_PARAMETER;
-	}
+    if (path == NULL) {
+        return NSERROR_BAD_PARAMETER;
+    }
 
-	leafname = strrchr(path, '/');
-	if (!leafname) {
-		leafname = path;
-	} else {
-		leafname += 1;
-	}
+    leafname = strrchr(path, '/');
+    if (!leafname) {
+        leafname = path;
+    } else {
+        leafname += 1;
+    }
 
-	fname = strdup(leafname);
-	if (fname == NULL) {
-		return NSERROR_NOMEM;
-	}
+    fname = strdup(leafname);
+    if (fname == NULL) {
+        return NSERROR_NOMEM;
+    }
 
-	*str = fname;
-	if (size != NULL) {
-		*size = strlen(fname);
-	}
-	return NSERROR_OK;
+    *str = fname;
+    if (size != NULL) {
+        *size = strlen(fname);
+    }
+    return NSERROR_OK;
 }
 
 /**
@@ -112,44 +112,40 @@ static nserror posix_basename(const char *path, char **str, size_t *size)
  */
 static nserror posix_nsurl_to_path(struct nsurl *url, char **path_out)
 {
-	lwc_string *urlpath;
-	char *path;
-	bool match;
-	lwc_string *scheme;
-	nserror res;
+    lwc_string *urlpath;
+    char *path;
+    bool match;
+    lwc_string *scheme;
+    nserror res;
 
-	if ((url == NULL) || (path_out == NULL)) {
-		return NSERROR_BAD_PARAMETER;
-	}
+    if ((url == NULL) || (path_out == NULL)) {
+        return NSERROR_BAD_PARAMETER;
+    }
 
-	scheme = nsurl_get_component(url, NSURL_SCHEME);
+    scheme = nsurl_get_component(url, NSURL_SCHEME);
 
-	if (lwc_string_caseless_isequal(scheme, corestring_lwc_file, &match) !=
-	    lwc_error_ok) {
-		return NSERROR_BAD_PARAMETER;
-	}
-	lwc_string_unref(scheme);
-	if (match == false) {
-		return NSERROR_BAD_PARAMETER;
-	}
+    if (lwc_string_caseless_isequal(scheme, corestring_lwc_file, &match) != lwc_error_ok) {
+        return NSERROR_BAD_PARAMETER;
+    }
+    lwc_string_unref(scheme);
+    if (match == false) {
+        return NSERROR_BAD_PARAMETER;
+    }
 
-	urlpath = nsurl_get_component(url, NSURL_PATH);
-	if (urlpath == NULL) {
-		return NSERROR_BAD_PARAMETER;
-	}
+    urlpath = nsurl_get_component(url, NSURL_PATH);
+    if (urlpath == NULL) {
+        return NSERROR_BAD_PARAMETER;
+    }
 
-	res = url_unescape(lwc_string_data(urlpath),
-			   lwc_string_length(urlpath),
-			   NULL,
-			   &path);
-	lwc_string_unref(urlpath);
-	if (res != NSERROR_OK) {
-		return res;
-	}
+    res = url_unescape(lwc_string_data(urlpath), lwc_string_length(urlpath), NULL, &path);
+    lwc_string_unref(urlpath);
+    if (res != NSERROR_OK) {
+        return res;
+    }
 
-	*path_out = path;
+    *path_out = path;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 /**
@@ -165,42 +161,42 @@ static nserror posix_nsurl_to_path(struct nsurl *url, char **path_out)
  */
 static nserror posix_path_to_nsurl(const char *path, struct nsurl **url_out)
 {
-	nserror ret;
-	int urllen;
-	char *urlstr;
-	char *escpath; /* escaped version of the path */
-	char *escpaths;
+    nserror ret;
+    int urllen;
+    char *urlstr;
+    char *escpath; /* escaped version of the path */
+    char *escpaths;
 
-	if ((path == NULL) || (url_out == NULL) || (*path == 0)) {
-		return NSERROR_BAD_PARAMETER;
-	}
+    if ((path == NULL) || (url_out == NULL) || (*path == 0)) {
+        return NSERROR_BAD_PARAMETER;
+    }
 
-	/* escape the path so it can be placed in a url */
-	ret = url_escape(path, false, "/", &escpath);
-	if (ret != NSERROR_OK) {
-		return ret;
-	}
-	/* remove unecessary / as file: paths are already absolute */
-	escpaths = escpath;
-	while (*escpaths == '/') {
-		escpaths++;
-	}
+    /* escape the path so it can be placed in a url */
+    ret = url_escape(path, false, "/", &escpath);
+    if (ret != NSERROR_OK) {
+        return ret;
+    }
+    /* remove unecessary / as file: paths are already absolute */
+    escpaths = escpath;
+    while (*escpaths == '/') {
+        escpaths++;
+    }
 
-	/* build url as a string for nsurl constructor */
-	urllen = strlen(escpaths) + FILE_SCHEME_PREFIX_LEN + 1;
-	urlstr = malloc(urllen);
-	if (urlstr == NULL) {
-		free(escpath);
-		return NSERROR_NOMEM;
-	}
+    /* build url as a string for nsurl constructor */
+    urllen = strlen(escpaths) + FILE_SCHEME_PREFIX_LEN + 1;
+    urlstr = malloc(urllen);
+    if (urlstr == NULL) {
+        free(escpath);
+        return NSERROR_NOMEM;
+    }
 
-	snprintf(urlstr, urllen, "%s%s", FILE_SCHEME_PREFIX, escpaths);
-	free(escpath);
+    snprintf(urlstr, urllen, "%s%s", FILE_SCHEME_PREFIX, escpaths);
+    free(escpath);
 
-	ret = nsurl_create(urlstr, url_out);
-	free(urlstr);
+    ret = nsurl_create(urlstr, url_out);
+    free(urlstr);
 
-	return ret;
+    return ret;
 }
 
 /**
@@ -211,70 +207,70 @@ static nserror posix_path_to_nsurl(const char *path, struct nsurl **url_out)
  */
 static nserror posix_mkdir_all(const char *fname)
 {
-	char *dname;
-	char *sep;
-	struct stat sb;
+    char *dname;
+    char *sep;
+    struct stat sb;
 
-	dname = strdup(fname);
+    dname = strdup(fname);
 
-	sep = strrchr(dname, '/');
-	if (sep == NULL) {
-		/* no directory separator path is just filename so its ok */
-		free(dname);
-		return NSERROR_OK;
-	}
+    sep = strrchr(dname, '/');
+    if (sep == NULL) {
+        /* no directory separator path is just filename so its ok */
+        free(dname);
+        return NSERROR_OK;
+    }
 
-	*sep = 0; /* null terminate directory path */
+    *sep = 0; /* null terminate directory path */
 
-	if (stat(dname, &sb) == 0) {
-		free(dname);
-		if (S_ISDIR(sb.st_mode)) {
-			/* path to file exists and is a directory */
-			return NSERROR_OK;
-		}
-		return NSERROR_NOT_DIRECTORY;
-	}
-	*sep = '/'; /* restore separator */
+    if (stat(dname, &sb) == 0) {
+        free(dname);
+        if (S_ISDIR(sb.st_mode)) {
+            /* path to file exists and is a directory */
+            return NSERROR_OK;
+        }
+        return NSERROR_NOT_DIRECTORY;
+    }
+    *sep = '/'; /* restore separator */
 
-	sep = dname;
-	while (*sep == '/') {
-		sep++;
-	}
-	while ((sep = strchr(sep, '/')) != NULL) {
-		*sep = 0;
-		if (stat(dname, &sb) != 0) {
-			if (nsmkdir(dname, S_IRWXU) != 0) {
-				/* could not create path element */
-				free(dname);
-				return NSERROR_NOT_FOUND;
-			}
-		} else {
-			if (!S_ISDIR(sb.st_mode)) {
-				/* path element not a directory */
-				free(dname);
-				return NSERROR_NOT_DIRECTORY;
-			}
-		}
-		*sep = '/'; /* restore separator */
-		/* skip directory separators */
-		while (*sep == '/') {
-			sep++;
-		}
-	}
+    sep = dname;
+    while (*sep == '/') {
+        sep++;
+    }
+    while ((sep = strchr(sep, '/')) != NULL) {
+        *sep = 0;
+        if (stat(dname, &sb) != 0) {
+            if (nsmkdir(dname, S_IRWXU) != 0) {
+                /* could not create path element */
+                free(dname);
+                return NSERROR_NOT_FOUND;
+            }
+        } else {
+            if (!S_ISDIR(sb.st_mode)) {
+                /* path element not a directory */
+                free(dname);
+                return NSERROR_NOT_DIRECTORY;
+            }
+        }
+        *sep = '/'; /* restore separator */
+        /* skip directory separators */
+        while (*sep == '/') {
+            sep++;
+        }
+    }
 
-	free(dname);
-	return NSERROR_OK;
+    free(dname);
+    return NSERROR_OK;
 }
 
 /**
  * default to using the posix file handling
  */
 static struct gui_file_table file_table = {
-	.mkpath = posix_vmkpath,
-	.basename = posix_basename,
-	.nsurl_to_path = posix_nsurl_to_path,
-	.path_to_nsurl = posix_path_to_nsurl,
-	.mkdir_all = posix_mkdir_all,
+    .mkpath = posix_vmkpath,
+    .basename = posix_basename,
+    .nsurl_to_path = posix_nsurl_to_path,
+    .path_to_nsurl = posix_path_to_nsurl,
+    .mkdir_all = posix_mkdir_all,
 };
 
 struct gui_file_table *default_file_table = &file_table;
@@ -282,110 +278,106 @@ struct gui_file_table *default_file_table = &file_table;
 /* exported interface documented in utils/file.h */
 nserror neosurf_mkpath(char **str, size_t *size, size_t nelm, ...)
 {
-	va_list ap;
-	nserror ret;
+    va_list ap;
+    nserror ret;
 
-	va_start(ap, nelm);
-	ret = guit->file->mkpath(str, size, nelm, ap);
-	va_end(ap);
+    va_start(ap, nelm);
+    ret = guit->file->mkpath(str, size, nelm, ap);
+    va_end(ap);
 
-	return ret;
+    return ret;
 }
 
 /* exported interface documented in utils/file.h */
 nserror neosurf_nsurl_to_path(struct nsurl *url, char **path_out)
 {
-	return guit->file->nsurl_to_path(url, path_out);
+    return guit->file->nsurl_to_path(url, path_out);
 }
 
 /* exported interface documented in utils/file.h */
 nserror neosurf_path_to_nsurl(const char *path, struct nsurl **url)
 {
-	return guit->file->path_to_nsurl(path, url);
+    return guit->file->path_to_nsurl(path, url);
 }
 
 /* exported interface documented in utils/file.h */
 nserror neosurf_mkdir_all(const char *fname)
 {
-	return guit->file->mkdir_all(fname);
+    return guit->file->mkdir_all(fname);
 }
 
 /* exported interface documented in utils/file.h */
 nserror neosurf_recursive_rm(const char *path)
 {
-	DIR *parent;
-	struct dirent *entry;
-	nserror ret = NSERROR_OK;
-	struct stat ent_stat; /* stat result of leaf entry */
+    DIR *parent;
+    struct dirent *entry;
+    nserror ret = NSERROR_OK;
+    struct stat ent_stat; /* stat result of leaf entry */
 
-	parent = opendir(path);
-	if (parent == NULL) {
-		switch (errno) {
-		case ENOENT:
-			return NSERROR_NOT_FOUND;
-		default:
-			return NSERROR_UNKNOWN;
-		}
-	}
+    parent = opendir(path);
+    if (parent == NULL) {
+        switch (errno) {
+        case ENOENT:
+            return NSERROR_NOT_FOUND;
+        default:
+            return NSERROR_UNKNOWN;
+        }
+    }
 
-	while ((entry = readdir(parent))) {
-		char *leafpath = NULL;
+    while ((entry = readdir(parent))) {
+        char *leafpath = NULL;
 
-		if (strcmp(entry->d_name, ".") == 0 ||
-		    strcmp(entry->d_name, "..") == 0)
-			continue;
+        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+            continue;
 
-		ret = neosurf_mkpath(&leafpath, NULL, 2, path, entry->d_name);
-		if (ret != NSERROR_OK)
-			goto out;
+        ret = neosurf_mkpath(&leafpath, NULL, 2, path, entry->d_name);
+        if (ret != NSERROR_OK)
+            goto out;
 
 #if (defined(HAVE_DIRFD) && defined(HAVE_FSTATAT))
-		if (fstatat(dirfd(parent),
-			    entry->d_name,
-			    &ent_stat,
-			    AT_SYMLINK_NOFOLLOW) != 0) {
+        if (fstatat(dirfd(parent), entry->d_name, &ent_stat, AT_SYMLINK_NOFOLLOW) != 0) {
 #else
-		if (stat(leafpath, &ent_stat) != 0) {
+        if (stat(leafpath, &ent_stat) != 0) {
 #endif
-			free(leafpath);
-			goto out_via_errno;
-		}
-		if (S_ISDIR(ent_stat.st_mode)) {
-			ret = neosurf_recursive_rm(leafpath);
-			if (ret != NSERROR_OK) {
-				free(leafpath);
-				goto out;
-			}
-		} else {
+            free(leafpath);
+            goto out_via_errno;
+        }
+        if (S_ISDIR(ent_stat.st_mode)) {
+            ret = neosurf_recursive_rm(leafpath);
+            if (ret != NSERROR_OK) {
+                free(leafpath);
+                goto out;
+            }
+        } else {
 #if (defined(HAVE_DIRFD) && defined(HAVE_UNLINKAT))
-			if (unlinkat(dirfd(parent), entry->d_name, 0) != 0) {
+            if (unlinkat(dirfd(parent), entry->d_name, 0) != 0) {
 #else
-			if (unlink(leafpath) != 0) {
+            if (unlink(leafpath) != 0) {
 #endif
-				free(leafpath);
-				goto out_via_errno;
-			}
-		}
-		free(leafpath);
-		leafpath = NULL;
-	}
+                free(leafpath);
+                goto out_via_errno;
+            }
+        }
+        free(leafpath);
+        leafpath = NULL;
+    }
 
-	if (rmdir(path) != 0) {
-		goto out_via_errno;
-	}
+    if (rmdir(path) != 0) {
+        goto out_via_errno;
+    }
 
-	goto out;
+    goto out;
 
 out_via_errno:
-	switch (errno) {
-	case ENOENT:
-		ret = NSERROR_NOT_FOUND;
-		break;
-	default:
-		ret = NSERROR_UNKNOWN;
-	}
+    switch (errno) {
+    case ENOENT:
+        ret = NSERROR_NOT_FOUND;
+        break;
+    default:
+        ret = NSERROR_UNKNOWN;
+    }
 out:
-	closedir(parent);
+    closedir(parent);
 
-	return ret;
+    return ret;
 }

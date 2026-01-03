@@ -31,10 +31,7 @@
  *             display is complete, the caller no longer owns the allocation.
  * \param data_size The size of the data in data.
  */
-nserror nsgtk_viewdata(const char *title,
-		       const char *filename,
-		       char *data,
-		       size_t data_size);
+nserror nsgtk_viewdata(const char *title, const char *filename, char *data, size_t data_size);
 
 /**
  * Display file to a user.
@@ -46,7 +43,6 @@ nserror nsgtk_viewdata(const char *title,
  * \param leafname The suggested leafname to be used.
  * \param filename The filename of the data to be viewed.
  */
-nserror
-nsgtk_viewfile(const char *title, const char *leafname, const char *filename);
+nserror nsgtk_viewfile(const char *title, const char *leafname, const char *filename);
 
 #endif

@@ -24,7 +24,7 @@
 #include "utils/http/challenge.h"
 
 typedef struct http_www_authenticate {
-	http_challenge *challenges;
+    http_challenge *challenges;
 } http_www_authenticate;
 
 /**
@@ -35,8 +35,7 @@ typedef struct http_www_authenticate {
  * \return NSERROR_OK on success,
  *         NSERROR_NOMEM on memory exhaustion
  */
-nserror http_parse_www_authenticate(const char *header_value,
-				    http_www_authenticate **result);
+nserror http_parse_www_authenticate(const char *header_value, http_www_authenticate **result);
 
 /**
  * Destroy a www authenticate object

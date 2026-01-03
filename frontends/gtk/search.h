@@ -36,9 +36,7 @@ struct gtk_search;
  * \param search search context result
  * \return NSERROR_OK and search_out updated
  */
-nserror nsgtk_search_create(GtkBuilder *builder,
-			    struct browser_window *bw,
-			    struct gtk_search **search);
+nserror nsgtk_search_create(GtkBuilder *builder, struct browser_window *bw, struct gtk_search **search);
 
 /**
  * update search toolbar size and style

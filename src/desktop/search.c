@@ -27,27 +27,24 @@
 
 #include <neosurf/utils/errors.h>
 #include "content/textsearch.h"
-#include "neosurf/types.h"
 #include "neosurf/browser_window.h"
+#include "neosurf/types.h"
 
-#include "desktop/browser_private.h"
 #include <neosurf/desktop/search.h>
+#include "desktop/browser_private.h"
 
 /* exported function documented in desktop/search.h */
-void browser_window_search(struct browser_window *bw,
-			   void *context,
-			   search_flags_t flags,
-			   const char *string)
+void browser_window_search(struct browser_window *bw, void *context, search_flags_t flags, const char *string)
 {
-	if ((bw != NULL) && (bw->current_content != NULL)) {
-		content_textsearch(bw->current_content, context, flags, string);
-	}
+    if ((bw != NULL) && (bw->current_content != NULL)) {
+        content_textsearch(bw->current_content, context, flags, string);
+    }
 }
 
 /* exported function documented in desktop/search.h */
 void browser_window_search_clear(struct browser_window *bw)
 {
-	if ((bw != NULL) && (bw->current_content != NULL)) {
-		content_textsearch_clear(bw->current_content);
-	}
+    if ((bw != NULL) && (bw->current_content != NULL)) {
+        content_textsearch_clear(bw->current_content);
+    }
 }

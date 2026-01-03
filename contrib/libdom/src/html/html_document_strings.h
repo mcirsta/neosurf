@@ -12,10 +12,10 @@
 #ifndef HTML_DOCUMENT_STRINGS_ACTION
 #define HTML_DOCUMENT_STRINGS_INTERNAL_ACTION 1
 #define HTML_DOCUMENT_STRINGS_PREFIX typedef enum {
-#define HTML_DOCUMENT_STRINGS_SUFFIX                                           \
-	hds_COUNT                                                              \
-	}                                                                      \
-	html_document_memo_string_e;
+#define HTML_DOCUMENT_STRINGS_SUFFIX                                                                                   \
+    hds_COUNT                                                                                                          \
+    }                                                                                                                  \
+    html_document_memo_string_e;
 #define HTML_DOCUMENT_STRINGS_ACTION(tag, str) hds_##tag,
 #endif
 

@@ -28,78 +28,78 @@
 
 /** Debugging dump operations */
 enum content_debug {
-	/** Debug the contents rendering. */
-	CONTENT_DEBUG_RENDER,
+    /** Debug the contents rendering. */
+    CONTENT_DEBUG_RENDER,
 
-	/** Debug the contents Document Object. */
-	CONTENT_DEBUG_DOM,
+    /** Debug the contents Document Object. */
+    CONTENT_DEBUG_DOM,
 
-	/** Debug redraw operations. */
-	CONTENT_DEBUG_REDRAW,
+    /** Debug redraw operations. */
+    CONTENT_DEBUG_REDRAW,
 
-	// TODO, implement this in the UI
-	/** Check for missing resources. */
-	CONTENT_DEBUG_MISSING
+    // TODO, implement this in the UI
+    /** Check for missing resources. */
+    CONTENT_DEBUG_MISSING
 };
 
 
 /** Content encoding information types */
 enum content_encoding_type {
-	/** The content encoding */
-	CONTENT_ENCODING_NORMAL,
+    /** The content encoding */
+    CONTENT_ENCODING_NORMAL,
 
-	/** The content encoding source */
-	CONTENT_ENCODING_SOURCE
+    /** The content encoding source */
+    CONTENT_ENCODING_SOURCE
 };
 
 
 /** The type of a content. */
 typedef enum {
-	/** no type for content */
-	CONTENT_NONE = 0x00,
+    /** no type for content */
+    CONTENT_NONE = 0x00,
 
-	/** content is HTML */
-	CONTENT_HTML = 0x01,
+    /** content is HTML */
+    CONTENT_HTML = 0x01,
 
-	/** content is plain text */
-	CONTENT_TEXTPLAIN = 0x02,
+    /** content is plain text */
+    CONTENT_TEXTPLAIN = 0x02,
 
-	/** content is CSS */
-	CONTENT_CSS = 0x04,
+    /** content is CSS */
+    CONTENT_CSS = 0x04,
 
-	/** All images */
-	CONTENT_IMAGE = 0x08,
+    /** All images */
+    CONTENT_IMAGE = 0x08,
 
-	/** Navigator API Plugins */
-	CONTENT_PLUGIN = 0x10,
+    /** Navigator API Plugins */
+    CONTENT_PLUGIN = 0x10,
 
-	/** RISC OS themes content */
-	CONTENT_THEME = 0x20,
+    /** RISC OS themes content */
+    CONTENT_THEME = 0x20,
 
-	/** Javascript */
-	CONTENT_JS = 0x40,
+    /** Javascript */
+    CONTENT_JS = 0x40,
 
-	/** All script types. */
-	CONTENT_SCRIPT = 0x40,
+    /** All script types. */
+    CONTENT_SCRIPT = 0x40,
 
-	/** Any content matches */
-	CONTENT_ANY = 0x7f
+    /** Any content matches */
+    CONTENT_ANY = 0x7f
 } content_type;
 
 
 /** Status of a content */
 typedef enum {
-	/** Content is being fetched or converted and is not safe to display. */
-	CONTENT_STATUS_LOADING,
+    /** Content is being fetched or converted and is not safe to display. */
+    CONTENT_STATUS_LOADING,
 
-	/** Some parts of content still being loaded, but can be displayed. */
-	CONTENT_STATUS_READY,
+    /** Some parts of content still being loaded, but can be displayed. */
+    CONTENT_STATUS_READY,
 
-	/** Content has completed all processing. */
-	CONTENT_STATUS_DONE,
+    /** Content has completed all processing. */
+    CONTENT_STATUS_DONE,
 
-	/** Error occurred, content will be destroyed imminently. */
-	CONTENT_STATUS_ERROR
+    /** Error occurred, content will be destroyed imminently. */
+    CONTENT_STATUS_ERROR
 } content_status;
 
 
@@ -107,80 +107,80 @@ typedef enum {
  * Used in callbacks to indicate what has occurred.
  */
 typedef enum {
-	/** Content wishes to log something */
-	CONTENT_MSG_LOG,
+    /** Content wishes to log something */
+    CONTENT_MSG_LOG,
 
-	/** Content is from SSL and this is its chain */
-	CONTENT_MSG_SSL_CERTS,
+    /** Content is from SSL and this is its chain */
+    CONTENT_MSG_SSL_CERTS,
 
-	/** fetching or converting */
-	CONTENT_MSG_LOADING,
+    /** fetching or converting */
+    CONTENT_MSG_LOADING,
 
-	/** may be displayed */
-	CONTENT_MSG_READY,
+    /** may be displayed */
+    CONTENT_MSG_READY,
 
-	/** content has finished processing */
-	CONTENT_MSG_DONE,
+    /** content has finished processing */
+    CONTENT_MSG_DONE,
 
-	/** error occurred */
-	CONTENT_MSG_ERROR,
+    /** error occurred */
+    CONTENT_MSG_ERROR,
 
-	/** fetch url redirect occured */
-	CONTENT_MSG_REDIRECT,
+    /** fetch url redirect occured */
+    CONTENT_MSG_REDIRECT,
 
-	/** new status string */
-	CONTENT_MSG_STATUS,
+    /** new status string */
+    CONTENT_MSG_STATUS,
 
-	/** content_reformat done */
-	CONTENT_MSG_REFORMAT,
+    /** content_reformat done */
+    CONTENT_MSG_REFORMAT,
 
-	/** needs redraw (eg. new animation frame) */
-	CONTENT_MSG_REDRAW,
+    /** needs redraw (eg. new animation frame) */
+    CONTENT_MSG_REDRAW,
 
-	/** wants refresh */
-	CONTENT_MSG_REFRESH,
+    /** wants refresh */
+    CONTENT_MSG_REFRESH,
 
-	/** download, not for display */
-	CONTENT_MSG_DOWNLOAD,
+    /** download, not for display */
+    CONTENT_MSG_DOWNLOAD,
 
-	/** RFC5988 link */
-	CONTENT_MSG_LINK,
+    /** RFC5988 link */
+    CONTENT_MSG_LINK,
 
-	/** Javascript thread */
-	CONTENT_MSG_GETTHREAD,
+    /** Javascript thread */
+    CONTENT_MSG_GETTHREAD,
 
-	/** Get viewport dimensions. */
-	CONTENT_MSG_GETDIMS,
+    /** Get viewport dimensions. */
+    CONTENT_MSG_GETDIMS,
 
-	/** Request to scroll content */
-	CONTENT_MSG_SCROLL,
+    /** Request to scroll content */
+    CONTENT_MSG_SCROLL,
 
-	/** Allow drag saving of content */
-	CONTENT_MSG_DRAGSAVE,
+    /** Allow drag saving of content */
+    CONTENT_MSG_DRAGSAVE,
 
-	/** Allow URL to be saved */
-	CONTENT_MSG_SAVELINK,
+    /** Allow URL to be saved */
+    CONTENT_MSG_SAVELINK,
 
-	/** Wants a specific mouse pointer set */
-	CONTENT_MSG_POINTER,
+    /** Wants a specific mouse pointer set */
+    CONTENT_MSG_POINTER,
 
-	/** A selection made or cleared */
-	CONTENT_MSG_SELECTION,
+    /** A selection made or cleared */
+    CONTENT_MSG_SELECTION,
 
-	/** Caret movement / hiding */
-	CONTENT_MSG_CARET,
+    /** Caret movement / hiding */
+    CONTENT_MSG_CARET,
 
-	/** A drag started or ended */
-	CONTENT_MSG_DRAG,
+    /** A drag started or ended */
+    CONTENT_MSG_DRAG,
 
-	/** Create a select menu */
-	CONTENT_MSG_SELECTMENU,
+    /** Create a select menu */
+    CONTENT_MSG_SELECTMENU,
 
-	/** A gadget has been clicked on (mainly for file) */
-	CONTENT_MSG_GADGETCLICK,
+    /** A gadget has been clicked on (mainly for file) */
+    CONTENT_MSG_GADGETCLICK,
 
-	/** A free text search action has occurred */
-	CONTENT_MSG_TEXTSEARCH
+    /** A free text search action has occurred */
+    CONTENT_MSG_TEXTSEARCH
 } content_msg;
 
 

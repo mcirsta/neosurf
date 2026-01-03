@@ -7,8 +7,8 @@
 
 #include <stdlib.h>
 
-#include "events/event_listener.h"
 #include "core/document.h"
+#include "events/event_listener.h"
 
 /**
  * Create an EventListener
@@ -19,21 +19,19 @@
  * \param listener  The returned EventListener
  * \return DOM_NO_ERR on success, DOM_NO_MEM_ERR on memory exhaustion.
  */
-dom_exception dom_event_listener_create(handle_event handler,
-					void *pw,
-					dom_event_listener **listener)
+dom_exception dom_event_listener_create(handle_event handler, void *pw, dom_event_listener **listener)
 {
-	dom_event_listener *ret = malloc(sizeof(dom_event_listener));
-	if (ret == NULL)
-		return DOM_NO_MEM_ERR;
+    dom_event_listener *ret = malloc(sizeof(dom_event_listener));
+    if (ret == NULL)
+        return DOM_NO_MEM_ERR;
 
-	ret->handler = handler;
-	ret->pw = pw;
-	ret->refcnt = 1;
+    ret->handler = handler;
+    ret->pw = pw;
+    ret->refcnt = 1;
 
-	*listener = ret;
+    *listener = ret;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -43,7 +41,7 @@ dom_exception dom_event_listener_create(handle_event handler,
  */
 void dom_event_listener_ref(dom_event_listener *listener)
 {
-	listener->refcnt++;
+    listener->refcnt++;
 }
 
 /**
@@ -53,9 +51,9 @@ void dom_event_listener_ref(dom_event_listener *listener)
  */
 void dom_event_listener_unref(dom_event_listener *listener)
 {
-	if (listener->refcnt > 0)
-		listener->refcnt--;
+    if (listener->refcnt > 0)
+        listener->refcnt--;
 
-	if (listener->refcnt == 0)
-		free(listener);
+    if (listener->refcnt == 0)
+        free(listener);
 }

@@ -21,21 +21,21 @@
  * Windows file operation table implementation.
  */
 
-#include <stdbool.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
+#include <stdbool.h>
 #include <unistd.h>
 #include <windows.h>
 
-#include "neosurf/utils/errors.h"
-#include "neosurf/utils/nsurl.h"
-#include "neosurf/utils/log.h"
-#include "neosurf/utils/utils.h"
-#include "neosurf/utils/corestrings.h"
-#include "neosurf/utils/file.h"
-#include "neosurf/utils/string.h"
 #include "neosurf/browser_window.h"
 #include "neosurf/utils/ascii.h"
+#include "neosurf/utils/corestrings.h"
+#include "neosurf/utils/errors.h"
+#include "neosurf/utils/file.h"
+#include "neosurf/utils/log.h"
+#include "neosurf/utils/nsurl.h"
+#include "neosurf/utils/string.h"
+#include "neosurf/utils/utils.h"
 
 #include "windows/file.h"
 
@@ -51,10 +51,7 @@
  *                         Returned string has trailing '\0'.
  * \return NSERROR_OK on success
  */
-nserror url_unescape(const char *str,
-		     size_t length,
-		     size_t *length_out,
-		     char **result_out);
+nserror url_unescape(const char *str, size_t length, size_t *length_out, char **result_out);
 
 /**
  * Generate a windows path from one or more component elemnts.
@@ -73,7 +70,7 @@ nserror url_unescape(const char *str,
  */
 static nserror windows_mkpath(char **str, size_t *size, size_t nelm, va_list ap)
 {
-	return vsnstrjoin(str, size, '\\', nelm, ap);
+    return vsnstrjoin(str, size, '\\', nelm, ap);
 }
 
 
@@ -93,30 +90,30 @@ static nserror windows_mkpath(char **str, size_t *size, size_t nelm, va_list ap)
  */
 static nserror windows_basename(const char *path, char **str, size_t *size)
 {
-	const char *leafname;
-	char *fname;
+    const char *leafname;
+    char *fname;
 
-	if (path == NULL) {
-		return NSERROR_BAD_PARAMETER;
-	}
+    if (path == NULL) {
+        return NSERROR_BAD_PARAMETER;
+    }
 
-	leafname = strrchr(path, '\\');
-	if (!leafname) {
-		leafname = path;
-	} else {
-		leafname += 1;
-	}
+    leafname = strrchr(path, '\\');
+    if (!leafname) {
+        leafname = path;
+    } else {
+        leafname += 1;
+    }
 
-	fname = strdup(leafname);
-	if (fname == NULL) {
-		return NSERROR_NOMEM;
-	}
+    fname = strdup(leafname);
+    if (fname == NULL) {
+        return NSERROR_NOMEM;
+    }
 
-	*str = fname;
-	if (size != NULL) {
-		*size = strlen(fname);
-	}
-	return NSERROR_OK;
+    *str = fname;
+    if (size != NULL) {
+        *size = strlen(fname);
+    }
+    return NSERROR_OK;
 }
 
 
@@ -131,68 +128,64 @@ static nserror windows_basename(const char *path, char **str, size_t *size)
  */
 static nserror windows_nsurl_to_path(struct nsurl *url, char **path_out)
 {
-	lwc_string *urlpath;
-	char *path;
-	bool match;
-	lwc_string *scheme;
-	nserror res;
+    lwc_string *urlpath;
+    char *path;
+    bool match;
+    lwc_string *scheme;
+    nserror res;
 
-	if ((url == NULL) || (path_out == NULL)) {
-		return NSERROR_BAD_PARAMETER;
-	}
+    if ((url == NULL) || (path_out == NULL)) {
+        return NSERROR_BAD_PARAMETER;
+    }
 
-	scheme = nsurl_get_component(url, NSURL_SCHEME);
+    scheme = nsurl_get_component(url, NSURL_SCHEME);
 
-	if (lwc_string_caseless_isequal(scheme, corestring_lwc_file, &match) !=
-	    lwc_error_ok) {
-		return NSERROR_BAD_PARAMETER;
-	}
-	lwc_string_unref(scheme);
-	if (match == false) {
-		return NSERROR_BAD_PARAMETER;
-	}
+    if (lwc_string_caseless_isequal(scheme, corestring_lwc_file, &match) != lwc_error_ok) {
+        return NSERROR_BAD_PARAMETER;
+    }
+    lwc_string_unref(scheme);
+    if (match == false) {
+        return NSERROR_BAD_PARAMETER;
+    }
 
-	urlpath = nsurl_get_component(url, NSURL_PATH);
-	if (urlpath == NULL) {
-		return NSERROR_BAD_PARAMETER;
-	}
+    urlpath = nsurl_get_component(url, NSURL_PATH);
+    if (urlpath == NULL) {
+        return NSERROR_BAD_PARAMETER;
+    }
 
-	res = url_unescape(lwc_string_data(urlpath),
-			   lwc_string_length(urlpath),
-			   NULL,
-			   &path);
-	lwc_string_unref(urlpath);
-	if (res != NSERROR_OK) {
-		return res;
-	}
+    res = url_unescape(lwc_string_data(urlpath), lwc_string_length(urlpath), NULL, &path);
+    lwc_string_unref(urlpath);
+    if (res != NSERROR_OK) {
+        return res;
+    }
 
-	/* if there is a drive: prefix treat path as DOS filename */
-	if ((path[2] == ':') || (path[2] == '|')) {
-		char *sidx; /* slash index */
+    /* if there is a drive: prefix treat path as DOS filename */
+    if ((path[2] == ':') || (path[2] == '|')) {
+        char *sidx; /* slash index */
 
-		/* move the string down to remove leading / note the
-		 * strlen is *not* copying too much data as we are
-		 * moving the null too!
-		 */
-		memmove(path, path + 1, strlen(path));
+        /* move the string down to remove leading / note the
+         * strlen is *not* copying too much data as we are
+         * moving the null too!
+         */
+        memmove(path, path + 1, strlen(path));
 
-		/* swap / for \ */
-		sidx = strrchr(path, '/');
-		while (sidx != NULL) {
-			*sidx = '\\';
-			sidx = strrchr(path, '/');
-		}
-	}
-	/* if the path does not have a drive letter we return the
-	 * complete path.
-	 */
-	/** @todo Need to check returning the unaltered path in this
-	 * case is correct
-	 */
+        /* swap / for \ */
+        sidx = strrchr(path, '/');
+        while (sidx != NULL) {
+            *sidx = '\\';
+            sidx = strrchr(path, '/');
+        }
+    }
+    /* if the path does not have a drive letter we return the
+     * complete path.
+     */
+    /** @todo Need to check returning the unaltered path in this
+     * case is correct
+     */
 
-	*path_out = path;
+    *path_out = path;
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
@@ -209,40 +202,40 @@ static nserror windows_nsurl_to_path(struct nsurl *url, char **path_out)
  */
 static nserror windows_path_to_nsurl(const char *path, struct nsurl **url_out)
 {
-	nserror ret;
-	int urllen;
-	char *urlstr;
-	char *sidx; /* slash index */
+    nserror ret;
+    int urllen;
+    char *urlstr;
+    char *sidx; /* slash index */
 
-	if ((path == NULL) || (url_out == NULL) || (*path == 0)) {
-		return NSERROR_BAD_PARAMETER;
-	}
+    if ((path == NULL) || (url_out == NULL) || (*path == 0)) {
+        return NSERROR_BAD_PARAMETER;
+    }
 
-	/* build url as a string for nsurl constructor */
-	urllen = strlen(path) + FILE_SCHEME_PREFIX_LEN + 5;
-	urlstr = malloc(urllen);
-	if (urlstr == NULL) {
-		return NSERROR_NOMEM;
-	}
+    /* build url as a string for nsurl constructor */
+    urllen = strlen(path) + FILE_SCHEME_PREFIX_LEN + 5;
+    urlstr = malloc(urllen);
+    if (urlstr == NULL) {
+        return NSERROR_NOMEM;
+    }
 
-	/** @todo check if this should be url escaping the path. */
-	if (*path == '/') {
-		/* unix style path start, so try wine Z: */
-		snprintf(urlstr, urllen, "%sZ%%3A%s", FILE_SCHEME_PREFIX, path);
-	} else {
-		snprintf(urlstr, urllen, "%s%s", FILE_SCHEME_PREFIX, path);
-	}
+    /** @todo check if this should be url escaping the path. */
+    if (*path == '/') {
+        /* unix style path start, so try wine Z: */
+        snprintf(urlstr, urllen, "%sZ%%3A%s", FILE_SCHEME_PREFIX, path);
+    } else {
+        snprintf(urlstr, urllen, "%s%s", FILE_SCHEME_PREFIX, path);
+    }
 
-	sidx = strrchr(urlstr, '\\');
-	while (sidx != NULL) {
-		*sidx = '/';
-		sidx = strrchr(urlstr, '\\');
-	}
+    sidx = strrchr(urlstr, '\\');
+    while (sidx != NULL) {
+        *sidx = '/';
+        sidx = strrchr(urlstr, '\\');
+    }
 
-	ret = nsurl_create(urlstr, url_out);
-	free(urlstr);
+    ret = nsurl_create(urlstr, url_out);
+    free(urlstr);
 
-	return ret;
+    return ret;
 }
 
 
@@ -254,72 +247,71 @@ static nserror windows_path_to_nsurl(const char *path, struct nsurl **url_out)
  */
 static nserror windows_mkdir_all(const char *fname)
 {
-	char *dname;
-	char *sep;
-	struct stat sb;
+    char *dname;
+    char *sep;
+    struct stat sb;
 
-	dname = strdup(fname);
+    dname = strdup(fname);
 
-	sep = strrchr(dname, '\\');
-	if (sep == NULL) {
-		/* no directory separator path is just filename so its ok */
-		free(dname);
-		return NSERROR_OK;
-	}
+    sep = strrchr(dname, '\\');
+    if (sep == NULL) {
+        /* no directory separator path is just filename so its ok */
+        free(dname);
+        return NSERROR_OK;
+    }
 
-	*sep = 0; /* null terminate directory path */
+    *sep = 0; /* null terminate directory path */
 
-	if (stat(dname, &sb) == 0) {
-		free(dname);
-		if (S_ISDIR(sb.st_mode)) {
-			/* path to file exists and is a directory */
-			return NSERROR_OK;
-		}
-		return NSERROR_NOT_DIRECTORY;
-	}
-	*sep = '\\'; /* restore separator */
+    if (stat(dname, &sb) == 0) {
+        free(dname);
+        if (S_ISDIR(sb.st_mode)) {
+            /* path to file exists and is a directory */
+            return NSERROR_OK;
+        }
+        return NSERROR_NOT_DIRECTORY;
+    }
+    *sep = '\\'; /* restore separator */
 
-	{
-		char *p = dname;
-		if (ascii_is_alpha(p[0]) && p[1] == ':' &&
-		    (p[2] == '\\' || p[2] == '/')) {
-			p += 3;
-		}
-		while (*p == '\\') {
-			p++;
-		}
-		while ((sep = strchr(p, '\\')) != NULL) {
-			*sep = 0;
-			if (stat(dname, &sb) != 0) {
-				if (nsmkdir(dname, S_IRWXU) != 0) {
-					free(dname);
-					return NSERROR_NOT_FOUND;
-				}
-			} else {
-				if (!S_ISDIR(sb.st_mode)) {
-					free(dname);
-					return NSERROR_NOT_DIRECTORY;
-				}
-			}
-			*sep = '\\';
-			p = sep + 1;
-			while (*p == '\\') {
-				p++;
-			}
-		}
-	}
+    {
+        char *p = dname;
+        if (ascii_is_alpha(p[0]) && p[1] == ':' && (p[2] == '\\' || p[2] == '/')) {
+            p += 3;
+        }
+        while (*p == '\\') {
+            p++;
+        }
+        while ((sep = strchr(p, '\\')) != NULL) {
+            *sep = 0;
+            if (stat(dname, &sb) != 0) {
+                if (nsmkdir(dname, S_IRWXU) != 0) {
+                    free(dname);
+                    return NSERROR_NOT_FOUND;
+                }
+            } else {
+                if (!S_ISDIR(sb.st_mode)) {
+                    free(dname);
+                    return NSERROR_NOT_DIRECTORY;
+                }
+            }
+            *sep = '\\';
+            p = sep + 1;
+            while (*p == '\\') {
+                p++;
+            }
+        }
+    }
 
-	free(dname);
-	return NSERROR_OK;
+    free(dname);
+    return NSERROR_OK;
 }
 
 /* windows file handling */
 static struct gui_file_table file_table = {
-	.mkpath = windows_mkpath,
-	.basename = windows_basename,
-	.nsurl_to_path = windows_nsurl_to_path,
-	.path_to_nsurl = windows_path_to_nsurl,
-	.mkdir_all = windows_mkdir_all,
+    .mkpath = windows_mkpath,
+    .basename = windows_basename,
+    .nsurl_to_path = windows_nsurl_to_path,
+    .path_to_nsurl = windows_path_to_nsurl,
+    .mkdir_all = windows_mkdir_all,
 };
 
 struct gui_file_table *win32_file_table = &file_table;

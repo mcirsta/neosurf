@@ -21,8 +21,8 @@
  * Implementation of netsurf scaffolding (widget) for qt.
  */
 
-#include <QTabBar>
 #include <QProxyStyle>
+#include <QTabBar>
 
 extern "C" {
 #include "utils/log.h"
@@ -41,7 +41,7 @@ static NS_Scaffold *current = nullptr; /**< currently selected scaffold */
 
 ScaffoldStyle::ScaffoldStyle(QObject *parent) : QProxyStyle()
 {
-	setParent(parent);
+    setParent(parent);
 }
 
 /**
@@ -53,62 +53,45 @@ ScaffoldStyle::ScaffoldStyle(QObject *parent) : QProxyStyle()
  *
  * \todo cope with reverse layout
  */
-QRect ScaffoldStyle::subElementRect(SubElement subElement,
-				    const QStyleOption *option,
-				    const QWidget *widget) const
+QRect ScaffoldStyle::subElementRect(SubElement subElement, const QStyleOption *option, const QWidget *widget) const
 {
-	if (subElement == QStyle::SE_TabWidgetRightCorner) {
-		QRect tabRect = QProxyStyle::subElementRect(
-			QStyle::SE_TabWidgetTabBar, option, widget);
-		QRect rightCornerRect = QProxyStyle::subElementRect(
-			QStyle::SE_TabWidgetRightCorner, option, widget);
+    if (subElement == QStyle::SE_TabWidgetRightCorner) {
+        QRect tabRect = QProxyStyle::subElementRect(QStyle::SE_TabWidgetTabBar, option, widget);
+        QRect rightCornerRect = QProxyStyle::subElementRect(QStyle::SE_TabWidgetRightCorner, option, widget);
 
-		int padding = (tabRect.height() - rightCornerRect.height()) / 2;
-		int x = qMin(tabRect.left() + tabRect.width() + padding,
-			     rightCornerRect.x());
-		return QRect(x,
-			     rightCornerRect.y() - padding,
-			     rightCornerRect.width(),
-			     rightCornerRect.height());
-	}
+        int padding = (tabRect.height() - rightCornerRect.height()) / 2;
+        int x = qMin(tabRect.left() + tabRect.width() + padding, rightCornerRect.x());
+        return QRect(x, rightCornerRect.y() - padding, rightCornerRect.width(), rightCornerRect.height());
+    }
 
-	return QProxyStyle::subElementRect(subElement, option, widget);
+    return QProxyStyle::subElementRect(subElement, option, widget);
 }
 
 
-NS_Scaffold::NS_Scaffold(QWidget *parent)
-	: QTabWidget(parent), m_newtab(new QAction("+", this))
+NS_Scaffold::NS_Scaffold(QWidget *parent) : QTabWidget(parent), m_newtab(new QAction("+", this))
 {
-	setStyle(new ScaffoldStyle(this));
+    setStyle(new ScaffoldStyle(this));
 
-	m_newtab->setToolTip(messages_get("NewTab"));
-	m_newtab->setShortcut(QKeySequence::AddTab);
-	connect(m_newtab, &QAction::triggered, this, &NS_Scaffold::newtab_slot);
+    m_newtab->setToolTip(messages_get("NewTab"));
+    m_newtab->setShortcut(QKeySequence::AddTab);
+    connect(m_newtab, &QAction::triggered, this, &NS_Scaffold::newtab_slot);
 
-	QToolButton *addbutton = new QToolButton(this);
-	addbutton->setDefaultAction(m_newtab);
-	addbutton->setStyleSheet(
-		"QToolButton {border:0} QToolButton:hover {background-color: rgba(255, 255, 255, 0.5);}");
-	setCornerWidget(addbutton, Qt::TopRightCorner);
+    QToolButton *addbutton = new QToolButton(this);
+    addbutton->setDefaultAction(m_newtab);
+    addbutton->setStyleSheet("QToolButton {border:0} QToolButton:hover {background-color: rgba(255, 255, 255, 0.5);}");
+    setCornerWidget(addbutton, Qt::TopRightCorner);
 
-	connect(tabBar(),
-		&QTabBar::tabCloseRequested,
-		this,
-		&NS_Scaffold::destroyTab);
-	connect(this,
-		&QTabWidget::currentChanged,
-		this,
-		&NS_Scaffold::changeTab);
-	setTabsClosable(true);
-	setFocusPolicy(Qt::StrongFocus);
+    connect(tabBar(), &QTabBar::tabCloseRequested, this, &NS_Scaffold::destroyTab);
+    connect(this, &QTabWidget::currentChanged, this, &NS_Scaffold::changeTab);
+    setTabsClosable(true);
+    setFocusPolicy(Qt::StrongFocus);
 
-	QSettings settings;
-	if (settings.contains("window/geometry")) {
-		restoreGeometry(
-			settings.value("window/geometry").toByteArray());
-	} else {
-		setWindowState(Qt::WindowMaximized);
-	}
+    QSettings settings;
+    if (settings.contains("window/geometry")) {
+        restoreGeometry(settings.value("window/geometry").toByteArray());
+    } else {
+        setWindowState(Qt::WindowMaximized);
+    }
 }
 
 /**
@@ -116,17 +99,17 @@ NS_Scaffold::NS_Scaffold(QWidget *parent)
  */
 void NS_Scaffold::closeEvent(QCloseEvent *event)
 {
-	/* build a list of the window objects and iterate it to call destroy */
-	QList<NS_Window *> pages;
-	for (int idx = 0; idx < count(); idx++) {
-		pages.append((NS_Window *)widget(idx));
-	}
-	for (int idx = 0; idx < pages.size(); idx++) {
-		pages.at(idx)->destroy();
-	}
+    /* build a list of the window objects and iterate it to call destroy */
+    QList<NS_Window *> pages;
+    for (int idx = 0; idx < count(); idx++) {
+        pages.append((NS_Window *)widget(idx));
+    }
+    for (int idx = 0; idx < pages.size(); idx++) {
+        pages.at(idx)->destroy();
+    }
 
-	QSettings settings;
-	settings.setValue("window/geometry", saveGeometry());
+    QSettings settings;
+    settings.setValue("window/geometry", saveGeometry());
 }
 
 /**
@@ -134,9 +117,9 @@ void NS_Scaffold::closeEvent(QCloseEvent *event)
  */
 void NS_Scaffold::destroyTab(int index)
 {
-	NS_Window *page;
-	page = (NS_Window *)widget(index);
-	page->destroy();
+    NS_Window *page;
+    page = (NS_Window *)widget(index);
+    page->destroy();
 }
 
 /**
@@ -144,49 +127,47 @@ void NS_Scaffold::destroyTab(int index)
  */
 void NS_Scaffold::changeTab(int index)
 {
-	if (index == -1) {
-		this->deleteLater();
-	}
+    if (index == -1) {
+        this->deleteLater();
+    }
 }
 
 void NS_Scaffold::newtab_slot(bool checked)
 {
-	current = this;
-	NS_Application::create_browser_widget(NULL, true);
+    current = this;
+    NS_Application::create_browser_widget(NULL, true);
 }
 
 void NS_Scaffold::changeTabTitle(const char *title)
 {
-	QObject *tabsender = sender();
-	QWidget *tabwidget;
+    QObject *tabsender = sender();
+    QWidget *tabwidget;
 
-	for (int index = 0; (tabwidget = (NS_Window *)widget(index)) != nullptr;
-	     index++) {
-		if (tabwidget == tabsender) {
-			setTabText(index, title);
-			if (isTabVisible(index)) {
-				setWindowTitle(title);
-			}
-			break;
-		}
-	}
+    for (int index = 0; (tabwidget = (NS_Window *)widget(index)) != nullptr; index++) {
+        if (tabwidget == tabsender) {
+            setTabText(index, title);
+            if (isTabVisible(index)) {
+                setWindowTitle(title);
+            }
+            break;
+        }
+    }
 }
 
 void NS_Scaffold::changeTabIcon(const QIcon &icon)
 {
-	QObject *tabsender = sender();
-	QWidget *tabwidget;
+    QObject *tabsender = sender();
+    QWidget *tabwidget;
 
-	for (int index = 0; (tabwidget = (NS_Window *)widget(index)) != nullptr;
-	     index++) {
-		if (tabwidget == tabsender) {
-			setTabIcon(index, icon);
-			if (isTabVisible(index)) {
-				setWindowIcon(icon);
-			}
-			break;
-		}
-	}
+    for (int index = 0; (tabwidget = (NS_Window *)widget(index)) != nullptr; index++) {
+        if (tabwidget == tabsender) {
+            setTabIcon(index, icon);
+            if (isTabVisible(index)) {
+                setWindowIcon(icon);
+            }
+            break;
+        }
+    }
 }
 
 
@@ -198,23 +179,16 @@ void NS_Scaffold::changeTabIcon(const QIcon &icon)
  */
 NS_Scaffold *NS_Scaffold::get_scaffold(QWidget *page, bool use_current)
 {
-	NS_Scaffold *scaffold = nullptr;
-	if (use_current && (page != nullptr)) {
-		/* todo check page parent is actually a scaffold */
-		scaffold = qobject_cast<NS_Scaffold *>(
-			page->parentWidget()->parentWidget());
-	} else if ((use_current) && (current != nullptr)) {
-		scaffold = current;
-	} else {
-		scaffold = new NS_Scaffold(nullptr);
-	}
-	NSLOG(netsurf,
-	      DEBUG,
-	      "page:%p use_current:%d current:%p scaffold:%p",
-	      page,
-	      use_current,
-	      current,
-	      scaffold);
-	current = scaffold;
-	return scaffold;
+    NS_Scaffold *scaffold = nullptr;
+    if (use_current && (page != nullptr)) {
+        /* todo check page parent is actually a scaffold */
+        scaffold = qobject_cast<NS_Scaffold *>(page->parentWidget()->parentWidget());
+    } else if ((use_current) && (current != nullptr)) {
+        scaffold = current;
+    } else {
+        scaffold = new NS_Scaffold(nullptr);
+    }
+    NSLOG(netsurf, DEBUG, "page:%p use_current:%d current:%p scaffold:%p", page, use_current, current, scaffold);
+    current = scaffold;
+    return scaffold;
 }

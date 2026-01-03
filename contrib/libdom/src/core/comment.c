@@ -18,11 +18,10 @@
  * A DOM Comment node
  */
 struct dom_comment {
-	dom_characterdata base; /**< Base node */
+    dom_characterdata base; /**< Base node */
 };
 
-static const struct dom_node_protect_vtable comment_protect_vtable = {
-	DOM_COMMENT_PROTECT_VTABLE};
+static const struct dom_node_protect_vtable comment_protect_vtable = {DOM_COMMENT_PROTECT_VTABLE};
 
 /**
  * Create a comment node
@@ -38,34 +37,30 @@ static const struct dom_node_protect_vtable comment_protect_vtable = {
  *
  * The returned node will already be referenced.
  */
-dom_exception _dom_comment_create(dom_document *doc,
-				  dom_string *name,
-				  dom_string *value,
-				  dom_comment **result)
+dom_exception _dom_comment_create(dom_document *doc, dom_string *name, dom_string *value, dom_comment **result)
 {
-	dom_comment *c;
-	dom_exception err;
+    dom_comment *c;
+    dom_exception err;
 
-	/* Allocate the comment node */
-	c = malloc(sizeof(dom_comment));
-	if (c == NULL)
-		return DOM_NO_MEM_ERR;
+    /* Allocate the comment node */
+    c = malloc(sizeof(dom_comment));
+    if (c == NULL)
+        return DOM_NO_MEM_ERR;
 
-	/* Set the virtual table */
-	((dom_node_internal *)c)->base.vtable = &characterdata_vtable;
-	((dom_node_internal *)c)->vtable = &comment_protect_vtable;
+    /* Set the virtual table */
+    ((dom_node_internal *)c)->base.vtable = &characterdata_vtable;
+    ((dom_node_internal *)c)->vtable = &comment_protect_vtable;
 
-	/* And initialise the node */
-	err = _dom_characterdata_initialise(
-		&c->base, doc, DOM_COMMENT_NODE, name, value);
-	if (err != DOM_NO_ERR) {
-		free(c);
-		return err;
-	}
+    /* And initialise the node */
+    err = _dom_characterdata_initialise(&c->base, doc, DOM_COMMENT_NODE, name, value);
+    if (err != DOM_NO_ERR) {
+        free(c);
+        return err;
+    }
 
-	*result = c;
+    *result = c;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }
 
 /**
@@ -77,11 +72,11 @@ dom_exception _dom_comment_create(dom_document *doc,
  */
 void _dom_comment_destroy(dom_comment *comment)
 {
-	/* Finalise base class contents */
-	_dom_characterdata_finalise(&comment->base);
+    /* Finalise base class contents */
+    _dom_characterdata_finalise(&comment->base);
 
-	/* Free node */
-	free(comment);
+    /* Free node */
+    free(comment);
 }
 
 
@@ -91,27 +86,26 @@ void _dom_comment_destroy(dom_comment *comment)
 /* The virtual destroy function */
 void __dom_comment_destroy(dom_node_internal *node)
 {
-	_dom_comment_destroy((dom_comment *)node);
+    _dom_comment_destroy((dom_comment *)node);
 }
 
 /* The copy constructor of this class */
-dom_exception
-_dom_comment_copy(dom_node_internal *old, dom_node_internal **copy)
+dom_exception _dom_comment_copy(dom_node_internal *old, dom_node_internal **copy)
 {
-	dom_comment *new_comment;
-	dom_exception err;
+    dom_comment *new_comment;
+    dom_exception err;
 
-	new_comment = malloc(sizeof(dom_comment));
-	if (new_comment == NULL)
-		return DOM_NO_MEM_ERR;
+    new_comment = malloc(sizeof(dom_comment));
+    if (new_comment == NULL)
+        return DOM_NO_MEM_ERR;
 
-	err = dom_characterdata_copy_internal(old, new_comment);
-	if (err != DOM_NO_ERR) {
-		free(new_comment);
-		return err;
-	}
+    err = dom_characterdata_copy_internal(old, new_comment);
+    if (err != DOM_NO_ERR) {
+        free(new_comment);
+        return err;
+    }
 
-	*copy = (dom_node_internal *)new_comment;
+    *copy = (dom_node_internal *)new_comment;
 
-	return DOM_NO_ERR;
+    return DOM_NO_ERR;
 }

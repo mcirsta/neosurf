@@ -23,9 +23,9 @@
 extern "C" {
 #include "utils/log.h"
 }
-#include "beos/throbber.h"
 #include "beos/bitmap.h"
 #include "beos/fetch_rsrc.h"
+#include "beos/throbber.h"
 
 #include <File.h>
 #include <Resources.h>
@@ -44,87 +44,75 @@ struct nsbeos_throbber *nsbeos_throbber = NULL;
  */
 bool nsbeos_throbber_initialise_from_png(const int frames, ...)
 {
-	va_list filenames;
-	struct nsbeos_throbber *throb; /**< structure we generate */
-	bool errors_when_loading = false; /**< true if a frame failed */
+    va_list filenames;
+    struct nsbeos_throbber *throb; /**< structure we generate */
+    bool errors_when_loading = false; /**< true if a frame failed */
 
-	if (frames < 2) {
-		/* we need at least two frames - one for idle, one for active */
-		NSLOG(netsurf,
-		      INFO,
-		      "Insufficent number of frames in throbber animation!");
-		NSLOG(netsurf,
-		      INFO,
-		      "(called with %d frames, where 2 is a minimum.)",
-		      frames);
-		return false;
-	}
+    if (frames < 2) {
+        /* we need at least two frames - one for idle, one for active */
+        NSLOG(netsurf, INFO, "Insufficent number of frames in throbber animation!");
+        NSLOG(netsurf, INFO, "(called with %d frames, where 2 is a minimum.)", frames);
+        return false;
+    }
 
-	BResources *res = get_app_resources();
-	if (res == NULL) {
-		NSLOG(netsurf, INFO, "Can't find resources for throbber!");
-		return false;
-	}
+    BResources *res = get_app_resources();
+    if (res == NULL) {
+        NSLOG(netsurf, INFO, "Can't find resources for throbber!");
+        return false;
+    }
 
-	throb = (struct nsbeos_throbber *)malloc(sizeof(*throb));
-	throb->nframes = frames;
-	throb->framedata = (BBitmap **)malloc(sizeof(BBitmap *) *
-					      throb->nframes);
+    throb = (struct nsbeos_throbber *)malloc(sizeof(*throb));
+    throb->nframes = frames;
+    throb->framedata = (BBitmap **)malloc(sizeof(BBitmap *) * throb->nframes);
 
-	va_start(filenames, frames);
+    va_start(filenames, frames);
 
-	for (int i = 0; i < frames; i++) {
-		const char *fn = va_arg(filenames, const char *);
-		const void *data;
-		size_t size;
-		data = res->LoadResource('data', fn, &size);
-		throb->framedata[i] = NULL;
-		if (!data) {
-			NSLOG(netsurf,
-			      INFO,
-			      "Error when loading resource %s",
-			      fn);
-			errors_when_loading = true;
-			continue;
-		}
-		BMemoryIO mem(data, size);
-		throb->framedata[i] = BTranslationUtils::GetBitmap(&mem);
-		if (throb->framedata[i] == NULL) {
-			NSLOG(netsurf,
-			      INFO,
-			      "Error when loading %s: GetBitmap() returned NULL",
-			      fn);
-			errors_when_loading = true;
-		}
-	}
+    for (int i = 0; i < frames; i++) {
+        const char *fn = va_arg(filenames, const char *);
+        const void *data;
+        size_t size;
+        data = res->LoadResource('data', fn, &size);
+        throb->framedata[i] = NULL;
+        if (!data) {
+            NSLOG(netsurf, INFO, "Error when loading resource %s", fn);
+            errors_when_loading = true;
+            continue;
+        }
+        BMemoryIO mem(data, size);
+        throb->framedata[i] = BTranslationUtils::GetBitmap(&mem);
+        if (throb->framedata[i] == NULL) {
+            NSLOG(netsurf, INFO, "Error when loading %s: GetBitmap() returned NULL", fn);
+            errors_when_loading = true;
+        }
+    }
 
-	va_end(filenames);
+    va_end(filenames);
 
-	if (errors_when_loading == true) {
-		for (int i = 0; i < frames; i++) {
-			delete throb->framedata[i];
-		}
+    if (errors_when_loading == true) {
+        for (int i = 0; i < frames; i++) {
+            delete throb->framedata[i];
+        }
 
-		free(throb->framedata);
-		free(throb);
+        free(throb->framedata);
+        free(throb);
 
-		return false;
-	}
+        return false;
+    }
 
-	nsbeos_throbber = throb;
+    nsbeos_throbber = throb;
 
-	return true;
+    return true;
 }
 
 void nsbeos_throbber_finalise(void)
 {
-	int i;
+    int i;
 
-	for (i = 0; i < nsbeos_throbber->nframes; i++)
-		delete nsbeos_throbber->framedata[i];
+    for (i = 0; i < nsbeos_throbber->nframes; i++)
+        delete nsbeos_throbber->framedata[i];
 
-	free(nsbeos_throbber->framedata);
-	free(nsbeos_throbber);
+    free(nsbeos_throbber->framedata);
+    free(nsbeos_throbber);
 
-	nsbeos_throbber = NULL;
+    nsbeos_throbber = NULL;
 }

@@ -38,8 +38,8 @@ typedef uint32_t colour;
  * Rectangle coordinates
  */
 typedef struct rect {
-	int x0, y0; /**< Top left */
-	int x1, y1; /**< Bottom right */
+    int x0, y0; /**< Top left */
+    int x1, y1; /**< Bottom right */
 } rect;
 
 #endif

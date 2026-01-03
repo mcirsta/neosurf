@@ -23,24 +23,24 @@
 
 #include <stdlib.h>
 
+#include <neosurf/desktop/save_text.h>
+#include <neosurf/plot_style.h>
+#include <neosurf/types.h>
 #include <neosurf/utils/errors.h>
 #include <neosurf/utils/utils.h>
-#include <neosurf/types.h>
-#include <neosurf/plot_style.h>
 #include "desktop/selection.h"
-#include <neosurf/desktop/save_text.h>
 
-#include <neosurf/content/handlers/html/private.h>
 #include <neosurf/content/handlers/html/box.h>
 #include <neosurf/content/handlers/html/box_inspect.h>
+#include <neosurf/content/handlers/html/private.h>
 #include "content/handlers/html/font.h"
 #include "content/handlers/html/textselection.h"
 
 #define SPACE_LEN(b) ((b->space == 0) ? 0 : 1)
 
 struct rdw_info {
-	bool inited;
-	struct rect r;
+    bool inited;
+    struct rect r;
 };
 
 
@@ -56,45 +56,40 @@ struct rdw_info {
  * \param end_offset receives the end offset of the selected part
  * \return true iff the range encloses at least part of the box
  */
-static bool selected_part(struct box *box,
-			  unsigned start_idx,
-			  unsigned end_idx,
-			  unsigned *start_offset,
-			  unsigned *end_offset)
+static bool
+selected_part(struct box *box, unsigned start_idx, unsigned end_idx, unsigned *start_offset, unsigned *end_offset)
 {
-	size_t box_length = box->length + SPACE_LEN(box);
+    size_t box_length = box->length + SPACE_LEN(box);
 
-	if (box_length > 0) {
-		if ((box->byte_offset >= start_idx) &&
-		    (box->byte_offset + box_length <= end_idx)) {
+    if (box_length > 0) {
+        if ((box->byte_offset >= start_idx) && (box->byte_offset + box_length <= end_idx)) {
 
-			/* fully enclosed */
-			*start_offset = 0;
-			*end_offset = box_length;
-			return true;
-		} else if ((box->byte_offset + box_length > start_idx) &&
-			   (box->byte_offset < end_idx)) {
-			/* partly enclosed */
-			int offset = 0;
-			int len;
+            /* fully enclosed */
+            *start_offset = 0;
+            *end_offset = box_length;
+            return true;
+        } else if ((box->byte_offset + box_length > start_idx) && (box->byte_offset < end_idx)) {
+            /* partly enclosed */
+            int offset = 0;
+            int len;
 
-			if (box->byte_offset < start_idx) {
-				offset = start_idx - box->byte_offset;
-			}
+            if (box->byte_offset < start_idx) {
+                offset = start_idx - box->byte_offset;
+            }
 
-			len = box_length - offset;
+            len = box_length - offset;
 
-			if (box->byte_offset + box_length > end_idx) {
-				len = end_idx - (box->byte_offset + offset);
-			}
+            if (box->byte_offset + box_length > end_idx) {
+                len = end_idx - (box->byte_offset + offset);
+            }
 
-			*start_offset = offset;
-			*end_offset = offset + len;
+            *start_offset = offset;
+            *end_offset = offset + len;
 
-			return true;
-		}
-	}
-	return false;
+            return true;
+        }
+    }
+    return false;
 }
 
 
@@ -109,119 +104,109 @@ static bool selected_part(struct box *box,
  * \param do_marker whether deal enter any marker box
  * \return NSERROR_OK on success else error code
  */
-static nserror coords_from_range(struct box *box,
-				 unsigned start_idx,
-				 unsigned end_idx,
-				 struct rdw_info *rdwi,
-				 bool do_marker)
+static nserror
+coords_from_range(struct box *box, unsigned start_idx, unsigned end_idx, struct rdw_info *rdwi, bool do_marker)
 {
-	struct box *child;
-	nserror res;
+    struct box *child;
+    nserror res;
 
-	assert(box);
+    assert(box);
 
-	/* If selection starts inside marker */
-	if (box->parent && box->parent->list_marker == box && !do_marker) {
-		/* set box to main list element */
-		box = box->parent;
-	}
+    /* If selection starts inside marker */
+    if (box->parent && box->parent->list_marker == box && !do_marker) {
+        /* set box to main list element */
+        box = box->parent;
+    }
 
-	/* If box has a list marker */
-	if (box->list_marker) {
-		/* do the marker box before continuing with the rest of the
-		 * list element */
-		res = coords_from_range(
-			box->list_marker, start_idx, end_idx, rdwi, true);
-		if (res != NSERROR_OK) {
-			return res;
-		}
-	}
+    /* If box has a list marker */
+    if (box->list_marker) {
+        /* do the marker box before continuing with the rest of the
+         * list element */
+        res = coords_from_range(box->list_marker, start_idx, end_idx, rdwi, true);
+        if (res != NSERROR_OK) {
+            return res;
+        }
+    }
 
-	/* we can prune this subtree, it's after the selection */
-	if (box->byte_offset >= end_idx) {
-		return NSERROR_OK;
-	}
+    /* we can prune this subtree, it's after the selection */
+    if (box->byte_offset >= end_idx) {
+        return NSERROR_OK;
+    }
 
-	/* read before calling the handler in case it modifies the tree */
-	child = box->children;
+    /* read before calling the handler in case it modifies the tree */
+    child = box->children;
 
-	if ((box->type != BOX_BR) &&
-	    !((box->type == BOX_FLOAT_LEFT || box->type == BOX_FLOAT_RIGHT) &&
-	      !box->text)) {
-		unsigned start_off;
-		unsigned end_off;
+    if ((box->type != BOX_BR) && !((box->type == BOX_FLOAT_LEFT || box->type == BOX_FLOAT_RIGHT) && !box->text)) {
+        unsigned start_off;
+        unsigned end_off;
 
-		if (selected_part(
-			    box, start_idx, end_idx, &start_off, &end_off)) {
-			int width, height;
-			int x, y;
+        if (selected_part(box, start_idx, end_idx, &start_off, &end_off)) {
+            int width, height;
+            int x, y;
 
-			/**
-			 * \todo it should be possible to reduce the redrawn
-			 *        area using the offsets
-			 */
-			box_coords(box, &x, &y);
+            /**
+             * \todo it should be possible to reduce the redrawn
+             *        area using the offsets
+             */
+            box_coords(box, &x, &y);
 
-			width = box->padding[LEFT] + box->width +
-				box->padding[RIGHT];
-			height = box->padding[TOP] + box->height +
-				 box->padding[BOTTOM];
+            width = box->padding[LEFT] + box->width + box->padding[RIGHT];
+            height = box->padding[TOP] + box->height + box->padding[BOTTOM];
 
-			if ((box->type == BOX_TEXT) && (box->space != 0)) {
-				width += box->space;
-			}
+            if ((box->type == BOX_TEXT) && (box->space != 0)) {
+                width += box->space;
+            }
 
-			if (rdwi->inited) {
-				if (x < rdwi->r.x0) {
-					rdwi->r.x0 = x;
-				}
-				if (y < rdwi->r.y0) {
-					rdwi->r.y0 = y;
-				}
-				if (x + width > rdwi->r.x1) {
-					rdwi->r.x1 = x + width;
-				}
-				if (y + height > rdwi->r.y1) {
-					rdwi->r.y1 = y + height;
-				}
-			} else {
-				rdwi->inited = true;
-				rdwi->r.x0 = x;
-				rdwi->r.y0 = y;
-				rdwi->r.x1 = x + width;
-				rdwi->r.y1 = y + height;
-			}
-		}
-	}
+            if (rdwi->inited) {
+                if (x < rdwi->r.x0) {
+                    rdwi->r.x0 = x;
+                }
+                if (y < rdwi->r.y0) {
+                    rdwi->r.y0 = y;
+                }
+                if (x + width > rdwi->r.x1) {
+                    rdwi->r.x1 = x + width;
+                }
+                if (y + height > rdwi->r.y1) {
+                    rdwi->r.y1 = y + height;
+                }
+            } else {
+                rdwi->inited = true;
+                rdwi->r.x0 = x;
+                rdwi->r.y0 = y;
+                rdwi->r.x1 = x + width;
+                rdwi->r.y1 = y + height;
+            }
+        }
+    }
 
-	/* find the first child that could lie partially within the selection;
-	 * this is important at the top-levels of the tree for pruning subtrees
-	 * that lie entirely before the selection */
+    /* find the first child that could lie partially within the selection;
+     * this is important at the top-levels of the tree for pruning subtrees
+     * that lie entirely before the selection */
 
-	if (child) {
-		struct box *next = child->next;
+    if (child) {
+        struct box *next = child->next;
 
-		while (next && next->byte_offset < start_idx) {
-			child = next;
-			next = child->next;
-		}
+        while (next && next->byte_offset < start_idx) {
+            child = next;
+            next = child->next;
+        }
 
-		while (child) {
-			/* read before calling the handler in case it modifies
-			 * the tree */
-			struct box *next = child->next;
+        while (child) {
+            /* read before calling the handler in case it modifies
+             * the tree */
+            struct box *next = child->next;
 
-			res = coords_from_range(
-				child, start_idx, end_idx, rdwi, false);
-			if (res != NSERROR_OK) {
-				return res;
-			}
+            res = coords_from_range(child, start_idx, end_idx, rdwi, false);
+            if (res != NSERROR_OK) {
+                return res;
+            }
 
-			child = next;
-		}
-	}
+            child = next;
+        }
+    }
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
@@ -239,51 +224,40 @@ static nserror coords_from_range(struct box *box,
  * \return NSERROR_OK iff successful and traversal should continue else error
  * code
  */
-static nserror selection_copy_box(const char *text,
-				  size_t length,
-				  struct box *box,
-				  const css_unit_ctx *unit_len_ctx,
-				  struct selection_string *handle,
-				  const char *whitespace_text,
-				  size_t whitespace_length)
+static nserror selection_copy_box(const char *text, size_t length, struct box *box, const css_unit_ctx *unit_len_ctx,
+    struct selection_string *handle, const char *whitespace_text, size_t whitespace_length)
 {
-	bool add_space = false;
-	plot_font_style_t style;
-	plot_font_style_t *pstyle = NULL;
+    bool add_space = false;
+    plot_font_style_t style;
+    plot_font_style_t *pstyle = NULL;
 
-	/* add any whitespace which precedes the text from this box */
-	if (whitespace_text != NULL && whitespace_length > 0) {
-		if (!selection_string_append(whitespace_text,
-					     whitespace_length,
-					     false,
-					     pstyle,
-					     handle)) {
-			return NSERROR_NOMEM;
-		}
-	}
+    /* add any whitespace which precedes the text from this box */
+    if (whitespace_text != NULL && whitespace_length > 0) {
+        if (!selection_string_append(whitespace_text, whitespace_length, false, pstyle, handle)) {
+            return NSERROR_NOMEM;
+        }
+    }
 
-	if (box != NULL) {
-		/* HTML */
-		add_space = (box->space != 0);
+    if (box != NULL) {
+        /* HTML */
+        add_space = (box->space != 0);
 
-		if (box->style != NULL) {
-			/* Override default font style */
-			font_plot_style_from_css(unit_len_ctx,
-						 box->style,
-						 &style);
-			pstyle = &style;
-		} else {
-			/* If there's no style, there must be no text */
-			assert(box->text == NULL);
-		}
-	}
+        if (box->style != NULL) {
+            /* Override default font style */
+            font_plot_style_from_css(unit_len_ctx, box->style, &style);
+            pstyle = &style;
+        } else {
+            /* If there's no style, there must be no text */
+            assert(box->text == NULL);
+        }
+    }
 
-	/* add the text from this box */
-	if (!selection_string_append(text, length, add_space, pstyle, handle)) {
-		return NSERROR_NOMEM;
-	}
+    /* add the text from this box */
+    if (!selection_string_append(text, length, add_space, pstyle, handle)) {
+        return NSERROR_NOMEM;
+    }
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
@@ -302,125 +276,92 @@ static nserror selection_copy_box(const char *text,
  * \param do_marker  whether deal enter any marker box
  * \return NSERROR_OK on sucess else error code
  */
-static nserror selection_copy(struct box *box,
-			      const css_unit_ctx *unit_len_ctx,
-			      unsigned start_idx,
-			      unsigned end_idx,
-			      struct selection_string *selstr,
-			      save_text_whitespace *before,
-			      bool *first,
-			      bool do_marker)
+static nserror selection_copy(struct box *box, const css_unit_ctx *unit_len_ctx, unsigned start_idx, unsigned end_idx,
+    struct selection_string *selstr, save_text_whitespace *before, bool *first, bool do_marker)
 {
-	nserror res;
-	struct box *child;
-	const char *whitespace_text = "";
-	size_t whitespace_length = 0;
+    nserror res;
+    struct box *child;
+    const char *whitespace_text = "";
+    size_t whitespace_length = 0;
 
-	assert(box);
+    assert(box);
 
-	/* If selection starts inside marker */
-	if (box->parent && box->parent->list_marker == box && !do_marker) {
-		/* set box to main list element */
-		box = box->parent;
-	}
+    /* If selection starts inside marker */
+    if (box->parent && box->parent->list_marker == box && !do_marker) {
+        /* set box to main list element */
+        box = box->parent;
+    }
 
-	/* If box has a list marker */
-	if (box->list_marker) {
-		/* do the marker box before continuing with the rest of the
-		 * list element */
-		res = selection_copy(box->list_marker,
-				     unit_len_ctx,
-				     start_idx,
-				     end_idx,
-				     selstr,
-				     before,
-				     first,
-				     true);
-		if (res != NSERROR_OK) {
-			return res;
-		}
-	}
+    /* If box has a list marker */
+    if (box->list_marker) {
+        /* do the marker box before continuing with the rest of the
+         * list element */
+        res = selection_copy(box->list_marker, unit_len_ctx, start_idx, end_idx, selstr, before, first, true);
+        if (res != NSERROR_OK) {
+            return res;
+        }
+    }
 
-	/* we can prune this subtree, it's after the selection */
-	if (box->byte_offset >= end_idx) {
-		return NSERROR_OK;
-	}
+    /* we can prune this subtree, it's after the selection */
+    if (box->byte_offset >= end_idx) {
+        return NSERROR_OK;
+    }
 
-	/* read before calling the handler in case it modifies the tree */
-	child = box->children;
+    /* read before calling the handler in case it modifies the tree */
+    child = box->children;
 
-	/* If nicely formatted output of the selected text is required, work
-	 * out what whitespace should be placed before the next bit of text */
-	if (before) {
-		save_text_solve_whitespace(box,
-					   first,
-					   before,
-					   &whitespace_text,
-					   &whitespace_length);
-	} else {
-		whitespace_text = NULL;
-	}
+    /* If nicely formatted output of the selected text is required, work
+     * out what whitespace should be placed before the next bit of text */
+    if (before) {
+        save_text_solve_whitespace(box, first, before, &whitespace_text, &whitespace_length);
+    } else {
+        whitespace_text = NULL;
+    }
 
-	if ((box->type != BOX_BR) &&
-	    !((box->type == BOX_FLOAT_LEFT || box->type == BOX_FLOAT_RIGHT) &&
-	      !box->text)) {
-		unsigned start_off;
-		unsigned end_off;
+    if ((box->type != BOX_BR) && !((box->type == BOX_FLOAT_LEFT || box->type == BOX_FLOAT_RIGHT) && !box->text)) {
+        unsigned start_off;
+        unsigned end_off;
 
-		if (selected_part(
-			    box, start_idx, end_idx, &start_off, &end_off)) {
-			res = selection_copy_box(box->text + start_off,
-						 min(box->length, end_off) -
-							 start_off,
-						 box,
-						 unit_len_ctx,
-						 selstr,
-						 whitespace_text,
-						 whitespace_length);
-			if (res != NSERROR_OK) {
-				return res;
-			}
-			if (before) {
-				*first = false;
-				*before = WHITESPACE_NONE;
-			}
-		}
-	}
+        if (selected_part(box, start_idx, end_idx, &start_off, &end_off)) {
+            res = selection_copy_box(box->text + start_off, min(box->length, end_off) - start_off, box, unit_len_ctx,
+                selstr, whitespace_text, whitespace_length);
+            if (res != NSERROR_OK) {
+                return res;
+            }
+            if (before) {
+                *first = false;
+                *before = WHITESPACE_NONE;
+            }
+        }
+    }
 
-	/* find the first child that could lie partially within the selection;
-	 * this is important at the top-levels of the tree for pruning subtrees
-	 * that lie entirely before the selection */
+    /* find the first child that could lie partially within the selection;
+     * this is important at the top-levels of the tree for pruning subtrees
+     * that lie entirely before the selection */
 
-	if (child) {
-		struct box *next = child->next;
+    if (child) {
+        struct box *next = child->next;
 
-		while (next && next->byte_offset < start_idx) {
-			child = next;
-			next = child->next;
-		}
+        while (next && next->byte_offset < start_idx) {
+            child = next;
+            next = child->next;
+        }
 
-		while (child) {
-			/* read before calling the handler in case it modifies
-			 * the tree */
-			struct box *next = child->next;
+        while (child) {
+            /* read before calling the handler in case it modifies
+             * the tree */
+            struct box *next = child->next;
 
-			res = selection_copy(child,
-					     unit_len_ctx,
-					     start_idx,
-					     end_idx,
-					     selstr,
-					     before,
-					     first,
-					     false);
-			if (res != NSERROR_OK) {
-				return res;
-			}
+            res = selection_copy(child, unit_len_ctx, start_idx, end_idx, selstr, before, first, false);
+            if (res != NSERROR_OK) {
+                return res;
+            }
 
-			child = next;
-		}
-	}
+            child = next;
+        }
+    }
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
@@ -434,101 +375,86 @@ static nserror selection_copy(struct box *box,
  */
 static unsigned selection_label_subtree(struct box *box, unsigned idx)
 {
-	struct box *child;
+    struct box *child;
 
-	assert(box != NULL);
+    assert(box != NULL);
 
-	child = box->children;
+    child = box->children;
 
-	box->byte_offset = idx;
+    box->byte_offset = idx;
 
-	if (box->text) {
-		idx += box->length + SPACE_LEN(box);
-	}
+    if (box->text) {
+        idx += box->length + SPACE_LEN(box);
+    }
 
-	while (child) {
-		if (child->list_marker) {
-			idx = selection_label_subtree(child->list_marker, idx);
-		}
+    while (child) {
+        if (child->list_marker) {
+            idx = selection_label_subtree(child->list_marker, idx);
+        }
 
-		idx = selection_label_subtree(child, idx);
-		child = child->next;
-	}
+        idx = selection_label_subtree(child, idx);
+        child = child->next;
+    }
 
-	return idx;
+    return idx;
 }
 
 
 /* exported interface documented in html/textselection.h */
-nserror html_textselection_redraw(struct content *c,
-				  unsigned start_idx,
-				  unsigned end_idx)
+nserror html_textselection_redraw(struct content *c, unsigned start_idx, unsigned end_idx)
 {
-	nserror res;
-	html_content *html = (html_content *)c;
-	struct rdw_info rdw;
+    nserror res;
+    html_content *html = (html_content *)c;
+    struct rdw_info rdw;
 
-	if (html->layout == NULL) {
-		return NSERROR_INVALID;
-	}
+    if (html->layout == NULL) {
+        return NSERROR_INVALID;
+    }
 
-	rdw.inited = false;
+    rdw.inited = false;
 
-	res = coords_from_range(html->layout, start_idx, end_idx, &rdw, false);
-	if (res != NSERROR_OK) {
-		return res;
-	}
+    res = coords_from_range(html->layout, start_idx, end_idx, &rdw, false);
+    if (res != NSERROR_OK) {
+        return res;
+    }
 
-	if (rdw.inited) {
-		content__request_redraw(c,
-					rdw.r.x0,
-					rdw.r.y0,
-					rdw.r.x1 - rdw.r.x0,
-					rdw.r.y1 - rdw.r.y0);
-	}
+    if (rdw.inited) {
+        content__request_redraw(c, rdw.r.x0, rdw.r.y0, rdw.r.x1 - rdw.r.x0, rdw.r.y1 - rdw.r.y0);
+    }
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
 /* exported interface documented in html/textselection.h */
-nserror html_textselection_copy(struct content *c,
-				unsigned start_idx,
-				unsigned end_idx,
-				struct selection_string *selstr)
+nserror
+html_textselection_copy(struct content *c, unsigned start_idx, unsigned end_idx, struct selection_string *selstr)
 {
-	html_content *html = (html_content *)c;
-	save_text_whitespace before = WHITESPACE_NONE;
-	bool first = true;
+    html_content *html = (html_content *)c;
+    save_text_whitespace before = WHITESPACE_NONE;
+    bool first = true;
 
-	if (html->layout == NULL) {
-		return NSERROR_INVALID;
-	}
+    if (html->layout == NULL) {
+        return NSERROR_INVALID;
+    }
 
-	return selection_copy(html->layout,
-			      &html->unit_len_ctx,
-			      start_idx,
-			      end_idx,
-			      selstr,
-			      &before,
-			      &first,
-			      false);
+    return selection_copy(html->layout, &html->unit_len_ctx, start_idx, end_idx, selstr, &before, &first, false);
 }
 
 
 /* exported interface documented in html/textselection.h */
 nserror html_textselection_get_end(struct content *c, unsigned *end_idx)
 {
-	html_content *html = (html_content *)c;
-	unsigned root_idx;
+    html_content *html = (html_content *)c;
+    unsigned root_idx;
 
-	if (html->layout == NULL) {
-		return NSERROR_INVALID;
-	}
+    if (html->layout == NULL) {
+        return NSERROR_INVALID;
+    }
 
-	root_idx = 0;
+    root_idx = 0;
 
-	*end_idx = selection_label_subtree(html->layout, root_idx);
+    *end_idx = selection_label_subtree(html->layout, root_idx);
 
-	return NSERROR_OK;
+    return NSERROR_OK;
 }

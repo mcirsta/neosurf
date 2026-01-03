@@ -34,28 +34,23 @@ bool verbose_log = false;
 
 nserror nslog_init(nslog_ensure_t *ensure, int *pargc, char **argv)
 {
-	return NSERROR_OK;
+    return NSERROR_OK;
 }
 
 
-void nslog_log(enum nslog_level level,
-	       const char *file,
-	       const char *func,
-	       int ln,
-	       const char *format,
-	       ...)
+void nslog_log(enum nslog_level level, const char *file, const char *func, int ln, const char *format, ...)
 {
-	va_list ap;
+    va_list ap;
 
-	if (verbose_log) {
-		fprintf(stderr, "%s:%i %s: ", file, ln, func);
+    if (verbose_log) {
+        fprintf(stderr, "%s:%i %s: ", file, ln, func);
 
-		va_start(ap, format);
+        va_start(ap, format);
 
-		vfprintf(stderr, format, ap);
+        vfprintf(stderr, format, ap);
 
-		va_end(ap);
+        va_end(ap);
 
-		fputc('\n', stderr);
-	}
+        fputc('\n', stderr);
+    }
 }

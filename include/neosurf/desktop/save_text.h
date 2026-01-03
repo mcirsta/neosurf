@@ -29,23 +29,20 @@ struct hlcache_handle;
 
 /* text currently being saved */
 struct save_text_state {
-	char *block;
-	size_t length;
-	size_t alloc;
+    char *block;
+    size_t length;
+    size_t alloc;
 };
 
 typedef enum {
-	WHITESPACE_NONE,
-	WHITESPACE_TAB,
-	WHITESPACE_ONE_NEW_LINE,
-	WHITESPACE_TWO_NEW_LINES
+    WHITESPACE_NONE,
+    WHITESPACE_TAB,
+    WHITESPACE_ONE_NEW_LINE,
+    WHITESPACE_TWO_NEW_LINES
 } save_text_whitespace;
 
 void save_as_text(struct hlcache_handle *c, char *path);
-void save_text_solve_whitespace(struct box *box,
-				bool *first,
-				save_text_whitespace *before,
-				const char **whitespace_text,
-				size_t *whitespace_length);
+void save_text_solve_whitespace(struct box *box, bool *first, save_text_whitespace *before,
+    const char **whitespace_text, size_t *whitespace_length);
 
 #endif
