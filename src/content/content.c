@@ -303,7 +303,10 @@ void content_set_error(struct content *c)
 /* exported interface documented in content/content.h */
 void content_reformat(hlcache_handle *h, bool background, int width, int height)
 {
-    content__reformat(hlcache_handle_get_content(h), background, width, height);
+    struct content *c = hlcache_handle_get_content(h);
+    if (c != NULL) {
+        content__reformat(c, background, width, height);
+    }
 }
 
 

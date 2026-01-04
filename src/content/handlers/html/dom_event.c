@@ -546,7 +546,18 @@ static bool html_process_title(html_content *c, dom_node *node)
  */
 static void html_texty_element_update(html_content *htmlc, dom_node *node)
 {
-    struct box *box = box_for_node(node);
+    struct box *box;
+
+    /* During box conversion restart, the layout is freed before the new
+     * one is built. DOM events can fire during the new box construction
+     * (e.g., when setting textarea values), but boxes from the old layout
+     * have been freed. Check if layout exists before trying to access boxes.
+     */
+    if (htmlc->layout == NULL) {
+        return; /* Layout not ready yet, nothing to update */
+    }
+
+    box = box_for_node(node);
     if (box == NULL) {
         return; /* No Box (yet?) so no gadget to update */
     }
