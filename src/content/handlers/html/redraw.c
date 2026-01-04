@@ -1299,14 +1299,6 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
                 cls = dom_string_data(class_attr);
             }
         }
-        bool is_target = (cls != NULL &&
-            (strstr(cls, "submenu-wrapper") || strstr(cls, "hn-container") || strstr(cls, "sub-menu")));
-        if (is_target) {
-            NSLOG(layout, INFO,
-                "redraw pre: tag %s class %s box %p x %i width %i overflow_x %u overflow_y %u parent %p parent.width %i",
-                tag, cls, box, x_parent + box->x, box->width, (unsigned)overflow_x, (unsigned)overflow_y, box->parent,
-                box->parent ? box->parent->width : -1);
-        }
         if (class_attr != NULL)
             dom_string_unref(class_attr);
         if (name != NULL)
@@ -1993,12 +1985,7 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
                     cls = dom_string_data(class_attr);
                 }
             }
-            bool is_target = (cls != NULL &&
-                (strstr(cls, "submenu-wrapper") || strstr(cls, "hn-container") || strstr(cls, "sub-menu")));
-            if (is_target) {
-                NSLOG(layout, INFO, "redraw children clip: tag %s class %s box %p using %s clip x0 %i x1 %i", tag, cls,
-                    box, (child_clip_ptr == clip) ? "viewport" : "parent", child_clip_ptr->x0, child_clip_ptr->x1);
-            }
+            // Debug logging removed - was hotnews.ro specific
             if (class_attr != NULL)
                 dom_string_unref(class_attr);
             if (name != NULL)
