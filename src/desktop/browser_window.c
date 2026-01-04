@@ -747,6 +747,29 @@ static nserror browser_window_content_ready(struct browser_window *bw)
     int width, height;
     nserror res = NSERROR_OK;
 
+    /* Check if this is a restart scenario: CONTENT_MSG_READY broadcast for
+     * content that's already current (in-place rebuild) rather than a new
+     * loading content. During restart, the content rebuilds itself in place,
+     * so there's no loading_content to transfer.
+     */
+    if (bw->loading_content == NULL && bw->current_content != NULL) {
+        /* This is a restart case. Content is already current, just reformat it. */
+        NSLOG(neosurf, INFO, "Content ready (restart): skipping transfer, reformatting current content");
+
+        /* Format the  content to the correct dimensions */
+        browser_window_get_dimensions(bw, &width, &height);
+        width /= bw->scale;
+        height /= bw->scale;
+        content_reformat(bw->current_content, false, width, height);
+
+        /* Update window but don't scroll to top since this is a restart */
+        browser_window_update(bw, false);
+
+        return NSERROR_OK;
+    }
+
+    /* Normal case: transferring loading_content to current_content */
+
     /* close and release the current window content */
     if (bw->current_content != NULL) {
         content_close(bw->current_content);
@@ -755,6 +778,16 @@ static nserror browser_window_content_ready(struct browser_window *bw)
 
     bw->current_content = bw->loading_content;
     bw->loading_content = NULL;
+
+    /* During box conversion restart, the loading_content may be NULL
+     * (e.g., if it was prematurely cleared or destroyed). If so, we cannot
+     * proceed with the ready callback. This is a defensive check for restart
+     * edge cases.
+     */
+    if (bw->current_content == NULL) {
+        NSLOG(neosurf, WARNING, "browser_window_content_ready: current_content is NULL, aborting");
+        return NSERROR_INVALID;
+    }
 
     if (!bw->internal_nav) {
         /* Transfer the fetch parameters */

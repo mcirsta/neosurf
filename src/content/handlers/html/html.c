@@ -261,9 +261,13 @@ static void html_box_convert_done(html_content *c, bool success)
     }
     /*imagemap_dump(c);*/
 
-    /* Destroy the parser binding */
-    dom_hubbub_parser_destroy(c->parser);
-    c->parser = NULL;
+    /* Destroy the parser binding. During a restart, the parser may have
+     * already been destroyed after the first conversion, so check for NULL.
+     */
+    if (c->parser != NULL) {
+        dom_hubbub_parser_destroy(c->parser);
+        c->parser = NULL;
+    }
 
     content_set_ready(&c->base);
 
@@ -956,8 +960,16 @@ bool html_begin_conversion(html_content *htmlc)
      * the ongoing conversion - just return success and let it complete.
      * This prevents race conditions where CSS loading finishes AFTER
      * dom_to_box() has already been called and started box construction.
+     *
+     * Prevent restart  cascades: if a restart is already pending, don't
+     * queue another one. Cascades happen when images load during a restart,
+     * triggering more restarts, causing 30+ second delays.
      */
     if (htmlc->box_conversion_context != NULL) {
+        if (htmlc->conversion_restart_pending) {
+            NSLOG(neosurf, INFO, "Late callback ignored: restart already pending (content %p)", htmlc);
+            return true;
+        }
         NSLOG(
             neosurf, INFO, "Late callback for content %p - box conversion already in progress, queuing restart", htmlc);
         htmlc->conversion_restart_pending = true;
@@ -1227,6 +1239,20 @@ static void html_free_layout(html_content *htmlc)
         htmlc->bctx = NULL;
     }
     htmlc->layout = NULL;
+
+    /* Clear the CSS selection context when freeing the layout.
+     * The select_ctx is semantically tied to the layout - it was used
+     * to build this specific box tree. When we free the layout (either
+     * for a restart or final destruction), we should also clear the
+     * select_ctx so that:
+     * 1. During restart: html_finish_conversion() won't incorrectly
+     *    bail out thinking conversion is already done
+     * 2. State consistency: layout and its CSS context lifecycle match
+     */
+    if (htmlc->select_ctx != NULL) {
+        css_select_ctx_destroy(htmlc->select_ctx);
+        htmlc->select_ctx = NULL;
+    }
 }
 
 /**
