@@ -979,7 +979,6 @@ static bool layout_flex__place_line_items_main(struct flex_ctx *ctx, struct flex
         box_size_main = lh__box_size_main(ctx->horizontal, b);
         box_pos_main = ctx->horizontal ? &b->x : &b->y;
 
-        NSLOG(flex, WARNING, "ITEM[%zu]: main_pos_entry=%d box_size_main=%d", i, main_pos, box_size_main);
 
         if (!lh__box_is_absolute(b)) {
             if (b->margin[main_start] == AUTO) {

@@ -1329,9 +1329,7 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
         border_bottom = box->border[BOTTOM].width;
         /* TRACE: log final visual position for flex items */
         if (box->parent && box->parent->style && css_computed_display(box->parent->style, false) == CSS_DISPLAY_FLEX) {
-            NSLOG(flex, WARNING,
-                "RENDER: box=%p x_parent=%d box->x=%d => x=%d width=%d padding_width=%d border_left=%d", box, x_parent,
-                box->x, x, width, padding_width, border_left);
+            // Log removed - was too verbose
         }
     } else {
         x = (x_parent + box->x) * scale;
