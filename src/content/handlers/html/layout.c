@@ -3230,27 +3230,9 @@ bool layout_block_context(struct box *block, int viewport_height, html_content *
                         cls = dom_string_data(class_attr);
                     }
                 }
-                bool is_target = (cls != NULL &&
-                    (strstr(cls, "submenu-wrapper") || strstr(cls, "hn-container") || strstr(cls, "sub-menu")));
-                if (is_target) {
-                    NSLOG(layout, INFO, "block pre: tag %s class %s box %p parent_w %i lm %i rm %i", tag, cls, box,
-                        box->parent ? box->parent->width : 0, lm, rm);
-                }
 
                 layout_block_find_dimensions(&content->unit_len_ctx, box->parent->width, viewport_height, lm, rm, box);
 
-                /* Debug: trace margin values for wpnbha blocks */
-                if (cls != NULL && strstr(cls, "wpnbha")) {
-                    NSLOG(layout, WARNING,
-                        "wpnbha margins: tag %s box %p margin[TOP]=%d margin[BOTTOM]=%d HAS_HEIGHT=%d in_margin=%d max_pos=%u",
-                        tag, box, box->margin[TOP], box->margin[BOTTOM], (box->flags & HAS_HEIGHT) ? 1 : 0, in_margin,
-                        max_pos_margin);
-                }
-
-                if (is_target) {
-                    NSLOG(layout, INFO, "block post: tag %s class %s box %p width %i height %i", tag, cls, box,
-                        box->width, box->height);
-                }
                 if (class_attr != NULL)
                     dom_string_unref(class_attr);
                 if (name != NULL)
