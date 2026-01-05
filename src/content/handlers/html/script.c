@@ -47,20 +47,8 @@
 
 #include <nsutils/time.h>
 
-/* Lightweight performance timing macro */
-#define PERF_ENABLED 1
-#if PERF_ENABLED
-#define PERF(fmt, ...)                                                                                                 \
-    do {                                                                                                               \
-        uint64_t _ms;                                                                                                  \
-        nsu_getmonotonic_ms(&_ms);                                                                                     \
-        fprintf(stderr, "PERF[%6lu.%03lu] " fmt "\n", (unsigned long)(_ms / 1000), (unsigned long)(_ms % 1000),        \
-            ##__VA_ARGS__);                                                                                            \
-        fflush(stderr);                                                                                                \
-    } while (0)
-#else
-#define PERF(fmt, ...) ((void)0)
-#endif
+/* Performance tracing - enable via CMake: -DNEOSURF_ENABLE_PERF_TRACE=ON */
+#include <neosurf/utils/perf.h>
 
 typedef bool(script_handler_t)(struct jsthread *jsthread, const uint8_t *data, size_t size, const char *name);
 

@@ -135,6 +135,12 @@ option(NEOSURF_BUILD_XXD "Build and install a complimentary xxd implementation" 
 option(NEOSURF_WERROR "Treat warnings as errors" ON)
 option(NEOSURF_ENABLE_GPROF "Enable gprof profiling instrumentation (-pg)" OFF)
 option(NEOSURF_ENABLE_FINSTRUMENT "Enable function tracing (-finstrument-functions)" OFF)
+option(NEOSURF_ENABLE_PERF_TRACE "Enable PERF() macro timing traces to stderr" OFF)
+
+if(NEOSURF_ENABLE_PERF_TRACE)
+    add_compile_definitions(NEOSURF_PERF_TRACE_ENABLED=1)
+    message(STATUS "Performance tracing enabled (PERF macro active)")
+endif()
 
 if(NEOSURF_ENABLE_GPROF AND NEOSURF_ENABLE_FINSTRUMENT)
     message(FATAL_ERROR "Enable only one of NEOSURF_ENABLE_GPROF or NEOSURF_ENABLE_FINSTRUMENT")

@@ -66,13 +66,8 @@
  */
 #define UPDATES_PER_SECOND 2
 
-/* Performance tracing macro */
-#define PERF(fmt, ...)                                                                                                 \
-    do {                                                                                                               \
-        uint64_t _ms;                                                                                                  \
-        nsu_getmonotonic_ms(&_ms);                                                                                     \
-        fprintf(stderr, "PERF[%10.3f] " fmt "\n", _ms / 1000.0, ##__VA_ARGS__);                                        \
-    } while (0)
+/* Performance tracing - enable via CMake: -DNEOSURF_ENABLE_PERF_TRACE=ON */
+#include <neosurf/utils/perf.h>
 
 /**
  * The ciphersuites the browser is prepared to use for TLS1.3
