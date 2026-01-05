@@ -136,10 +136,18 @@ option(NEOSURF_WERROR "Treat warnings as errors" ON)
 option(NEOSURF_ENABLE_GPROF "Enable gprof profiling instrumentation (-pg)" OFF)
 option(NEOSURF_ENABLE_FINSTRUMENT "Enable function tracing (-finstrument-functions)" OFF)
 option(NEOSURF_ENABLE_PERF_TRACE "Enable PERF() macro timing traces to stderr" OFF)
+option(NEOSURF_ENABLE_INCREMENTAL_REFLOW "Enable incremental page reflow as images load (slower but progressive)" OFF)
 
 if(NEOSURF_ENABLE_PERF_TRACE)
     add_compile_definitions(NEOSURF_PERF_TRACE_ENABLED=1)
     message(STATUS "Performance tracing enabled (PERF macro active)")
+endif()
+
+if(NEOSURF_ENABLE_INCREMENTAL_REFLOW)
+    add_compile_definitions(NEOSURF_ENABLE_INCREMENTAL_REFLOW=1)
+    message(STATUS "Incremental reflow enabled (slower but progressive rendering)")
+else()
+    message(STATUS "Incremental reflow disabled (faster load times)")
 endif()
 
 if(NEOSURF_ENABLE_GPROF AND NEOSURF_ENABLE_FINSTRUMENT)

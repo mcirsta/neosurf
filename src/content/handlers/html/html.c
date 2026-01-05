@@ -1145,6 +1145,21 @@ static void html_reformat(struct content *c, int width, int height)
         return;
     }
 
+#ifndef NEOSURF_ENABLE_INCREMENTAL_REFLOW
+    /* Skip viewport-triggered reformats while objects are still downloading.
+     * Only allow:
+     * 1. Initial layout (when had_initial_layout is false)
+     * 2. Final deferred reformat (when all non-script objects are done)
+     *
+     * This prevents unnecessary intermediate reformats that block download
+     * completion processing and slow down overall page load.
+     */
+    if (htmlc->had_initial_layout && c->active > htmlc->scripts_active) {
+        PERF("html_reformat SKIPPED: %d objects still downloading", c->active - htmlc->scripts_active);
+        return;
+    }
+#endif
+
     nsu_getmonotonic_ms(&ms_before);
 
     NSLOG(neosurf, DEBUG, "PROFILER: START HTML layout %p", c);
