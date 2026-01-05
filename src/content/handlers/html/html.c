@@ -80,20 +80,8 @@
 #define ALWAYS_DUMP_FRAMESET 0
 #define ALWAYS_DUMP_BOX 0
 
-/* Lightweight performance timing macro - outputs to stderr with timestamp */
-#define PERF_ENABLED 1
-#if PERF_ENABLED
-#define PERF(fmt, ...)                                                                                                 \
-    do {                                                                                                               \
-        uint64_t _ms;                                                                                                  \
-        nsu_getmonotonic_ms(&_ms);                                                                                     \
-        fprintf(stderr, "PERF[%6lu.%03lu] " fmt "\n", (unsigned long)(_ms / 1000), (unsigned long)(_ms % 1000),        \
-            ##__VA_ARGS__);                                                                                            \
-        fflush(stderr);                                                                                                \
-    } while (0)
-#else
-#define PERF(fmt, ...) ((void)0)
-#endif
+/* Performance tracing - enable via CMake: -DNEOSURF_ENABLE_PERF_TRACE=ON */
+#include <neosurf/utils/perf.h>
 
 static const char *html_types[] = {"application/xhtml+xml", "text/html"};
 
