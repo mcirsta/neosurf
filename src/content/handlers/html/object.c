@@ -149,6 +149,7 @@ static nserror html_object_nobox_callback(hlcache_handle *object, const hlcache_
 void html_deferred_reformat(void *p)
 {
     html_content *c = p;
+    PERF("html_deferred_reformat called (active=%d)", c->base.active);
     c->pending_reformat = false;
 
     /* We cannot use content__reformat() here because it has an optimization
@@ -194,10 +195,10 @@ static nserror html_object_callback(hlcache_handle *object, const hlcache_event 
             /* Adjust parent content for new object size */
             html_object_done(box, object, o->background);
 
-            /* DISABLED: Incremental reformat on READY
-             * Wait for all downloads to complete before reformatting.
+            /* Incremental reflow on READY - disabled by default for performance.
+             * Enable via CMake: -DNEOSURF_ENABLE_INCREMENTAL_REFLOW=ON
              */
-#if 0
+#ifdef NEOSURF_ENABLE_INCREMENTAL_REFLOW
             if (c->base.status == CONTENT_STATUS_READY || c->base.status == CONTENT_STATUS_DONE) {
                 uint64_t ms_now;
                 nsu_getmonotonic_ms(&ms_now);
@@ -246,18 +247,20 @@ static nserror html_object_callback(hlcache_handle *object, const hlcache_event 
             if (!box_visible(box))
                 break;
 
+
+            /* Dynamic-size images need dimension updates via reformat, not just redraw */
             if (!(box->flags & REPLACE_DIM)) {
+#ifdef NEOSURF_ENABLE_INCREMENTAL_REFLOW
                 /*
-                 * Dynamic-size image completed after initial
-                 * layout. We need to trigger a reformat so the
-                 * layout engine picks up the new intrinsic
-                 * dimensions. The CONTENT_MSG_REFORMAT
-                 * broadcast will cause a full redraw.
+                 * Incremental reflow: trigger immediate reformat
+                 * to pick up the new intrinsic dimensions.
                  */
                 if (c->pending_reformat == false) {
                     c->pending_reformat = true;
                     guit->misc->schedule(0, html_deferred_reformat, c);
                 }
+#endif
+                /* Skip fixed-size redraw code - wait for next reformat */
                 break;
             }
 
@@ -498,38 +501,34 @@ static nserror html_object_callback(hlcache_handle *object, const hlcache_event 
     if (c->base.status == CONTENT_STATUS_READY && c->base.active == c->scripts_active &&
         (event->type == CONTENT_MSG_LOADING || event->type == CONTENT_MSG_DONE || event->type == CONTENT_MSG_ERROR)) {
         /* all objects have arrived (only scripts may still be active) */
-        PERF("ALL OBJECTS COMPLETE - content_set_done (active=%d, scripts_active=%d)", c->base.active,
+        PERF("ALL OBJECTS COMPLETE - scheduling final reformat (active=%d, scripts_active=%d)", c->base.active,
             c->scripts_active);
 
-        /* Cancel any pending deferred reformat - we're doing final reformat now.
-         * This eliminates the 3× layout time throttle delay that would otherwise
-         * cause an unnecessary wait after loading completes. */
+        /* Cancel any previous pending reformat */
         if (c->pending_reformat) {
             guit->misc->schedule(-1, html_deferred_reformat, c);
-            c->pending_reformat = false;
         }
 
-        content__reformat(&c->base, false, c->base.available_width, c->base.available_height);
-        content_set_done(&c->base);
+        /* Schedule final reformat. This runs after we return from the current
+         * callback, ensuring all object processing for this event is complete.
+         * The event sequence guarantees all images are decoded before we get here
+         * (CONTENT_MSG_DONE is only sent after image decode completes).
+         */
+        c->pending_reformat = true;
+        guit->misc->schedule(0, html_deferred_reformat, c);
     }
 
-    /* DISABLED: Incremental reflow during downloads.
-     * Problem: Layout blocks the main thread, preventing curl polling.
-     * This causes downloads to appear "slow" when they've actually finished.
-     *
-     * Strategy: Wait for ALL downloads to complete, then do ONE final reformat.
-     * Result: Faster total load time and no blocking of download completion detection.
+    /* Incremental reflow during downloads - disabled by default for performance.
+     * When enabled, reformats are triggered as individual images load.
+     * When disabled, only one final reformat occurs after all downloads complete.
+     * Enable via CMake: -DNEOSURF_ENABLE_INCREMENTAL_REFLOW=ON
      */
-#if 0
-    else if (nsoption_bool(incremental_reflow) && event->type == CONTENT_MSG_DONE && box != NULL &&
-        !(box->flags & REPLACE_DIM)) {
+#ifdef NEOSURF_ENABLE_INCREMENTAL_REFLOW
+    else if (event->type == CONTENT_MSG_DONE && box != NULL && !(box->flags & REPLACE_DIM)) {
 
-        /* 1) the configuration option to reflow pages while
-         *      objects are fetched is set
-         * 2) an object is newly fetched & converted,
-         * 3) the box's dimensions need to change due to
-         * being replaced 4) the object's parent HTML is
-         * ready for reformat,
+        /* 1) an object is newly fetched & converted,
+         * 2) the box's dimensions need to change due to being replaced
+         * 3) the object's parent HTML is ready for reformat
          */
         uint64_t ms_now;
         nsu_getmonotonic_ms(&ms_now);

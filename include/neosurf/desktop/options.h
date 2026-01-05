@@ -182,7 +182,7 @@ NSOPTION_INTEGER(toolbar_status_size, 6667)
 NSOPTION_INTEGER(scale, 100)
 
 /* Whether to reflow web pages while objects are fetching */
-NSOPTION_BOOL(incremental_reflow, true)
+/* incremental_reflow option removed - use CMake -DNEOSURF_ENABLE_INCREMENTAL_REFLOW=ON instead */
 
 /* Minimum time (in cs) between HTML reflows while objects are fetching */
 NSOPTION_UINT(min_reflow_period, DEFAULT_REFLOW_PERIOD)
