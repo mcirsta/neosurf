@@ -42,6 +42,127 @@
 
 #include "content/handlers/image/svg.h"
 
+/**
+ * Render a dashed line as a series of filled rectangles.
+ *
+ * This provides cross-platform dash rendering that works on ALL backends
+ * (Qt, GTK, BeOS, framebuffer, Windows) without relying on platform-specific
+ * dash pattern APIs.
+ *
+ * Only handles horizontal and vertical lines for now - diagonal lines
+ * would require rotated rectangles which most plotters don't support.
+ *
+ * \param ctx          Redraw context
+ * \param stroke_colour Stroke colour for the dashes
+ * \param x1,y1        Start of line
+ * \param x2,y2        End of line
+ * \param stroke_width Width of the stroke
+ * \param dasharray    Array of dash/gap lengths (scaled to display coords)
+ * \param dasharray_count Number of elements in dasharray
+ * \param dashoffset   Offset into the dash pattern
+ * \param transform    Affine transform to apply
+ * \return NSERROR_OK on success
+ */
+static nserror svg_plot_dashed_line_as_rects(const struct redraw_context *ctx, colour stroke_colour, float x1, float y1,
+    float x2, float y2, float stroke_width, const float *dasharray, unsigned int dasharray_count, float dashoffset,
+    const float transform[6])
+{
+    if (dasharray == NULL || dasharray_count == 0) {
+        return NSERROR_INVALID;
+    }
+
+    /* Apply transform to line endpoints */
+    float tx1 = x1 * transform[0] + y1 * transform[2] + transform[4];
+    float ty1 = x1 * transform[1] + y1 * transform[3] + transform[5];
+    float tx2 = x2 * transform[0] + y2 * transform[2] + transform[4];
+    float ty2 = x2 * transform[1] + y2 * transform[3] + transform[5];
+
+    /* Calculate line length and direction */
+    float dx = tx2 - tx1;
+    float dy = ty2 - ty1;
+    float line_length = sqrtf(dx * dx + dy * dy);
+
+    if (line_length < 1.0f) {
+        return NSERROR_OK; /* Line too short */
+    }
+
+    /* Normalize direction */
+    float ndx = dx / line_length;
+    float ndy = dy / line_length;
+
+    /* Perpendicular direction for stroke width */
+    float px = -ndy * stroke_width / 2.0f;
+    float py = ndx * stroke_width / 2.0f;
+
+    /* Set up fill style for rectangles */
+    plot_style_t fill_style = {
+        .fill_type = PLOT_OP_TYPE_SOLID, .fill_colour = stroke_colour, .stroke_type = PLOT_OP_TYPE_NONE};
+
+    /* Calculate total pattern length */
+    float pattern_length = 0.0f;
+    for (unsigned int i = 0; i < dasharray_count; i++) {
+        pattern_length += dasharray[i];
+    }
+    if (pattern_length < 1.0f) {
+        return NSERROR_OK; /* Pattern too short */
+    }
+
+    /* Start position, accounting for dash offset */
+    float pos = -fmodf(dashoffset, pattern_length);
+    if (pos > 0)
+        pos -= pattern_length;
+
+    unsigned int dash_idx = 0;
+    bool draw_dash = true; /* Alternate between dash (draw) and gap (skip) */
+
+    while (pos < line_length) {
+        float dash_len = dasharray[dash_idx % dasharray_count];
+        float dash_start = pos;
+        float dash_end = pos + dash_len;
+
+        /* Clamp to line bounds */
+        if (dash_start < 0)
+            dash_start = 0;
+        if (dash_end > line_length)
+            dash_end = line_length;
+
+        /* Only draw if this is a dash (not a gap) and within bounds */
+        if (draw_dash && dash_end > dash_start && dash_start < line_length) {
+            /* Calculate rectangle corners */
+            float sx = tx1 + ndx * dash_start;
+            float sy = ty1 + ndy * dash_start;
+            float ex = tx1 + ndx * dash_end;
+            float ey = ty1 + ndy * dash_end;
+
+            /* For horizontal lines (dy ≈ 0), create axis-aligned rect */
+            if (fabsf(dy) < 0.01f) {
+                struct rect r;
+                r.x0 = (int)(fminf(sx, ex));
+                r.y0 = (int)(sy - stroke_width / 2.0f);
+                r.x1 = (int)(fmaxf(sx, ex));
+                r.y1 = (int)(sy + stroke_width / 2.0f);
+                ctx->plot->rectangle(ctx, &fill_style, &r);
+            }
+            /* For vertical lines (dx ≈ 0), create axis-aligned rect */
+            else if (fabsf(dx) < 0.01f) {
+                struct rect r;
+                r.x0 = (int)(sx - stroke_width / 2.0f);
+                r.y0 = (int)(fminf(sy, ey));
+                r.x1 = (int)(sx + stroke_width / 2.0f);
+                r.y1 = (int)(fmaxf(sy, ey));
+                ctx->plot->rectangle(ctx, &fill_style, &r);
+            }
+            /* Diagonal lines - skip for now (would need polygon or rotated rect) */
+        }
+
+        pos += dash_len;
+        dash_idx++;
+        draw_dash = !draw_dash;
+    }
+
+    return NSERROR_OK;
+}
+
 /* Maximum number of floats sent per plotter path call to avoid oversized
  * buffers */
 #define SVG_COMBO_FLUSH_LIMIT 960
@@ -258,8 +379,7 @@ typedef struct svg_content {
 
     struct svgtiny_diagram *diagram;
 
-    int current_width;
-    int current_height;
+    bool parsed; /**< True if SVG has been parsed at least once */
 } svg_content;
 
 
@@ -269,8 +389,7 @@ static nserror svg_create_svg_data(svg_content *c)
     if (c->diagram == NULL)
         goto no_memory;
 
-    c->current_width = INT_MAX;
-    c->current_height = INT_MAX;
+    c->parsed = false;
 
     return NSERROR_OK;
 
@@ -318,11 +437,26 @@ static nserror svg_create(const content_handler *handler, lwc_string *imime_type
 
 static bool svg_convert(struct content *c)
 {
-    /*c->title = malloc(100);
-    if (c->title)
-        snprintf(c->title, 100, messages_get("svgTitle"),
-                width, height, c->source_size);*/
-    // c->size += ?;
+    svg_content *svg = (svg_content *)c;
+    const uint8_t *source_data;
+    size_t source_size;
+    int intrinsic_width = 0, intrinsic_height = 0;
+
+    assert(svg->diagram);
+
+    /* Extract intrinsic dimensions from SVG width/height/viewBox attributes.
+     * This lightweight parse only reads the header, not shapes.
+     * This is needed so that layout can calculate aspect ratio for images
+     * with width=100% height=auto before reformat is called. */
+    source_data = content__get_source_data(c, &source_size);
+    if (source_data != NULL && source_size > 0) {
+        svgtiny_parse_dimensions((const char *)source_data, source_size, &intrinsic_width, &intrinsic_height);
+
+        /* Set content dimensions from the extracted intrinsic size */
+        c->width = intrinsic_width;
+        c->height = intrinsic_height;
+    }
+
     content_set_ready(c);
     content_set_done(c);
     /* Done: update status bar */
@@ -343,18 +477,23 @@ static void svg_reformat(struct content *c, int width, int height)
 
     assert(svg->diagram);
 
-    /* Avoid reformats to same width/height as we already reformatted to */
-    if (width != svg->current_width || height != svg->current_height) {
-        NSLOG(neosurf, DEBUG, "PROFILER: START SVG parsing %p", c);
-        source_data = content__get_source_data(c, &source_size);
-
-        svgtiny_parse(
-            svg->diagram, (const char *)source_data, source_size, nsurl_access(content_get_url(c)), width, height);
-        NSLOG(neosurf, DEBUG, "PROFILER: STOP SVG parsing %p", c);
-
-        svg->current_width = width;
-        svg->current_height = height;
+    /* Skip reformat if dimensions are unknown (0x0).
+     * We can't do a meaningful parse without knowing the target viewport.
+     * Intrinsic dimensions are already available from svg_convert via
+     * svgtiny_parse_dimensions(), so we just wait for a call with real dimensions. */
+    if (width <= 0 || height <= 0) {
+        NSLOG(neosurf, DEBUG, "SVG reformat skipped: dimensions unknown (0x0)");
+        return;
     }
+
+    /* Parse the SVG at the viewport dimensions.
+     * libsvgtiny bakes the CTM into shape coordinates and stroke widths,
+     * so we need to parse at the actual display size for correct scaling. */
+    NSLOG(neosurf, DEBUG, "SVG parsing with viewport: %dx%d", width, height);
+    source_data = content__get_source_data(c, &source_size);
+
+    svgtiny_parse(
+        svg->diagram, (const char *)source_data, source_size, nsurl_access(content_get_url(c)), width, height);
 
     c->width = svg->diagram->width;
     c->height = svg->diagram->height;
@@ -366,7 +505,7 @@ static void svg_reformat(struct content *c, int width, int height)
  */
 
 static bool svg_redraw_internal(svg_content *svg, int x, int y, int width, int height, const struct rect *clip,
-    const struct redraw_context *ctx, float scale, colour background_colour, colour current_color)
+    const struct redraw_context *ctx, colour background_colour, colour current_color)
 {
     float transform[6];
     struct svgtiny_diagram *diagram = svg->diagram;
@@ -384,6 +523,8 @@ static bool svg_redraw_internal(svg_content *svg, int x, int y, int width, int h
 
     float sx = (float)width / (float)svg->base.width;
     float sy = (float)height / (float)svg->base.height;
+    NSLOG(neosurf, WARNING, "SVG redraw: display=%dx%d intrinsic=%dx%d sx=%.3f sy=%.3f", width, height, svg->base.width,
+        svg->base.height, sx, sy);
     transform[0] = 1.0f;
     transform[1] = 0.0f;
     transform[2] = 0.0f;
@@ -392,8 +533,8 @@ static bool svg_redraw_internal(svg_content *svg, int x, int y, int width, int h
     transform[5] = y;
 
     NSLOG(neosurf, DEBUG, "PROFILER: START SVG rendering %p", svg);
-    NSLOG(neosurf, INFO, "SVG redraw start: url=%s scale=%.3f clip=%d,%d..%d,%d limit=%u", url_str, scale, clip->x0,
-        clip->y0, clip->x1, clip->y1, SVG_COMBO_FLUSH_LIMIT);
+    NSLOG(neosurf, INFO, "SVG redraw start: url=%s clip=%d,%d..%d,%d limit=%u", url_str, clip->x0, clip->y0, clip->x1,
+        clip->y1, SVG_COMBO_FLUSH_LIMIT);
 
 #define BGR(c) (((svgtiny_RED((c))) | (svgtiny_GREEN((c)) << 8) | (svgtiny_BLUE((c)) << 16)))
 
@@ -418,8 +559,12 @@ static bool svg_redraw_internal(svg_content *svg, int x, int y, int width, int h
 
     for (i = 0; i != diagram->shape_count; i++) {
         if (diagram->shape[i].path) {
+            NSLOG(neosurf, WARNING, "SVG shape[%u/%u]: fill=0x%x stroke=0x%x stroke_width=%d dasharray=%s", i,
+                diagram->shape_count, (unsigned)diagram->shape[i].fill, (unsigned)diagram->shape[i].stroke,
+                diagram->shape[i].stroke_width, diagram->shape[i].stroke_dasharray_set ? "yes" : "no");
             /* stroke style */
             svgtiny_colour stroke_c = diagram->shape[i].stroke;
+
             if (stroke_c == svgtiny_CURRENT_COLOR) {
                 /* currentColor from CSS is already in neosurf format */
                 pstyle.stroke_type = PLOT_OP_TYPE_SOLID;
@@ -431,10 +576,40 @@ static bool svg_redraw_internal(svg_content *svg, int x, int y, int width, int h
                 pstyle.stroke_type = PLOT_OP_TYPE_SOLID;
                 pstyle.stroke_colour = BGR(stroke_c);
             }
-            pstyle.stroke_width = plot_style_int_to_fixed(diagram->shape[i].stroke_width);
+            /* Scale stroke_width by display/intrinsic ratio, just like path coordinates.
+             * Use average of sx and sy for uniform stroke appearance. */
+            float stroke_scale = (sx + sy) / 2.0f;
+            int scaled_stroke_width = (int)(diagram->shape[i].stroke_width * stroke_scale + 0.5f);
+            if (diagram->shape[i].stroke_width > 0 && scaled_stroke_width == 0)
+                scaled_stroke_width = 1; /* Ensure visible strokes don't disappear */
+            pstyle.stroke_width = plot_style_int_to_fixed(scaled_stroke_width);
+
+            /* Pass dasharray to plotter for custom dash patterns */
+            float scaled_dasharray[16]; /* Stack-allocated for common dash patterns */
+            if (diagram->shape[i].stroke_dasharray_set && diagram->shape[i].stroke_dasharray_count > 0 &&
+                diagram->shape[i].stroke_dasharray_count <= 16) {
+                /* Scale dasharray values by same factor as stroke_width */
+                for (unsigned int d = 0; d < diagram->shape[i].stroke_dasharray_count; d++) {
+                    scaled_dasharray[d] = diagram->shape[i].stroke_dasharray[d] * stroke_scale;
+                }
+                NSLOG(neosurf, WARNING, "svg.c dasharray: raw=[%.1f,%.1f] stroke_scale=%.3f scaled=[%.1f,%.1f]",
+                    diagram->shape[i].stroke_dasharray[0],
+                    diagram->shape[i].stroke_dasharray_count > 1 ? diagram->shape[i].stroke_dasharray[1] : 0,
+                    stroke_scale, scaled_dasharray[0],
+                    diagram->shape[i].stroke_dasharray_count > 1 ? scaled_dasharray[1] : 0);
+                pstyle.stroke_dasharray = scaled_dasharray;
+                pstyle.stroke_dasharray_count = diagram->shape[i].stroke_dasharray_count;
+                /* Scale dashoffset by the same factor as stroke_width */
+                pstyle.stroke_dashoffset = diagram->shape[i].stroke_dashoffset * stroke_scale;
+            } else {
+                pstyle.stroke_dasharray = NULL;
+                pstyle.stroke_dasharray_count = 0;
+                pstyle.stroke_dashoffset = 0;
+            }
 
             /* fill style */
             svgtiny_colour fill_c = diagram->shape[i].fill;
+
             if (fill_c == svgtiny_CURRENT_COLOR) {
                 /* currentColor from CSS is already in neosurf format */
                 pstyle.fill_type = PLOT_OP_TYPE_SOLID;
@@ -547,6 +722,48 @@ static bool svg_redraw_internal(svg_content *svg, int x, int y, int width, int h
                     }
                     continue;
 #endif
+                    /* For shapes with dasharray, use cross-platform rectangle rendering for
+                     * simple lines (MOVE+LINE), or plot the path directly for complex shapes.
+                     * This is also plotted immediately (not batched) because pstyle.stroke_dasharray
+                     * points to a stack-allocated array. */
+                    if (pstyle.stroke_dasharray != NULL) {
+                        /* Flush any pending combo first */
+                        if (combo_active && combo_len > 0) {
+                            res = svg_plot_path_chunked(ctx, &combo_style, combo, combo_len, transform);
+                            combo_len = 0;
+                        }
+
+                        /* Check if this is a simple line:
+                         * - 6 elements: MOVE,x,y,LINE,x,y (raw line)
+                         * - 7 elements: MOVE,x,y,LINE,x,y,CLOSE (<line> element from svgtiny) */
+                        bool is_simple_line = (((k == 6 || k == 7) && (int)scaled[0] == PLOTTER_PATH_MOVE &&
+                            (int)scaled[3] == PLOTTER_PATH_LINE));
+
+                        /* Use cross-platform rectangle-based rendering for simple dashed lines */
+                        if (is_simple_line) {
+                            float x1 = scaled[1];
+                            float y1 = scaled[2];
+                            float x2 = scaled[4];
+                            float y2 = scaled[5];
+                            colour stroke_colour = pstyle.stroke_colour;
+
+                            res = svg_plot_dashed_line_as_rects(ctx, stroke_colour, x1, y1, x2, y2,
+                                (float)scaled_stroke_width, pstyle.stroke_dasharray, pstyle.stroke_dasharray_count,
+                                (float)diagram->shape[i].stroke_dashoffset, transform);
+
+                            NSLOG(neosurf, INFO, "Dashed line->rects: stroke_width=%d dasharray=[%.1f,%.1f]",
+                                scaled_stroke_width, pstyle.stroke_dasharray[0],
+                                pstyle.stroke_dasharray_count > 1 ? pstyle.stroke_dasharray[1] : 0.0f);
+                        } else {
+                            /* Fall back to standard path rendering for complex shapes */
+                            res = ctx->plot->path(ctx, &pstyle, scaled, k, transform);
+                        }
+
+                        if (res != NSERROR_OK) {
+                            ok = false;
+                        }
+                        continue;
+                    }
                     int same = combo_active && combo_style.stroke_type == pstyle.stroke_type &&
                         combo_style.fill_type == pstyle.fill_type &&
                         combo_style.stroke_colour == pstyle.stroke_colour &&
@@ -627,19 +844,6 @@ static bool svg_redraw_internal(svg_content *svg, int x, int y, int width, int h
                         combo_len = 0;
                     }
                 }
-            } else {
-                res = ctx->plot->path(ctx, &pstyle, diagram->shape[i].path, diagram->shape[i].path_length, transform);
-                if (res != NSERROR_OK) {
-                    ok = false;
-                    int stroke_rgb = (svgtiny_RED(diagram->shape[i].stroke) << 16) |
-                        (svgtiny_GREEN(diagram->shape[i].stroke) << 8) | (svgtiny_BLUE(diagram->shape[i].stroke));
-                    int fill_rgb = (svgtiny_RED(diagram->shape[i].fill) << 16) |
-                        (svgtiny_GREEN(diagram->shape[i].fill) << 8) | (svgtiny_BLUE(diagram->shape[i].fill));
-                    NSLOG(neosurf, ERROR,
-                        "SVG render failed: url=%s element=path index=%u path_len=%u err=%d stroke=#%06x fill=#%06x stroke_w=%d",
-                        url_str, i, diagram->shape[i].path_length, res, stroke_rgb, fill_rgb,
-                        diagram->shape[i].stroke_width);
-                }
             }
 
         } else if (diagram->shape[i].text) {
@@ -665,15 +869,22 @@ static bool svg_redraw_internal(svg_content *svg, int x, int y, int width, int h
             } else {
                 fstyle.foreground = BGR(diagram->shape[i].fill);
             }
-            /* Use SVG font-size, scale with diagram, fallback to
-             * 12pt */
+            /* Use SVG font-size, fallback to 12.
+             * SVG font-size is in USER UNITS (pixels). Scale with viewport
+             * so fonts grow/shrink proportionally with the SVG.
+             * Use sx (display_width/intrinsic_width) as the scale factor.
+             * Use FONTF_SIZE_PIXELS flag to tell the frontend to use the
+             * size directly as pixels without point-to-pixel conversion.
+             */
             float fsize = diagram->shape[i].font_size;
             if (fsize <= 0.0f) {
                 fsize = 12.0f;
             }
-            /* SVG font size is in SVG units, just apply plot scale
-             */
-            fstyle.size = (int)(fsize * PLOT_STYLE_SCALE * scale);
+            /* Apply viewport scale (sx) so fonts scale with SVG display size */
+            float scaled_fsize = fsize * sx;
+            fstyle.size = (int)(scaled_fsize * PLOT_STYLE_SCALE);
+            fstyle.flags |= FONTF_SIZE_PIXELS;
+
 
             /* Apply font-weight bold if specified */
             if (diagram->shape[i].font_weight_bold) {
@@ -730,14 +941,14 @@ static bool svg_redraw_internal(svg_content *svg, int x, int y, int width, int h
 
 
 bool svg_redraw_diagram(struct svgtiny_diagram *diagram, int x, int y, int width, int height, const struct rect *clip,
-    const struct redraw_context *ctx, float scale, colour background_colour, colour current_color)
+    const struct redraw_context *ctx, colour background_colour, colour current_color)
 {
     svg_content tmp;
     memset(&tmp, 0, sizeof(tmp));
     tmp.diagram = diagram;
     tmp.base.width = width;
     tmp.base.height = height;
-    return svg_redraw_internal(&tmp, x, y, width, height, clip, ctx, scale, background_colour, current_color);
+    return svg_redraw_internal(&tmp, x, y, width, height, clip, ctx, background_colour, current_color);
 }
 
 
@@ -770,8 +981,7 @@ static bool svg_redraw_tiled_internal(
     /* Repeatedly plot the SVG across the area */
     for (y = y0; y < y1; y += data->height) {
         for (x = x0; x < x1; x += data->width) {
-            if (!svg_redraw_internal(
-                    svg, x, y, data->width, data->height, clip, ctx, data->scale, data->background_colour, 0)) {
+            if (!svg_redraw_internal(svg, x, y, data->width, data->height, clip, ctx, data->background_colour, 0)) {
                 return false;
             }
         }
@@ -797,7 +1007,7 @@ static bool svg_redraw(
 
     if ((data->repeat_x == false) && (data->repeat_y == false)) {
         return svg_redraw_internal(
-            svg, data->x, data->y, data->width, data->height, clip, ctx, data->scale, data->background_colour, 0);
+            svg, data->x, data->y, data->width, data->height, clip, ctx, data->background_colour, 0);
     }
 
     return svg_redraw_tiled_internal(svg, data, clip, ctx);

@@ -129,7 +129,20 @@ static QFont *new_qfont_fstyle(const struct plot_font_style *fstyle)
 
     nfont = new QFont(family, -1, fstyle->weight, italic);
 
-    nfont->setPixelSize((fstyle->size * 100) / (PLOT_STYLE_SCALE * MAGIC_SCALING_DENOMINATOR));
+    /* Calculate pixel size from fstyle->size.
+     * If FONTF_SIZE_PIXELS is set (SVG), size is already in pixels * PLOT_STYLE_SCALE.
+     * Otherwise (HTML/CSS), size is in points and needs conversion.
+     */
+    int pixelSize;
+    if (fstyle->flags & FONTF_SIZE_PIXELS) {
+        /* SVG: size is pixels * PLOT_STYLE_SCALE, use directly */
+        pixelSize = fstyle->size / PLOT_STYLE_SCALE;
+    } else {
+        /* HTML/CSS: size is points * PLOT_STYLE_SCALE, convert to pixels */
+        pixelSize = (fstyle->size * 100) / (PLOT_STYLE_SCALE * MAGIC_SCALING_DENOMINATOR);
+    }
+    nfont->setPixelSize(pixelSize > 0 ? pixelSize : 1);
+
 
     if (fstyle->flags & FONTF_SMALLCAPS) {
         nfont->setCapitalization(QFont::SmallCaps);

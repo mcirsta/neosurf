@@ -78,6 +78,11 @@ typedef struct plot_style_s {
     colour stroke_colour; /**< Colour of stroke */
     plot_operation_type_t fill_type; /**< Fill plot type */
     colour fill_colour; /**< Colour of fill */
+
+    /* Custom dash pattern for strokes (optional, used by SVG) */
+    const float *stroke_dasharray; /**< Array of dash/gap lengths, or NULL for solid */
+    unsigned int stroke_dasharray_count; /**< Number of elements in dasharray */
+    float stroke_dashoffset; /**< Starting offset into dash pattern */
 } plot_style_t;
 
 
@@ -102,6 +107,7 @@ typedef enum {
     FONTF_ITALIC = 1,
     FONTF_OBLIQUE = 2,
     FONTF_SMALLCAPS = 4,
+    FONTF_SIZE_PIXELS = 8, /**< Size is in pixels, not points (for SVG) */
 } plot_font_flags_t;
 
 /**

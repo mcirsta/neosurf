@@ -1944,7 +1944,7 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
         colour current_col = nscss_color_to_ns(css_col);
 
         if (!svg_redraw_diagram(box->svg_diagram, (int)(x_scrolled + padding_left), (int)(y_scrolled + padding_top),
-                (int)width, (int)height, &r, ctx, scale, current_background_color, current_col)) {
+                (int)width, (int)height, &r, ctx, current_background_color, current_col)) {
             NSLOG(neosurf, WARNING, "SVG: Inline SVG redraw failed");
         }
     } else if (box->svg_diagram != NULL && (width == 0 || height == 0)) {

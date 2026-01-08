@@ -7,10 +7,12 @@
 #include "neosurf/types.h"
 #include "neosurf/utils/errors.h"
 
+#include <stdint.h>
 #include <svgtiny.h>
+typedef uint32_t colour;
 
 extern bool svg_redraw_diagram(struct svgtiny_diagram *diagram, int x, int y, int width, int height,
-    const struct rect *clip, const struct redraw_context *ctx, float scale, colour background_colour);
+    const struct rect *clip, const struct redraw_context *ctx, colour background_colour, colour current_color);
 
 typedef struct {
     int path_calls;
@@ -102,7 +104,7 @@ START_TEST(test_svg_wordmark_final_flush_failure)
         .priv = &cap,
     };
 
-    bool ok = svg_redraw_diagram(diagram, 0, 0, 1000, 1000, &clip, &ctx, 1.0f, 0xFFFFFF);
+    bool ok = svg_redraw_diagram(diagram, 0, 0, 1000, 1000, &clip, &ctx, 0xFFFFFF, 0);
     ck_assert_msg(
         ok == true, "Expected svg_redraw_diagram to succeed; last_len=%u max_len=%u", cap.last_len, cap.max_len);
 

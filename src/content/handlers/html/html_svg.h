@@ -103,4 +103,14 @@ void html_free_inline_svgs(struct html_content *c);
 nserror
 html_serialize_inline_svg(dom_element *svg_element, const char *current_color, char **svg_data, size_t *svg_len);
 
+/**
+ * Update the pre-serialized inline SVG XML strings.
+ *
+ * This should be called after <use> resolution to ensure the XML matches
+ * the modified DOM (with resolved symbols) before box conversion.
+ *
+ * \param c  HTML content
+ */
+nserror html_update_inline_svgs(struct html_content *c);
+
 #endif /* NETSURF_HTML_SVG_H */

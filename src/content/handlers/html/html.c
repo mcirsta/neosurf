@@ -423,6 +423,10 @@ void html_finish_conversion(html_content *htmlc)
     error = html_collect_svg_symbols(htmlc, htmlc->document);
     if (error == NSERROR_OK) {
         error = html_resolve_svg_use_refs(htmlc, htmlc->document);
+        if (error == NSERROR_OK) {
+            /* Update the pre-serialized XML to include the resolved content */
+            html_update_inline_svgs(htmlc);
+        }
     }
     if (error != NSERROR_OK && error != NSERROR_NOT_FOUND) {
         NSLOG(neosurf, WARNING, "SVG symbol resolution had issues: %d", error);
