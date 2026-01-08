@@ -1,17 +1,20 @@
 #include <assert.h>
+#include <stdint.h>
 #include <string.h>
 #include <svgtiny.h>
+typedef uint32_t colour;
 
 #include "neosurf/plot_style.h"
 #include "neosurf/plotters.h"
 #include "neosurf/utils/errors.h"
 
 static bool svg_plot_diagram(const struct svgtiny_diagram *diagram, int x, int y, int width, int height,
-    const struct rect *clip, const struct redraw_context *ctx, float scale, colour background_colour)
+    const struct rect *clip, const struct redraw_context *ctx, colour background_colour, colour current_color)
 {
     (void)width;
     (void)height;
     (void)background_colour;
+    (void)current_color;
 
     float transform[6];
     int px, py;
@@ -60,7 +63,7 @@ static bool svg_plot_diagram(const struct svgtiny_diagram *diagram, int x, int y
 
             fstyle.background = 0xffffff;
             fstyle.foreground = 0x000000;
-            fstyle.size = (8 * PLOT_STYLE_SCALE) * scale;
+            fstyle.size = (8 * PLOT_STYLE_SCALE);
 
             res = ctx->plot->text(ctx, &fstyle, px, py, diagram->shape[i].text, strlen(diagram->shape[i].text));
             if (res != NSERROR_OK) {
@@ -74,8 +77,8 @@ static bool svg_plot_diagram(const struct svgtiny_diagram *diagram, int x, int y
 }
 
 bool svg_redraw_diagram(struct svgtiny_diagram *diagram, int x, int y, int width, int height, const struct rect *clip,
-    const struct redraw_context *ctx, float scale, colour background_colour)
+    const struct redraw_context *ctx, colour background_colour, colour current_color)
 {
     (void)clip;
-    return svg_plot_diagram(diagram, x, y, width, height, clip, ctx, scale, background_colour);
+    return svg_plot_diagram(diagram, x, y, width, height, clip, ctx, background_colour, current_color);
 }

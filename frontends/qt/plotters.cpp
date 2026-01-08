@@ -69,6 +69,9 @@ static nserror nsqt_set_style(QPainter *painter, const plot_style_t *style)
     pen.setStyle(penstyle);
     pen.setWidthF(plot_style_fixed_to_float(style->stroke_width));
 
+    /* Note: Dash patterns are handled in svg.c by converting dashed lines
+     * to filled rectangles for cross-platform compatibility */
+
     painter->setPen(pen);
 
     return NSERROR_OK;
@@ -265,13 +268,13 @@ static nserror nsqt_plot_path(const struct redraw_context *ctx, const plot_style
     }
     qtpath.setFillRule(Qt::WindingFill);
 
+    /* Normal rendering - dashed lines are pre-converted to rectangles in svg.c */
     nsqt_set_style(painter, pstyle);
     const QTransform orig_transform = painter->transform();
     painter->setTransform(
         QTransform(transform[0], transform[1], 0.0, transform[2], transform[3], 0.0, transform[4], transform[5], 1.0),
         true);
     painter->drawPath(qtpath);
-
     painter->setTransform(orig_transform);
     return NSERROR_OK;
 }

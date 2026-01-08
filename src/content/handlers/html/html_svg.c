@@ -228,6 +228,7 @@ nserror html_resolve_svg_use_refs(struct html_content *c, dom_document *doc)
     dom_string *use_tag = NULL;
     uint32_t use_count, i;
     struct svg_symbol_registry *reg;
+    dom_node **static_list = NULL;
 
     if (c->svg_symbols == NULL) {
         return NSERROR_OK;
@@ -262,20 +263,45 @@ nserror html_resolve_svg_use_refs(struct html_content *c, dom_document *doc)
 
     NSLOG(neosurf, DEBUG, "SVG: Found %u <use> elements to resolve", use_count);
 
+    if (use_count > 0) {
+        static_list = malloc(sizeof(dom_node *) * use_count);
+        if (static_list == NULL) {
+            dom_nodelist_unref(use_elements);
+            return NSERROR_NOMEM;
+        }
+
+        /* Collect into static list first */
+        for (i = 0; i < use_count; i++) {
+            dom_node *node = NULL;
+            exc = dom_nodelist_item(use_elements, i, &node);
+            /* Node is already ref'd by item() */
+            static_list[i] = node;
+        }
+    }
+
+    /* Now we can modify the DOM safely */
     for (i = 0; i < use_count; i++) {
-        dom_node *use_node = NULL;
+        dom_node *use_node = static_list[i];
         dom_element *use_elem;
         dom_string *href_attr = NULL;
         dom_string *href_name = NULL;
         const char *href_str;
         dom_element *symbol;
 
-        exc = dom_nodelist_item(use_elements, i, &use_node);
-        if (exc != DOM_NO_ERR || use_node == NULL) {
+        if (use_node == NULL)
             continue;
-        }
 
         use_elem = (dom_element *)use_node;
+
+        /* Check for existing children - if so, already resolved? */
+        dom_node *first_child = NULL;
+        exc = dom_node_get_first_child(use_node, &first_child);
+        if (exc == DOM_NO_ERR && first_child != NULL) {
+            dom_node_unref(first_child);
+            /* Already has content, skip */
+            dom_node_unref(use_node);
+            continue;
+        }
 
         /* Try href attribute first, then xlink:href */
         exc = dom_string_create((const uint8_t *)"href", 4, &href_name);
@@ -320,6 +346,8 @@ nserror html_resolve_svg_use_refs(struct html_content *c, dom_document *doc)
                     if (exc == DOM_NO_ERR && result != NULL) {
                         dom_node_unref(result);
                         NSLOG(neosurf, DEBUG, "SVG: Successfully resolved <use> to symbol");
+                    } else {
+                        NSLOG(neosurf, ERROR, "SVG: Failed to append resolved symbol content");
                     }
                     dom_node_unref(cloned);
                 }
@@ -332,6 +360,9 @@ nserror html_resolve_svg_use_refs(struct html_content *c, dom_document *doc)
         dom_node_unref(use_node);
     }
 
+    if (static_list) {
+        free(static_list);
+    }
     dom_nodelist_unref(use_elements);
 
     return NSERROR_OK;
@@ -787,4 +818,71 @@ dom_hubbub_error html_process_svg(void *ctx, dom_node *node)
     NSLOG(neosurf, DEBUG, "SVG: Pre-serialized %zu bytes of SVG XML", svg_xml_len);
 
     return DOM_HUBBUB_OK;
+}
+
+/**
+ * Update the pre-serialized inline SVG XML strings.
+ */
+/**
+ * Update the pre-serialized inline SVG XML strings.
+ */
+nserror html_update_inline_svgs(struct html_content *c)
+{
+    struct html_inline_svg *entry;
+    nserror err;
+    dom_string *use_tag = NULL;
+    dom_exception exc;
+
+    if (c == NULL || c->inline_svgs == NULL) {
+        return NSERROR_OK;
+    }
+
+    NSLOG(neosurf, DEBUG, "SVG: Updating inline SVG XML after resolution");
+
+    exc = dom_string_create((const uint8_t *)"use", 3, &use_tag);
+    if (exc != DOM_NO_ERR) {
+        return NSERROR_DOM;
+    }
+
+    for (entry = c->inline_svgs; entry != NULL; entry = entry->next) {
+        char *svg_xml = NULL;
+        size_t svg_xml_len = 0;
+        dom_nodelist *use_elements = NULL;
+        uint32_t use_count = 0;
+
+        /* Optimization: Check if this SVG actually contains any <use> elements
+         * before re-serializing. This avoids expensive re-serialization of
+         * large definition/sprite-sheet SVGs that don't need updating. */
+        exc = dom_element_get_elements_by_tag_name((dom_element *)entry->node, use_tag, &use_elements);
+        if (exc == DOM_NO_ERR && use_elements != NULL) {
+            dom_nodelist_get_length(use_elements, &use_count);
+            dom_nodelist_unref(use_elements);
+        }
+
+        if (use_count == 0) {
+            /* No <use> elements, skip re-serialization */
+            continue;
+        }
+
+        /* Re-serialize the SVG element (which now includes resolved symbols) */
+        err = html_serialize_inline_svg((dom_element *)entry->node, NULL, &svg_xml, &svg_xml_len);
+        if (err != NSERROR_OK || svg_xml == NULL) {
+            NSLOG(neosurf, WARNING, "SVG: Failed to re-serialize inline SVG");
+            continue;
+        }
+
+        /* Free old XML and replace with new */
+        if (entry->svg_xml != NULL) {
+            free(entry->svg_xml);
+        }
+
+        entry->svg_xml = svg_xml;
+        entry->svg_xml_len = svg_xml_len;
+
+        NSLOG(neosurf, DEBUG, "SVG: Updated serialized XML (%zu bytes)", svg_xml_len);
+    }
+
+    dom_string_unref(use_tag);
+
+    return NSERROR_OK;
 }

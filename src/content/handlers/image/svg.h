@@ -54,6 +54,6 @@ typedef uint32_t colour;
  * \return true on success, false on error
  */
 bool svg_redraw_diagram(struct svgtiny_diagram *diagram, int x, int y, int width, int height, const struct rect *clip,
-    const struct redraw_context *ctx, float scale, colour background_colour, colour current_color);
+    const struct redraw_context *ctx, colour background_colour, colour current_color);
 
 #endif

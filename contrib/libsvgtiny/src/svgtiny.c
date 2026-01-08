@@ -676,6 +676,10 @@ static svgtiny_code svgtiny_parse_line(dom_element *line, struct svgtiny_parse_s
     svgtiny_parse_paint_attributes(line, &state);
     svgtiny_parse_transform_attributes(line, &state);
 
+    /* Lines are stroke-only elements in SVG - they have no fill area.
+     * Force fill to transparent regardless of any inherited or explicit fill. */
+    state.fill = svgtiny_TRANSPARENT;
+
     p = malloc(7 * sizeof p[0]);
     if (!p) {
         svgtiny_cleanup_state_local(&state);
@@ -1178,12 +1182,14 @@ static svgtiny_code initialise_parse_state(struct svgtiny_parse_state *state, st
     /* set up parsing state */
     state->viewport_width = width;
     state->viewport_height = height;
-    state->ctm.a = 1; /*(float) viewport_width / (float) width;*/
+    /* CTM is identity - we parse in SVG user units.
+     * Scaling to display size happens at render time. */
+    state->ctm.a = 1;
     state->ctm.b = 0;
     state->ctm.c = 0;
-    state->ctm.d = 1; /*(float) viewport_height / (float) height;*/
-    state->ctm.e = 0; /*x;*/
-    state->ctm.f = 0; /*y;*/
+    state->ctm.d = 1;
+    state->ctm.e = 0;
+    state->ctm.f = 0;
     /*state->style = css_base_style;
       state->style.font_size.value.length.value = option_font_size * 0.1;*/
     state->fill = 0x000000;
@@ -1351,7 +1357,11 @@ struct svgtiny_shape *svgtiny_add_shape(struct svgtiny_parse_state *state)
             unsigned int c = state->stroke_dasharray_count;
             float *arr = malloc(c * sizeof(float));
             if (arr != NULL) {
-                memcpy(arr, state->stroke_dasharray, c * sizeof(float));
+                /* Apply CTM scaling to dasharray values, same as stroke_width */
+                float ctm_scale = (state->ctm.a + state->ctm.d) / 2.0f;
+                for (unsigned int j = 0; j < c; j++) {
+                    arr[j] = state->stroke_dasharray[j] * ctm_scale;
+                }
                 shape->stroke_dasharray = arr;
                 shape->stroke_dasharray_count = c;
             } else {
@@ -1453,6 +1463,139 @@ svgtiny_code svgtiny_parse(struct svgtiny_diagram *diagram, const char *buffer, 
     }
 
     return code;
+}
+
+
+/**
+ * Parse SVG to extract only the intrinsic dimensions (width/height).
+ *
+ * This is a lightweight function that extracts the SVG's intrinsic dimensions
+ * from its width, height, and viewBox attributes without processing any shapes.
+ * Use this for early layout calculations before the full parse.
+ *
+ * \param buffer    Source data
+ * \param size      Size of source data
+ * \param width     Pointer to store extracted width
+ * \param height    Pointer to store extracted height
+ * \return svgtiny_OK on success, error code on failure
+ */
+svgtiny_code svgtiny_parse_dimensions(const char *buffer, size_t size, int *width, int *height)
+{
+    dom_document *document;
+    dom_element *svg;
+    dom_string *attr;
+    dom_string *str_width, *str_height, *str_viewBox;
+    dom_exception exc;
+    svgtiny_code code;
+    float w = 0, h = 0;
+
+    assert(buffer);
+    assert(width);
+    assert(height);
+
+    *width = 0;
+    *height = 0;
+
+    code = svg_document_from_buffer((uint8_t *)buffer, size, &document);
+    if (code != svgtiny_OK) {
+        return code;
+    }
+
+    code = get_svg_element(document, &svg);
+    if (code != svgtiny_OK) {
+        dom_node_unref(document);
+        return code;
+    }
+
+    /* Create interned strings for attribute names */
+    if (dom_string_create_interned((const uint8_t *)"width", 5, &str_width) != DOM_NO_ERR ||
+        dom_string_create_interned((const uint8_t *)"height", 6, &str_height) != DOM_NO_ERR ||
+        dom_string_create_interned((const uint8_t *)"viewBox", 7, &str_viewBox) != DOM_NO_ERR) {
+        dom_node_unref(svg);
+        dom_node_unref(document);
+        return svgtiny_LIBDOM_ERROR;
+    }
+
+    /* Try to get width attribute */
+    exc = dom_element_get_attribute(svg, str_width, &attr);
+    if (exc == DOM_NO_ERR && attr != NULL) {
+        const char *data = dom_string_data(attr);
+        /* Skip percentage values - they don't give intrinsic dimensions */
+        if (strchr(data, '%') == NULL) {
+            w = strtof(data, NULL);
+        }
+        dom_string_unref(attr);
+    }
+
+    /* Try to get height attribute */
+    exc = dom_element_get_attribute(svg, str_height, &attr);
+    if (exc == DOM_NO_ERR && attr != NULL) {
+        const char *data = dom_string_data(attr);
+        /* Skip percentage values */
+        if (strchr(data, '%') == NULL) {
+            h = strtof(data, NULL);
+        }
+        dom_string_unref(attr);
+    }
+
+    /* If width/height missing, try viewBox */
+    if (w <= 0 || h <= 0) {
+        exc = dom_element_get_attribute(svg, str_viewBox, &attr);
+        if (exc == DOM_NO_ERR && attr != NULL) {
+            const char *text = dom_string_data(attr);
+            float vb[4] = {0, 0, 0, 0};
+            int i = 0;
+
+            /* Parse "minX minY width height" from viewBox */
+            while (*text && i < 4) {
+                /* Skip whitespace and commas */
+                while (*text && (*text == ' ' || *text == '\t' || *text == '\n' || *text == '\r' || *text == ','))
+                    text++;
+                if (*text) {
+                    char *end;
+                    vb[i] = strtof(text, &end);
+                    if (end > text) {
+                        text = end;
+                        i++;
+                    } else {
+                        break;
+                    }
+                }
+            }
+
+            if (i == 4) {
+                if (w <= 0)
+                    w = vb[2];
+                if (h <= 0)
+                    h = vb[3];
+            }
+
+            dom_string_unref(attr);
+        }
+    }
+
+    /* Clean up interned strings */
+    dom_string_unref(str_width);
+    dom_string_unref(str_height);
+    dom_string_unref(str_viewBox);
+
+    /* Fallback defaults if still no dimensions */
+    if (w <= 0 && h <= 0) {
+        w = 300;
+        h = 150;
+    } else if (w <= 0) {
+        w = 300;
+    } else if (h <= 0) {
+        h = 150;
+    }
+
+    *width = (int)ceilf(w);
+    *height = (int)ceilf(h);
+
+    dom_node_unref(svg);
+    dom_node_unref(document);
+
+    return svgtiny_OK;
 }
 
 

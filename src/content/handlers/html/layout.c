@@ -142,8 +142,6 @@ static void layout_get_object_dimensions(const css_unit_ctx *unit_len_ctx, struc
     int intrinsic_height = FIXTOINT(
         css_unit_device2css_px(INTTOFIX(content_get_height(box->object)), unit_len_ctx->device_dpi));
 
-    /* DIAGNOSTIC LOG START */
-    /* DIAGNOSTIC LOG END */
 
     if (*width == AUTO && *height == AUTO) {
         /* No given dimensions */
@@ -215,9 +213,6 @@ static void layout_get_object_dimensions(const css_unit_ctx *unit_len_ctx, struc
         else
             *height = intrinsic_height;
     }
-
-    /* DIAGNOSTIC LOG START */
-    /* DIAGNOSTIC LOG END */
 }
 
 
@@ -2629,9 +2624,14 @@ static bool layout_line(struct box *first, int *width, int *y, int cx, int cy, s
 
             content_reformat(b->object, false, b->width, b->height);
 
-            if (htype == CSS_HEIGHT_AUTO)
+            /* Only update height from content for HTML/iframe objects that may have
+             * dynamic height. For images and SVGs with fixed intrinsic aspect ratio,
+             * we've already calculated the correct scaled height in
+             * layout_get_object_dimensions - don't overwrite it with the intrinsic height. */
+            if (htype == CSS_HEIGHT_AUTO && content_get_type(b->object) == CONTENT_HTML) {
                 b->height = FIXTOINT(
                     css_unit_device2css_px(INTTOFIX(content_get_height(b->object)), content->unit_len_ctx.device_dpi));
+            }
         }
 
         if (height < b->height)
