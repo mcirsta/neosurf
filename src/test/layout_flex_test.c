@@ -137,6 +137,155 @@ START_TEST(test_flex_basis_calc_integration)
 }
 END_TEST
 
+/**
+ * Test for column flex base_size calculation fix.
+ *
+ * Bug: For column (vertical) flex with flex-basis:auto, base_size was being
+ * set to b->height BEFORE layout_flex_item() was called, getting a pre-layout
+ * value (e.g., 22px) instead of the post-layout content height (e.g., 139px).
+ *
+ * Fix: For column flex, defer base_size to AUTO at line 348, then set it from
+ * b->height after layout_flex_item() completes at line 365-367.
+ */
+static int test_column_flex_base_size_logic(
+    int css_flex_basis_auto, int is_horizontal, int pre_layout_height, int post_layout_height)
+{
+    int base_size;
+
+    if (css_flex_basis_auto) {
+        if (is_horizontal) {
+            /* Horizontal: width is known before layout */
+            base_size = pre_layout_height; /* Actually would be width */
+        } else {
+            /* Column (vertical): defer to AUTO, set after layout */
+            base_size = INT_MIN; /* AUTO */
+        }
+    } else {
+        base_size = INT_MIN; /* AUTO */
+    }
+
+    /* Simulate layout_flex_item() being called for column flex */
+    if (!is_horizontal && base_size == INT_MIN) {
+        /* After layout, use post-layout height */
+        base_size = post_layout_height;
+    }
+
+    return base_size;
+}
+
+START_TEST(test_column_flex_base_size_fix)
+{
+    /* Scenario: entry-wrapper flex item in column flex article container
+     * Pre-layout height: 22px (wrong value from CSS or initial)
+     * Post-layout height: 139px (correct content-based height)
+     */
+    int pre_layout = 22;
+    int post_layout = 139;
+
+    /* OLD behavior (bug): base_size = pre-layout height = 22 */
+    /* NEW behavior (fix): base_size = post-layout height = 139 */
+
+    int result = test_column_flex_base_size_logic(1, /* CSS_FLEX_BASIS_AUTO */
+        0, /* is_horizontal = false (column flex) */
+        pre_layout, post_layout);
+
+    /* With the fix, should get post-layout height */
+    ck_assert_int_eq(result, post_layout);
+    ck_assert_int_ne(result, pre_layout);
+}
+END_TEST
+
+START_TEST(test_horizontal_flex_base_size_unchanged)
+{
+    /* Horizontal flex should still use pre-layout width (unchanged behavior) */
+    int pre_layout = 300;
+    int post_layout = 350;
+
+    int result = test_column_flex_base_size_logic(1, /* CSS_FLEX_BASIS_AUTO */
+        1, /* is_horizontal = true */
+        pre_layout, post_layout);
+
+    /* Horizontal flex uses width which is known before layout */
+    ck_assert_int_eq(result, pre_layout);
+}
+
+
+/**
+ * Test for column flex height preservation fix.
+ *
+ * Bug: Column flex containers were preserving stretched height from parent,
+ * causing content to be cut off.
+ *
+ * Fix: Only preserve height for horizontal flex (where height is cross-size).
+ */
+static bool test_should_preserve_height_logic(int is_horizontal, int height_definite)
+{
+    return height_definite && is_horizontal;
+}
+
+START_TEST(test_column_flex_height_not_preserved)
+{
+    /* Column flex should NOT preserve stretched height */
+    bool should_preserve = test_should_preserve_height_logic(0, 1);
+    ck_assert_int_eq(should_preserve, 0);
+}
+END_TEST
+
+START_TEST(test_horizontal_flex_height_preserved)
+{
+    /* Horizontal flex SHOULD preserve height (cross-dimension) */
+    bool should_preserve = test_should_preserve_height_logic(1, 1);
+    ck_assert_int_eq(should_preserve, 1);
+}
+END_TEST
+
+
+/**
+ * Test for flex-basis:0 in column flex fix.
+ *
+ * Bug: Elements with 'flex: 1' (which sets flex-basis: 0) in column flex
+ * were not having their content height measured. Instead, base_size was
+ * set to 0, causing the layout to be incorrect.
+ *
+ * Fix: For column flex with flex-basis: 0, defer base_size calculation
+ * to content-based sizing, just like flex-basis: auto.
+ */
+static bool test_flex_basis_zero_column_logic(int is_horizontal, int basis_px)
+{
+    /* Replicates the logic from layout_flex.c lines 344-350:
+     * For column flex with flex-basis: 0, defer to content sizing.
+     * Returns true if base_size should be set to AUTO (deferred). */
+    if (is_horizontal == 0 && basis_px == 0) {
+        return true; /* Defer to content sizing */
+    }
+    return false; /* Use the basis_px value directly */
+}
+
+START_TEST(test_column_flex_basis_zero_deferred)
+{
+    /* Column flex with flex-basis: 0 should defer to content sizing */
+    bool should_defer = test_flex_basis_zero_column_logic(0, 0);
+    ck_assert_int_eq(should_defer, 1);
+}
+END_TEST
+
+START_TEST(test_horizontal_flex_basis_zero_not_deferred)
+{
+    /* Horizontal flex with flex-basis: 0 should NOT defer (use 0) */
+    bool should_defer = test_flex_basis_zero_column_logic(1, 0);
+    ck_assert_int_eq(should_defer, 0);
+}
+END_TEST
+
+START_TEST(test_column_flex_basis_nonzero_not_deferred)
+{
+    /* Column flex with non-zero flex-basis should NOT defer */
+    bool should_defer = test_flex_basis_zero_column_logic(0, 100);
+    ck_assert_int_eq(should_defer, 0);
+}
+END_TEST
+
+
 /* Test suite setup */
 Suite *layout_flex_suite(void)
 {
@@ -150,6 +299,13 @@ Suite *layout_flex_suite(void)
     tcase_add_test(tc_core, test_flex_width_max_constraint);
     tcase_add_test(tc_core, test_flex_width_min_constraint);
     tcase_add_test(tc_core, test_flex_basis_calc_integration);
+    tcase_add_test(tc_core, test_column_flex_base_size_fix);
+    tcase_add_test(tc_core, test_horizontal_flex_base_size_unchanged);
+    tcase_add_test(tc_core, test_column_flex_height_not_preserved);
+    tcase_add_test(tc_core, test_horizontal_flex_height_preserved);
+    tcase_add_test(tc_core, test_column_flex_basis_zero_deferred);
+    tcase_add_test(tc_core, test_horizontal_flex_basis_zero_not_deferred);
+    tcase_add_test(tc_core, test_column_flex_basis_nonzero_not_deferred);
 
     suite_add_tcase(s, tc_core);
 

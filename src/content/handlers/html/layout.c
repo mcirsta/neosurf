@@ -3051,7 +3051,9 @@ static bool layout_inline_container(
 
         NSLOG(layout, DEBUG, "c %p", c);
 
-        curwidth = inline_container->width;
+        /* Use the available width for layout, not inline_container->width which
+         * may contain a stale min_width value from minmax calculation */
+        curwidth = (inline_container->width > width) ? width : inline_container->width;
         if (!layout_line(c, &curwidth, &y, cx, cy + y, cont, first_line, has_text_children, content, &next))
             return false;
         maxwidth = max(maxwidth, curwidth);

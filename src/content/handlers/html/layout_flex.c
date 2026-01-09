@@ -328,6 +328,7 @@ layout_flex__base_and_main_sizes(const struct flex_ctx *ctx, struct flex_item_da
     }
 
     NSLOG(flex, DEEPDEBUG, "box %p: delta_outer_main: %i", b, delta_outer_main);
+    NSLOG(flex, DEBUG, "box %p: item->basis=%d (SET=1, AUTO=2, CONTENT=3)", b, item->basis);
 
     if (item->basis == CSS_FLEX_BASIS_SET) {
         /* Use css_computed_flex_basis_px to properly evaluate calc() expressions */
@@ -338,22 +339,43 @@ layout_flex__base_and_main_sizes(const struct flex_ctx *ctx, struct flex_item_da
              * The delta_outer_main will be added later at line 314, so we
              * need to subtract padding+border now if box-sizing is border-box. */
             layout_handle_box_sizing(ctx->unit_len_ctx, b, available_width, ctx->horizontal, &basis_px);
-            item->base_size = basis_px;
+
+            /* For column flex with flex-basis: 0 (e.g., from 'flex: 1'), the item
+             * should still grow to fit its content. The 0 means "start from content
+             * size" not "use zero height". Defer to content-based sizing. */
+            if (ctx->horizontal == false && basis_px == 0) {
+                item->base_size = AUTO;
+                NSLOG(flex, DEBUG, "box %p: flex-basis:0 in column flex, deferred to content sizing", b);
+            } else {
+                item->base_size = basis_px;
+            }
         } else {
             /* Fallback to content-based sizing if calc() couldn't be evaluated */
             NSLOG(flex, DEEPDEBUG, "flex-basis: calc() evaluated to auto, using content-based sizing");
             item->base_size = AUTO;
         }
     } else if (item->basis == CSS_FLEX_BASIS_AUTO) {
-        item->base_size = ctx->horizontal ? b->width : b->height;
+        /* For horizontal flex, width is known before layout.
+         * For vertical (column) flex, height must be calculated first by
+         * layout_flex_item() below, so defer to line 365-367. */
+        if (ctx->horizontal) {
+            item->base_size = b->width;
+            NSLOG(flex, DEBUG, "box %p: flex-basis:auto horizontal, base_size=%d from width", b, item->base_size);
+        } else {
+            item->base_size = AUTO; /* Will be set after layout below */
+            NSLOG(flex, DEBUG, "box %p: flex-basis:auto column, deferred base_size to AUTO", b);
+        }
     } else {
         item->base_size = AUTO;
+        NSLOG(flex, DEBUG, "box %p: flex-basis not SET or AUTO (basis=%d), base_size=AUTO", b, item->basis);
     }
 
 
     if (ctx->horizontal == false) {
         if (b->width == AUTO) {
-            b->width = min(max(content_min_width, available_width), content_max_width);
+            /* For column flex cross-size (width): use available_width, constrained by max_width.
+             * Don't use content_min_width as floor - text should wrap within available space */
+            b->width = min(available_width, content_max_width);
             b->width -= lh__delta_outer_width(b);
         }
 
@@ -364,6 +386,7 @@ layout_flex__base_and_main_sizes(const struct flex_ctx *ctx, struct flex_item_da
 
     if (item->base_size == AUTO) {
         if (ctx->horizontal == false) {
+            NSLOG(flex, DEBUG, "box %p: setting base_size from b->height=%d", b, b->height);
             item->base_size = b->height;
         } else {
             item->base_size = content_max_width - delta_outer_main;
@@ -676,7 +699,10 @@ static inline int layout_flex__get_min_max_violations(struct flex_ctx *ctx, stru
             NSLOG(flex, DEEPDEBUG, "Violation: min_main: %i", item->min_main);
         }
 
-        if (target_main_size < item->box->min_width) {
+        /* Only apply box->min_width for horizontal flex (where width is main axis).
+         * For column flex, min_width is cross-axis, not main-axis.
+         * (struct box has no min_height field to use for column flex) */
+        if (ctx->horizontal && target_main_size < item->box->min_width) {
             target_main_size = item->box->min_width;
             item->min_violation = true;
             NSLOG(flex, DEEPDEBUG, "Violation: box min_width: %i", item->box->min_width);
@@ -1222,16 +1248,26 @@ bool layout_flex(struct box *flex, int available_width, html_content *content)
      * If this flex container is a stretched flex item of a parent flex container,
      * its height may already be set to a definite value. Pass NULL for height
      * to prevent layout_find_dimensions from overwriting it with AUTO from CSS.
+     *
+     * IMPORTANT: For column (vertical) flex, height is the MAIN size, not the cross
+     * size. We should NOT preserve a stretched height from the parent because:
+     * 1. The parent's stretch was based on incorrect content sizing from the first pass
+     * 2. Column flex height should grow based on its own content, not be constrained
+     * Only preserve height for horizontal flex where height is the cross-dimension.
      */
     bool height_already_definite = (flex->height != AUTO && flex->height != UNKNOWN_WIDTH && flex->height >= 0);
-    int *height_ptr = height_already_definite ? NULL : &flex->height;
+    bool should_preserve_height = height_already_definite && ctx->horizontal;
+    int *height_ptr = should_preserve_height ? NULL : &flex->height;
 
     layout_find_dimensions(ctx->unit_len_ctx, available_width, -1, flex, flex->style, NULL, /* width - already set */
-        height_ptr, /* height - NULL if already definite from stretch */
+        height_ptr, /* height - NULL if already definite from stretch AND horizontal */
         &max_width, &min_width, &max_height, &min_height, flex->margin, flex->padding, flex->border);
 
-    if (height_already_definite) {
-        NSLOG(flex, DEBUG, "box %p: preserved stretched height %d (skipped CSS height:auto)", flex, flex->height);
+    if (should_preserve_height) {
+        NSLOG(flex, DEBUG, "box %p: preserved stretched height %d (horizontal cross-size)", flex, flex->height);
+    } else if (height_already_definite && !ctx->horizontal) {
+        NSLOG(flex, DEBUG, "box %p: NOT preserving height %d for column flex (should grow from content)", flex,
+            flex->height);
     }
 
     available_width = min(available_width, flex->width);

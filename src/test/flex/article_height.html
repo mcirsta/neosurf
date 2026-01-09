@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Flex Article Height Test - SVG in Flex Container</title>
+<style>
+body {
+    margin: 20px;
+    font-family: sans-serif;
+    background: #f0f0f0;
+}
+
+/* Parent flex container - simulates wpnbha grid */
+.article-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 19px;
+    width: 936px;
+    border: 2px solid blue;
+    background: #e0e0ff;
+    padding: 10px;
+}
+
+/* Article card - should be ~380px tall in Chrome */
+.article {
+    display: flex;
+    flex-direction: column;
+    width: 299px;
+    border: 2px solid green;
+    background: white;
+}
+
+/* Image thumbnail */
+.post-thumbnail {
+    height: 104px;
+    background: #ccc;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+}
+
+/* Entry wrapper - vertical flex for title + share */
+.entry-wrapper {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 10px;
+    border: 1px solid orange;
+}
+
+/* Category label */
+.category-label {
+    font-size: 12px;
+    color: #999;
+    margin-bottom: 5px;
+}
+
+/* Article title */
+.entry-title {
+    font-size: 16px;
+    font-weight: bold;
+    line-height: 1.4;
+    margin-bottom: 10px;
+}
+
+/* Share wrapper - THIS IS THE PROBLEM AREA */
+.share-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: auto;
+    padding: 8px 0;
+    border: 2px solid red;
+}
+
+/* SVG share icon container */
+.share-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.share-icon svg {
+    width: 24px;
+    height: 24px;
+}
+
+.debug-info {
+    background: #ffffcc;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+}
+</style>
+</head>
+<body>
+
+<h1>Flex Article Height Test</h1>
+
+<div class="debug-info">
+    <strong>Expected behavior:</strong>
+    <ul>
+        <li>Article card should be ~380px tall (like Chrome)</li>
+        <li>Share wrapper (red border) should be visible at bottom with SVG icons</li>
+        <li>Text should NOT be cut off</li>
+    </ul>
+    <strong>Bug:</strong> In NeoSurf, articles are only ~298px tall, share icons are cut off or not visible.
+</div>
+
+<div class="article-grid">
+    <!-- Article 1 -->
+    <article class="article">
+        <div class="post-thumbnail">
+            [Image 299x104]
+        </div>
+        <div class="entry-wrapper">
+            <span class="category-label">CATEGORY</span>
+            <h2 class="entry-title">This is a sample article title that may wrap to multiple lines</h2>
+            <div class="share-wrapper">
+                <div class="share-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                </div>
+                <div class="share-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="4" y="4" width="16" height="16"/>
+                    </svg>
+                </div>
+                <div class="share-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <polygon points="12,2 22,22 2,22"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Article 2 -->
+    <article class="article">
+        <div class="post-thumbnail">
+            [Image 299x104]
+        </div>
+        <div class="entry-wrapper">
+            <span class="category-label">NEWS</span>
+            <h2 class="entry-title">Another article with a longer title that definitely needs to wrap across multiple lines to test height</h2>
+            <div class="share-wrapper">
+                <div class="share-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                </div>
+                <div class="share-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <rect x="4" y="4" width="16" height="16"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </article>
+
+    <!-- Article 3 -->
+    <article class="article">
+        <div class="post-thumbnail">
+            [Image 299x104]
+        </div>
+        <div class="entry-wrapper">
+            <span class="category-label">SPORTS</span>
+            <h2 class="entry-title">Short title</h2>
+            <div class="share-wrapper">
+                <div class="share-icon">
+                    <svg viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="12" r="10"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </article>
+</div>
+
+</body>
+</html>

@@ -247,14 +247,17 @@ layout_position(QFontMetrics &metrics, const char *string, size_t length, int x,
         return NSERROR_OK;
     }
 
+    /* Use QString for proper UTF-8 handling */
+    QString qstr = QString::fromUtf8(string, length);
+    int char_count = qstr.length();
+
     /* if it is assumed each character of the string will occupy more than a
      * pixel then do not attempt measure excessively long strings
      */
-    if ((x > 0) && (length > (size_t)x)) {
-        str_len = x;
-    } else {
-        str_len = length;
-    }
+    int chars_to_measure = (x > 0 && char_count > x) ? x : char_count;
+
+    /* Convert character count back to byte position */
+    str_len = qstr.left(chars_to_measure).toUtf8().length();
 
     full_x = metrics.horizontalAdvance(string, str_len);
     if (full_x < x) {
@@ -264,9 +267,16 @@ layout_position(QFontMetrics &metrics, const char *string, size_t length, int x,
         return NSERROR_OK;
     }
 
-    /* initial string offset if every char was the same width */
-    str_len = x / (full_x / str_len);
+    /* Start with an estimate based on character count */
+    int current_chars = chars_to_measure * x / (full_x > 0 ? full_x : 1);
+    if (current_chars < 1)
+        current_chars = 1;
+    if (current_chars > char_count)
+        current_chars = char_count;
+
+    str_len = qstr.left(current_chars).toUtf8().length();
     measured_x = metrics.horizontalAdvance(string, str_len);
+
     if (measured_x == 0) {
         *string_idx = 0;
         *actual_x = full_x;
@@ -274,24 +284,27 @@ layout_position(QFontMetrics &metrics, const char *string, size_t length, int x,
     }
 
     if (measured_x >= x) {
-        /* too long try fewer chars */
-        while (measured_x >= x) {
-            str_len--;
-            if (str_len == 0) {
+        /* too long try fewer chars - step back by UTF-8 characters */
+        while (measured_x >= x && current_chars > 0) {
+            current_chars--;
+            if (current_chars == 0) {
                 /* cannot fit a single character */
                 measured_x = full_x;
                 break;
             }
+            str_len = qstr.left(current_chars).toUtf8().length();
             measured_x = metrics.horizontalAdvance(string, str_len);
         }
-    } else if (measured_x < x) {
-        /* too short try more chars untill overflowing */
+    } else {
+        /* too short try more chars until overflowing */
         int n_measured_x = measured_x;
-        while (n_measured_x < x) {
-            n_measured_x = metrics.horizontalAdvance(string, str_len + 1);
+        while (n_measured_x < x && current_chars < char_count) {
+            size_t n_str_len = qstr.left(current_chars + 1).toUtf8().length();
+            n_measured_x = metrics.horizontalAdvance(string, n_str_len);
             if (n_measured_x < x) {
                 measured_x = n_measured_x;
-                str_len++;
+                current_chars++;
+                str_len = n_str_len;
             }
         }
     }
