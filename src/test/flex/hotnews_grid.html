@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Hotnews Grid Article Test</title>
+    <style>
+        body {
+            margin: 20px;
+            font-family: sans-serif;
+            background: #f0f0f0;
+        }
+
+        /* Parent grid container - replicates wpnbha is-grid */
+        .article-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 19px;
+            width: 936px;
+            background: #e0e0ff;
+            padding: 10px;
+            border: 2px solid blue;
+        }
+
+        /* Article card - column flex container */
+        .article {
+            display: flex;
+            flex-direction: column;
+            border: 2px solid green;
+            background: white;
+            /* Article has flex-basis set (not 0, not auto) */
+        }
+
+        /* Image thumbnail - fixed height */
+        .post-thumbnail {
+            height: 104px;
+            background: #ccc;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #666;
+            flex-shrink: 0;
+        }
+
+        /* Entry wrapper - should grow to fill remaining space */
+        .entry-wrapper {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            /* flex-grow:1, flex-shrink:1, flex-basis:0 */
+            padding: 10px;
+            border: 1px solid orange;
+        }
+
+        /* Category label */
+        .category-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+            background: #e0e0ff;
+            padding: 2px 8px;
+            display: inline-block;
+            width: fit-content;
+        }
+
+        /* Article title */
+        .entry-title {
+            font-size: 14px;
+            font-weight: bold;
+            line-height: 1.4;
+            margin: 0 0 10px 0;
+        }
+
+        /* Share wrapper - should be at bottom */
+        .share-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: auto;
+            /* Push to bottom */
+            padding: 8px 0;
+            border: 2px solid red;
+        }
+
+        .share-icon {
+            width: 24px;
+            height: 24px;
+        }
+
+        .share-icon svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .debug-info {
+            background: #ffffcc;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Hotnews Grid Article Test</h1>
+
+    <div class="debug-info">
+        <strong>Expected behavior:</strong>
+        <ul>
+            <li>6 articles in a 3x2 grid</li>
+            <li>All articles in a row should have the same height (grid alignment)</li>
+            <li>Share wrapper (red border) should be visible at bottom of each article</li>
+            <li>Text should NOT be cut off</li>
+        </ul>
+        <strong>Bug:</strong> Share icons may be cut off if grid row height is calculated incorrectly.
+    </div>
+
+    <div class="article-grid">
+        <!-- Row 1 -->
+        <article class="article">
+            <div class="post-thumbnail">[Image 299x104]</div>
+            <div class="entry-wrapper">
+                <span class="category-label">ACTUALITATE</span>
+                <h2 class="entry-title">VIDEO Ce este racheta Oreșnik cu care Rusia a lansat noul bombardament</h2>
+                <div class="share-wrapper">
+                    <div class="share-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="10" />
+                        </svg>
+                    </div>
+                    <div class="share-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <rect x="4" y="4" width="16" height="16" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="post-thumbnail">[Image 299x104]</div>
+            <div class="entry-wrapper">
+                <span class="category-label">GOLAZO</span>
+                <h2 class="entry-title">BREAKING. Dacia, zi istorică la Raliul Dakar: piloții echipei ocupă primele două
+                    locuri</h2>
+                <div class="share-wrapper">
+                    <div class="share-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="10" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="post-thumbnail">[Image 299x104]</div>
+            <div class="entry-wrapper">
+                <span class="category-label">UPDATE</span>
+                <h2 class="entry-title">Primul scandal al anului din coaliție. PSD acuză de „trădare a intereselor"
+                    Ministerul de Externe</h2>
+                <div class="share-wrapper">
+                    <div class="share-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="10" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <!-- Row 2 -->
+        <article class="article">
+            <div class="post-thumbnail">[Image 299x104]</div>
+            <div class="entry-wrapper">
+                <span class="category-label">ACTUALITATE</span>
+                <h2 class="entry-title">Noi precizări ale Armatei din Elveția despre escortarea aeronavei în care se
+                    afla Nicușor Dan</h2>
+                <div class="share-wrapper">
+                    <div class="share-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="10" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="post-thumbnail">[Image 299x104]</div>
+            <div class="entry-wrapper">
+                <span class="category-label">ACTUALITATE</span>
+                <h2 class="entry-title">Nicușor Dan explică de ce România a votat acordul UE-Mercosur, decizie care a
+                    stârnit un scandal în coaliție</h2>
+                <div class="share-wrapper">
+                    <div class="share-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="10" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="post-thumbnail">[Image 299x104]</div>
+            <div class="entry-wrapper">
+                <span class="category-label">GOLAZO</span>
+                <h2 class="entry-title">Rinat Akhmetov, lider în România! Domeniul în care miliardarul ucrainean a făcut
+                    investiții record</h2>
+                <div class="share-wrapper">
+                    <div class="share-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor">
+                            <circle cx="12" cy="12" r="10" />
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </article>
+    </div>
+
+</body>
+
+</html>

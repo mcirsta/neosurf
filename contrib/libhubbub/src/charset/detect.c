@@ -51,7 +51,7 @@ parserutils_error hubbub_charset_extract(const uint8_t *data, size_t len, uint16
      * CONFIDENT - Do not pass Go, do not attempt auto-detection.
      * TENTATIVE - We've tried to autodetect already, but subsequently
      *             discovered that we don't actually support the detected
-     *             charset. Thus, we've defaulted to Windows-1252. Don't
+     *             charset. Thus, we've defaulted to UTF-8. Don't
      *             perform auto-detection again, as it would be futile.
      *             (This bit diverges from the spec)
      * UNKNOWN   - No autodetection performed yet. Get on with it.
@@ -131,9 +131,10 @@ default_encoding:
 
     /* 7. */
 
-    charset = parserutils_charset_mibenum_from_name("Windows-1252", SLEN("Windows-1252"));
+    /* HTML5 spec: default to UTF-8 when no encoding can be determined */
+    charset = parserutils_charset_mibenum_from_name("UTF-8", SLEN("UTF-8"));
     if (charset == 0)
-        charset = parserutils_charset_mibenum_from_name("ISO-8859-1", SLEN("ISO-8859-1"));
+        charset = parserutils_charset_mibenum_from_name("Windows-1252", SLEN("Windows-1252"));
 
     *mibenum = charset;
     *source = HUBBUB_CHARSET_TENTATIVE;
