@@ -937,8 +937,8 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
                 }
             }
 
-            /* Calculate x position (sum of columns before item_col) */
-            child_x = 0;
+            /* Calculate x position (sum of columns before item_col + container padding) */
+            child_x = grid->padding[LEFT];
             for (int c = 0; c < item_col; c++) {
                 child_x += col_widths[c] + gap_px;
             }
@@ -1055,8 +1055,8 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
                 break;
             }
 
-            /* Calculate y position (sum of row heights before item_row) */
-            child_y = 0;
+            /* Calculate y position (sum of row heights before item_row + container padding) */
+            child_y = grid->padding[TOP];
             for (int r = 0; r < item_row; r++) {
                 child_y += row_heights[r] + gap_px;
             }
