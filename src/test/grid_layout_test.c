@@ -103,6 +103,13 @@ bool layout_block_context(struct box *block, int viewport_height, html_content *
     return true;
 }
 
+/* Mock layout_flex_redistribute_auto_margins_vertical for test isolation */
+bool layout_flex_redistribute_auto_margins_vertical(struct box *flex)
+{
+    /* Stub - does nothing in test, the real function redistributes auto margins */
+    return true;
+}
+
 /* Helper to log errors */
 static void test_log(const char *fmt, va_list args)
 {

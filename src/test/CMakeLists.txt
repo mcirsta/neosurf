@@ -170,8 +170,13 @@ add_neosurf_test(html_redraw_borders_test
 )
 
 add_neosurf_test(layout_flex_test
+  ${CMAKE_SOURCE_DIR}/src/content/handlers/html/layout_flex.c
+  ${CMAKE_SOURCE_DIR}/src/test/log.c
   ${CMAKE_SOURCE_DIR}/src/test/layout_flex_test.c
 )
+# Define TESTING so layout_flex.c can use test stubs
+target_compile_definitions(layout_flex_test PRIVATE TESTING)
+
 
 add_neosurf_test(svg_redraw_test
   ${CMAKE_SOURCE_DIR}/src/desktop/plot_style.c

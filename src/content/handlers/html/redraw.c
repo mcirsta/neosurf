@@ -1554,14 +1554,16 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
             int target_left = (int)(-vp_x * scale);
             int target_right = (int)((-vp_x + root_w) * scale);
             int tol = 8;
+            bool left_match = (b_left >= target_left - tol) && (b_left <= target_left + tol);
+            bool right_match = (b_right >= target_right - tol) && (b_right <= target_right + tol);
+            int root_w_scaled = (int)(root_w * scale);
+            int bg_extent = padding_width + border_left + border_right;
+            bool abs_full_width = (bg_extent >= root_w_scaled - tol);
+
             if (pos_enum == CSS_POSITION_FIXED || bg_attach == CSS_BACKGROUND_ATTACHMENT_FIXED) {
-                expand_viewport_bg = true;
+                /* For fixed position, only expand if element spans full viewport width */
+                expand_viewport_bg = (left_match && right_match) || abs_full_width;
             } else {
-                bool left_match = (b_left >= target_left - tol) && (b_left <= target_left + tol);
-                bool right_match = (b_right >= target_right - tol) && (b_right <= target_right + tol);
-                int root_w_scaled = (int)(root_w * scale);
-                int bg_extent = padding_width + border_left + border_right;
-                bool abs_full_width = (bg_extent >= root_w_scaled - tol);
                 expand_viewport_bg = left_match && right_match;
                 if (!expand_viewport_bg && abs_full_width) {
                     expand_viewport_bg = true;

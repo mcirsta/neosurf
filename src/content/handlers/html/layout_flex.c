@@ -64,9 +64,9 @@ struct flex_item_data {
     css_fixed shrink;
     css_fixed grow;
 
-    int min_main;
+    struct css_size min_main;
     int max_main;
-    int min_cross;
+    struct css_size min_cross;
     int max_cross;
 
     int target_main_size;
@@ -254,6 +254,165 @@ static enum box_side layout_flex__main_end_side(const struct flex_ctx *ctx)
 }
 
 /**
+ * Redistribute auto margin space for a column flex container.
+ *
+ * This is called after the container's height becomes definite (e.g., via
+ * flex: 1 from parent). It shifts children with margin-top/bottom: auto
+ * to distribute the extra vertical space that wasn't available during
+ * initial layout.
+ *
+ * \param[in] flex  The column flex container box
+ * \return true on success
+ */
+bool layout_flex_redistribute_auto_margins_vertical(struct box *flex)
+{
+    int container_height = flex->height;
+    int content_height = 0;
+    int auto_margin_count = 0;
+    css_fixed grow_factor_sum = 0;
+    int grow_item_count = 0;
+
+    NSLOG(flex, INFO, "Flex redistribute: container_h=%d", container_height);
+
+    /* First pass: calculate base content height, count auto margins, and sum flex-grow factors */
+    for (struct box *child = flex->children; child; child = child->next) {
+        if (child->type == BOX_FLOAT_LEFT || child->type == BOX_FLOAT_RIGHT) {
+            continue;
+        }
+
+        /* Calculate this child's outer height */
+        int child_outer_height = child->height + child->padding[TOP] + child->padding[BOTTOM] +
+            child->border[TOP].width + child->border[BOTTOM].width;
+
+        if (child->margin[TOP] != AUTO) {
+            child_outer_height += child->margin[TOP];
+        } else {
+            auto_margin_count++;
+        }
+        if (child->margin[BOTTOM] != AUTO) {
+            child_outer_height += child->margin[BOTTOM];
+        } else {
+            auto_margin_count++;
+        }
+
+        content_height += child_outer_height;
+
+        /* Get flex-grow factor if this child has a style */
+        if (child->style) {
+            css_fixed grow;
+            css_computed_flex_grow(child->style, &grow);
+            if (grow > 0) {
+                grow_factor_sum += grow;
+                grow_item_count++;
+                NSLOG(flex, INFO, "  Child %p: height=%d, grow=%d", child, child->height, FIXTOINT(grow));
+            }
+        }
+    }
+
+    NSLOG(flex, INFO, "  Initial: content_h=%d, auto_margins=%d, grow_sum=%d", content_height, auto_margin_count,
+        FIXTOINT(grow_factor_sum));
+
+    /* Calculate extra space */
+    int extra_space = container_height - content_height;
+
+    if (extra_space <= 0) {
+        /* No extra space to distribute */
+        NSLOG(flex, INFO, "  No extra space (extra=%d)", extra_space);
+        return true;
+    }
+
+    /* Step 1: Redistribute extra space to flex-grow items
+     * This increases their heights proportionally */
+    if (grow_factor_sum > 0 && grow_item_count > 0) {
+        css_fixed remainder = 0;
+        int distributed = 0;
+
+        for (struct box *child = flex->children; child; child = child->next) {
+            if (child->type == BOX_FLOAT_LEFT || child->type == BOX_FLOAT_RIGHT) {
+                continue;
+            }
+
+            if (child->style) {
+                css_fixed grow;
+                css_computed_flex_grow(child->style, &grow);
+
+                if (grow > 0) {
+                    /* Calculate this child's share of extra space */
+                    css_fixed ratio = FDIV(grow, grow_factor_sum);
+                    css_fixed result = FMUL(INTTOFIX(extra_space), ratio) + remainder;
+                    int growth = FIXTOINT(result);
+                    remainder = FIXFRAC(result);
+
+                    int old_height = child->height;
+                    child->height += growth;
+                    distributed += growth;
+
+                    NSLOG(flex, INFO, "  GROW: child %p: %d -> %d (+%d)", child, old_height, child->height, growth);
+                }
+            }
+        }
+
+        /* After redistributing to flex-grow items, recalculate content_height
+         * The extra space has now been absorbed by the flex-grow items */
+        content_height += distributed;
+        extra_space = container_height - content_height;
+
+        NSLOG(flex, INFO, "  After grow: distributed=%d, new extra_space=%d", distributed, extra_space);
+    }
+
+    /* Step 2: Redistribute remaining space to auto margins
+     * After flex-grow distribution, any remaining space goes to auto margins */
+    if (auto_margin_count > 0 && extra_space > 0) {
+        int margin_each = extra_space / auto_margin_count;
+        int margin_remainder = extra_space % auto_margin_count;
+
+        NSLOG(flex, INFO, "  Auto margin redistribute: extra=%d, margin_each=%d", extra_space, margin_each);
+
+        /* Reposition children with adjusted margins */
+        int current_y = flex->padding[TOP];
+        for (struct box *child = flex->children; child; child = child->next) {
+            if (child->type == BOX_FLOAT_LEFT || child->type == BOX_FLOAT_RIGHT) {
+                continue;
+            }
+
+            /* Add margin-top (resolved or auto) */
+            if (child->margin[TOP] == AUTO) {
+                int this_margin = margin_each;
+                if (margin_remainder > 0) {
+                    this_margin++;
+                    margin_remainder--;
+                }
+                current_y += this_margin;
+            } else {
+                current_y += child->margin[TOP];
+            }
+
+            /* Position the child */
+            current_y += child->border[TOP].width;
+            child->y = current_y;
+            current_y += child->padding[TOP] + child->height + child->padding[BOTTOM];
+            current_y += child->border[BOTTOM].width;
+
+            NSLOG(flex, INFO, "  Position: child %p at y=%d", child, child->y);
+
+            /* Add margin-bottom (resolved or auto) */
+            if (child->margin[BOTTOM] == AUTO) {
+                int this_margin = margin_each;
+                if (margin_remainder > 0) {
+                    this_margin++;
+                    margin_remainder--;
+                }
+                current_y += this_margin;
+            } else {
+                current_y += child->margin[BOTTOM];
+            }
+        }
+    }
+
+    return true;
+}
+
+/**
  * Perform layout on a flex item
  *
  * \param[in] ctx              Flex layout context
@@ -310,7 +469,7 @@ static inline bool
 layout_flex__base_and_main_sizes(const struct flex_ctx *ctx, struct flex_item_data *item, int available_width)
 {
     struct box *b = item->box;
-    int content_min_width = b->min_width;
+    int content_min_width = b->min_width.value;
     int content_max_width = b->max_width;
     int delta_outer_main = lh__delta_outer_main(ctx->flex, b);
 
@@ -403,6 +562,23 @@ layout_flex__base_and_main_sizes(const struct flex_ctx *ctx, struct flex_item_da
         if (!layout_flex_item(ctx, item, b->width)) {
             return false;
         }
+
+        /* CSS Flexbox §4.5: automatic minimum size for flex items.
+         * When min-height: auto (not explicitly set), the minimum size should be
+         * the content's minimum size, not 0. This prevents flex items from
+         * shrinking below their content (e.g., images with CSS height).
+         *
+         * For column flex: update min_main from actual content height.
+         * This handles both CSS-specified heights and intrinsic image sizes. */
+        if (!ctx->horizontal && item->min_main.type == CSS_SIZE_AUTO) {
+            int content_min_height = b->height + lh__delta_outer_height(b);
+            if (content_min_height > 0) {
+                NSLOG(flex, DEEPDEBUG, "AUTO MIN-HEIGHT: box %p min_main 0 -> %d (content height)", b,
+                    content_min_height);
+                item->min_main.value = content_min_height;
+                item->min_main.type = CSS_SIZE_SET; /* Now it's set to content min */
+            }
+        }
     }
 
     if (item->base_size == AUTO) {
@@ -445,8 +621,9 @@ layout_flex__base_and_main_sizes(const struct flex_ctx *ctx, struct flex_item_da
         item->main_size = item->max_main + delta_outer_main;
     }
 
-    if (item->main_size < item->min_main + delta_outer_main) {
-        item->main_size = item->min_main + delta_outer_main;
+    /* Only apply min_main if it was set (explicit or from content calculation) */
+    if (item->min_main.type == CSS_SIZE_SET && item->main_size < item->min_main.value + delta_outer_main) {
+        item->main_size = item->min_main.value + delta_outer_main;
     }
 
     NSLOG(flex, DEEPDEBUG, "flex-item box: %p: base_size: %i, main_size %i", b, item->base_size, item->main_size);
@@ -499,6 +676,39 @@ static void layout_flex_ctx__populate_item_data(const struct flex_ctx *ctx, cons
             horizontal ? &item->max_cross : &item->max_main, horizontal ? &item->min_cross : &item->min_main, b->margin,
             b->padding, b->border);
         b->float_container = NULL;
+
+        /* Determine min type from CSS computed values.
+         * Per CSS Flexbox spec §4.5, flex items have min-width/min-height initial value of 'auto',
+         * which triggers automatic minimum size based on content. However, libcss computes the
+         * general initial value of 0 (for non-flex items) because it doesn't know layout context.
+         *
+         * Solution: For flex items, treat min-size: 0 as if it were 'auto', enabling automatic
+         * minimum size. Only explicitly set non-zero values should prevent shrinking below content.
+         * This matches browser behavior where flex items don't shrink below content by default. */
+        {
+            css_fixed value;
+            css_unit unit;
+            enum css_min_height_e min_h_type = ns_computed_min_height(b->style, &value, &unit);
+            enum css_min_width_e min_w_type = ns_computed_min_width(b->style, &value, &unit);
+
+            if (horizontal) {
+                /* Horizontal flex: min-width affects main axis.
+                 * Treat 0 as AUTO to enable automatic minimum size per spec. */
+                item->min_main.type = (min_w_type == CSS_MIN_WIDTH_SET && item->min_main.value != 0) ? CSS_SIZE_SET
+                                                                                                     : CSS_SIZE_AUTO;
+                item->min_cross.type = (min_h_type == CSS_MIN_HEIGHT_SET && item->min_cross.value != 0) ? CSS_SIZE_SET
+                                                                                                        : CSS_SIZE_AUTO;
+            } else {
+                /* Column flex: min-height affects main axis.
+                 * Treat 0 as AUTO to enable automatic minimum size per spec. */
+                item->min_main.type = (min_h_type == CSS_MIN_HEIGHT_SET && item->min_main.value != 0) ? CSS_SIZE_SET
+                                                                                                      : CSS_SIZE_AUTO;
+                item->min_cross.type = (min_w_type == CSS_MIN_WIDTH_SET && item->min_cross.value != 0) ? CSS_SIZE_SET
+                                                                                                       : CSS_SIZE_AUTO;
+            }
+            NSLOG(flex, DEEPDEBUG, "box %p: min_main.type=%d value=%d (AUTO=0, SET=1) min_h_type=%d horizontal=%d", b,
+                item->min_main.type, item->min_main.value, min_h_type, horizontal);
+        }
 
         /* DIAG: Log flex item info with class name */
         {
@@ -714,19 +924,20 @@ static inline int layout_flex__get_min_max_violations(struct flex_ctx *ctx, stru
             NSLOG(flex, DEEPDEBUG, "Violation: max_main: %i", item->max_main);
         }
 
-        if (target_main_size < item->min_main) {
-            target_main_size = item->min_main;
+        /* Only apply min_main constraint when it's been explicitly set or computed from content */
+        if (item->min_main.type == CSS_SIZE_SET && target_main_size < item->min_main.value) {
+            target_main_size = item->min_main.value;
             item->min_violation = true;
-            NSLOG(flex, DEEPDEBUG, "Violation: min_main: %i", item->min_main);
+            NSLOG(flex, DEEPDEBUG, "Violation: min_main: %i", item->min_main.value);
         }
 
         /* Only apply box->min_width for horizontal flex (where width is main axis).
          * For column flex, min_width is cross-axis, not main-axis.
          * (struct box has no min_height field to use for column flex) */
-        if (ctx->horizontal && target_main_size < item->box->min_width) {
-            target_main_size = item->box->min_width;
+        if (ctx->horizontal && target_main_size < item->box->min_width.value) {
+            target_main_size = item->box->min_width.value;
             item->min_violation = true;
-            NSLOG(flex, DEEPDEBUG, "Violation: box min_width: %i", item->box->min_width);
+            NSLOG(flex, DEEPDEBUG, "Violation: box min_width: %i", item->box->min_width.value);
         }
 
         if (target_main_size < 0) {
@@ -1085,6 +1296,8 @@ static bool layout_flex__place_line_items_main(struct flex_ctx *ctx, struct flex
 
             cross_size = box_size_cross + lh__delta_outer_cross(ctx->flex, b);
             if (line->cross_size < cross_size) {
+                NSLOG(flex, WARNING, "LINE CROSS_SIZE update: box %p type=%d height=%d -> line->cross_size=%d", b,
+                    b->type, box_size_cross, cross_size);
                 line->cross_size = cross_size;
             }
         }
@@ -1126,6 +1339,10 @@ static bool layout_flex__collect_items_into_lines(struct flex_ctx *ctx)
             return false;
         }
 
+        /* DIAG: Log line finalization */
+        NSLOG(flex, WARNING, "LINE FINAL: container %p line_idx=%zu items=%zu cross_size=%d main_size=%d", ctx->flex,
+            ctx->line.count - 1, line->count, line->cross_size, line->main_size);
+
         ctx->cross_size += line->cross_size;
         if (ctx->main_size < line->main_size) {
             ctx->main_size = line->main_size;
@@ -1164,16 +1381,81 @@ static void layout_flex__place_line_items_cross(struct flex_ctx *ctx, struct fle
 
         cross_free_space = line->cross_size + extra - *box_size_cross - lh__delta_outer_cross(ctx->flex, b);
 
+        /* DIAG: Log cross placement for each item */
+        NSLOG(flex, WARNING, "CROSS_PLACE[%zu]: box %p type=%d line_cross=%d item_cross=%d free_space=%d", i, b,
+            b->type, line->cross_size, *box_size_cross, cross_free_space);
+
         switch (lh__box_align_self(ctx->flex, b)) {
         default:
             /* Fall through. */
         case CSS_ALIGN_SELF_STRETCH:
             if (lh__box_size_cross_is_auto(ctx->horizontal, b)) {
-                *box_size_cross += cross_free_space;
+                int old_cross_size = *box_size_cross;
+                int target_cross_size = old_cross_size + cross_free_space;
 
-                /* Relayout children for stretch. */
+                NSLOG(flex, WARNING, "STRETCH: box %p old_height=%d target_height=%d (free=%d)", b, old_cross_size,
+                    target_cross_size, cross_free_space);
+
+                /* Set stretched size and mark with flag so layout_flex preserves it */
+                *box_size_cross = target_cross_size;
+                if (ctx->horizontal && cross_free_space > 0) {
+                    b->flags |= HEIGHT_STRETCHED;
+                }
+
+                /* Relayout children for stretch */
                 if (!layout_flex_item(ctx, item, b->width)) {
                     return;
+                }
+
+                /* DIAGNOSTIC: Check if content height exceeds container height after stretch */
+                if (ctx->horizontal && b->type == BOX_FLEX) {
+                    int content_height = 0;
+                    int child_idx = 0;
+                    struct box *tallest_child = NULL;
+                    int tallest_bottom = 0;
+
+                    for (struct box *child = b->children; child; child = child->next) {
+                        int child_bottom = child->y + child->height + child->padding[BOTTOM] +
+                            child->border[BOTTOM].width + (child->margin[BOTTOM] != AUTO ? child->margin[BOTTOM] : 0);
+                        if (child_bottom > content_height) {
+                            content_height = child_bottom;
+                            tallest_child = child;
+                            tallest_bottom = child_bottom;
+                        }
+                        child_idx++;
+                    }
+
+                    bool overflow = content_height > b->height;
+                    NSLOG(flex, WARNING, "STRETCH DIAG box %p: container_height=%d content_height=%d delta=%d %s", b,
+                        b->height, content_height, content_height - b->height, overflow ? "OVERFLOW!" : "OK");
+
+                    /* If overflow, log each child to find the culprit */
+                    if (overflow && tallest_child) {
+                        NSLOG(flex, WARNING, "  OVERFLOW DETAIL: tallest child %p type=%d y=%d h=%d bottom=%d",
+                            tallest_child, tallest_child->type, tallest_child->y, tallest_child->height,
+                            tallest_bottom);
+                        /* Log all children positions */
+                        child_idx = 0;
+                        for (struct box *child = b->children; child; child = child->next) {
+                            int cb = child->y + child->height + child->padding[BOTTOM] + child->border[BOTTOM].width +
+                                (child->margin[BOTTOM] != AUTO ? child->margin[BOTTOM] : 0);
+                            NSLOG(flex, WARNING, "    CHILD[%d]: type=%d y=%d h=%d margin_b=%d bottom=%d", child_idx,
+                                child->type, child->y, child->height,
+                                child->margin[BOTTOM] != AUTO ? child->margin[BOTTOM] : -1, cb);
+                            child_idx++;
+                        }
+                    }
+                }
+
+                /* If this stretched item is a column flex container and its height increased,
+                 * redistribute auto margins to push items with margin-top/bottom: auto. */
+                if (ctx->horizontal && cross_free_space > 0 && b->type == BOX_FLEX && b->style) {
+                    uint8_t child_dir = css_computed_flex_direction(b->style);
+                    if (child_dir == CSS_FLEX_DIRECTION_COLUMN || child_dir == CSS_FLEX_DIRECTION_COLUMN_REVERSE) {
+                        NSLOG(flex, INFO, "Stretched column flex %p: height %d -> %d, redistributing", b,
+                            old_cross_size, target_cross_size);
+                        layout_flex_redistribute_auto_margins_vertical(b);
+                    }
                 }
             }
             /* Fall through. */
@@ -1249,8 +1531,10 @@ static void layout_flex__place_lines(struct flex_ctx *ctx)
  */
 bool layout_flex(struct box *flex, int available_width, html_content *content)
 {
-    int max_height, min_height;
-    int max_width = -1, min_width = 0;
+    int max_height;
+    struct css_size min_height;
+    int max_width = -1;
+    struct css_size min_width;
     struct flex_ctx *ctx;
     bool success = false;
 
@@ -1266,29 +1550,20 @@ bool layout_flex(struct box *flex, int available_width, html_content *content)
      * the cross sizes of items in auto-sized flex containers are also considered
      * definite for the purpose of layout."
      *
-     * If this flex container is a stretched flex item of a parent flex container,
-     * its height may already be set to a definite value. Pass NULL for height
-     * to prevent layout_find_dimensions from overwriting it with AUTO from CSS.
-     *
-     * IMPORTANT: For column (vertical) flex, height is the MAIN size, not the cross
-     * size. We should NOT preserve a stretched height from the parent because:
-     * 1. The parent's stretch was based on incorrect content sizing from the first pass
-     * 2. Column flex height should grow based on its own content, not be constrained
-     * Only preserve height for horizontal flex where height is the cross-dimension.
+     * If this flex container was stretched by its parent (HEIGHT_STRETCHED flag),
+     * preserve the stretched height by not letting layout_find_dimensions overwrite it.
+     * Clear the flag after checking since we've now handled the stretch.
      */
-    bool height_already_definite = (flex->height != AUTO && flex->height != UNKNOWN_WIDTH && flex->height >= 0);
-    bool should_preserve_height = height_already_definite && ctx->horizontal;
-    int *height_ptr = should_preserve_height ? NULL : &flex->height;
+    bool height_was_stretched = (flex->flags & HEIGHT_STRETCHED) != 0;
+    flex->flags &= ~HEIGHT_STRETCHED; /* Clear flag after reading */
+    int *height_ptr = height_was_stretched ? NULL : &flex->height;
 
     layout_find_dimensions(ctx->unit_len_ctx, available_width, -1, flex, flex->style, NULL, /* width - already set */
-        height_ptr, /* height - NULL if already definite from stretch AND horizontal */
+        height_ptr, /* height - NULL if already definite from stretch */
         &max_width, &min_width, &max_height, &min_height, flex->margin, flex->padding, flex->border);
 
-    if (should_preserve_height) {
-        NSLOG(flex, DEBUG, "box %p: preserved stretched height %d (horizontal cross-size)", flex, flex->height);
-    } else if (height_already_definite && !ctx->horizontal) {
-        NSLOG(flex, DEBUG, "box %p: NOT preserving height %d for column flex (should grow from content)", flex,
-            flex->height);
+    if (height_was_stretched) {
+        NSLOG(flex, DEBUG, "box %p: preserved stretched height %d", flex, flex->height);
     }
 
     available_width = min(available_width, flex->width);
@@ -1299,15 +1574,15 @@ bool layout_flex(struct box *flex, int available_width, html_content *content)
         if (max_width >= 0 && flex->width > max_width) {
             flex->width = max_width;
         }
-        if (min_width > 0 && flex->width < min_width) {
-            flex->width = min_width;
+        if (min_width.type == CSS_SIZE_SET && min_width.value > 0 && flex->width < min_width.value) {
+            flex->width = min_width.value;
         }
     }
 
     if (flex->height != AUTO) {
         resolved_height = flex->height;
-    } else if (min_height > 0) {
-        resolved_height = min_height;
+    } else if (min_height.type == CSS_SIZE_SET && min_height.value > 0) {
+        resolved_height = min_height.value;
     } else {
         resolved_height = AUTO;
     }
@@ -1343,17 +1618,41 @@ bool layout_flex(struct box *flex, int available_width, html_content *content)
         if (max_height >= 0 && flex->height > max_height) {
             flex->height = max_height;
         }
-        if (min_height > 0 && flex->height < min_height) {
-            flex->height = min_height;
+        if (min_height.type == CSS_SIZE_SET && min_height.value > 0 && flex->height < min_height.value) {
+            flex->height = min_height.value;
+        }
+    }
+
+    /* For column flex containers, redistribute auto margins now that height is definite.
+     * This allows margin-top: auto and margin-bottom: auto to work correctly by
+     * distributing extra vertical space after the container's final height is known.
+     */
+    if (!ctx->horizontal) {
+        NSLOG(flex, INFO, "Column flex %p: final height=%d, calling redistribute", flex, flex->height);
+        layout_flex_redistribute_auto_margins_vertical(flex);
+
+        /* Also handle nested column flex containers recursively */
+        for (struct box *child = flex->children; child; child = child->next) {
+            if (child->type == BOX_FLEX && child->style) {
+                uint8_t child_flex_dir = css_computed_flex_direction(child->style);
+                bool child_is_column = (child_flex_dir == CSS_FLEX_DIRECTION_COLUMN ||
+                    child_flex_dir == CSS_FLEX_DIRECTION_COLUMN_REVERSE);
+                if (child_is_column) {
+                    NSLOG(flex, INFO, "Nested column flex %p: redistributing", child);
+                    layout_flex_redistribute_auto_margins_vertical(child);
+                }
+            }
         }
     }
 
     success = true;
 
 cleanup:
+    /* DIAG: Final flex container summary (before destroying ctx) */
+    NSLOG(flex, WARNING, "FLEX DONE: box %p %s w=%d h=%d %s", flex, ctx->horizontal ? "ROW" : "COL", flex->width,
+        flex->height, success ? "OK" : "FAIL");
+
     layout_flex_ctx__destroy(ctx);
 
-    NSLOG(
-        flex, DEEPDEBUG, "box %p: %s: w: %i, h: %i", flex, success ? "success" : "failure", flex->width, flex->height);
     return success;
 }
