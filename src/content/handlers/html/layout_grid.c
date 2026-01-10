@@ -402,7 +402,7 @@ void layout_minmax_grid(struct box *grid, const struct gui_layout_table *font_fu
     if (!col_min || !col_max) {
         free(col_min);
         free(col_max);
-        grid->min_width = 0;
+        grid->min_width.value = 0;
         grid->max_width = 0;
         return;
     }
@@ -439,7 +439,7 @@ void layout_minmax_grid(struct box *grid, const struct gui_layout_table *font_fu
 #ifdef TESTING
             /* In test environment, just use safe defaults
              * since we don't have full layout.c linked */
-            child->min_width = 0;
+            child->min_width.value = 0;
             child->max_width = 100;
 #else
             /* In production, use the dispatcher */
@@ -448,8 +448,8 @@ void layout_minmax_grid(struct box *grid, const struct gui_layout_table *font_fu
         }
 
         /* Accumulate child min/max into the column */
-        if (child->min_width > col_min[col_idx])
-            col_min[col_idx] = child->min_width;
+        if (child->min_width.value > col_min[col_idx])
+            col_min[col_idx] = child->min_width.value;
         if (child->max_width > col_max[col_idx])
             col_max[col_idx] = child->max_width;
 
@@ -502,7 +502,7 @@ void layout_minmax_grid(struct box *grid, const struct gui_layout_table *font_fu
     if (max < min)
         max = min;
 
-    grid->min_width = min;
+    grid->min_width.value = min;
     grid->max_width = max;
     grid->flags |= HAS_HEIGHT;
 
@@ -691,6 +691,15 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
     int *row_heights = calloc(row_heights_capacity, sizeof(int));
     if (!row_heights) {
         free(col_widths);
+        return false;
+    }
+
+    /* Track if any row needs re-stretch (height increased after first item in row) */
+    bool *row_first_item_done = calloc(row_heights_capacity, sizeof(bool));
+    bool needs_pass3 = false;
+    if (!row_first_item_done) {
+        free(col_widths);
+        free(row_heights);
         return false;
     }
 
@@ -944,9 +953,11 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
             }
 
             /* Resolve CSS dimensions - this populates child->padding and child->border */
+            struct css_size item_min_width; /* local struct to match layout_find_dimensions signature */
             layout_find_dimensions(&content->unit_len_ctx, child_width, -1, child, child->style, &child->width,
-                &child->height, &child->max_width, &child->min_width, NULL, NULL, child->margin, child->padding,
+                &child->height, &child->max_width, &item_min_width, NULL, NULL, child->margin, child->padding,
                 child->border);
+            child->min_width.value = item_min_width.value; /* Store value back in box struct */
 
             /* Subtract horizontal padding and border so total box width fits in cell */
             int content_width = child_width - child->padding[LEFT] - child->padding[RIGHT] - child->border[LEFT].width -
@@ -977,8 +988,13 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
                     return false;
                 }
                 if (height_per_row > row_heights[r]) {
+                    /* If this row already had an item, we need pass 3 to fix it */
+                    if (row_first_item_done[r]) {
+                        needs_pass3 = true;
+                    }
                     row_heights[r] = height_per_row;
                 }
+                row_first_item_done[r] = true;
             }
 
             /* Track max row for grid height calculation */
@@ -1130,6 +1146,124 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
         } /* end child loop */
     } /* end phase loop */
 
+    /* Pass 3: Apply final stretch and positioning now that all row_heights are known.
+     * This is only necessary if some row had its height increased by a later item,
+     * which means earlier items in that row need re-stretching. */
+    if (needs_pass3) {
+        NSLOG(layout, INFO, "GRID LAYOUT: Pass 3 - applying final stretch with row_heights");
+        for (child = grid->children; child; child = child->next) {
+            int col_start, col_end, row_start, row_end;
+            int item_col, item_row, col_span, row_span;
+
+            /* Re-get placement info for this child */
+            get_grid_item_placement(child->style, &col_start, &col_end, &row_start, &row_end, &col_span, &row_span);
+
+            /* Determine span from explicit line numbers */
+            if (col_end != GRID_PLACEMENT_SPAN && col_end != GRID_PLACEMENT_AUTO && col_end > col_start &&
+                col_start != GRID_PLACEMENT_AUTO) {
+                col_span = col_end - col_start;
+            }
+            if (row_end != GRID_PLACEMENT_SPAN && row_end != GRID_PLACEMENT_AUTO && row_end > row_start &&
+                row_start != GRID_PLACEMENT_AUTO) {
+                row_span = row_end - row_start;
+            }
+
+            /* Get actual position from child's current x/y (already set in passes 1-2) */
+            /* We need to recalculate item_row from child->y */
+            int child_y_from_top = child->y - grid->padding[TOP];
+            item_row = 0;
+            int accumulated_y = 0;
+            for (int r = 0; r < max_row; r++) {
+                if (accumulated_y >= child_y_from_top) {
+                    item_row = r;
+                    break;
+                }
+                accumulated_y += row_heights[r] + gap_px;
+                item_row = r + 1;
+            }
+            /* Clamp to valid range */
+            if (item_row >= max_row)
+                item_row = max_row - 1;
+            if (item_row < 0)
+                item_row = 0;
+
+            /* Determine vertical alignment */
+            uint8_t align = CSS_ALIGN_ITEMS_STRETCH;
+            if (child->style) {
+                uint8_t align_self = css_computed_align_self(child->style);
+                if (align_self == CSS_ALIGN_SELF_AUTO) {
+                    if (grid->style) {
+                        align = css_computed_align_items(grid->style);
+                    }
+                } else {
+                    align = align_self;
+                }
+            } else if (grid->style) {
+                align = css_computed_align_items(grid->style);
+            }
+
+            /* Calculate spanned height with final row_heights */
+            int spanned_height = 0;
+            for (int r = item_row; r < item_row + row_span && r < max_row; r++) {
+                spanned_height += row_heights[r];
+                if (r > item_row) {
+                    spanned_height += gap_px;
+                }
+            }
+
+            /* Store original height to detect if we need re-layout */
+            int original_height = child->height;
+
+            /* Apply stretch */
+            if (align == CSS_ALIGN_ITEMS_STRETCH) {
+                int stretch_height = spanned_height - child->padding[TOP] - child->padding[BOTTOM] -
+                    child->border[TOP].width - child->border[BOTTOM].width;
+                if (stretch_height < 0)
+                    stretch_height = 0;
+                child->height = stretch_height;
+            }
+
+            /* Recalculate y position with final row_heights */
+            int final_y = grid->padding[TOP];
+            for (int r = 0; r < item_row; r++) {
+                final_y += row_heights[r] + gap_px;
+            }
+            child->y = final_y;
+
+            NSLOG(layout, INFO, "Grid pass 3: item at row=%d height=%d->%d y=%d", item_row, original_height,
+                child->height, child->y);
+
+            /* If height changed, redistribute auto margins in nested flex containers.
+             * For the grid item itself (e.g., .article which is flex column), we need to
+             * find its flex children that have margin-top/bottom: auto and adjust their positions.
+             * We also need to handle nested flex containers (e.g., .entry-wrapper with flex: 1). */
+            if (child->height != original_height && child->type == BOX_FLEX) {
+                uint8_t flex_dir = css_computed_flex_direction(child->style);
+                bool is_column = (flex_dir == CSS_FLEX_DIRECTION_COLUMN ||
+                    flex_dir == CSS_FLEX_DIRECTION_COLUMN_REVERSE);
+
+                if (is_column) {
+                    /* Redistribute auto margins in this column flex container */
+                    layout_flex_redistribute_auto_margins_vertical(child);
+
+                    /* Also check if any children are column flex containers */
+                    for (struct box *grandchild = child->children; grandchild; grandchild = grandchild->next) {
+                        if (grandchild->type == BOX_FLEX && grandchild->style) {
+                            uint8_t gc_dir = css_computed_flex_direction(grandchild->style);
+                            bool gc_is_column = (gc_dir == CSS_FLEX_DIRECTION_COLUMN ||
+                                gc_dir == CSS_FLEX_DIRECTION_COLUMN_REVERSE);
+                            if (gc_is_column) {
+                                layout_flex_redistribute_auto_margins_vertical(grandchild);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        NSLOG(layout, INFO, "GRID LAYOUT: Pass 3 skipped - no rows needed re-stretch");
+    }
+
     /* Calculate total grid height */
     grid_height = 0;
     for (int r = 0; r < max_row; r++) {
@@ -1141,6 +1275,7 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
 
     grid->height = grid_height;
 
+    free(row_first_item_done);
     free(occupied);
     free(row_heights);
     free(col_widths);

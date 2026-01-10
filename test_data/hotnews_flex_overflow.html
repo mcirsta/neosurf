@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Hotnews.ro Flex Overflow Reproduction</title>
+    <style>
+        /*
+         * This reproduces the hotnews.ro article card layout issue.
+         * 
+         * STRUCTURE:
+         * - Row flex container (wpnbha) with multiple article cards
+         * - Each article is a column flex (flex-direction: column)
+         * - Article children:
+         *   1. post-thumbnail: a block containing an image with height: 200px
+         *   2. entry-wrapper: a nested flex containing title/meta
+         *
+         * ISSUE:
+         * When the row flex calculates line cross-size, it uses the article's
+         * initial height. But the article's initial height comes from:
+         * - post-thumbnail: flex-basis sets this to ~104px initially
+         * - The image inside has CSS height: 200px
+         * 
+         * The flex algorithm shrinks post-thumbnail to ~101px to fit,
+         * but the IMAGE inside still renders at 200px, causing overflow.
+         */
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        .wpnbha {
+            /* Parent: row flex, this holds multiple article cards */
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 8px;
+            width: 906px;
+            background: #f0f0f0;
+            padding: 10px;
+        }
+
+        .article {
+            /* Article card: column flex */
+            display: flex;
+            flex-direction: column;
+            flex-basis: 299px;
+            /* Width of each card */
+            gap: 10px;
+            background: white;
+            border: 1px solid #ccc;
+        }
+
+        .post-thumbnail {
+            /* Thumbnail block */
+            flex-basis: 104px;
+            /* This is what hotnews sets */
+            flex-shrink: 1;
+        }
+
+        .post-thumbnail img {
+            /* The image has a FIXED height in CSS - this is the problem! */
+            width: 100%;
+            height: 200px;
+            /* Fixed height that exceeds flex-basis */
+            object-fit: cover;
+            display: block;
+        }
+
+        .entry-wrapper {
+            /* Text content - another nested flex */
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            /* Grow to fill remaining space */
+            gap: 8px;
+            padding: 10px;
+        }
+
+        .entry-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .entry-meta {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* Visual markers */
+        .debug-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #333;
+            color: #fff;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            max-width: 400px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="debug-info">
+        <strong>Hotnews.ro Flex Overflow Bug</strong><br><br>
+        <strong>Expected:</strong> Articles should not overlap<br>
+        <strong>Bug:</strong> Article cards overlap because:<br>
+        - flex-basis: 104px on post-thumbnail<br>
+        - img height: 200px (fixed)<br>
+        - Flex algorithm shrinks post-thumbnail to ~101px<br>
+        - But image still renders at 200px = OVERFLOW<br><br>
+        <strong>From logs:</strong><br>
+        container_height=199<br>
+        content_height=259<br>
+        CHILD[0]: h=101 (thumbnail block)<br>
+        CHILD[1]: y=111 h=148 (entry-wrapper)<br>
+        Total: 101 + 10gap + 148 = 259 &gt; 199
+    </div>
+
+    <h2 style="margin: 20px;">Row Flex Container with Article Cards</h2>
+
+    <div class="wpnbha">
+        <article class="article">
+            <div class="post-thumbnail">
+                <!-- Using data URI for a colored placeholder -->
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='267' fill='%234a90d9'%3E%3Crect width='100%25' height='100%25'/%3E%3Ctext x='50%25' y='50%25' fill='white' text-anchor='middle' dy='.3em' font-size='20'%3EImage 1%3C/text%3E%3C/svg%3E"
+                    alt="Article 1">
+            </div>
+            <div class="entry-wrapper">
+                <h3 class="entry-title">Article Title 1 - This is a longer title that wraps to multiple lines</h3>
+                <div class="entry-meta">Author | 2 hours ago | Category</div>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="post-thumbnail">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='267' fill='%2390d94a'%3E%3Crect width='100%25' height='100%25'/%3E%3Ctext x='50%25' y='50%25' fill='white' text-anchor='middle' dy='.3em' font-size='20'%3EImage 2%3C/text%3E%3C/svg%3E"
+                    alt="Article 2">
+            </div>
+            <div class="entry-wrapper">
+                <h3 class="entry-title">Article Title 2</h3>
+                <div class="entry-meta">Author | 5 hours ago</div>
+            </div>
+        </article>
+
+        <article class="article">
+            <div class="post-thumbnail">
+                <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='267' fill='%23d94a90'%3E%3Crect width='100%25' height='100%25'/%3E%3Ctext x='50%25' y='50%25' fill='white' text-anchor='middle' dy='.3em' font-size='20'%3EImage 3%3C/text%3E%3C/svg%3E"
+                    alt="Article 3">
+            </div>
+            <div class="entry-wrapper">
+                <h3 class="entry-title">Article Title 3 - Another article with some text content</h3>
+                <div class="entry-meta">Author | Yesterday | Breaking News</div>
+            </div>
+        </article>
+    </div>
+
+    <h2 style="margin: 20px; margin-top: 40px;">Expected Behavior (Chrome/Firefox)</h2>
+    <p style="margin: 20px;">In a standard browser, the articles should NOT overlap. The row flex should calculate the
+        line cross-size based on the actual tallest article height (including the 200px image).</p>
+
+</body>
+
+</html>
+</programlisting>

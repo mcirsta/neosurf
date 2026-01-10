@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Nested Flex Cross-Size Test - Hotnews Issue</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+
+        h2 {
+            margin-top: 30px;
+            color: #333;
+        }
+
+        .container {
+            background: #ddd;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Horizontal flex container (like hotnews article row) */
+        .row-flex {
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+            background: #888;
+            padding: 5px;
+        }
+
+        /* Column flex children (like article cards) */
+        .column-flex {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+            background: #4a90d9;
+            color: white;
+            padding: 10px;
+        }
+
+        .image {
+            background: #6ab04c;
+            height: 100px;
+            margin-bottom: 10px;
+        }
+
+        .tall-image {
+            background: #eb4d4b;
+            height: 200px;
+            margin-bottom: 10px;
+        }
+
+        .meta {
+            background: #f9ca24;
+            color: #333;
+            padding: 5px;
+            margin-top: auto; /* This pushes to bottom with auto margin */
+        }
+
+        .title {
+            margin-bottom: 10px;
+        }
+
+        .expected {
+            color: #666;
+            font-size: 12px;
+            margin-top: 5px;
+        }
+
+        .debug-border {
+            border: 2px solid red;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Nested Flex Cross-Size Test</h1>
+    <p>This page tests cross-axis stretching with nested flex containers (like hotnews.ro articles).</p>
+
+    <h2>Test 1: Row flex with column flex children - SAME height content</h2>
+    <div class="container">
+        <div class="row-flex">
+            <div class="column-flex">
+                <div class="image">Image 1</div>
+                <div class="title">Article Title 1</div>
+                <div class="meta">Meta info (margin-top: auto)</div>
+            </div>
+            <div class="column-flex">
+                <div class="image">Image 2</div>
+                <div class="title">Article Title 2</div>
+                <div class="meta">Meta info (margin-top: auto)</div>
+            </div>
+            <div class="column-flex">
+                <div class="image">Image 3</div>
+                <div class="title">Article Title 3</div>
+                <div class="meta">Meta info (margin-top: auto)</div>
+            </div>
+        </div>
+        <p class="expected">Expected: All 3 columns same height, meta at bottom of each</p>
+    </div>
+
+    <h2>Test 2: Row flex with column flex children - DIFFERENT height content</h2>
+    <div class="container">
+        <div class="row-flex">
+            <div class="column-flex">
+                <div class="image">Short Image (100px)</div>
+                <div class="title">Short Article</div>
+                <div class="meta">Meta (auto margin)</div>
+            </div>
+            <div class="column-flex">
+                <div class="tall-image">Tall Image (200px)</div>
+                <div class="title">Tall Article with longer title that might wrap onto multiple lines to increase height</div>
+                <div class="meta">Meta (auto margin)</div>
+            </div>
+            <div class="column-flex">
+                <div class="image">Short Image (100px)</div>
+                <div class="title">Short Article</div>
+                <div class="meta">Meta (auto margin)</div>
+            </div>
+        </div>
+        <p class="expected">Expected: All columns stretch to match tallest (middle). Meta should be at bottom of stretched height. Short columns should NOT overflow.</p>
+    </div>
+
+    <h2>Test 3: Critical case - Short content with margin-top: auto</h2>
+    <p>This tests if the row flex's height is calculated correctly when children are stretched.</p>
+    <div class="container">
+        <div class="row-flex" style="height: auto;">
+            <div class="column-flex">
+                <div>Small content A</div>
+                <div class="meta">BOTTOM (margin-top: auto)</div>
+            </div>
+            <div class="column-flex">
+                <div>Small content B</div>
+                <div>More content B</div>
+                <div>Even more B</div>
+                <div>Line 4 B</div>
+                <div>Line 5 B</div>
+                <div class="meta">BOTTOM (margin-top: auto)</div>
+            </div>
+            <div class="column-flex">
+                <div>Small content C</div>
+                <div class="meta">BOTTOM (margin-top: auto)</div>
+            </div>
+        </div>
+        <p class="expected">Expected: Row height = tallest child (middle). Left and right columns stretch. All "BOTTOM" elements align at the same vertical position.</p>
+    </div>
+
+    <h2>Test 4: Nested flex WITHOUT auto margins (control)</h2>
+    <div class="container">
+        <div class="row-flex">
+            <div class="column-flex">
+                <div class="image">Image 1</div>
+                <div class="title">Short</div>
+            </div>
+            <div class="column-flex">
+                <div class="tall-image">Tall Image</div>
+                <div class="title">The tallest column determines line cross-size</div>
+            </div>
+            <div class="column-flex">
+                <div class="image">Image 3</div>
+                <div class="title">Short</div>
+            </div>
+        </div>
+        <p class="expected">Expected: All columns stretch to match tallest. No meta elements, so no auto margin complexity.</p>
+    </div>
+
+    <h2>Test 5: Multiple rows simulation</h2>
+    <p>Tests if subsequent rows position correctly when previous rows have stretched items.</p>
+    <div class="container">
+        <div class="row-flex" style="margin-bottom: 10px;">
+            <div class="column-flex">
+                <div>Row 1 Item A</div>
+                <div class="meta">BOTTOM</div>
+            </div>
+            <div class="column-flex">
+                <div>Row 1 Item B</div>
+                <div>Extra content</div>
+                <div>More lines</div>
+                <div class="meta">BOTTOM</div>
+            </div>
+        </div>
+        <div class="row-flex">
+            <div class="column-flex">
+                <div>Row 2 Item A - should NOT overlap with Row 1</div>
+                <div class="meta">BOTTOM</div>
+            </div>
+            <div class="column-flex">
+                <div>Row 2 Item B</div>
+                <div class="meta">BOTTOM</div>
+            </div>
+        </div>
+        <p class="expected">Expected: Row 2 should start BELOW Row 1 with proper gap. No overlapping.</p>
+    </div>
+
+</body>
+</html>

@@ -131,7 +131,7 @@ layout_minmax_block(struct box *block, const struct gui_layout_table *font_func,
  * See CSS 2.1 sections 10.3 and 10.6.
  */
 static void layout_get_object_dimensions(const css_unit_ctx *unit_len_ctx, struct box *box, int *width, int *height,
-    int min_width, int max_width, int min_height, int max_height)
+    struct css_size min_width, int max_width, struct css_size min_height, int max_height)
 {
     assert(box->object != NULL);
     assert(width != NULL && height != NULL);
@@ -142,6 +142,9 @@ static void layout_get_object_dimensions(const css_unit_ctx *unit_len_ctx, struc
     int intrinsic_height = FIXTOINT(
         css_unit_device2css_px(INTTOFIX(content_get_height(box->object)), unit_len_ctx->device_dpi));
 
+    /* DIAG: Log image dimensions before calculation */
+    NSLOG(layout, WARNING, "OBJ_DIM box %p: input w=%d h=%d intrinsic=%dx%d limits w[%d,%d] h[%d,%d]", box, *width,
+        *height, intrinsic_width, intrinsic_height, min_width, max_width, min_height, max_height);
 
     if (*width == AUTO && *height == AUTO) {
         /* No given dimensions */
@@ -153,8 +156,8 @@ static void layout_get_object_dimensions(const css_unit_ctx *unit_len_ctx, struc
         *height = intrinsic_height;
 
         /* Deal with min/max-width first */
-        if (min_width > 0 && min_width > *width) {
-            *width = min_width;
+        if (min_width.type == CSS_SIZE_SET && min_width.value > 0 && min_width.value > *width) {
+            *width = min_width.value;
             scaled = true;
         }
         if (max_width >= 0 && max_width < *width) {
@@ -169,8 +172,8 @@ static void layout_get_object_dimensions(const css_unit_ctx *unit_len_ctx, struc
 
         scaled = false;
         /* Deal with min/max-height */
-        if (min_height > 0 && min_height > *height) {
-            *height = min_height;
+        if (min_height.type == CSS_SIZE_SET && min_height.value > 0 && min_height.value > *height) {
+            *height = min_height.value;
             scaled = true;
         }
         if (max_height >= 0 && max_height < *height) {
@@ -193,8 +196,8 @@ static void layout_get_object_dimensions(const css_unit_ctx *unit_len_ctx, struc
         else
             *width = intrinsic_width;
 
-        if (min_width > 0 && min_width > *width)
-            *width = min_width;
+        if (min_width.type == CSS_SIZE_SET && min_width.value > 0 && min_width.value > *width)
+            *width = min_width.value;
         if (max_width >= 0 && max_width < *width)
             *width = max_width;
 
@@ -203,8 +206,8 @@ static void layout_get_object_dimensions(const css_unit_ctx *unit_len_ctx, struc
          * and ratio of intrinsic dimensions */
         /* Intrinsic fetch removed */
 
-        if (min_width > 0 && min_width > *width)
-            *width = min_width;
+        if (min_width.type == CSS_SIZE_SET && min_width.value > 0 && min_width.value > *width)
+            *width = min_width.value;
         if (max_width >= 0 && max_width < *width)
             *width = max_width;
 
@@ -244,8 +247,8 @@ static int layout_text_indent(const css_unit_ctx *unit_len_ctx, const css_comput
  * \param table box of type TABLE
  * \param font_func Font functions
  * \param content  The HTML content we are laying out.
- * \post  table->min_width and table->max_width filled in,
- *        0 <= table->min_width <= table->max_width
+ * \post  table->min_width.value and table->max_width filled in,
+ *        0 <= table->min_width.value <= table->max_width
  */
 static void
 layout_minmax_table(struct box *table, const struct gui_layout_table *font_func, const html_content *content)
@@ -309,8 +312,8 @@ layout_minmax_table(struct box *table, const struct gui_layout_table *font_func,
 
                 /* update column min, max widths using cell
                  * widths */
-                if (col[i].min < cell->min_width)
-                    col[i].min = cell->min_width;
+                if (col[i].min < cell->min_width.value)
+                    col[i].min = cell->min_width.value;
                 if (col[i].max < cell->max_width)
                     col[i].max = cell->max_width;
             }
@@ -341,16 +344,16 @@ layout_minmax_table(struct box *table, const struct gui_layout_table *font_func,
                 min += (cell->columns - 1) * border_spacing_h;
 
                 /* distribute extra min to spanned columns */
-                if (min < cell->min_width) {
+                if (min < cell->min_width.value) {
                     if (flexible_columns == 0) {
-                        extra = 1 + (cell->min_width - min) / cell->columns;
+                        extra = 1 + (cell->min_width.value - min) / cell->columns;
                         for (j = 0; j != cell->columns; j++) {
                             col[i + j].min += extra;
                             if (col[i + j].max < col[i + j].min)
                                 col[i + j].max = col[i + j].min;
                         }
                     } else {
-                        extra = 1 + (cell->min_width - min) / flexible_columns;
+                        extra = 1 + (cell->min_width.value - min) / flexible_columns;
                         for (j = 0; j != cell->columns; j++) {
                             if (col[i + j].type != COLUMN_WIDTH_FIXED) {
                                 col[i + j].min += extra;
@@ -401,12 +404,12 @@ layout_minmax_table(struct box *table, const struct gui_layout_table *font_func,
         extra_frac = 0;
     if (1.0 <= extra_frac)
         extra_frac = 0.9;
-    table->min_width = (table_min + extra_fixed) / (1.0 - extra_frac);
+    table->min_width.value = (table_min + extra_fixed) / (1.0 - extra_frac);
     table->max_width = (table_max + extra_fixed) / (1.0 - extra_frac);
-    table->min_width += (table->columns + 1) * border_spacing_h;
+    table->min_width.value += (table->columns + 1) * border_spacing_h;
     table->max_width += (table->columns + 1) * border_spacing_h;
 
-    assert(0 <= table->min_width && table->min_width <= table->max_width);
+    assert(0 <= table->min_width.value && table->min_width.value <= table->max_width);
 }
 
 /**
@@ -483,18 +486,18 @@ static struct box *layout_minmax_line(struct box *first, int *line_min, int *lin
                 layout_minmax_table(b->children, font_func, content);
             else
                 layout_minmax_block(b->children, font_func, content);
-            b->min_width = b->children->min_width;
+            b->min_width.value = b->children->min_width.value;
             b->max_width = b->children->max_width;
-            if (min < b->min_width)
-                min = b->min_width;
+            if (min < b->min_width.value)
+                min = b->min_width.value;
             max += b->max_width;
             continue;
         }
 
         if (b->type == BOX_INLINE_BLOCK || b->type == BOX_INLINE_FLEX) {
             layout_minmax_block(b, font_func, content);
-            if (min < b->min_width)
-                min = b->min_width;
+            if (min < b->min_width.value)
+                min = b->min_width.value;
             max += b->max_width;
 
             if (b->flags & HAS_HEIGHT)
@@ -639,8 +642,10 @@ static struct box *layout_minmax_line(struct box *first, int *line_min, int *lin
         if (b->object || (b->flags & REPLACE_DIM)) {
             if (b->object) {
                 int temp_height = height;
+                /* No min constraints for inline replaced content */
+                struct css_size no_min = {.type = CSS_SIZE_AUTO, .value = 0};
                 layout_get_object_dimensions(
-                    &content->unit_len_ctx, b, &width, &temp_height, INT_MIN, INT_MAX, INT_MIN, INT_MAX);
+                    &content->unit_len_ctx, b, &width, &temp_height, no_min, INT_MAX, no_min, INT_MAX);
             } else if (b->svg_diagram != NULL) {
                 /* Inline SVG - use diagram's intrinsic dimensions */
                 if (width == AUTO) {
@@ -718,8 +723,8 @@ static struct box *layout_minmax_line(struct box *first, int *line_min, int *lin
  * \param inline_container  box of type INLINE_CONTAINER
  * \param[out] has_height set to true if container has height
  * \param font_func Font functions.
- * \post  inline_container->min_width and inline_container->max_width filled in,
- *        0 <= inline_container->min_width <= inline_container->max_width
+ * \post  inline_container->min_width.value and inline_container->max_width filled in,
+ *        0 <= inline_container->min_width.value <= inline_container->max_width
  */
 static void layout_minmax_inline_container(struct box *inline_container, bool *has_height,
     const struct gui_layout_table *font_func, const html_content *content)
@@ -748,10 +753,10 @@ static void layout_minmax_inline_container(struct box *inline_container, bool *h
         *has_height |= line_has_height;
     }
 
-    inline_container->min_width = min;
+    inline_container->min_width.value = min;
     inline_container->max_width = max;
 
-    assert(0 <= inline_container->min_width && inline_container->min_width <= inline_container->max_width);
+    assert(0 <= inline_container->min_width.value && inline_container->min_width.value <= inline_container->max_width);
 }
 
 /**
@@ -760,8 +765,8 @@ static void layout_minmax_inline_container(struct box *inline_container, bool *h
  * \param block  box of type BLOCK, INLINE_BLOCK, or TABLE_CELL
  * \param font_func font functions
  * \param content The HTML content being layed out.
- * \post  block->min_width and block->max_width filled in,
- *        0 <= block->min_width <= block->max_width
+ * \post  block->min_width.value and block->max_width filled in,
+ *        0 <= block->min_width.value <= block->max_width
  */
 static void
 layout_minmax_block(struct box *block, const struct gui_layout_table *font_func, const html_content *content)
@@ -838,7 +843,7 @@ layout_minmax_block(struct box *block, const struct gui_layout_table *font_func,
     if (block->object) {
         if (content_get_type(block->object) == CONTENT_HTML) {
             layout_minmax_block(html_get_box_tree(block->object), font_func, content);
-            min = html_get_box_tree(block->object)->min_width;
+            min = html_get_box_tree(block->object)->min_width.value;
             max = html_get_box_tree(block->object)->max_width;
         } else {
             min = max = FIXTOINT(
@@ -895,16 +900,16 @@ layout_minmax_block(struct box *block, const struct gui_layout_table *font_func,
 
             if (lh__box_is_flex_container(block) && lh__flex_main_is_horizontal(block)) {
                 if (block->style != NULL && css_computed_flex_wrap(block->style) == CSS_FLEX_WRAP_NOWRAP) {
-                    min += child->min_width;
+                    min += child->min_width.value;
                 } else {
-                    if (min < child->min_width)
-                        min = child->min_width;
+                    if (min < child->min_width.value)
+                        min = child->min_width.value;
                 }
                 max += child->max_width;
 
             } else {
-                if (min < child->min_width)
-                    min = child->min_width;
+                if (min < child->min_width.value)
+                    min = child->min_width.value;
                 if (max < child->max_width)
                     max = child->max_width;
             }
@@ -1001,16 +1006,16 @@ layout_minmax_block(struct box *block, const struct gui_layout_table *font_func,
     if (block->style != NULL &&
         (css_computed_float(block->style) == CSS_FLOAT_LEFT || css_computed_float(block->style) == CSS_FLOAT_RIGHT)) {
         /* floated boxs */
-        block->min_width = min + extra_fixed;
+        block->min_width.value = min + extra_fixed;
         block->max_width = max + extra_fixed;
     } else {
         /* not floated */
-        block->min_width = (min + extra_fixed) / (1.0 - extra_frac);
+        block->min_width.value = (min + extra_fixed) / (1.0 - extra_frac);
         block->max_width = (max + extra_fixed) / (1.0 - extra_frac);
     }
 
-    assert(0 <= block->min_width);
-    assert(block->min_width <= block->max_width);
+    assert(0 <= block->min_width.value);
+    assert(block->min_width.value <= block->max_width);
 }
 
 /**
@@ -1049,7 +1054,7 @@ void layout_minmax_box(struct box *box, const struct gui_layout_table *font_func
         break;
     default:
         NSLOG(layout, WARNING, "layout_minmax_box: unhandled box type %d", box->type);
-        box->min_width = 0;
+        box->min_width.value = 0;
         box->max_width = 0;
         break;
     }
@@ -1366,8 +1371,10 @@ layout_solve_width(struct box *box, int available_width, int width, int lm, int 
 static void layout_block_find_dimensions(
     const css_unit_ctx *unit_len_ctx, int available_width, int viewport_height, int lm, int rm, struct box *box)
 {
-    int width, max_width, min_width;
-    int height, max_height, min_height;
+    int width, max_width;
+    struct css_size min_width;
+    int height, max_height;
+    struct css_size min_height;
     int *margin = box->margin;
     int *padding = box->padding;
     struct box_border *border = box->border;
@@ -1381,7 +1388,7 @@ static void layout_block_find_dimensions(
         layout_get_object_dimensions(unit_len_ctx, box, &width, &height, min_width, max_width, min_height, max_height);
     }
 
-    box->width = layout_solve_width(box, available_width, width, lm, rm, max_width, min_width);
+    box->width = layout_solve_width(box, available_width, width, lm, rm, max_width, min_width.value);
     box->height = height;
 
     if (margin[TOP] == AUTO)
@@ -1636,7 +1643,7 @@ bool layout_table(struct box *table, int available_width, html_content *content)
     }
     required_width += (columns + 1 - positioned_columns) * border_spacing_h;
 
-    NSLOG(layout, DEBUG, "width %i, min %i, max %i, auto %i, required %i", table_width, table->min_width,
+    NSLOG(layout, DEBUG, "width %i, min %i, max %i, auto %i, required %i", table_width, table->min_width.value,
         table->max_width, auto_width, required_width);
 
     if (auto_width < required_width) {
@@ -2171,7 +2178,9 @@ static bool layout_text_box_split(
 static void layout_float_find_dimensions(
     const css_unit_ctx *unit_len_ctx, int available_width, const css_computed_style *style, struct box *box)
 {
-    int width, height, max_width, min_width, max_height, min_height;
+    int width, height, max_width, max_height;
+    struct css_size min_width;
+    struct css_size min_height;
     int *margin = box->margin;
     int *padding = box->padding;
     struct box_border *border = box->border;
@@ -2232,7 +2241,7 @@ static void layout_float_find_dimensions(
         }
     } else if (width == AUTO) {
         /* CSS 2.1 section 10.3.5 */
-        width = min(max(box->min_width, available_width), box->max_width);
+        width = min(max(box->min_width.value, available_width), box->max_width);
 
         /* width includes margin, borders and padding */
         if (width == available_width) {
@@ -2254,14 +2263,14 @@ static void layout_float_find_dimensions(
 
         if (max_width >= 0 && width > max_width)
             width = max_width;
-        if (min_width > 0 && width < min_width)
-            width = min_width;
+        if (min_width.type == CSS_SIZE_SET && min_width.value > 0 && width < min_width.value)
+            width = min_width.value;
 
     } else {
         if (max_width >= 0 && width > max_width)
             width = max_width;
-        if (min_width > 0 && width < min_width)
-            width = min_width;
+        if (min_width.type == CSS_SIZE_SET && min_width.value > 0 && width < min_width.value)
+            width = min_width.value;
         width -= scrollbar_width_y;
     }
 
@@ -2462,7 +2471,8 @@ static bool layout_line(struct box *first, int *width, int *y, int cx, int cy, s
 
 
     for (x = 0, b = first; x <= x1 - x0 && b != 0; b = b->next) {
-        int min_width, max_width, min_height, max_height;
+        struct css_size min_width, min_height;
+        int max_width, max_height;
 
         assert(lh__box_is_inline_content(b));
 
@@ -3096,8 +3106,10 @@ bool layout_block_context(struct box *block, int viewport_height, html_content *
         int temp_width = block->width;
         if (!layout_block_object(block))
             return false;
+        /* No min constraints for block objects */
+        struct css_size no_min = {.type = CSS_SIZE_AUTO, .value = 0};
         layout_get_object_dimensions(
-            &content->unit_len_ctx, block, &temp_width, &block->height, INT_MIN, INT_MAX, INT_MIN, INT_MAX);
+            &content->unit_len_ctx, block, &temp_width, &block->height, no_min, INT_MAX, no_min, INT_MAX);
         return true;
     } else if (block->flags & REPLACE_DIM) {
         return true;
@@ -4051,7 +4063,8 @@ static bool layout_absolute(struct box *box, struct box *containing_block, int c
 {
     int static_left, static_top; /* static position */
     int top, right, bottom, left;
-    int width, height, max_width, min_width;
+    int width, height, max_width;
+    struct css_size min_width;
     int *margin = box->margin;
     int *padding = box->padding;
     struct box_border *border = box->border;
@@ -4144,15 +4157,18 @@ static bool layout_absolute(struct box *box, struct box *containing_block, int c
             margin[RIGHT] = 0;
         left = static_left;
 
-        width = min(max(box->min_width, available_width), box->max_width);
+        /* Use CSS min-width (min_width parameter), not intrinsic min_width (box->min_width.value).
+         * For absolute/fixed elements, box->min_width hasn't been populated by minmax calculations. */
+        int min_w = (min_width.type == CSS_SIZE_SET) ? min_width.value : 0;
+        width = min(max(min_w, available_width), box->max_width);
         width -= box->margin[LEFT] + box->border[LEFT].width + box->padding[LEFT] + box->padding[RIGHT] +
             box->border[RIGHT].width + box->margin[RIGHT];
 
         /* Adjust for {min|max}-width */
         if (max_width >= 0 && width > max_width)
             width = max_width;
-        if (width < min_width)
-            width = min_width;
+        if (min_width.type == CSS_SIZE_SET && width < min_width.value)
+            width = min_width.value;
 
         right = containing_block->width - left - margin[LEFT] - border[LEFT].width - padding[LEFT] - width -
             padding[RIGHT] - border[RIGHT].width - margin[RIGHT];
@@ -4161,8 +4177,8 @@ static bool layout_absolute(struct box *box, struct box *containing_block, int c
         /* Adjust for {min|max}-width */
         if (max_width >= 0 && width > max_width)
             width = max_width;
-        if (min_width > 0 && width < min_width)
-            width = min_width;
+        if (min_width.type == CSS_SIZE_SET && min_width.value > 0 && width < min_width.value)
+            width = min_width.value;
 
         if (margin[LEFT] == AUTO && margin[RIGHT] == AUTO) {
             space = containing_block->width - left - border[LEFT].width - padding[LEFT] - width - padding[RIGHT] -
@@ -4192,15 +4208,16 @@ static bool layout_absolute(struct box *box, struct box *containing_block, int c
         if (left == AUTO && width == AUTO && right != AUTO) {
             available_width -= right;
 
-            width = min(max(box->min_width, available_width), box->max_width);
+            int min_w = (min_width.type == CSS_SIZE_SET) ? min_width.value : 0;
+            width = min(max(min_w, available_width), box->max_width);
             width -= box->margin[LEFT] + box->border[LEFT].width + box->padding[LEFT] + box->padding[RIGHT] +
                 box->border[RIGHT].width + box->margin[RIGHT];
 
             /* Adjust for {min|max}-width */
             if (max_width >= 0 && width > max_width)
                 width = max_width;
-            if (width < min_width)
-                width = min_width;
+            if (min_width.type == CSS_SIZE_SET && width < min_width.value)
+                width = min_width.value;
 
             left = containing_block->width - margin[LEFT] - border[LEFT].width - padding[LEFT] - width -
                 padding[RIGHT] - border[RIGHT].width - margin[RIGHT] - right;
@@ -4209,8 +4226,8 @@ static bool layout_absolute(struct box *box, struct box *containing_block, int c
             /* Adjust for {min|max}-width */
             if (max_width >= 0 && width > max_width)
                 width = max_width;
-            if (min_width > 0 && width < min_width)
-                width = min_width;
+            if (min_width.type == CSS_SIZE_SET && min_width.value > 0 && width < min_width.value)
+                width = min_width.value;
 
             left = static_left;
             right = containing_block->width - left - margin[LEFT] - border[LEFT].width - padding[LEFT] - width -
@@ -4218,15 +4235,16 @@ static bool layout_absolute(struct box *box, struct box *containing_block, int c
         } else if (left != AUTO && width == AUTO && right == AUTO) {
             available_width -= left;
 
-            width = min(max(box->min_width, available_width), box->max_width);
+            int min_w = (min_width.type == CSS_SIZE_SET) ? min_width.value : 0;
+            width = min(max(min_w, available_width), box->max_width);
             width -= box->margin[LEFT] + box->border[LEFT].width + box->padding[LEFT] + box->padding[RIGHT] +
                 box->border[RIGHT].width + box->margin[RIGHT];
 
             /* Adjust for {min|max}-width */
             if (max_width >= 0 && width > max_width)
                 width = max_width;
-            if (width < min_width)
-                width = min_width;
+            if (min_width.type == CSS_SIZE_SET && width < min_width.value)
+                width = min_width.value;
 
             right = containing_block->width - left - margin[LEFT] - border[LEFT].width - padding[LEFT] - width -
                 padding[RIGHT] - border[RIGHT].width - margin[RIGHT];
@@ -4235,8 +4253,8 @@ static bool layout_absolute(struct box *box, struct box *containing_block, int c
             /* Adjust for {min|max}-width */
             if (max_width >= 0 && width > max_width)
                 width = max_width;
-            if (width < min_width)
-                width = min_width;
+            if (min_width.type == CSS_SIZE_SET && width < min_width.value)
+                width = min_width.value;
 
             left = containing_block->width - margin[LEFT] - border[LEFT].width - padding[LEFT] - width -
                 padding[RIGHT] - border[RIGHT].width - margin[RIGHT] - right;
@@ -4247,16 +4265,16 @@ static bool layout_absolute(struct box *box, struct box *containing_block, int c
             /* Adjust for {min|max}-width */
             if (max_width >= 0 && width > max_width)
                 width = max_width;
-            if (width < min_width)
-                width = min_width;
+            if (min_width.type == CSS_SIZE_SET && width < min_width.value)
+                width = min_width.value;
 
         } else if (left != AUTO && width != AUTO && right == AUTO) {
 
             /* Adjust for {min|max}-width */
             if (max_width >= 0 && width > max_width)
                 width = max_width;
-            if (width < min_width)
-                width = min_width;
+            if (min_width.type == CSS_SIZE_SET && width < min_width.value)
+                width = min_width.value;
 
             right = containing_block->width - left - margin[LEFT] - border[LEFT].width - padding[LEFT] - width -
                 padding[RIGHT] - border[RIGHT].width - margin[RIGHT];

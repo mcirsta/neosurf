@@ -50,6 +50,25 @@ typedef void (*box_construct_complete_cb)(struct html_content *c, bool success);
 
 
 /**
+ * Type of a CSS size value (used for min-width, min-height).
+ * Distinguishes between 'auto' values and explicitly set values.
+ */
+enum css_size_type {
+    CSS_SIZE_AUTO, /**< min-height/width: auto (use content size for flex) */
+    CSS_SIZE_SET /**< min-height/width is explicitly set (including 0) */
+};
+
+/**
+ * A CSS size with type information.
+ * Used for min-width and min-height to distinguish auto from explicit values.
+ */
+struct css_size {
+    enum css_size_type type;
+    int value;
+};
+
+
+/**
  * Type of a struct box.
  */
 typedef enum {
@@ -90,7 +109,8 @@ typedef enum {
     REPLACE_DIM = 1 << 9, /* replaced element has given dimensions */
     IFRAME = 1 << 10, /* box contains an iframe */
     CONVERT_CHILDREN = 1 << 11, /* wanted children converting */
-    IS_REPLACED = 1 << 12 /* box is a replaced element */
+    IS_REPLACED = 1 << 12, /* box is a replaced element */
+    HEIGHT_STRETCHED = 1 << 13 /* height was set by parent's cross-axis stretch */
 } box_flags;
 
 
@@ -340,9 +360,9 @@ struct box {
 
     /**
      * Width of box taking all line breaks (including margins
-     * etc). Must be non-negative.
+     * etc). For flex items, use .type to check if auto vs explicit.
      */
-    int min_width;
+    struct css_size min_width;
 
     /**
      * Width that would be taken with no line breaks. Must be

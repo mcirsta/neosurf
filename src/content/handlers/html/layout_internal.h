@@ -35,6 +35,8 @@ struct gui_layout_table;
 
 #define AUTO INT_MIN
 
+/* Note: enum css_size_type and struct css_size are defined in box.h */
+
 /**
  * Layout a block formatting context.
  *
@@ -67,6 +69,17 @@ bool layout_table(struct box *table, int available_width, struct html_content *c
  * \return  true on success, false on memory exhaustion
  */
 bool layout_flex(struct box *flex, int available_width, struct html_content *content);
+
+/**
+ * Redistribute auto margin space for a column flex container.
+ *
+ * Called after the container's height becomes definite to adjust positions
+ * of children with margin-top/bottom: auto.
+ *
+ * \param[in] flex  The column flex container box
+ * \return true on success
+ */
+bool layout_flex_redistribute_auto_margins_vertical(struct box *flex);
 
 /**
  * Calculate minimum and maximum width of any box type.
@@ -384,8 +397,9 @@ static inline void layout_handle_box_sizing(
  * \param  border           filled with border widths, may be NULL
  */
 static inline void layout_find_dimensions(const css_unit_ctx *unit_len_ctx, int available_width, int viewport_height,
-    const struct box *box, const css_computed_style *style, int *width, int *height, int *max_width, int *min_width,
-    int *max_height, int *min_height, int margin[4], int padding[4], struct box_border border[4])
+    const struct box *box, const css_computed_style *style, int *width, int *height, int *max_width,
+    struct css_size *min_width, int *max_height, struct css_size *min_height, int margin[4], int padding[4],
+    struct box_border border[4])
 {
     struct box *containing_block = NULL;
     unsigned int i;
@@ -495,18 +509,20 @@ static inline void layout_find_dimensions(const css_unit_ctx *unit_len_ctx, int 
         type = ns_computed_min_width(style, &value, &unit);
 
         if (type == CSS_MIN_WIDTH_SET) {
+            min_width->type = CSS_SIZE_SET;
             if (unit == CSS_UNIT_PCT) {
-                *min_width = FPCT_OF_INT_TOINT(value, available_width);
+                min_width->value = FPCT_OF_INT_TOINT(value, available_width);
             } else {
-                *min_width = FIXTOINT(css_unit_len2device_px(style, unit_len_ctx, value, unit));
+                min_width->value = FIXTOINT(css_unit_len2device_px(style, unit_len_ctx, value, unit));
             }
         } else {
-            /* Inadmissible */
-            *min_width = 0;
+            /* min-width: auto */
+            min_width->type = CSS_SIZE_AUTO;
+            min_width->value = 0;
         }
 
-        if (*min_width != 0) {
-            layout_handle_box_sizing(unit_len_ctx, box, available_width, true, min_width);
+        if (min_width->value != 0) {
+            layout_handle_box_sizing(unit_len_ctx, box, available_width, true, &min_width->value);
         }
     }
 
@@ -538,15 +554,17 @@ static inline void layout_find_dimensions(const css_unit_ctx *unit_len_ctx, int 
         type = ns_computed_min_height(style, &value, &unit);
 
         if (type == CSS_MIN_HEIGHT_SET) {
+            min_height->type = CSS_SIZE_SET;
             if (unit == CSS_UNIT_PCT) {
                 /* TODO: handle percentage */
-                *min_height = 0;
+                min_height->value = 0;
             } else {
-                *min_height = FIXTOINT(css_unit_len2device_px(style, unit_len_ctx, value, unit));
+                min_height->value = FIXTOINT(css_unit_len2device_px(style, unit_len_ctx, value, unit));
             }
         } else {
-            /* Inadmissible */
-            *min_height = 0;
+            /* min-height: auto */
+            min_height->type = CSS_SIZE_AUTO;
+            min_height->value = 0;
         }
     }
 
