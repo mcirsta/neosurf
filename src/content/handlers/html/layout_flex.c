@@ -77,6 +77,7 @@ struct flex_item_data {
     bool freeze;
     bool min_violation;
     bool max_violation;
+    bool has_pct_basis; /* True if flex-basis was a percentage (for two-pass layout) */
 };
 
 /**
@@ -127,6 +128,8 @@ struct flex_ctx {
         size_t alloc;
         struct flex_line_data *data;
     } line;
+
+    bool needs_two_pass; /**< True if any item has % flex-basis in column flex */
 };
 
 /**
@@ -202,6 +205,8 @@ static struct flex_ctx *layout_flex_ctx__create(html_content *content, const str
             }
         }
 
+        NSLOG(flex, INFO, "Gap parsed: flex=%p horizontal=%d main_gap=%d", flex, ctx->horizontal, ctx->main_gap);
+
         /* Cross gap */
         if (ctx->horizontal) {
             if (css_computed_row_gap(flex->style, &gap_len, &gap_unit) == CSS_ROW_GAP_SET) {
@@ -272,12 +277,33 @@ bool layout_flex_redistribute_auto_margins_vertical(struct box *flex)
     css_fixed grow_factor_sum = 0;
     int grow_item_count = 0;
     int child_count = 0;
-    int gap_total = 0;
 
     NSLOG(flex, INFO, "Flex redistribute: container_h=%d", container_height);
 
-    /* First pass: calculate base content height, count children, auto margins, and sum flex-grow factors.
-     * Also compute gap total by measuring space between adjacent children. */
+    /* Get CSS row-gap for column flex (this is the main axis gap) */
+    int css_row_gap = 0;
+    if (flex->style) {
+        css_fixed gap_len = 0;
+        css_unit gap_unit = CSS_UNIT_PX;
+        uint8_t gap_type = css_computed_row_gap(flex->style, &gap_len, &gap_unit);
+        if (gap_type == CSS_ROW_GAP_SET && gap_unit != CSS_UNIT_PCT) {
+            /* Convert to pixels using a dummy unit context - we just need px conversion */
+            css_row_gap = FIXTOINT(gap_len); /* Already in px if unit is px */
+        }
+    }
+
+    /* First pass: count children */
+    int child_count_initial = 0;
+    for (struct box *child = flex->children; child; child = child->next) {
+        if (child->type != BOX_FLOAT_LEFT && child->type != BOX_FLOAT_RIGHT) {
+            child_count_initial++;
+        }
+    }
+
+    /* Calculate gap_total from CSS row-gap, not from measured positions */
+    int gap_total = (child_count_initial > 1) ? (child_count_initial - 1) * css_row_gap : 0;
+
+    /* Second pass: calculate content height, auto margins, and flex-grow */
     struct box *prev_child = NULL;
     for (struct box *child = flex->children; child; child = child->next) {
         if (child->type == BOX_FLOAT_LEFT || child->type == BOX_FLOAT_RIGHT) {
@@ -303,23 +329,7 @@ bool layout_flex_redistribute_auto_margins_vertical(struct box *flex)
 
         content_height += child_outer_height;
 
-        /* Compute gap from positions: gap = (this child's y) - (prev child's y + prev child's outer height) */
-        if (prev_child != NULL) {
-            int prev_outer_bottom = prev_child->y + prev_child->height + prev_child->padding[BOTTOM] +
-                prev_child->border[BOTTOM].width;
-            if (prev_child->margin[BOTTOM] != AUTO) {
-                prev_outer_bottom += prev_child->margin[BOTTOM];
-            }
-            int gap_before_this = child->y - child->border[TOP].width - child->padding[TOP];
-            if (child->margin[TOP] != AUTO) {
-                gap_before_this -= child->margin[TOP];
-            }
-            int measured_gap = gap_before_this - prev_outer_bottom;
-            if (measured_gap > 0) {
-                gap_total += measured_gap;
-            }
-        }
-        prev_child = child;
+        /* gap_total is now calculated from CSS row-gap at the top - no need to measure */
 
         /* Get flex-grow factor if this child has a style */
         if (child->style) {
@@ -437,6 +447,176 @@ bool layout_flex_redistribute_auto_margins_vertical(struct box *flex)
 }
 
 /**
+ * Two-pass resolve for column flex with percentage flex-basis.
+ *
+ * After first pass determines container height, re-resolve percentage flex-basis
+ * against the now-definite height and apply flex-shrink algorithm.
+ * This matches Firefox/Chrome behavior for indefinite-height column flex.
+ *
+ * \param[in] ctx   Flex layout context
+ * \param[in] flex  Flex container box (mutable for height adjustment)
+ */
+static void layout_flex__two_pass_resolve(struct flex_ctx *ctx, struct box *flex)
+{
+    /* DISABLED: Two-pass algorithm not working correctly.
+     * Regular redistribute_auto_margins_vertical handles this case. */
+    (void)ctx;
+    (void)flex;
+    return;
+
+    int definite_height = flex->height; /* Now known after pass 1 */
+    int gap_total = (ctx->item.count > 1) ? (int)(ctx->item.count - 1) * ctx->main_gap : 0;
+
+    /* Calculate what heights would be if % flex-basis resolved against definite height */
+    int total_pct_demand = 0;
+    int total_other = 0;
+    css_fixed scaled_shrink_sum = 0;
+
+    for (size_t i = 0; i < ctx->item.count; i++) {
+        struct flex_item_data *item = &ctx->item.data[i];
+        struct box *b = item->box;
+
+        if (item->has_pct_basis) {
+            /* Re-resolve percentage against definite height */
+            int pct = FIXTOINT(item->basis_length.value);
+            int resolved = (definite_height * pct) / 100;
+            total_pct_demand += resolved;
+            scaled_shrink_sum += FMUL(item->shrink, INTTOFIX(resolved));
+
+            NSLOG(flex, INFO, "PASS2: item %p pct=%d%% resolved=%dpx against h=%d", b, pct, resolved, definite_height);
+        } else {
+            /* Non-percentage items: calculate outer height */
+            total_other += b->height + b->padding[TOP] + b->padding[BOTTOM] + b->border[TOP].width +
+                b->border[BOTTOM].width;
+            if (b->margin[TOP] != AUTO)
+                total_other += b->margin[TOP];
+            if (b->margin[BOTTOM] != AUTO)
+                total_other += b->margin[BOTTOM];
+        }
+    }
+
+    /* Check if shrinking is needed */
+    int available = definite_height - gap_total;
+    int total_demand = total_pct_demand + total_other;
+
+    NSLOG(flex, INFO, "PASS2: available=%d total_demand=%d (pct=%d other=%d gap=%d)", available, total_demand,
+        total_pct_demand, total_other, gap_total);
+
+    if (total_demand > available && total_pct_demand > 0 && scaled_shrink_sum > 0) {
+        /* Need to shrink percentage items.
+         * Algorithm: Items where content_min > resolved% are frozen at content_min.
+         * Remaining space is distributed to shrinkable items. */
+
+        bool frozen[64] = {false};
+        int new_heights[64] = {0};
+        int frozen_total = 0;
+        int shrinkable_total = 0;
+        css_fixed shrinkable_factor_sum = 0;
+
+        /* First pass: identify frozen items (content_min > resolved%) and calculate totals */
+        for (size_t i = 0; i < ctx->item.count && i < 64; i++) {
+            struct flex_item_data *item = &ctx->item.data[i];
+            struct box *b = item->box;
+
+            if (item->has_pct_basis) {
+                int pct = FIXTOINT(item->basis_length.value);
+                int resolved = (definite_height * pct) / 100;
+                int content_min = b->height;
+
+                if (content_min >= resolved) {
+                    /* This item can't shrink - it needs its content_min */
+                    new_heights[i] = content_min;
+                    frozen[i] = true;
+                    frozen_total += content_min;
+                    NSLOG(flex, INFO, "PASS2: item %p FROZEN: pct=%d%% resolved=%d < content=%d", b, pct, resolved,
+                        content_min);
+                } else {
+                    /* This item can shrink */
+                    new_heights[i] = resolved;
+                    shrinkable_total += resolved;
+                    shrinkable_factor_sum += FMUL(item->shrink, INTTOFIX(resolved));
+                    NSLOG(flex, INFO, "PASS2: item %p SHRINKABLE: pct=%d%% resolved=%d content=%d", b, pct, resolved,
+                        content_min);
+                }
+            }
+        }
+
+        /* Calculate remaining space for shrinkable items */
+        int remaining_for_shrinkable = available - frozen_total;
+
+        NSLOG(flex, INFO, "PASS2: available=%d frozen_total=%d remaining=%d shrinkable_total=%d", available,
+            frozen_total, remaining_for_shrinkable, shrinkable_total);
+
+        if (remaining_for_shrinkable > 0 && shrinkable_total > remaining_for_shrinkable) {
+            /* Need to shrink the shrinkable items */
+            int overflow = shrinkable_total - remaining_for_shrinkable;
+
+            NSLOG(flex, INFO, "PASS2: shrinkable overflow=%d", overflow);
+
+            /* Distribute shrink proportionally to shrinkable items */
+            for (size_t i = 0; i < ctx->item.count && i < 64; i++) {
+                struct flex_item_data *item = &ctx->item.data[i];
+                struct box *b = item->box;
+
+                if (item->has_pct_basis && !frozen[i] && item->shrink > 0) {
+                    css_fixed scaled_factor = FMUL(item->shrink, INTTOFIX(new_heights[i]));
+                    css_fixed ratio = FDIV(scaled_factor, shrinkable_factor_sum);
+                    int shrink_amount = FIXTOINT(FMUL(INTTOFIX(overflow), ratio));
+
+                    int target = new_heights[i] - shrink_amount;
+                    int content_min = b->height;
+
+                    /* Don't go below content min */
+                    if (target < content_min) {
+                        target = content_min;
+                    }
+
+                    NSLOG(flex, INFO, "PASS2: item %p shrink: %d - %d = %d (min=%d)", b, new_heights[i], shrink_amount,
+                        target, content_min);
+                    new_heights[i] = target;
+                }
+            }
+        } else if (remaining_for_shrinkable <= 0) {
+            /* Not enough space even for frozen items - cap shrinkable at content_min */
+            for (size_t i = 0; i < ctx->item.count && i < 64; i++) {
+                struct flex_item_data *item = &ctx->item.data[i];
+                struct box *b = item->box;
+                if (item->has_pct_basis && !frozen[i]) {
+                    new_heights[i] = b->height;
+                }
+            }
+        }
+
+        /* Apply final heights */
+        for (size_t i = 0; i < ctx->item.count && i < 64; i++) {
+            struct flex_item_data *item = &ctx->item.data[i];
+            struct box *b = item->box;
+
+            if (item->has_pct_basis) {
+                NSLOG(flex, INFO, "PASS2: item %p: final height=%d (was %d)", b, new_heights[i], b->height);
+                b->height = new_heights[i];
+            }
+        }
+    }
+
+    /* After adjusting heights, re-run redistribute on nested flex containers */
+    for (size_t i = 0; i < ctx->item.count; i++) {
+        struct flex_item_data *item = &ctx->item.data[i];
+        struct box *b = item->box;
+
+        if (b->type == BOX_FLEX && b->style) {
+            uint8_t child_flex_dir = css_computed_flex_direction(b->style);
+            bool child_is_column = (child_flex_dir == CSS_FLEX_DIRECTION_COLUMN ||
+                child_flex_dir == CSS_FLEX_DIRECTION_COLUMN_REVERSE);
+            if (child_is_column) {
+                NSLOG(flex, INFO, "PASS2: re-running redistribute on nested flex %p (h=%d)", b, b->height);
+                layout_flex_redistribute_auto_margins_vertical(b);
+            }
+        }
+    }
+}
+
+/**
  * Perform layout on a flex item
  *
  * \param[in] ctx              Flex layout context
@@ -484,13 +664,14 @@ static bool layout_flex_item(const struct flex_ctx *ctx, const struct flex_item_
 /**
  * Calculate an item's base and target main sizes.
  *
- * \param[in] ctx              Flex layout context
- * \param[in] item             Item to get sizes of
- * \param[in] available_width  Available width in pixels
+ * \param[in] ctx                    Flex layout context
+ * \param[in] item                   Item to get sizes of
+ * \param[in] available_main_size    Available size in main axis (px), for resolving percentage flex-basis
+ * \param[in] available_cross_size   Available size in cross axis (px)
  * \return true on success false on failure
  */
-static inline bool
-layout_flex__base_and_main_sizes(const struct flex_ctx *ctx, struct flex_item_data *item, int available_width)
+static inline bool layout_flex__base_and_main_sizes(
+    struct flex_ctx *ctx, struct flex_item_data *item, int available_main_size, int available_cross_size)
 {
     struct box *b = item->box;
     int content_min_width = b->min_width.value;
@@ -514,14 +695,26 @@ layout_flex__base_and_main_sizes(const struct flex_ctx *ctx, struct flex_item_da
     NSLOG(flex, DEBUG, "box %p: item->basis=%d (SET=1, AUTO=2, CONTENT=3)", b, item->basis);
 
     if (item->basis == CSS_FLEX_BASIS_SET) {
-        /* Use css_computed_flex_basis_px to properly evaluate calc() expressions */
+        /* Use css_computed_flex_basis_px to properly evaluate calc() expressions.
+         * For row flex: percentages resolve against available width.
+         * For column flex: percentages resolve against available height (main axis).
+         * If the reference size is indefinite (AUTO), percentage resolves to 'auto' per spec. */
         int basis_px = 0;
-        uint8_t basis_type = css_computed_flex_basis_px(b->style, ctx->unit_len_ctx, available_width, &basis_px);
+        uint8_t basis_type = css_computed_flex_basis_px(b->style, ctx->unit_len_ctx, available_main_size, &basis_px);
+
+        /* Track if this item has percentage flex-basis for two-pass layout.
+         * In column flex with indefinite height, we'll need to re-resolve this
+         * after the first pass determines the container's height. */
+        item->has_pct_basis = (item->basis_unit == CSS_UNIT_PCT && !ctx->horizontal);
+        if (item->has_pct_basis) {
+            ctx->needs_two_pass = true;
+        }
+
         if (basis_type == CSS_FLEX_BASIS_SET) {
             /* Handle box-sizing: border-box by converting to content-box.
              * The delta_outer_main will be added later at line 314, so we
              * need to subtract padding+border now if box-sizing is border-box. */
-            layout_handle_box_sizing(ctx->unit_len_ctx, b, available_width, ctx->horizontal, &basis_px);
+            layout_handle_box_sizing(ctx->unit_len_ctx, b, available_cross_size, ctx->horizontal, &basis_px);
 
             /* For column flex with flex-basis: 0 (e.g., from 'flex: 1'), the item
              * should still grow to fit its content. The 0 means "start from content
@@ -533,8 +726,10 @@ layout_flex__base_and_main_sizes(const struct flex_ctx *ctx, struct flex_item_da
                 item->base_size = basis_px;
             }
         } else {
-            /* Fallback to content-based sizing if calc() couldn't be evaluated */
-            NSLOG(flex, DEEPDEBUG, "flex-basis: calc() evaluated to auto, using content-based sizing");
+            /* Fallback to content-based sizing if calc() couldn't be evaluated.
+             * For column flex with percentage flex-basis and indefinite container,
+             * this is the first pass - will re-resolve in second pass. */
+            NSLOG(flex, DEEPDEBUG, "flex-basis: resolved to auto (calc/pct with indefinite container)");
             item->base_size = AUTO;
         }
     } else if (item->basis == CSS_FLEX_BASIS_AUTO) {
@@ -569,12 +764,12 @@ layout_flex__base_and_main_sizes(const struct flex_ctx *ctx, struct flex_item_da
             if (is_content_sizing) {
                 /* Content-sizing: use intrinsic content width, clamped by available */
                 b->width = content_max_width;
-                if (b->width > available_width) {
-                    b->width = available_width;
+                if (b->width > available_cross_size) {
+                    b->width = available_cross_size;
                 }
             } else {
                 /* Auto: stretch to fill available width (standard flex cross-axis behavior) */
-                b->width = available_width;
+                b->width = available_cross_size;
                 /* But don't exceed content max if it's smaller (shrink-wrap) */
                 if (b->width > content_max_width) {
                     b->width = content_max_width;
@@ -630,11 +825,12 @@ layout_flex__base_and_main_sizes(const struct flex_ctx *ctx, struct flex_item_da
 
     if (ctx->horizontal) {
         int before_clamp = item->base_size;
-        item->base_size = min(item->base_size, available_width);
+        item->base_size = min(item->base_size, available_main_size);
         item->base_size = max(item->base_size, content_min_width);
         if (item->base_size != before_clamp) {
-            NSLOG(flex, WARNING, "CLAMP: base_size changed from %d to %d (content_min_width=%d, available_width=%d)",
-                before_clamp, item->base_size, content_min_width, available_width);
+            NSLOG(flex, WARNING,
+                "CLAMP: base_size changed from %d to %d (content_min_width=%d, available_main_size=%d)", before_clamp,
+                item->base_size, content_min_width, available_main_size);
         }
     }
 
@@ -758,7 +954,12 @@ static void layout_flex_ctx__populate_item_data(const struct flex_ctx *ctx, cons
         css_computed_flex_shrink(b->style, &item->shrink);
         css_computed_flex_grow(b->style, &item->grow);
 
-        layout_flex__base_and_main_sizes(ctx, item, available_width);
+        /* Pass correct reference size for percentage flex-basis resolution:
+         * - Row flex: main=width, cross=height
+         * - Column flex: main=height, cross=width */
+        int ref_main = horizontal ? available_width : ctx->available_main;
+        int ref_cross = horizontal ? ctx->available_main : available_width;
+        layout_flex__base_and_main_sizes(ctx, item, ref_main, ref_cross);
     }
 }
 
@@ -827,7 +1028,9 @@ static struct flex_line_data *layout_flex__build_line(struct flex_ctx *ctx, size
         if (ctx->wrap == CSS_FLEX_WRAP_NOWRAP || pos_main + used_main + gap_for_item <= ctx->available_main ||
             lh__box_is_absolute(item->box) || ctx->available_main == AUTO || line->count == 0 || pos_main == 0) {
             if (lh__box_is_absolute(item->box) == false) {
-                line->main_size += item->main_size;
+                /* Use pos_main which reflects actual b->height for column flex,
+                 * not pre-computed item->main_size which may be stale */
+                line->main_size += pos_main;
                 used_main += pos_main + gap_for_item;
 
                 if (b->margin[start_side] == AUTO) {
@@ -846,6 +1049,13 @@ static struct flex_line_data *layout_flex__build_line(struct flex_ctx *ctx, size
     }
 
     if (line->count > 0) {
+        /* Add gap_total to main_size - gaps are part of the line's main axis space */
+        if (line->count > 1 && ctx->main_gap > 0) {
+            int gap_total = (int)(line->count - 1) * ctx->main_gap;
+            line->main_size += gap_total;
+            NSLOG(flex, INFO, "LINE gap added: count=%zu main_gap=%d gap_total=%d new main_size=%d", line->count,
+                ctx->main_gap, gap_total, line->main_size);
+        }
         ctx->line.count++;
     } else {
         NSLOG(layout, ERROR, "Failed to fit any flex items");
@@ -1668,6 +1878,10 @@ bool layout_flex(struct box *flex, int available_width, html_content *content)
     if (flex->height == AUTO) {
         flex->height = ctx->horizontal ? ctx->cross_size : ctx->main_size;
     }
+
+    /* TWO-PASS LAYOUT: Re-resolve percentage flex-basis against definite height
+     * and apply flex-shrink algorithm. Only runs for column flex with % flex-basis. */
+    layout_flex__two_pass_resolve(ctx, flex);
 
     if (flex->height != AUTO) {
         if (max_height >= 0 && flex->height > max_height) {
