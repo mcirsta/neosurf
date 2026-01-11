@@ -220,6 +220,7 @@ css_error css__parse_grid_row_end(css_language *c, const parserutils_vector *vec
 css_error css__parse_grid_column(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error css__parse_grid_row(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error css__parse_grid_area(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
+css_error css__parse_object_fit(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 
 /** Mapping from property bytecode index to bytecode unit class mask. */
 extern const uint32_t property_unit_mask[CSS_N_PROPERTIES];
@@ -341,5 +342,6 @@ extern const uint32_t property_unit_mask[CSS_N_PROPERTIES];
 #define UNIT_MASK_GRID_TEMPLATE_ROWS (UNIT_LENGTH | UNIT_PCT)
 #define UNIT_MASK_GRID_AUTO_FLOW (0)
 #define UNIT_MASK_ROW_GAP (UNIT_LENGTH)
+#define UNIT_MASK_OBJECT_FIT (0)
 
 #endif

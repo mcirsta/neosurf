@@ -311,7 +311,11 @@ static nserror nsqt_plot_bitmap(const struct redraw_context *ctx, struct bitmap 
     QPainter *painter = (QPainter *)ctx->priv;
     QRectF source(0, 0, img->width(), img->height());
     QRectF target(x, y, width, height);
+
+    /* Enable smooth scaling for better image quality when resizing */
+    painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
     painter->drawImage(target, *img, source);
+
     return NSERROR_OK;
 }
 

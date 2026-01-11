@@ -177,7 +177,9 @@ style = {
     ('grid_column_start', 2, 'integer', 'CSS_GRID_LINE_SET', 'CSS_GRID_LINE_AUTO'),
     ('grid_column_end', 2, 'integer', 'CSS_GRID_LINE_SET', 'CSS_GRID_LINE_AUTO'),
     ('grid_row_start', 2, 'integer', 'CSS_GRID_LINE_SET', 'CSS_GRID_LINE_AUTO'),
-    ('grid_row_end', 2, 'integer', 'CSS_GRID_LINE_SET', 'CSS_GRID_LINE_AUTO')
+    ('grid_row_end', 2, 'integer', 'CSS_GRID_LINE_SET', 'CSS_GRID_LINE_AUTO'),
+    # Object-fit property
+    ('object_fit', 3)
 }
 
 groups = [

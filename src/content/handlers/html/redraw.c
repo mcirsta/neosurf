@@ -137,6 +137,96 @@ static struct box *html_redraw_find_bg_box(struct box *box)
 }
 
 /**
+ * Calculate render dimensions for object-fit CSS property.
+ *
+ * Computes the dimensions and position at which to render replaced element
+ * content (images, videos) based on the object-fit property value.
+ *
+ * \param object_fit     CSS object-fit value
+ * \param box_width      Box content area width
+ * \param box_height     Box content area height
+ * \param intrinsic_width   Content intrinsic width
+ * \param intrinsic_height  Content intrinsic height
+ * \param render_width   Updated with computed render width
+ * \param render_height  Updated with computed render height
+ * \param offset_x       Updated with x offset within box (for centering)
+ * \param offset_y       Updated with y offset within box (for centering)
+ */
+static void calculate_object_fit_dimensions(uint8_t object_fit, int box_width, int box_height, int intrinsic_width,
+    int intrinsic_height, int *render_width, int *render_height, int *offset_x, int *offset_y)
+{
+    /* Handle zero dimensions */
+    if (intrinsic_width <= 0 || intrinsic_height <= 0 || box_width <= 0 || box_height <= 0) {
+        *render_width = box_width;
+        *render_height = box_height;
+        *offset_x = 0;
+        *offset_y = 0;
+        return;
+    }
+
+    float box_ratio = (float)box_width / (float)box_height;
+    float img_ratio = (float)intrinsic_width / (float)intrinsic_height;
+
+    switch (object_fit) {
+    case CSS_OBJECT_FIT_FILL:
+    default:
+        /* Stretch to fill box (default behavior) */
+        *render_width = box_width;
+        *render_height = box_height;
+        break;
+
+    case CSS_OBJECT_FIT_CONTAIN:
+        /* Scale to fit entirely within box, preserving aspect ratio */
+        if (img_ratio > box_ratio) {
+            /* Image is wider - fit to width */
+            *render_width = box_width;
+            *render_height = (int)(box_width / img_ratio);
+        } else {
+            /* Image is taller - fit to height */
+            *render_height = box_height;
+            *render_width = (int)(box_height * img_ratio);
+        }
+        break;
+
+    case CSS_OBJECT_FIT_COVER:
+        /* Scale to fill entire box, preserving aspect ratio (may overflow) */
+        if (img_ratio > box_ratio) {
+            /* Image is wider - fit to height, overflow width */
+            *render_height = box_height;
+            *render_width = (int)(box_height * img_ratio);
+        } else {
+            /* Image is taller - fit to width, overflow height */
+            *render_width = box_width;
+            *render_height = (int)(box_width / img_ratio);
+        }
+        break;
+
+    case CSS_OBJECT_FIT_NONE:
+        /* Use intrinsic size, no scaling */
+        *render_width = intrinsic_width;
+        *render_height = intrinsic_height;
+        break;
+
+    case CSS_OBJECT_FIT_SCALE_DOWN:
+        /* Use 'none' if intrinsic fits, else 'contain' */
+        if (intrinsic_width <= box_width && intrinsic_height <= box_height) {
+            *render_width = intrinsic_width;
+            *render_height = intrinsic_height;
+        } else {
+            /* Recurse with contain */
+            calculate_object_fit_dimensions(CSS_OBJECT_FIT_CONTAIN, box_width, box_height, intrinsic_width,
+                intrinsic_height, render_width, render_height, offset_x, offset_y);
+            return;
+        }
+        break;
+    }
+
+    /* Center in box (default object-position: 50% 50%) */
+    *offset_x = (box_width - *render_width) / 2;
+    *offset_y = (box_height - *render_height) / 2;
+}
+
+/**
  * Redraw a short text string, complete with highlighting
  * (for selection/search)
  *
@@ -1856,25 +1946,62 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
 
     if (box->object && width != 0 && height != 0) {
         struct content_redraw_data obj_data;
+        struct rect object_clip = r;
 
         x_scrolled = x - scrollbar_get_offset(box->scroll_x) * scale;
         y_scrolled = y - scrollbar_get_offset(box->scroll_y) * scale;
 
-        obj_data.x = x_scrolled + padding_left;
-        obj_data.y = y_scrolled + padding_top;
-        obj_data.width = width;
-        obj_data.height = height;
+        /* Get object-fit value from style (default: fill) */
+        uint8_t object_fit = CSS_OBJECT_FIT_FILL;
+        if (box->style) {
+            object_fit = css_computed_object_fit(box->style);
+        }
+
+        /* Get intrinsic dimensions of content */
+        int intrinsic_width = content_get_width(box->object);
+        int intrinsic_height = content_get_height(box->object);
+
+        /* Calculate render dimensions based on object-fit */
+        int render_width, render_height, offset_x, offset_y;
+        calculate_object_fit_dimensions(object_fit, width, height, intrinsic_width, intrinsic_height, &render_width,
+            &render_height, &offset_x, &offset_y);
+
+        /* Position: base position + padding + centering offset (all scaled) */
+        obj_data.x = x_scrolled + padding_left + offset_x * scale;
+        obj_data.y = y_scrolled + padding_top + offset_y * scale;
+        /* Dimensions: pass unscaled, content_redraw applies obj_data.scale */
+        obj_data.width = render_width;
+        obj_data.height = render_height;
         obj_data.background_colour = current_background_color;
         obj_data.scale = scale;
         obj_data.repeat_x = false;
         obj_data.repeat_y = false;
+
+        /* For cover/none/scale-down modes, clip to box bounds to crop overflow */
+        if (object_fit == CSS_OBJECT_FIT_COVER || object_fit == CSS_OBJECT_FIT_NONE ||
+            object_fit == CSS_OBJECT_FIT_SCALE_DOWN) {
+            int box_left = x_scrolled + padding_left;
+            int box_top = y_scrolled + padding_top;
+            int box_right = box_left + width * scale;
+            int box_bottom = box_top + height * scale;
+
+            /* Intersect with box content bounds */
+            if (object_clip.x0 < box_left)
+                object_clip.x0 = box_left;
+            if (object_clip.y0 < box_top)
+                object_clip.y0 = box_top;
+            if (object_clip.x1 > box_right)
+                object_clip.x1 = box_right;
+            if (object_clip.y1 > box_bottom)
+                object_clip.y1 = box_bottom;
+        }
 
         if (content_get_type(box->object) == CONTENT_HTML) {
             obj_data.x /= scale;
             obj_data.y /= scale;
         }
 
-        if (!content_redraw(box->object, &obj_data, &r, ctx)) {
+        if (!content_redraw(box->object, &obj_data, &object_clip, ctx)) {
             const char *tag = "";
             const char *cls = "";
             dom_string *name = NULL;

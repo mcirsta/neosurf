@@ -574,4 +574,9 @@ struct prop_table prop_dispatch[CSS_N_PROPERTIES] = {{
     {
         PROPERTY_FUNCS(grid_row_end),
         0,
+    },
+    /* Object-fit property */
+    {
+        PROPERTY_FUNCS(object_fit),
+        0,
     }};

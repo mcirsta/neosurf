@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Object-Fit Test</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        h2 {
+            color: #555;
+            margin-top: 30px;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .box {
+            width: 200px;
+            background: #fff;
+            border: 2px solid #333;
+            text-align: center;
+        }
+
+        .box img {
+            width: 200px;
+            height: 120px;
+            display: block;
+            border-bottom: 1px solid #ccc;
+        }
+
+        .label {
+            font-size: 14px;
+            font-weight: bold;
+            padding: 8px;
+            display: block;
+        }
+
+        .fill img {
+            object-fit: fill;
+        }
+
+        .contain img {
+            object-fit: contain;
+            background: #eee;
+        }
+
+        .cover img {
+            object-fit: cover;
+        }
+
+        .none img {
+            object-fit: none;
+        }
+
+        .scale-down img {
+            object-fit: scale-down;
+            background: #eee;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>CSS Object-Fit Test</h1>
+    <p>Box: 200×120px | Image: 400×300px (wider aspect ratio)</p>
+
+    <div class="container">
+        <div class="box fill">
+            <img src="test_wide.png" alt="test">
+            <span class="label">fill</span>
+        </div>
+        <div class="box contain">
+            <img src="test_wide.png" alt="test">
+            <span class="label">contain</span>
+        </div>
+        <div class="box cover">
+            <img src="test_wide.png" alt="test">
+            <span class="label">cover</span>
+        </div>
+        <div class="box none">
+            <img src="test_wide.png" alt="test">
+            <span class="label">none</span>
+        </div>
+        <div class="box scale-down">
+            <img src="test_wide.png" alt="test">
+            <span class="label">scale-down</span>
+        </div>
+    </div>
+
+    <h2>Small image (100×75px - fits in box)</h2>
+    <div class="container">
+        <div class="box none">
+            <img src="test_small.png" alt="small">
+            <span class="label">none</span>
+        </div>
+        <div class="box scale-down">
+            <img src="test_small.png" alt="small">
+            <span class="label">scale-down</span>
+        </div>
+        <div class="box contain">
+            <img src="test_small.png" alt="small">
+            <span class="label">contain</span>
+        </div>
+    </div>
+
+    <h2>Expected Behavior</h2>
+    <table border="1" cellpadding="8" style="border-collapse: collapse; background: #fff;">
+        <tr>
+            <th>Value</th>
+            <th>Behavior</th>
+        </tr>
+        <tr>
+            <td>fill</td>
+            <td>Stretch to fill box (distorted)</td>
+        </tr>
+        <tr>
+            <td>contain</td>
+            <td>Fit entirely, preserve ratio (letterboxing)</td>
+        </tr>
+        <tr>
+            <td>cover</td>
+            <td>Fill box, preserve ratio (cropped)</td>
+        </tr>
+        <tr>
+            <td>none</td>
+            <td>Original size (cropped if larger)</td>
+        </tr>
+        <tr>
+            <td>scale-down</td>
+            <td>Smaller of none/contain</td>
+        </tr>
+    </table>
+</body>
+
+</html>

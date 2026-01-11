@@ -367,6 +367,11 @@ enum {
     MAX_CONTENT,
     FIT_CONTENT,
     SPAN,
+    /* Object-fit keywords */
+    FILL,
+    CONTAIN,
+    COVER,
+    SCALE_DOWN,
     /* Named colours */
     FIRST_COLOUR,
 
