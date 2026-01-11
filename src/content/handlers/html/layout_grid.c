@@ -981,6 +981,12 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
             int total_height = child->height + child->padding[TOP] + child->padding[BOTTOM] + child->border[TOP].width +
                 child->border[BOTTOM].width;
             int height_per_row = total_height / row_span;
+
+            NSLOG(layout, WARNING,
+                "GRID ROW_HEIGHT: child %p content_h=%d pad=%d,%d border=%d,%d total=%d row_span=%d height_per_row=%d",
+                child, child->height, child->padding[TOP], child->padding[BOTTOM], child->border[TOP].width,
+                child->border[BOTTOM].width, total_height, row_span, height_per_row);
+
             for (int r = item_row; r < item_row + row_span; r++) {
                 if (!ensure_row_capacity(&row_heights, &row_heights_capacity, r)) {
                     free(col_widths);
@@ -988,9 +994,12 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
                     return false;
                 }
                 if (height_per_row > row_heights[r]) {
+                    NSLOG(layout, WARNING, "GRID ROW_HEIGHT UPDATE: row[%d] %d -> %d (from child %p)", r,
+                        row_heights[r], height_per_row, child);
                     /* If this row already had an item, we need pass 3 to fix it */
                     if (row_first_item_done[r]) {
                         needs_pass3 = true;
+                        NSLOG(layout, WARNING, "GRID: needs_pass3 set TRUE because row[%d] already had item", r);
                     }
                     row_heights[r] = height_per_row;
                 }
