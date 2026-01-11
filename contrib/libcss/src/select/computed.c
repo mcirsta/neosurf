@@ -1864,3 +1864,8 @@ uint8_t css_computed_grid_auto_flow(const css_computed_style *style)
 {
     return get_grid_auto_flow(style);
 }
+
+uint8_t css_computed_object_fit(const css_computed_style *style)
+{
+    return get_object_fit(style);
+}

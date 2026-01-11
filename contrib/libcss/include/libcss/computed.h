@@ -413,6 +413,8 @@ uint8_t css_computed_grid_row_end(const css_computed_style *style, int32_t *inte
 
 uint8_t css_computed_grid_auto_flow(const css_computed_style *style);
 
+uint8_t css_computed_object_fit(const css_computed_style *style);
+
 #ifdef __cplusplus
 }
 #endif

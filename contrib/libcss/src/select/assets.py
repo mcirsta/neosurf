@@ -17,7 +17,7 @@ COPYRIGHT = '''\
 INCLUDE_LIBCSS_COMPUTED = '#include <libcss/computed.h>\n'
 INCLUDE_PROPGET = '#include "select/propget.h"\n'
 INCLUDE_CALC = '#include "select/calc.h"\n'
-INCLUDE_COMPUTED = '#include "computed.h"\n'
+INCLUDE_COMPUTED = '#include "select/computed.h"\n'
 
 # Union type definition with include guard to prevent redefinition
 CSS_FIXED_OR_CALC_UNION = '''\

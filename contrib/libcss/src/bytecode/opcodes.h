@@ -722,4 +722,12 @@ enum op_grid_line { GRID_LINE_AUTO = 0x0000, GRID_LINE_SET = 0x0001, GRID_LINE_S
 
 enum op_grid_template { GRID_TEMPLATE_NONE = 0x0000, GRID_TEMPLATE_SET = 0x0080 };
 
+enum op_object_fit {
+    OBJECT_FIT_FILL = 0x0000,
+    OBJECT_FIT_CONTAIN = 0x0001,
+    OBJECT_FIT_COVER = 0x0002,
+    OBJECT_FIT_NONE = 0x0003,
+    OBJECT_FIT_SCALE_DOWN = 0x0004
+};
+
 #endif

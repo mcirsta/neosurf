@@ -327,6 +327,13 @@ bool layout_flex_redistribute_auto_margins_vertical(struct box *flex)
             margin_type = css_computed_margin_bottom(child->style, &len, &unit);
             margin_bottom_auto = (margin_type == CSS_MARGIN_AUTO);
         }
+        /* Also check for AUTO sentinel in box margin (used when style is unavailable) */
+        if (child->margin[TOP] == AUTO) {
+            margin_top_auto = true;
+        }
+        if (child->margin[BOTTOM] == AUTO) {
+            margin_bottom_auto = true;
+        }
 
         if (!margin_top_auto) {
             child_outer_height += child->margin[TOP];
@@ -440,6 +447,13 @@ bool layout_flex_redistribute_auto_margins_vertical(struct box *flex)
             margin_top_auto = (margin_type == CSS_MARGIN_AUTO);
             margin_type = css_computed_margin_bottom(child->style, &len, &unit);
             margin_bottom_auto = (margin_type == CSS_MARGIN_AUTO);
+        }
+        /* Also check for AUTO sentinel in box margin (used when style is unavailable) */
+        if (child->margin[TOP] == AUTO) {
+            margin_top_auto = true;
+        }
+        if (child->margin[BOTTOM] == AUTO) {
+            margin_bottom_auto = true;
         }
 
         /* Add margin-top (resolved or auto) */

@@ -259,6 +259,7 @@ add_library(css SHARED
 	src/select/properties/grid_column_end.c
 	src/select/properties/grid_row_start.c
 	src/select/properties/grid_row_end.c
+	src/select/properties/object_fit.c
 	src/select/arena.c
 	src/select/calc.c
 	src/select/computed.c
