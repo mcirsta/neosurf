@@ -1142,30 +1142,48 @@ static struct box *layout_next_margin_block(const css_unit_ctx *unit_len_ctx, st
                 /* No more siblings:
                  * Go up to first ancestor with a sibling. */
                 do {
-                    /* Apply bottom margin */
-                    if (box->margin[BOTTOM] > 0 && (unsigned int)box->margin[BOTTOM] > *max_pos_margin)
-                        *max_pos_margin = (unsigned int)box->margin[BOTTOM];
-                    else if (box->margin[BOTTOM] != AUTO && box->margin[BOTTOM] < 0 &&
-                        -(unsigned int)box->margin[BOTTOM] > *max_neg_margin)
-                        *max_neg_margin = -(unsigned int)box->margin[BOTTOM];
-
                     box = box->parent;
-                } while (box != block && !box->next);
 
-                if (box == block) {
-                    /* Margins don't collapse with stuff
-                     * outside the block formatting context
-                     */
-                    return block;
-                }
+                    /* Check if we've reached the block boundary BEFORE
+                     * accumulating any margins from it */
+                    if (box == block) {
+                        /* Margins don't collapse with stuff
+                         * outside the block formatting context.
+                         * Don't accumulate this block's margin-bottom
+                         * as it belongs to the outer context. */
+                        return block;
+                    }
+
+                    /* CSS 2.1 §8.3.1: If parent has padding[TOP], margins
+                     * from children don't collapse through to ancestors.
+                     * Stop here and return this box as the collapse target. */
+                    if (box->padding[TOP]) {
+                        return box;
+                    }
+
+                    /* Apply bottom margin only if padding[BOTTOM] doesn't
+                     * separate it from children (CSS 2.1 §8.3.1: "no padding
+                     * ...separate them" for margins to be adjoining) */
+                    if (!box->padding[BOTTOM]) {
+                        if (box->margin[BOTTOM] > 0 && (unsigned int)box->margin[BOTTOM] > *max_pos_margin)
+                            *max_pos_margin = (unsigned int)box->margin[BOTTOM];
+                        else if (box->margin[BOTTOM] != AUTO && box->margin[BOTTOM] < 0 &&
+                            -(unsigned int)box->margin[BOTTOM] > *max_neg_margin)
+                            *max_neg_margin = -(unsigned int)box->margin[BOTTOM];
+                    }
+
+                } while (!box->next);
             }
 
-            /* Apply bottom margin */
-            if (box->margin[BOTTOM] > 0 && (unsigned int)box->margin[BOTTOM] > *max_pos_margin)
-                *max_pos_margin = (unsigned int)box->margin[BOTTOM];
-            else if (box->margin[BOTTOM] != AUTO && box->margin[BOTTOM] < 0 &&
-                -(unsigned int)box->margin[BOTTOM] > *max_neg_margin)
-                *max_neg_margin = -(unsigned int)box->margin[BOTTOM];
+            /* Apply bottom margin only if padding[BOTTOM] doesn't separate it
+             * (CSS 2.1 §8.3.1: padding prevents margin collapsing) */
+            if (!box->padding[BOTTOM]) {
+                if (box->margin[BOTTOM] > 0 && (unsigned int)box->margin[BOTTOM] > *max_pos_margin)
+                    *max_pos_margin = (unsigned int)box->margin[BOTTOM];
+                else if (box->margin[BOTTOM] != AUTO && box->margin[BOTTOM] < 0 &&
+                    -(unsigned int)box->margin[BOTTOM] > *max_neg_margin)
+                    *max_neg_margin = -(unsigned int)box->margin[BOTTOM];
+            }
 
             /* To next sibling. */
             box = box->next;

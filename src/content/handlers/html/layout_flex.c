@@ -904,7 +904,7 @@ static inline bool layout_flex__base_and_main_sizes(
  * \param[in] flex             Flex box
  * \param[in] available_width  Available width in pixels
  */
-static void layout_flex_ctx__populate_item_data(const struct flex_ctx *ctx, const struct box *flex, int available_width)
+static void layout_flex_ctx__populate_item_data(struct flex_ctx *ctx, const struct box *flex, int available_width)
 {
     size_t i = 0;
     bool horizontal = ctx->horizontal;
