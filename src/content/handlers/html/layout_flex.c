@@ -1574,6 +1574,14 @@ static bool layout_flex__place_line_items_main(struct flex_ctx *ctx, struct flex
             NSLOG(
                 flex, DEEPDEBUG, "ITEM[%zu]: after post_mult main_pos=%d (post_mult=%d)", i, main_pos, post_multiplier);
 
+            /* DIAG: Log detailed child contribution for column flex debugging */
+            if (!ctx->horizontal) {
+                NSLOG(flex, WARNING,
+                    "COLUMN_CHILD[%zu]: box %p type=%d h=%d m_top=%d m_bot=%d delta_outer=%d total_contrib=%d running_main=%d",
+                    i, b, b->type, box_size_main, b->margin[TOP], b->margin[BOTTOM], lh__delta_outer_main(ctx->flex, b),
+                    box_size_main + lh__delta_outer_main(ctx->flex, b), main_pos);
+            }
+
             if (jc_gap_between > 0 || jc_gap_between_rem > 0) {
                 int extra_between_for_item = 0;
                 if (jc_gap_between_rem > 0) {
