@@ -67,6 +67,7 @@
 #include "content/handlers/html/box_construct.h"
 #include "content/handlers/html/css.h"
 #include "content/handlers/html/dom_event.h"
+#include "content/handlers/html/font_face.h"
 #include "content/handlers/html/html_svg.h"
 #include "content/handlers/html/imagemap.h"
 #include "content/handlers/html/layout.h"
@@ -296,11 +297,14 @@ nserror html_proceed_to_done(html_content *html)
 {
     switch (content__get_status(&html->base)) {
     case CONTENT_STATUS_READY:
-        if (html->base.active == html->scripts_active) {
-            content_set_done(&html->base);
-            return NSERROR_OK;
+        if (html->base.active != html->scripts_active) {
+            NSLOG(neosurf, DEBUG, "proceed_to_done: waiting for scripts (active=%d scripts=%d)", html->base.active,
+                html->scripts_active);
+            break;
         }
-        break;
+        NSLOG(neosurf, INFO, "proceed_to_done: all resources ready, setting content DONE");
+        content_set_done(&html->base);
+        return NSERROR_OK;
     case CONTENT_STATUS_DONE:
         /* fallthrough */
     case CONTENT_STATUS_LOADING:
@@ -376,28 +380,34 @@ void html_finish_conversion(html_content *htmlc)
      * box tree for the html content when this new stylesheet is ready.
      * NetSurf has no concept of dynamically changing documents, so this
      * would break badly.
+     *
+     * EXCEPTION: If we have a pending font_wait_start_ms, we're resuming
+     * after waiting for fonts, so we should proceed.
      */
-    if (htmlc->select_ctx != NULL) {
+    if (htmlc->select_ctx != NULL && htmlc->font_wait_start_ms == 0) {
         NSLOG(neosurf, INFO, "Ignoring style change: NS layout is static.");
         return;
     }
 
-    /* create new css selection context */
-    PERF("CSS selection context CREATE");
-    error = html_css_new_selection_context(htmlc, &htmlc->select_ctx);
-    if (error != NSERROR_OK) {
-        content_broadcast_error(&htmlc->base, error, NULL);
-        content_set_error(&htmlc->base);
-        return;
-    }
+    /* Only do these steps on first call, not when resuming after fonts */
+    if (htmlc->select_ctx == NULL) {
+        /* create new css selection context */
+        PERF("CSS selection context CREATE");
+        error = html_css_new_selection_context(htmlc, &htmlc->select_ctx);
+        if (error != NSERROR_OK) {
+            content_broadcast_error(&htmlc->base, error, NULL);
+            content_set_error(&htmlc->base);
+            return;
+        }
 
 
-    /* fire a simple event named load at the Document's Window
-     * object, but with its target set to the Document object (and
-     * the currentTarget set to the Window object)
-     */
-    if (htmlc->jsthread != NULL) {
-        js_fire_event(htmlc->jsthread, "load", htmlc->document, NULL);
+        /* fire a simple event named load at the Document's Window
+         * object, but with its target set to the Document object (and
+         * the currentTarget set to the Window object)
+         */
+        if (htmlc->jsthread != NULL) {
+            js_fire_event(htmlc->jsthread, "load", htmlc->document, NULL);
+        }
     }
 
     /* convert dom tree to box tree */
@@ -422,6 +432,33 @@ void html_finish_conversion(html_content *htmlc)
     if (error != NSERROR_OK && error != NSERROR_NOT_FOUND) {
         NSLOG(neosurf, WARNING, "SVG symbol resolution had issues: %d", error);
         /* Non-fatal - continue with box conversion */
+    }
+
+    /* Register this content for font completion callback (only on first call) */
+    if (htmlc->font_wait_start_ms == 0) {
+        html_font_face_init(htmlc, htmlc->select_ctx);
+    }
+
+    /* Wait for fonts before starting box conversion to avoid FOUT */
+    if (html_font_face_has_pending()) {
+        /* Store timestamp on first delay */
+        if (htmlc->font_wait_start_ms == 0) {
+            nsu_getmonotonic_ms(&htmlc->font_wait_start_ms);
+            NSLOG(neosurf, INFO, "Delaying box conversion - waiting for %d pending fonts (started at %llu ms)",
+                html_font_face_pending_count(), htmlc->font_wait_start_ms);
+        }
+        dom_node_unref(html);
+        /* Will be called again when fonts complete */
+        return;
+    }
+
+    /* Log delay if we waited for fonts */
+    if (htmlc->font_wait_start_ms != 0) {
+        uint64_t now_ms;
+        nsu_getmonotonic_ms(&now_ms);
+        uint64_t delay_ms = now_ms - htmlc->font_wait_start_ms;
+        NSLOG(neosurf, INFO, "Fonts ready! Box conversion delayed by %llu ms", delay_ms);
+        htmlc->font_wait_start_ms = 0; /* Reset for next time */
     }
 
     PERF("DOM to box START");
@@ -1358,6 +1395,9 @@ static void html_destroy(struct content *c)
 
         form_free(f);
     }
+
+    /* Clean up font waiting state */
+    html_font_face_fini(html);
 
     imagemap_destroy(html);
 

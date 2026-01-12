@@ -63,6 +63,12 @@ static int pending_font_count = 0;
 /** Callback to invoke when all fonts finish downloading */
 static html_font_face_done_cb font_done_callback = NULL;
 
+/** Current HTML content waiting for fonts (for proceed_to_done callback) */
+static struct html_content *font_waiting_content = NULL;
+
+/* Forward declaration */
+extern void html_finish_conversion(struct html_content *htmlc);
+
 /**
  * Check if all fonts have finished and invoke callback if set.
  */
@@ -71,6 +77,12 @@ static void check_fonts_done(void)
     if (pending_font_count == 0 && font_done_callback != NULL) {
         NSLOG(netsurf, INFO, "All font downloads complete, invoking callback");
         font_done_callback();
+    }
+    /* Notify content that fonts are done so it can continue box conversion */
+    if (pending_font_count == 0 && font_waiting_content != NULL) {
+        struct html_content *c = font_waiting_content;
+        NSLOG(netsurf, INFO, "All fonts loaded, resuming box conversion for %p", c);
+        html_finish_conversion(c);
     }
 }
 
@@ -305,17 +317,8 @@ nserror html_font_face_process(const css_font_face *font_face, const char *base_
 /* Exported function documented in font_face.h */
 nserror html_font_face_init(struct html_content *c, css_select_ctx *select_ctx)
 {
-    /* Note: We can't easily enumerate all font-faces from the selection
-     * context. The css_select_font_faces API requires a specific family
-     * name to query.
-     *
-     * For now, we'll rely on font-faces being discovered during style
-     * selection when a font-family is encountered that doesn't exist.
-     *
-     * TODO: Add a mechanism to enumerate all @font-face rules from
-     * stylesheets directly if libcss provides such an API.
-     */
-    (void)c;
+    /* Store the content so we can notify it when fonts complete */
+    font_waiting_content = c;
     (void)select_ctx;
 
     NSLOG(netsurf, INFO, "Font-face system initialized for content %p", c);
@@ -325,12 +328,10 @@ nserror html_font_face_init(struct html_content *c, css_select_ctx *select_ctx)
 /* Exported function documented in font_face.h */
 nserror html_font_face_fini(struct html_content *c)
 {
-    (void)c; /* No longer tracking per-content downloads */
-
-    /* Note: Font downloads are now global (not per-content) since we
-     * removed the html field when switching to llcache. Downloads will
-     * complete or timeout on their own. */
-
+    /* Clear the waiting content if it matches */
+    if (font_waiting_content == c) {
+        font_waiting_content = NULL;
+    }
     return NSERROR_OK;
 }
 
@@ -369,4 +370,10 @@ void html_font_face_set_done_callback(html_font_face_done_cb cb)
 bool html_font_face_has_pending(void)
 {
     return pending_font_count > 0;
+}
+
+/* Get pending font count for logging */
+int html_font_face_pending_count(void)
+{
+    return pending_font_count;
 }

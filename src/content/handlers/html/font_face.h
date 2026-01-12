@@ -97,4 +97,11 @@ void html_font_face_set_done_callback(html_font_face_done_cb cb);
  */
 bool html_font_face_has_pending(void);
 
+/**
+ * Get the count of pending font downloads (for logging).
+ *
+ * \return number of fonts still downloading
+ */
+int html_font_face_pending_count(void);
+
 #endif /* NETSURF_HTML_FONT_FACE_H */

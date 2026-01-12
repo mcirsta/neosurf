@@ -48,6 +48,20 @@ extern "C" {
 #define MAGIC_SCALING_DENOMINATOR (75)
 
 /**
+ * Get a top-level widget to use as QPaintDevice for font metrics.
+ * Returns nullptr if no window exists yet (early startup).
+ * Using an existing widget ensures font metrics match actual rendering.
+ */
+static QPaintDevice *get_metrics_device(void)
+{
+    auto widgets = QApplication::topLevelWidgets();
+    if (!widgets.isEmpty()) {
+        return widgets.first();
+    }
+    return nullptr;
+}
+
+/**
  * constructs a qfont from a nsfont
  *
  * First checks if any of the CSS font-family names are available,
@@ -329,7 +343,9 @@ layout_position(QFontMetrics &metrics, const char *string, size_t length, int x,
 static nserror nsqt_layout_width(const struct plot_font_style *fstyle, const char *string, size_t length, int *width)
 {
     QFont *font = nsfont_style_to_font(fstyle);
-    QFontMetrics metrics(*font);
+    /* Use top-level widget as device for accurate metrics matching rendering */
+    QPaintDevice *device = get_metrics_device();
+    QFontMetrics metrics = device ? QFontMetrics(*font, device) : QFontMetrics(*font);
     *width = metrics.horizontalAdvance(string, length);
     delete font;
     NSLOG(netsurf, DEEPDEBUG, "fstyle: %p string:\"%.*s\", length: %" PRIsizet ", width: %dpx", fstyle, (int)length,
@@ -354,7 +370,9 @@ static nserror nsqt_layout_position(
     const struct plot_font_style *fstyle, const char *string, size_t length, int x, size_t *string_idx, int *actual_x)
 {
     QFont *font = nsfont_style_to_font(fstyle);
-    QFontMetrics metrics(*font);
+    /* Use top-level widget as device for accurate metrics matching rendering */
+    QPaintDevice *device = get_metrics_device();
+    QFontMetrics metrics = device ? QFontMetrics(*font, device) : QFontMetrics(*font);
     nserror res;
 
     res = layout_position(metrics, string, length, x, string_idx, actual_x);
@@ -396,7 +414,9 @@ static nserror nsqt_layout_split(const struct plot_font_style *fstyle, const cha
 {
     nserror res;
     QFont *font = nsfont_style_to_font(fstyle);
-    QFontMetrics metrics(*font);
+    /* Use top-level widget as device for accurate metrics matching rendering */
+    QPaintDevice *device = get_metrics_device();
+    QFontMetrics metrics = device ? QFontMetrics(*font, device) : QFontMetrics(*font);
     size_t split_len;
     int split_x;
     size_t str_len;
