@@ -162,6 +162,7 @@ PROPERTY_FUNCS(grid_row_end);
 
 /* Object-fit property */
 PROPERTY_FUNCS(object_fit);
+PROPERTY_FUNCS(object_position);
 
 #undef PROPERTY_FUNCS
 
