@@ -90,6 +90,8 @@ static nserror nsqt_plot_clip(const struct redraw_context *ctx, const struct rec
 {
     QPainter *painter = (QPainter *)ctx->priv;
 
+    NSLOG(netsurf, WARNING, "clip set: %d,%d to %d,%d", clip->x0, clip->y0, clip->x1, clip->y1);
+
     painter->setClipRect(clip->x0, clip->y0, clip->x1 - clip->x0, clip->y1 - clip->y0);
     return NSERROR_OK;
 }
@@ -311,6 +313,9 @@ static nserror nsqt_plot_bitmap(const struct redraw_context *ctx, struct bitmap 
     QPainter *painter = (QPainter *)ctx->priv;
     QRectF source(0, 0, img->width(), img->height());
     QRectF target(x, y, width, height);
+
+    NSLOG(netsurf, WARNING, "bitmap plot: target=(%d,%d %dx%d) source=(%dx%d)", x, y, width, height, img->width(),
+        img->height());
 
     /* Enable smooth scaling for better image quality when resizing */
     painter->setRenderHint(QPainter::SmoothPixmapTransform, true);

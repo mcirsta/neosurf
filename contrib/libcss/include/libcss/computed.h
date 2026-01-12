@@ -415,6 +415,9 @@ uint8_t css_computed_grid_auto_flow(const css_computed_style *style);
 
 uint8_t css_computed_object_fit(const css_computed_style *style);
 
+uint8_t css_computed_object_position(
+    const css_computed_style *style, css_fixed *hlength, css_unit *hunit, css_fixed *vlength, css_unit *vunit);
+
 #ifdef __cplusplus
 }
 #endif

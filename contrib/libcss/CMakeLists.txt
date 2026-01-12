@@ -123,6 +123,7 @@ add_library(css SHARED
 	src/parse/properties/grid_row.c
 	src/parse/properties/grid_area.c
 	src/parse/properties/grid_auto_flow.c
+	src/parse/properties/object_position.c
 	${PROPSRC}
 	src/select/properties/helpers.c
 	src/select/properties/align_content.c
@@ -260,6 +261,7 @@ add_library(css SHARED
 	src/select/properties/grid_row_start.c
 	src/select/properties/grid_row_end.c
 	src/select/properties/object_fit.c
+	src/select/properties/object_position.c
 	src/select/arena.c
 	src/select/calc.c
 	src/select/computed.c

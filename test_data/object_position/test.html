@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Object-Position Test (Portrait Image)</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        h2 {
+            color: #555;
+            margin-top: 30px;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .box {
+            width: 100px;
+            background: #fff;
+            border: 2px solid #333;
+            text-align: center;
+        }
+
+        .box img {
+            width: 100px;
+            height: 100px;
+            display: block;
+            border-bottom: 1px solid #ccc;
+            object-fit: cover;
+            background: #eee;
+        }
+
+        .label {
+            font-size: 11px;
+            font-weight: bold;
+            padding: 6px;
+            display: block;
+        }
+
+        /* object-position test cases - VERTICAL positioning matters for portrait images */
+        .pos-center img {
+            object-position: center center;
+        }
+
+        .pos-top img {
+            object-position: center top;
+        }
+
+        .pos-bottom img {
+            object-position: center bottom;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Portrait Image Test (hotnews.ro scenario)</h1>
+    <p>Box: 100×100px | Image: Portrait (taller than wide) | object-fit: cover</p>
+    <p><strong>Expected:</strong> With a portrait image, vertical positioning matters!</p>
+    <ul>
+        <li><strong>center center</strong> - Shows middle (face/tan area)</li>
+        <li><strong>center top</strong> - Shows top (blue sky)</li>
+        <li><strong>center bottom</strong> - Shows bottom (green grass)</li>
+    </ul>
+
+    <h2>Vertical Positioning (These should look DIFFERENT!)</h2>
+    <div class="container">
+        <div class="box pos-top">
+            <img src="portrait.png" alt="test">
+            <span class="label">center top<br>(BLUE - sky)</span>
+        </div>
+        <div class="box pos-center">
+            <img src="portrait.png" alt="test">
+            <span class="label">center center<br>(TAN - face)</span>
+        </div>
+        <div class="box pos-bottom">
+            <img src="portrait.png" alt="test">
+            <span class="label">center bottom<br>(GREEN - grass)</span>
+        </div>
+    </div>
+
+    <h2>Expected Behavior</h2>
+    <table border="1" cellpadding="8" style="border-collapse: collapse; background: #fff;">
+        <tr>
+            <th>Value</th>
+            <th>Shows</th>
+            <th>Color</th>
+        </tr>
+        <tr>
+            <td>center top</td>
+            <td>Top of image</td>
+            <td style="background: #0099dd; color: white;">BLUE (sky)</td>
+        </tr>
+        <tr>
+            <td>center center</td>
+            <td>Middle of image</td>
+            <td style="background: #e8b888;">TAN (face)</td>
+        </tr>
+        <tr>
+            <td>center bottom</td>
+            <td>Bottom of image</td>
+            <td style="background: #22cc44; color: white;">GREEN (grass)</td>
+        </tr>
+    </table>
+</body>
+
+</html>

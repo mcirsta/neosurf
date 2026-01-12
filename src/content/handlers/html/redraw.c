@@ -140,20 +140,22 @@ static struct box *html_redraw_find_bg_box(struct box *box)
  * Calculate render dimensions for object-fit CSS property.
  *
  * Computes the dimensions and position at which to render replaced element
- * content (images, videos) based on the object-fit property value.
+ * content (images, videos) based on the object-fit and object-position properties.
  *
- * \param object_fit     CSS object-fit value
- * \param box_width      Box content area width
- * \param box_height     Box content area height
+ * \param style           CSS computed style (for object-position)
+ * \param object_fit      CSS object-fit value
+ * \param box_width       Box content area width
+ * \param box_height      Box content area height
  * \param intrinsic_width   Content intrinsic width
  * \param intrinsic_height  Content intrinsic height
- * \param render_width   Updated with computed render width
- * \param render_height  Updated with computed render height
- * \param offset_x       Updated with x offset within box (for centering)
- * \param offset_y       Updated with y offset within box (for centering)
+ * \param render_width    Updated with computed render width
+ * \param render_height   Updated with computed render height
+ * \param offset_x        Updated with x offset within box
+ * \param offset_y        Updated with y offset within box
  */
-static void calculate_object_fit_dimensions(uint8_t object_fit, int box_width, int box_height, int intrinsic_width,
-    int intrinsic_height, int *render_width, int *render_height, int *offset_x, int *offset_y)
+static void calculate_object_fit_dimensions(const css_computed_style *style, uint8_t object_fit, int box_width,
+    int box_height, int intrinsic_width, int intrinsic_height, int *render_width, int *render_height, int *offset_x,
+    int *offset_y)
 {
     /* Handle zero dimensions */
     if (intrinsic_width <= 0 || intrinsic_height <= 0 || box_width <= 0 || box_height <= 0) {
@@ -214,16 +216,50 @@ static void calculate_object_fit_dimensions(uint8_t object_fit, int box_width, i
             *render_height = intrinsic_height;
         } else {
             /* Recurse with contain */
-            calculate_object_fit_dimensions(CSS_OBJECT_FIT_CONTAIN, box_width, box_height, intrinsic_width,
+            calculate_object_fit_dimensions(style, CSS_OBJECT_FIT_CONTAIN, box_width, box_height, intrinsic_width,
                 intrinsic_height, render_width, render_height, offset_x, offset_y);
             return;
         }
         break;
     }
 
-    /* Center in box (default object-position: 50% 50%) */
-    *offset_x = (box_width - *render_width) / 2;
-    *offset_y = (box_height - *render_height) / 2;
+    /* Calculate object-position offsets */
+    css_fixed hlength = 0, vlength = 0;
+    css_unit hunit = CSS_UNIT_PCT, vunit = CSS_UNIT_PCT;
+
+    if (style != NULL) {
+        uint8_t type = css_computed_object_position(style, &hlength, &hunit, &vlength, &vunit);
+        NSLOG(netsurf, WARNING, "object-position: type=%d hlength=%d hunit=%d vlength=%d vunit=%d", type,
+            FIXTOINT(hlength), hunit, FIXTOINT(vlength), vunit);
+    } else {
+        /* Default: 50% 50% (center center) */
+        hlength = INTTOFIX(50);
+        vlength = INTTOFIX(50);
+        NSLOG(netsurf, WARNING, "object-position: style=NULL, using default 50%% 50%%");
+    }
+
+    /* Calculate horizontal offset */
+    int available_x = box_width - *render_width;
+    if (hunit == CSS_UNIT_PCT) {
+        /* Percentage: offset = (available space) * (percentage / 100) */
+        *offset_x = FIXTOINT(FDIV(FMUL(INTTOFIX(available_x), hlength), INTTOFIX(100)));
+    } else {
+        /* Length unit - for now treat as pixels (proper unit conversion would need unit_ctx) */
+        *offset_x = FIXTOINT(hlength);
+    }
+
+    /* Calculate vertical offset */
+    int available_y = box_height - *render_height;
+    if (vunit == CSS_UNIT_PCT) {
+        /* Percentage: offset = (available space) * (percentage / 100) */
+        *offset_y = FIXTOINT(FDIV(FMUL(INTTOFIX(available_y), vlength), INTTOFIX(100)));
+    } else {
+        /* Length unit - treat as pixels */
+        *offset_y = FIXTOINT(vlength);
+    }
+
+    NSLOG(netsurf, WARNING, "object-position: box=%dx%d render=%dx%d avail=%d,%d offset=%d,%d", box_width, box_height,
+        *render_width, *render_height, available_x, available_y, *offset_x, *offset_y);
 }
 
 /**
@@ -1961,10 +1997,12 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
         int intrinsic_width = content_get_width(box->object);
         int intrinsic_height = content_get_height(box->object);
 
-        /* Calculate render dimensions based on object-fit */
+        /* Calculate render dimensions based on object-fit and object-position */
         int render_width, render_height, offset_x, offset_y;
-        calculate_object_fit_dimensions(object_fit, width, height, intrinsic_width, intrinsic_height, &render_width,
-            &render_height, &offset_x, &offset_y);
+        NSLOG(netsurf, WARNING, "object-fit: box=%dx%d intrinsic=%dx%d fit=%d", width, height, intrinsic_width,
+            intrinsic_height, object_fit);
+        calculate_object_fit_dimensions(box->style, object_fit, width, height, intrinsic_width, intrinsic_height,
+            &render_width, &render_height, &offset_x, &offset_y);
 
         /* Position: base position + padding + centering offset (all scaled) */
         obj_data.x = x_scrolled + padding_left + offset_x * scale;
