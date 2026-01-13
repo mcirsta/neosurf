@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>CSS Transform Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+
+        h1 {
+            margin-bottom: 30px;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+
+        .test-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .test-box h3 {
+            margin-top: 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .box-container {
+            width: 150px;
+            height: 150px;
+            background: #e0e0e0;
+            border: 1px dashed #999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: visible;
+        }
+
+        .box {
+            width: 80px;
+            height: 80px;
+            background: #2196F3;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+        }
+
+        /* Test 1: No transform (baseline) */
+        .test1 .box {
+            transform: none;
+        }
+
+        /* Test 2: Scale down */
+        .test2 .box {
+            transform: scale(0.5);
+        }
+
+        /* Test 3: Scale up */
+        .test3 .box {
+            transform: scale(1.5);
+        }
+
+        /* Test 4: Translate */
+        .test4 .box {
+            transform: translate(20px, 10px);
+        }
+
+        /* Test 5: TranslateX */
+        .test5 .box {
+            transform: translateX(30px);
+        }
+
+        /* Test 6: TranslateY */
+        .test6 .box {
+            transform: translateY(-20px);
+        }
+
+        /* Test 7: Rotate */
+        .test7 .box {
+            transform: rotate(45deg);
+        }
+
+        /* Test 8: Rotate negative */
+        .test8 .box {
+            transform: rotate(-30deg);
+        }
+
+        /* Test 9: Combined translate + scale (like hotnews.ro) */
+        .test9 .box {
+            transform: translateX(-50%) scale(0.4);
+        }
+
+        /* Test 10: Scale separate X and Y */
+        .test10 .box {
+            transform: scaleX(0.5) scaleY(1.5);
+        }
+
+        /* Test 11: Combined all */
+        .test11 .box {
+            transform: translate(10px, 10px) rotate(15deg) scale(0.8);
+        }
+
+        /* Test 12: Translate percentage */
+        .test12 .box {
+            transform: translate(50%, 25%);
+        }
+    </style>
+</head>
+
+<body>
+    <h1>CSS Transform Test</h1>
+
+    <div class="container">
+        <div class="test-box test1">
+            <h3>1. none (baseline)</h3>
+            <div class="box-container">
+                <div class="box">A</div>
+            </div>
+        </div>
+
+        <div class="test-box test2">
+            <h3>2. scale(0.5)</h3>
+            <div class="box-container">
+                <div class="box">B</div>
+            </div>
+        </div>
+
+        <div class="test-box test3">
+            <h3>3. scale(1.5)</h3>
+            <div class="box-container">
+                <div class="box">C</div>
+            </div>
+        </div>
+
+        <div class="test-box test4">
+            <h3>4. translate(20px, 10px)</h3>
+            <div class="box-container">
+                <div class="box">D</div>
+            </div>
+        </div>
+
+        <div class="test-box test5">
+            <h3>5. translateX(30px)</h3>
+            <div class="box-container">
+                <div class="box">E</div>
+            </div>
+        </div>
+
+        <div class="test-box test6">
+            <h3>6. translateY(-20px)</h3>
+            <div class="box-container">
+                <div class="box">F</div>
+            </div>
+        </div>
+
+        <div class="test-box test7">
+            <h3>7. rotate(45deg)</h3>
+            <div class="box-container">
+                <div class="box">G</div>
+            </div>
+        </div>
+
+        <div class="test-box test8">
+            <h3>8. rotate(-30deg)</h3>
+            <div class="box-container">
+                <div class="box">H</div>
+            </div>
+        </div>
+
+        <div class="test-box test9">
+            <h3>9. translateX(-50%) scale(0.4)</h3>
+            <div class="box-container">
+                <div class="box">I</div>
+            </div>
+        </div>
+
+        <div class="test-box test10">
+            <h3>10. scaleX(0.5) scaleY(1.5)</h3>
+            <div class="box-container">
+                <div class="box">O</div>
+            </div>
+        </div>
+
+        <div class="test-box test11">
+            <h3>11. translate + rotate + scale</h3>
+            <div class="box-container">
+                <div class="box">K</div>
+            </div>
+        </div>
+
+        <div class="test-box test12">
+            <h3>12. translate(50%, 25%)</h3>
+            <div class="box-container">
+                <div class="box">L</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

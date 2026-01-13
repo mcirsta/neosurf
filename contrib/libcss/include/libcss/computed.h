@@ -109,6 +109,30 @@ typedef struct css_computed_content_item {
     } data;
 } css_computed_content_item;
 
+/**
+ * Transform function types for css_computed_transform
+ */
+enum css_transform_function_type {
+    CSS_TRANSFORM_FUNC_TRANSLATE = 1,
+    CSS_TRANSFORM_FUNC_TRANSLATEX = 2,
+    CSS_TRANSFORM_FUNC_TRANSLATEY = 3,
+    CSS_TRANSFORM_FUNC_SCALE = 4,
+    CSS_TRANSFORM_FUNC_SCALEX = 5,
+    CSS_TRANSFORM_FUNC_SCALEY = 6,
+    CSS_TRANSFORM_FUNC_ROTATE = 7
+};
+
+/**
+ * A single transform function with its values
+ */
+typedef struct css_transform_function {
+    uint8_t type; /* css_transform_function_type */
+    css_fixed value1;
+    css_unit unit1;
+    css_fixed value2;
+    css_unit unit2;
+} css_transform_function;
+
 css_error css_computed_style_destroy(css_computed_style *style);
 
 css_error css_computed_style_compose(const css_computed_style *restrict parent,
@@ -417,6 +441,9 @@ uint8_t css_computed_object_fit(const css_computed_style *style);
 
 uint8_t css_computed_object_position(
     const css_computed_style *style, css_fixed *hlength, css_unit *hunit, css_fixed *vlength, css_unit *vunit);
+
+uint8_t css_computed_transform(
+    const css_computed_style *style, uint32_t *n_functions, const css_transform_function **functions);
 
 #ifdef __cplusplus
 }

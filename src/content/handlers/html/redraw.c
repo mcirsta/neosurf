@@ -66,6 +66,7 @@
 #include "content/handlers/html/box_manipulate.h"
 #include "content/handlers/html/font.h"
 #include "content/handlers/html/layout.h"
+#include "content/handlers/html/redraw_helpers.h"
 #include "content/handlers/html/stacking.h"
 #include "content/handlers/image/svg.h"
 
@@ -229,13 +230,11 @@ static void calculate_object_fit_dimensions(const css_computed_style *style, uin
 
     if (style != NULL) {
         uint8_t type = css_computed_object_position(style, &hlength, &hunit, &vlength, &vunit);
-        NSLOG(netsurf, WARNING, "object-position: type=%d hlength=%d hunit=%d vlength=%d vunit=%d", type,
-            FIXTOINT(hlength), hunit, FIXTOINT(vlength), vunit);
+        (void)type; /* Silence unused variable warning */
     } else {
         /* Default: 50% 50% (center center) */
         hlength = INTTOFIX(50);
         vlength = INTTOFIX(50);
-        NSLOG(netsurf, WARNING, "object-position: style=NULL, using default 50%% 50%%");
     }
 
     /* Calculate horizontal offset */
@@ -257,9 +256,6 @@ static void calculate_object_fit_dimensions(const css_computed_style *style, uin
         /* Length unit - treat as pixels */
         *offset_y = FIXTOINT(vlength);
     }
-
-    NSLOG(netsurf, WARNING, "object-position: box=%dx%d render=%dx%d avail=%d,%d offset=%d,%d", box_width, box_height,
-        *render_width, *render_height, available_x, available_y, *offset_x, *offset_y);
 }
 
 /**
@@ -1407,9 +1403,118 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
     if (html_redraw_printing && (box->flags & PRINTED))
         return true;
 
+    bool has_transform = false;
     if (box->style != NULL) {
         overflow_x = css_computed_overflow_x(box->style);
         overflow_y = css_computed_overflow_y(box->style);
+
+        /* Check for CSS transform and apply if available */
+        uint32_t transform_count = 0;
+        const css_transform_function *transform_functions = NULL;
+        uint8_t transform_type = css_computed_transform(box->style, &transform_count, &transform_functions);
+
+
+        if (transform_type == CSS_TRANSFORM_FUNCTIONS && transform_count > 0 && transform_functions != NULL &&
+            ctx->plot->push_transform != NULL && box->node != NULL) {
+            /* Only apply transform if this box owns a DOM node - prevents child boxes
+             * sharing the parent's style from having the transform applied again */
+
+            /* CSS Transforms spec says:
+             * 1. Start with identity matrix
+             * 2. Translate by transform-origin
+             * 3. Multiply by each transform function left-to-right
+             * 4. Translate by negated transform-origin
+             *
+             * Matrix format: [a, b, c, d, tx, ty] where:
+             * | a  c  tx |
+             * | b  d  ty |
+             * | 0  0  1  |
+             */
+            float matrix[6] = {1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
+            int box_x = x_parent + box->x;
+            int box_y = y_parent + box->y;
+            float cx = box_x + box->width / 2.0f; /* transform-origin default: center */
+            float cy = box_y + box->height / 2.0f;
+
+            /* Build composed transform matrix M (starting with identity, no pre-translate) */
+            for (uint32_t i = 0; i < transform_count; i++) {
+                const css_transform_function *func = &transform_functions[i];
+                float val1 = FIXTOFLT(func->value1);
+                float val2 = FIXTOFLT(func->value2);
+                if (func->unit1 == CSS_UNIT_PCT)
+                    val1 = (val1 / 100.0f) * box->width;
+                if (func->unit2 == CSS_UNIT_PCT)
+                    val2 = (val2 / 100.0f) * box->height;
+
+                switch (func->type) {
+                case CSS_TRANSFORM_FUNC_TRANSLATE: {
+                    /* M' = M * T(tx,ty) -- right multiply by translation */
+                    matrix[4] += val1 * matrix[0] + val2 * matrix[2];
+                    matrix[5] += val1 * matrix[1] + val2 * matrix[3];
+                    break;
+                }
+                case CSS_TRANSFORM_FUNC_TRANSLATEX: {
+                    matrix[4] += val1 * matrix[0];
+                    matrix[5] += val1 * matrix[1];
+                    break;
+                }
+                case CSS_TRANSFORM_FUNC_TRANSLATEY: {
+                    matrix[4] += val1 * matrix[2];
+                    matrix[5] += val1 * matrix[3];
+                    break;
+                }
+                case CSS_TRANSFORM_FUNC_SCALE: {
+                    /* M' = M * S(sx,sy) -- right multiply by scale */
+                    float sx = val1;
+                    float sy = (func->value2 == 0) ? sx : val2;
+                    matrix[0] *= sx;
+                    matrix[1] *= sx;
+                    matrix[2] *= sy;
+                    matrix[3] *= sy;
+                    /* tx, ty unchanged when multiplying by pure scale from right */
+                    break;
+                }
+                case CSS_TRANSFORM_FUNC_SCALEX:
+                    matrix[0] *= val1;
+                    matrix[1] *= val1;
+                    break;
+                case CSS_TRANSFORM_FUNC_SCALEY:
+                    matrix[2] *= val1;
+                    matrix[3] *= val1;
+                    break;
+                case CSS_TRANSFORM_FUNC_ROTATE: {
+                    /* M' = M * R(θ) -- right multiply by rotation */
+                    float rad = val1 * M_PI / 180.0f;
+                    float cos_a = cosf(rad), sin_a = sinf(rad);
+                    float a = matrix[0], b = matrix[1], c = matrix[2], d = matrix[3];
+                    matrix[0] = a * cos_a + c * sin_a;
+                    matrix[1] = b * cos_a + d * sin_a;
+                    matrix[2] = c * cos_a - a * sin_a;
+                    matrix[3] = d * cos_a - b * sin_a;
+                    /* tx, ty unchanged when multiplying by pure rotation from right */
+                    break;
+                }
+                default:
+                    break;
+                }
+            }
+
+            /* Apply transform-origin wrap: Final = T(cx,cy) * M * T(-cx,-cy)
+             * This computes to: tx' = tx + cx*(1-a) - cy*c, ty' = ty + cy*(1-d) - cx*b */
+            float a = matrix[0], b = matrix[1], c = matrix[2], d = matrix[3];
+            matrix[4] += cx * (1.0f - a) - cy * c;
+            matrix[5] += cy * (1.0f - d) - cx * b;
+
+            /* Check if the matrix has any non-identity transform */
+            bool is_identity = (matrix[0] == 1.0f && matrix[1] == 0.0f && matrix[2] == 0.0f && matrix[3] == 1.0f &&
+                matrix[4] == 0.0f && matrix[5] == 0.0f);
+
+
+            if (!is_identity) {
+                if (ctx->plot->push_transform(ctx, matrix) == NSERROR_OK)
+                    has_transform = true;
+            }
+        }
     }
 
     {
@@ -1607,19 +1712,12 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
             return false;
 
     } else if (box->type == BOX_BLOCK || box->type == BOX_INLINE_BLOCK || box->type == BOX_TABLE_CELL || box->object) {
-        /* find intersection of clip rectangle and box */
-        if (r.x0 < clip->x0)
-            r.x0 = clip->x0;
-        if (r.y0 < clip->y0)
-            r.y0 = clip->y0;
-        if (clip->x1 < r.x1)
-            r.x1 = clip->x1;
-        if (clip->y1 < r.y1)
-            r.y1 = clip->y1;
-        /* no point trying to draw 0-width/height boxes */
-        if (r.x0 == r.x1 || r.y0 == r.y1)
-            /* not an error */
+        /* Use helper function for clip intersection */
+        clip_result_t result = html_clip_intersect_box(&r, clip, has_transform);
+        if (result == CLIP_RESULT_EMPTY) {
+            /* no point trying to draw 0-width/height boxes */
             return ((!ctx->plot->group_end) || (ctx->plot->group_end(ctx) == NSERROR_OK));
+        }
         /* clip to it */
         if (ctx->plot->clip(ctx, &r) != NSERROR_OK)
             return false;
@@ -1906,8 +2004,9 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
     }
 
     /* clip to the padding edge for objects, or boxes with overflow hidden
-     * or scroll, unless it's the root element */
-    if (box->parent != NULL) {
+     * or scroll, unless it's the root element.
+     * Skip for transformed boxes - the visual bounds differ from box coords. */
+    if (box->parent != NULL && !has_transform) {
         bool need_clip = false;
         if (box->object || box->flags & IFRAME ||
             (overflow_x != CSS_OVERFLOW_VISIBLE && overflow_y != CSS_OVERFLOW_VISIBLE)) {
@@ -1999,8 +2098,6 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
 
         /* Calculate render dimensions based on object-fit and object-position */
         int render_width, render_height, offset_x, offset_y;
-        NSLOG(netsurf, WARNING, "object-fit: box=%dx%d intrinsic=%dx%d fit=%d", width, height, intrinsic_width,
-            intrinsic_height, object_fit);
         calculate_object_fit_dimensions(box->style, object_fit, width, height, intrinsic_width, intrinsic_height,
             &render_width, &render_height, &offset_x, &offset_y);
 
@@ -2015,7 +2112,7 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
         obj_data.repeat_x = false;
         obj_data.repeat_y = false;
 
-        /* For cover/none/scale-down modes, clip to box bounds to crop overflow */
+        /* For cover/none/scale-down modes, clip to box bounds to crop overflow. */
         if (object_fit == CSS_OBJECT_FIT_COVER || object_fit == CSS_OBJECT_FIT_NONE ||
             object_fit == CSS_OBJECT_FIT_SCALE_DOWN) {
             int box_left = x_scrolled + padding_left;
@@ -2023,21 +2120,15 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
             int box_right = box_left + width * scale;
             int box_bottom = box_top + height * scale;
 
-            /* Intersect with box content bounds */
-            if (object_clip.x0 < box_left)
-                object_clip.x0 = box_left;
-            if (object_clip.y0 < box_top)
-                object_clip.y0 = box_top;
-            if (object_clip.x1 > box_right)
-                object_clip.x1 = box_right;
-            if (object_clip.y1 > box_bottom)
-                object_clip.y1 = box_bottom;
+            /* Use helper function - skips intersection for transformed boxes */
+            html_clip_intersect_object_fit(&object_clip, box_left, box_top, box_right, box_bottom, has_transform);
         }
 
         if (content_get_type(box->object) == CONTENT_HTML) {
             obj_data.x /= scale;
             obj_data.y /= scale;
         }
+
 
         if (!content_redraw(box->object, &obj_data, &object_clip, ctx)) {
             const char *tag = "";
@@ -2231,6 +2322,11 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
         box->type == BOX_INLINE) {
         if (ctx->plot->clip(ctx, clip) != NSERROR_OK)
             return false;
+    }
+
+    /* Pop any transform that was pushed */
+    if (has_transform && ctx->plot->pop_transform != NULL) {
+        ctx->plot->pop_transform(ctx);
     }
 
     return ((!plot->group_end) || (ctx->plot->group_end(ctx) == NSERROR_OK));

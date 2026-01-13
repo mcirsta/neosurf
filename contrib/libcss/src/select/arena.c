@@ -156,6 +156,23 @@ static inline bool css__arena_style_is_equal(struct css_computed_style *a, struc
         return false;
     }
 
+    /* Compare transform functions */
+    if (a->transform_count != b->transform_count) {
+        return false;
+    }
+    if (a->transform_count > 0) {
+        if (a->transform_functions == NULL || b->transform_functions == NULL) {
+            if (a->transform_functions != b->transform_functions) {
+                return false;
+            }
+        } else {
+            if (memcmp(a->transform_functions, b->transform_functions,
+                    a->transform_count * sizeof(css_transform_function)) != 0) {
+                return false;
+            }
+        }
+    }
+
     return true;
 }
 

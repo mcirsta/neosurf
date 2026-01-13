@@ -287,6 +287,36 @@ struct plotter_table {
      */
     nserror (*flush)(const struct redraw_context *ctx);
 
+    /**
+     * Push a transformation matrix onto the transform stack.
+     *
+     * All subsequent drawing operations will have this transform applied.
+     * The transform is a 2D affine matrix in the format:
+     *   [0]=a [1]=b [2]=c [3]=d [4]=tx [5]=ty
+     * Where the matrix is:
+     *   | a  b  0 |
+     *   | c  d  0 |
+     *   | tx ty 1 |
+     *
+     * Optional, may be NULL if frontend doesn't support transforms.
+     *
+     * \param ctx The current redraw context.
+     * \param transform 6-element affine transform matrix.
+     * \return NSERROR_OK on success else error code.
+     */
+    nserror (*push_transform)(const struct redraw_context *ctx, const float transform[6]);
+
+    /**
+     * Pop the most recent transform from the transform stack.
+     *
+     * Restores the previous transform state.
+     * Optional, may be NULL if frontend doesn't support transforms.
+     *
+     * \param ctx The current redraw context.
+     * \return NSERROR_OK on success else error code.
+     */
+    nserror (*pop_transform)(const struct redraw_context *ctx);
+
     /* flags */
     /**
      * flag to enable knockout rendering.

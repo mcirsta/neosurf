@@ -164,6 +164,9 @@ PROPERTY_FUNCS(grid_row_end);
 PROPERTY_FUNCS(object_fit);
 PROPERTY_FUNCS(object_position);
 
+/* Transform property */
+PROPERTY_FUNCS(transform);
+
 #undef PROPERTY_FUNCS
 
 #endif

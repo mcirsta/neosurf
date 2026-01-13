@@ -106,6 +106,9 @@ const stringmap_entry stringmap[LAST_KNOWN] = {SMAP("*"),
     SMAP("minmax"), SMAP("min-content"), SMAP("max-content"), SMAP("fit-content"), SMAP("span"),
     /* Object-fit keywords */
     SMAP("fill"), SMAP("contain"), SMAP("cover"), SMAP("scale-down"),
+    /* CSS transform function keywords */
+    SMAP("translate"), SMAP("translateX"), SMAP("translateY"), SMAP("scale"), SMAP("scaleX"), SMAP("scaleY"),
+    SMAP("rotate"),
 
     /* Named colours */
     SMAP("aliceblue"), SMAP("antiquewhite"), SMAP("aqua"), SMAP("aquamarine"), SMAP("azure"), SMAP("beige"),

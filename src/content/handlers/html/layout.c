@@ -4159,8 +4159,9 @@ static bool layout_absolute(struct box *box, struct box *containing_block, int c
         }
         uint8_t wtype = css_computed_width(box->style, &wlen, &wunit);
         NSLOG(layout, INFO,
-            "abs offsets pre: tag %s class %s left %i right %i width %i wtype %u wlen %ld wunit %u cb.width %i", tag,
-            cls, left, right, width, (unsigned)wtype, (long)wlen, (unsigned)wunit, containing_block->width);
+            "abs offsets pre: tag %s class %s top %i left %i right %i width %i wtype %u wlen %ld wunit %u cb.width %i cb.height %i",
+            tag, cls, top, left, right, width, (unsigned)wtype, (long)wlen, (unsigned)wunit, containing_block->width,
+            containing_block->height);
         if (class_attr != NULL)
             dom_string_unref(class_attr);
         if (name != NULL)
@@ -4438,6 +4439,9 @@ static bool layout_absolute(struct box *box, struct box *containing_block, int c
     }
     box->height = height;
     layout_apply_minmax_height(&content->unit_len_ctx, box, containing_block);
+
+    NSLOG(layout, INFO, "abs final: box->x %i box->y %i box->width %i box->height %i (top=%i left=%i cy=%i cx=%i)",
+        box->x, box->y, box->width, box->height, top, left, cy, cx);
 
     return true;
 }
