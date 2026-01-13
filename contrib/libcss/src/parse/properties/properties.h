@@ -223,6 +223,7 @@ css_error css__parse_grid_area(css_language *c, const parserutils_vector *vector
 css_error css__parse_object_fit(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error
 css__parse_object_position(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
+css_error css__parse_transform(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 
 /** Mapping from property bytecode index to bytecode unit class mask. */
 extern const uint32_t property_unit_mask[CSS_N_PROPERTIES];

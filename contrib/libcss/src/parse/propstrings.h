@@ -372,6 +372,14 @@ enum {
     CONTAIN,
     COVER,
     SCALE_DOWN,
+    /* CSS transform function keywords */
+    TRANSLATE,
+    TRANSLATEX,
+    TRANSLATEY,
+    SCALE,
+    SCALEX,
+    SCALEY,
+    ROTATE,
     /* Named colours */
     FIRST_COLOUR,
 

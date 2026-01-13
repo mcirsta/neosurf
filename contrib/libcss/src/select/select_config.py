@@ -17,7 +17,8 @@ values = {
     ('string_arr', 'lwc_string**'),
     ('counter_arr', 'css_computed_counter*'),
     ('content_item', 'css_computed_content_item*'),
-    ('grid_track_arr', 'css_computed_grid_track*')
+    ('grid_track_arr', 'css_computed_grid_track*'),
+    ('transform_func_arr', 'css_transform_function*')
 }
 
 # Configuration of property groups.
@@ -181,7 +182,10 @@ style = {
     # Object-fit property
     ('object_fit', 3),
     ('object_position', 1, (('length',), ('length',)),
-        'CSS_OBJECT_POSITION_SET')
+        'CSS_OBJECT_POSITION_SET'),
+    # Transform property - type only stored in bits, functions stored separately
+    ('transform', 2, None, None, None,
+        'Transform functions stored in css_computed_style.transform_*')
 }
 
 groups = [

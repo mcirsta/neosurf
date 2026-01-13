@@ -929,6 +929,48 @@ bool knockout_plot_end(const struct redraw_context *ctx)
 
 
 /**
+ * Push a transformation matrix - pass through to real plotter.
+ */
+static nserror knockout_plot_push_transform(const struct redraw_context *ctx, const float transform[6])
+{
+    nserror ffres;
+
+    /* Flush pending operations before transform */
+    ffres = knockout_plot_flush(ctx);
+
+    if (real_plot.push_transform != NULL) {
+        nserror res = real_plot.push_transform(ctx, transform);
+        if ((res != NSERROR_OK) && (ffres == NSERROR_OK)) {
+            ffres = res;
+        }
+    }
+
+    return ffres;
+}
+
+
+/**
+ * Pop transformation matrix - pass through to real plotter.
+ */
+static nserror knockout_plot_pop_transform(const struct redraw_context *ctx)
+{
+    nserror ffres;
+
+    /* Flush pending operations before restoring transform */
+    ffres = knockout_plot_flush(ctx);
+
+    if (real_plot.pop_transform != NULL) {
+        nserror res = real_plot.pop_transform(ctx);
+        if ((res != NSERROR_OK) && (ffres == NSERROR_OK)) {
+            ffres = res;
+        }
+    }
+
+    return ffres;
+}
+
+
+/**
  * knockout plotter operation table
  */
 const struct plotter_table knockout_plotters = {
@@ -944,5 +986,7 @@ const struct plotter_table knockout_plotters = {
     .group_end = knockout_plot_group_end,
     .flush = knockout_plot_flush,
     .path = knockout_plot_path,
+    .push_transform = knockout_plot_push_transform,
+    .pop_transform = knockout_plot_pop_transform,
     .option_knockout = true,
 };

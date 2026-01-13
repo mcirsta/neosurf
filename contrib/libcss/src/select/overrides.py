@@ -245,3 +245,54 @@ static inline uint8_t get_grid_row_end(const css_computed_style *style, int32_t 
 	return (bits & 0x3);
 }'''
 
+overrides['get']['transform'] = '''\
+static inline uint8_t get_transform(
+		const css_computed_style *style,
+		uint32_t *n_functions,
+		css_transform_function **functions)
+{
+	uint32_t bits = style->i.bits[TRANSFORM_INDEX];
+	bits &= TRANSFORM_MASK;
+	bits >>= TRANSFORM_SHIFT;
+
+	/* 2bits: tt : type */
+	if ((bits & 0x3) == CSS_TRANSFORM_FUNCTIONS) {
+		if (n_functions != NULL)
+			*n_functions = style->transform_count;
+		if (functions != NULL)
+			*functions = style->transform_functions;
+	} else {
+		if (n_functions != NULL)
+			*n_functions = 0;
+		if (functions != NULL)
+			*functions = NULL;
+	}
+
+	return (bits & 0x3);
+}'''
+
+overrides['set']['transform'] = '''\
+static inline css_error set_transform(
+		css_computed_style *style, uint8_t type,
+		uint32_t n_functions, css_transform_function *functions)
+{
+	uint32_t *bits;
+	css_transform_function *old_funcs;
+
+	/* 2bits: type */
+	bits = &style->i.bits[TRANSFORM_INDEX];
+	old_funcs = style->transform_functions;
+
+	*bits = (*bits & ~TRANSFORM_MASK) |
+			(((uint32_t)type & 0x3) << TRANSFORM_SHIFT);
+
+	style->transform_count = n_functions;
+	style->transform_functions = functions;
+
+	/* Free existing array */
+	if (old_funcs != NULL && old_funcs != functions) {
+		free(old_funcs);
+	}
+
+	return CSS_OK;
+}'''

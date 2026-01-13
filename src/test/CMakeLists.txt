@@ -240,6 +240,11 @@ add_neosurf_test(grid_construct_test
 # Disable leak detection for grid_construct_test since libdom parsing has internal leaks
 set_property(TEST grid_construct_test PROPERTY ENVIRONMENT "ASAN_OPTIONS=detect_leaks=0")
 
+add_neosurf_test(transform_clip_test
+  ${CMAKE_SOURCE_DIR}/src/content/handlers/html/redraw_helpers.c
+  ${CMAKE_SOURCE_DIR}/src/test/transform_clip_test.c
+)
+
 # ============================================================================
 # JavaScript Tests
 # ============================================================================

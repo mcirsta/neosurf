@@ -1875,3 +1875,16 @@ uint8_t css_computed_object_position(
 {
     return get_object_position(style, hlength, hunit, vlength, vunit);
 }
+
+uint8_t
+css_computed_transform(const css_computed_style *style, uint32_t *n_functions, const css_transform_function **functions)
+{
+    css_transform_function *funcs = NULL;
+    uint32_t count = 0;
+    uint8_t type = get_transform(style, &count, &funcs);
+    if (n_functions != NULL)
+        *n_functions = count;
+    if (functions != NULL)
+        *functions = funcs;
+    return type;
+}

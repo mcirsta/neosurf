@@ -137,6 +137,7 @@ add_library(neosurf ${NEOSURF_LIB_TYPE}
 	content/handlers/html/object.c
 	content/handlers/html/redraw.c
 	content/handlers/html/redraw_border.c
+	content/handlers/html/redraw_helpers.c
 	content/handlers/html/stacking.c
 	content/handlers/html/script.c
 	content/handlers/html/table.c

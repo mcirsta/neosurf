@@ -90,9 +90,13 @@ static nserror nsqt_plot_clip(const struct redraw_context *ctx, const struct rec
 {
     QPainter *painter = (QPainter *)ctx->priv;
 
-    NSLOG(netsurf, WARNING, "clip set: %d,%d to %d,%d", clip->x0, clip->y0, clip->x1, clip->y1);
-
-    painter->setClipRect(clip->x0, clip->y0, clip->x1 - clip->x0, clip->y1 - clip->y0);
+    /* Clip rect is in world coordinates, but setClipRect interprets coords
+     * in the current (transformed) coordinate space. We need to apply the
+     * inverse transform to get correct world-space clipping. */
+    QTransform inv = painter->worldTransform().inverted();
+    QRectF worldClip(clip->x0, clip->y0, clip->x1 - clip->x0, clip->y1 - clip->y0);
+    QRectF transformedClip = inv.mapRect(worldClip);
+    painter->setClipRect(transformedClip);
     return NSERROR_OK;
 }
 
@@ -344,6 +348,65 @@ static nserror nsqt_plot_text(const struct redraw_context *ctx, const struct plo
 
 
 /**
+ * Push a transformation matrix onto the transform stack.
+ *
+ * Uses QPainter's save/setTransform to apply the transform.
+ * The transform is combined with the current transform.
+ *
+ * \param ctx The current redraw context.
+ * \param transform 6-element affine transform matrix.
+ * \return NSERROR_OK on success else error code.
+ */
+static nserror nsqt_push_transform(const struct redraw_context *ctx, const float transform[6])
+{
+    QPainter *painter = (QPainter *)ctx->priv;
+
+    NSLOG(netsurf, WARNING, "PUSH_TRANSFORM called: ctx=%p transform=[%.2f,%.2f,%.2f,%.2f,%.2f,%.2f]", (void *)ctx,
+        transform[0], transform[1], transform[2], transform[3], transform[4], transform[5]);
+
+    /* Save current state (includes transform) */
+    painter->save();
+
+    /* Create QTransform from the 6-element affine matrix */
+    /* Matrix format: [a, b, c, d, tx, ty]
+     * QTransform constructor: m11, m12, m21, m22, dx, dy
+     * Where:
+     *   m11 = a (scale x / cos for rotate)
+     *   m12 = b (shear y / sin for rotate)
+     *   m21 = c (shear x / -sin for rotate)
+     *   m22 = d (scale y / cos for rotate)
+     *   dx = tx (translate x)
+     *   dy = ty (translate y)
+     */
+    QTransform matrix(transform[0], transform[1], transform[2], transform[3], transform[4], transform[5]);
+
+    /* Combine with current transform */
+    painter->setTransform(matrix, true);
+
+    return NSERROR_OK;
+}
+
+
+/**
+ * Pop the most recent transform from the transform stack.
+ *
+ * Restores the previous transform state using QPainter::restore().
+ *
+ * \param ctx The current redraw context.
+ * \return NSERROR_OK on success else error code.
+ */
+static nserror nsqt_pop_transform(const struct redraw_context *ctx)
+{
+    QPainter *painter = (QPainter *)ctx->priv;
+
+    /* Restore previous state (includes transform) */
+    painter->restore();
+
+    return NSERROR_OK;
+}
+
+
+/**
  * QT plotter table
  */
 const struct plotter_table nsqt_plotters = {.clip = nsqt_plot_clip,
@@ -358,4 +421,6 @@ const struct plotter_table nsqt_plotters = {.clip = nsqt_plot_clip,
     .group_start = NULL,
     .group_end = NULL,
     .flush = NULL,
+    .push_transform = nsqt_push_transform,
+    .pop_transform = nsqt_pop_transform,
     .option_knockout = true};

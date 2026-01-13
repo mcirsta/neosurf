@@ -341,7 +341,7 @@ class CSSProperty:
             vt, vn = shift_star(v.type, v.name)
             vn = star + vn + v.suffix
             if pointer:
-                if v.name == 'counter_arr' or v.name == 'content_item':
+                if v.name == 'counter_arr' or v.name == 'content_item' or v.name == 'transform_func_arr':
                     vt = 'const ' + vt
             vals.append((vt + or_calc, vn))
             if v.bits is not None:
@@ -504,7 +504,10 @@ class CSSGroup:
         t.append()
         t.append(self.make_value_declaration(for_commented=True))
         t.append()
-
+        t.append('/* CSS transform function data */')
+        t.append('uint32_t transform_count;')
+        t.append('css_transform_function *transform_functions;')
+        t.append()
         t.append('struct css_computed_style *next;')
         t.append('uint32_t count;')
         t.append('uint32_t bin;')
@@ -634,6 +637,23 @@ class CSSGroup:
                 elif v.name == 'grid_track_arr':
                     # Grid track arrays don't need lwc_string ref/unref
                     # Just copy the pointer and free the old one
+                    t.append('{} {} = style->{};'.format(
+                        old_t, old_n_shift,
+                        p.name + v.suffix))
+                    t.append()
+                    t.append('style->{} = {};'.format(
+                        p.name + v.suffix, v.name + v.suffix))
+                    t.append()
+                    t.append('/* Free existing array */')
+                    t.append('if ({} != NULL && {} != {}) {{'.format(
+                        old_n, old_n, v.name + v.suffix))
+                    t.indent(1)
+                    t.append('free({});'.format(old_n))
+                    t.indent(-1)
+                    t.append('}')
+
+                elif v.name == 'transform_func_arr':
+                    # Transform function arrays - copy pointer and free old
                     t.append('{} {} = style->{};'.format(
                         old_t, old_n_shift,
                         p.name + v.suffix))
