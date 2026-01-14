@@ -2377,9 +2377,6 @@ static bool layout_float(struct box *b, int width, html_content *content)
         b->type == BOX_GRID || b->type == BOX_INLINE_FLEX || b->type == BOX_INLINE_GRID);
     layout_float_find_dimensions(&content->unit_len_ctx, width, b->style, b);
 
-    fprintf(stderr, "LAYOUT_DEBUG: layout_float b=%p type=%d width=%d\n", (void *)b, b->type, b->width);
-    fflush(stderr);
-
     if (b->type == BOX_TABLE || b->type == BOX_INLINE_FLEX || b->type == BOX_INLINE_GRID || b->type == BOX_GRID ||
         b->type == BOX_FLEX ||
         (b->type == BOX_BLOCK && b->style &&
@@ -2567,10 +2564,6 @@ static bool layout_line(struct box *first, int *width, int *y, int cx, int cy, s
 
 
     for (x = 0, b = first; x <= x1 - x0 && b != 0; b = b->next) {
-        fprintf(stderr, "LINE_TRACE: visit b=%p type=%d next=%p\n", (void *)b, b->type, (void *)b->next);
-        fflush(stderr);
-
-
         struct css_size min_width, min_height;
         int max_width, max_height;
 
@@ -2800,11 +2793,6 @@ static bool layout_line(struct box *first, int *width, int *y, int cx, int cy, s
                 b->type == BOX_INLINE_FLEX || b->type == BOX_INLINE_GRID) {
                 b->x += b->margin[LEFT] + b->border[LEFT].width;
                 x = b->x + b->padding[LEFT] + b->width + b->padding[RIGHT] + b->border[RIGHT].width + b->margin[RIGHT];
-                if (b->type == BOX_INLINE_GRID) {
-                    fprintf(stderr, "PASS2_GRID: b=%p width=%d x=%d x1-x0=%d next=%p will_exit=%s\n", (void *)b,
-                        b->width, x, x1 - x0, (void *)b->next, (x > x1 - x0) ? "YES" : "NO");
-                    fflush(stderr);
-                }
             } else if (b->type == BOX_INLINE) {
                 b->x += b->margin[LEFT] + b->border[LEFT].width;
                 x = b->x + b->padding[LEFT] + b->width;
@@ -3122,9 +3110,6 @@ static bool layout_line(struct box *first, int *width, int *y, int cx, int cy, s
     if (move_y)
         *y += used_height;
     *next_box = b;
-    fprintf(stderr, "LAYOUT_LINE_EXIT: next_box set to %p (type=%d) for first=%p\n", (void *)b, b ? b->type : -1,
-        (void *)first);
-    fflush(stderr);
     *width = x; /* return actual width */
     return true;
 }
@@ -4972,12 +4957,6 @@ static void layout_calculate_descendant_bboxes(const css_unit_ctx *unit_len_ctx,
     assert(box->height != AUTO);
     /* assert((box->width >= 0) && (box->height >= 0)); */
 
-    /* Debug: catch BOX_INLINE_GRID specifically - use immediate output */
-    if (box->type == BOX_INLINE_GRID) {
-        fprintf(stderr, "DESCENDANT_CALC: BOX_INLINE_GRID %p width=%d\n", (void *)box, box->width);
-        fflush(stderr);
-    }
-
     /* Handle boxes with invalid negative width - set descendant to box size to prevent overflow */
     if (box->width < 0) {
         box->descendant_x0 = 0;
@@ -4988,10 +4967,6 @@ static void layout_calculate_descendant_bboxes(const css_unit_ctx *unit_len_ctx,
     }
 
     /* Initialise box's descendant box to border edge box */
-    if (box->type == BOX_INLINE_GRID) {
-        fprintf(stderr, "BBOX_INIT: BOX_INLINE_GRID %p about to call layout_get_box_bbox\n", (void *)box);
-        fflush(stderr);
-    }
     layout_get_box_bbox(
         unit_len_ctx, box, &box->descendant_x0, &box->descendant_y0, &box->descendant_x1, &box->descendant_y1);
     if (box->type == BOX_INLINE_GRID && box->descendant_x1 > 100000000) {

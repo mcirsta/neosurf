@@ -228,6 +228,33 @@ static svgtiny_code svgtiny_parse_linear_gradient(
 }
 
 
+/**
+ * Parse a <radialGradient> element node.
+ *
+ * http://www.w3.org/TR/SVG11/pservers#RadialGradients
+ *
+ * Note: This is a simplified implementation that only parses gradient stops.
+ * The actual radial gradient interpolation is not implemented - instead,
+ * shapes with radial gradients will be filled with the first stop color
+ * as a fallback.
+ */
+static svgtiny_code svgtiny_parse_radial_gradient(
+    dom_element *radial, struct svgtiny_parse_state_gradient *grad, struct svgtiny_parse_state *state)
+{
+    svgtiny_code res;
+    dom_element *ref; /* referenced element */
+
+    /* Follow href reference to get stops from referenced gradient */
+    res = svgtiny_parse_element_from_href(radial, state, &ref);
+    if (res == svgtiny_OK && ref != NULL) {
+        svgtiny_update_gradient(ref, state, grad);
+        dom_node_unref(ref);
+    }
+
+    /* Parse stops from this element (may override referenced stops) */
+    return parse_gradient_stops(radial, grad, state);
+}
+
 struct grad_point {
     float x, y, r;
 };
@@ -779,9 +806,11 @@ svgtiny_code svgtiny_update_gradient(
         return svgtiny_SVG_ERROR;
     }
 
-    /* ensure element is a linear gradiant */
+    /* ensure element is a linear or radial gradient */
     if (dom_string_isequal(name, state->interned_linearGradient)) {
         res = svgtiny_parse_linear_gradient(grad_element, grad, state);
+    } else if (dom_string_isequal(name, state->interned_radialGradient)) {
+        res = svgtiny_parse_radial_gradient(grad_element, grad, state);
     }
 
     dom_string_unref(name);
