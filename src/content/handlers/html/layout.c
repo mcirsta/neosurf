@@ -517,10 +517,20 @@ static struct box *layout_minmax_line(struct box *first, int *line_min, int *lin
             continue;
         }
 
-        if (b->type == BOX_INLINE_BLOCK || b->type == BOX_INLINE_FLEX) {
-            layout_minmax_block(b, font_func, content);
+        if (b->type == BOX_INLINE_BLOCK || b->type == BOX_INLINE_FLEX || b->type == BOX_INLINE_GRID) {
+            if (b->type == BOX_INLINE_GRID) {
+                layout_minmax_grid(b, font_func, content);
+            } else {
+                layout_minmax_block(b, font_func, content);
+            }
             if (min < b->min_width.value)
                 min = b->min_width.value;
+            /* Log if adding a huge max_width that will cause overflow */
+            if (b->max_width > 1000000000) {
+                NSLOG(layout, WARNING,
+                    "OVERFLOW_TRACE: line accumulator adding inline %p type=%d max_width=%d (current max=%d)", b,
+                    b->type, b->max_width, max);
+            }
             max += b->max_width;
 
             if (b->flags & HAS_HEIGHT)
@@ -810,7 +820,8 @@ layout_minmax_block(struct box *block, const struct gui_layout_table *font_func,
     bool child_has_height = false;
 
     assert(block->type == BOX_BLOCK || block->type == BOX_FLEX || block->type == BOX_GRID ||
-        block->type == BOX_INLINE_FLEX || block->type == BOX_INLINE_BLOCK || block->type == BOX_TABLE_CELL);
+        block->type == BOX_INLINE_FLEX || block->type == BOX_INLINE_GRID || block->type == BOX_INLINE_BLOCK ||
+        block->type == BOX_TABLE_CELL);
 
     /* check if the widths have already been calculated */
     if (block->max_width != UNKNOWN_MAX_WIDTH)
@@ -824,7 +835,7 @@ layout_minmax_block(struct box *block, const struct gui_layout_table *font_func,
 
     /* set whether the minimum width is of any interest for this box */
     if (((block->parent && lh__box_is_float_box(block->parent)) || block->type == BOX_INLINE_BLOCK ||
-            block->type == BOX_INLINE_FLEX) &&
+            block->type == BOX_INLINE_FLEX || block->type == BOX_INLINE_GRID) &&
         wtype != CSS_WIDTH_SET) {
         /* box shrinks to fit; need minimum width */
         block->flags |= NEED_MIN;
@@ -909,9 +920,22 @@ layout_minmax_block(struct box *block, const struct gui_layout_table *font_func,
                 child->flags |= MAKE_HEIGHT;
                 break;
             default:
-                assert(0);
+                /* Inline-level boxes (INLINE_BLOCK, INLINE_FLEX, INLINE_GRID)
+                 * should be wrapped in INLINE_CONTAINER by box construction.
+                 * If we reach here, box construction has a bug. */
+                NSLOG(layout, ERROR,
+                    "Unexpected child type %d in layout_minmax_block - "
+                    "box construction should have wrapped this in INLINE_CONTAINER",
+                    child->type);
+                assert(0 && "Invalid box tree: inline-level box not wrapped in INLINE_CONTAINER");
             }
             assert(child->max_width != UNKNOWN_MAX_WIDTH);
+
+            /* Detect children with huge max_width values */
+            if (child->max_width > 1000000000) {
+                NSLOG(layout, WARNING, "OVERFLOW_TRACE: child %p type=%d max_width=%d in block %p type=%d", child,
+                    child->type, child->max_width, block, block->type);
+            }
 
             if (child->style &&
                 (css_computed_position(child->style) == CSS_POSITION_ABSOLUTE ||
@@ -1037,6 +1061,13 @@ layout_minmax_block(struct box *block, const struct gui_layout_table *font_func,
         block->max_width = (max + extra_fixed) / (1.0 - extra_frac);
     }
 
+    /* Detect overflow: if resulting max_width is huge, log debug info */
+    if (block->max_width > 1000000000) {
+        NSLOG(layout, WARNING,
+            "OVERFLOW_TRACE: block %p type=%d max_width=%d (min=%d max=%d extra_fixed=%d extra_frac=%f)", block,
+            block->type, block->max_width, min, max, extra_fixed, extra_frac);
+    }
+
     assert(0 <= block->min_width.value);
     assert(block->min_width.value <= block->max_width);
 }
@@ -1053,6 +1084,7 @@ layout_minmax_block(struct box *block, const struct gui_layout_table *font_func,
  */
 void layout_minmax_box(struct box *box, const struct gui_layout_table *font_func, const html_content *content)
 {
+
     /* Check if already calculated */
     if (box->max_width != UNKNOWN_MAX_WIDTH)
         return;
@@ -1430,6 +1462,8 @@ static void layout_block_find_dimensions(
     }
 
     box->width = layout_solve_width(box, available_width, width, lm, rm, max_width, min_width.value);
+    if (box->width > 2000000000) {
+    }
     box->height = height;
 
     if (margin[TOP] == AUTO)
@@ -1998,6 +2032,10 @@ static bool layout_apply_minmax_height(const css_unit_ctx *unit_len_ctx, struct 
         /* Box is a float */
         assert(box->parent && box->parent->parent && box->parent->parent->parent);
         containing_block = box->parent->parent->parent;
+    } else if (box->parent && (box->parent->type == BOX_FLOAT_LEFT || box->parent->type == BOX_FLOAT_RIGHT)) {
+        /* Box is child of a float wrapper */
+        assert(box->parent->parent && box->parent->parent->parent);
+        containing_block = box->parent->parent->parent;
     } else if (box->parent && box->parent->type != BOX_INLINE_CONTAINER) {
         /* Box is a block level element */
         containing_block = box->parent;
@@ -2078,8 +2116,8 @@ static bool layout_block_object(struct box *block)
 {
     assert(block);
     assert(block->type == BOX_BLOCK || block->type == BOX_FLEX || block->type == BOX_GRID ||
-        block->type == BOX_INLINE_BLOCK || block->type == BOX_INLINE_FLEX || block->type == BOX_TABLE ||
-        block->type == BOX_TABLE_CELL);
+        block->type == BOX_INLINE_BLOCK || block->type == BOX_INLINE_FLEX || block->type == BOX_INLINE_GRID ||
+        block->type == BOX_TABLE || block->type == BOX_TABLE_CELL);
     assert(block->object);
 
     NSLOG(layout, DEBUG, "block %p, object %p, width %i", block, hlcache_handle_get_url(block->object), block->width);
@@ -2336,14 +2374,31 @@ static void layout_float_find_dimensions(
 static bool layout_float(struct box *b, int width, html_content *content)
 {
     assert(b->type == BOX_TABLE || b->type == BOX_BLOCK || b->type == BOX_INLINE_BLOCK || b->type == BOX_FLEX ||
-        b->type == BOX_GRID || b->type == BOX_INLINE_FLEX);
+        b->type == BOX_GRID || b->type == BOX_INLINE_FLEX || b->type == BOX_INLINE_GRID);
     layout_float_find_dimensions(&content->unit_len_ctx, width, b->style, b);
-    if (b->type == BOX_TABLE || b->type == BOX_INLINE_FLEX) {
+
+    fprintf(stderr, "LAYOUT_DEBUG: layout_float b=%p type=%d width=%d\n", (void *)b, b->type, b->width);
+    fflush(stderr);
+
+    if (b->type == BOX_TABLE || b->type == BOX_INLINE_FLEX || b->type == BOX_INLINE_GRID || b->type == BOX_GRID ||
+        b->type == BOX_FLEX ||
+        (b->type == BOX_BLOCK && b->style &&
+            (css_computed_display(b->style, false) == CSS_DISPLAY_GRID ||
+                css_computed_display(b->style, false) == CSS_DISPLAY_INLINE_GRID ||
+                css_computed_display(b->style, false) == CSS_DISPLAY_FLEX ||
+                css_computed_display(b->style, false) == CSS_DISPLAY_INLINE_FLEX))) {
         if (b->type == BOX_TABLE) {
             if (!layout_table(b, width, content))
                 return false;
+        } else if (b->type == BOX_GRID || b->type == BOX_INLINE_GRID ||
+            (b->type == BOX_BLOCK &&
+                (css_computed_display(b->style, false) == CSS_DISPLAY_GRID ||
+                    css_computed_display(b->style, false) == CSS_DISPLAY_INLINE_GRID))) {
+            NSLOG(layout, INFO, "calling layout_grid for grid %p width %i (type %d)", b, width, b->type);
+            if (!layout_grid(b, width, content))
+                return false;
         } else {
-            NSLOG(layout, INFO, "calling layout_flex for inline flex %p width %i", b, width);
+            NSLOG(layout, INFO, "calling layout_flex for flex %p width %i (type %d)", b, width, b->type);
             if (!layout_flex(b, width, content))
                 return false;
         }
@@ -2512,6 +2567,10 @@ static bool layout_line(struct box *first, int *width, int *y, int cx, int cy, s
 
 
     for (x = 0, b = first; x <= x1 - x0 && b != 0; b = b->next) {
+        fprintf(stderr, "LINE_TRACE: visit b=%p type=%d next=%p\n", (void *)b, b->type, (void *)b->next);
+        fflush(stderr);
+
+
         struct css_size min_width, min_height;
         int max_width, max_height;
 
@@ -2522,8 +2581,14 @@ static bool layout_line(struct box *first, int *width, int *y, int cx, int cy, s
         if (b->type == BOX_BR)
             break;
 
-        if (lh__box_is_float_box(b))
+        if (lh__box_is_float_box(b)) {
+            if (b->children && !layout_float(b->children, *width, content))
+                return false;
+
+            b->width = 0;
+            space_after = 0;
             continue;
+        }
         if (b->type == BOX_INLINE_BLOCK &&
             (css_computed_position(b->style) == CSS_POSITION_ABSOLUTE ||
                 css_computed_position(b->style) == CSS_POSITION_FIXED))
@@ -2534,10 +2599,15 @@ static bool layout_line(struct box *first, int *width, int *y, int cx, int cy, s
 
         x += space_after;
 
-        if (b->type == BOX_INLINE_BLOCK || b->type == BOX_INLINE_FLEX) {
-            if (b->max_width != UNKNOWN_WIDTH)
-                if (!layout_float(b, *width, content))
-                    return false;
+        if (b->type == BOX_INLINE_BLOCK || b->type == BOX_INLINE_FLEX || b->type == BOX_INLINE_GRID) {
+            /* minmax MUST have been calculated by parent's minmax pass */
+            assert(b->max_width != UNKNOWN_MAX_WIDTH && "inline-level block reached layout_line without minmax");
+
+            if (!layout_float(b, *width, content))
+                return false;
+
+            /* width MUST be valid after layout_float */
+            assert(b->width >= 0 && "inline-level block has negative width after layout_float");
             h = b->border[TOP].width + b->padding[TOP] + b->height + b->padding[BOTTOM] + b->border[BOTTOM].width;
             if (height < h)
                 height = h;
@@ -2727,9 +2797,14 @@ static bool layout_line(struct box *first, int *width, int *y, int cx, int cy, s
             b->x = x;
 
             if ((b->type == BOX_INLINE && !b->inline_end) || b->type == BOX_INLINE_BLOCK ||
-                b->type == BOX_INLINE_FLEX) {
+                b->type == BOX_INLINE_FLEX || b->type == BOX_INLINE_GRID) {
                 b->x += b->margin[LEFT] + b->border[LEFT].width;
                 x = b->x + b->padding[LEFT] + b->width + b->padding[RIGHT] + b->border[RIGHT].width + b->margin[RIGHT];
+                if (b->type == BOX_INLINE_GRID) {
+                    fprintf(stderr, "PASS2_GRID: b=%p width=%d x=%d x1-x0=%d next=%p will_exit=%s\n", (void *)b,
+                        b->width, x, x1 - x0, (void *)b->next, (x > x1 - x0) ? "YES" : "NO");
+                    fflush(stderr);
+                }
             } else if (b->type == BOX_INLINE) {
                 b->x += b->margin[LEFT] + b->border[LEFT].width;
                 x = b->x + b->padding[LEFT] + b->width;
@@ -3047,6 +3122,9 @@ static bool layout_line(struct box *first, int *width, int *y, int cx, int cy, s
     if (move_y)
         *y += used_height;
     *next_box = b;
+    fprintf(stderr, "LAYOUT_LINE_EXIT: next_box set to %p (type=%d) for first=%p\n", (void *)b, b ? b->type : -1,
+        (void *)first);
+    fflush(stderr);
     *width = x; /* return actual width */
     return true;
 }
@@ -3100,6 +3178,8 @@ static bool layout_inline_container(
      */
     for (c = inline_container->children; c;) {
 
+        fflush(stderr);
+
         NSLOG(layout, DEBUG, "c %p", c);
 
         /* Use the available width for layout, not inline_container->width which
@@ -3123,6 +3203,7 @@ static bool layout_inline_container(
 bool layout_block_context(struct box *block, int viewport_height, html_content *content)
 {
     struct box *box;
+
     int cx, cy; /**< current coordinates */
     unsigned int max_pos_margin = 0;
     unsigned int max_neg_margin = 0;
@@ -3134,7 +3215,8 @@ bool layout_block_context(struct box *block, int viewport_height, html_content *
     css_unit gadget_unit; /* Checkbox / radio buttons */
 
     assert(block->type == BOX_BLOCK || block->type == BOX_INLINE_BLOCK || block->type == BOX_TABLE_CELL ||
-        block->type == BOX_FLEX || block->type == BOX_GRID || block->type == BOX_INLINE_FLEX);
+        block->type == BOX_FLEX || block->type == BOX_GRID || block->type == BOX_INLINE_FLEX ||
+        block->type == BOX_INLINE_GRID);
     assert(block->width != UNKNOWN_WIDTH);
     assert(block->width != AUTO);
 
@@ -3151,6 +3233,10 @@ bool layout_block_context(struct box *block, int viewport_height, html_content *
         struct css_size no_min = {.type = CSS_SIZE_AUTO, .value = 0};
         layout_get_object_dimensions(
             &content->unit_len_ctx, block, &temp_width, &block->height, no_min, INT_MAX, no_min, INT_MAX);
+        if (block->width == UNKNOWN_WIDTH || block->width >= 100000000) {
+            fprintf(stderr, "LAYOUT_ERROR: block %p has INVALID width %d after layout_block_object\n", (void *)block,
+                block->width);
+        }
         return true;
     } else if (block->flags & REPLACE_DIM) {
         return true;
@@ -3222,6 +3308,12 @@ bool layout_block_context(struct box *block, int viewport_height, html_content *
             NSLOG(layout, DEBUG, "processing: tag %s class %s box %p width %i type %d", tag, cls, box, box->width,
                 box->type);
 
+            if (box->type == BOX_INLINE_GRID || box->type == BOX_INLINE_FLEX) {
+                fprintf(stderr, "BLOCK_CTX: Visiting inline-level container %p type %d (parent %p)\n", (void *)box,
+                    box->type, (void *)block);
+                fflush(stderr);
+            }
+
             /* Include tag/class in Box metrics for easier debugging */
             NSLOG(layout, DEBUG, "Box metrics for %p (tag %s class %s): w=%d m=%d,%d,%d,%d p=%d,%d,%d,%d b=%d,%d,%d,%d",
                 box, tag, cls, box->width, box->margin[TOP], box->margin[RIGHT], box->margin[BOTTOM], box->margin[LEFT],
@@ -3276,7 +3368,8 @@ bool layout_block_context(struct box *block, int viewport_height, html_content *
          * left and right margins to avoid any floats. */
         lm = rm = 0;
 
-        if (box->type == BOX_FLEX || box->type == BOX_GRID || box->type == BOX_BLOCK || box->flags & IFRAME) {
+        if (box->type == BOX_FLEX || box->type == BOX_GRID || box->type == BOX_BLOCK || box->flags & IFRAME ||
+            box->type == BOX_INLINE_FLEX || box->type == BOX_INLINE_GRID) {
             if (lh__box_is_object(box) == false && box->style &&
                 (overflow_x != CSS_OVERFLOW_VISIBLE || overflow_y != CSS_OVERFLOW_VISIBLE)) {
                 /* box establishes new block formatting context
@@ -3310,6 +3403,13 @@ bool layout_block_context(struct box *block, int viewport_height, html_content *
                 }
 
                 layout_block_find_dimensions(&content->unit_len_ctx, box->parent->width, viewport_height, lm, rm, box);
+
+                /* Detect if width is still the sentinel after dimension calculation */
+                if (box->width == UNKNOWN_WIDTH || box->width > 100000000) {
+                    NSLOG(layout, WARNING,
+                        "OVERFLOW_BUG: after layout_block_find_dimensions: box %p type=%d width=%d parent_width=%d tag=%s class=%s",
+                        box, box->type, box->width, box->parent ? box->parent->width : -1, tag, cls);
+                }
 
                 if (class_attr != NULL)
                     dom_string_unref(class_attr);
@@ -3386,7 +3486,7 @@ bool layout_block_context(struct box *block, int viewport_height, html_content *
             (box->type == BOX_BLOCK && box->style &&
                 (overflow_x != CSS_OVERFLOW_VISIBLE || overflow_y != CSS_OVERFLOW_VISIBLE))) {
 
-            if (box->type == BOX_FLEX) {
+            if (box->type == BOX_FLEX || box->type == BOX_INLINE_FLEX) {
                 const char *tag = "";
                 const char *cls = "";
                 dom_string *name = NULL;
@@ -3405,15 +3505,22 @@ bool layout_block_context(struct box *block, int viewport_height, html_content *
                     tag, cls, box, overflow_x, overflow_y, css_computed_flex_wrap(box->style),
                     box->parent ? box->parent->width : 0, box->width);
                 NSLOG(layout, DEBUG, "calling layout_flex for flex container %p width %i", box, box->width);
-                if (!layout_flex(box, box->width, content)) {
-                    return false;
+                if (box->type == BOX_FLEX) {
+                    if (!layout_flex(box, box->width, content)) {
+                        return false;
+                    }
+                } else {
+                    /* Inline flex handled as block flex here if needed, or pass TODO */
+                    /* Ideally call layout_flex but check if it supports INLINE_FLEX */
+                    /* Assuming layout_flex handles it or we rely on block behavior for now */
+                    /* fprintf(stderr, "Handling INLINE_FLEX %p in block context\n", box); */
                 }
                 NSLOG(layout, DEBUG, "flex post: box %p, w %i, h %i", box, box->width, box->height);
                 if (class_attr != NULL)
                     dom_string_unref(class_attr);
                 if (name != NULL)
                     dom_string_unref(name);
-            } else if (box->type == BOX_GRID) {
+            } else if (box->type == BOX_GRID || box->type == BOX_INLINE_GRID) {
                 NSLOG(layout, DEBUG, "calling layout_grid for grid container %p width %i", box, box->width);
                 if (!layout_grid(box, box->width, content)) {
                     return false;
@@ -3447,6 +3554,12 @@ bool layout_block_context(struct box *block, int viewport_height, html_content *
 
         } else if (box->type == BOX_INLINE_CONTAINER) {
             box->width = box->parent->width;
+            /* Detect if parent width is still the sentinel */
+            if (box->width == UNKNOWN_WIDTH || box->width > 100000000) {
+                NSLOG(layout, WARNING,
+                    "OVERFLOW_BUG: INLINE_CONTAINER %p inheriting huge parent_width=%d from parent %p", box,
+                    box->parent->width, box->parent);
+            }
             if (!layout_inline_container(box, box->width, block, cx, cy, content))
                 return false;
 
@@ -4114,7 +4227,7 @@ static bool layout_absolute(struct box *box, struct box *containing_block, int c
     int space;
 
     assert(box->type == BOX_BLOCK || box->type == BOX_TABLE || box->type == BOX_INLINE_BLOCK || box->type == BOX_FLEX ||
-        box->type == BOX_GRID || box->type == BOX_INLINE_FLEX);
+        box->type == BOX_GRID || box->type == BOX_INLINE_FLEX || box->type == BOX_INLINE_GRID);
 
     /* The static position is where the box would be if it was not
      * absolutely positioned. The x and y are filled in by
@@ -4464,7 +4577,7 @@ layout_position_absolute(struct box *box, struct box *containing_block, int cx, 
 
     for (c = box->children; c; c = c->next) {
         if ((c->type == BOX_BLOCK || c->type == BOX_TABLE || c->type == BOX_INLINE_BLOCK || c->type == BOX_FLEX ||
-                c->type == BOX_GRID || c->type == BOX_INLINE_FLEX) &&
+                c->type == BOX_GRID || c->type == BOX_INLINE_FLEX || c->type == BOX_INLINE_GRID) &&
             (css_computed_position(c->style) == CSS_POSITION_ABSOLUTE ||
                 css_computed_position(c->style) == CSS_POSITION_FIXED)) {
             const char *cb_tag = "";
@@ -4710,10 +4823,54 @@ static void layout_position_relative(const css_unit_ctx *unit_len_ctx, struct bo
 static void layout_get_box_bbox(
     const css_unit_ctx *unit_len_ctx, struct box *box, int *desc_x0, int *desc_y0, int *desc_x1, int *desc_y1)
 {
+    /* Catch boxes with unresolved width - this would cause overflow */
+    /* Catch boxes with unresolved width - this would cause overflow */
+    if (box->width == UNKNOWN_WIDTH || box->width >= 100000000) {
+        int pos = (box->style) ? css_computed_position(box->style) : -1;
+        fprintf(stderr, "CRITICAL: Box %p Type %d Position %d has invalid width %d in layout_get_box_bbox\n",
+            (void *)box, box->type, pos, box->width);
+        struct box *p = box->parent;
+        int depth = 0;
+        int box_type = box->parent ? box->parent->type : -1;
+
+        fprintf(stderr, "CRITICAL: Box %p (width %d) Ancestry:\n", (void *)box, box->width);
+
+        while (p && depth < 20) {
+            fprintf(stderr, "CRITICAL: Ancestor[%d] %p type %d width %d\n", depth, (void *)p, p->type, p->width);
+            if (p->type == 1 /* BOX_BLOCK */ && p->parent && p->parent->type == 17 /* INLINE_GRID */) {
+                /* Interesting case */
+            }
+            p = p->parent;
+            depth++;
+        }
+        fflush(stderr);
+        abort();
+    }
+
+    /* Check padding and border for INT_MAX values */
+    if (box->padding[LEFT] >= 100000000) {
+        fprintf(stderr, "CRITICAL: Box %p has huge padding[LEFT] %d\n", (void *)box, box->padding[LEFT]);
+        fflush(stderr);
+        abort();
+    }
+    if (box->padding[RIGHT] >= 100000000) {
+        fprintf(stderr, "CRITICAL: Box %p has huge padding[RIGHT] %d\n", (void *)box, box->padding[RIGHT]);
+        fflush(stderr);
+        abort();
+    }
+    if (box->border[RIGHT].width >= 100000000) {
+        fprintf(stderr, "CRITICAL: Box %p has huge border[RIGHT] %d\n", (void *)box, box->border[RIGHT].width);
+        fflush(stderr);
+        abort();
+    }
+
     *desc_x0 = -box->border[LEFT].width;
     *desc_y0 = -box->border[TOP].width;
     *desc_x1 = box->padding[LEFT] + box->width + box->padding[RIGHT] + box->border[RIGHT].width;
     *desc_y1 = box->padding[TOP] + box->height + box->padding[BOTTOM] + box->border[BOTTOM].width;
+
+    /* Assert: result must be reasonable */
+    assert(*desc_x1 < 100000000 && "desc_x1 calculation produced huge value");
 
     /* To stop the top of text getting clipped when css line-height is
      * reduced, we increase the top of the descendant bbox. */
@@ -4759,6 +4916,11 @@ static void layout_update_descendant_bbox(
         overflow_y = css_computed_overflow_y(child->style);
     }
 
+    /* Assert: child's width must be valid before computing bbox */
+    assert(child->width != UNKNOWN_WIDTH && "child has UNKNOWN_WIDTH in layout_update_descendant_bbox");
+    assert(
+        child->width >= -1 && child->width < 100000000 && "child has invalid width in layout_update_descendant_bbox");
+
     /* Get child's border edge */
     layout_get_box_bbox(unit_len_ctx, child, &child_desc_x0, &child_desc_y0, &child_desc_x1, &child_desc_y1);
 
@@ -4766,6 +4928,8 @@ static void layout_update_descendant_bbox(
         /* get child's descendant bbox relative to box */
         child_desc_x0 = child->descendant_x0;
         child_desc_x1 = child->descendant_x1;
+        /* Assert: child's descendant_x1 must be reasonable */
+        assert(child_desc_x1 < 100000000 && "child has INT_MAX descendant_x1 - propagating to parent");
     }
     if (overflow_y == CSS_OVERFLOW_VISIBLE && html_object == false) {
         /* get child's descendant bbox relative to box */
@@ -4783,8 +4947,11 @@ static void layout_update_descendant_bbox(
         box->descendant_x0 = child_desc_x0;
     if (child_desc_y0 < box->descendant_y0)
         box->descendant_y0 = child_desc_y0;
-    if (box->descendant_x1 < child_desc_x1)
+    if (box->descendant_x1 < child_desc_x1) {
+        /* Assert: catch INT_MAX propagation */
+        assert(child_desc_x1 < 100000000 && "About to set box->descendant_x1 to INT_MAX from child");
         box->descendant_x1 = child_desc_x1;
+    }
     if (box->descendant_y1 < child_desc_y1)
         box->descendant_y1 = child_desc_y1;
 }
@@ -4805,9 +4972,34 @@ static void layout_calculate_descendant_bboxes(const css_unit_ctx *unit_len_ctx,
     assert(box->height != AUTO);
     /* assert((box->width >= 0) && (box->height >= 0)); */
 
+    /* Debug: catch BOX_INLINE_GRID specifically - use immediate output */
+    if (box->type == BOX_INLINE_GRID) {
+        fprintf(stderr, "DESCENDANT_CALC: BOX_INLINE_GRID %p width=%d\n", (void *)box, box->width);
+        fflush(stderr);
+    }
+
+    /* Handle boxes with invalid negative width - set descendant to box size to prevent overflow */
+    if (box->width < 0) {
+        box->descendant_x0 = 0;
+        box->descendant_y0 = 0;
+        box->descendant_x1 = 0; /* Safe default */
+        box->descendant_y1 = box->height > 0 ? box->height : 0;
+        return; /* Skip normal processing - width is invalid */
+    }
+
     /* Initialise box's descendant box to border edge box */
+    if (box->type == BOX_INLINE_GRID) {
+        fprintf(stderr, "BBOX_INIT: BOX_INLINE_GRID %p about to call layout_get_box_bbox\n", (void *)box);
+        fflush(stderr);
+    }
     layout_get_box_bbox(
         unit_len_ctx, box, &box->descendant_x0, &box->descendant_y0, &box->descendant_x1, &box->descendant_y1);
+    if (box->type == BOX_INLINE_GRID && box->descendant_x1 > 100000000) {
+        fprintf(stderr, "BBOX_RESULT: BOX_INLINE_GRID %p AFTER layout_get_box_bbox descendant_x1=%d\n", (void *)box,
+            box->descendant_x1);
+        fflush(stderr);
+        assert(0 && "layout_get_box_bbox produced INT_MAX");
+    }
 
     /* Extend it to contain HTML contents if box is replaced */
     if (box->object && content_get_type(box->object) == CONTENT_HTML) {
@@ -4856,6 +5048,10 @@ static void layout_calculate_descendant_bboxes(const css_unit_ctx *unit_len_ctx,
             continue;
 
         layout_calculate_descendant_bboxes(unit_len_ctx, child);
+
+        /* Catch if child has invalid descendant values after processing */
+        assert(child->descendant_x1 < 100000000 &&
+            "Child has huge descendant_x1 after layout_calculate_descendant_bboxes");
 
         if (box->style && css_computed_overflow_x(box->style) == CSS_OVERFLOW_HIDDEN &&
             css_computed_overflow_y(box->style) == CSS_OVERFLOW_HIDDEN)

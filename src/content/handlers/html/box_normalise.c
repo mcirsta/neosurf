@@ -1043,9 +1043,30 @@ static bool box_normalise_grid(struct box *grid_container, const struct box *roo
             assert(0);
             break;
         case BOX_INLINE_BLOCK:
+            /* Blockify */
+            child->type = BOX_BLOCK;
+            if (box_normalise_block(child, root, c) == false)
+                return false;
+            break;
         case BOX_FLOAT_LEFT:
         case BOX_FLOAT_RIGHT:
-            /* Blockify / De-float */
+            /* De-float: Float wrapper boxes have NULL style, so we need to
+             * create a blank style for the blockified box.
+             * The actual styled content is in child->children. */
+            assert(grid_container->style != NULL);
+            assert(child->style == NULL);
+
+            ctx.ctx = c->select_ctx;
+            ctx.quirks = (c->quirks == DOM_DOCUMENT_QUIRKS_MODE_FULL);
+            ctx.base_url = c->base_url;
+            ctx.universal = c->universal;
+
+            style = nscss_get_blank_style(&ctx, &c->unit_len_ctx, grid_container->style);
+            if (style == NULL)
+                return false;
+
+            child->style = style;
+            child->flags |= STYLE_OWNED;
             child->type = BOX_BLOCK;
             if (box_normalise_block(child, root, c) == false)
                 return false;
@@ -1121,10 +1142,41 @@ static bool box_normalise_inline_container(struct box *cont, const struct box *r
     NSLOG(netsurf, INFO, "cont %p", cont);
 #endif
 
+    NSLOG(netsurf, INFO, "Normalising inline container %p", cont);
     for (child = cont->children; child != NULL; child = next_child) {
+        NSLOG(netsurf, INFO, "  visiting child %p type %d next %p", child, child->type, child->next);
         next_child = child->next;
         switch (child->type) {
         case BOX_INLINE:
+            /* Flatten children of BOX_INLINE into the sibling list */
+            if (child->children != NULL) {
+                struct box *children = child->children;
+                struct box *last_child = child->last;
+                struct box *after = child->next;
+
+                NSLOG(netsurf, INFO, "    flattening INLINE %p children %p last %p after %p", child, children,
+                    last_child, after);
+
+                /* Link children to follow BOX_INLINE */
+                child->next = children;
+                children->prev = child;
+
+                if (last_child) {
+                    last_child->next = after;
+                    if (after) {
+                        after->prev = last_child;
+                    } else {
+                        cont->last = last_child;
+                    }
+                }
+
+                child->children = NULL;
+                child->last = NULL;
+
+                /* Continue loop from formatting the first child we just pulled up */
+                next_child = children;
+            }
+            break; /* continue with next sibling (which is now the first child) */
         case BOX_INLINE_END:
         case BOX_BR:
         case BOX_TEXT:
@@ -1164,6 +1216,21 @@ static bool box_normalise_inline_container(struct box *cont, const struct box *r
                     return false;
                 break;
             case BOX_GRID:
+                if (box_normalise_grid(child->children, root, c) == false)
+                    return false;
+                break;
+            case BOX_INLINE_BLOCK:
+                child->children->type = BOX_BLOCK;
+                if (box_normalise_block(child->children, root, c) == false)
+                    return false;
+                break;
+            case BOX_INLINE_FLEX:
+                child->children->type = BOX_FLEX;
+                if (box_normalise_flex(child->children, root, c) == false)
+                    return false;
+                break;
+            case BOX_INLINE_GRID:
+                child->children->type = BOX_GRID;
                 if (box_normalise_grid(child->children, root, c) == false)
                     return false;
                 break;

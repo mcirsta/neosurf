@@ -402,7 +402,7 @@ void layout_minmax_grid(struct box *grid, const struct gui_layout_table *font_fu
     int i, col_idx;
     int min = 0, max = 0;
 
-    assert(grid->type == BOX_GRID);
+    assert(grid->type == BOX_GRID || grid->type == BOX_INLINE_GRID);
 
     /* Already calculated? */
     if (grid->max_width != UNKNOWN_MAX_WIDTH)
@@ -1003,7 +1003,7 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
 
             /* Recursively layout the child */
             if (child->type == BOX_BLOCK || child->type == BOX_INLINE_BLOCK || child->type == BOX_FLEX ||
-                child->type == BOX_GRID) {
+                child->type == BOX_INLINE_FLEX || child->type == BOX_GRID || child->type == BOX_INLINE_GRID) {
                 if (!layout_block_context(child, -1, content)) {
                     free(col_widths);
                     free(row_heights);
@@ -1305,6 +1305,15 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
     }
 
     grid->height = grid_height;
+
+    /* IMPORTANT: layout_grid must set the grid's width */
+    if (grid->width == UNKNOWN_WIDTH || grid->width < 0) {
+        fprintf(stderr, "GRID_BUG: grid %p width still not set (=%d)\n", (void *)grid, grid->width);
+        fflush(stderr);
+        assert(0 && "Grid width must be resolved by layout_grid");
+        /* Fallback for safety in Release builds if assert disabled */
+        grid->width = grid_width;
+    }
 
     free(item_cache);
     free(row_first_item_done);
