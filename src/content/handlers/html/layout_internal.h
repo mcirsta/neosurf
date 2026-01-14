@@ -128,8 +128,8 @@ static inline bool lh__box_is_float_box(const struct box *b)
 /** Layout helper: Check whether box takes part in inline flow. */
 static inline bool lh__box_is_inline_flow(const struct box *b)
 {
-    return b->type == BOX_INLINE || b->type == BOX_INLINE_FLEX || b->type == BOX_INLINE_BLOCK || b->type == BOX_TEXT ||
-        b->type == BOX_INLINE_END;
+    return b->type == BOX_INLINE || b->type == BOX_INLINE_FLEX || b->type == BOX_INLINE_BLOCK ||
+        b->type == BOX_INLINE_GRID || b->type == BOX_TEXT || b->type == BOX_INLINE_END;
 }
 
 /** Layout helper: Check whether box takes part in inline flow. */

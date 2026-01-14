@@ -335,8 +335,9 @@ static void box_construct_generate(dom_node *n, html_content *content, struct bo
     /* set box type from computed display */
     gen->type = box_map[computed_display];
 
-    /* For inline pseudo-elements, we need an inline container */
-    if (gen->type == BOX_INLINE) {
+    /* For inline-level pseudo-elements, we need an inline container */
+    if (gen->type == BOX_INLINE || gen->type == BOX_INLINE_BLOCK || gen->type == BOX_INLINE_FLEX ||
+        gen->type == BOX_INLINE_GRID) {
         /* Check if parent already has an inline container as last child
          */
         if (box->last != NULL && box->last->type == BOX_INLINE_CONTAINER) {
@@ -725,7 +726,8 @@ static bool box_construct_element(struct box_construct_ctx *ctx, bool *convert_c
 
     if (props.inline_container == NULL &&
         (box->type == BOX_INLINE || box->type == BOX_BR || box->type == BOX_INLINE_BLOCK ||
-            box->type == BOX_INLINE_FLEX || (box__style_is_float(box) && !box__containing_block_is_flex(&props))) &&
+            box->type == BOX_INLINE_FLEX || box->type == BOX_INLINE_GRID ||
+            (box__style_is_float(box) && !box__containing_block_is_flex(&props))) &&
         props.node_is_root == false) {
         /* Found an inline child of a block without a current container
          * (i.e. this box is the first child of its parent, or was
@@ -769,7 +771,7 @@ static bool box_construct_element(struct box_construct_ctx *ctx, bool *convert_c
         box->flags |= CONVERT_CHILDREN;
 
     if (box->type == BOX_INLINE || box->type == BOX_BR || box->type == BOX_INLINE_FLEX ||
-        box->type == BOX_INLINE_BLOCK) {
+        box->type == BOX_INLINE_BLOCK || box->type == BOX_INLINE_GRID) {
         /* Inline container must exist, as we'll have
          * created it above if it didn't */
         assert(props.inline_container != NULL);

@@ -162,6 +162,8 @@ static inline struct box *box_move_xy(struct box *b, enum box_walk_dir dir, int 
         b = b->children;
         if (b == NULL)
             break;
+        assert(b->x > -100000000 && b->x < 100000000 && "Box has huge x in children walk");
+        assert(b->y > -100000000 && b->y < 100000000 && "Box has huge y in children walk");
         *x += b->x;
         *y += b->y;
         if (!box_is_float(b)) {
@@ -177,6 +179,8 @@ static inline struct box *box_move_xy(struct box *b, enum box_walk_dir dir, int 
             b = b->next;
             if (b == NULL)
                 break;
+            assert(b->x > -100000000 && b->x < 100000000 && "Box has huge x in sibling walk");
+            assert(b->y > -100000000 && b->y < 100000000 && "Box has huge y in sibling walk");
             *x += b->x;
             *y += b->y;
         } while (box_is_float(b));
@@ -515,11 +519,21 @@ box_at_point(const css_unit_ctx *unit_len_ctx, struct box *box, const int x, con
 {
     bool skip_children;
     bool physically;
+    int iterations = 0;
+    const int MAX_ITERATIONS = 100000; /* No legitimate page should need this many */
 
     assert(box);
 
     skip_children = false;
     while ((box = box_next_xy(box, box_x, box_y, skip_children))) {
+        iterations++;
+        if (iterations > MAX_ITERATIONS) {
+            fprintf(stderr, "BOX_LOOP: box_at_point exceeded %d iterations, likely infinite loop\n", MAX_ITERATIONS);
+            fprintf(stderr, "  current box=%p type=%d width=%d descendant_x1=%d\n", (void *)box, box->type, box->width,
+                box->descendant_x1);
+            fflush(stderr);
+            assert(0 && "box_at_point infinite loop detected");
+        }
         if (box_contains_point(unit_len_ctx, box, x - *box_x, y - *box_y, &physically)) {
             *box_x -= scrollbar_get_offset(box->scroll_x);
             *box_y -= scrollbar_get_offset(box->scroll_y);
