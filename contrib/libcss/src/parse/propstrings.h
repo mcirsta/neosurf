@@ -380,6 +380,9 @@ enum {
     SCALEX,
     SCALEY,
     ROTATE,
+    /* CSS gradient functions */
+    LINEAR_GRADIENT,
+    RADIAL_GRADIENT,
     /* Named colours */
     FIRST_COLOUR,
 

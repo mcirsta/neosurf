@@ -81,6 +81,7 @@ add_library(css SHARED
 	src/parse/mq.c
 	src/parse/properties/azimuth.c
 	src/parse/properties/background.c
+	src/parse/properties/background_image.c
 	src/parse/properties/background_position.c
 	src/parse/properties/border.c
 	src/parse/properties/border_color.c
