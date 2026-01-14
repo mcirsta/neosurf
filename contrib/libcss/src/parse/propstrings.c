@@ -109,6 +109,8 @@ const stringmap_entry stringmap[LAST_KNOWN] = {SMAP("*"),
     /* CSS transform function keywords */
     SMAP("translate"), SMAP("translateX"), SMAP("translateY"), SMAP("scale"), SMAP("scaleX"), SMAP("scaleY"),
     SMAP("rotate"),
+    /* CSS gradient functions */
+    SMAP("linear-gradient"), SMAP("radial-gradient"),
 
     /* Named colours */
     SMAP("aliceblue"), SMAP("antiquewhite"), SMAP("aqua"), SMAP("aquamarine"), SMAP("azure"), SMAP("beige"),
