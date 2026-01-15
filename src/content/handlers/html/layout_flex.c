@@ -1000,6 +1000,9 @@ static void layout_flex_ctx__populate_item_data(struct flex_ctx *ctx, const stru
         css_computed_flex_shrink(b->style, &item->shrink);
         css_computed_flex_grow(b->style, &item->grow);
 
+        NSLOG(flex, DEEPDEBUG, "flex-item box %p: flex-grow=%d flex-shrink=%d", b, FIXTOINT(item->grow),
+            FIXTOINT(item->shrink));
+
         /* Pass correct reference size for percentage flex-basis resolution:
          * - Row flex: main=width, cross=height
          * - Column flex: main=height, cross=width */
@@ -1079,6 +1082,9 @@ static struct flex_line_data *layout_flex__build_line(struct flex_ctx *ctx, size
                 line->main_size += pos_main;
                 used_main += pos_main + gap_for_item;
 
+                NSLOG(flex, DEEPDEBUG,
+                    "MARGIN_CHECK: box %p margin[LEFT]=%d margin[RIGHT]=%d (AUTO=%d) start=%d end=%d", b,
+                    b->margin[LEFT], b->margin[RIGHT], AUTO, start_side, end_side);
                 if (b->margin[start_side] == AUTO) {
                     line->main_auto_margin_count++;
                 }
@@ -1438,9 +1444,13 @@ static bool layout_flex__place_line_items_main(struct flex_ctx *ctx, struct flex
 
     if (ctx->available_main != AUTO && ctx->available_main != UNKNOWN_WIDTH &&
         ctx->available_main > line->used_main_size) {
+        NSLOG(flex, DEEPDEBUG, "PLACE_MAIN: auto_margin_count=%d available=%d used=%d free=%d",
+            line->main_auto_margin_count, ctx->available_main, line->used_main_size,
+            ctx->available_main - line->used_main_size);
         if (line->main_auto_margin_count > 0) {
             extra = ctx->available_main - line->used_main_size;
-
+            NSLOG(flex, DEEPDEBUG, "PLACE_MAIN: distributing extra=%d to %d auto margins", extra,
+                line->main_auto_margin_count);
             extra_remainder = extra % line->main_auto_margin_count;
             extra /= line->main_auto_margin_count;
         } else {

@@ -535,15 +535,22 @@ static bool box_input_text(html_content *html, struct box *box, struct dom_node 
     struct box *inline_container, *inline_box;
     uint8_t display = css_computed_display_static(box->style);
 
-    switch (display) {
-    case CSS_DISPLAY_GRID:
-    case CSS_DISPLAY_FLEX:
-    case CSS_DISPLAY_BLOCK:
-        box->type = BOX_BLOCK;
-        break;
-    default:
-        box->type = BOX_INLINE_BLOCK;
-        break;
+    /* Per CSS Flexbox spec §4 and CSS Grid spec, flex/grid items have their
+     * display blockified. If the box type was already set to BOX_BLOCK by
+     * blockification in box_construct_element (e.g., for input inside a flex
+     * container), preserve it. The computed display doesn't reflect this
+     * blockification, so we check the existing box type. */
+    if (box->type != BOX_BLOCK) {
+        switch (display) {
+        case CSS_DISPLAY_GRID:
+        case CSS_DISPLAY_FLEX:
+        case CSS_DISPLAY_BLOCK:
+            box->type = BOX_BLOCK;
+            break;
+        default:
+            box->type = BOX_INLINE_BLOCK;
+            break;
+        }
     }
 
     inline_container = box_create(NULL, 0, false, 0, 0, 0, 0, html->bctx);
