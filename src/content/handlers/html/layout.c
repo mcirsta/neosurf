@@ -853,13 +853,26 @@ layout_minmax_block(struct box *block, const struct gui_layout_table *font_func,
     if (block->gadget &&
         (block->gadget->type == GADGET_TEXTBOX || block->gadget->type == GADGET_PASSWORD ||
             block->gadget->type == GADGET_FILE || block->gadget->type == GADGET_TEXTAREA) &&
-        block->style && wtype == CSS_WIDTH_AUTO) {
-        css_fixed size = INTTOFIX(10);
-        css_unit unit = CSS_UNIT_EM;
+        block->style) {
+        /* For text inputs, use intrinsic width (10em ≈ 20 chars) for minmax:
+         * - Always when width is AUTO
+         * - Also when the element is a flex item, since the intrinsic size
+         *   should be used for the parent's shrink-to-fit calculation.
+         *   This matches Chrome/Firefox behavior where inputs have an intrinsic
+         *   size based on their type, even with explicit width like "width: 1%". */
+        bool use_intrinsic = (wtype == CSS_WIDTH_AUTO);
+        if (!use_intrinsic && block->parent &&
+            (block->parent->type == BOX_FLEX || block->parent->type == BOX_INLINE_FLEX)) {
+            use_intrinsic = true;
+        }
+        if (use_intrinsic) {
+            css_fixed size = INTTOFIX(10);
+            css_unit unit = CSS_UNIT_EM;
 
-        min = max = FIXTOINT(css_unit_len2device_px(block->style, &content->unit_len_ctx, size, unit));
+            min = max = FIXTOINT(css_unit_len2device_px(block->style, &content->unit_len_ctx, size, unit));
 
-        block->flags |= HAS_HEIGHT;
+            block->flags |= HAS_HEIGHT;
+        }
     }
 
     if (block->gadget && (block->gadget->type == GADGET_RADIO || block->gadget->type == GADGET_CHECKBOX) &&
