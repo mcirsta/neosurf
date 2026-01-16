@@ -374,9 +374,6 @@ static nserror nsqt_push_transform(const struct redraw_context *ctx, const float
 {
     QPainter *painter = (QPainter *)ctx->priv;
 
-    NSLOG(netsurf, WARNING, "PUSH_TRANSFORM called: ctx=%p transform=[%.2f,%.2f,%.2f,%.2f,%.2f,%.2f]", (void *)ctx,
-        transform[0], transform[1], transform[2], transform[3], transform[4], transform[5]);
-
     /* Save current state (includes transform) */
     painter->save();
 

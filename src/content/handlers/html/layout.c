@@ -3637,10 +3637,10 @@ bool layout_block_context(struct box *block, int viewport_height, html_content *
                     margin_collapse = NULL;
                 }
 
-                /* Apply bottom margin */
-                if (max_pos_margin < box->margin[BOTTOM])
+                /* Apply bottom margin (skip if AUTO to prevent overflow) */
+                if (box->margin[BOTTOM] != AUTO && max_pos_margin < box->margin[BOTTOM])
                     max_pos_margin = box->margin[BOTTOM];
-                else if (max_neg_margin < -box->margin[BOTTOM])
+                else if (box->margin[BOTTOM] != AUTO && max_neg_margin < -box->margin[BOTTOM])
                     max_neg_margin = -box->margin[BOTTOM];
 
                 box = box->parent;
@@ -3689,9 +3689,10 @@ bool layout_block_context(struct box *block, int viewport_height, html_content *
             margin_collapse = NULL;
         }
 
-        if (max_pos_margin < box->margin[BOTTOM])
+        /* Apply bottom margin (skip if AUTO to prevent overflow) */
+        if (box->margin[BOTTOM] != AUTO && max_pos_margin < box->margin[BOTTOM])
             max_pos_margin = box->margin[BOTTOM];
-        else if (max_neg_margin < -box->margin[BOTTOM])
+        else if (box->margin[BOTTOM] != AUTO && max_neg_margin < -box->margin[BOTTOM])
             max_neg_margin = -box->margin[BOTTOM];
 
         /* Mark that we have a pending margin to apply to the next sibling.
