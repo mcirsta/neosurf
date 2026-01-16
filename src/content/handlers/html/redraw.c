@@ -1794,11 +1794,14 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
     dom_exception exc;
     dom_html_element_type tag_type;
 
-
     if (html_redraw_printing && (box->flags & PRINTED))
         return true;
 
     bool has_transform = false;
+    bool need_transform = false;
+    bool result = true; /* Track success/failure for cleanup */
+    float transform_matrix[6] = {1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f}; /* Identity matrix */
+
     if (box->style != NULL) {
         overflow_x = css_computed_overflow_x(box->style);
         overflow_y = css_computed_overflow_y(box->style);
@@ -1825,67 +1828,83 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
              * | b  d  ty |
              * | 0  0  1  |
              */
-            float matrix[6] = {1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
+            /* Use transform_matrix from function scope */
             int box_x = x_parent + box->x;
             int box_y = y_parent + box->y;
             float cx = box_x + box->width / 2.0f; /* transform-origin default: center */
             float cy = box_y + box->height / 2.0f;
 
-            /* Build composed transform matrix M (starting with identity, no pre-translate) */
+            /* Build composed transform transform_matrix M (starting with identity, no pre-translate) */
             for (uint32_t i = 0; i < transform_count; i++) {
                 const css_transform_function *func = &transform_functions[i];
                 float val1 = FIXTOFLT(func->value1);
                 float val2 = FIXTOFLT(func->value2);
-                if (func->unit1 == CSS_UNIT_PCT)
-                    val1 = (val1 / 100.0f) * box->width;
-                if (func->unit2 == CSS_UNIT_PCT)
-                    val2 = (val2 / 100.0f) * box->height;
+
+                /* Note: Percentage conversion depends on the transform function type.
+                 * For translate functions:
+                 *   - translateX(%) uses width
+                 *   - translateY(%) uses height
+                 *   - translate(x%, y%) uses width for x, height for y
+                 * Other functions handle percentages within their case blocks.
+                 */
 
                 switch (func->type) {
                 case CSS_TRANSFORM_FUNC_TRANSLATE: {
                     /* M' = M * T(tx,ty) -- right multiply by translation */
-                    matrix[4] += val1 * matrix[0] + val2 * matrix[2];
-                    matrix[5] += val1 * matrix[1] + val2 * matrix[3];
+                    float tx = val1, ty = val2;
+                    if (func->unit1 == CSS_UNIT_PCT)
+                        tx = (val1 / 100.0f) * box->width;
+                    if (func->unit2 == CSS_UNIT_PCT)
+                        ty = (val2 / 100.0f) * box->height;
+                    transform_matrix[4] += tx * transform_matrix[0] + ty * transform_matrix[2];
+                    transform_matrix[5] += tx * transform_matrix[1] + ty * transform_matrix[3];
                     break;
                 }
                 case CSS_TRANSFORM_FUNC_TRANSLATEX: {
-                    matrix[4] += val1 * matrix[0];
-                    matrix[5] += val1 * matrix[1];
+                    float tx = val1;
+                    if (func->unit1 == CSS_UNIT_PCT)
+                        tx = (val1 / 100.0f) * box->width;
+                    transform_matrix[4] += tx * transform_matrix[0];
+                    transform_matrix[5] += tx * transform_matrix[1];
                     break;
                 }
                 case CSS_TRANSFORM_FUNC_TRANSLATEY: {
-                    matrix[4] += val1 * matrix[2];
-                    matrix[5] += val1 * matrix[3];
+                    float ty = val1;
+                    if (func->unit1 == CSS_UNIT_PCT)
+                        ty = (val1 / 100.0f) * box->height; /* Use HEIGHT for translateY */
+                    transform_matrix[4] += ty * transform_matrix[2];
+                    transform_matrix[5] += ty * transform_matrix[3];
                     break;
                 }
                 case CSS_TRANSFORM_FUNC_SCALE: {
                     /* M' = M * S(sx,sy) -- right multiply by scale */
                     float sx = val1;
                     float sy = (func->value2 == 0) ? sx : val2;
-                    matrix[0] *= sx;
-                    matrix[1] *= sx;
-                    matrix[2] *= sy;
-                    matrix[3] *= sy;
+                    transform_matrix[0] *= sx;
+                    transform_matrix[1] *= sx;
+                    transform_matrix[2] *= sy;
+                    transform_matrix[3] *= sy;
                     /* tx, ty unchanged when multiplying by pure scale from right */
                     break;
                 }
                 case CSS_TRANSFORM_FUNC_SCALEX:
-                    matrix[0] *= val1;
-                    matrix[1] *= val1;
+                    transform_matrix[0] *= val1;
+                    transform_matrix[1] *= val1;
                     break;
                 case CSS_TRANSFORM_FUNC_SCALEY:
-                    matrix[2] *= val1;
-                    matrix[3] *= val1;
+                    transform_matrix[2] *= val1;
+                    transform_matrix[3] *= val1;
                     break;
                 case CSS_TRANSFORM_FUNC_ROTATE: {
                     /* M' = M * R(θ) -- right multiply by rotation */
                     float rad = val1 * M_PI / 180.0f;
                     float cos_a = cosf(rad), sin_a = sinf(rad);
-                    float a = matrix[0], b = matrix[1], c = matrix[2], d = matrix[3];
-                    matrix[0] = a * cos_a + c * sin_a;
-                    matrix[1] = b * cos_a + d * sin_a;
-                    matrix[2] = c * cos_a - a * sin_a;
-                    matrix[3] = d * cos_a - b * sin_a;
+                    float a = transform_matrix[0], b = transform_matrix[1], c = transform_matrix[2],
+                          d = transform_matrix[3];
+                    transform_matrix[0] = a * cos_a + c * sin_a;
+                    transform_matrix[1] = b * cos_a + d * sin_a;
+                    transform_matrix[2] = c * cos_a - a * sin_a;
+                    transform_matrix[3] = d * cos_a - b * sin_a;
                     /* tx, ty unchanged when multiplying by pure rotation from right */
                     break;
                 }
@@ -1896,19 +1915,17 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
 
             /* Apply transform-origin wrap: Final = T(cx,cy) * M * T(-cx,-cy)
              * This computes to: tx' = tx + cx*(1-a) - cy*c, ty' = ty + cy*(1-d) - cx*b */
-            float a = matrix[0], b = matrix[1], c = matrix[2], d = matrix[3];
-            matrix[4] += cx * (1.0f - a) - cy * c;
-            matrix[5] += cy * (1.0f - d) - cx * b;
+            float a = transform_matrix[0], b = transform_matrix[1], c = transform_matrix[2], d = transform_matrix[3];
+            transform_matrix[4] += cx * (1.0f - a) - cy * c;
+            transform_matrix[5] += cy * (1.0f - d) - cx * b;
 
-            /* Check if the matrix has any non-identity transform */
-            bool is_identity = (matrix[0] == 1.0f && matrix[1] == 0.0f && matrix[2] == 0.0f && matrix[3] == 1.0f &&
-                matrix[4] == 0.0f && matrix[5] == 0.0f);
+            /* Check if the transform_matrix has any non-identity transform */
+            bool is_identity = (transform_matrix[0] == 1.0f && transform_matrix[1] == 0.0f &&
+                transform_matrix[2] == 0.0f && transform_matrix[3] == 1.0f && transform_matrix[4] == 0.0f &&
+                transform_matrix[5] == 0.0f);
 
-
-            if (!is_identity) {
-                if (ctx->plot->push_transform(ctx, matrix) == NSERROR_OK)
-                    has_transform = true;
-            }
+            /* Mark that we need a transform, but don't push yet - wait until after early bailouts */
+            need_transform = !is_identity;
         }
     }
 
@@ -2038,8 +2055,9 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
     }
 
     /* return if the rectangle is completely outside the clip rectangle */
-    if (clip->y1 < r.y0 || r.y1 < clip->y0 || clip->x1 < r.x0 || r.x1 < clip->x0)
-        return true;
+    if (clip->y1 < r.y0 || r.y1 < clip->y0 || clip->x1 < r.x0 || r.x1 < clip->x0) {
+        return true; /* Early return BEFORE push_transform, no cleanup needed */
+    }
 
     /*if the rectangle is under the page bottom but it can fit in a page,
     don't print it now*/
@@ -2051,23 +2069,32 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
                 not printed elements*/
                 if (r.y0 < html_redraw_printing_top_cropped)
                     html_redraw_printing_top_cropped = r.y0;
-                return true;
+                return true; /* Early return BEFORE push_transform, no cleanup needed */
             }
         } else
             box->flags |= PRINTED; /*it won't be printed anymore*/
     }
 
-    /* if visibility is hidden render children only */
+    /* if visibility is hidden render children only - NO transform needed for hidden elements */
     if (box->style && css_computed_visibility(box->style) == CSS_VISIBILITY_HIDDEN) {
-        if ((ctx->plot->group_start) && (ctx->plot->group_start(ctx, "hidden box") != NSERROR_OK))
+        if ((ctx->plot->group_start) && (ctx->plot->group_start(ctx, "hidden box") != NSERROR_OK)) {
             return false;
-        if (!html_redraw_box_children(html, box, x_parent, y_parent, &r, scale, current_background_color, data, ctx))
+        }
+        if (!html_redraw_box_children(html, box, x_parent, y_parent, &r, scale, current_background_color, data, ctx)) {
             return false;
+        }
         return ((!ctx->plot->group_end) || (ctx->plot->group_end(ctx) == NSERROR_OK));
     }
 
+    /* NOW push the transform - after all early bailouts, before rendering */
+    if (need_transform && ctx->plot->push_transform != NULL) {
+        if (ctx->plot->push_transform(ctx, transform_matrix) == NSERROR_OK) {
+            has_transform = true;
+        }
+    }
+
     if ((ctx->plot->group_start) && (ctx->plot->group_start(ctx, "vis box") != NSERROR_OK)) {
-        return false;
+        goto cleanup;
     }
 
     if (box->style != NULL && css_computed_position(box->style) == CSS_POSITION_ABSOLUTE &&
@@ -2101,26 +2128,38 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
         /* Nothing to do for invalid rectangles */
         if (r.x0 >= r.x1 || r.y0 >= r.y1)
             /* not an error */
-            return ((!ctx->plot->group_end) || (ctx->plot->group_end(ctx) == NSERROR_OK));
+            goto cleanup;
         /* clip to it */
-        if (ctx->plot->clip(ctx, &r) != NSERROR_OK)
-            return false;
+        if (ctx->plot->clip(ctx, &r) != NSERROR_OK) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
 
     } else if (box->type == BOX_BLOCK || box->type == BOX_INLINE_BLOCK || box->type == BOX_TABLE_CELL || box->object) {
         /* Use helper function for clip intersection */
         clip_result_t result = html_clip_intersect_box(&r, clip, has_transform);
         if (result == CLIP_RESULT_EMPTY) {
             /* no point trying to draw 0-width/height boxes */
-            return ((!ctx->plot->group_end) || (ctx->plot->group_end(ctx) == NSERROR_OK));
+            goto cleanup;
         }
         /* clip to it */
-        if (ctx->plot->clip(ctx, &r) != NSERROR_OK)
-            return false;
+        if (ctx->plot->clip(ctx, &r) != NSERROR_OK) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
     } else {
         /* clip box is fine, clip to it */
         r = *clip;
-        if (ctx->plot->clip(ctx, &r) != NSERROR_OK)
-            return false;
+        if (ctx->plot->clip(ctx, &r) != NSERROR_OK) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
     }
 
     /* CSS 2.1: Render children with negative z-index BEFORE parent's
@@ -2128,7 +2167,12 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
      * stacking context. */
     if (!html_redraw_negative_zindex_children(
             html, box, x_parent, y_parent, &r, scale, current_background_color, data, ctx)) {
-        return false;
+        {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
     }
 
     /* background colour and image for block level content and replaced
@@ -2218,8 +2262,12 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
                 root_w = 0;
             p.x0 = (int)(-vp_x * scale);
             p.x1 = (int)((-vp_x + root_w) * scale);
-            if (ctx->plot->clip(ctx, &p) != NSERROR_OK)
-                return false;
+            if (ctx->plot->clip(ctx, &p) != NSERROR_OK) {
+                {
+                    result = false;
+                    goto cleanup;
+                }
+            }
         }
         if (!box->parent) {
             /* Root element, special case:
@@ -2245,8 +2293,12 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
         if ((p.x0 < p.x1) && (p.y0 < p.y1)) {
             /* plot background */
             if (!html_redraw_background(
-                    x, y, box, scale, &p, &current_background_color, bg_box, &html->unit_len_ctx, ctx))
-                return false;
+                    x, y, box, scale, &p, &current_background_color, bg_box, &html->unit_len_ctx, ctx)) {
+                {
+                    result = false;
+                    goto cleanup;
+                }
+            }
             if (expand_viewport_bg) {
                 NSLOG(layout, INFO, "bg draw post: tag %s class %s box %p rect x0 %i x1 %i", tag, cls, box, p.x0, p.x1);
             }
@@ -2255,8 +2307,12 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
             if (name != NULL)
                 dom_string_unref(name);
             /* restore previous graphics window */
-            if (ctx->plot->clip(ctx, &r) != NSERROR_OK)
-                return false;
+            if (ctx->plot->clip(ctx, &r) != NSERROR_OK) {
+                {
+                    result = false;
+                    goto cleanup;
+                }
+            }
         }
     }
 
@@ -2267,8 +2323,12 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
                 (box->gadget->type == GADGET_TEXTAREA || box->gadget->type == GADGET_TEXTBOX ||
                     box->gadget->type == GADGET_PASSWORD))) &&
         (border_top || border_right || border_bottom || border_left)) {
-        if (!html_redraw_borders(box, x_parent, y_parent, padding_width, padding_height, &r, scale, ctx))
-            return false;
+        if (!html_redraw_borders(box, x_parent, y_parent, padding_width, padding_height, &r, scale, ctx)) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
     }
 
     /* backgrounds and borders for non-replaced inlines */
@@ -2318,13 +2378,25 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
                 /* inline element has wrapped, plot background
                  * and borders */
                 if (!html_redraw_inline_background(
-                        x, y, box, scale, &p, b, first, false, &current_background_color, &html->unit_len_ctx, ctx))
-                    return false;
+                        x, y, box, scale, &p, b, first, false, &current_background_color, &html->unit_len_ctx, ctx)) {
+                    {
+                        result = false;
+                        goto cleanup;
+                    }
+                }
                 /* restore previous graphics window */
-                if (ctx->plot->clip(ctx, &r) != NSERROR_OK)
-                    return false;
-                if (!html_redraw_inline_borders(box, b, &r, scale, first, false, ctx))
-                    return false;
+                if (ctx->plot->clip(ctx, &r) != NSERROR_OK) {
+                    {
+                        result = false;
+                        goto cleanup;
+                    }
+                }
+                if (!html_redraw_inline_borders(box, b, &r, scale, first, false, ctx)) {
+                    {
+                        result = false;
+                        goto cleanup;
+                    }
+                }
                 /* reset coords */
                 b.x0 = ib_x - ib_b_left;
                 b.y0 = ib_y - border_top - padding_top;
@@ -2348,13 +2420,25 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
         /* plot background and borders for last rectangle of
          * the inline */
         if (!html_redraw_inline_background(
-                x, ib_y, box, scale, &p, b, first, true, &current_background_color, &html->unit_len_ctx, ctx))
-            return false;
+                x, ib_y, box, scale, &p, b, first, true, &current_background_color, &html->unit_len_ctx, ctx)) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
         /* restore previous graphics window */
-        if (ctx->plot->clip(ctx, &r) != NSERROR_OK)
-            return false;
-        if (!html_redraw_inline_borders(box, b, &r, scale, first, true, ctx))
-            return false;
+        if (ctx->plot->clip(ctx, &r) != NSERROR_OK) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
+        if (!html_redraw_inline_borders(box, b, &r, scale, first, true, ctx)) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
     }
 
     /* Debug outlines */
@@ -2378,24 +2462,36 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
         rect.y0 = y + padding_top;
         rect.x1 = x + padding_left + width;
         rect.y1 = y + padding_top + height;
-        if (ctx->plot->rectangle(ctx, plot_style_content_edge, &rect) != NSERROR_OK)
-            return false;
+        if (ctx->plot->rectangle(ctx, plot_style_content_edge, &rect) != NSERROR_OK) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
 
         /* Padding edge -- red */
         rect.x0 = x;
         rect.y0 = y;
         rect.x1 = x + padding_width;
         rect.y1 = y + padding_height;
-        if (ctx->plot->rectangle(ctx, plot_style_padding_edge, &rect) != NSERROR_OK)
-            return false;
+        if (ctx->plot->rectangle(ctx, plot_style_padding_edge, &rect) != NSERROR_OK) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
 
         /* Margin edge -- yellow */
         rect.x0 = x - border_left - margin_left;
         rect.y0 = y - border_top - margin_top;
         rect.x1 = x + padding_width + border_right + margin_right;
         rect.y1 = y + padding_height + border_bottom + margin_bottom;
-        if (ctx->plot->rectangle(ctx, plot_style_margin_edge, &rect) != NSERROR_OK)
-            return false;
+        if (ctx->plot->rectangle(ctx, plot_style_margin_edge, &rect) != NSERROR_OK) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
     }
 
     /* clip to the padding edge for objects, or boxes with overflow hidden
@@ -2453,15 +2549,23 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
 
         if (need_clip &&
             (box->type == BOX_BLOCK || box->type == BOX_INLINE_BLOCK || box->type == BOX_TABLE_CELL || box->object)) {
-            if (ctx->plot->clip(ctx, &r) != NSERROR_OK)
-                return false;
+            if (ctx->plot->clip(ctx, &r) != NSERROR_OK) {
+                {
+                    result = false;
+                    goto cleanup;
+                }
+            }
         }
     }
 
     /* text decoration */
     if ((box->type != BOX_TEXT) && box->style && css_computed_text_decoration(box->style) != CSS_TEXT_DECORATION_NONE) {
-        if (!html_redraw_text_decoration(box, x_parent, y_parent, scale, current_background_color, ctx))
-            return false;
+        if (!html_redraw_text_decoration(box, x_parent, y_parent, scale, current_background_color, ctx)) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
     }
 
     if (box->node != NULL) {
@@ -2569,7 +2673,12 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
             rect.y1 = y + padding_top + height - 1;
             res = ctx->plot->rectangle(ctx, plot_style_broken_object, &rect);
             if (res != NSERROR_OK) {
-                return false;
+                {
+                    {
+                        result = false;
+                        goto cleanup;
+                    }
+                }
             }
 
             res = guit->layout->width(plot_fstyle_broken_object, obj, sizeof(obj) - 1, &obj_width);
@@ -2580,8 +2689,12 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
             }
 
             if (ctx->plot->text(ctx, plot_fstyle_broken_object, obj_x, y + padding_top + (int)(height * 0.75), obj,
-                    sizeof(obj) - 1) != NSERROR_OK)
-                return false;
+                    sizeof(obj) - 1) != NSERROR_OK) {
+                {
+                    result = false;
+                    goto cleanup;
+                }
+            }
         }
     } else if (box->svg_diagram != NULL && width != 0 && height != 0) {
         /* Inline SVG rendering */
@@ -2611,24 +2724,40 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
         }
         if (bitmap != NULL &&
             ctx->plot->bitmap(ctx, bitmap, x + padding_left, y + padding_top, width, height, current_background_color,
-                BITMAPF_NONE) != NSERROR_OK)
-            return false;
+                BITMAPF_NONE) != NSERROR_OK) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
     } else if (box->iframe) {
         /* Offset is passed to browser window redraw unscaled */
         browser_window_redraw(box->iframe, x + padding_left, y + padding_top, &r, ctx);
 
     } else if (box->gadget && box->gadget->type == GADGET_CHECKBOX) {
-        if (!html_redraw_checkbox(x + padding_left, y + padding_top, width, height, box->gadget->selected, ctx))
-            return false;
+        if (!html_redraw_checkbox(x + padding_left, y + padding_top, width, height, box->gadget->selected, ctx)) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
 
     } else if (box->gadget && box->gadget->type == GADGET_RADIO) {
-        if (!html_redraw_radio(x + padding_left, y + padding_top, width, height, box->gadget->selected, ctx))
-            return false;
+        if (!html_redraw_radio(x + padding_left, y + padding_top, width, height, box->gadget->selected, ctx)) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
 
     } else if (box->gadget && box->gadget->type == GADGET_FILE) {
         if (!html_redraw_file(x + padding_left, y + padding_top, width, height, box, scale, current_background_color,
-                &html->unit_len_ctx, ctx))
-            return false;
+                &html->unit_len_ctx, ctx)) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
 
     } else if (box->gadget &&
         (box->gadget->type == GADGET_TEXTAREA || box->gadget->type == GADGET_PASSWORD ||
@@ -2636,8 +2765,12 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
         textarea_redraw(box->gadget->data.text.ta, x, y, current_background_color, scale, &r, ctx);
 
     } else if (box->text) {
-        if (!html_redraw_text_box(html, box, x, y, &r, scale, current_background_color, ctx))
-            return false;
+        if (!html_redraw_text_box(html, box, x, y, &r, scale, current_background_color, ctx)) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
 
     } else {
         const struct rect *child_clip_ptr = &r;
@@ -2665,21 +2798,33 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
                 dom_string_unref(name);
         }
         if (!html_redraw_box_children(
-                html, box, x_parent, y_parent, child_clip_ptr, scale, current_background_color, data, ctx))
-            return false;
+                html, box, x_parent, y_parent, child_clip_ptr, scale, current_background_color, data, ctx)) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
     }
 
     if (box->type == BOX_BLOCK || box->type == BOX_INLINE_BLOCK || box->type == BOX_TABLE_CELL ||
         box->type == BOX_INLINE)
-        if (ctx->plot->clip(ctx, clip) != NSERROR_OK)
-            return false;
+        if (ctx->plot->clip(ctx, clip) != NSERROR_OK) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
 
     /* list marker */
     if (box->list_marker) {
         if (!html_redraw_box(html, box->list_marker, x_parent + box->x - scrollbar_get_offset(box->scroll_x),
                 y_parent + box->y - scrollbar_get_offset(box->scroll_y), clip, scale, current_background_color, data,
-                ctx))
-            return false;
+                ctx)) {
+            {
+                result = false;
+                goto cleanup;
+            }
+        }
     }
 
     /* scrollbars */
@@ -2700,7 +2845,12 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
         res = box_handle_scrollbars((struct content *)html, box, has_x_scroll, has_y_scroll);
         if (res != NSERROR_OK) {
             NSLOG(neosurf, INFO, "%s", messages_get_errorcode(res));
-            return false;
+            {
+                {
+                    result = false;
+                    goto cleanup;
+                }
+            }
         }
 
         if (box->scroll_x != NULL)
@@ -2715,16 +2865,18 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
 
     if (box->type == BOX_BLOCK || box->type == BOX_INLINE_BLOCK || box->type == BOX_TABLE_CELL ||
         box->type == BOX_INLINE) {
-        if (ctx->plot->clip(ctx, clip) != NSERROR_OK)
-            return false;
+        if (ctx->plot->clip(ctx, clip) != NSERROR_OK) {
+            goto cleanup;
+        }
     }
 
+cleanup:
     /* Pop any transform that was pushed */
     if (has_transform && ctx->plot->pop_transform != NULL) {
         ctx->plot->pop_transform(ctx);
     }
 
-    return ((!plot->group_end) || (ctx->plot->group_end(ctx) == NSERROR_OK));
+    return result;
 }
 
 /**
