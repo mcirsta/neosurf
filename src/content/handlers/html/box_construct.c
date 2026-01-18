@@ -464,6 +464,130 @@ static struct box *create_content_box(
 
 
 /**
+ * Ensure an inline container exists for inline-level content.
+ *
+ * This helper creates or reuses an inline container. It checks if the
+ * containing block already has an inline container as its last child
+ * (e.g., from a ::before pseudo-element) and reuses it if so.
+ *
+ * \param containing_block  Parent block to contain the inline container
+ * \param inline_container_ptr  Pointer to inline container (may be updated)
+ * \param bctx              Box context for memory allocation
+ * \return true on success, false on memory allocation failure
+ */
+static bool box_ensure_inline_container(struct box *containing_block, struct box **inline_container_ptr, int *bctx)
+{
+    if (*inline_container_ptr != NULL) {
+        return true; /* Already have one */
+    }
+
+    /* Check if containing block's last child is an inline container */
+    if (containing_block->last != NULL && containing_block->last->type == BOX_INLINE_CONTAINER) {
+        *inline_container_ptr = containing_block->last;
+        return true;
+    }
+
+    /* Create new inline container */
+    struct box *ic = box_create(NULL, NULL, false, NULL, NULL, NULL, NULL, bctx);
+    if (ic == NULL) {
+        return false;
+    }
+    ic->type = BOX_INLINE_CONTAINER;
+    box_add_child(containing_block, ic);
+    *inline_container_ptr = ic;
+    return true;
+}
+
+
+/**
+ * Add box to parent with optional float wrapping.
+ *
+ * If the box has float:left or float:right (and is not a flex child),
+ * wraps it in a BOX_FLOAT_LEFT/RIGHT box before adding to the inline container.
+ * Otherwise, adds directly to the parent.
+ *
+ * \param box              Box to add
+ * \param parent           Parent to add to (inline_container or containing_block)
+ * \param bctx             Box context for memory allocation
+ * \param is_flex_child    True if parent is flex/grid (floats don't apply)
+ * \return true on success, false on memory allocation failure
+ */
+static bool box_add_with_float_wrap(struct box *box, struct box *parent, int *bctx, bool is_flex_child)
+{
+    if (box->style == NULL) {
+        box_add_child(parent, box);
+        return true;
+    }
+
+    uint8_t float_val = css_computed_float(box->style);
+    bool is_floated = !is_flex_child && (float_val == CSS_FLOAT_LEFT || float_val == CSS_FLOAT_RIGHT);
+
+    if (is_floated) {
+        struct box *flt = box_create(NULL, NULL, false, NULL, NULL, NULL, NULL, bctx);
+        if (flt == NULL) {
+            return false;
+        }
+        flt->type = (float_val == CSS_FLOAT_LEFT) ? BOX_FLOAT_LEFT : BOX_FLOAT_RIGHT;
+        box_add_child(parent, flt);
+        box_add_child(flt, box);
+    } else {
+        box_add_child(parent, box);
+    }
+
+    return true;
+}
+
+
+/**
+ * Fetch background image for a box if specified in its style.
+ *
+ * \param box      Box to fetch background for (must have style)
+ * \param content  HTML content for resource fetching
+ * \return true on success, false on fetch failure
+ */
+static bool box_fetch_background(struct box *box, html_content *content)
+{
+    lwc_string *bgimage_uri;
+
+    if (box->style == NULL) {
+        return true;
+    }
+
+    if (css_computed_background_image(box->style, &bgimage_uri) == CSS_BACKGROUND_IMAGE_IMAGE && bgimage_uri != NULL &&
+        nsoption_bool(background_images) == true) {
+        nsurl *url;
+        nserror error;
+
+        error = nsurl_create(lwc_string_data(bgimage_uri), &url);
+        if (error == NSERROR_OK) {
+            if (html_fetch_object(content, url, box, image_types, true) == false) {
+                NSLOG(neosurf, WARNING, "box_fetch_background: Failed to fetch background image");
+                nsurl_unref(url);
+                return false;
+            }
+            nsurl_unref(url);
+        }
+    }
+
+    return true;
+}
+
+
+/**
+ * Check if a box type needs an inline container.
+ *
+ * \param box_type      The box type to check
+ * \param is_floated    Whether the box has float:left or float:right
+ * \return true if box needs inline container, false otherwise
+ */
+static inline bool box_needs_inline_container(box_type type, bool is_floated)
+{
+    return type == BOX_INLINE || type == BOX_BR || type == BOX_INLINE_BLOCK || type == BOX_INLINE_FLEX ||
+        type == BOX_INLINE_GRID || is_floated;
+}
+
+
+/**
  * Construct the box required for a generated element.
  *
  * \param n        XML node of type XML_ELEMENT_NODE
@@ -527,24 +651,26 @@ static void box_construct_generate(dom_node *n, html_content *content, struct bo
     /* set box type from computed display */
     gen->type = box_map[computed_display];
 
-    /* For inline-level pseudo-elements, we need an inline container */
-    if (gen->type == BOX_INLINE || gen->type == BOX_INLINE_BLOCK || gen->type == BOX_INLINE_FLEX ||
-        gen->type == BOX_INLINE_GRID) {
-        /* Check if parent already has an inline container as last child
-         */
-        if (box->last != NULL && box->last->type == BOX_INLINE_CONTAINER) {
-            inline_container = box->last;
-        } else {
-            /* Create a new inline container */
-            inline_container = box_create(NULL, NULL, false, NULL, NULL, NULL, NULL, content->bctx);
-            if (inline_container == NULL) {
-                return;
-            }
-            inline_container->type = BOX_INLINE_CONTAINER;
-            box_add_child(box, inline_container);
+    /* Fetch background image for pseudo-element */
+    if (!box_fetch_background(gen, content)) {
+        return;
+    }
+
+    /* Check if we need an inline container */
+    uint8_t float_val = css_computed_float(style);
+    bool is_floated = (float_val == CSS_FLOAT_LEFT || float_val == CSS_FLOAT_RIGHT);
+
+    if (box_needs_inline_container(gen->type, is_floated)) {
+        /* Ensure inline container exists */
+        if (!box_ensure_inline_container(box, &inline_container, content->bctx)) {
+            return;
         }
-        box_add_child(inline_container, gen);
+        /* Add with float wrapping if needed */
+        if (!box_add_with_float_wrap(gen, inline_container, content->bctx, false)) {
+            return;
+        }
     } else {
+        /* Block-level: add directly to parent */
         box_add_child(box, gen);
     }
 
@@ -926,37 +1052,16 @@ static bool box_construct_element(struct box_construct_ctx *ctx, bool *convert_c
          * preceded by block-level siblings) */
         assert(props.containing_block != NULL && "Box must have containing block.");
 
-        props.inline_container = box_create(NULL, NULL, false, NULL, NULL, NULL, NULL, ctx->bctx);
-        if (props.inline_container == NULL) {
+        /* Use helper to ensure inline container exists (may reuse from ::before) */
+        if (!box_ensure_inline_container(props.containing_block, &props.inline_container, ctx->bctx)) {
             NSLOG(neosurf, WARNING, "Failed to create inline container box");
             goto error;
         }
-
-        props.inline_container->type = BOX_INLINE_CONTAINER;
-
-        box_add_child(props.containing_block, props.inline_container);
     }
 
     /* Kick off fetch for any background image */
-    if (css_computed_background_image(box->style, &bgimage_uri) == CSS_BACKGROUND_IMAGE_IMAGE && bgimage_uri != NULL &&
-        nsoption_bool(background_images) == true) {
-        nsurl *url;
-        nserror error;
-
-        /* TODO: we get a url out of libcss as a lwc string, but
-         *       earlier we already had it as a nsurl after we
-         *       nsurl_joined it.  Can this be improved?
-         *       For now, just making another nsurl. */
-        error = nsurl_create(lwc_string_data(bgimage_uri), &url);
-        if (error == NSERROR_OK) {
-            /* Fetch image if we got a valid URL */
-            if (html_fetch_object(ctx->content, url, box, image_types, true) == false) {
-                NSLOG(neosurf, WARNING, "Failed to fetch background image");
-                nsurl_unref(url);
-                goto error;
-            }
-            nsurl_unref(url);
-        }
+    if (!box_fetch_background(box, ctx->content)) {
+        goto error;
     }
 
     if (*convert_children)
