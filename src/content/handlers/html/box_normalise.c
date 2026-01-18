@@ -1153,9 +1153,17 @@ static bool box_normalise_inline_container(struct box *cont, const struct box *r
                 struct box *children = child->children;
                 struct box *last_child = child->last;
                 struct box *after = child->next;
+                struct box *c_child;
 
                 NSLOG(netsurf, INFO, "    flattening INLINE %p children %p last %p after %p", child, children,
                     last_child, after);
+
+                /* Update parent pointers of all children to the inline container */
+                for (c_child = children; c_child != NULL; c_child = c_child->next) {
+                    c_child->parent = cont;
+                    if (c_child == last_child)
+                        break;
+                }
 
                 /* Link children to follow BOX_INLINE */
                 child->next = children;

@@ -290,6 +290,180 @@ static css_select_results *box_get_style(
 
 
 /**
+ * Create a box from a CSS content item.
+ *
+ * This handles all content types defined in CSS 2.1 and CSS Generated Content:
+ * - STRING: text content
+ * - URI: images or font icons
+ * - COUNTER/COUNTERS: counter values
+ * - ATTR: attribute values
+ * - quotes: open/close quote characters
+ *
+ * \param item      Content item to create box from
+ * \param style     Computed style for the pseudo-element
+ * \param content   HTML content for memory allocation
+ * \param node      DOM node for ATTR lookups (may be NULL)
+ * \return          Box, or NULL on failure or unsupported type
+ */
+static struct box *create_content_box(
+    const css_computed_content_item *item, const css_computed_style *style, html_content *content, dom_node *node)
+{
+    struct box *box = NULL;
+
+    switch (item->type) {
+    case CSS_COMPUTED_CONTENT_STRING: {
+        /* Text content - most common case */
+        const char *text_data = lwc_string_data(item->data.string);
+        size_t text_len = lwc_string_length(item->data.string);
+
+        if (text_len == 0)
+            return NULL;
+
+        box = box_create(NULL, (css_computed_style *)style, false, NULL, NULL, NULL, NULL, content->bctx);
+        if (box == NULL)
+            return NULL;
+
+        box->type = BOX_TEXT;
+        box->text = talloc_strndup(content->bctx, text_data, text_len);
+        if (box->text == NULL) {
+            /* Can't free box here - relies on talloc cleanup */
+            return NULL;
+        }
+        box->length = text_len;
+
+        NSLOG(neosurf, DEEPDEBUG, "create_content_box: STRING '%.*s'", (int)(text_len > 50 ? 50 : text_len), text_data);
+        break;
+    }
+
+    case CSS_COMPUTED_CONTENT_URI: {
+        /* URI content - fetch image and create object box.
+         * Similar pattern to list-style-image handling. */
+        nsurl *url;
+        nserror error;
+
+        error = nsurl_create(lwc_string_data(item->data.uri), &url);
+        if (error != NSERROR_OK) {
+            NSLOG(neosurf, WARNING, "create_content_box: URI nsurl_create failed");
+            break;
+        }
+
+        /* Create box to hold the image object */
+        box = box_create(NULL, (css_computed_style *)style, false, NULL, NULL, NULL, NULL, content->bctx);
+        if (box == NULL) {
+            nsurl_unref(url);
+            break;
+        }
+
+        /* Mark as replaced (image) and set type for inline context */
+        box->type = BOX_INLINE;
+        box->flags |= IS_REPLACED;
+
+        /* Start async fetch - box->object will be set when done */
+        if (html_fetch_object(content, url, box, CONTENT_IMAGE, false) == false) {
+            NSLOG(neosurf, WARNING, "create_content_box: URI html_fetch_object failed");
+            nsurl_unref(url);
+            /* Box allocation will be cleaned up by talloc */
+            box = NULL;
+            break;
+        }
+
+        nsurl_unref(url);
+        NSLOG(neosurf, DEEPDEBUG, "create_content_box: URI started fetch for %s", lwc_string_data(item->data.uri));
+        break;
+    }
+
+    case CSS_COMPUTED_CONTENT_COUNTER: {
+        /* Counter - would need counter state tracking.
+         * TODO: Implement counter support */
+        NSLOG(neosurf, DEEPDEBUG, "create_content_box: COUNTER (not implemented)");
+        box = NULL;
+        break;
+    }
+
+    case CSS_COMPUTED_CONTENT_COUNTERS: {
+        /* Nested counters with separator
+         * TODO: Implement counters support */
+        NSLOG(neosurf, DEEPDEBUG, "create_content_box: COUNTERS (not implemented)");
+        box = NULL;
+        break;
+    }
+
+    case CSS_COMPUTED_CONTENT_ATTR: {
+        /* Attribute value - get from DOM node */
+        if (node != NULL && item->data.attr != NULL) {
+            dom_string *attr_value = NULL;
+            dom_string *attr_name = NULL;
+            dom_exception err;
+
+            err = dom_string_create_interned(
+                (const uint8_t *)lwc_string_data(item->data.attr), lwc_string_length(item->data.attr), &attr_name);
+
+            if (err == DOM_NO_ERR && attr_name != NULL) {
+                err = dom_element_get_attribute(node, attr_name, &attr_value);
+                dom_string_unref(attr_name);
+
+                if (err == DOM_NO_ERR && attr_value != NULL) {
+                    const char *text_data = dom_string_data(attr_value);
+                    size_t text_len = dom_string_length(attr_value);
+
+                    if (text_len > 0) {
+                        box = box_create(
+                            NULL, (css_computed_style *)style, false, NULL, NULL, NULL, NULL, content->bctx);
+                        if (box != NULL) {
+                            box->type = BOX_TEXT;
+                            box->text = talloc_strndup(content->bctx, text_data, text_len);
+                            box->length = text_len;
+                            NSLOG(neosurf, DEEPDEBUG, "create_content_box: ATTR '%.*s'",
+                                (int)(text_len > 50 ? 50 : text_len), text_data);
+                        }
+                    }
+                    dom_string_unref(attr_value);
+                }
+            }
+        }
+        break;
+    }
+
+    case CSS_COMPUTED_CONTENT_OPEN_QUOTE:
+    case CSS_COMPUTED_CONTENT_CLOSE_QUOTE: {
+        /* Quote characters - would need to check 'quotes' property.
+         * Default quotes are typically " and '
+         * TODO: Implement proper quote handling with nesting level */
+        const char *quote;
+        if (item->type == CSS_COMPUTED_CONTENT_OPEN_QUOTE) {
+            quote = "\""; /* Default open quote */
+        } else {
+            quote = "\""; /* Default close quote */
+        }
+
+        box = box_create(NULL, (css_computed_style *)style, false, NULL, NULL, NULL, NULL, content->bctx);
+        if (box != NULL) {
+            box->type = BOX_TEXT;
+            box->text = talloc_strdup(content->bctx, quote);
+            box->length = strlen(quote);
+            NSLOG(neosurf, DEEPDEBUG, "create_content_box: %s_QUOTE",
+                item->type == CSS_COMPUTED_CONTENT_OPEN_QUOTE ? "OPEN" : "CLOSE");
+        }
+        break;
+    }
+
+    case CSS_COMPUTED_CONTENT_NO_OPEN_QUOTE:
+    case CSS_COMPUTED_CONTENT_NO_CLOSE_QUOTE:
+        /* These affect quote nesting but produce no content */
+        box = NULL;
+        break;
+
+    default:
+        NSLOG(neosurf, WARNING, "create_content_box: unknown type %d", item->type);
+        box = NULL;
+        break;
+    }
+
+    return box;
+}
+
+
+/**
  * Construct the box required for a generated element.
  *
  * \param n        XML node of type XML_ELEMENT_NODE
@@ -309,9 +483,27 @@ static void box_construct_generate(dom_node *n, html_content *content, struct bo
     const css_computed_content_item *c_item;
     uint8_t content_type;
 
-    /* Nothing to generate if the parent box is not a block */
-    if (box->type != BOX_BLOCK)
+    /* Generated content can be added to container box types that can have children.
+     * Block-level and inline-level containers that establish formatting contexts
+     * can have ::before/::after pseudo-elements per CSS spec.
+     *
+     * Note: BOX_INLINE is NOT supported here because inline boxes in this
+     * codebase have a different structure (text stored directly on box, not
+     * as children). Inline elements are handled separately in box_construct_element. */
+    switch (box->type) {
+    case BOX_BLOCK:
+    case BOX_INLINE_BLOCK:
+    case BOX_FLEX:
+    case BOX_INLINE_FLEX:
+    case BOX_GRID:
+    case BOX_INLINE_GRID:
+        /* These can have generated content children */
+        break;
+    default:
+        /* Other box types (BOX_INLINE, TABLE_*, FLOAT_*, etc.) cannot directly
+         * have generated content in the current implementation */
         return;
+    }
 
     /* To determine if an element has a pseudo element, we select
      * for it and test to see if the returned style's content
@@ -839,6 +1031,70 @@ static void box_construct_element_after(dom_node *n, html_content *content)
     assert(box != NULL);
 
     box_extract_properties(n, &props);
+
+    /* TODO: Handle ::before pseudo-element for inline boxes.
+     * This is disabled for now because:
+     * 1. It only handles STRING content, not URI/COUNTER/ATTR/etc.
+     * 2. The layout code needs more work to properly handle styled BOX_TEXT.
+     *
+     * Proper implementation requires:
+     * - Handle all content types (STRING, URI, COUNTER, ATTR, quotes)
+     * - Use BOX_INLINE wrapper for margins to work correctly
+     * - Normalization flattens children to siblings in correct order
+     */
+    if (box->type == BOX_INLINE && !(box->flags & IS_REPLACED) && box->styles != NULL &&
+        box->styles->styles[CSS_PSEUDO_ELEMENT_BEFORE] != NULL) {
+        const css_computed_style *before_style = box->styles->styles[CSS_PSEUDO_ELEMENT_BEFORE];
+        const css_computed_content_item *c_item;
+        uint8_t content_type = css_computed_content(before_style, &c_item);
+
+        if (content_type != CSS_CONTENT_NORMAL && content_type != CSS_CONTENT_NONE && c_item != NULL) {
+            /* Create BOX_INLINE wrapper - this gets margins/padding from the style */
+            struct box *pseudo_box = box_create(
+                NULL, (css_computed_style *)before_style, false, NULL, NULL, NULL, NULL, content->bctx);
+
+            if (pseudo_box != NULL) {
+                pseudo_box->type = BOX_INLINE;
+                bool has_content = false;
+
+                /* Create content boxes as children of the pseudo-element */
+                while (c_item->type != CSS_COMPUTED_CONTENT_NONE) {
+                    struct box *content_box = create_content_box(c_item, before_style, content, n);
+                    if (content_box != NULL) {
+                        box_add_child(pseudo_box, content_box);
+                        has_content = true;
+                    }
+                    c_item++;
+                }
+
+                /* Only insert if we created content */
+                if (has_content) {
+                    /* Insert as FIRST child of parent inline box.
+                     * After flattening in normalization:
+                     *   INLINE_CONTAINER
+                     *     ├─ INLINE(parent)
+                     *     ├─ INLINE(::before)  <- pseudo_box
+                     *     ├─ content children  <- flattened
+                     *     ├─ original content
+                     *     └─ INLINE_END(parent)
+                     */
+                    pseudo_box->parent = box;
+                    pseudo_box->next = box->children;
+                    pseudo_box->prev = NULL;
+                    if (box->children != NULL) {
+                        box->children->prev = pseudo_box;
+                    }
+                    box->children = pseudo_box;
+                    if (box->last == NULL) {
+                        box->last = pseudo_box;
+                    }
+
+                    NSLOG(neosurf, DEEPDEBUG, "inline_before: created BOX_INLINE %p for ::before with %d children",
+                        (void *)pseudo_box, pseudo_box->children ? 1 : 0);
+                }
+            }
+        }
+    }
 
     if (box->type == BOX_INLINE || box->type == BOX_BR) {
         /* Insert INLINE_END into containing block */
