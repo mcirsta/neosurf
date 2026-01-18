@@ -2256,12 +2256,20 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
         if (expand_viewport_bg && ctx->interactive) {
             int vp_x = (data != NULL) ? data->viewport_x : 0;
             int root_w = (data != NULL) ? data->root_width : 0;
+            int vp_y = (data != NULL) ? data->viewport_y : 0;
+            int root_h = (data != NULL) ? data->root_height : 0;
             if (vp_x < 0)
                 vp_x = 0;
             if (root_w < 0)
                 root_w = 0;
+            if (vp_y < 0)
+                vp_y = 0;
+            if (root_h < 0)
+                root_h = 0;
             p.x0 = (int)(-vp_x * scale);
             p.x1 = (int)((-vp_x + root_w) * scale);
+            p.y0 = (int)(-vp_y * scale);
+            p.y1 = (int)((-vp_y + root_h) * scale);
             if (ctx->plot->clip(ctx, &p) != NSERROR_OK) {
                 {
                     result = false;
