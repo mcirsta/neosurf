@@ -94,6 +94,40 @@ static void write_mvg(FILE *fh, float scale, struct svgtiny_diagram *diagram)
             fprintf(fh, "stroke-dashoffset %g ", diagram->shape[i].stroke_dashoffset);
         }
 
+        /* Output fill gradient metadata */
+        if (diagram->shape[i].fill_gradient_type == svgtiny_GRADIENT_LINEAR) {
+            fprintf(fh, "fill-gradient linear(%g,%g,%g,%g) ", scale * diagram->shape[i].fill_grad_x1,
+                scale * diagram->shape[i].fill_grad_y1, scale * diagram->shape[i].fill_grad_x2,
+                scale * diagram->shape[i].fill_grad_y2);
+            if (diagram->shape[i].fill_grad_stop_count > 0 && diagram->shape[i].fill_grad_stops) {
+                fprintf(fh, "fill-stops(");
+                for (unsigned int si = 0; si < diagram->shape[i].fill_grad_stop_count; si++) {
+                    if (si != 0)
+                        fprintf(fh, ",");
+                    fprintf(fh, "%.2f:#%.6x", diagram->shape[i].fill_grad_stops[si].offset,
+                        diagram->shape[i].fill_grad_stops[si].color);
+                }
+                fprintf(fh, ") ");
+            }
+        }
+
+        /* Output stroke gradient metadata */
+        if (diagram->shape[i].stroke_gradient_type == svgtiny_GRADIENT_LINEAR) {
+            fprintf(fh, "stroke-gradient linear(%g,%g,%g,%g) ", scale * diagram->shape[i].stroke_grad_x1,
+                scale * diagram->shape[i].stroke_grad_y1, scale * diagram->shape[i].stroke_grad_x2,
+                scale * diagram->shape[i].stroke_grad_y2);
+            if (diagram->shape[i].stroke_grad_stop_count > 0 && diagram->shape[i].stroke_grad_stops) {
+                fprintf(fh, "stroke-stops(");
+                for (unsigned int si = 0; si < diagram->shape[i].stroke_grad_stop_count; si++) {
+                    if (si != 0)
+                        fprintf(fh, ",");
+                    fprintf(fh, "%.2f:#%.6x", diagram->shape[i].stroke_grad_stops[si].offset,
+                        diagram->shape[i].stroke_grad_stops[si].color);
+                }
+                fprintf(fh, ") ");
+            }
+        }
+
         if (diagram->shape[i].path) {
             unsigned int j;
             fprintf(fh, "path '");
