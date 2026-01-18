@@ -342,15 +342,72 @@ static nserror nsqt_plot_bitmap(const struct redraw_context *ctx, struct bitmap 
 {
     QImage *img = (QImage *)bitmap;
     QPainter *painter = (QPainter *)ctx->priv;
-    QRectF source(0, 0, img->width(), img->height());
-    QRectF target(x, y, width, height);
 
-    NSLOG(netsurf, WARNING, "bitmap plot: target=(%d,%d %dx%d) source=(%dx%d)", x, y, width, height, img->width(),
-        img->height());
+    bool repeat_x = (flags & BITMAPF_REPEAT_X) != 0;
+    bool repeat_y = (flags & BITMAPF_REPEAT_Y) != 0;
 
-    /* Enable smooth scaling for better image quality when resizing */
-    painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
-    painter->drawImage(target, *img, source);
+    /* Scale image to target size if different from source */
+    QImage scaled_img;
+    if (width != img->width() || height != img->height()) {
+        painter->setRenderHint(QPainter::SmoothPixmapTransform, true);
+        scaled_img = img->scaled(width, height, Qt::IgnoreAspectRatio, Qt::SmoothTransformation);
+    } else {
+        scaled_img = *img;
+    }
+
+    /* No tiling needed - just draw single image */
+    if (!repeat_x && !repeat_y) {
+        QRectF source(0, 0, scaled_img.width(), scaled_img.height());
+        QRectF target(x, y, width, height);
+        painter->drawImage(target, scaled_img, source);
+        return NSERROR_OK;
+    }
+
+    /* Tiling is needed - use drawTiledPixmap for efficiency */
+    QRectF clip = painter->clipBoundingRect();
+    if (clip.isEmpty()) {
+        /* No clip set - can't tile infinitely, just draw one */
+        QRectF source(0, 0, scaled_img.width(), scaled_img.height());
+        QRectF target(x, y, width, height);
+        painter->drawImage(target, scaled_img, source);
+        return NSERROR_OK;
+    }
+
+    /* Determine the fill rectangle based on repeat flags */
+    QRect fill_rect = clip.toRect();
+    if (!repeat_x) {
+        fill_rect.setLeft(x);
+        fill_rect.setWidth(width);
+    }
+    if (!repeat_y) {
+        fill_rect.setTop(y);
+        fill_rect.setHeight(height);
+    }
+
+    /* Calculate tile offset for proper alignment
+     * The offset is how far into the tile pattern we start drawing.
+     * We need to find where (x,y) falls within the tile grid. */
+    int offset_x = 0;
+    int offset_y = 0;
+    if (repeat_x && width > 0) {
+        /* Calculate how far left of fill_rect.left() the tile at x begins */
+        int tiles_left = (fill_rect.left() - x) / width;
+        int tile_start_x = x + tiles_left * width;
+        offset_x = fill_rect.left() - tile_start_x;
+        if (offset_x < 0)
+            offset_x += width;
+    }
+    if (repeat_y && height > 0) {
+        int tiles_up = (fill_rect.top() - y) / height;
+        int tile_start_y = y + tiles_up * height;
+        offset_y = fill_rect.top() - tile_start_y;
+        if (offset_y < 0)
+            offset_y += height;
+    }
+
+    /* Use Qt's efficient tiled pixmap drawing */
+    QPixmap pixmap = QPixmap::fromImage(scaled_img);
+    painter->drawTiledPixmap(fill_rect, pixmap, QPoint(offset_x, offset_y));
 
     return NSERROR_OK;
 }
