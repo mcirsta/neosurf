@@ -1106,67 +1106,115 @@ static bool srcset_select_url(const char *srcset, int target_w, nsurl *base_url,
         return false;
     }
 
-    /* Parse comma-separated entries */
+    /* Parse comma-separated entries.
+     * Note: URLs can contain commas (e.g., ?resize=300,200), so we can't
+     * simply split on commas. Instead, we find the descriptor (ends with
+     * 'w' or 'x') or the next comma that's followed by whitespace/letter. */
     while (*p) {
+        const char *entry_start;
         const char *url_start;
-        const char *url_end;
+        const char *url_end = NULL;
+        const char *entry_end;
         int width = 0;
 
-        /* Skip leading whitespace */
-        while (*p && (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r')) {
+        /* Skip leading whitespace and commas */
+        while (*p && (*p == ' ' || *p == '\t' || *p == '\n' || *p == '\r' || *p == ',')) {
             p++;
         }
         if (!*p)
             break;
 
-        /* URL starts here */
+        entry_start = p;
         url_start = p;
 
-        /* Find end of URL (stops at whitespace or comma) */
-        while (*p && *p != ' ' && *p != '\t' && *p != ',' && *p != '\n') {
-            p++;
-        }
-        url_end = p;
-
-        if (url_start == url_end) {
-            /* Empty URL, skip */
-            if (*p == ',')
-                p++;
-            continue;
-        }
-
-        /* Skip whitespace between URL and descriptor */
-        while (*p && (*p == ' ' || *p == '\t')) {
-            p++;
-        }
-
-        /* Parse width descriptor (e.g., "800w") */
-        if (*p && *p != ',') {
-            char *endptr;
-            long w = strtol(p, &endptr, 10);
-            if (endptr > p && *endptr == 'w') {
-                width = (int)w;
-                p = endptr + 1;
-            } else if (endptr > p && *endptr == 'x') {
-                /* Pixel density descriptor - treat 1x as ~800w, 2x as ~1600w */
-                double density = strtod(p, &endptr);
-                if (endptr > p && *endptr == 'x') {
-                    width = (int)(800 * density);
-                    p = endptr + 1;
+        /* Find the end of this entry by looking for:
+         * 1. A descriptor pattern (number followed by 'w' or 'x') then comma/end
+         * 2. End of string */
+        entry_end = NULL;
+        const char *scan = p;
+        while (*scan) {
+            /* Look for a comma that separates entries.
+             * An entry-separating comma is followed by whitespace or a letter
+             * (start of next URL), not by a digit (which would be part of
+             * a query string like ?resize=300,200). */
+            if (*scan == ',') {
+                const char *after_comma = scan + 1;
+                /* Skip whitespace after comma */
+                while (*after_comma && (*after_comma == ' ' || *after_comma == '\t')) {
+                    after_comma++;
+                }
+                /* If followed by a letter or end of string, this is an entry separator */
+                if (!*after_comma || (*after_comma >= 'a' && *after_comma <= 'z') ||
+                    (*after_comma >= 'A' && *after_comma <= 'Z') || strncmp(after_comma, "http", 4) == 0 ||
+                    strncmp(after_comma, "//", 2) == 0 || *after_comma == '/') {
+                    entry_end = scan;
+                    break;
                 }
             }
-            /* Skip to comma or end */
-            while (*p && *p != ',') {
-                p++;
+            scan++;
+        }
+        if (entry_end == NULL) {
+            entry_end = scan; /* End of string */
+        }
+
+        /* Now parse this entry: find the descriptor at the end */
+        /* Work backwards from entry_end to find the descriptor */
+        const char *desc_start = entry_end;
+
+        /* Skip trailing whitespace */
+        while (desc_start > url_start && (*(desc_start - 1) == ' ' || *(desc_start - 1) == '\t')) {
+            desc_start--;
+        }
+
+        /* Check if there's a descriptor (number + 'w' or 'x') */
+        if (desc_start > url_start && (*(desc_start - 1) == 'w' || *(desc_start - 1) == 'x')) {
+            char desc_type = *(desc_start - 1);
+            const char *num_end = desc_start - 1;
+            const char *num_start = num_end;
+
+            /* Find start of number (including possible decimal for 'x' descriptors) */
+            while (num_start > url_start &&
+                (*(num_start - 1) >= '0' && *(num_start - 1) <= '9' || *(num_start - 1) == '.')) {
+                num_start--;
+            }
+
+            /* Verify there's whitespace before the number (separating URL and descriptor) */
+            if (num_start > url_start && (*(num_start - 1) == ' ' || *(num_start - 1) == '\t')) {
+                char *endptr;
+                if (desc_type == 'w') {
+                    width = (int)strtol(num_start, &endptr, 10);
+                } else {
+                    double density = strtod(num_start, &endptr);
+                    width = (int)(800 * density);
+                }
+
+                /* URL ends at the whitespace before the descriptor */
+                url_end = num_start;
+                while (url_end > url_start && (*(url_end - 1) == ' ' || *(url_end - 1) == '\t')) {
+                    url_end--;
+                }
             }
         }
 
-        /* Skip comma */
-        if (*p == ',') {
-            p++;
+        /* If no descriptor found, URL is the whole entry (minus trailing whitespace) */
+        if (url_end == NULL) {
+            url_end = entry_end;
+            while (url_end > url_start && (*(url_end - 1) == ' ' || *(url_end - 1) == '\t')) {
+                url_end--;
+            }
+            width = 10000; /* No descriptor = treat as very large */
         }
 
-        /* If no width descriptor, assume large (treat as fallback) */
+        /* Move p to after this entry */
+        p = entry_end;
+        if (*p == ',')
+            p++;
+
+        if (url_start >= url_end) {
+            continue; /* Empty URL */
+        }
+
+        /* If no width descriptor was found, default to large */
         if (width == 0) {
             width = 10000; /* Treat as very large */
         }

@@ -112,7 +112,7 @@ typedef enum shape { SHAPE_RECT = 0 } shape;
 
 static inline css_code_t buildOPV(opcode_t opcode, uint8_t flags, uint16_t value)
 {
-    return (opcode & 0x3ff) | (flags << 10) | ((value & 0x3fff) << 18);
+    return (opcode & 0x3ffu) | ((uint32_t)flags << 10) | ((value & 0x3fffu) << 18);
 }
 
 static inline opcode_t getOpcode(css_code_t OPV)
