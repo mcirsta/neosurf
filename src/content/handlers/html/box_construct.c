@@ -651,6 +651,11 @@ static void box_construct_generate(dom_node *n, html_content *content, struct bo
     /* set box type from computed display */
     gen->type = box_map[computed_display];
 
+    /* Skip BOX_NONE - display:none pseudo-elements should not be added */
+    if (gen->type == BOX_NONE) {
+        return;
+    }
+
     /* Fetch background image for pseudo-element */
     if (!box_fetch_background(gen, content)) {
         return;
