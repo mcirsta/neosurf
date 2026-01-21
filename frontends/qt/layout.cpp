@@ -41,11 +41,9 @@ extern "C" {
 #include "qt/layout.h"
 #include "qt/misc.h"
 
-/* without this the text appears with large line spacing due to
- * content/handlers/html/redraw.c:253 having a 0.75 scaling on the line
- * height
+/* Standard DPI assumption: CSS uses 96 DPI, points are 1/72 inch.
+ * To convert points to pixels: pixels = points × (96/72) = points × 4/3
  */
-#define MAGIC_SCALING_DENOMINATOR (100)
 
 /**
  * Get a top-level widget to use as QPaintDevice for font metrics.
@@ -174,8 +172,11 @@ static QFont *new_qfont_fstyle(const struct plot_font_style *fstyle)
         /* SVG: size is pixels * PLOT_STYLE_SCALE, use directly */
         pixelSize = fstyle->size / PLOT_STYLE_SCALE;
     } else {
-        /* HTML/CSS: size is points * PLOT_STYLE_SCALE, convert to pixels */
-        pixelSize = (fstyle->size * 100) / (PLOT_STYLE_SCALE * MAGIC_SCALING_DENOMINATOR);
+        /* HTML/CSS: size is points * PLOT_STYLE_SCALE, convert to pixels.
+         * Standard conversion: pixels = points × (96/72) = points × 4/3
+         * With PLOT_STYLE_SCALE: pixelSize = (fstyle->size × 4) / (PLOT_STYLE_SCALE × 3)
+         */
+        pixelSize = (fstyle->size * 4) / (PLOT_STYLE_SCALE * 3);
     }
     nfont->setPixelSize(pixelSize > 0 ? pixelSize : 1);
 
