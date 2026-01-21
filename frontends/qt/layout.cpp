@@ -45,7 +45,7 @@ extern "C" {
  * content/handlers/html/redraw.c:253 having a 0.75 scaling on the line
  * height
  */
-#define MAGIC_SCALING_DENOMINATOR (75)
+#define MAGIC_SCALING_DENOMINATOR (100)
 
 /**
  * Get a top-level widget to use as QPaintDevice for font metrics.
@@ -94,9 +94,31 @@ static QFont *new_qfont_fstyle(const struct plot_font_style *fstyle)
 
             /* Check if this font family is available in the system
              */
+            /* Check if this font family is available in the system
+             * We check strict existence first, then try to resolve aliases (e.g. Helvetica -> Noto Sans)
+             */
             if (QFontDatabase::hasFamily(qfamily) || QFontDatabase::families().contains(qfamily, Qt::CaseInsensitive)) {
                 family = family_name;
                 NSLOG(netsurf, DEBUG, "Using CSS font-family: %s", family_name);
+                break;
+            }
+
+            /* Special handling for Helvetica Neue which is often compact - prefer condensed variants */
+            if (qfamily.compare("Helvetica Neue", Qt::CaseInsensitive) == 0) {
+                if (QFontDatabase::hasFamily("DejaVu Sans Condensed")) {
+                    family = "DejaVu Sans Condensed";
+                    NSLOG(netsurf, DEBUG, "Using specific alias: 'Helvetica Neue' -> 'DejaVu Sans Condensed'");
+                    break;
+                }
+            }
+
+            /* Check if Qt/FontConfig maps this to a valid installed font (alias) */
+            QFont aliasFont(qfamily);
+            QFontInfo aliasInfo(aliasFont);
+            if (QFontDatabase::hasFamily(aliasInfo.family())) {
+                family = family_name;
+                NSLOG(netsurf, INFO, "Using CSS font-family alias: '%s' -> '%s'", family_name,
+                    aliasInfo.family().toUtf8().constData());
                 break;
             }
 

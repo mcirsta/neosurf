@@ -530,6 +530,8 @@ static void *fetch_curl_setup(struct fetch *parent_fetch, nsurl *url, bool only_
 
     /* remove curl default headers */
     APPEND(fetch->headers, "Pragma:");
+    APPEND(fetch->headers,
+        "Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8");
 
     /* when doing a POST libcurl sends Expect: 100-continue" by default
      * which fails with lighttpd, so disable it (see bug 1429054) */
@@ -2004,7 +2006,7 @@ nserror fetch_curl_register(void)
     SETOPT(NSCURLOPT_PROGRESS_FUNCTION, fetch_curl_progress);
     SETOPT(CURLOPT_NOPROGRESS, 0);
     SETOPT(CURLOPT_USERAGENT, user_agent_string());
-    SETOPT(CURLOPT_ENCODING, "gzip");
+    SETOPT(CURLOPT_ENCODING, "");
     SETOPT(CURLOPT_LOW_SPEED_LIMIT, 1L);
     SETOPT(CURLOPT_LOW_SPEED_TIME, 180L);
     SETOPT(CURLOPT_NOSIGNAL, 1L);

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { background-color: #f0f0f0; padding: 20px; }
+        #sharebar { background-color: #e0e0e0; padding: 10px; border: 1px solid #ccc; }
+    </style>
+</head>
+<body>
+    <h1>Widget Test</h1>
+    <div id="sharebar">
+        <div style="margin: 0 10px 10px; overflow: hidden;">
+            <!-- Twitter Widget -->
+            <div style="float: left; overflow: hidden; margin-right: 20px; border: 1px solid red;">
+                <iframe id="twitter-widget-0" scrolling="no" frameborder="0" allowtransparency="true" allowfullscreen="true" 
+                    title="X Post Button" 
+                    src="https://platform.twitter.com/widgets/tweet_button.html?text=Test%20Tweet" 
+                    style="position: static; visibility: visible; width: 65px; height: 20px;">
+                </iframe>
+            </div>
+
+            <!-- Facebook Widget -->
+            <div style="float: left; overflow: hidden; border: 1px solid blue;">
+                <iframe src="https://www.facebook.com/plugins/like.php?href=https://www.phoronix.com&layout=button_count" 
+                    scrolling="no" frameborder="0" 
+                    style="border:none; overflow:hidden; width:200px; height:46px;" 
+                    allowtransparency="true">
+                </iframe>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
