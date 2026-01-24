@@ -24,13 +24,17 @@
 
 #include "neosurf/utils/config.h"
 #include <assert.h>
+#include <ctype.h>
 #include <string.h>
 #include <windows.h>
+
+#include <libwapcaplet/libwapcaplet.h>
 
 #include "neosurf/inttypes.h"
 #include "neosurf/layout.h"
 #include "neosurf/plot_style.h"
 #include "neosurf/utf8.h"
+#include "neosurf/utils/errors.h"
 #include "neosurf/utils/log.h"
 #include "neosurf/utils/nsoption.h"
 #include "neosurf/utils/utf8.h"
@@ -62,19 +66,41 @@ typedef struct {
     int size;
     int weight;
     int flags;
+    char *face;
 } font_key_t;
 
 static void *fc_key_clone(void *key)
 {
+    font_key_t *src = (font_key_t *)key;
     font_key_t *k = malloc(sizeof(font_key_t));
-    if (k != NULL) {
-        *k = *(font_key_t *)key;
+    if (k == NULL) {
+        return NULL;
+    }
+    
+    /* Initialize all fields first */
+    k->family = src->family;
+    k->size = src->size;
+    k->weight = src->weight;
+    k->flags = src->flags;
+    k->face = NULL;
+    
+    /* Then duplicate the face string if needed */
+    if (src->face != NULL) {
+        k->face = strdup(src->face);
+        if (k->face == NULL) {
+            free(k);
+            return NULL;
+        }
     }
     return k;
 }
 
 static void fc_key_destroy(void *key)
 {
+    font_key_t *k = (font_key_t *)key;
+    if (k->face != NULL) {
+        free(k->face);
+    }
     free(key);
 }
 
@@ -86,6 +112,17 @@ static uint32_t fc_key_hash(void *key)
     h = (h ^ (uint32_t)k->size) * 16777619u;
     h = (h ^ (uint32_t)k->weight) * 16777619u;
     h = (h ^ (uint32_t)k->flags) * 16777619u;
+    if (k->face != NULL) {
+        /* Limit face name length to prevent excessive hashing */
+        const char *p = k->face;
+        int max_len = 256;  /* Reasonable limit for font face names */
+        int i = 0;
+        while (*p != '\0' && i < max_len) {
+            h = (h ^ (uint32_t)tolower((unsigned char)*p)) * 16777619u;
+            p++;
+            i++;
+        }
+    }
     return h;
 }
 
@@ -93,7 +130,21 @@ static bool fc_key_eq(void *a, void *b)
 {
     font_key_t *ka = (font_key_t *)a;
     font_key_t *kb = (font_key_t *)b;
-    return ka->family == kb->family && ka->size == kb->size && ka->weight == kb->weight && ka->flags == kb->flags;
+    
+    if (ka->family != kb->family || ka->size != kb->size || ka->weight != kb->weight || ka->flags != kb->flags) {
+        return false;
+    }
+    
+    /* Handle NULL face pointers consistently */
+    if (ka->face == NULL && kb->face == NULL) {
+        return true;
+    }
+    if (ka->face == NULL || kb->face == NULL) {
+        return false;
+    }
+    
+    /* Use same case-insensitive comparison as hash function */
+    return strcasecmp(ka->face, kb->face) == 0;
 }
 
 typedef struct {
@@ -463,16 +514,103 @@ static nserror get_cached_wide(const char *utf8str, size_t utf8len, const WCHAR 
     return NSERROR_OK;
 }
 
+static int CALLBACK font_enum_proc(const LOGFONTW *lf, const TEXTMETRICW *tm, DWORD type, LPARAM lParam)
+{
+    int *found = (int *)lParam;
+    (void)lf;
+    (void)tm;
+    (void)type;
+    *found = 1;
+    return 0;
+}
+
+static bool win32_font_family_exists(const char *family_name)
+{
+    LOGFONTW lf;
+    int found = 0;
+
+    if (family_name == NULL || family_name[0] == '\0') {
+        return false;
+    }
+
+    memset(&lf, 0, sizeof(lf));
+    lf.lfCharSet = DEFAULT_CHARSET;
+    if (MultiByteToWideChar(CP_UTF8, 0, family_name, -1, lf.lfFaceName, LF_FACESIZE) == 0) {
+        return false;
+    }
+
+    EnumFontFamiliesExW(get_text_hdc(), &lf, font_enum_proc, (LPARAM)&found, 0);
+    return found != 0;
+}
+
+static const char *select_face_name(const plot_font_style_t *style, DWORD *out_family)
+{
+    const char *face = NULL;
+
+    if (style->families != NULL) {
+        lwc_string *const *families = style->families;
+        while (*families != NULL) {
+            const char *candidate = lwc_string_data(*families);
+            if (win32_font_family_exists(candidate)) {
+                if (out_family != NULL) {
+                    *out_family = FF_DONTCARE | DEFAULT_PITCH;
+                }
+                return candidate;
+            }
+            families++;
+        }
+    }
+
+    switch (style->family) {
+    case PLOT_FONT_FAMILY_SERIF:
+        face = nsoption_charp(font_serif);
+        if (out_family != NULL) {
+            *out_family = FF_ROMAN | DEFAULT_PITCH;
+        }
+        break;
+    case PLOT_FONT_FAMILY_MONOSPACE:
+        face = nsoption_charp(font_mono);
+        if (out_family != NULL) {
+            *out_family = FF_MODERN | DEFAULT_PITCH;
+        }
+        break;
+    case PLOT_FONT_FAMILY_CURSIVE:
+        face = nsoption_charp(font_cursive);
+        if (out_family != NULL) {
+            *out_family = FF_SCRIPT | DEFAULT_PITCH;
+        }
+        break;
+    case PLOT_FONT_FAMILY_FANTASY:
+        face = nsoption_charp(font_fantasy);
+        if (out_family != NULL) {
+            *out_family = FF_DECORATIVE | DEFAULT_PITCH;
+        }
+        break;
+    case PLOT_FONT_FAMILY_SANS_SERIF:
+    default:
+        face = nsoption_charp(font_sans);
+        if (out_family != NULL) {
+            *out_family = FF_SWISS | DEFAULT_PITCH;
+        }
+        break;
+    }
+
+    return face;
+}
+
 static HFONT get_cached_font(const plot_font_style_t *style)
 {
     font_key_t key;
     void *slot;
     HFONT font;
+    const char *face;
 
+    face = select_face_name(style, NULL);
     key.family = style->family;
     key.size = style->size;
     key.weight = style->weight;
     key.flags = style->flags;
+    key.face = (char *)face;  /* Safe: face points to static config strings or NULL */
 
     if (font_cache == NULL) {
         font_cache = hashmap_create(&font_cache_params);
@@ -551,38 +689,16 @@ static nserror utf8_from_local_encoding(const char *string, size_t len, char **r
 /* exported interface documented in windows/font.h */
 HFONT get_font(const plot_font_style_t *style)
 {
-    char *face = NULL;
+    const char *face = NULL;
     DWORD family;
     int nHeight;
     HDC hdc;
     HFONT font;
 
-    switch (style->family) {
-    case PLOT_FONT_FAMILY_SERIF:
-        face = strdup(nsoption_charp(font_serif));
-        family = FF_ROMAN | DEFAULT_PITCH;
-        break;
-
-    case PLOT_FONT_FAMILY_MONOSPACE:
-        face = strdup(nsoption_charp(font_mono));
-        family = FF_MODERN | DEFAULT_PITCH;
-        break;
-
-    case PLOT_FONT_FAMILY_CURSIVE:
-        face = strdup(nsoption_charp(font_cursive));
-        family = FF_SCRIPT | DEFAULT_PITCH;
-        break;
-
-    case PLOT_FONT_FAMILY_FANTASY:
-        face = strdup(nsoption_charp(font_fantasy));
-        family = FF_DECORATIVE | DEFAULT_PITCH;
-        break;
-
-    case PLOT_FONT_FAMILY_SANS_SERIF:
-    default:
-        face = strdup(nsoption_charp(font_sans));
-        family = FF_SWISS | DEFAULT_PITCH;
-        break;
+    face = select_face_name(style, &family);
+    if (face == NULL) {
+        face = "";
+        family = FF_DONTCARE | DEFAULT_PITCH;
     }
 
     nHeight = -10;
@@ -591,19 +707,8 @@ HFONT get_font(const plot_font_style_t *style)
     nHeight = -MulDiv(style->size, GetDeviceCaps(hdc, LOGPIXELSY), 72 * PLOT_STYLE_SCALE);
     ReleaseDC(font_hwnd, hdc);
 
-    font = CreateFont(nHeight, /* height */
-        0, /* width */
-        0, /* escapement*/
-        0, /* orientation */
-        style->weight, (style->flags & FONTF_ITALIC) ? TRUE : FALSE, FALSE, /* underline */
-        FALSE, /* strike */
-        DEFAULT_CHARSET, /* for locale */
-        OUT_DEFAULT_PRECIS, /* general 'best match' */
-        CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, family, face); /* name of font face */
-
-    if (face != NULL) {
-        free(face);
-    }
+    font = CreateFont(nHeight, 0, 0, 0, style->weight, (style->flags & FONTF_ITALIC) ? TRUE : FALSE, FALSE, FALSE,
+        DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, family, face);
 
     if (font == NULL) {
         if (style->family == PLOT_FONT_FAMILY_MONOSPACE) {
@@ -837,6 +942,32 @@ void win32_font_caches_flush(void)
     wstr_total_bytes = 0;
     wstr_gen = 0;
     split_gen = 0;
+}
+
+nserror html_font_face_load_data(const char *family_name, const uint8_t *data, size_t size)
+{
+    DWORD num_fonts = 0;
+    HANDLE font_handle;
+
+    /* Validate input parameters */
+    if (family_name == NULL || data == NULL || size == 0) {
+        return NSERROR_BAD_PARAMETER;
+    }
+
+    /* Check for reasonable size limits to prevent memory issues */
+    if (size > 50 * 1024 * 1024) {  /* 50MB limit for font files */
+        NSLOG(netsurf, WARNING, "Font '%s' size %zu exceeds reasonable limit", family_name, size);
+        return NSERROR_BAD_PARAMETER;
+    }
+
+    font_handle = AddFontMemResourceEx((PVOID)data, (DWORD)size, NULL, &num_fonts);
+    if (font_handle == NULL || num_fonts == 0) {
+        NSLOG(netsurf, WARNING, "Failed to load font '%s' into Windows (error=%lu)", family_name, GetLastError());
+        return NSERROR_INVALID;
+    }
+
+    win32_font_caches_flush();
+    return NSERROR_OK;
 }
 
 
