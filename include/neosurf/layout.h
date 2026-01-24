@@ -32,6 +32,10 @@
 #ifndef _NETSURF_LAYOUT_H_
 #define _NETSURF_LAYOUT_H_
 
+#include <stddef.h>
+
+#include <neosurf/utils/errors.h>
+
 struct plot_font_style;
 
 struct gui_layout_table {

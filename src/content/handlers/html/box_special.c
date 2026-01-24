@@ -34,6 +34,7 @@
 #include <neosurf/desktop/frame_types.h>
 #include <neosurf/plot_style.h>
 #include <neosurf/utils/ascii.h>
+#include <neosurf/utils/config.h>
 #include <neosurf/utils/corestrings.h>
 #include <neosurf/utils/log.h>
 #include <neosurf/utils/messages.h>

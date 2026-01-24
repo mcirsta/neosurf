@@ -28,6 +28,7 @@
 #include <libcss/libcss.h>
 #include "neosurf/css.h"
 #include "neosurf/types.h"
+#include "neosurf/utils/config.h"
 #include "neosurf/utils/errors.h"
 #include "neosurf/utils/log.h"
 /* We must provide definitions that utils.h would have provided if used */
