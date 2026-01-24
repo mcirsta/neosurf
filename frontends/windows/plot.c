@@ -112,8 +112,16 @@ static nserror plot_block(COLORREF col, int x, int y, int width, int height)
  * \param height The height to plot the bitmap into
  * \return NSERROR_OK on success else appropriate error code.
  */
-static nserror plot_alpha_bitmap(HDC hdc, struct bitmap *bitmap, int x, int y, int width, int height)
+static nserror plot_alpha_bitmap(HDC hdc, struct bitmap *bitmap, int x, int y, int width, int height, colour bg)
 {
+    if (bg != NS_TRANSPARENT) {
+        RECT target_rect = {.left = x, .top = y, .right = x + width, .bottom = y + height};
+        HBRUSH bg_brush = CreateSolidBrush((COLORREF)(bg & 0x00FFFFFF));
+        if (bg_brush != NULL) {
+            FillRect(hdc, &target_rect, bg_brush);
+            DeleteObject(bg_brush);
+        }
+    }
 
     BLENDFUNCTION blnd = {AC_SRC_OVER, 0, 0xff, AC_SRC_ALPHA};
     HDC bmihdc;
@@ -140,7 +148,7 @@ static nserror plot_alpha_bitmap(HDC hdc, struct bitmap *bitmap, int x, int y, i
  * \param height The height to plot the bitmap into
  * \return NSERROR_OK on success else appropriate error code.
  */
-static nserror plot_bitmap(struct bitmap *bitmap, int x, int y, int width, int height)
+static nserror plot_bitmap(struct bitmap *bitmap, int x, int y, int width, int height, colour bg)
 {
     HRGN clipregion;
     nserror res = NSERROR_OK;
@@ -187,7 +195,7 @@ static nserror plot_bitmap(struct bitmap *bitmap, int x, int y, int width, int h
         NSLOG(plot, DEEPDEBUG, "bltres = %d", bltres);
     } else {
         /* Bitmap with alpha.*/
-        res = plot_alpha_bitmap(plot_hdc, bitmap, x, y, width, height);
+        res = plot_alpha_bitmap(plot_hdc, bitmap, x, y, width, height, bg);
     }
 
     DeleteObject(clipregion);
@@ -838,7 +846,7 @@ static nserror bitmap(const struct redraw_context *ctx, struct bitmap *bitmap, i
             return plot_block((*(COLORREF *)bitmap->pixdata) & 0xffffff, x, y, x + width, y + height);
 
         } else {
-            return plot_bitmap(bitmap, x, y, width, height);
+            return plot_bitmap(bitmap, x, y, width, height, bg);
         }
     }
 
@@ -886,7 +894,7 @@ static nserror bitmap(const struct redraw_context *ctx, struct bitmap *bitmap, i
     for (xf = x; xf < plot_clip.right; xf += width) {
         for (yf = y; yf < plot_clip.bottom; yf += height) {
 
-            plot_bitmap(bitmap, xf, yf, width, height);
+            plot_bitmap(bitmap, xf, yf, width, height, bg);
             if (!repeat_y)
                 break;
         }
