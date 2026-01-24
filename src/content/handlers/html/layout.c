@@ -143,7 +143,7 @@ static void layout_get_object_dimensions(const css_unit_ctx *unit_len_ctx, struc
         css_unit_device2css_px(INTTOFIX(content_get_height(box->object)), unit_len_ctx->device_dpi));
 
     /* DIAG: Log image dimensions before calculation */
-    NSLOG(layout, WARNING, "OBJ_DIM box %p: input w=%d h=%d intrinsic=%dx%d limits w[%d,%d] h[%d,%d]", box, *width,
+    NSLOG(layout, DEBUG, "OBJ_DIM box %p: input w=%d h=%d intrinsic=%dx%d limits w[%d,%d] h[%d,%d]", box, *width,
         *height, intrinsic_width, intrinsic_height, min_width, max_width, min_height, max_height);
 
     if (*width == AUTO && *height == AUTO) {
