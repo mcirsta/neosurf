@@ -17,8 +17,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <windows.h>
 #include <winsock2.h>
+#include <windows.h>
 
 #include <limits.h>
 #include <stdbool.h>

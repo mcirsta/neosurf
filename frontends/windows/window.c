@@ -24,10 +24,10 @@
 #include "neosurf/utils/config.h"
 
 #include "neosurf/inttypes.h"
-#include <commctrl.h>
 #include <stdbool.h>
 #include <windows.h>
 #include <windowsx.h>
+#include <commctrl.h>
 
 #include "neosurf/browser_window.h"
 #include "neosurf/content/content.h"

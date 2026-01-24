@@ -25,6 +25,10 @@
 #ifndef _NETSURF_UTF8_H_
 #define _NETSURF_UTF8_H_
 
+#include <stddef.h>
+
+#include <neosurf/utils/errors.h>
+
 /**
  * User interface utf8 characterset conversion routines.
  */

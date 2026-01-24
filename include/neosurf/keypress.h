@@ -25,6 +25,9 @@
 #ifndef _NETSURF_KEYPRESS_H_
 #define _NETSURF_KEYPRESS_H_
 
+#include <stdbool.h>
+#include <stdint.h>
+
 struct browser_window;
 
 enum input_key {

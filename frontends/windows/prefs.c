@@ -23,8 +23,8 @@
 
 #include "neosurf/utils/config.h"
 
-#include <commctrl.h>
 #include <windows.h>
+#include <commctrl.h>
 
 #include "neosurf/utils/file.h"
 #include "neosurf/utils/log.h"
