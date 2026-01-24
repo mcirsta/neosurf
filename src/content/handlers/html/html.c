@@ -1554,8 +1554,13 @@ static nserror html_close(struct content *c)
     html_object_close_objects(htmlc);
 
     if (htmlc->jsthread != NULL) {
-        /* Close, but do not destroy (yet) the JS thread */
-        ret = js_closethread(htmlc->jsthread);
+        /* Destroy the JS thread now while the browser window's jsheap
+         * is still valid. This must happen in close (not destroy)
+         * because the content may outlive the browser window due to
+         * hlcache reference counting.
+         */
+        js_destroythread(htmlc->jsthread);
+        htmlc->jsthread = NULL;
     }
 
     return ret;

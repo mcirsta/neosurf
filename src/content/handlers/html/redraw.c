@@ -2269,7 +2269,7 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
                 expand_viewport_bg = true;
             } else if ((left_match && right_match) || abs_full_width) {
                 /* Would have expanded under old heuristics - log for detection */
-                NSLOG(netsurf, ERROR,
+                NSLOG(netsurf, DEBUG,
                     "VIEWPORT_EXPANSION_SKIP: tag=%s class=%s box=%p - full-width element NOT expanded "
                     "(left_match=%d right_match=%d abs_full_width=%d)",
                     tag, cls, (void *)box, left_match, right_match, abs_full_width);

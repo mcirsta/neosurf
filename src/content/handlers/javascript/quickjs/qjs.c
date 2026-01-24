@@ -316,6 +316,17 @@ void js_destroythread(jsthread *thread)
     NSLOG(neosurf, DEBUG, "Destroying QuickJS thread %p", thread);
 
     if (thread->ctx != NULL) {
+        /* Execute any pending jobs before freeing context.
+         * This is required by QuickJS to properly clean up Promise
+         * callbacks and other async operations that hold references
+         * to function objects.
+         */
+        JSRuntime *rt = JS_GetRuntime(thread->ctx);
+        JSContext *ctx1;
+        while (JS_ExecutePendingJob(rt, &ctx1) > 0) {
+            /* Drain the job queue */
+        }
+
         JS_FreeContext(thread->ctx);
     }
 
