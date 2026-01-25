@@ -4606,21 +4606,6 @@ static bool layout_absolute(struct box *box, struct box *containing_block, int c
             margin[TOP] = 0;
         if (margin[BOTTOM] == AUTO)
             margin[BOTTOM] = 0;
-        /* Log which case we hit for submenu-wrapper */
-        if (box->node != NULL) {
-            dom_string *dbg_class = NULL;
-            if (dom_element_get_attribute(box->node, corestring_dom_class, &dbg_class) == DOM_NO_ERR && dbg_class != NULL) {
-                if (strstr(dom_string_data(dbg_class), "submenu-wrapper") != NULL) {
-                    NSLOG(layout, INFO,
-                        "VERT CASE submenu-wrapper: top=%d(%s) height=%d(%s) bottom=%d(%s) static_top=%d box->height=%d cb.height=%d",
-                        top, (top == AUTO ? "AUTO" : "SET"),
-                        height, (height == AUTO ? "AUTO" : "SET"),
-                        bottom, (bottom == AUTO ? "AUTO" : "SET"),
-                        static_top, box->height, containing_block->height);
-                }
-                dom_string_unref(dbg_class);
-            }
-        }
         if (top == AUTO && height == AUTO && bottom != AUTO) {
             height = box->height;
             top = containing_block->height - margin[TOP] - border[TOP].width - padding[TOP] - height - padding[BOTTOM] -
@@ -4648,32 +4633,8 @@ static bool layout_absolute(struct box *box, struct box *containing_block, int c
     NSLOG(layout, DEBUG, "%i + %i + %i + %i + %i + %i + %i + %i + %i = %i", top, margin[TOP], border[TOP].width,
         padding[TOP], height, padding[BOTTOM], border[BOTTOM].width, margin[BOTTOM], bottom, containing_block->height);
 
-    /* Log final values for submenu-wrapper */
-    if (box->node != NULL) {
-        dom_string *dbg_class = NULL;
-        if (dom_element_get_attribute(box->node, corestring_dom_class, &dbg_class) == DOM_NO_ERR && dbg_class != NULL) {
-            if (strstr(dom_string_data(dbg_class), "submenu-wrapper") != NULL) {
-                NSLOG(layout, INFO,
-                    "VERT FINAL submenu-wrapper: top=%d height=%d bottom=%d => box->y will be %d",
-                    top, height, bottom, top + margin[TOP] + border[TOP].width);
-            }
-            dom_string_unref(dbg_class);
-        }
-    }
-
     box->y = top + margin[TOP] + border[TOP].width;
-    
-    /* Debug: Log box->y assignment for submenu-wrapper */
-    if (box->node != NULL) {
-        dom_string *ydbg_class = NULL;
-        if (dom_element_get_attribute(box->node, corestring_dom_class, &ydbg_class) == DOM_NO_ERR && ydbg_class != NULL) {
-            if (strstr(dom_string_data(ydbg_class), "submenu-wrapper") != NULL) {
-                NSLOG(layout, INFO, "BOX_Y SET submenu-wrapper: box->y=%d (top=%d)", box->y, top);
-            }
-            dom_string_unref(ydbg_class);
-        }
-    }
-    
+
     if (containing_block->type == BOX_BLOCK || containing_block->type == BOX_INLINE_BLOCK ||
         containing_block->type == BOX_TABLE_CELL) {
         /* Block-level ancestor => reset container's height */
@@ -5198,6 +5159,169 @@ static void layout_calculate_descendant_bboxes(const css_unit_ctx *unit_len_ctx,
     }
 }
 
+static void layout_log_final_box_heights(const css_unit_ctx *unit_len_ctx, struct box *box)
+{
+    struct box *child;
+
+    if (box == NULL) {
+        return;
+    }
+
+    if (box->node != NULL) {
+        const char *tag = "";
+        const char *cls = "";
+        dom_string *name = NULL;
+        dom_string *class_attr = NULL;
+
+        if (dom_node_get_node_name(box->node, &name) == DOM_NO_ERR && name != NULL) {
+            tag = dom_string_data(name);
+        }
+        if (dom_element_get_attribute(box->node, corestring_dom_class, &class_attr) == DOM_NO_ERR &&
+            class_attr != NULL) {
+            cls = dom_string_data(class_attr);
+        }
+
+        bool is_site_nav = (cls[0] != '\0' && strstr(cls, "site-navigation") != NULL);
+        bool is_site_nav_child = false;
+
+        if (!is_site_nav && box->parent && box->parent->node) {
+            dom_string *pclass_attr = NULL;
+            if (dom_element_get_attribute(box->parent->node, corestring_dom_class, &pclass_attr) == DOM_NO_ERR &&
+                pclass_attr != NULL) {
+                const char *pcls = dom_string_data(pclass_attr);
+                if (pcls != NULL && strstr(pcls, "site-navigation") != NULL) {
+                    is_site_nav_child = true;
+                }
+            }
+            if (pclass_attr != NULL) {
+                dom_string_unref(pclass_attr);
+            }
+        }
+
+        if (cls[0] != '\0' && (strstr(cls, "row") != NULL || is_site_nav)) {
+            int total_height = box->height + box->padding[TOP] + box->padding[BOTTOM] + box->border[TOP].width +
+                box->border[BOTTOM].width + lh__non_auto_margin(box, TOP) + lh__non_auto_margin(box, BOTTOM);
+            NSLOG(layout, INFO, "FINAL_HEIGHT tag=%s class=%s box=%p y=%d h=%d total=%d m=(%d,%d) p=(%d,%d) b=(%d,%d)",
+                tag, cls, box, box->y, box->height, total_height, box->margin[TOP], box->margin[BOTTOM],
+                box->padding[TOP], box->padding[BOTTOM], box->border[TOP].width, box->border[BOTTOM].width);
+        }
+        if (is_site_nav && box->style != NULL) {
+            css_fixed hval = 0;
+            css_unit hunit = CSS_UNIT_PX;
+            css_fixed min_hval = 0;
+            css_unit min_hunit = CSS_UNIT_PX;
+            css_fixed max_hval = 0;
+            css_unit max_hunit = CSS_UNIT_PX;
+            css_fixed lhval = 0;
+            css_unit lhunit = CSS_UNIT_PX;
+            enum css_height_e htype = css_computed_height(box->style, &hval, &hunit);
+            enum css_min_height_e min_htype = ns_computed_min_height(box->style, &min_hval, &min_hunit);
+            enum css_max_height_e max_htype = css_computed_max_height(box->style, &max_hval, &max_hunit);
+            enum css_line_height_e lhtype = css_computed_line_height(box->style, &lhval, &lhunit);
+            int hpx = -1;
+            int min_hpx = -1;
+            int max_hpx = -1;
+            int lhpx = line_height(unit_len_ctx, box->style);
+
+            if (htype == CSS_HEIGHT_SET && hunit != CSS_UNIT_PCT) {
+                hpx = FIXTOINT(css_unit_len2device_px(box->style, unit_len_ctx, hval, hunit));
+            }
+            if (min_htype == CSS_MIN_HEIGHT_SET && min_hunit != CSS_UNIT_PCT) {
+                min_hpx = FIXTOINT(css_unit_len2device_px(box->style, unit_len_ctx, min_hval, min_hunit));
+            }
+            if (max_htype == CSS_MAX_HEIGHT_SET && max_hunit != CSS_UNIT_PCT) {
+                max_hpx = FIXTOINT(css_unit_len2device_px(box->style, unit_len_ctx, max_hval, max_hunit));
+            }
+
+            NSLOG(layout, INFO,
+                "SITE_NAV style box=%p height_type=%d height_px=%d min_type=%d min_px=%d max_type=%d max_px=%d line_type=%d line_px=%d",
+                box, htype, hpx, min_htype, min_hpx, max_htype, max_hpx, lhtype, lhpx);
+
+            for (child = box->children; child; child = child->next) {
+                const char *ctag = "";
+                const char *ccls = "";
+                dom_string *cname = NULL;
+                dom_string *cclass_attr = NULL;
+                if (child->node != NULL) {
+                    if (dom_node_get_node_name(child->node, &cname) == DOM_NO_ERR && cname != NULL) {
+                        ctag = dom_string_data(cname);
+                    }
+                    if (dom_element_get_attribute(child->node, corestring_dom_class, &cclass_attr) == DOM_NO_ERR &&
+                        cclass_attr != NULL) {
+                        ccls = dom_string_data(cclass_attr);
+                    }
+                }
+                NSLOG(layout, INFO, "SITE_NAV_CHILD tag=%s class=%s type=%d y=%d h=%d total=%d", ctag, ccls,
+                    child->type, child->y, child->height,
+                    child->height + child->padding[TOP] + child->padding[BOTTOM] + child->border[TOP].width +
+                        child->border[BOTTOM].width + lh__non_auto_margin(child, TOP) +
+                        lh__non_auto_margin(child, BOTTOM));
+                if (cclass_attr != NULL) {
+                    dom_string_unref(cclass_attr);
+                }
+                if (cname != NULL) {
+                    dom_string_unref(cname);
+                }
+            }
+        }
+        if (is_site_nav_child) {
+            NSLOG(
+                layout, INFO, "SITE_NAV_CHILDREN tag=%s class=%s box=%p y=%d h=%d", tag, cls, box, box->y, box->height);
+            for (child = box->children; child; child = child->next) {
+                const char *ctag = "";
+                const char *ccls = "";
+                dom_string *cname = NULL;
+                dom_string *cclass_attr = NULL;
+                if (child->node != NULL) {
+                    if (dom_node_get_node_name(child->node, &cname) == DOM_NO_ERR && cname != NULL) {
+                        ctag = dom_string_data(cname);
+                    }
+                    if (dom_element_get_attribute(child->node, corestring_dom_class, &cclass_attr) == DOM_NO_ERR &&
+                        cclass_attr != NULL) {
+                        ccls = dom_string_data(cclass_attr);
+                    }
+                }
+                NSLOG(layout, INFO,
+                    "SITE_NAV_GRANDCHILD tag=%s class=%s type=%d y=%d h=%d total=%d m=(%d,%d) p=(%d,%d) b=(%d,%d)",
+                    ctag, ccls, child->type, child->y, child->height,
+                    child->height + child->padding[TOP] + child->padding[BOTTOM] + child->border[TOP].width +
+                        child->border[BOTTOM].width + lh__non_auto_margin(child, TOP) +
+                        lh__non_auto_margin(child, BOTTOM),
+                    child->margin[TOP], child->margin[BOTTOM], child->padding[TOP], child->padding[BOTTOM],
+                    child->border[TOP].width, child->border[BOTTOM].width);
+                if (cclass_attr != NULL) {
+                    dom_string_unref(cclass_attr);
+                }
+                if (cname != NULL) {
+                    dom_string_unref(cname);
+                }
+            }
+        }
+
+        if (class_attr != NULL) {
+            dom_string_unref(class_attr);
+        }
+        if (name != NULL) {
+            dom_string_unref(name);
+        }
+    }
+
+    for (child = box->children; child; child = child->next) {
+        if (child->type == BOX_FLOAT_LEFT || child->type == BOX_FLOAT_RIGHT) {
+            continue;
+        }
+        layout_log_final_box_heights(unit_len_ctx, child);
+    }
+
+    for (child = box->float_children; child; child = child->next_float) {
+        layout_log_final_box_heights(unit_len_ctx, child);
+    }
+
+    if (box->list_marker) {
+        layout_log_final_box_heights(unit_len_ctx, box->list_marker);
+    }
+}
+
 
 /* exported function documented in html/layout.h */
 bool layout_document(html_content *content, int width, int height)
@@ -5242,6 +5366,7 @@ bool layout_document(html_content *content, int width, int height)
     layout_position_relative(&content->unit_len_ctx, doc, doc, 0, 0);
 
     layout_calculate_descendant_bboxes(&content->unit_len_ctx, doc);
+    layout_log_final_box_heights(&content->unit_len_ctx, doc);
 
     NSLOG(netsurf, DEBUG, "PROFILER: STOP layout_document %p", content);
 
