@@ -241,12 +241,8 @@ css_fixed css_unit_len2px_mq(const css_unit_ctx *ctx, const css_fixed length, co
     css_fixed px_per_unit = css_unit__px_per_unit(ctx->measure, NULL, NULL, ctx->font_size_default,
         ctx->font_size_minimum, ctx->viewport_height, ctx->viewport_width, unit, ctx->pw);
 
-    /* Ensure we round px_per_unit to the nearest whole number of pixels:
-     * the use of FIXTOINT() below will truncate. */
-    px_per_unit += F_0_5;
-
     /* Calculate total number of pixels */
-    return FMUL(length, TRUNCATEFIX(px_per_unit));
+    return FMUL(length, px_per_unit);
 }
 
 /* Exported function, documented in libcss/unit.h. */
@@ -256,12 +252,8 @@ css_fixed css_unit_len2css_px(
     css_fixed px_per_unit = css_unit__px_per_unit(ctx->measure, style, ctx->root_style, ctx->font_size_default,
         ctx->font_size_minimum, ctx->viewport_height, ctx->viewport_width, unit, ctx->pw);
 
-    /* Ensure we round px_per_unit to the nearest whole number of pixels:
-     * the use of FIXTOINT() below will truncate. */
-    px_per_unit += F_0_5;
-
     /* Calculate total number of pixels */
-    return FMUL(length, TRUNCATEFIX(px_per_unit));
+    return FMUL(length, px_per_unit);
 }
 
 /* Exported function, documented in libcss/unit.h. */
@@ -273,12 +265,7 @@ css_fixed css_unit_len2device_px(
 
     px_per_unit = css_unit_css2device_px(px_per_unit, ctx->device_dpi);
 
-    /* Ensure we round px_per_unit to the nearest whole number of pixels:
-     * the use of FIXTOINT() below will truncate. */
-    px_per_unit += F_0_5;
-
-    /* Calculate total number of pixels */
-    return FMUL(length, TRUNCATEFIX(px_per_unit));
+    return FMUL(length, px_per_unit);
 }
 
 /**
