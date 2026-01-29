@@ -824,7 +824,11 @@ static inline bool layout_flex__base_and_main_sizes(
                     b->width = content_max_width;
                 }
             }
-            b->width -= lh__delta_outer_width(b);
+            int delta_outer = lh__delta_outer_width(b);
+            NSLOG(flex, DEEPDEBUG, "  DELTA_OUTER: lh__delta_outer_width=%d", delta_outer);
+            b->width -= delta_outer;
+            NSLOG(flex, DEEPDEBUG, "  FINAL_WIDTH: b->width=%d (after delta_outer)", b->width);
+            NSLOG(flex, DEEPDEBUG, "} END_FLEX_ITEM_AUTO_WIDTH_RESOLUTION");
         }
 
         if (!layout_flex_item(ctx, item, b->width)) {
@@ -887,15 +891,24 @@ static inline bool layout_flex__base_and_main_sizes(
     item->main_size = item->base_size;
 
     if (item->max_main > 0 && item->main_size > item->max_main + delta_outer_main) {
+        int old_main_size = item->main_size;
         item->main_size = item->max_main + delta_outer_main;
+        NSLOG(flex, DEEPDEBUG,
+            "MAIN_SIZE_MAX_CLAMP: box=%p old_main_size=%d new_main_size=%d (max_main=%d + delta_outer_main=%d)", b,
+            old_main_size, item->main_size, item->max_main, delta_outer_main);
     }
 
     /* Only apply min_main if it was set (explicit or from content calculation) */
     if (item->min_main.type == CSS_SIZE_SET && item->main_size < item->min_main.value + delta_outer_main) {
+        int old_main_size = item->main_size;
         item->main_size = item->min_main.value + delta_outer_main;
+        NSLOG(flex, DEEPDEBUG,
+            "MAIN_SIZE_MIN_CLAMP: box=%p old_main_size=%d new_main_size=%d (min_main=%d + delta_outer_main=%d)", b,
+            old_main_size, item->main_size, item->min_main.value, delta_outer_main);
     }
 
-    NSLOG(flex, DEEPDEBUG, "flex-item box: %p: base_size: %i, main_size %i", b, item->base_size, item->main_size);
+    NSLOG(flex, DEEPDEBUG, "MAIN_SIZE_FINAL: box=%p base_size=%i target_main_size=%i main_size=%i", b, item->base_size,
+        item->target_main_size, item->main_size);
 
     return true;
 }
@@ -1239,11 +1252,15 @@ static inline int layout_flex__get_min_max_violations(struct flex_ctx *ctx, stru
             NSLOG(flex, DEEPDEBUG, "Violation: less than 0");
         }
 
-        /* DIAG: Log violations */
+        /* DIAG: Log violations with detailed context */
         if (target_main_size != item->target_main_size) {
-            NSLOG(flex, DEEPDEBUG, "DIAG: violation box=%p orig=%d new=%d min_main=%d box_min_width=%d", item->box,
-                item->target_main_size, target_main_size, item->min_main, item->box->min_width);
+            NSLOG(flex, DEEPDEBUG,
+                "TARGET_MAIN_SIZE_VIOLATION: box=%p orig=%d new=%d max_main=%d min_main=%d box_min_width=%d horizontal=%d",
+                item->box, item->target_main_size, target_main_size, item->max_main, item->min_main.value,
+                item->box->min_width.value, ctx->horizontal);
         }
+
+        NSLOG(flex, DEEPDEBUG, "TARGET_MAIN_SIZE_FINAL: box=%p final_target_main_size=%d", item->box, target_main_size);
 
         total_violation += target_main_size - item->target_main_size;
         item->target_main_size = target_main_size;
@@ -1489,6 +1506,9 @@ static bool layout_flex__place_line_items_main(struct flex_ctx *ctx, struct flex
                     jc_gap_pre = base_between / 2;
                     jc_gap_pre_extra = base_between % 2;
                     jc_gap_between_rem = remainder;
+                    NSLOG(flex, DEEPDEBUG,
+                        "JUSTIFY_CONTENT_SPACE_AROUND: free_main=%d denom=%d base_between=%d jc_gap_pre=%d jc_gap_between=%d jc_gap_between_rem=%d",
+                        free_main, denom, base_between, jc_gap_pre, jc_gap_between, jc_gap_between_rem);
                 }
                 break;
             case CSS_JUSTIFY_CONTENT_SPACE_EVENLY: {
@@ -1630,6 +1650,7 @@ static bool layout_flex__place_line_items_main(struct flex_ctx *ctx, struct flex
                 NSLOG(flex, DEEPDEBUG, "ITEM[%zu]: ADDING CSS GAP main_pos_after=%d", i, main_pos);
             }
 
+            /* CSS FLEXBOX §9.8 COMPLIANCE: Cross Size Determination */
             cross_size = box_size_cross + lh__delta_outer_cross(ctx->flex, b);
             if (line->cross_size < cross_size) {
                 NSLOG(flex, WARNING, "LINE CROSS_SIZE update: box %p type=%d height=%d -> line->cross_size=%d", b,
@@ -1718,8 +1739,8 @@ static void layout_flex__place_line_items_cross(struct flex_ctx *ctx, struct fle
         cross_free_space = line->cross_size + extra - *box_size_cross - lh__delta_outer_cross(ctx->flex, b);
 
         /* DIAG: Log cross placement for each item */
-        NSLOG(flex, WARNING, "CROSS_PLACE[%zu]: box %p type=%d line_cross=%d item_cross=%d free_space=%d", i, b,
-            b->type, line->cross_size, *box_size_cross, cross_free_space);
+        NSLOG(flex, INFO, "CROSS_PLACE[%zu]: box %p type=%d line_cross=%d item_cross=%d free_space=%d", i, b, b->type,
+            line->cross_size, *box_size_cross, cross_free_space);
 
         switch (lh__box_align_self(ctx->flex, b)) {
         default:
@@ -1848,6 +1869,7 @@ bool layout_flex(struct box *flex, int available_width, html_content *content)
 
     ctx = layout_flex_ctx__create(content, flex);
     if (ctx == NULL) {
+        NSLOG(layout, ERROR, "FLEX_CTX_CREATE_FAILED: flex=%p", flex);
         return false;
     }
 

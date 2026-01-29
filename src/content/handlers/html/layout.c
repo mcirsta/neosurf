@@ -1515,25 +1515,12 @@ static void layout_block_find_dimensions(
     }
 
     box->width = layout_solve_width(box, available_width, width, lm, rm, max_width, min_width.value);
-    if (box->width > 2000000000) {
-    }
     box->height = height;
-
-    /* Debug: Log before AUTO margin handling */
-    if (margin[TOP] == AUTO || margin[BOTTOM] == AUTO) {
-        NSLOG(layout, DEBUG,
-            "layout_block_find_dimensions: BEFORE AUTO handling box=%p margin[TOP]=%d margin[BOTTOM]=%d", box,
-            margin[TOP], margin[BOTTOM]);
-    }
 
     if (margin[TOP] == AUTO)
         margin[TOP] = 0;
     if (margin[BOTTOM] == AUTO)
         margin[BOTTOM] = 0;
-
-    /* Debug: Log final margins */
-    NSLOG(layout, DEBUG, "layout_block_find_dimensions: FINAL box=%p margins=[%d,%d,%d,%d]", box, margin[TOP],
-        margin[RIGHT], margin[BOTTOM], margin[LEFT]);
 }
 
 
@@ -4311,7 +4298,7 @@ static bool layout_absolute(struct box *box, struct box *containing_block, int c
     int *margin = box->margin;
     int *padding = box->padding;
     struct box_border *border = box->border;
-    int available_width = containing_block->width;
+    int available_width;
     int space;
 
     assert(box->type == BOX_BLOCK || box->type == BOX_TABLE || box->type == BOX_INLINE_BLOCK || box->type == BOX_FLEX ||
@@ -4324,13 +4311,18 @@ static bool layout_absolute(struct box *box, struct box *containing_block, int c
     static_top = cy + box->y;
 
     if (containing_block->type == BOX_BLOCK || containing_block->type == BOX_INLINE_BLOCK ||
-        containing_block->type == BOX_TABLE_CELL) {
+        containing_block->type == BOX_TABLE_CELL || containing_block->type == BOX_FLEX ||
+        containing_block->type == BOX_INLINE_FLEX || containing_block->type == BOX_GRID ||
+        containing_block->type == BOX_INLINE_GRID) {
         /* Block level container => temporarily increase containing
          * block dimensions to include padding (we restore this
          * again at the end) */
         containing_block->width += containing_block->padding[LEFT] + containing_block->padding[RIGHT];
         containing_block->height += containing_block->padding[TOP] + containing_block->padding[BOTTOM];
     }
+
+    /* Capture available_width AFTER padding adjustment */
+    available_width = containing_block->width;
 
     layout_compute_offsets(&content->unit_len_ctx, box, containing_block, &top, &right, &bottom, &left);
 
@@ -4533,7 +4525,9 @@ static bool layout_absolute(struct box *box, struct box *containing_block, int c
     box->abs_containing_block = containing_block;
     box->x = left + margin[LEFT] + border[LEFT].width;
     if (containing_block->type == BOX_BLOCK || containing_block->type == BOX_INLINE_BLOCK ||
-        containing_block->type == BOX_TABLE_CELL) {
+        containing_block->type == BOX_TABLE_CELL || containing_block->type == BOX_FLEX ||
+        containing_block->type == BOX_INLINE_FLEX || containing_block->type == BOX_GRID ||
+        containing_block->type == BOX_INLINE_GRID) {
         /* Block-level ancestor => reset container's width */
         containing_block->width -= containing_block->padding[LEFT] + containing_block->padding[RIGHT];
     } else {
@@ -4673,6 +4667,11 @@ layout_position_absolute(struct box *box, struct box *containing_block, int cx, 
                 c->type == BOX_GRID || c->type == BOX_INLINE_FLEX || c->type == BOX_INLINE_GRID) &&
             (css_computed_position(c->style) == CSS_POSITION_ABSOLUTE ||
                 css_computed_position(c->style) == CSS_POSITION_FIXED)) {
+            struct box *abs_cb = containing_block;
+            if (c->parent != NULL && (c->parent->type == BOX_FLEX || c->parent->type == BOX_INLINE_FLEX) &&
+                c->parent->style != NULL && css_computed_position(c->parent->style) != CSS_POSITION_STATIC) {
+                abs_cb = c->parent;
+            }
             const char *cb_tag = "";
             const char *cb_cls = "";
             const char *tag = "";
@@ -4681,12 +4680,11 @@ layout_position_absolute(struct box *box, struct box *containing_block, int cx, 
             dom_string *cb_class_attr = NULL;
             dom_string *name = NULL;
             dom_string *class_attr = NULL;
-            if (containing_block->node != NULL) {
-                if (dom_node_get_node_name(containing_block->node, &cb_name) == DOM_NO_ERR && cb_name != NULL) {
+            if (abs_cb->node != NULL) {
+                if (dom_node_get_node_name(abs_cb->node, &cb_name) == DOM_NO_ERR && cb_name != NULL) {
                     cb_tag = dom_string_data(cb_name);
                 }
-                if (dom_element_get_attribute(containing_block->node, corestring_dom_class, &cb_class_attr) ==
-                        DOM_NO_ERR &&
+                if (dom_element_get_attribute(abs_cb->node, corestring_dom_class, &cb_class_attr) == DOM_NO_ERR &&
                     cb_class_attr != NULL) {
                     cb_cls = dom_string_data(cb_class_attr);
                 }
@@ -4701,7 +4699,7 @@ layout_position_absolute(struct box *box, struct box *containing_block, int cx, 
                 }
             }
             NSLOG(layout, INFO, "abs call: elem tag %s class %s box %p cb tag %s class %s cb %p cb.width %i", tag, cls,
-                c, cb_tag, cb_cls, containing_block, containing_block->width);
+                c, cb_tag, cb_cls, abs_cb, abs_cb->width);
             if (class_attr != NULL)
                 dom_string_unref(class_attr);
             if (name != NULL)
@@ -4710,7 +4708,7 @@ layout_position_absolute(struct box *box, struct box *containing_block, int cx, 
                 dom_string_unref(cb_class_attr);
             if (cb_name != NULL)
                 dom_string_unref(cb_name);
-            if (!layout_absolute(c, containing_block, cx, cy, content))
+            if (!layout_absolute(c, abs_cb, cx, cy, content))
                 return false;
             if (!layout_position_absolute(c, c, 0, 0, content))
                 return false;

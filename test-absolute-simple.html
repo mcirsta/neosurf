@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Absolute Position Children Test (No Fixed Elements)</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            padding: 20px;
+            background: white;
+        }
+
+        /* Header spacer */
+        .header {
+            height: 80px;
+            background: #333;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Container at known position */
+        .container {
+            position: relative;
+            height: 50px;
+            background: #ccc;
+            display: flex;
+            align-items: center;
+            padding-left: 20px;
+        }
+
+        /* Absolutely positioned child */
+        .absolute-child {
+            position: absolute;
+            top: 50px;
+            /* 50px below container top */
+            left: 0;
+            width: 100%;
+            height: 60px;
+            background: #0066cc;
+        }
+
+        /* Inner content of absolute child */
+        .inner-text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* Description */
+        .description {
+            margin-top: 80px;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">Header (80px tall)</div>
+
+    <!-- Container -->
+    <div class="container">
+        Container (position: relative, 50px tall)
+
+        <!-- Absolute child at top: 50px -->
+        <div class="absolute-child">
+            <div class="inner-text">
+                THIS TEXT MUST BE VISIBLE IN BLUE BOX
+            </div>
+        </div>
+    </div>
+
+    <div class="description">
+        <h2>Test Case: Absolute Position Children (No Fixed Elements)</h2>
+        <p><strong>Expected rendering:</strong></p>
+        <ul>
+            <li>Dark header at top (80px)</li>
+            <li>Gray container below header (50px)</li>
+            <li>Blue box below gray container (60px) - the absolute child</li>
+            <li>White text "THIS TEXT MUST BE VISIBLE IN BLUE BOX" centered in blue</li>
+        </ul>
+        <p><strong>Bug symptom:</strong> If children of absolute elements are positioned incorrectly,
+            the text may be higher/lower than expected or clipped.</p>
+    </div>
+</body>
+
+</html>
+</CodeContent>
+<parameter name="Complexity">2

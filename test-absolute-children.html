@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Simple Absolute Position Children Test</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 16px;
+            padding: 20px;
+        }
+
+        /* Fixed reference lines */
+        .ref-line-100 {
+            position: fixed;
+            left: 0;
+            top: 100px;
+            width: 100%;
+            height: 2px;
+            background: red;
+            z-index: 1000;
+        }
+
+        .ref-line-200 {
+            position: fixed;
+            left: 0;
+            top: 200px;
+            width: 100%;
+            height: 2px;
+            background: green;
+            z-index: 1000;
+        }
+
+        .ref-label-100 {
+            position: fixed;
+            right: 10px;
+            top: 82px;
+            color: red;
+            font-size: 12px;
+            z-index: 1000;
+        }
+
+        .ref-label-200 {
+            position: fixed;
+            right: 10px;
+            top: 202px;
+            color: green;
+            font-size: 12px;
+            z-index: 1000;
+        }
+
+        /* Container at y=100 */
+        .container {
+            position: relative;
+            margin-top: 80px;
+            /* This puts the container at ~100px from viewport top */
+            height: 50px;
+            background: #ccc;
+            display: flex;
+            align-items: center;
+            padding-left: 20px;
+        }
+
+        /* Absolutely positioned child at top: 50px (should be ~50px below container start = 150px) */
+        .absolute-child {
+            position: absolute;
+            top: 50px;
+            left: 0;
+            width: 100%;
+            height: 50px;
+            background: #0066cc;
+        }
+
+        /* Inner content of absolute child */
+        .inner-text {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        /* Description */
+        .description {
+            margin-top: 150px;
+            padding: 20px;
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Reference lines -->
+    <div class="ref-line-100"></div>
+    <div class="ref-label-100">y=100 (container top)</div>
+    <div class="ref-line-200"></div>
+    <div class="ref-label-200">y=200 (blue box bottom)</div>
+
+    <!-- Container (should be at y=100) -->
+    <div class="container">
+        Container (position: relative, height: 50px)
+
+        <!-- Absolute child (top: 50px means 50px below container = y=150) -->
+        <div class="absolute-child">
+            <div class="inner-text">
+                THIS TEXT MUST BE VISIBLE
+            </div>
+        </div>
+    </div>
+
+    <div class="description">
+        <h2>Test Case: Absolute Position Children</h2>
+        <p><strong>Structure:</strong></p>
+        <ul>
+            <li>Container div: position:relative, at y≈100, height=50px</li>
+            <li>Absolute child: position:absolute, top:50px, height=50px → should be at y≈150</li>
+            <li>Inner text: should be centered in blue box (y≈150 to y≈200)</li>
+        </ul>
+        <p><strong>Expected:</strong> The blue box should appear below the gray container, with "THIS TEXT MUST BE
+            VISIBLE" centered inside it.</p>
+        <p><strong>Bug symptom:</strong> If children of absolute elements are positioned incorrectly, the text will
+            appear offset or clipped.</p>
+    </div>
+</body>
+
+</html>
+</CodeContent>
+<parameter name="Complexity">3

@@ -1472,8 +1472,15 @@ static void win32_window_destroy(struct gui_window *w)
  */
 static nserror win32_window_get_dimensions(struct gui_window *gw, int *width, int *height)
 {
-    *width = gw->width;
-    *height = gw->height;
+    if (gw->drawingarea != NULL) {
+        RECT rc;
+        GetClientRect(gw->drawingarea, &rc);
+        *width = rc.right - rc.left;
+        *height = rc.bottom - rc.top;
+    } else {
+        *width = gw->width;
+        *height = gw->height;
+    }
 
     NSLOG(neosurf, INFO, "gw:%p w=%d h=%d", gw, *width, *height);
 
@@ -1862,17 +1869,32 @@ nserror win32_window_set_scroll(struct gui_window *gw, const struct rect *rect)
 {
     SCROLLINFO si;
     nserror res;
-    int height;
-    int width;
+    int content_height;
+    int content_width;
+    int view_width;
+    int view_height;
     POINT p;
+    RECT rc;
 
     if ((gw == NULL) || (gw->bw == NULL)) {
         return NSERROR_BAD_PARAMETER;
     }
 
-    res = browser_window_get_extents(gw->bw, true, &width, &height);
+    res = browser_window_get_extents(gw->bw, true, &content_width, &content_height);
     if (res != NSERROR_OK) {
         return res;
+    }
+
+    /* Get the actual drawable area dimensions - this matches what get_dimensions returns
+     * and what the content was laid out for. Using gw->width/height is incorrect because
+     * it doesn't account for visible scrollbars. */
+    if (gw->drawingarea != NULL) {
+        GetClientRect(gw->drawingarea, &rc);
+        view_width = rc.right - rc.left;
+        view_height = rc.bottom - rc.top;
+    } else {
+        view_width = gw->width;
+        view_height = gw->height;
     }
 
     /* The resulting gui window scroll must remain within the
@@ -1880,15 +1902,15 @@ nserror win32_window_set_scroll(struct gui_window *gw, const struct rect *rect)
      */
     if (rect->x0 < 0) {
         gw->requestscrollx = -gw->scrollx;
-    } else if (rect->x0 > (width - gw->width)) {
-        gw->requestscrollx = (width - gw->width) - gw->scrollx;
+    } else if (rect->x0 > (content_width - view_width)) {
+        gw->requestscrollx = (content_width - view_width) - gw->scrollx;
     } else {
         gw->requestscrollx = rect->x0 - gw->scrollx;
     }
     if (rect->y0 < 0) {
         gw->requestscrolly = -gw->scrolly;
-    } else if (rect->y0 > (height - gw->height)) {
-        gw->requestscrolly = (height - gw->height) - gw->scrolly;
+    } else if (rect->y0 > (content_height - view_height)) {
+        gw->requestscrolly = (content_height - view_height) - gw->scrolly;
     } else {
         gw->requestscrolly = rect->y0 - gw->scrolly;
     }
@@ -1899,10 +1921,10 @@ nserror win32_window_set_scroll(struct gui_window *gw, const struct rect *rect)
     si.cbSize = sizeof(si);
     si.fMask = SIF_ALL;
     si.nMin = 0;
-    si.nMax = height - 1;
-    si.nPage = gw->height;
+    si.nMax = content_height - 1;
+    si.nPage = view_height;
     si.nPos = max(gw->scrolly + gw->requestscrolly, 0);
-    si.nPos = min(si.nPos, height - gw->height);
+    si.nPos = min(si.nPos, content_height - view_height);
     SetScrollInfo(gw->drawingarea, SB_VERT, &si, TRUE);
     NSLOG(neosurf, DEEPDEBUG, "SetScrollInfo VERT min:%d max:%d page:%d pos:%d", si.nMin, si.nMax, si.nPage, si.nPos);
 
@@ -1910,10 +1932,10 @@ nserror win32_window_set_scroll(struct gui_window *gw, const struct rect *rect)
     si.cbSize = sizeof(si);
     si.fMask = SIF_ALL;
     si.nMin = 0;
-    si.nMax = width - 1;
-    si.nPage = gw->width;
+    si.nMax = content_width - 1;
+    si.nPage = view_width;
     si.nPos = max(gw->scrollx + gw->requestscrollx, 0);
-    si.nPos = min(si.nPos, width - gw->width);
+    si.nPos = min(si.nPos, content_width - view_width);
     SetScrollInfo(gw->drawingarea, SB_HORZ, &si, TRUE);
     NSLOG(neosurf, DEEPDEBUG, "SetScrollInfo HORZ min:%d max:%d page:%d pos:%d", si.nMin, si.nMax, si.nPage, si.nPos);
 
@@ -1925,9 +1947,9 @@ nserror win32_window_set_scroll(struct gui_window *gw, const struct rect *rect)
 
     RECT r, redraw;
     r.top = 0;
-    r.bottom = gw->height + 1;
+    r.bottom = view_height + 1;
     r.left = 0;
-    r.right = gw->width + 1;
+    r.right = view_width + 1;
     ScrollWindowEx(gw->drawingarea, -gw->requestscrollx, -gw->requestscrolly, &r, NULL, NULL, &redraw, SW_INVALIDATE);
     NSLOG(neosurf, DEEPDEBUG, "ScrollWindowEx %d, %d", -gw->requestscrollx, -gw->requestscrolly);
 

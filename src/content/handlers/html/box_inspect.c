@@ -164,8 +164,15 @@ static inline struct box *box_move_xy(struct box *b, enum box_walk_dir dir, int 
             break;
         assert(b->x > -100000000 && b->x < 100000000 && "Box has huge x in children walk");
         assert(b->y > -100000000 && b->y < 100000000 && "Box has huge y in children walk");
-        *x += b->x;
-        *y += b->y;
+        /* FIX: For absolute positioned children, box->x/y are relative to containing block,
+         * not the visual parent. Use box_coords to get correct global position.
+         * Per CSS 2.1 §9.6, absolute elements are offset from containing block. */
+        if (b->abs_containing_block != NULL) {
+            box_coords(b, x, y);
+        } else {
+            *x += b->x;
+            *y += b->y;
+        }
         if (!box_is_float(b)) {
             rb = b;
             break;
@@ -174,22 +181,39 @@ static inline struct box *box_move_xy(struct box *b, enum box_walk_dir dir, int 
 
     case BOX_WALK_NEXT_SIBLING:
         do {
-            *x -= b->x;
-            *y -= b->y;
+            /* When leaving a box, need to handle absolute elements specially */
+            if (b->abs_containing_block != NULL) {
+                /* Absolute box - calculate position of parent to "exit" correctly */
+                box_coords(b->parent, x, y);
+            } else {
+                *x -= b->x;
+                *y -= b->y;
+            }
             b = b->next;
             if (b == NULL)
                 break;
             assert(b->x > -100000000 && b->x < 100000000 && "Box has huge x in sibling walk");
             assert(b->y > -100000000 && b->y < 100000000 && "Box has huge y in sibling walk");
-            *x += b->x;
-            *y += b->y;
+            /* When entering a box, handle absolute elements */
+            if (b->abs_containing_block != NULL) {
+                box_coords(b, x, y);
+            } else {
+                *x += b->x;
+                *y += b->y;
+            }
         } while (box_is_float(b));
         rb = b;
         break;
 
     case BOX_WALK_PARENT:
-        *x -= b->x;
-        *y -= b->y;
+        /* When leaving a box to go to parent, handle absolute elements */
+        if (b->abs_containing_block != NULL) {
+            /* For absolute box, get parent's position directly */
+            box_coords(b->parent, x, y);
+        } else {
+            *x -= b->x;
+            *y -= b->y;
+        }
         rb = b->parent;
         break;
 

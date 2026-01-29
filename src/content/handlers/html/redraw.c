@@ -1957,7 +1957,10 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
          * box_coords() returns document-relative coordinates, so we must add
          * the viewport scroll offset (data->x/y) to get screen coordinates. */
         if (box->abs_containing_block != NULL) {
-            box_coords(box, &x, &y);
+            int doc_x, doc_y;
+            box_coords(box, &doc_x, &doc_y);
+            x = doc_x;
+            y = doc_y;
             /* Add viewport scroll offset */
             if (data != NULL) {
                 x += data->x;
@@ -1984,10 +1987,7 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
         border_top = box->border[TOP].width;
         border_right = box->border[RIGHT].width;
         border_bottom = box->border[BOTTOM].width;
-        /* TRACE: log final visual position for flex items */
-        if (box->parent && box->parent->style && css_computed_display(box->parent->style, false) == CSS_DISPLAY_FLEX) {
-            // Log removed - was too verbose
-        }
+
     } else {
         /* For absolute/fixed positioned elements, use box_coords() to get
          * correct screen position from the containing block, not from the
@@ -2276,8 +2276,10 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
              *
              * For all other elements, do NOT expand - log if they would have
              * matched the old heuristics so we can detect if needed. */
-            if (pos_enum == CSS_POSITION_FIXED || bg_attach == CSS_BACKGROUND_ATTACHMENT_FIXED) {
-                /* CSS spec: fixed backgrounds cover the viewport */
+            if (bg_attach == CSS_BACKGROUND_ATTACHMENT_FIXED) {
+                /* CSS spec: only background-attachment:fixed expands to viewport.
+                 * position:fixed elements are fixed to viewport but their background
+                 * respects the element's box dimensions. */
                 expand_viewport_bg = true;
             } else if (is_root_or_body && ((left_match && right_match) || abs_full_width)) {
                 /* Root/body elements: expand if they span the viewport width */
@@ -2864,14 +2866,32 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
                     cls = dom_string_data(class_attr);
                 }
             }
-            // Debug logging removed - was hotnews.ro specific
+
             if (class_attr != NULL)
                 dom_string_unref(class_attr);
             if (name != NULL)
                 dom_string_unref(name);
         }
-        if (!html_redraw_box_children(
-                html, box, x_parent, y_parent, child_clip_ptr, scale, current_background_color, data, ctx)) {
+
+        /* FIX: For absolute positioned elements, compute correct parent position for children.
+         * Problem: box->x/y for absolute elements are relative to containing block, not x_parent/y_parent.
+         * Solution: Pass adjusted parent coords so (adj_parent + box->x/y) equals computed screen position.
+         * Per CSS 2.1 §9.6, absolute element's children are in normal flow relative to the absolute element. */
+        int child_x_parent, child_y_parent;
+        if (box->abs_containing_block != NULL) {
+            /* For absolute elements: we computed screen position x, y via box_coords().
+             * Children's offset = child_x_parent + box->x = x (we want)
+             * So child_x_parent = x - box->x */
+            child_x_parent = x - box->x;
+            child_y_parent = y - box->y;
+        } else {
+            /* Normal elements: use standard parent chain */
+            child_x_parent = x_parent;
+            child_y_parent = y_parent;
+        }
+
+        if (!html_redraw_box_children(html, box, child_x_parent, child_y_parent, child_clip_ptr, scale,
+                current_background_color, data, ctx)) {
             {
                 result = false;
                 goto cleanup;
