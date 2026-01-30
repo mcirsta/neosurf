@@ -32,6 +32,7 @@
 
 #include "neosurf/mouse.h"
 #include "neosurf/plotters.h"
+#include "neosurf/browser.h"
 #include "neosurf/utils/log.h"
 #include "neosurf/utils/utf8.h"
 #include "neosurf/window.h"
@@ -127,12 +128,33 @@ static nserror plot_alpha_bitmap(HDC hdc, struct bitmap *bitmap, int x, int y, i
     HDC bmihdc;
     bool bltres;
     bmihdc = CreateCompatibleDC(hdc);
-    SelectObject(bmihdc, bitmap->windib);
-    bltres = AlphaBlend(hdc, x, y, width, height, bmihdc, 0, 0, bitmap->width, bitmap->height, blnd);
-    DeleteDC(bmihdc);
-    if (!bltres) {
+    if (bmihdc == NULL) {
+        NSLOG(plot, WARNING, "CreateCompatibleDC failed, error %lu", GetLastError());
         return NSERROR_INVALID;
     }
+    HGDIOBJ oldbm = SelectObject(bmihdc, bitmap->windib);
+    if (oldbm == NULL || oldbm == HGDI_ERROR) {
+        NSLOG(plot, WARNING, "SelectObject(windib) failed, windib=%p error %lu", bitmap->windib, GetLastError());
+        DeleteDC(bmihdc);
+        return NSERROR_INVALID;
+    }
+
+    NSLOG(plot, DEEPDEBUG, "AlphaBlend: dst=(%d,%d) size=(%d,%d) src_size=(%d,%d) windib=%p", x, y, width, height,
+        bitmap->width, bitmap->height, bitmap->windib);
+
+    bltres = AlphaBlend(hdc, x, y, width, height, bmihdc, 0, 0, bitmap->width, bitmap->height, blnd);
+
+    if (!bltres) {
+        DWORD err = GetLastError();
+        NSLOG(plot, WARNING, "AlphaBlend FAILED: error %lu, dst=(%d,%d) size=(%d,%d) src_size=(%d,%d)", err, x, y,
+            width, height, bitmap->width, bitmap->height);
+        SelectObject(bmihdc, oldbm);
+        DeleteDC(bmihdc);
+        return NSERROR_INVALID;
+    }
+
+    SelectObject(bmihdc, oldbm);
+    DeleteDC(bmihdc);
 
     return NSERROR_OK;
 }

@@ -65,12 +65,10 @@ static void *win32_bitmap_create(int width, int height, enum gui_bitmap_flags fl
     pbmi->bV5Height = -height;
     pbmi->bV5Planes = 1;
     pbmi->bV5BitCount = 32;
-    pbmi->bV5Compression = BI_BITFIELDS;
-
-    pbmi->bV5RedMask = 0xff; /* red mask */
-    pbmi->bV5GreenMask = 0xff00; /* green mask */
-    pbmi->bV5BlueMask = 0xff0000; /* blue mask */
-    pbmi->bV5AlphaMask = 0xff000000; /* alpha mask */
+    /* Use BI_RGB for 32-bit bitmaps - required for AlphaBlend with AC_SRC_ALPHA.
+     * With BI_RGB on 32-bit, Windows uses BGRA byte order (B in low byte, A in high byte).
+     * The color masks below are informational but not strictly required for BI_RGB. */
+    pbmi->bV5Compression = BI_RGB;
 
     windib = CreateDIBSection(NULL, (BITMAPINFO *)pbmi, DIB_RGB_COLORS, (void **)&pixdata, NULL, 0);
 
@@ -296,11 +294,8 @@ nserror win32_bitmap_ensure_scaled(struct bitmap *bm, int width, int height)
     spbmi->bV5Height = -height;
     spbmi->bV5Planes = 1;
     spbmi->bV5BitCount = 32;
-    spbmi->bV5Compression = BI_BITFIELDS;
-    spbmi->bV5RedMask = 0xff;
-    spbmi->bV5GreenMask = 0xff00;
-    spbmi->bV5BlueMask = 0xff0000;
-    spbmi->bV5AlphaMask = 0xff000000;
+    /* Use BI_RGB for AlphaBlend compatibility - same as main bitmap */
+    spbmi->bV5Compression = BI_RGB;
 
     swindib = CreateDIBSection(NULL, (BITMAPINFO *)spbmi, DIB_RGB_COLORS, (void **)&spix, NULL, 0);
     if (swindib == NULL) {

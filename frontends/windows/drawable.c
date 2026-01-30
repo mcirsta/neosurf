@@ -44,7 +44,6 @@
 
 static const wchar_t *windowclassname_drawable = L"nswsdrawablewindow";
 
-
 /**
  * Handle wheel scroll messages.
  */

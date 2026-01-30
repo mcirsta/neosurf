@@ -58,7 +58,6 @@
 #include "windows/schedule.h"
 #include "windows/window.h"
 
-
 /**
  * Obtain the DPI of the display.
  *
@@ -74,7 +73,7 @@ static int get_screen_dpi(void)
         dpi = 96; /* 96DPI is the default */
     }
 
-    NSLOG(neosurf, INFO, "FIX DPI %d", dpi);
+    NSLOG(neosurf, INFO, "Screen DPI: %d", dpi);
 
     return dpi;
 }
@@ -397,10 +396,10 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hLastInstance, LPSTR lpcli, in
         die("NeoSurf operation table registration failed");
     }
 
-    /* Configure client bitmap format for Windows: RGBA with premultiplied
-     * alpha */
+    /* Configure client bitmap format for Windows: BGRA with premultiplied
+     * alpha. Windows GDI with BI_RGB expects BGRA byte order. */
     bitmap_set_format(&(bitmap_fmt_t){
-        .layout = BITMAP_LAYOUT_R8G8B8A8,
+        .layout = BITMAP_LAYOUT_B8G8R8A8,
         .pma = true,
     });
 
