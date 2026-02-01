@@ -100,3 +100,8 @@ Windows frontend action plan
 4) Validate against core changes
    - Smoke test viewport background expansion and absolute border placement with pages that rely on fixed backgrounds and transformed elements.
   - Verify @font-face downloads apply to text rendering in Windows by loading a page that requests a custom font and confirming glyphs change after download.
+
+
+Others:
+
+1) CSS transforms ( Push and pop transform)
