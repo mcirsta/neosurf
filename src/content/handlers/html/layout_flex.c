@@ -1139,16 +1139,21 @@ static struct flex_line_data *layout_flex__build_line(struct flex_ctx *ctx, size
 /**
  * Freeze an item on a line
  *
+ * \param[in] ctx   Flex layout context
  * \param[in] line  Line to containing item
  * \param[in] item  Item to freeze
  */
-static inline void layout_flex__item_freeze(struct flex_line_data *line, struct flex_item_data *item)
+static inline void
+layout_flex__item_freeze(const struct flex_ctx *ctx, struct flex_line_data *line, struct flex_item_data *item)
 {
     item->freeze = true;
     line->frozen++;
 
     if (!lh__box_is_absolute(item->box)) {
-        line->used_main_size += item->target_main_size;
+        /* Include outer dimensions (padding + border + non-auto margins)
+         * in used_main_size so free space calculation is correct for
+         * auto margin distribution (mx-auto centering). */
+        line->used_main_size += item->target_main_size + lh__delta_outer_main(ctx->flex, item->box);
     }
 
     NSLOG(flex, DEEPDEBUG,
@@ -1330,7 +1335,7 @@ static inline void layout_flex__distribute_free_main(struct flex_ctx *ctx, struc
                 continue;
             } else if (scaled_shrink_factor_sum == 0) {
                 item->target_main_size = item->main_size;
-                layout_flex__item_freeze(line, item);
+                layout_flex__item_freeze(ctx, line, item);
                 continue;
             }
 
@@ -1387,12 +1392,12 @@ static bool layout_flex__resolve_line(struct flex_ctx *ctx, struct flex_line_dat
         if (grow) {
             if (item->grow == 0 || item->base_size > item->main_size) {
                 item->target_main_size = item->main_size;
-                layout_flex__item_freeze(line, item);
+                layout_flex__item_freeze(ctx, line, item);
             }
         } else {
             if (item->shrink == 0 || item->base_size < item->main_size) {
                 item->target_main_size = item->main_size;
-                layout_flex__item_freeze(line, item);
+                layout_flex__item_freeze(ctx, line, item);
             }
         }
 
@@ -1434,7 +1439,7 @@ static bool layout_flex__resolve_line(struct flex_ctx *ctx, struct flex_line_dat
 
             if (total_violation == 0 || (total_violation > 0 && item->min_violation) ||
                 (total_violation < 0 && item->max_violation)) {
-                layout_flex__item_freeze(line, item);
+                layout_flex__item_freeze(ctx, line, item);
             }
         }
     }
@@ -1595,13 +1600,17 @@ static bool layout_flex__place_line_items_main(struct flex_ctx *ctx, struct flex
                 extra_post = extra + extra_remainder;
             }
             extra_total = extra_pre + extra_post;
+            NSLOG(flex, DEEPDEBUG, "ITEM[%zu]: extra=%d extra_pre=%d extra_post=%d extra_total=%d", i, extra, extra_pre,
+                extra_post, extra_total);
 
             main_pos += pre_multiplier * (extra_total + box_size_main + lh__delta_outer_main(ctx->flex, b));
             NSLOG(flex, DEEPDEBUG, "ITEM[%zu]: after pre_mult main_pos=%d (pre_mult=%d)", i, main_pos, pre_multiplier);
         }
 
         *box_pos_main = main_pos + lh__non_auto_margin(b, main_start) + extra_pre + b->border[main_start].width;
-        NSLOG(flex, DEEPDEBUG, "ITEM[%zu]: POSITIONED at %d (main_pos=%d)", i, *box_pos_main, main_pos);
+        NSLOG(flex, DEEPDEBUG,
+            "ITEM[%zu]: box_pos_main=%d (main_pos=%d + non_auto_margin=%d + extra_pre=%d + border=%d)", i,
+            *box_pos_main, main_pos, lh__non_auto_margin(b, main_start), extra_pre, b->border[main_start].width);
 
         if (!lh__box_is_absolute(b)) {
             int cross_size;
@@ -1741,6 +1750,31 @@ static void layout_flex__place_line_items_cross(struct flex_ctx *ctx, struct fle
         /* DIAG: Log cross placement for each item */
         NSLOG(flex, INFO, "CROSS_PLACE[%zu]: box %p type=%d line_cross=%d item_cross=%d free_space=%d", i, b, b->type,
             line->cross_size, *box_size_cross, cross_free_space);
+
+        /* CSS Flexbox §8.1: "Prior to alignment via justify-content and align-self,
+         * any positive free space is distributed to auto margins in that dimension."
+         * Handle auto margins on the cross axis before applying align-self. */
+        enum box_side cross_end = ctx->horizontal ? BOTTOM : RIGHT;
+        bool has_auto_margin_cross_start = (b->margin[cross_start] == AUTO);
+        bool has_auto_margin_cross_end = (b->margin[cross_end] == AUTO);
+
+        if (cross_free_space > 0 && (has_auto_margin_cross_start || has_auto_margin_cross_end)) {
+            int extra_cross_pre = 0;
+            int auto_margin_count = (has_auto_margin_cross_start ? 1 : 0) + (has_auto_margin_cross_end ? 1 : 0);
+            int margin_per_auto = cross_free_space / auto_margin_count;
+
+            if (has_auto_margin_cross_start) {
+                extra_cross_pre = margin_per_auto;
+            }
+
+            NSLOG(flex, DEEPDEBUG, "CROSS_AUTO_MARGIN[%zu]: box %p free=%d auto_count=%d margin_per=%d extra_pre=%d", i,
+                b, cross_free_space, auto_margin_count, margin_per_auto, extra_cross_pre);
+
+            /* Position with auto margin offset */
+            *box_pos_cross = ctx->flex->padding[cross_start] + line->pos + extra_cross_pre +
+                b->border[cross_start].width;
+            continue; /* Skip align-self handling since auto margins take precedence */
+        }
 
         switch (lh__box_align_self(ctx->flex, b)) {
         default:
@@ -1993,7 +2027,7 @@ bool layout_flex(struct box *flex, int available_width, html_content *content)
 
 cleanup:
     /* DIAG: Final flex container summary (before destroying ctx) */
-    NSLOG(flex, WARNING, "FLEX DONE: box %p %s w=%d h=%d %s", flex, ctx->horizontal ? "ROW" : "COL", flex->width,
+    NSLOG(flex, DEEPDEBUG, "FLEX DONE: box %p %s w=%d h=%d %s", flex, ctx->horizontal ? "ROW" : "COL", flex->width,
         flex->height, success ? "OK" : "FAIL");
 
     layout_flex_ctx__destroy(ctx);

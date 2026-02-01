@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mx-auto Simple Test - 1024px width</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #f0f0f0;
+        }
+
+        /* Flex container - full width */
+        .flex-container {
+            display: flex;
+            width: 100%;
+            background: #ddd;
+            padding: 20px 0;
+        }
+
+        /* Centered element with explicit width and mx-auto */
+        .centered-box {
+            width: 1024px;
+            /* Explicit width, no media query escaping */
+            margin-left: auto;
+            /* mx-auto */
+            margin-right: auto;
+            /* mx-auto */
+            background: #2563eb;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        /* Reference markers */
+        .marker {
+            position: fixed;
+            top: 0;
+            height: 100%;
+            width: 2px;
+            background: red;
+            z-index: 1000;
+        }
+
+        .marker-left {
+            left: calc(50% - 512px);
+        }
+
+        .marker-right {
+            left: calc(50% + 512px);
+        }
+
+        .marker-center {
+            left: 50%;
+            background: green;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Reference markers: red lines at expected edges, green at center -->
+    <div class="marker marker-left" title="Expected left edge"></div>
+    <div class="marker marker-center" title="Center"></div>
+    <div class="marker marker-right" title="Expected right edge"></div>
+
+    <h1 style="text-align: center; padding: 20px;">mx-auto Centering Test - Explicit 1024px Width</h1>
+
+    <!-- Test: Flex container with centered child -->
+    <div class="flex-container">
+        <div class="centered-box">
+            <h2>This box should be centered</h2>
+            <p>Width: 1024px | margin-left: auto | margin-right: auto</p>
+            <p>The red lines mark expected left/right edges. Green line marks center.</p>
+            <p>If the box aligns with the red markers, mx-auto is working correctly!</p>
+        </div>
+    </div>
+
+    <div style="padding: 40px; text-align: center;">
+        <p><strong>Expected:</strong> The blue box should be perfectly centered between the red markers.</p>
+        <p><strong>If left-aligned:</strong> The mx-auto fix is not working.</p>
+    </div>
+</body>
+
+</html>

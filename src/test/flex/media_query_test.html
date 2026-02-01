@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Query Breakpoint Test</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            padding: 20px;
+        }
+
+        .test-box {
+            padding: 20px;
+            margin: 10px 0;
+            border: 2px solid #333;
+        }
+
+        /* Default state - no media query applied */
+        .test-box {
+            background: gray;
+        }
+
+        .test-box::after {
+            content: " - GRAY (default, no MQ matched)";
+        }
+
+        /* Test various breakpoints */
+        @media (min-width: 100px) {
+            .mq-100 {
+                background: green !important;
+            }
+
+            .mq-100::after {
+                content: " - GREEN (100px matched)";
+            }
+        }
+
+        @media (min-width: 500px) {
+            .mq-500 {
+                background: blue !important;
+            }
+
+            .mq-500::after {
+                content: " - BLUE (500px matched)";
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .mq-1024 {
+                background: orange !important;
+            }
+
+            .mq-1024::after {
+                content: " - ORANGE (1024px matched)";
+            }
+        }
+
+        @media (min-width: 1280px) {
+            .mq-1280 {
+                background: purple !important;
+            }
+
+            .mq-1280::after {
+                content: " - PURPLE (1280px matched)";
+            }
+        }
+
+        @media (min-width: 1536px) {
+            .mq-1536 {
+                background: red !important;
+            }
+
+            .mq-1536::after {
+                content: " - RED (1536px matched)";
+            }
+        }
+
+        @media (min-width: 2000px) {
+            .mq-2000 {
+                background: navy !important;
+                color: white;
+            }
+
+            .mq-2000::after {
+                content: " - NAVY (2000px matched)";
+            }
+        }
+
+        @media (min-width: 3000px) {
+            .mq-3000 {
+                background: black !important;
+                color: white;
+            }
+
+            .mq-3000::after {
+                content: " - BLACK (3000px matched)";
+            }
+        }
+
+        #viewport-info {
+            background: #eee;
+            padding: 10px;
+            margin-bottom: 20px;
+            font-family: monospace;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Media Query Breakpoint Test</h1>
+    <div id="viewport-info">
+        Viewport width: <span id="width">checking...</span>px
+    </div>
+
+    <p>Each box should show its color if the viewport is wide enough for that breakpoint:</p>
+
+    <div class="test-box mq-100">min-width: 100px</div>
+    <div class="test-box mq-500">min-width: 500px</div>
+    <div class="test-box mq-1024">min-width: 1024px</div>
+    <div class="test-box mq-1280">min-width: 1280px</div>
+    <div class="test-box mq-1536">min-width: 1536px</div>
+    <div class="test-box mq-2000">min-width: 2000px</div>
+    <div class="test-box mq-3000">min-width: 3000px</div>
+
+    <script>
+        document.getElementById('width').textContent = window.innerWidth;
+    </script>
+</body>
+
+</html>

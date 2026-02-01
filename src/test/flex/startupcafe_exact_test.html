@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Exact Startupcafe Selector Test</title>
+    <style>
+        /* Exact copy from startupcafe_simple.html */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: system-ui, sans-serif;
+            background: #f0f0f0;
+        }
+
+        .flex {
+            display: flex;
+        }
+
+        .w-full {
+            width: 100%;
+        }
+
+        .px-5 {
+            padding-left: 1.25rem;
+            padding-right: 1.25rem;
+        }
+
+        .mx-auto {
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .bg-white {
+            background-color: #fff;
+        }
+
+        .border-b {
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        /* EXACT selector from startupcafe_simple.html line 82 */
+        @media (min-width: 1024px) {
+            .lg\:w-\[1024px\] {
+                width: 1024px;
+            }
+        }
+
+        /* 2xl: prefix (1536px+) - EXACT from startupcafe_simple.html line 91 */
+        @media (min-width: 1536px) {
+            .\32xl\:w-\[1237px\] {
+                width: 1237px;
+            }
+        }
+
+        .debug-box {
+            background: blue;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="text-align:center; padding:20px;">Exact Startupcafe Selector Test</h1>
+
+    <!-- EXACT HTML from startupcafe_simple.html line 108-109 -->
+    <div class="flex w-full bg-white border-b">
+        <div class="mx-auto w-full px-5 lg:w-[1024px] 2xl:w-[1237px] debug-box">
+            This element should be:
+            <ul style="text-align:left; margin-top:10px;">
+                <li>Width: 1024px (if viewport >= 1024px)</li>
+                <li>Width: 1237px (if viewport >= 1536px)</li>
+                <li>Centered with auto margins</li>
+            </ul>
+            <p style="margin-top:10px;">Class: mx-auto w-full px-5 lg:w-[1024px] 2xl:w-[1237px]</p>
+        </div>
+    </div>
+
+    <div style="padding:20px; text-align:center;">
+        <p><strong>Expected:</strong> Blue box should be 1024px or 1237px wide and centered.</p>
+        <p><strong>If full width:</strong> The lg:w-[1024px] selector is not matching.</p>
+    </div>
+</body>
+
+</html>

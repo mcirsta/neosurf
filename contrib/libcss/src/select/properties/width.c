@@ -19,6 +19,7 @@ css_error css__cascade_width(uint32_t opv, css_style *style, css_select_state *s
     return css__cascade_length_auto_calc(opv, style, state, set_width);
 }
 
+
 css_error css__set_width_from_hint(const css_hint *hint, css_computed_style *style)
 {
     return set_width(style, hint->status, (css_fixed_or_calc)(hint->data.length.value), hint->data.length.unit);

@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StartupCafe Simple - Layout Test</title>
+    <style>
+        /* Reset */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            line-height: 1.5;
+            color: #1a1a2e;
+            background: #fff;
+        }
+
+        /* TailwindCSS-like utility classes */
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .flex-row { flex-direction: row; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        .grow { flex-grow: 1; }
+        .shrink-0 { flex-shrink: 0; }
+
+        .w-full { width: 100%; }
+        .w-1\/2 { width: 50%; }
+        .w-1\/3 { width: 33.333333%; }
+        .w-2\/3 { width: 66.666667%; }
+        .min-h-full { min-height: 100%; }
+        .h-full { height: 100%; }
+
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-5 { gap: 1.25rem; }
+        .gap-6 { gap: 1.5rem; }
+
+        .p-4 { padding: 1rem; }
+        .p-5 { padding: 1.25rem; }
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        .px-5 { padding-left: 1.25rem; padding-right: 1.25rem; }
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-5 { margin-bottom: 1.25rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-8 { margin-top: 2rem; }
+
+        .mx-auto { margin-left: auto; margin-right: auto; }
+        .text-center { text-align: center; }
+        .text-sm { font-size: 0.875rem; }
+        .text-xs { font-size: 0.75rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+
+        .bg-white { background-color: #fff; }
+        .bg-gray-100 { background-color: #f3f4f6; }
+        .bg-gray-200 { background-color: #e5e7eb; }
+        .bg-blue-600 { background-color: #2563eb; }
+        .text-white { color: #fff; }
+        .text-gray-600 { color: #4b5563; }
+        .text-gray-800 { color: #1f2937; }
+
+        .border { border: 1px solid #e5e7eb; }
+        .border-b { border-bottom: 1px solid #e5e7eb; }
+        .rounded { border-radius: 0.25rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .shadow { box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+        .overflow-hidden { overflow: hidden; }
+
+        /* TailwindCSS responsive - lg: prefix (1024px+) */
+        @media (min-width: 1024px) {
+            .lg\:w-\[1024px\] { width: 1024px; }
+            .lg\:flex-row { flex-direction: row; }
+            .lg\:block { display: block; }
+            .lg\:hidden { display: none; }
+            .lg\:mt-6 { margin-top: 1.5rem; }
+        }
+
+        /* 2xl: prefix (1536px+) */
+        @media (min-width: 1536px) {
+            .\32xl\:w-\[1237px\] { width: 1237px; }
+            .\32xl\:flex-row-reverse { flex-direction: row-reverse; }
+        }
+
+        /* Placeholder image */
+        .placeholder-img {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body class="flex flex-col min-h-full">
+    <!-- Header Bar -->
+    <div class="flex w-full bg-white border-b">
+        <div class="mx-auto w-full px-5 lg:w-[1024px] 2xl:w-[1237px]">
+            <div class="flex items-center justify-between py-2">
+                <div class="flex gap-4 text-xs text-gray-600">
+                    <span>IDEI</span>
+                    <span>FINANȚĂRI</span>
+                    <span>AFACERI</span>
+                    <span>TAXE</span>
+                </div>
+                <div class="font-bold text-blue-600">STARTUP CAFE</div>
+                <div class="flex gap-4 text-xs text-gray-600">
+                    <span>TECH</span>
+                    <span>ESPORTS</span>
+                    <span>ANUNȚURI</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="flex w-full grow flex-col">
+        <div class="mx-auto w-full px-5 lg:w-[1024px] 2xl:w-[1237px]">
+            <!-- Section Title -->
+            <header class="mt-2 lg:mt-6">
+                <h1 class="text-2xl font-bold mb-4">Startup Astăzi</h1>
+            </header>
+
+            <!-- Main Grid: Featured + Sidebar -->
+            <div class="mb-5 flex flex-col gap-5 lg:flex-row">
+                <!-- Featured Article (grows to fill) -->
+                <div class="grow">
+                    <article class="mb-4 flex flex-col rounded-lg overflow-hidden shadow">
+                        <div class="placeholder-img" style="height: 300px;">
+                            Featured Image Placeholder
+                        </div>
+                        <div class="p-5">
+                            <h2 class="text-xl font-bold mb-2">
+                                Cum arată „fabrica de startup-uri", deschisă la Cluj
+                            </h2>
+                            <p class="text-sm text-gray-600">
+                                Tehnologia de la Cluj face minuni: personaje cu dezabilități 
+                                de vedere redau culori sau elemente de azi pentru muncă.
+                            </p>
+                        </div>
+                    </article>
+
+                    <!-- Article Grid (3 columns on large screens) -->
+                    <div class="flex flex-col gap-4 lg:flex-row">
+                        <article class="flex-1 border rounded-lg overflow-hidden">
+                            <div class="placeholder-img" style="height: 120px;">IMG 1</div>
+                            <div class="p-4">
+                                <span class="text-xs font-semibold text-gray-600">TAXE</span>
+                                <h3 class="font-semibold mt-2">Obligații fiscale în februarie 2026</h3>
+                            </div>
+                        </article>
+                        <article class="flex-1 border rounded-lg overflow-hidden">
+                            <div class="placeholder-img" style="height: 120px;">IMG 2</div>
+                            <div class="p-4">
+                                <span class="text-xs font-semibold text-gray-600">TAXE</span>
+                                <h3 class="font-semibold mt-2">Completarea Declarației Unice 2026</h3>
+                            </div>
+                        </article>
+                        <article class="flex-1 border rounded-lg overflow-hidden">
+                            <div class="placeholder-img" style="height: 120px;">IMG 3</div>
+                            <div class="p-4">
+                                <span class="text-xs font-semibold text-gray-600">AFACERI</span>
+                                <h3 class="font-semibold mt-2">Cât ne-a costat deplasarea unui ministru</h3>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <!-- Sidebar -->
+                <aside class="w-full lg:w-1/3 shrink-0">
+                    <div class="border rounded-lg p-4 bg-gray-100">
+                        <h3 class="font-bold mb-4">📈 Cele mai citite</h3>
+                        <ul class="flex flex-col gap-3">
+                            <li class="text-sm border-b py-2">
+                                Informații ANAF 2026: Stabilirea din oficiu a contribuțiilor sociale
+                            </li>
+                            <li class="text-sm border-b py-2">
+                                e-Factura 2026: OUG trecut a modificat termenul de transmitere
+                            </li>
+                            <li class="text-sm border-b py-2">
+                                Salariul minim 2026: Informații ANAF referitoare la suma minimă
+                            </li>
+                            <li class="text-sm border-b py-2">
+                                OFICIAL Depunerea situațiilor financiare anuale 2026
+                            </li>
+                            <li class="text-sm py-2">
+                                DOCUMENT Înregistrarea fiscală a sediilor secundare
+                            </li>
+                        </ul>
+                    </div>
+                </aside>
+            </div>
+
+            <!-- Video Section -->
+            <section class="mt-8 mb-5">
+                <h2 class="text-xl font-bold mb-4">▶ VIDEO RECENTE</h2>
+                <div class="flex flex-col gap-4 lg:flex-row">
+                    <div class="flex-1 placeholder-img rounded-lg" style="height: 200px;">
+                        Video 1
+                    </div>
+                    <div class="flex-1 placeholder-img rounded-lg" style="height: 200px;">
+                        Video 2
+                    </div>
+                    <div class="flex-1 placeholder-img rounded-lg" style="height: 200px;">
+                        Video 3
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-200 py-4 mt-8">
+        <div class="mx-auto w-full px-5 lg:w-[1024px] 2xl:w-[1237px]">
+            <p class="text-center text-sm text-gray-600">
+                © 2026 StartupCafe Simple - Layout Test Page
+            </p>
+        </div>
+    </footer>
+</body>
+</html>

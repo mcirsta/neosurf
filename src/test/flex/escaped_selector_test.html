@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escaped CSS Selector Test</title>
+    <style>
+        body {
+            font-family: system-ui, sans-serif;
+            padding: 20px;
+        }
+
+        /* Test 1: Simple class selector (should work) */
+        .simple-class {
+            background: green;
+            color: white;
+            padding: 10px;
+            margin: 5px 0;
+        }
+
+        /* Test 2: Class with escaped colon like Tailwind's lg:w-[1024px] */
+        .lg\:w-1024 {
+            width: 1024px;
+            background: blue;
+            color: white;
+            padding: 10px;
+            margin: 5px 0;
+        }
+
+        /* Test 3: Class with escaped brackets */
+        .w-\[500px\] {
+            width: 500px;
+            background: purple;
+            color: white;
+            padding: 10px;
+            margin: 5px 0;
+        }
+
+        /* Test 4: Full Tailwind-style selector */
+        .lg\:w-\[800px\] {
+            width: 800px;
+            background: orange;
+            color: black;
+            padding: 10px;
+            margin: 5px 0;
+        }
+
+        /* Test 5: Media query with escaped selector */
+        @media (min-width: 100px) {
+            .mq\:test {
+                background: red;
+                color: white;
+                padding: 10px;
+                margin: 5px 0;
+            }
+        }
+
+        .failure {
+            background: red;
+            color: white;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Escaped CSS Selector Test</h1>
+    <p>Each box below should have its specified background color if the selector is working.</p>
+
+    <div class="simple-class">
+        Test 1: .simple-class → Should be GREEN
+    </div>
+
+    <div class="lg:w-1024">
+        Test 2: .lg\:w-1024 → Should be BLUE (width 1024px)<br>
+        Class attribute: lg:w-1024
+    </div>
+
+    <div class="w-[500px]">
+        Test 3: .w-\[500px\] → Should be PURPLE (width 500px)<br>
+        Class attribute: w-[500px]
+    </div>
+
+    <div class="lg:w-[800px]">
+        Test 4: .lg\:w-\[800px\] → Should be ORANGE (width 800px)<br>
+        Class attribute: lg:w-[800px]
+    </div>
+
+    <div class="mq:test">
+        Test 5: .mq\:test (inside @media) → Should be RED<br>
+        Class attribute: mq:test
+    </div>
+
+    <hr>
+    <h2>Expected Results:</h2>
+    <ul>
+        <li>Test 1 (simple-class): GREEN background</li>
+        <li>Test 2 (lg:w-1024): BLUE background, 1024px wide</li>
+        <li>Test 3 (w-[500px]): PURPLE background, 500px wide</li>
+        <li>Test 4 (lg:w-[800px]): ORANGE background, 800px wide</li>
+        <li>Test 5 (mq:test): RED background</li>
+    </ul>
+    <p>If any box is missing its color/width, that selector type is not being parsed correctly.</p>
+</body>
+
+</html>

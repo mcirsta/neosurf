@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>mx-auto Centering Test</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #f0f0f0;
+        }
+
+        /* Test 1: Block element with margin: auto (should work in any browser) */
+        .test1-container {
+            width: 100%;
+            background: #ddd;
+            padding: 10px 0;
+        }
+
+        .test1-centered {
+            width: 400px;
+            background: #4CAF50;
+            color: white;
+            padding: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+        }
+
+        /* Test 2: Flex container with mx-auto child */
+        .test2-container {
+            display: flex;
+            width: 100%;
+            background: #ccc;
+            padding: 10px 0;
+        }
+
+        .test2-centered {
+            width: 400px;
+            background: #2196F3;
+            color: white;
+            padding: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+        }
+
+        /* Test 3: Flex container - child should fill because no fixed width */
+        .test3-container {
+            display: flex;
+            width: 100%;
+            background: #bbb;
+            padding: 10px 0;
+        }
+
+        .test3-full {
+            width: 100%;
+            background: #FF9800;
+            color: white;
+            padding: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+        }
+
+        /* Test 4: Block parent, centered block child (classic centering) */
+        .test4-container {
+            display: block;
+            width: 100%;
+            background: #aaa;
+            padding: 10px 0;
+        }
+
+        .test4-centered {
+            width: 400px;
+            background: #9C27B0;
+            color: white;
+            padding: 20px;
+            margin-left: auto;
+            margin-right: auto;
+            text-align: center;
+        }
+
+        .label {
+            font-size: 12px;
+            color: #666;
+            margin: 5px 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="label">Test 1: Block container + margin:auto child (classic)</div>
+    <div class="test1-container">
+        <div class="test1-centered">Block mx-auto (400px)</div>
+    </div>
+
+    <div class="label">Test 2: Flex container + fixed-width child with margin:auto</div>
+    <div class="test2-container">
+        <div class="test2-centered">Flex mx-auto (400px)</div>
+    </div>
+
+    <div class="label">Test 3: Flex container + width:100% child (no centering expected)</div>
+    <div class="test3-container">
+        <div class="test3-full">Flex 100% width</div>
+    </div>
+
+    <div class="label">Test 4: Block container + margin:auto child (reference)</div>
+    <div class="test4-container">
+        <div class="test4-centered">Display:block mx-auto</div>
+    </div>
+</body>
+
+</html>
