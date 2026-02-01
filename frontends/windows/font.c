@@ -466,11 +466,18 @@ static char *ttf_get_family_name(const uint8_t *data, size_t size)
     if (6 + (size_t)name_count * 12 > name_length)
         return NULL;
 
-    /* Look for name ID 1 (Font Family) or ID 4 (Full Name) as fallback */
+    /* Look for name ID 16 (Typographic Family name) first, then ID 1 (Font Family).
+     * Name ID 16 is preferred because it provides the base family name (e.g., "Literata")
+     * while Name ID 1 may include the subfamily (e.g., "Literata Light").
+     * Using the base family name allows Windows CreateFont to properly match
+     * font weights via its weight parameter.
+     */
     const uint8_t *name_records = name_table + 6;
     char *family_name = NULL;
+    char *typographic_family = NULL; /* Name ID 16 - preferred */
+    char *font_family = NULL; /* Name ID 1 - fallback */
 
-    for (uint16_t i = 0; i < name_count && family_name == NULL; i++) {
+    for (uint16_t i = 0; i < name_count; i++) {
         const uint8_t *record = name_records + i * 12;
         uint16_t platform_id = ((uint16_t)record[0] << 8) | record[1];
         uint16_t encoding_id = ((uint16_t)record[2] << 8) | record[3];
@@ -478,8 +485,14 @@ static char *ttf_get_family_name(const uint8_t *data, size_t size)
         uint16_t str_length = ((uint16_t)record[8] << 8) | record[9];
         uint16_t str_offset = ((uint16_t)record[10] << 8) | record[11];
 
-        /* We want name ID 1 (Font Family) */
-        if (name_id != 1)
+        /* We want name ID 16 (Typographic Family) or ID 1 (Font Family) */
+        if (name_id != 16 && name_id != 1)
+            continue;
+
+        /* Skip if we already have this one */
+        if (name_id == 16 && typographic_family != NULL)
+            continue;
+        if (name_id == 1 && font_family != NULL)
             continue;
 
         uint32_t abs_offset = name_offset + string_offset + str_offset;
@@ -487,29 +500,49 @@ static char *ttf_get_family_name(const uint8_t *data, size_t size)
             continue;
 
         const uint8_t *str_data = data + abs_offset;
+        char *extracted_name = NULL;
 
         /* Platform 3 (Windows), Encoding 1 (Unicode BMP) - UTF-16BE */
         if (platform_id == 3 && encoding_id == 1) {
             int char_count = str_length / 2;
-            family_name = malloc(char_count + 1);
-            if (family_name) {
+            extracted_name = malloc(char_count + 1);
+            if (extracted_name) {
                 for (int j = 0; j < char_count; j++) {
                     uint16_t ch = ((uint16_t)str_data[j * 2] << 8) | str_data[j * 2 + 1];
-                    family_name[j] = (ch < 128) ? (char)ch : '?';
+                    extracted_name[j] = (ch < 128) ? (char)ch : '?';
                 }
-                family_name[char_count] = '\0';
+                extracted_name[char_count] = '\0';
             }
-            break;
         }
         /* Platform 1 (Macintosh), Encoding 0 (Roman) - ASCII compatible */
         else if (platform_id == 1 && encoding_id == 0) {
-            family_name = malloc(str_length + 1);
-            if (family_name) {
-                memcpy(family_name, str_data, str_length);
-                family_name[str_length] = '\0';
+            extracted_name = malloc(str_length + 1);
+            if (extracted_name) {
+                memcpy(extracted_name, str_data, str_length);
+                extracted_name[str_length] = '\0';
             }
-            break;
         }
+
+        if (extracted_name != NULL) {
+            if (name_id == 16) {
+                typographic_family = extracted_name;
+            } else {
+                font_family = extracted_name;
+            }
+        }
+
+        /* Stop early if we have the preferred name */
+        if (typographic_family != NULL && font_family != NULL)
+            break;
+    }
+
+    /* Prefer typographic family (ID 16) over font family (ID 1) */
+    if (typographic_family != NULL) {
+        family_name = typographic_family;
+        if (font_family != NULL)
+            free(font_family);
+    } else {
+        family_name = font_family;
     }
 
     return family_name;
@@ -1176,6 +1209,9 @@ HFONT get_font(const plot_font_style_t *style)
     hdc = GetDC(font_hwnd);
     nHeight = -MulDiv(style->size, GetDeviceCaps(hdc, LOGPIXELSY), 72 * PLOT_STYLE_SCALE);
     ReleaseDC(font_hwnd, hdc);
+
+    NSLOG(netsurf, DEEPDEBUG, "CreateFont: face='%s' height=%d weight=%d italic=%s", face ? face : "(null)", nHeight,
+        style->weight, (style->flags & FONTF_ITALIC) ? "yes" : "no");
 
     font = CreateFont(nHeight, 0, 0, 0, style->weight, (style->flags & FONTF_ITALIC) ? TRUE : FALSE, FALSE, FALSE,
         DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, family, face);
