@@ -5,7 +5,7 @@
  * Copyright 2011 John-Mark Bell <jmb@netsurf-browser.org>
  */
 
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 #include "bytecode/bytecode.h"
 #include "bytecode/opcodes.h"
 #include "select/propget.h"

@@ -7,7 +7,7 @@
 
 #include <libcss/libcss.h>
 
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 
 #include "dump.h"
 #include "testutils.h"

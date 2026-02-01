@@ -34,7 +34,7 @@
 #include <neosurf/utils/utils.h>
 #include "utils/ring.h"
 #include "utils/url.h"
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 
 #include <neosurf/content/fetch.h>
 #include "content/fetchers.h"

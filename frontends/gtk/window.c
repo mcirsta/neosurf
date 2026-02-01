@@ -36,7 +36,7 @@
 #include <neosurf/desktop/searchweb.h>
 #include <neosurf/desktop/textinput.h>
 #include <neosurf/form.h>
-#include <neosurf/inttypes.h>
+#include <neosurf/ns_inttypes.h>
 #include <neosurf/keypress.h>
 #include <neosurf/mouse.h>
 #include <neosurf/plotters.h>

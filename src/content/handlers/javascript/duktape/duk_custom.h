@@ -37,4 +37,4 @@
 extern duk_bool_t dukky_check_timeout(void *udata);
 #define DUK_USE_EXEC_TIMEOUT_CHECK dukky_check_timeout
 
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>

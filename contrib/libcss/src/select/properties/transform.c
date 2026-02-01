@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 #include "bytecode/bytecode.h"
 #include "bytecode/opcodes.h"
 #include "select/propget.h"

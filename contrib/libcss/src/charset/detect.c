@@ -10,7 +10,7 @@
 
 #include <parserutils/charset/mibenum.h>
 
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 #include "charset/detect.h"
 
 static parserutils_error css_charset_read_bom_or_charset(const uint8_t *data, size_t len, uint16_t *mibenum);

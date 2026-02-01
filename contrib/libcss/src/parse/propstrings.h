@@ -18,7 +18,7 @@
 #ifndef css_css__parse_propstrings_h_
 #define css_css__parse_propstrings_h_
 
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 
 enum {
     /* Universal selector */

@@ -28,7 +28,7 @@
 #include <stdint.h>
 
 #include <neosurf/content/content.h>
-#include <neosurf/inttypes.h>
+#include <neosurf/ns_inttypes.h>
 #include <neosurf/utils/corestrings.h>
 #include <neosurf/utils/log.h>
 #include <neosurf/utils/nsoption.h>

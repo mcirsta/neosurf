@@ -25,7 +25,7 @@
 #include <stddef.h>
 
 #include "utils/errors.h"
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 // #include "testament.h"
 
 #include "atestament.h"

@@ -33,7 +33,7 @@ extern "C" {
 #include "utils/log.h"
 #include "utils/nsoption.h"
 #include "utils/utf8.h"
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 #include "neosurf/layout.h"
 #include "neosurf/plot_style.h"
 }

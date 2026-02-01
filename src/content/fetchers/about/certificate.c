@@ -29,7 +29,7 @@
 #include <neosurf/utils/errors.h>
 #include <neosurf/utils/log.h>
 #include <neosurf/utils/messages.h>
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 #include "neosurf/ssl_certs.h"
 
 #include "certificate.h"

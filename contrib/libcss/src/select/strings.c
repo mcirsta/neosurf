@@ -7,7 +7,7 @@
 
 #include <libwapcaplet/libwapcaplet.h>
 
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 #include "select/strings.h"
 
 css_error css_select_strings_intern(css_select_strings *str)

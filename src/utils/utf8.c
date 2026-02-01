@@ -33,7 +33,7 @@
 #include <neosurf/utils/utf8.h>
 
 #include <neosurf/desktop/gui_internal.h>
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 #include "neosurf/utf8.h"
 
 

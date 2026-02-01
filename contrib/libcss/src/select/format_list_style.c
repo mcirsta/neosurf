@@ -5,7 +5,7 @@
  * Copyright 2021 Vincent Sanders <vince@netsurf-browser.org>
  */
 
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 #include "select/propget.h"
 
 #define SYMBOL_SIZE 8

@@ -5,7 +5,7 @@
  * Copyright 2007-9 John-Mark Bell <jmb@netsurf-browser.org>
  */
 
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 
 css_fixed css__number_from_lwc_string(lwc_string *string, bool int_only, size_t *consumed)
 {

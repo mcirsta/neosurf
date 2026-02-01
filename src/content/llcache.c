@@ -48,7 +48,7 @@
 #include <neosurf/utils/utils.h>
 #include "utils/http.h"
 #include "utils/time.h"
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 #include "neosurf/misc.h"
 
 #include <neosurf/content/backing_store.h>

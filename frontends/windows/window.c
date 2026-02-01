@@ -23,7 +23,7 @@
 
 #include "neosurf/utils/config.h"
 
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 #include <stdbool.h>
 #include <windows.h>
 #include <windowsx.h>

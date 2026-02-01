@@ -250,6 +250,8 @@ include_directories(
 	"${CMAKE_SOURCE_DIR}/contrib/libsvgtiny/src"
 	"${CMAKE_BINARY_DIR}/contrib/libhubbub/src"
 	"${CMAKE_SOURCE_DIR}/frontends"
+	"${CMAKE_SOURCE_DIR}/include"
+	"${CMAKE_SOURCE_DIR}/include/neosurf"
 )
 
 add_subdirectory(contrib)

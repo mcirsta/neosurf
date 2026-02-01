@@ -11,7 +11,7 @@
 #include "select/helpers.h"
 #include "select/unit.h"
 
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 
 /** The default number of entries on a calculator stack */
 #define DEFAULT_STACK_SIZE 32

@@ -31,7 +31,7 @@
 #include <neosurf/content/content_protected.h>
 #include <neosurf/content/llcache.h>
 #include <neosurf/desktop/gui_internal.h>
-#include <neosurf/inttypes.h>
+#include <neosurf/ns_inttypes.h>
 #include <neosurf/misc.h>
 #include <neosurf/utils/log.h>
 #include <neosurf/utils/utils.h>

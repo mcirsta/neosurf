@@ -71,7 +71,7 @@ const char *test_cookies_out_path = "test/data/cookies-out";
 
 const char *wikipedia_url = "http://www.wikipedia.org/";
 
-struct netsurf_table *guit = NULL;
+struct neosurf_table *guit = NULL;
 
 
 struct test_urls {
@@ -233,7 +233,7 @@ struct gui_bitmap_table tst_bitmap_table = {
     .destroy = destroy_bitmap,
 };
 
-struct netsurf_table tst_table = {
+struct neosurf_table tst_table = {
     .bitmap = &tst_bitmap_table,
 };
 

@@ -8,7 +8,7 @@
 
 #include <libcss/libcss.h>
 
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 #include "charset/detect.h"
 
 #include "testutils.h"

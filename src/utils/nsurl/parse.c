@@ -38,7 +38,7 @@
 #include <string.h>
 #include <strings.h>
 
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 
 #include <neosurf/utils/ascii.h>
 #include <neosurf/utils/corestrings.h>

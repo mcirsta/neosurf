@@ -37,7 +37,7 @@
 #include <neosurf/utils/errors.h>
 #include <neosurf/utils/nsurl.h>
 #include <neosurf/utils/utils.h>
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 
 #include "chart.h"
 #include "private.h"

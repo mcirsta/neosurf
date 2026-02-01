@@ -23,7 +23,7 @@
  * \todo The windows download functionality is very buggy this needs redoing
  */
 
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 #include "neosurf/utils/inet.h" /* get correct winsock ordering */
 #include <limits.h>
 #include <shlobj.h>

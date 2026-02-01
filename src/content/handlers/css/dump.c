@@ -19,7 +19,7 @@
 #include <libcss/libcss.h>
 #include <stdio.h>
 
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 
 #include <neosurf/content/handlers/css/utils.h>
 #include "content/handlers/css/dump.h"

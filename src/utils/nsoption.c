@@ -39,7 +39,7 @@
 #include <neosurf/utils/log.h>
 #include <neosurf/utils/nsoption.h>
 #include <neosurf/utils/utils.h>
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 
 /** Length of buffer used to read lines from input file */
 #define NSOPTION_MAX_LINE_LEN 1024

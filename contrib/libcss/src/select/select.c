@@ -13,7 +13,7 @@
 #include <libcss/select.h>
 
 #include "utils/parserutilserror.h"
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 #include "bytecode/bytecode.h"
 #include "bytecode/opcodes.h"
 #include "select/arena.h"

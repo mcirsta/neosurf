@@ -9,7 +9,7 @@
 
 #include <libcss/gradient.h>
 
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 #include "select/arena.h"
 #include "select/calc.h"
 #include "select/computed.h"

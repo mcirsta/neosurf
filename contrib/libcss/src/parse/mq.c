@@ -11,7 +11,7 @@
 
 #include <libcss/fpmath.h>
 
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 #include "bytecode/bytecode.h"
 #include "parse/mq.h"
 #include "parse/properties/utils.h"

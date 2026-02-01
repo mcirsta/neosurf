@@ -22,7 +22,7 @@
 #include "stylesheet.h"
 
 #include "utils/parserutilserror.h"
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 
 typedef struct context_entry {
     css_parser_event type; /**< Type of entry */

@@ -29,7 +29,7 @@
 #include <neosurf/content/handlers/css/css.h>
 #include <neosurf/content/handlers/html/html.h>
 #include <neosurf/content/hlcache.h>
-#include <neosurf/inttypes.h>
+#include <neosurf/ns_inttypes.h>
 #include <neosurf/utils/config.h>
 #include <neosurf/utils/corestrings.h>
 #include <neosurf/utils/log.h>

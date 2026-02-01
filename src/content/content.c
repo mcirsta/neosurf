@@ -33,7 +33,7 @@
 #include "neosurf/bitmap.h"
 #include "neosurf/browser_window.h"
 #include "neosurf/content.h"
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 
 #include <neosurf/content/content_protected.h>
 #include <neosurf/content/hlcache.h>

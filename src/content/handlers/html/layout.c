@@ -50,7 +50,7 @@
 #include <neosurf/content/content_protected.h>
 #include <neosurf/content/handlers/css/utils.h>
 #include <neosurf/desktop/textarea.h>
-#include <neosurf/inttypes.h>
+#include <neosurf/ns_inttypes.h>
 #include <neosurf/layout.h>
 #include <neosurf/utils/corestrings.h>
 #include <neosurf/utils/log.h>

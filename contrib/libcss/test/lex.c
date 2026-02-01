@@ -6,7 +6,7 @@
 
 #include <libcss/libcss.h>
 
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 #include "charset/detect.h"
 
 #include "lex/lex.h"

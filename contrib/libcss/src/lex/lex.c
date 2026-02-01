@@ -33,7 +33,7 @@
 #include <libcss/errors.h>
 
 #include "utils/parserutilserror.h"
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 #include "lex/lex.h"
 
 /** \todo Optimisation -- we're currently revisiting a bunch of input

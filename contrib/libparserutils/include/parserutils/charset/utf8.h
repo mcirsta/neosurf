@@ -17,6 +17,7 @@ extern "C" {
 #endif
 
 #include <inttypes.h>
+#include <stdint.h>
 
 #include <parserutils/errors.h>
 

@@ -30,7 +30,7 @@
 
 #include <libwapcaplet/libwapcaplet.h>
 
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 #include "neosurf/layout.h"
 #include "neosurf/plot_style.h"
 #include "neosurf/utf8.h"

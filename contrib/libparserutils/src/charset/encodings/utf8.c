@@ -12,6 +12,7 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdint.h>
 
 #include <parserutils/charset/utf8.h>
 #include "charset/encodings/utf8impl.h"

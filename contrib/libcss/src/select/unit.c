@@ -8,7 +8,7 @@
 
 #include <libcss/stylesheet.h>
 
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 
 #include "propget.h"
 #include "unit.h"

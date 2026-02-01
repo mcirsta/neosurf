@@ -29,7 +29,7 @@
 #include <neosurf/utils/nsurl.h>
 #include "utils/nscolour.h"
 
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 #include "neosurf/plot_style.h"
 #include "neosurf/types.h"
 

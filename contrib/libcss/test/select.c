@@ -10,7 +10,7 @@
 #include <libcss/select.h>
 #include <libcss/stylesheet.h>
 
-#include "utils/utils.h"
+#include "utils/css_utils.h"
 
 #include "dump_computed.h"
 #include "testutils.h"

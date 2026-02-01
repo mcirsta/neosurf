@@ -21,7 +21,7 @@
 #include <assert.h>
 #include <stdio.h>
 
-#include <neosurf/inttypes.h>
+#include <neosurf/ns_inttypes.h>
 #include <neosurf/layout.h>
 #include <neosurf/plot_style.h>
 #include <neosurf/utils/log.h>

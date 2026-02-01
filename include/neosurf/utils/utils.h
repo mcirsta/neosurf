@@ -28,9 +28,18 @@
 
 #include <stdbool.h>
 #include <stddef.h>
+#include <neosurf/ns_inttypes.h>
 
 #ifndef NOF_ELEMENTS
 #define NOF_ELEMENTS(array) (sizeof(array) / sizeof(*(array)))
+#endif
+
+#ifndef N_ELEMENTS
+#define N_ELEMENTS(array) NOF_ELEMENTS(array)
+#endif
+
+#ifndef UNUSED
+#define UNUSED(x) ((void)(x))
 #endif
 
 #ifndef ABS

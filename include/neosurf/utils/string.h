@@ -25,6 +25,8 @@
 #define _NETSURF_UTILS_STRING_H_
 
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
 #include <stdlib.h>
 
 #include <neosurf/utils/errors.h>
@@ -111,5 +113,12 @@ nserror vsnstrjoin(char **str, size_t *size, char sep, size_t nelm, va_list ap);
  *         code on failure.
  */
 nserror snstrjoin(char **str, size_t *size, char sep, size_t nelm, ...);
+
+
+/** Match two strings case-sensitively */
+bool hubbub_string_match(const uint8_t *a, size_t a_len, const uint8_t *b, size_t b_len);
+
+/** Match two strings case-insensitively */
+bool hubbub_string_match_ci(const uint8_t *a, size_t a_len, const uint8_t *b, size_t b_len);
 
 #endif

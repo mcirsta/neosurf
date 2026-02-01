@@ -78,7 +78,7 @@ static int open_file_binary(const char *fname, int flags, int mode)
 #include <neosurf/utils/messages.h>
 #include <neosurf/utils/nsurl.h>
 #include "utils/hashmap.h"
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 #include "neosurf/misc.h"
 
 #include <neosurf/content/backing_store.h>

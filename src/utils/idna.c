@@ -28,7 +28,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 #include <inttypes.h>
 
 #include <neosurf/utils/errors.h>

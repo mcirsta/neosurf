@@ -38,7 +38,7 @@
 #include "utils/ring.h"
 #include "utils/time.h"
 #include "neosurf/fetch.h"
-#include "neosurf/inttypes.h"
+#include <neosurf/ns_inttypes.h>
 
 #include <neosurf/content/fetch.h>
 #include "content/fetchers.h"
