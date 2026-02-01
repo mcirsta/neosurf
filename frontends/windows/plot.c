@@ -51,6 +51,11 @@ struct gui_window *plot_gw;
 /** currently set clipping rectangle */
 static RECT plot_clip;
 
+/** Transform stack for push_transform/pop_transform support */
+#define TRANSFORM_STACK_SIZE 16
+static XFORM transform_stack[TRANSFORM_STACK_SIZE];
+static int transform_stack_depth = 0;
+
 
 /**
  * bitmap helper to plot a solid block of colour
@@ -1348,6 +1353,99 @@ static nserror win_plot_linear_gradient(const struct redraw_context *ctx, const 
 
 
 /**
+ * Push a transformation matrix onto the transform stack.
+ *
+ * Uses Win32 SetWorldTransform to apply CSS transforms.
+ * The transform is combined with the current world transform.
+ *
+ * \param ctx The current redraw context.
+ * \param transform 6-element affine transform matrix.
+ * \return NSERROR_OK on success else error code.
+ */
+static nserror win_push_transform(const struct redraw_context *ctx, const float transform[6])
+{
+    XFORM current_xform;
+    XFORM new_xform;
+
+    if (plot_hdc == NULL) {
+        NSLOG(neosurf, INFO, "HDC not set on call to push_transform");
+        return NSERROR_INVALID;
+    }
+
+    if (transform_stack_depth >= TRANSFORM_STACK_SIZE) {
+        NSLOG(neosurf, WARNING, "Transform stack overflow");
+        return NSERROR_INVALID;
+    }
+
+    /* Enable advanced graphics mode for world transforms */
+    SetGraphicsMode(plot_hdc, GM_ADVANCED);
+
+    /* Save current transform to stack */
+    if (!GetWorldTransform(plot_hdc, &current_xform)) {
+        NSLOG(neosurf, WARNING, "GetWorldTransform failed: %lu", GetLastError());
+        return NSERROR_INVALID;
+    }
+    transform_stack[transform_stack_depth++] = current_xform;
+
+    /* Create new transform from the 6-element affine matrix
+     * Matrix format: [a, b, c, d, tx, ty]
+     * XFORM: eM11=a, eM12=b, eM21=c, eM22=d, eDx=tx, eDy=ty
+     */
+    new_xform.eM11 = transform[0];
+    new_xform.eM12 = transform[1];
+    new_xform.eM21 = transform[2];
+    new_xform.eM22 = transform[3];
+    new_xform.eDx = transform[4];
+    new_xform.eDy = transform[5];
+
+    /* Combine with current transform (multiply: new = current * new) */
+    if (!ModifyWorldTransform(plot_hdc, &new_xform, MWT_RIGHTMULTIPLY)) {
+        NSLOG(neosurf, WARNING, "ModifyWorldTransform failed: %lu", GetLastError());
+        transform_stack_depth--;
+        return NSERROR_INVALID;
+    }
+
+    return NSERROR_OK;
+}
+
+
+/**
+ * Pop the most recent transform from the transform stack.
+ *
+ * Restores the previous world transform state.
+ *
+ * \param ctx The current redraw context.
+ * \return NSERROR_OK on success else error code.
+ */
+static nserror win_pop_transform(const struct redraw_context *ctx)
+{
+    if (plot_hdc == NULL) {
+        NSLOG(neosurf, INFO, "HDC not set on call to pop_transform");
+        return NSERROR_INVALID;
+    }
+
+    if (transform_stack_depth <= 0) {
+        NSLOG(neosurf, WARNING, "Transform stack underflow");
+        return NSERROR_INVALID;
+    }
+
+    /* Restore previous transform from stack */
+    XFORM saved_xform = transform_stack[--transform_stack_depth];
+    if (!SetWorldTransform(plot_hdc, &saved_xform)) {
+        NSLOG(neosurf, WARNING, "SetWorldTransform failed: %lu", GetLastError());
+        return NSERROR_INVALID;
+    }
+
+    /* If stack is empty, we can switch back to compatible mode */
+    if (transform_stack_depth == 0) {
+        SetGraphicsMode(plot_hdc, GM_COMPATIBLE);
+    }
+
+    return NSERROR_OK;
+}
+
+
+/**
  * win32 API plot operation table
  */
 const struct plotter_table win_plotters = {
@@ -1360,6 +1458,8 @@ const struct plotter_table win_plotters = {
     .arc = arc,
     .bitmap = bitmap,
     .path = path,
+    .push_transform = win_push_transform,
+    .pop_transform = win_pop_transform,
 #ifdef NEOSURF_WINDOWS_NATIVE_LINEAR_GRADIENT
     .linear_gradient = win_plot_linear_gradient,
 #endif
