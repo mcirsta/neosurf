@@ -427,13 +427,17 @@ static inline void layout_find_dimensions(const css_unit_ctx *unit_len_ctx, int 
                     /* Box is absolutely positioned */
                     assert(box->float_container);
                     containing_block = box->float_container;
-                } else if (box->float_container && css_computed_position(box->style) != CSS_POSITION_ABSOLUTE &&
-                    (css_computed_float(box->style) == CSS_FLOAT_LEFT ||
-                        css_computed_float(box->style) == CSS_FLOAT_RIGHT)) {
-                    /* Box is a float */
-                    assert(box->parent && box->parent->parent && box->parent->parent->parent);
-
-                    containing_block = box->parent->parent->parent;
+                } else if (box->parent &&
+                    (box->parent->type == BOX_FLOAT_LEFT || box->parent->type == BOX_FLOAT_RIGHT)) {
+                    /* Box is child of a float wrapper - walk up to find containing block with style.
+                     * Skip BOX_INLINE_CONTAINER and BOX_FLOAT_* which have NULL styles by design. */
+                    struct box *cb = box->parent;
+                    while (cb != NULL &&
+                        (cb->style == NULL || cb->type == BOX_INLINE_CONTAINER || cb->type == BOX_FLOAT_LEFT ||
+                            cb->type == BOX_FLOAT_RIGHT)) {
+                        cb = cb->parent;
+                    }
+                    containing_block = cb;
                 } else if (box->parent && box->parent->type != BOX_INLINE_CONTAINER) {
                     /* Box is a block level element */
                     containing_block = box->parent;
