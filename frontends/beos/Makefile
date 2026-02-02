@@ -58,8 +58,8 @@ vendor	"Wisp"\n\
 packager	"$(PACKAGER)"\n\
 copyrights	{\n\t"2003-2025 The NetSurf Browser project"\n}\n\
 licenses	{\n\t"GNU GPL v2"\n}\n\
-urls	{\n\t"http://www.wisp-browser.org/"\n}\n\
-source-urls	{\n\t"http://download.wisp-browser.org/wisp/releases/source/wisp-$(VERSION_MAJ).$(VERSION_MIN)-src.tar.gz"\n}\n\
+urls	{\n\t"http://www.wispbrowser.com/"\n}\n\
+source-urls	{\n\t"http://download.wispbrowser.com/wisp/releases/source/wisp-$(VERSION_MAJ).$(VERSION_MIN)-src.tar.gz"\n}\n\
 provides	{\n\
 \twisp$(PKGSARCH) = $(VERSION_MAJ).$(VERSION_MIN)\n\
 \tapp:wisp = $(VERSION_MAJ).$(VERSION_MIN)\n\

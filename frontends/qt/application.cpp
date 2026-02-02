@@ -354,7 +354,7 @@ NS_Application::NS_Application(int &argc, char **argv, struct wisp_table *nsqt_t
 
     /* organization setup for settings */
     setOrganizationName("Wisp");
-    setOrganizationDomain("wisp-browser.org");
+    setOrganizationDomain("wispbrowser.com");
     setApplicationName("Wisp");
 
     // set up scheduler timer

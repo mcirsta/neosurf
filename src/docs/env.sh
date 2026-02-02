@@ -321,7 +321,7 @@ export WISP_GTK_MAJOR
 MAKE=make
 
 # NetSurf GIT repositories
-NS_GIT="git://git.wisp-browser.org"
+NS_GIT="git://git.wispbrowser.com"
 
 # Buildsystem: everything depends on this
 NS_BUILDSYSTEM="buildsystem"

@@ -164,10 +164,10 @@ START_TEST(nsurl_create_test)
 END_TEST
 
 static const struct test_triplets access_tests[] = {
-    {"http://www.wisp-browser.org/a/big/tree", "http://www.wisp-browser.org/a/big/tree", "tree"},
+    {"http://www.wispbrowser.com/a/big/tree", "http://www.wispbrowser.com/a/big/tree", "tree"},
 
-    {"HTTP://ci.wisp-browser.org/jenkins/view/Unit Tests/job/coverage-wisp/11/cobertura/utils/nsurl_c/",
-        "http://ci.wisp-browser.org/jenkins/view/Unit%20Tests/job/coverage-wisp/11/cobertura/utils/nsurl_c/", ""},
+    {"HTTP://ci.wispbrowser.com/jenkins/view/Unit Tests/job/coverage-wisp/11/cobertura/utils/nsurl_c/",
+        "http://ci.wispbrowser.com/jenkins/view/Unit%20Tests/job/coverage-wisp/11/cobertura/utils/nsurl_c/", ""},
 
     {"FILE:///", "file:///", "/"},
 };
@@ -487,18 +487,18 @@ END_TEST
  * query replacement tests
  */
 static const struct test_triplets replace_query_tests[] = {
-    {"http://wisp-browser.org/?magical=true", "magical=true&result=win",
-        "http://wisp-browser.org/?magical=true&result=win"},
+    {"http://wispbrowser.com/?magical=true", "magical=true&result=win",
+        "http://wispbrowser.com/?magical=true&result=win"},
 
-    {"http://wisp-browser.org/?magical=true#fragment", "magical=true&result=win",
-        "http://wisp-browser.org/?magical=true&result=win#fragment"},
+    {"http://wispbrowser.com/?magical=true#fragment", "magical=true&result=win",
+        "http://wispbrowser.com/?magical=true&result=win#fragment"},
 
-    {"http://wisp-browser.org/#fragment", "magical=true&result=win",
-        "http://wisp-browser.org/?magical=true&result=win#fragment"},
+    {"http://wispbrowser.com/#fragment", "magical=true&result=win",
+        "http://wispbrowser.com/?magical=true&result=win#fragment"},
 
-    {"http://wisp-browser.org/path", "magical=true", "http://wisp-browser.org/path?magical=true"},
+    {"http://wispbrowser.com/path", "magical=true", "http://wispbrowser.com/path?magical=true"},
 
-    {"http://wisp-browser.org/path?magical=true", "", "http://wisp-browser.org/path"},
+    {"http://wispbrowser.com/path?magical=true", "", "http://wispbrowser.com/path"},
 
 };
 

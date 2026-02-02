@@ -10,7 +10,7 @@ Automated testing
 
 If you want to run the monkey_driver.py or monkey-see-monkey-do tools then
 you will need python3 and pyyaml installed.  The latter also needs internet
-access to test.wisp-browser.org to acquire test data.
+access to test.wispbrowser.com to acquire test data.
 
 Overview
 --------

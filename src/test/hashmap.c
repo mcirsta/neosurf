@@ -296,8 +296,8 @@ typedef struct {
  * to validate prevptr and next in all cases.
  */
 static case_pair chain_pairs[] = {{"https://www.google.com/", NULL}, {"https://www.google.co.uk/", NULL},
-    {"https://www.wisp-browser.org/", NULL}, {"http://www.google.com/", NULL}, {"http://www.google.co.uk/", NULL},
-    {"http://www.wisp-browser.org/", NULL}, {"file:///tmp/test.html", NULL}, {"file:///tmp/inner.html", NULL},
+    {"https://www.wispbrowser.com/", NULL}, {"http://www.google.com/", NULL}, {"http://www.google.co.uk/", NULL},
+    {"http://www.wispbrowser.com/", NULL}, {"file:///tmp/test.html", NULL}, {"file:///tmp/inner.html", NULL},
     {"about:blank", NULL}, {"about:welcome", NULL}, {"about:testament", NULL}, {"resources:default.css", NULL},
     {NULL, NULL}};
 

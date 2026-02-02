@@ -1106,15 +1106,15 @@ nsws_window_command(HWND hwnd, struct gui_window *gw, int notification_code, int
         break;
 
     case IDM_HELP_CONTENTS:
-        nsws_window_go(hwnd, "https://www.wisp-browser.org/documentation/");
+        nsws_window_go(hwnd, "https://www.wispbrowser.com/documentation/");
         break;
 
     case IDM_HELP_GUIDE:
-        nsws_window_go(hwnd, "https://www.wisp-browser.org/documentation/guide");
+        nsws_window_go(hwnd, "https://www.wispbrowser.com/documentation/guide");
         break;
 
     case IDM_HELP_INFO:
-        nsws_window_go(hwnd, "https://www.wisp-browser.org/documentation/info");
+        nsws_window_go(hwnd, "https://www.wispbrowser.com/documentation/info");
         break;
 
     case IDM_HELP_ABOUT:

@@ -19,7 +19,7 @@ import monkey_driver as driver
 
 # Otherwise let's begin...
 
-BASE_PATH = "https://test.wisp-browser.org/cgi-bin/monkey-index.cgi"
+BASE_PATH = "https://test.wispbrowser.com/cgi-bin/monkey-index.cgi"
 MONKEY_PATH = "./nsmonkey"
 
 mp.set_start_method('fork')

@@ -2770,7 +2770,7 @@ static gboolean contents_button_clicked_cb(GtkWidget *widget, gpointer data)
     struct nsgtk_toolbar *tb = (struct nsgtk_toolbar *)data;
     nserror res;
 
-    res = toolbar_navigate_to_url(tb, "https://www.wisp-browser.org/documentation/");
+    res = toolbar_navigate_to_url(tb, "https://www.wispbrowser.com/documentation/");
     if (res != NSERROR_OK) {
         nsgtk_warning(messages_get_errorcode(res), 0);
     }
@@ -2790,7 +2790,7 @@ static gboolean guide_button_clicked_cb(GtkWidget *widget, gpointer data)
     struct nsgtk_toolbar *tb = (struct nsgtk_toolbar *)data;
     nserror res;
 
-    res = toolbar_navigate_to_url(tb, "https://www.wisp-browser.org/documentation/guide");
+    res = toolbar_navigate_to_url(tb, "https://www.wispbrowser.com/documentation/guide");
     if (res != NSERROR_OK) {
         nsgtk_warning(messages_get_errorcode(res), 0);
     }
@@ -2811,7 +2811,7 @@ static gboolean info_button_clicked_cb(GtkWidget *widget, gpointer data)
     struct nsgtk_toolbar *tb = (struct nsgtk_toolbar *)data;
     nserror res;
 
-    res = toolbar_navigate_to_url(tb, "https://www.wisp-browser.org/documentation/info");
+    res = toolbar_navigate_to_url(tb, "https://www.wispbrowser.com/documentation/info");
     if (res != NSERROR_OK) {
         nsgtk_warning(messages_get_errorcode(res), 0);
     }

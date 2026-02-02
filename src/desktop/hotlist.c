@@ -907,10 +907,10 @@ static nserror hotlist_generate(void)
     static const struct {
         const char *url;
         const char *msg_key;
-    } default_entries[] = {{"https://www.wisp-browser.org/", "HotlistHomepage"},
-        {"https://www.wisp-browser.org/downloads/", "HotlistDownloads"},
-        {"https://www.wisp-browser.org/documentation", "HotlistDocumentation"},
-        {"https://www.wisp-browser.org/contact", "HotlistContact"}};
+    } default_entries[] = {{"https://www.wispbrowser.com/", "HotlistHomepage"},
+        {"https://www.wispbrowser.com/downloads/", "HotlistDownloads"},
+        {"https://www.wispbrowser.com/documentation", "HotlistDocumentation"},
+        {"https://www.wispbrowser.com/contact", "HotlistContact"}};
     const int n_entries = sizeof(default_entries) / sizeof(default_entries[0]);
 
     /* First make "NeoSurf" folder for defualt entries */
@@ -1504,7 +1504,7 @@ nserror hotlist_add_entry(nsurl *url, const char *title, bool at_y, int y)
     enum treeview_relationship rel;
 
     if (url == NULL) {
-        err = nsurl_create("https://wisp-browser.org/", &url);
+        err = nsurl_create("https://wispbrowser.com/", &url);
         if (err != NSERROR_OK) {
             return err;
         }
