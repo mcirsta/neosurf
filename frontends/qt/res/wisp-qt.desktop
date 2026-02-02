@@ -2,12 +2,12 @@
 Name=Wisp
 Comment=Browse the Internet
 GenericName=Web Browser
-Exec=nsqt %u
+Exec=wisp-qt %u
 Terminal=false
 X-MultipleArgs=false
 Type=Application
 Icon=wisp
 Categories=Network;WebBrowser;
 MimeType=text/html;text/xml;application/xhtml+xml;application/xml;image/gif;image/jpeg;image/png;x-scheme-handler/http;x-scheme-handler/https;
-StartupWMClass=nsqt
+StartupWMClass=wisp-qt
 StartupNotify=true
