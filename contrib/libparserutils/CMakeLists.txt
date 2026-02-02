@@ -9,7 +9,7 @@ add_custom_command(
 )
 add_custom_target(parserutils_aliases DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/src/charset/aliases.inc)
 
-add_library(parserutils SHARED
+add_library(parserutils ${WISP_LIB_TYPE}
 	src/input/filter.c
 	src/input/inputstream.c
 	src/charset/aliases.c
@@ -39,10 +39,12 @@ if(Iconv_FOUND)
 	endif()
 endif()
 
+if(NOT WIN32)
 install(TARGETS parserutils
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
+endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/contrib/libparserutils/src)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/src/charset)

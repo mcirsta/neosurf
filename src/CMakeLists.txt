@@ -1,5 +1,9 @@
 find_package(PkgConfig)
 
+if(WIN32)
+	set(PKG_CONFIG_USE_STATIC_LIBS ON)
+endif()
+
 include_directories(
 	"${CMAKE_SOURCE_DIR}/src"
 	"${CMAKE_SOURCE_DIR}/include"
@@ -68,13 +72,6 @@ endif()
 # QuickJS-ng bindings
 include(${CMAKE_CURRENT_SOURCE_DIR}/cmake/quickjs_bindings.cmake)
 
- 
- 
- 
-set(WISP_LIB_TYPE SHARED)
-if(WISP_ENABLE_GPROF OR WISP_ENABLE_FINSTRUMENT)
-    set(WISP_LIB_TYPE STATIC)
-endif()
 
 add_library(wisp ${WISP_LIB_TYPE}
 	content/content.c
@@ -255,6 +252,7 @@ endif()
 
 if(WIN32)
 	list(APPEND WISP_COMMON_LIBS ws2_32)
+    target_link_options(wisp PUBLIC -static)
 endif()
 
 # Add QuickJS-ng library
@@ -267,25 +265,33 @@ target_include_directories(wisp PRIVATE ${CMAKE_SOURCE_DIR}/contrib ${CMAKE_BINA
 # Include tests subdirectory (tests only enabled for Debug builds or when NEOSURF_ENABLE_TESTS=ON)
 add_subdirectory(test)
 
+if(NOT WIN32)
 install(TARGETS wisp
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
+endif()
 install(DIRECTORY resources/ DESTINATION ${CMAKE_INSTALL_DATADIR}/wisp)
 
 if(WISP_INSTALL_NSGENBIND)
+	if(NOT WIN32)
 	install(FILES ${CMAKE_BINARY_DIR}/contrib/nsgenbind/nsgenbind DESTINATION ${CMAKE_INSTALL_BINDIR} PERMISSIONS WORLD_EXECUTE)
+	endif()
 endif()
 
 if(WISP_INSTALL_GEN_PARSER)
+	if(NOT WIN32)
 	install(FILES ${CMAKE_BINARY_DIR}/contrib/libcss/gen_parser/gen_parser DESTINATION ${CMAKE_INSTALL_BINDIR} PERMISSIONS WORLD_EXECUTE)
+	endif()
 endif()
 
 if(WISP_BUILD_XXD)
+	if(NOT WIN32)
 	install(TARGETS xxd DESTINATION ${CMAKE_INSTALL_BINDIR})
+	endif()
 endif()
 
-if(WIN32)
+if(WIN32 AND BUILD_SHARED_LIBS)
     function(install_dlls_for_package PREFIX LIBS)
         if(NOT PREFIX OR NOT EXISTS "${PREFIX}/bin")
             return()

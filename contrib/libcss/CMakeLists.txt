@@ -69,7 +69,7 @@ include_directories("${CMAKE_CURRENT_BINARY_DIR}/src")
 include_directories("${CMAKE_CURRENT_BINARY_DIR}/src/generated")  # For property registration includes
 
 
-add_library(css SHARED
+add_library(css ${WISP_LIB_TYPE}
 	src/stylesheet.c
 	src/charset/detect.c
 	src/lex/lex.c
@@ -287,7 +287,9 @@ target_link_libraries(css nsutils parserutils)
 # Export generated files include path to consumers
 target_include_directories(css PUBLIC "${CMAKE_CURRENT_BINARY_DIR}/src/generated")
 
+if(NOT WIN32)
 install(TARGETS css
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
+endif()

@@ -39,12 +39,12 @@
 en.all.Wisp:Wisp
 zh_CN.all.Wisp:Wisp
 
-en.all.NetSurfCopyright:© 2003-2023 The NetSurf Developers
-de.all.NetSurfCopyright:© 2003-2023 die NetSurf Entwickler
-fr.all.NetSurfCopyright:© 2003-2023 Les développeurs de NetSurf
-nl.all.NetSurfCopyright:© 2003-2023 De NetSurf-ontwikkelaars
-it.all.NetSurfCopyright:© 2003-2023 A cura degli sviluppatori di NetSurf
-zh_CN.all.NetSurfCopyright:© 2003-2023 NetSurf 开发人员
+en.all.WispCopyright: 2026 The Wisp Developers
+de.all.WispCopyright: 2026 die Wisp Entwickler
+fr.all.WispCopyright: 2026 Les développeurs de Wisp
+nl.all.WispCopyright: 2026 De Wisp-ontwikkelaars
+it.all.WispCopyright: 2026 A cura degli sviluppatori di Wisp
+zh_CN.all.WispCopyright: 2026 Wisp 开发人员
 
 
 # General

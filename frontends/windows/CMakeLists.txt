@@ -74,7 +74,29 @@ target_compile_definitions(wisp-windows PRIVATE -DWISP_MESSAGES_PATH="\\"${GENER
 add_dependencies(wisp-windows windows_messages)
 target_include_directories(wisp-windows PRIVATE ${GENERATED_MESSAGES_DIR} ${CMAKE_SOURCE_DIR}/src)
 
-target_link_libraries(wisp-windows wisp m ${WISP_COMMON_LIBS} ws2_32 comctl32 gdi32 user32 kernel32 msimg32 wininet shlwapi crypt32)
+target_link_libraries(wisp-windows wisp m ${WISP_COMMON_LIBS} ws2_32 comctl32 gdi32 user32 kernel32 msimg32 wininet shlwapi crypt32
+    # Static library dependencies (required when linking curl, libxml2, etc. statically)
+    bcrypt       # Windows crypto API (used by libxml2)
+    nghttp2      # HTTP/2 support
+    zstd         # Zstandard compression
+    brotlidec brotlicommon  # Brotli compression
+    ngtcp2 ngtcp2_crypto_ossl  # HTTP/3 QUIC
+    nghttp3      # HTTP/3
+    ssh2         # libssh2
+    idn2         # IDN support
+    unistring    # Unicode string support
+    iconv        # Character set conversion
+    psl          # Public Suffix List
+    # Windows system libraries for curl
+    secur32      # Security API (InitSecurityInterfaceA)
+    wldap32      # LDAP support
+    iphlpapi     # Network interface (if_nametoindex)
+)
+
+# Force fully static linking on Windows (no external DLLs except Windows system DLLs)
+target_link_options(wisp-windows PRIVATE -static -static-libgcc)
+# Define static library macros so headers don't use __declspec(dllimport)
+target_compile_definitions(wisp-windows PRIVATE CURL_STATICLIB LIBXML_STATIC)
 
 # Enable native GDI linear gradient support if option is ON
 if(WISP_WINDOWS_NATIVE_LINEAR_GRADIENT)
@@ -105,14 +127,6 @@ if(WIN32 AND CMAKE_BUILD_TYPE MATCHES Debug)
         )
     endif()
     add_custom_command(TARGET wisp-windows POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/contrib/libdom/libdom.dll" "$<TARGET_FILE_DIR:wisp-windows>/"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/contrib/libnsutils/libnsutils.dll" "$<TARGET_FILE_DIR:wisp-windows>/"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/contrib/libparserutils/libparserutils.dll" "$<TARGET_FILE_DIR:wisp-windows>/"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/contrib/libnsbmp/libnsbmp.dll" "$<TARGET_FILE_DIR:wisp-windows>/"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/contrib/libnsgif/libnsgif.dll" "$<TARGET_FILE_DIR:wisp-windows>/"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/contrib/libcss/libcss.dll" "$<TARGET_FILE_DIR:wisp-windows>/"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/contrib/libhubbub/libhubbub.dll" "$<TARGET_FILE_DIR:wisp-windows>/"
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_BINARY_DIR}/src/libwisp.dll" "$<TARGET_FILE_DIR:wisp-windows>/"
         COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_SOURCE_DIR}/src/resources/ca-bundle" "$<TARGET_FILE_DIR:wisp-windows>/ca-bundle.crt"
     )
 endif()

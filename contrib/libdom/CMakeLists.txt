@@ -2,7 +2,7 @@ find_package(PkgConfig)
 
 pkg_check_modules(LIBXML2 REQUIRED libxml-2.0)
 
-add_library(dom SHARED
+add_library(dom ${WISP_LIB_TYPE}
 	src/core/string.c
 	src/core/node.c
 	src/core/attr.c
@@ -102,10 +102,12 @@ set_target_properties(dom PROPERTIES SOVERSION ${WISP_ABI})
 
 target_link_libraries(dom nsutils parserutils hubbub ${LIBXML2_LIBRARIES})
 
+if(NOT WIN32)
 install(TARGETS dom
 	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
+endif()
 
 include_directories(
 	${CMAKE_SOURCE_DIR}/contrib/libdom/src

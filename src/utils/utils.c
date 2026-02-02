@@ -447,7 +447,10 @@ error:
 
 /**
  *  Find the first occurrence of C in S or the final NUL byte.
+ *  Note: __attribute__((used)) prevents LTO from discarding this function,
+ *  which is needed by libidn2.a when statically linking.
  */
+__attribute__((used))
 char *strchrnul(const char *s, int c_in)
 {
     const unsigned char *us = (const unsigned char *)s;

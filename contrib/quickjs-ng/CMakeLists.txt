@@ -142,7 +142,7 @@ macro(xoption OPTION_NAME OPTION_TEXT OPTION_DEFAULT)
     message(STATUS "  ${OPTION_NAME}: ${${OPTION_NAME}}")
 endmacro()
 
-xoption(BUILD_SHARED_LIBS "Build a shared library" OFF)
+# xoption(BUILD_SHARED_LIBS "Build a shared library" OFF)
 if(BUILD_SHARED_LIBS)
     message(STATUS "Building a shared library")
 endif()
@@ -151,7 +151,7 @@ endif()
 # don't explicitly check for that because who knows what the future will bring?
 # QJS_ENABLE_MSAN only works with clang at the time of writing; also not checked
 # for the same reason
-xoption(QJS_BUILD_EXAMPLES "Build examples" OFF)
+xoption(QJS_BUILD_CLI "Build the qjs executable" OFF)
 xoption(QJS_BUILD_CLI_STATIC "Build a static qjs executable" OFF)
 xoption(QJS_BUILD_CLI_WITH_MIMALLOC "Build the qjs executable with mimalloc" OFF)
 xoption(QJS_BUILD_CLI_WITH_STATIC_MIMALLOC "Build the qjs executable with mimalloc (statically linked)" OFF)
@@ -280,7 +280,7 @@ if(M_LIBRARIES OR CMAKE_C_COMPILER_ID STREQUAL "TinyCC")
     list(APPEND qjs_libs m)
 endif()
 
-add_library(qjs ${qjs_sources})
+add_library(qjs ${WISP_LIB_TYPE} ${qjs_sources})
 target_compile_definitions(qjs PRIVATE ${qjs_defines})
 target_include_directories(qjs PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
@@ -322,6 +322,7 @@ target_link_libraries(qjsc qjs)
 # QuickJS CLI
 #
 
+if(QJS_BUILD_CLI)
 add_executable(qjs_exe
     gen/repl.c
     gen/standalone.c
@@ -345,6 +346,7 @@ if(QJS_BUILD_CLI_WITH_MIMALLOC OR QJS_BUILD_CLI_WITH_STATIC_MIMALLOC)
     else()
         target_link_libraries(qjs_exe mimalloc)
     endif()
+endif()
 endif()
 
 # Test262 runner
@@ -458,12 +460,15 @@ set_target_properties(qjs PROPERTIES
     VERSION ${QJS_VERSION_MAJOR}.${QJS_VERSION_MINOR}.${QJS_VERSION_PATCH}
     SOVERSION ${QJS_VERSION_MAJOR}
 )
+if(NOT WIN32)
 install(FILES quickjs.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 if(QJS_BUILD_LIBC)
     install(FILES quickjs-libc.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
 endif()
 if(NOT IOS AND NOT TVOS AND NOT WATCHOS)
+    if(QJS_BUILD_CLI)
     install(TARGETS qjs_exe RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+    endif()
     install(TARGETS qjsc RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 endif()
 install(TARGETS qjs EXPORT qjsConfig
@@ -473,3 +478,4 @@ install(TARGETS qjs EXPORT qjsConfig
 install(EXPORT qjsConfig DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/quickjs)
 install(FILES LICENSE DESTINATION ${CMAKE_INSTALL_DOCDIR})
 install(DIRECTORY examples DESTINATION ${CMAKE_INSTALL_DOCDIR})
+endif()

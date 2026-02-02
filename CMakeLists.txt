@@ -82,6 +82,8 @@ endif()
 
 if(WIN32)
 	set(DEFAULT_WINDOWS_FRONTEND ON)
+    # Force static build on Windows to avoid pseudo-relocation issues
+    set(BUILD_SHARED_LIBS OFF)
 elseif(CMAKE_SYSTEM_NAME MATCHES "Linux")
 	set(DEFAULT_QT_FRONTEND ON)
 endif()
@@ -106,6 +108,10 @@ endif()
 
 if(WISP_BUILD_WINDOWS_FRONTEND)
     add_definitions(-Dnswin32 -DWINVER=0x0600 -D_WIN32_WINNT=0x0600 -D_WIN32_WINDOWS=0x0600 -D_WIN32_IE=0x0600)
+    # Static library definitions - prevent headers from using __declspec(dllimport)
+    if(NOT BUILD_SHARED_LIBS)
+        add_definitions(-DCURL_STATICLIB -DLIBXML_STATIC)
+    endif()
     # Windows uses device pixels for layout (GDI doesn't auto-scale like Qt's QPainter)
     # This causes image intrinsic dimensions to be scaled by DPI factor during layout
     set(DEFAULT_DEVICE_PIXEL_LAYOUT ON)
@@ -208,11 +214,11 @@ if(NOT CMAKE_BUILD_TYPE MATCHES Debug)
     message(STATUS "Disabling logging and tracing for non-Debug build")
     
     # Enable Link Time Optimization (LTO) with parallel execution (auto)
-    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -flto=auto")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto=auto")
-    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto=auto")
-    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} -flto=auto")
-    set(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} -flto=auto")
+    set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} -flto=auto -ffunction-sections -fdata-sections")
+    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -flto=auto -ffunction-sections -fdata-sections")
+    set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} -flto=auto -Wl,--gc-sections")
+    set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} -flto=auto -Wl,--gc-sections")
+    set(CMAKE_MODULE_LINKER_FLAGS_RELEASE "${CMAKE_MODULE_LINKER_FLAGS_RELEASE} -flto=auto -Wl,--gc-sections")
     message(STATUS "Enabled Link Time Optimization (LTO) for Release build (auto-parallel)")
 endif()
 
@@ -248,15 +254,14 @@ include_directories(
 	"${CMAKE_SOURCE_DIR}/include"
 	"${CMAKE_SOURCE_DIR}/include/wisp"
 )
+set(WISP_LIB_TYPE SHARED)
+if(WIN32 OR WISP_ENABLE_GPROF OR WISP_ENABLE_FINSTRUMENT)
+    set(WISP_LIB_TYPE STATIC)
+endif()
 
 add_subdirectory(contrib)
 add_subdirectory(src)
 add_subdirectory(frontends)
-
-#TODO: quickjs/wasm3
-
-#FIXME: gtk frontend seems to segfault if no proper GTK cursor theme is installed
-#FIXME: will fail in mysterious ways if user does not have write access to their ~/.config/
 
 set(CPACK_PACKAGE_NAME "Wisp")
 set(CPACK_PACKAGE_VENDOR "Wisp")
