@@ -2253,8 +2253,13 @@ static nserror llcache_fetch_redirect(llcache_object *object, const char *target
     if (http_code == 301 || http_code == 302 || http_code == 303) {
         /* 301, 302, 303 redirects are all unconditional GET requests */
         post = NULL;
-    } else if (http_code != 307 || post != NULL) {
-        /** \todo 300, 305, 307 with POST */
+    } else if (http_code != 307 && http_code != 308) {
+        /** \todo 300, 305 with POST */
+        nsurl_unref(hsts_url);
+        return NSERROR_OK;
+    } else if (post != NULL) {
+        /* 307 and 308 preserve the request method, but we don't support
+         * POST redirects yet */
         nsurl_unref(hsts_url);
         return NSERROR_OK;
     }
