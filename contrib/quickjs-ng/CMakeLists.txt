@@ -350,7 +350,7 @@ endif()
 # Test262 runner
 #
 
-if(NOT EMSCRIPTEN)
+if(WISP_ENABLE_TESTS AND NOT EMSCRIPTEN)
     add_executable(run-test262
         run-test262.c
     )
@@ -362,11 +362,13 @@ endif()
 # Interrupt test
 #
 
+if(WISP_ENABLE_TESTS)
 add_executable(api-test
     api-test.c
 )
 target_compile_definitions(api-test PRIVATE ${qjs_defines})
 target_link_libraries(api-test qjs)
+endif()
 
 # Unicode generator
 #
@@ -378,6 +380,7 @@ add_executable(unicode_gen EXCLUDE_FROM_ALL
 )
 target_compile_definitions(unicode_gen PRIVATE ${qjs_defines})
 
+if(WISP_ENABLE_TESTS)
 add_executable(function_source
     gen/function_source.c
 )
@@ -385,6 +388,7 @@ add_qjs_libc_if_needed(function_source)
 target_include_directories(function_source PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_compile_definitions(function_source PRIVATE ${qjs_defines})
 target_link_libraries(function_source qjs)
+endif()
 
 # Examples
 #

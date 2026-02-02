@@ -36,6 +36,7 @@ install(TARGETS svgtiny
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
 )
 
+if(WISP_ENABLE_TESTS)
 add_executable(svgtiny_test_svg2mvg
     ${CMAKE_SOURCE_DIR}/contrib/libsvgtiny/test/svg2mvg.c
 )
@@ -79,5 +80,6 @@ endforeach()
 
 add_custom_target(svgtiny_tests_canonical DEPENDS ${SVGTINY_TEST_CANON_OUTPUTS})
 add_dependencies(svgtiny_test_svg2mvg svgtiny_tests_canonical)
+endif()
 
 
