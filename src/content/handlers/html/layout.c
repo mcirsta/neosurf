@@ -1210,9 +1210,11 @@ static struct box *layout_next_margin_block(const css_unit_ctx *unit_len_ctx, st
             /* Down into children. */
             box = box->children;
         } else {
+            bool walked_up = false;
             if (!box->next) {
                 /* No more siblings:
                  * Go up to first ancestor with a sibling. */
+                walked_up = true;
                 do {
                     box = box->parent;
 
@@ -1233,23 +1235,23 @@ static struct box *layout_next_margin_block(const css_unit_ctx *unit_len_ctx, st
                         return box;
                     }
 
-                    /* Apply bottom margin only if padding[BOTTOM] doesn't
-                     * separate it from children (CSS 2.1 §8.3.1: "no padding
-                     * ...separate them" for margins to be adjoining) */
-                    if (!box->padding[BOTTOM]) {
-                        if (box->margin[BOTTOM] > 0 && (unsigned int)box->margin[BOTTOM] > *max_pos_margin) {
-                            *max_pos_margin = (unsigned int)box->margin[BOTTOM];
-                        } else if (box->margin[BOTTOM] != AUTO && box->margin[BOTTOM] < 0 &&
-                            -(unsigned int)box->margin[BOTTOM] > *max_neg_margin)
-                            *max_neg_margin = -(unsigned int)box->margin[BOTTOM];
-                    }
+                    /* NOTE: We do NOT accumulate parent's margin[BOTTOM] here.
+                     * When walking up from children looking for the next margin
+                     * collapse target, the parent's bottom margin is at the
+                     * BOTTOM of the parent box, not adjacent to children's
+                     * top margins. The parent's bottom margin should only
+                     * collapse with what comes AFTER the parent, not with
+                     * content inside it. */
 
                 } while (!box->next);
             }
 
-            /* Apply bottom margin only if padding[BOTTOM] doesn't separate it
-             * (CSS 2.1 §8.3.1: padding prevents margin collapsing) */
-            if (!box->padding[BOTTOM]) {
+            /* CSS 2.1 §8.3.1: "bottom margin of box and top margin of its
+             * next in-flow following sibling" - only applies for DIRECT
+             * siblings. If we walked up, this box is an ancestor, and its
+             * margin-bottom is not adjacent to the first child's top margin
+             * deep inside a nested element. */
+            if (!walked_up && !box->padding[BOTTOM]) {
                 if (box->margin[BOTTOM] > 0 && (unsigned int)box->margin[BOTTOM] > *max_pos_margin) {
                     *max_pos_margin = (unsigned int)box->margin[BOTTOM];
                 } else if (box->margin[BOTTOM] != AUTO && box->margin[BOTTOM] < 0 &&
@@ -2900,6 +2902,12 @@ static bool layout_line(struct box *first, int *width, int *y, int cx, int cy, s
             } else {
                 x += b->width;
             }
+            /* Log TEXT box positioning */
+            if (b->text && b->length > 0) {
+                NSLOG(wisp, INFO, "TEXT_POSITION: '%.*s' x=%d y=%d width=%d (parent=%p parent->y=%d cy=%d)",
+                    (int)b->length, b->text, b->x, b->parent ? b->parent->y : -1, b->width, b->parent,
+                    b->parent ? b->parent->y : -1, cy);
+            }
 
             space_before = space_after;
             if (b->object || b->flags & REPLACE_DIM || b->flags & IFRAME)
@@ -3279,6 +3287,11 @@ static bool layout_inline_container(
     inline_container->width = maxwidth;
     inline_container->height = y;
 
+    /* Log inline container final dimensions */
+    NSLOG(wisp, INFO, "INLINE_CONTAINER_DONE: ic=%p parent=%p ic_y=%d ic_height=%d (parent_list_marker=%p)",
+        inline_container, inline_container->parent, inline_container->y, inline_container->height,
+        inline_container->parent ? inline_container->parent->list_marker : NULL);
+
     return true;
 }
 
@@ -3548,8 +3561,11 @@ bool layout_block_context(struct box *block, int viewport_height, html_content *
                 box->type == BOX_TABLE || box->type == BOX_INLINE_CONTAINER || margin_collapse == box) &&
             in_margin == true) {
             /* Margin goes above this box. */
+            NSLOG(wisp, INFO, "MARGIN_COLLAPSE: box=%p type=%d cy_before=%d max_pos_margin=%u max_neg_margin=%u", box,
+                box->type, cy, max_pos_margin, max_neg_margin);
             cy += (int)max_pos_margin - (int)max_neg_margin;
             box->y += (int)max_pos_margin - (int)max_neg_margin;
+            NSLOG(wisp, INFO, "MARGIN_COLLAPSE: box=%p cy_after=%d box->y=%d", box, cy, box->y);
 
             /* Current margin has been applied. */
             in_margin = false;
@@ -4234,6 +4250,12 @@ static void layout_lists(const html_content *content, struct box *box)
             }
             /* Gap between marker and content */
             marker->x -= 4;
+
+            /* Log marker positioning relative to LI */
+            NSLOG(wisp, INFO,
+                "MARKER_LAYOUT: LI=%p marker=%p marker_text='%.*s' marker_xy=(%d,%d) LI_children=%p LI_first_child_y=%d",
+                child, marker, marker->text ? (int)marker->length : 0, marker->text ? marker->text : "", marker->x,
+                marker->y, child->children, child->children ? child->children->y : -999);
         }
         layout_lists(content, child);
     }

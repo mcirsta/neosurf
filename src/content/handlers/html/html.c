@@ -1055,8 +1055,7 @@ bool html_begin_conversion(html_content *htmlc)
             NSLOG(wisp, INFO, "Late callback ignored: restart already pending (content %p)", htmlc);
             return true;
         }
-        NSLOG(
-            wisp, INFO, "Late callback for content %p - box conversion already in progress, queuing restart", htmlc);
+        NSLOG(wisp, INFO, "Late callback for content %p - box conversion already in progress, queuing restart", htmlc);
         htmlc->conversion_restart_pending = true;
         return true;
     }

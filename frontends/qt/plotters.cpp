@@ -19,6 +19,17 @@
 /**
  * \file
  * Implementation of plotters for qt.
+ *
+ * TODO: Color Management
+ * Currently, CSS colors (specified in sRGB) are passed directly to QColor
+ * without any color space conversion. Modern browsers like Chrome convert
+ * sRGB CSS colors to the display's ICC color profile, which can result in
+ * slightly different rendered colors (e.g., CSS #FFFBE6 might render as
+ * #FCFCE5 after conversion). To match Chrome's behavior, we would need to:
+ * 1. Read the system/monitor ICC profile
+ * 2. Use QColorSpace/QColorTransform to convert sRGB colors to the display profile
+ * Or alternatively, set QColorSpace::SRgb on rendered surfaces and let
+ * Qt/compositor handle the conversion.
  */
 
 #include <QLinearGradient>
