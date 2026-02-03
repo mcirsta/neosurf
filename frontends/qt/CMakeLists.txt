@@ -92,20 +92,20 @@ set(QT_RESOURCES
     ${GENERATED_MESSAGES_DIR}/messages.qrc
 )
 
-add_executable(nsqt ${QT_SOURCES} ${QT_RESOURCES})
+add_executable(wisp-qt ${QT_SOURCES} ${QT_RESOURCES})
 
-add_dependencies(nsqt qt_messages)
+add_dependencies(wisp-qt qt_messages)
 
-target_compile_definitions(nsqt PRIVATE
+target_compile_definitions(wisp-qt PRIVATE
     nsqt
     QT_RESPATH="${CMAKE_INSTALL_PREFIX}/share/wisp/res"
 )
 
-target_link_libraries(nsqt PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui wisp)
-target_include_directories(nsqt PRIVATE
+target_link_libraries(wisp-qt PRIVATE Qt6::Widgets Qt6::Core Qt6::Gui wisp)
+target_include_directories(wisp-qt PRIVATE
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/frontends/qt
     ${CMAKE_SOURCE_DIR}/src
 )
 
-install(TARGETS nsqt DESTINATION bin)
+install(TARGETS wisp-qt DESTINATION bin)
