@@ -14,7 +14,7 @@
 static enum qpc_reliability g_qpc_status = QPC_RELIABILITY_UNKNOWN;
 static LARGE_INTEGER g_qpc_frequency;
 static LARGE_INTEGER g_qpc_offset;
-static DWORD g_tick_offset;
+static ULONGLONG g_tick_offset;
 
 /**
  * Test CPU for constant TSC feature (Intel/AMD)
@@ -198,14 +198,23 @@ void qpc_safe_init(void)
         QueryPerformanceCounter(&g_qpc_offset);
         NSLOG(wisp, INFO, "QPC initialized successfully (High Precision)");
     } else if (g_qpc_status == QPC_RELIABILITY_UNSTABLE) {
-        /* Treat unstable as BAD for safety - fallback to GetTickCount64
-         */
+        /* Treat unstable as BAD for safety - fallback to GetTickCount */
+#if _WIN32_WINNT >= 0x0600
         g_tick_offset = GetTickCount64();
         NSLOG(wisp, INFO, "QPC initialized (Unstable - potential drift), falling back to GetTickCount64");
+#else
+        g_tick_offset = GetTickCount();
+        NSLOG(wisp, INFO, "QPC initialized (Unstable - potential drift), falling back to GetTickCount");
+#endif
     } else {
-        /* Use GetTickCount64() as baseline for unreliable QPC */
+        /* Use GetTickCount as baseline for unreliable QPC */
+#if _WIN32_WINNT >= 0x0600
         g_tick_offset = GetTickCount64();
         NSLOG(wisp, INFO, "QPC unreliable, falling back to GetTickCount64 (Low Precision)");
+#else
+        g_tick_offset = GetTickCount();
+        NSLOG(wisp, INFO, "QPC unreliable, falling back to GetTickCount (Low Precision)");
+#endif
     }
 }
 
@@ -239,8 +248,12 @@ bool qpc_safe_get_monotonic_ms(uint64_t *time_ms)
 
     case QPC_RELIABILITY_UNSTABLE:
     case QPC_RELIABILITY_BAD: {
-        /* Fall back to GetTickCount64() */
+        /* Fall back to GetTickCount */
+#if _WIN32_WINNT >= 0x0600
         *time_ms = GetTickCount64() - g_tick_offset;
+#else
+        *time_ms = GetTickCount() - (DWORD)g_tick_offset;
+#endif
         break;
     }
 
@@ -287,8 +300,12 @@ bool qpc_safe_get_monotonic_us(uint64_t *time_us)
 
     case QPC_RELIABILITY_UNSTABLE:
     case QPC_RELIABILITY_BAD: {
-        /* Fall back to GetTickCount64() */
+        /* Fall back to GetTickCount */
+#if _WIN32_WINNT >= 0x0600
         *time_us = (GetTickCount64() - g_tick_offset) * 1000;
+#else
+        *time_us = (ULONGLONG)(GetTickCount() - (DWORD)g_tick_offset) * 1000;
+#endif
         break;
     }
 

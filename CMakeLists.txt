@@ -103,8 +103,21 @@ if(WISP_BUILD_QT_FRONTEND)
     add_definitions(-Dnsqt)
 endif()
 
+# Windows XP 32-bit non-SSE target option
+option(WISP_TARGET_WINXP "Target Windows XP (32-bit, no SSE) instead of Vista+" OFF)
+
 if(WISP_BUILD_WINDOWS_FRONTEND)
-    add_definitions(-Dnswin32 -DWINVER=0x0600 -D_WIN32_WINNT=0x0600 -D_WIN32_WINDOWS=0x0600 -D_WIN32_IE=0x0600)
+    add_definitions(-Dnswin32)
+    if(WISP_TARGET_WINXP)
+        # Windows XP target (32-bit, no SSE)
+        add_definitions(-DWINVER=0x0501 -D_WIN32_WINNT=0x0501 -D_WIN32_WINDOWS=0x0501 -D_WIN32_IE=0x0600)
+        # Disable SSE for compatibility with older CPUs without SSE support
+        add_compile_options(-march=i686 -mno-sse -mno-sse2 -mtune=generic)
+        message(STATUS "Targeting Windows XP (32-bit, no SSE)")
+    else()
+        # Vista+ target (default)
+        add_definitions(-DWINVER=0x0600 -D_WIN32_WINNT=0x0600 -D_WIN32_WINDOWS=0x0600 -D_WIN32_IE=0x0600)
+    endif()
     # Static library definitions - prevent headers from using __declspec(dllimport)
     if(NOT BUILD_SHARED_LIBS)
         add_definitions(-DCURL_STATICLIB -DLIBXML_STATIC)
