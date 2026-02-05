@@ -60,7 +60,7 @@ string(REPLACE "." ";" LIBSSL_VERSION_STRING ${LIBSSL_VERSION})
 
 list(GET LIBSSL_VERSION_STRING 0 LIBSSL_VERSION_MAJOR)
 if(LIBSSL_VERSION_MAJOR EQUAL 1)
-message(FATAL_ERROR "Wisp does not support OpenSSL 1.x.x")
+    message(WARNING "Wisp support for OpenSSL 1.x.x is experimental. 1.1.1+ should work, 1.0.2 will fail.")
 endif()
 
 # QuickJS-ng bindings

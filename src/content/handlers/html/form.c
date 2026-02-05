@@ -2000,7 +2000,11 @@ static void map_key_destroy(void *key)
 static uint32_t map_key_hash(void *key)
 {
     uintptr_t v = (uintptr_t)key;
-    return (uint32_t)((v >> 4) ^ (v >> 32) ^ v);
+    return (uint32_t)((v >> 4) ^
+#if UINTPTR_MAX > 0xffffffff
+        (v >> 32) ^
+#endif
+        v);
 }
 static bool map_key_eq(void *a, void *b)
 {

@@ -74,24 +74,45 @@ target_compile_definitions(wisp-windows PRIVATE -DWISP_MESSAGES_PATH="\\"${GENER
 add_dependencies(wisp-windows windows_messages)
 target_include_directories(wisp-windows PRIVATE ${GENERATED_MESSAGES_DIR} ${CMAKE_SOURCE_DIR}/src)
 
-target_link_libraries(wisp-windows wisp m ${WISP_COMMON_LIBS} ws2_32 comctl32 gdi32 user32 kernel32 msimg32 wininet shlwapi crypt32
-    # Static library dependencies (required when linking curl, libxml2, etc. statically)
-    bcrypt       # Windows crypto API (used by libxml2)
-    nghttp2      # HTTP/2 support
-    zstd         # Zstandard compression
-    brotlidec brotlicommon  # Brotli compression
-    ngtcp2 ngtcp2_crypto_ossl  # HTTP/3 QUIC
-    nghttp3      # HTTP/3
-    ssh2         # libssh2
-    idn2         # IDN support
-    unistring    # Unicode string support
-    iconv        # Character set conversion
-    psl          # Public Suffix List
-    # Windows system libraries for curl
-    secur32      # Security API (InitSecurityInterfaceA)
-    wldap32      # LDAP support
-    iphlpapi     # Network interface (if_nametoindex)
-)
+if(WIN32 AND CMAKE_SIZEOF_VOID_P EQUAL 4)
+    target_link_libraries(wisp-windows wisp m ${WISP_COMMON_LIBS} ws2_32 comctl32 gdi32 user32 kernel32 msimg32 wininet shlwapi crypt32
+        # Static library dependencies (required when linking curl, libxml2, etc. statically)
+        bcrypt       # Windows crypto API (used by libxml2)
+        nghttp2      # HTTP/2 support
+        zstd         # Zstandard compression
+        brotlidec-static brotlicommon-static  # Brotli compression
+        ssh2         # libssh2
+        idn2         # IDN support
+        unistring    # Unicode string support
+        iconv        # Character set conversion
+        psl          # Public Suffix List
+        # Windows system libraries for curl
+        secur32      # Security API (InitSecurityInterfaceA)
+        wldap32      # LDAP support
+        iphlpapi     # Network interface (if_nametoindex)
+        lzma         # XZ compression (used by libxml2)
+    )
+else()
+    target_link_libraries(wisp-windows wisp m ${WISP_COMMON_LIBS} ws2_32 comctl32 gdi32 user32 kernel32 msimg32 wininet shlwapi crypt32
+        # Static library dependencies (required when linking curl, libxml2, etc. statically)
+        bcrypt       # Windows crypto API (used by libxml2)
+        nghttp2      # HTTP/2 support
+        zstd         # Zstandard compression
+        brotlidec brotlicommon  # Brotli compression
+        ngtcp2 ngtcp2_crypto_ossl  # HTTP/3 QUIC
+        nghttp3      # HTTP/3
+        ssh2         # libssh2
+        idn2         # IDN support
+        unistring    # Unicode string support
+        iconv        # Character set conversion
+        psl          # Public Suffix List
+        # Windows system libraries for curl
+        secur32      # Security API (InitSecurityInterfaceA)
+        wldap32      # LDAP support
+        iphlpapi     # Network interface (if_nametoindex)
+        lzma         # XZ compression (used by libxml2)
+    )
+endif()
 
 # Force fully static linking on Windows (no external DLLs except Windows system DLLs)
 target_link_options(wisp-windows PRIVATE -static -static-libgcc)
