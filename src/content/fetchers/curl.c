@@ -1965,9 +1965,9 @@ nserror fetch_curl_register(void)
         goto curl_multi_setopt_failed;                                                                                 \
     }
 
-        SETOPT(CURLMOPT_MAXCONNECTS, maxconnects);
-        SETOPT(CURLMOPT_MAX_TOTAL_CONNECTIONS, maxconnects);
-        SETOPT(CURLMOPT_MAX_HOST_CONNECTIONS, nsoption_int(max_fetchers_per_host));
+        SETOPT(CURLMOPT_MAXCONNECTS, (long)maxconnects);
+        SETOPT(CURLMOPT_MAX_TOTAL_CONNECTIONS, (long)maxconnects);
+        SETOPT(CURLMOPT_MAX_HOST_CONNECTIONS, (long)nsoption_int(max_fetchers_per_host));
 
         /* Enable HTTP/2 multiplexing for better performance */
         SETOPT(CURLMOPT_PIPELINING, CURLPIPE_MULTIPLEX);
@@ -1993,9 +1993,9 @@ nserror fetch_curl_register(void)
 
     SETOPT(CURLOPT_DEBUGFUNCTION, fetch_curl_debug);
     if (nsoption_bool(suppress_curl_debug)) {
-        SETOPT(CURLOPT_VERBOSE, 0);
+        SETOPT(CURLOPT_VERBOSE, 0L);
     } else {
-        SETOPT(CURLOPT_VERBOSE, 1);
+        SETOPT(CURLOPT_VERBOSE, 1L);
     }
 
     /* YOLO: Enable HTTP/2 with TLS (falls back to HTTP/1.1 if needed) */
@@ -2004,7 +2004,7 @@ nserror fetch_curl_register(void)
     SETOPT(CURLOPT_WRITEFUNCTION, fetch_curl_data);
     SETOPT(CURLOPT_HEADERFUNCTION, fetch_curl_header);
     SETOPT(NSCURLOPT_PROGRESS_FUNCTION, fetch_curl_progress);
-    SETOPT(CURLOPT_NOPROGRESS, 0);
+    SETOPT(CURLOPT_NOPROGRESS, 0L);
     SETOPT(CURLOPT_USERAGENT, user_agent_string());
     SETOPT(CURLOPT_ENCODING, "");
     SETOPT(CURLOPT_LOW_SPEED_LIMIT, 1L);
