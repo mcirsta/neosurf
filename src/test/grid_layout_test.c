@@ -110,6 +110,19 @@ bool layout_flex_redistribute_auto_margins_vertical(struct box *flex)
     return true;
 }
 
+/* Stub for layout_table - called by layout_grid */
+bool layout_table(struct box *table, int available_width, html_content *content)
+{
+    /* Emulate table layout: just fill width and set some height */
+    if (table->width == AUTO) {
+        table->width = 100;
+    }
+    if (table->height == AUTO) {
+        table->height = 50;
+    }
+    return true;
+}
+
 /* Helper to log errors */
 static void test_log(const char *fmt, va_list args)
 {

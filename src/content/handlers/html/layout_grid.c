@@ -1004,11 +1004,21 @@ bool layout_grid(struct box *grid, int available_width, html_content *content)
             /* Recursively layout the child */
             if (child->type == BOX_BLOCK || child->type == BOX_INLINE_BLOCK || child->type == BOX_FLEX ||
                 child->type == BOX_INLINE_FLEX || child->type == BOX_GRID || child->type == BOX_INLINE_GRID) {
+                child->float_container = grid;
                 if (!layout_block_context(child, -1, content)) {
                     free(col_widths);
                     free(row_heights);
                     return false;
                 }
+                child->float_container = NULL;
+            } else if (child->type == BOX_TABLE) {
+                child->float_container = grid;
+                if (!layout_table(child, child_width, content)) {
+                    free(col_widths);
+                    free(row_heights);
+                    return false;
+                }
+                child->float_container = NULL;
             }
 
             /* Track row heights for all spanned rows - include padding and border */
