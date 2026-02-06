@@ -1972,6 +1972,12 @@ bool layout_flex(struct box *flex, int available_width, html_content *content)
     }
 
     if (ctx->item.count == 0) {
+        /* Empty flex container: resolve height to 0 (no content = no height).
+         * This mirrors the resolution at line 2021-2022 for non-empty containers
+         * and prevents integer overflow when parent uses unresolved AUTO height. */
+        if (flex->height == AUTO) {
+            flex->height = 0;
+        }
         layout_flex_ctx__destroy(ctx);
         return true;
     }
