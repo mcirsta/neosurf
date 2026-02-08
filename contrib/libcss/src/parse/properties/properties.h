@@ -36,6 +36,7 @@ css_error
 css__parse_background_position(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error
 css__parse_background_repeat(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
+css_error css__parse_block_size(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error css__parse_border(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error css__parse_border_bottom(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error
@@ -123,6 +124,7 @@ css_error css__parse_font_style(css_language *c, const parserutils_vector *vecto
 css_error css__parse_font_variant(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error css__parse_font_weight(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error css__parse_height(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
+css_error css__parse_inline_size(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error
 css__parse_justify_content(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error css__parse_left(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
@@ -140,9 +142,15 @@ css_error css__parse_margin_bottom(css_language *c, const parserutils_vector *ve
 css_error css__parse_margin_left(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error css__parse_margin_right(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error css__parse_margin_top(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
+css_error css__parse_max_block_size(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error css__parse_max_height(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
+css_error
+css__parse_max_inline_size(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error css__parse_max_width(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
+css_error css__parse_min_block_size(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error css__parse_min_height(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
+css_error
+css__parse_min_inline_size(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error css__parse_min_width(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error css__parse_opacity(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);
 css_error css__parse_order(css_language *c, const parserutils_vector *vector, int32_t *ctx, css_style *result);

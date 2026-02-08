@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CSS Logical Properties Test</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+        .box {
+            background-color: #eee;
+            border: 2px solid #333;
+            margin-bottom: 20px;
+            padding: 10px;
+        }
+        .test-inline-size {
+            background-color: lightblue;
+            /* Should equivalent to width: 200px */
+            inline-size: 200px; 
+            block-size: 50px;
+        }
+        .test-block-size {
+            background-color: lightgreen;
+            inline-size: 100px;
+            /* Should equivalent to height: 100px */
+            block-size: 100px; 
+        }
+        .test-min-max {
+            background-color: lightcoral;
+            /* constrain width between 100px and 300px */
+            min-inline-size: 100px;
+            max-inline-size: 300px;
+            width: 500px; /* Should be capped at 300px */
+            height: 50px;
+        }
+        .test-min-block {
+            background-color: thistle;
+            /* min-height: 100px */
+            min-block-size: 100px;
+            height: 50px; /* Should be overridden by min-block-size */
+            inline-size: 100%;
+        }
+    </style>
+</head>
+<body>
+    <h1>CSS Logical Properties Test</h1>
+    
+    <h3>1. inline-size: 200px; block-size: 50px;</h3>
+    <div class="box test-inline-size">
+        Width should be 200px.
+    </div>
+
+    <h3>2. inline-size: 100px; block-size: 100px;</h3>
+    <div class="box test-block-size">
+        100x100 square.
+    </div>
+
+    <h3>3. min-inline-size: 100px; max-inline-size: 300px; width: 500px;</h3>
+    <div class="box test-min-max">
+        Width should be 300px (capped).
+    </div>
+
+    <h3>4. min-block-size: 100px; height: 50px;</h3>
+    <div class="box test-min-block">
+        Height should be 100px.
+    </div>
+</body>
+</html>
