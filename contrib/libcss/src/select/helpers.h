@@ -17,6 +17,8 @@
 static inline css_unit css__to_css_unit(uint32_t u)
 {
     switch (u) {
+    case UNIT_NUMBER:
+        return CSS_UNIT_NUMBER;
     case UNIT_PX:
         return CSS_UNIT_PX;
     case UNIT_EX:

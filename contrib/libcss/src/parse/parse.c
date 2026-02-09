@@ -21,8 +21,10 @@
 #include "lex/lex.h"
 #include "parse/parse.h"
 
+#ifdef DEBUG_CSS_EXTRA
 #define DEBUG_STACK
 #define DEBUG_EVENTS
+#endif
 
 #ifndef NDEBUG
 #include <stdio.h>

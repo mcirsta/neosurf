@@ -42,11 +42,12 @@ nserror cw_helper_scroll_visible(struct core_window *cw_h, const struct rect *r)
     int x1;
     int y1;
 
-    assert(cw_t != NULL);
     assert(cw_h != NULL);
-    assert(cw_t->get_scroll != NULL);
-    assert(cw_t->set_scroll != NULL);
-    assert(cw_t->get_window_dimensions != NULL);
+    assert(guit != NULL);
+    assert(guit->corewindow != NULL);
+    assert(guit->corewindow->get_scroll != NULL);
+    assert(guit->corewindow->set_scroll != NULL);
+    assert(guit->corewindow->get_dimensions != NULL);
 
     err = guit->corewindow->get_dimensions(cw_h, &width, &height);
     if (err != NSERROR_OK) {

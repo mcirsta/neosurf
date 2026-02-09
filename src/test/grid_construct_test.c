@@ -50,6 +50,7 @@ css_fixed nscss_screen_dpi = 0;
 /* Mock corestrings (Must be visible before mocks uses them) */
 #include "wisp/utils/corestrings.h"
 struct dom_string *corestring_dom_id;
+struct dom_string *corestring_dom_class;
 struct dom_string *corestring_dom_title;
 struct dom_string *corestring_dom_style;
 struct dom_string *corestring_dom_colspan;

@@ -47,6 +47,8 @@ enum calc_opcodes {
 };
 
 typedef enum unit {
+    UNIT_NUMBER = (1u << 13), /* Unitless number (e.g., scale factors, line-height multipliers). Uses bit 13 to
+                                 avoid collision with length units that have odd offsets (which set bit 0). */
     UNIT_LENGTH = (1u << 8),
     UNIT_PX = (1u << 8) + 0,
     UNIT_EX = (1u << 8) + 1,

@@ -72,7 +72,7 @@ static css_error parse_transform_function(css_language *c, const parserutils_vec
             /* Convert percentage to multiplier: 50% = 0.5 */
             value1 = FDIV(value1, F_100);
         } else {
-            unit1 = 0; /* Unitless number */
+            unit1 = UNIT_NUMBER; /* Unitless number */
         }
     } else {
         /* Parse length/percentage for translate */
@@ -127,7 +127,7 @@ static css_error parse_transform_function(css_language *c, const parserutils_vec
                     unit2 = UNIT_PCT;
                     value2 = FDIV(value2, F_100);
                 } else {
-                    unit2 = 0;
+                    unit2 = UNIT_NUMBER;
                 }
             } else {
                 error = css__parse_unit_specifier(c, vector, ctx, UNIT_PX, &value2, &unit2);

@@ -1480,6 +1480,31 @@ static bool box_construct_text(struct box_construct_ctx *ctx)
             /* Child of a block without a current container
              * (i.e. this box is the first child of its parent, or
              * was preceded by block-level siblings) */
+
+            /* DEBUG: Log when containing block doesn't have inline container */
+            if (props.containing_block != NULL) {
+                const char *tag = "";
+                const char *cls = "";
+                dom_string *name = NULL;
+                dom_string *class_attr = NULL;
+                if (props.containing_block->node != NULL) {
+                    if (dom_node_get_node_name(props.containing_block->node, &name) == DOM_NO_ERR && name != NULL) {
+                        tag = dom_string_data(name);
+                    }
+                    if (dom_element_get_attribute(props.containing_block->node, corestring_dom_class, &class_attr) ==
+                            DOM_NO_ERR &&
+                        class_attr != NULL) {
+                        cls = dom_string_data(class_attr);
+                    }
+                }
+                NSLOG(wisp, INFO, "TEXT_BOX: creating inline_container for text, parent: tag=%s class='%s' type=%d",
+                    tag, cls, props.containing_block->type);
+                if (name)
+                    dom_string_unref(name);
+                if (class_attr)
+                    dom_string_unref(class_attr);
+            }
+
             props.inline_container = box_create(NULL, NULL, false, NULL, NULL, NULL, NULL, ctx->bctx);
             if (props.inline_container == NULL) {
                 free(text);

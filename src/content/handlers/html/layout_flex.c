@@ -1102,15 +1102,30 @@ static struct flex_line_data *layout_flex__build_line(struct flex_ctx *ctx, size
                 line->main_size += pos_main;
                 used_main += pos_main + gap_for_item;
 
-                NSLOG(flex, DEEPDEBUG,
-                    "MARGIN_CHECK: box %p margin[LEFT]=%d margin[RIGHT]=%d (AUTO=%d) start=%d end=%d", b,
-                    b->margin[LEFT], b->margin[RIGHT], AUTO, start_side, end_side);
+                /* Get element class for debugging */
+                const char *item_cls = "";
+                dom_string *item_class_attr = NULL;
+                if (b->node != NULL) {
+                    if (dom_element_get_attribute(b->node, corestring_dom_class, &item_class_attr) == DOM_NO_ERR &&
+                        item_class_attr != NULL) {
+                        item_cls = dom_string_data(item_class_attr);
+                    }
+                }
+                NSLOG(flex, INFO,
+                    "MARGIN_CHECK: box %p class='%s' margin[LEFT]=%d margin[RIGHT]=%d (AUTO=%d) start_side=%d end_side=%d",
+                    b, item_cls, b->margin[LEFT], b->margin[RIGHT], AUTO, start_side, end_side);
                 if (b->margin[start_side] == AUTO) {
                     line->main_auto_margin_count++;
+                    NSLOG(flex, INFO, "  -> auto margin on START side detected, count now %d",
+                        line->main_auto_margin_count);
                 }
                 if (b->margin[end_side] == AUTO) {
                     line->main_auto_margin_count++;
+                    NSLOG(flex, INFO, "  -> auto margin on END side detected, count now %d",
+                        line->main_auto_margin_count);
                 }
+                if (item_class_attr != NULL)
+                    dom_string_unref(item_class_attr);
             }
             item->line = ctx->line.count;
             line->count++;

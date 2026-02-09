@@ -126,7 +126,9 @@ typedef enum css_unit {
      * - High 16 bits: min unit
      * - Low 16 bits: max unit
      * Followed by two values: min value, then max value */
-    CSS_UNIT_MINMAX = 0x24
+    CSS_UNIT_MINMAX = 0x24,
+
+    CSS_UNIT_NUMBER = 0x25 /* Unitless number (e.g., scale factors, line-height multipliers) */
 } css_unit;
 
 /**

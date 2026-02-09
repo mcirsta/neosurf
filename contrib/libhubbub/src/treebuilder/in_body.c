@@ -84,7 +84,7 @@ hubbub_error handle_in_body(hubbub_treebuilder *treebuilder, const hubbub_token 
     hubbub_error err = HUBBUB_OK;
     uint32_t i;
 
-#if !defined(NDEBUG)
+#ifdef DEBUG_CSS_EXTRA
     fprintf(stdout, "Processing token %d\n", token->type);
     element_stack_dump(treebuilder, stdout);
     formatting_list_dump(treebuilder, stdout);
@@ -125,7 +125,7 @@ hubbub_error handle_in_body(hubbub_treebuilder *treebuilder, const hubbub_token 
         break;
     }
 
-#if !defined(NDEBUG)
+#ifdef DEBUG_CSS_EXTRA
     fprintf(stdout, "Processed\n");
     element_stack_dump(treebuilder, stdout);
     formatting_list_dump(treebuilder, stdout);

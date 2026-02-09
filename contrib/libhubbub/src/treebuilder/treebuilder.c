@@ -193,12 +193,12 @@ hubbub_error hubbub_treebuilder_token_handler(const hubbub_token *token, void *p
     assert((signed)treebuilder->context.current_node >= 0);
 
 /* A slightly nasty debugging hook, but very useful */
-#ifdef NDEBUG
-#define mode(x) case x:
-#else
+#ifdef DEBUG_CSS_EXTRA
 #define mode(x)                                                                                                        \
     case x:                                                                                                            \
         printf(#x "\n");
+#else
+#define mode(x) case x:
 #endif
 
     while (err == HUBBUB_REPROCESS) {
