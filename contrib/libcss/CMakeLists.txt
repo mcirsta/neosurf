@@ -31,35 +31,21 @@ add_custom_command(
 )
 add_custom_target(libcss_select_gen DEPENDS ${LIBCSS_SELECT_GEN_FILES})
 
-# Check for perfect_hash Python module (required for O(1) property lookup hash table)
-execute_process(
-    COMMAND ${Python3_EXECUTABLE} -c "import perfect_hash; print('ok')"
-    OUTPUT_VARIABLE PERFECT_HASH_CHECK
-    ERROR_QUIET
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-)
-if(NOT PERFECT_HASH_CHECK STREQUAL "ok")
-    message(FATAL_ERROR 
-        "Python 'perfect-hash' module not found.\n"
-        "Install it via:\n"
-        "  - Arch Linux: yay -S python-perfect-hash\n"
-        "  - pip: pip install perfect-hash\n"
-        "This is required for generating the CSS property hash table."
-    )
-endif()
-message(STATUS "Found Python perfect_hash module")
-
 # Property registration generator output files
+# Step 1: Python generates .inc files + .gperf input for the hash table
+# Step 2: gperf processes .gperf -> prop_hash_table.inc (perfect hash C code)
 set(LIBCSS_PROPREG_OUT_DIR ${CMAKE_CURRENT_BINARY_DIR}/src/generated)
-set(LIBCSS_PROPREG_GEN_FILES
+
+# Files produced by the Python generator (Step 1)
+set(LIBCSS_PROPREG_PYTHON_FILES
     ${LIBCSS_PROPREG_OUT_DIR}/properties_enum.inc
     ${LIBCSS_PROPREG_OUT_DIR}/dispatch_table.inc
     ${LIBCSS_PROPREG_OUT_DIR}/propstrings_enum.inc
     ${LIBCSS_PROPREG_OUT_DIR}/propstrings_strings.inc
-    ${LIBCSS_PROPREG_OUT_DIR}/prop_hash_table.inc
+    ${LIBCSS_PROPREG_OUT_DIR}/prop_hash_table.gperf
 )
 add_custom_command(
-    OUTPUT ${LIBCSS_PROPREG_GEN_FILES}
+    OUTPUT ${LIBCSS_PROPREG_PYTHON_FILES}
     COMMAND ${CMAKE_COMMAND} -E make_directory ${LIBCSS_PROPREG_OUT_DIR}
     COMMAND ${PYTHON3} ${CMAKE_SOURCE_DIR}/contrib/libcss/build-aux/property_generator.py
         ${CMAKE_SOURCE_DIR}/contrib/libcss/src/select/dispatch.c
@@ -69,13 +55,27 @@ add_custom_command(
         ${LIBCSS_PROPREG_OUT_DIR}/dispatch_table.inc
         ${LIBCSS_PROPREG_OUT_DIR}/propstrings_enum.inc
         ${LIBCSS_PROPREG_OUT_DIR}/propstrings_strings.inc
-        ${LIBCSS_PROPREG_OUT_DIR}/prop_hash_table.inc
-    DEPENDS 
+        ${LIBCSS_PROPREG_OUT_DIR}/prop_hash_table.gperf
+    DEPENDS
         ${CMAKE_SOURCE_DIR}/contrib/libcss/build-aux/property_generator.py
         ${CMAKE_SOURCE_DIR}/contrib/libcss/src/select/dispatch.c
         ${CMAKE_SOURCE_DIR}/contrib/libcss/src/parse/properties/properties.gen
         ${CMAKE_SOURCE_DIR}/contrib/libcss/src/parse/keywords.gen
-    COMMENT "Generating property registration files"
+    COMMENT "Generating property registration files and gperf input"
+)
+
+# Step 2: gperf processes .gperf -> prop_hash_table.inc
+add_custom_command(
+    OUTPUT ${LIBCSS_PROPREG_OUT_DIR}/prop_hash_table.inc
+    COMMAND ${GPERF} ${LIBCSS_PROPREG_OUT_DIR}/prop_hash_table.gperf
+        --output-file=${LIBCSS_PROPREG_OUT_DIR}/prop_hash_table.inc
+    DEPENDS ${LIBCSS_PROPREG_OUT_DIR}/prop_hash_table.gperf
+    COMMENT "Generating perfect hash table with gperf"
+)
+
+set(LIBCSS_PROPREG_GEN_FILES
+    ${LIBCSS_PROPREG_PYTHON_FILES}
+    ${LIBCSS_PROPREG_OUT_DIR}/prop_hash_table.inc
 )
 add_custom_target(libcss_propreg_gen DEPENDS ${LIBCSS_PROPREG_GEN_FILES})
 
