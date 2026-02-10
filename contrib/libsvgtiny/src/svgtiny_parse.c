@@ -1022,11 +1022,11 @@ static inline svgtiny_code dispatch_op(const char *value, size_t value_len, stru
         break;
 
     case SVGTIOP_LENGTH:
-        res = svgtiny_parse_length(value, value_len, *((int *)styleop->param), styleop->value);
+        res = svgtiny_parse_length(value, value_len, (int)*((float *)styleop->param), styleop->value);
         break;
 
     case SVGTIOP_INTLENGTH:
-        res = svgtiny_parse_length(value, value_len, *((int *)styleop->param), &parse_len);
+        res = svgtiny_parse_length(value, value_len, (int)*((float *)styleop->param), &parse_len);
         *((int *)styleop->value) = parse_len;
         break;
 

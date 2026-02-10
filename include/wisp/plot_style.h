@@ -47,7 +47,7 @@
 typedef int32_t plot_style_fixed;
 
 /* Convert an int to fixed point */
-#define plot_style_int_to_fixed(v) ((v) << PLOT_STYLE_RADIX)
+#define plot_style_int_to_fixed(v) (((plot_style_fixed)(v)) << PLOT_STYLE_RADIX)
 
 /* Convert fixed point to int */
 #define plot_style_fixed_to_int(v) ((v) >> PLOT_STYLE_RADIX)
