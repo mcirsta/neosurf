@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Table Padding Tests</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            background: #f4f4f9;
+            padding: 20px;
+            color: #333;
+        }
+
+        h1 {
+            border-bottom: 3px solid #333;
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            margin-top: 30px;
+            border-bottom: 2px solid #ccc;
+            padding-bottom: 5px;
+            color: #444;
+        }
+
+        .test-case {
+            margin-bottom: 20px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .description {
+            font-style: italic;
+            color: #555;
+            margin-bottom: 15px;
+            border-left: 4px solid #007bff;
+            padding-left: 10px;
+            background: #eef7ff;
+            padding: 8px 10px;
+            border-radius: 0 4px 4px 0;
+        }
+
+        /* 
+           VISUAL VERIFICATION GUIDE:
+           - TABLE background is RED (#ff9999). This represents the PADDING area.
+           - CELL background is GREEN (#99ff99). This represents the CONTENT area.
+           - If padding is working, you should see the RED background in the padded areas.
+           - If padding is BROKEN (ignored), the GREEN cells will cover the RED area (e.g. adjacent to border).
+        */
+
+        table {
+            background-color: #ff9999;
+            /* Red = PADDING / SPACING area */
+            border: 3px solid #333;
+            /* Thick dark border for reference */
+            margin-bottom: 10px;
+            color: black;
+        }
+
+        td {
+            background-color: #99ff99;
+            /* Green = CONTENT area */
+            border: 1px solid #666;
+            padding: 5px;
+        }
+
+        /* Utility classes for visual verification */
+        .pad-top {
+            padding-top: 30px;
+        }
+
+        .pad-left {
+            padding-left: 30px;
+        }
+
+        .pad-right {
+            padding-right: 30px;
+        }
+
+        .pad-bottom {
+            padding-bottom: 30px;
+        }
+
+        .pad-all {
+            padding: 20px;
+        }
+
+        .spacing {
+            border-spacing: 10px;
+            border-collapse: separate;
+        }
+
+        .no-spacing {
+            border-spacing: 0;
+            border-collapse: separate;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Table Padding Tests</h1>
+    <p>These tests verify the fix for table padding rendering. <br>
+        <strong>Verification:</strong> Look for the <span
+            style="background:#ff9999; padding: 2px 5px; border: 1px solid #333;">RED</span> area between the thick
+        black table border and the <span
+            style="background:#99ff99; padding: 2px 5px; border: 1px solid #666;">GREEN</span> cells.
+    </p>
+
+    <!-- Test 1: Padding Top -->
+    <h2>1. Padding Top (30px)</h2>
+    <div class="test-case">
+        <div class="description">Table has 30px top padding. You should see a <strong>30px high RED band</strong> at the
+            top, between the black border and the green cells.</div>
+        <table class="pad-top no-spacing">
+            <tr>
+                <td>Cell 1</td>
+                <td>Cell 2</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Test 2: Padding Left (30px) -->
+    <h2>2. Padding Left (30px)</h2>
+    <div class="test-case">
+        <div class="description">Table has 30px left padding. You should see a <strong>30px wide RED band</strong> on
+            the left.</div>
+        <table class="pad-left no-spacing">
+            <tr>
+                <td>Cell 1</td>
+                <td>Cell 2</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Test 3: Padding All Sides (20px) -->
+    <h2>3. Padding All Sides (20px)</h2>
+    <div class="test-case">
+        <div class="description">Table has 20px padding on all sides. You should see a <strong>RED frame</strong> around
+            the green cells.</div>
+        <table class="pad-all no-spacing">
+            <tr>
+                <td>Cell 1</td>
+                <td>Cell 2</td>
+            </tr>
+            <tr>
+                <td>Cell 3</td>
+                <td>Cell 4</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Test 4: Border Spacing + Padding -->
+    <h2>4. Border Spacing (10px) + Padding Top (30px)</h2>
+    <div class="test-case">
+        <div class="description">Padding adds to border spacing. Top red area should be 30px (padding) + 10px (spacing)
+            = <strong>40px total</strong>. Gaps between cells should be 10px red.</div>
+        <table class="pad-top spacing">
+            <tr>
+                <td>Cell 1</td>
+                <td>Cell 2</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Test 5: Nested Tables -->
+    <h2>5. Nested Tables</h2>
+    <div class="test-case">
+        <div class="description">Outer table (Padding All) should have Red frame. Inner table (Padding All + Spacing)
+            should also have Red frame and spacing.</div>
+        <table class="pad-all no-spacing">
+            <tr>
+                <td>
+                    Outer Cell
+                    <table class="pad-all spacing">
+                        <tr>
+                            <td>Inner Cell 1</td>
+                            <td>Inner Cell 2</td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Test 6: Table with Caption -->
+    <h2>6. Table with Caption</h2>
+    <div class="test-case">
+        <div class="description">Padding applies to the table box. Caption is usually handled separately but visually
+            associated. Verify table box padding is still correct.</div>
+        <table class="pad-all no-spacing">
+            <caption style="background: #eee; border: 1px dotted #999; padding: 5px; margin-bottom: 5px;">Table Caption
+            </caption>
+            <tr>
+                <td>Cell 1</td>
+                <td>Cell 2</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Test 7: Width 100% -->
+    <h2>7. Width 100%</h2>
+    <div class="test-case">
+        <div class="description">Table width 100% with padding. Rows should still respect padding and not overflow or
+            align incorrectly.</div>
+        <table class="pad-all no-spacing" style="width: 100%;">
+            <tr>
+                <td>Cell 1</td>
+                <td>Cell 2</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Test 8: Empty Cells -->
+    <h2>8. Empty Cells</h2>
+    <div class="test-case">
+        <div class="description">Table with empty cells and padding.</div>
+        <table class="pad-all no-spacing">
+            <tr>
+                <td>Cell 1</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td></td>
+                <td>Cell 4</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Test 9: Colspan/Rowspan -->
+    <h2>9. Colspan/Rowspan</h2>
+    <div class="test-case">
+        <div class="description">Padding interaction with spanned cells.</div>
+        <table class="pad-all spacing">
+            <tr>
+                <td colspan="2">Colspan 2</td>
+                <td>Cell 3</td>
+            </tr>
+            <tr>
+                <td rowspan="2">Rowspan 2</td>
+                <td>Cell 4</td>
+                <td>Cell 5</td>
+            </tr>
+            <tr>
+                <td>Cell 6</td>
+                <td>Cell 7</td>
+            </tr>
+        </table>
+    </div>
+
+</body>
+
+</html>

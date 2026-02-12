@@ -1976,7 +1976,7 @@ bool layout_table(struct box *table, int available_width, html_content *content)
     }
 
     /* position cells */
-    table_height = border_spacing_v;
+    table_height = border_spacing_v + table->padding[TOP];
     for (row_group = table->children; row_group; row_group = row_group->next) {
         int row_group_height = 0;
         for (row = row_group->children; row; row = row->next) {
@@ -2075,6 +2075,7 @@ bool layout_table(struct box *table, int available_width, html_content *content)
     /* Table height is either the height of the contents, or specified
      * height if greater */
     table_height = max(table_height, min_height);
+    table_height += table->padding[BOTTOM];
     /** \todo distribute spare height over the row groups / rows / cells */
 
     /* perform vertical alignment */

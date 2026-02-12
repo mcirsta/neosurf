@@ -2341,6 +2341,13 @@ bool html_redraw_box(const html_content *html, struct box *box, int x_parent, in
             NSLOG(layout, INFO, "bg draw pre: tag %s class %s box %p pad_w %i pad_h %i", tag, cls, box, padding_width,
                 padding_height);
         }
+        /* Debug: log table padding */
+        if (box->type == BOX_TABLE) {
+            NSLOG(layout, INFO,
+                "TABLE draw: tag %s class %s box %p width %i height %i padding[L]=%d [T]=%d [R]=%d [B]=%d", tag, cls,
+                (void *)box, box->width, box->height, box->padding[LEFT], box->padding[TOP], box->padding[RIGHT],
+                box->padding[BOTTOM]);
+        }
         /* find intersection of clip box and border edge */
         struct rect p;
         p.x0 = x - border_left < r.x0 ? r.x0 : x - border_left;
